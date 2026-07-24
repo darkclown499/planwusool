@@ -1,0 +1,233 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\LandingPageSetting;
+use Illuminate\Database\Seeder;
+
+class LandingPageSeeder extends Seeder
+{
+    public function run(): void
+    {
+        LandingPageSetting::updateOrCreate(
+            ['id' => 1],
+            [
+                'company_name' => 'Wusool',
+                'contact_email' => 'info@wusool.ps',
+                'contact_phone' => '+970 59 123 4567',
+                'contact_address' => 'وكالة بلانكتون، قلقيلية، فلسطين',
+                'config_sections' => $this->getConfigSections()
+            ]
+        );
+
+        $this->command->info('Landing page settings updated with Arabic content.');
+    }
+
+    private function getConfigSections(): array
+    {
+        return [
+            'sections' => [
+                [
+                    'key' => 'header',
+                    'transparent' => false,
+                    'background_color' => '#ffffff',
+                    'text_color' => '#1f2937',
+                    'button_style' => 'gradient'
+                ],
+                [
+                    'key' => 'hero',
+                    'title' => 'وصول',
+                    'subtitle' => 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع',
+                    'announcement_text' => 'موثوق من أكثر من ١٠,٠٠٠ متجر حول العالم',
+                    'primary_button_text' => 'ابدأ تجربة مجانية',
+                    'secondary_button_text' => 'الدخول',
+                    'background_color' => '#0a0a0a',
+                    'text_color' => '#ffffff',
+                    'layout' => 'image-right',
+                    'image_position' => 'right',
+                    'stats' => [
+                        ['value' => '١٠ آلاف+', 'label' => 'متجر'],
+                        ['value' => '+٥٠', 'label' => 'دولة'],
+                        ['value' => '٩٩.٩٪', 'label' => 'وقت تشغيل']
+                    ],
+                ],
+                [
+                    'key' => 'features',
+                    'title' => 'كل ما تحتاجه لإطلاق متجرك',
+                    'description' => 'أدوات احترافية مصممة لنجاح متجرك عبر واتساب',
+                    'background_color' => '#ffffff',
+                    'layout' => 'grid',
+                    'columns' => 3,
+                    'show_icons' => true,
+                    'features_list' => [
+                        ['title' => 'متجر واتساب ذكي', 'description' => 'متجر تفاعلي متكامل عبر واتساب يتيح للعملاء التصفح والشراء بسهولة تامة.', 'icon' => 'store'],
+                        ['title' => 'تصميم احترافي قابل للتخصيص', 'description' => 'قوالب جاهزة بتصاميم عصرية يمكنك تخصيصها بالكامل لتناسب هوية متجرك.', 'icon' => 'palette'],
+                        ['title' => 'لوحة تحكم شاملة', 'description' => 'تابع مبيعاتك وعملاءك ومخزونك من مكان واحد مع تقارير مفصلة وفورية.', 'icon' => 'bar-chart']
+                    ]
+                ],
+                [
+                    'key' => 'screenshots',
+                    'title' => 'شاهد وصول قيد التشغيل',
+                    'subtitle' => 'استكشف لوحة التحكم البديهية وميزات إدارة المتجر القوية.',
+                    'screenshots_list' => []
+                ],
+                [
+                    'key' => 'why_choose_us',
+                    'title' => 'لماذا تختار وصول؟',
+                    'subtitle' => 'الحل الشامل للتجارة الإلكترونية للمؤسسات الحديثة.',
+                    'reasons' => [
+                        ['title' => 'بنية متعددة المتاجر', 'description' => 'أدر متاجر غير محدودة من حساب واحد مع لوحة تحكم موحدة.', 'icon' => 'stores'],
+                        ['title' => 'بدون رسوم معاملات', 'description' => 'احتفظ بـ ١٠٠٪ من أرباحك مع تسعير شفاف.', 'icon' => 'money']
+                    ],
+                    'stats' => [
+                        ['value' => '١٠ آلاف+', 'label' => 'مستخدم نشط', 'color' => 'blue'],
+                        ['value' => '٩٩٪', 'label' => 'رضا العملاء', 'color' => 'green']
+                    ]
+                ],
+                [
+                    'key' => 'themes',
+                    'title' => 'اختر تصميم متجرك',
+                    'subtitle' => 'اختر من بين تصاميمنا الاحترافية لتناسب أسلوب عملك',
+                    'selected_themes' => ['gadgets', 'fashion', 'bakery'],
+                    'cta_title' => 'جاهز لبدء متجرك؟',
+                    'cta_description' => 'اختر التصميم المفضل لديك وابدأ في بناء متجرك الإلكتروني اليوم.',
+                    'primary_button_text' => 'ابدأ مجاناً',
+                    'secondary_button_text' => 'عرض جميع الميزات'
+                ],
+                [
+                    'key' => 'about',
+                    'title' => 'عن وصول',
+                    'description' => 'نحن شغوفون بتمكين رواد الأعمال من بناء أعمال تجارة إلكترونية ناجحة.',
+                    'background_color' => '#f9fafb',
+                    'stats' => [
+                        ['value' => '+٤ سنوات', 'label' => 'خبرة', 'color' => 'blue'],
+                        ['value' => '١٠ آلاف+', 'label' => 'مستخدم سعيد', 'color' => 'green'],
+                        ['value' => '+٥٠', 'label' => 'دولة', 'color' => 'purple']
+                    ]
+                ],
+                [
+                    'key' => 'team',
+                    'title' => 'تعرف على فريقنا',
+                    'subtitle' => 'نحن فريق متنوع من المبتكرين وحلال المشكلات.',
+                    'members' => []
+                ],
+                [
+                    'key' => 'testimonials',
+                    'title' => 'ماذا يقول عملاؤنا',
+                    'subtitle' => 'آراء حقيقية من أصحاب متاجر ناجحة استخدموا وصول',
+                    'background_color' => '#ffffff',
+                    'testimonials' => [
+                        ['name' => 'أحمد منصور', 'role' => 'صاحب متجر إلكتروني', 'content' => 'وصول غيّرت طريقة عملنا بالكامل. أصبحنا ندير متاجرنا عبر واتساب بسهولة والمبيعات تضاعفت خلال ثلاثة أشهر.', 'rating' => 5],
+                        ['name' => 'فاطمة العلي', 'role' => 'مديرة تسويق', 'content' => 'التصميم الاحترافي للمتجر أحدث فرقاً كبيراً. عملاؤنا يحبون تجربة التسوق عبر واتساب.', 'rating' => 5],
+                        ['name' => 'محمد الخطيب', 'role' => 'رائد أعمال', 'content' => 'لوحة التحكم شاملة ومفصلة. أستطيع متابعة كل شيء من موبايلي في أي مكان.', 'rating' => 5],
+                        ['name' => 'نور حسين', 'role' => 'صاحبة متجر ملابس', 'content' => 'أفضل استثمار قمت به لمتجري. الدعم الفني ممتاز والسعر مناسب جداً.', 'rating' => 5],
+                        ['name' => 'خالد الشمري', 'role' => 'مدير مبيعات', 'content' => 'التكامل مع واتساب أحدث ثورة في طريقة تعاملنا مع العملاء. المبيعات زادت ٢٠٠٪.', 'rating' => 5],
+                        ['name' => 'سارة المحمدي', 'role' => 'صاحبة مشروع صغير', 'content' => 'بدأت من الصفر وصول أعطاني القوة للمنافسة. المتجر يعمل ٢٤ ساعة بدون توقف.', 'rating' => 5]
+                    ]
+                ],
+                [
+                    'key' => 'plans',
+                    'title' => 'اختر خطتك',
+                    'subtitle' => 'ابدأ بخطتنا المجانية وترقِ مع نموك.',
+                    'background_color' => '#f8fafc'
+                ],
+                [
+                    'key' => 'faq',
+                    'title' => 'الأسئلة الشائعة',
+                    'subtitle' => 'لديك أسئلة؟ لدينا الإجابات.',
+                    'background_color' => '#ffffff',
+                    'faqs' => [
+                        ['question' => 'كيف تعمل وصول؟', 'answer' => 'تتيح لك وصول إنشاء وإدارة متاجر إلكترونية متعددة من لوحة تحكم واحدة مع ميزات تجارة إلكترونية قوية.'],
+                        ['question' => 'هل يمكنني إنشاء متاجر متعددة بحساب واحد؟', 'answer' => 'نعم! وصول مصممة كمنصة متاجر متعددة. يمكنك إنشاء وإدارة متاجر كثيرة من لوحة تحكم واحدة حسب خطتك.'],
+                        ['question' => 'ما طرق الدفع المدعومة؟', 'answer' => 'ندعم أكثر من ٣٠ بوابة دفع بما في ذلك Stripe وPayPal وRazorpay وFlutterwave وغيرها الكثير.'],
+                        ['question' => 'هل تتوفر تجربة مجانية؟', 'answer' => 'نعم! نقدم تجربة مجانية لمدة ١٤ يوماً مع وصول كامل لجميع الميزات. لا حاجة لبطاقة ائتمان للبدء.'],
+                        ['question' => 'هل أحتاج خبرة تقنية لاستخدام وصول؟', 'answer' => 'على الإطلاق! وصول مصممة لرواد الأعمال غير التقنيين. واجهتنا البديهية ومنشئ المتجر بالسحب والإفلات يسهل إنشاء متاجر احترافية.'],
+                        ['question' => 'ما نوع الدعم المقدم؟', 'answer' => 'نقدم دعماً على مدار الساعة عبر الدردشة المباشرة والبريد الإلكتروني وواتساب. فريقنا يشمل خبراء تجارة إلكترونية.']
+                    ]
+                ],
+                [
+                    'key' => 'newsletter',
+                    'title' => 'ابقَ على اطلاع مع وصول',
+                    'subtitle' => 'احصل على آخر التحديثات ونصائح التجارة الإلكترونية.',
+                    'privacy_text' => 'بدون رسائل مزعجة، يمكنك إلغاء الاشتراك في أي وقت.'
+                ],
+                [
+                    'key' => 'contact',
+                    'title' => 'تواصل معنا',
+                    'subtitle' => 'لديك أسئلة حول وصول؟ نحب أن نسمع منك. أرسل لنا رسالة وسنرد في أقرب وقت ممكن.',
+                    'form_title' => 'أرسل لنا رسالة',
+                    'info_title' => 'معلومات التواصل',
+                    'info_description' => 'نحن هنا لمساعدتك والإجابة على أي سؤال لديك. نتطلع لسماع منك.',
+                    'background_color' => '#f9fafb'
+                ],
+                [
+                    'key' => 'footer',
+                    'description' => 'نمكّن رواد الأعمال بحلول تجارة إلكترونية قوية متعددة المتاجر.',
+                    'newsletter_title' => 'ابقَ على اطلاع مع وصول',
+                    'newsletter_subtitle' => 'اشترك في نشرتنا الإخبارية لنصائح التجارة الإلكترونية والتحديثات',
+                    'links' => [
+                        'product' => [
+                            ['name' => 'الميزات', 'href' => '#features'],
+                            ['name' => 'القوالب', 'href' => '#themes'],
+                            ['name' => 'الأسعار', 'href' => '#pricing']
+                        ],
+                        'company' => [
+                            ['name' => 'من نحن', 'href' => '#about'],
+                            ['name' => 'اتصل بنا', 'href' => '#contact'],
+                            ['name' => 'وظائف', 'href' => '#careers']
+                        ],
+                        'support' => [
+                            ['name' => 'مركز المساعدة', 'href' => '#help'],
+                            ['name' => 'التوثيق', 'href' => '#docs'],
+                            ['name' => 'الأسئلة الشائعة', 'href' => '#faq']
+                        ],
+                        'legal' => [
+                            ['name' => 'سياسة الخصوصية', 'href' => '#privacy'],
+                            ['name' => 'شروط الخدمة', 'href' => '#terms']
+                        ]
+                    ],
+                    'section_titles' => [
+                        'product' => 'المنتج',
+                        'company' => 'الشركة',
+                        'support' => 'الدعم',
+                        'legal' => 'قانوني'
+                    ],
+                    'social_links' => [
+                        ['name' => 'Facebook', 'icon' => 'Facebook', 'href' => '#'],
+                        ['name' => 'Twitter', 'icon' => 'Twitter', 'href' => '#'],
+                        ['name' => 'Instagram', 'icon' => 'Instagram', 'href' => '#']
+                    ]
+                ]
+            ],
+            'colors' => [
+                'primary' => '#10b77f',
+                'secondary' => '#059669',
+                'accent' => '#065f46'
+            ],
+            'seo' => [
+                'meta_title' => 'وصول - منصة إدارة المتاجر المتعددة',
+                'meta_description' => 'أنشئ وأدر متاجر إلكترونية متعددة مع وصول. منصة تجارة إلكترونية قوية مع تصاميم جميلة وميزات متقدمة.',
+                'meta_keywords' => 'منصة متاجر متعددة، إدارة متاجر إلكترونية، حلول التجارة الإلكترونية، وصول'
+            ],
+            'section_order' => [
+                'header', 'hero', 'features', 'testimonials', 'plans', 'contact', 'footer'
+            ],
+            'section_visibility' => [
+                'header' => true,
+                'hero' => true,
+                'features' => true,
+                'screenshots' => false,
+                'why_choose_us' => false,
+                'themes' => false,
+                'about' => false,
+                'team' => false,
+                'testimonials' => true,
+                'plans' => true,
+                'faq' => false,
+                'newsletter' => false,
+                'contact' => true,
+                'footer' => true
+            ]
+        ];
+    }
+}

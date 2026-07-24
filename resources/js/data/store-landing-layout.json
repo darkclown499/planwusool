@@ -1,0 +1,268 @@
+[
+  {
+    "id": "header-1",
+    "type": "header",
+    "name": "Header",
+    "icon": "Navigation",
+    "config": {
+      "logo": "wusool.ps",
+      "menuItems": ["Features", "Themes", "About", "Contact"],
+      "buttonText": "Get Started"
+    }
+  },
+  {
+    "id": "hero-1",
+    "type": "hero",
+    "name": "Hero Section",
+    "icon": "Layout",
+    "config": {
+      "variant": "variant3",
+      "title": "Create a polished modern storefront in minutes",
+      "subtitle": "Bring calm design, multi-language readiness, and conversion-focused product storytelling to your next digital experience.",
+      "buttonText": "Create Your Store",
+      "buttonUrl": "/register",
+      "announcement": "New: refined layouts and lighter interactions"
+    }
+  },
+  {
+    "id": "features-1",
+    "type": "features",
+    "name": "Features",
+    "icon": "Star",
+    "config": {
+      "title": "Everything needed for a modern storefront",
+      "items": [
+        {
+          "icon": "Zap",
+          "title": "Instant launch",
+          "description": "Go from concept to polished storefront quickly with a calm, effortless setup flow."
+        },
+        {
+          "icon": "Shield",
+          "title": "Always current",
+          "description": "Keep your content fresh and consistent without the old cluttered editing experience."
+        },
+        {
+          "icon": "Users",
+          "title": "Adaptive engagement",
+          "description": "Design for multiple markets with thoughtful layouts and a naturally flexible experience."
+        },
+        {
+          "icon": "Grid3X3",
+          "title": "Flexible templates",
+          "description": "Choose from elegant layouts with a premium visual rhythm and modern motion."
+        },
+        {
+          "icon": "MousePointer",
+          "title": "Insightful growth",
+          "description": "Track the interactions that matter and keep your experience moving forward."
+        },
+        {
+          "icon": "Briefcase",
+          "title": "Team ready",
+          "description": "Support collaborative selling and organization from a single refined workspace."
+        }
+      ]
+    }
+  },
+  {
+    "id": "themes-1",
+    "type": "themes",
+    "name": "Themes",
+    "icon": "Layout",
+    "config": {
+      "title": "Choose a calm, modern storefront experience",
+      "subtitle": "Each theme is curated to feel graceful, fast, and conversion-focused across every device.",
+      "items": [
+        {
+          "name": "Studio",
+          "description": "Editorial-first presentation with a soft neutral palette and refined product storytelling.",
+          "accent": "from-slate-900 to-slate-600"
+        },
+        {
+          "name": "Lumen",
+          "description": "Soft contrast and airy layouts with a premium modern retail feel.",
+          "accent": "from-blue-600 to-slate-700"
+        },
+        {
+          "name": "North",
+          "description": "A fresh, high-contrast theme for bold product launches and quick discovery.",
+          "accent": "from-amber-500 to-orange-600"
+        }
+      ]
+    }
+  },
+  {
+    "id": "about-1",
+    "type": "about",
+    "name": "About",
+    "icon": "Image",
+    "config": {
+      "title": "Why Wusool stands apart",
+      "description": "Wusool brings together thoughtful product experiences, refined storytelling, and a structure that remains flexible for evolving brands and multilingual audiences.",
+      "buttonText": "Learn More",
+      "coreValues": [
+        {
+          "title": "Clarity first",
+          "description": "Every interaction is designed to feel calm, confident, and easy to navigate."
+        },
+        {
+          "title": "Built for growth",
+          "description": "The platform scales from the first launch to a full multi-tenant operation."
+        },
+        {
+          "title": "Localized by design",
+          "description": "Content, layout, and typography adapt naturally for Arabic, English, Hebrew, and Russian."
+        }
+      ]
+    }
+  },
+  {
+    "id": "services-1",
+    "type": "services",
+    "name": "Services",
+    "icon": "DollarSign",
+    "config": {
+      "title": "Choose Your Perfect Plan",
+      "services": [
+        {
+          "title": "Starter",
+          "description": "Perfect for individuals starting their storefront journey",
+          "price": "Free",
+          "features": [
+            "1 polished storefront",
+            "Flexible theme selection",
+            "Localized content support",
+            "Easy launch flow",
+            "Email support"
+          ]
+        },
+        {
+          "title": "Professional",
+          "description": "Ideal for professionals and modern growing brands",
+          "price": "$9",
+          "features": [
+            "Multi-page storefronts",
+            "Premium design systems",
+            "Advanced storytelling",
+            "Flexible integrations",
+            "Priority support"
+          ]
+        },
+        {
+          "title": "Business",
+          "description": "Perfect for teams and growing businesses",
+          "price": "$29",
+          "features": [
+            "Unlimited storefronts",
+            "Custom launch flows",
+            "Advanced analytics",
+            "Dedicated support",
+            "Multi-tenant readiness"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "testimonials-1",
+    "type": "testimonials",
+    "name": "Testimonials",
+    "icon": "MessageSquare",
+    "config": {
+      "title": "Trusted by ambitious teams",
+      "testimonials": [
+        {
+          "content": "The new experience feels far more polished and thoughtful for our clients. It feels premium without being heavy.",
+          "name": "Sarah Johnson",
+          "role": "Founder, Studio North",
+          "title": "Fresh and modern"
+        },
+        {
+          "content": "The modular approach made it easy to tailor our storefront for our global audience.",
+          "name": "Michael Chen",
+          "role": "Product Lead, Lumen Labs",
+          "title": "Flexible and calm"
+        },
+        {
+          "content": "The visual direction feels refined and contemporary. It made our launch feel instantly credible.",
+          "name": "Emily Rodriguez",
+          "role": "Creative Director, Atelier",
+          "title": "Professional and expressive"
+        },
+        {
+          "content": "The experience feels lightweight, clear, and market-ready in a way our earlier setup never did.",
+          "name": "David Park",
+          "role": "Operations Lead, Northwave",
+          "title": "Built for momentum"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cta-1",
+    "type": "cta",
+    "name": "Call to Action",
+    "icon": "Zap",
+    "config": {
+      "title": "Ready to modernize your storefront?",
+      "description": "Bring elegant structure, calm design, and thoughtful localization to your next launch.",
+      "buttonText": "Start Free Trial"
+    }
+  },
+  {
+    "id": "contact-1",
+    "type": "contact",
+    "name": "Contact",
+    "icon": "Mail",
+    "config": {
+      "title": "Get in Touch",
+      "description": "Have questions about Wusool? Our team is here to help you shape your next storefront experience.",
+      "email": "hello@wusool.ps",
+      "phone": "+1 (555) 123-4567",
+      "address": "123 Modern Avenue, Tech City, TC 12345"
+    }
+  },
+  {
+    "id": "footer-1",
+    "type": "footer",
+    "name": "Footer",
+    "icon": "Minus",
+    "config": {
+      "companyName": "wusool.ps",
+      "description": "A refined platform for building calm, modern, and multilingual storefront experiences.",
+      "links": [
+        {
+          "title": "Features",
+          "url": "/features"
+        },
+        {
+          "title": "Themes",
+          "url": "/themes"
+        },
+        {
+          "title": "About",
+          "url": "/about"
+        },
+        {
+          "title": "Contact",
+          "url": "/contact"
+        }
+      ],
+      "socialLinks": [
+        {
+          "platform": "Twitter",
+          "url": "https://twitter.com/wusool"
+        },
+        {
+          "platform": "LinkedIn",
+          "url": "https://linkedin.com/company/wusool"
+        },
+        {
+          "platform": "Facebook",
+          "url": "https://facebook.com/wusool"
+        }
+      ]
+    }
+  }
+]

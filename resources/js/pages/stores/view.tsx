@@ -1,0 +1,130 @@
+import React from 'react';
+import { PageTemplate } from '@/components/page-template';
+import { ArrowLeft, Edit, Settings, Globe } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
+import { router, usePage } from '@inertiajs/react';
+import { formatCurrency } from '@/utils/currency-helper';
+
+export default function ViewStore({ store, stats }) {
+  const { t } = useTranslation();
+  const { auth } = usePage().props as any;
+
+  
+  // Get permissions directly
+  const userPermissions = typeof auth?.permissions === 'function' ? auth.permissions() : (auth?.permissions || []);
+  const hasEditPermission = userPermissions.includes('edit-stores');
+
+  const pageActions = [
+    {
+      label: t('Visit Store'),
+      icon: <Globe className="h-4 w-4" />,
+      variant: 'outline' as const,
+      onClick: () => {
+        const getStoreUrl = () => {
+          const protocol = window.location.protocol;
+          
+          if (store.enable_custom_domain && store.custom_domain) {
+            return `${protocol}//${store.custom_domain}`;
+          }
+          
+          if (store.enable_custom_subdomain && store.custom_subdomain) {
+            // Get base domain dynamically
+            const currentHost = window.location.hostname;
+            const baseDomain = currentHost.includes('localhost') 
+              ? 'localhost' 
+              : currentHost.split('.').slice(-2).join('.');
+            return `${protocol}//${store.custom_subdomain}.${baseDomain}`;
+          }
+          
+          return route('store.home', store.slug);
+        };
+        
+        window.open(getStoreUrl(), '_blank');
+      }
+    },
+    ...(hasEditPermission ? [{
+      label: t('Edit Store'),
+      icon: <Edit className="h-4 w-4" />,
+      variant: 'default' as const,
+      onClick: () => router.visit(route('stores.edit', store.id))
+    }] : [])
+  ];
+
+  return (
+    <PageTemplate 
+      title={t(`Store Details`)}
+      url={`/stores/${store.id}`}
+      actions={pageActions}
+      backUrl={route('stores.index')}
+      breadcrumbs={[
+        { title: t('Dashboard'), href: route('dashboard') },
+        { title: t('Stores'), href: route('stores.index') },
+        { title: t(`Store Details`) }
+      ]}
+    >
+      <div className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('Store Information')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Store Name')}</p>
+                <p className="text-lg font-semibold">{store.name}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Status')}</p>
+                <Badge variant={store.config_status ? "default" : "secondary"}>
+                  {store.config_status ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Domain')}</p>
+                <p>{store.domain || 'No domain set'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Email')}</p>
+                <p>{store.email || 'No email set'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Theme')}</p>
+                <p>{store.theme}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Created')}</p>
+                <p>{new Date(store.created_at).toLocaleDateString()}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('Store Statistics')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-muted-foreground">{t('Total Orders')}</span>
+                <span className="font-semibold">{stats?.total_orders || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-muted-foreground">{t('Total Revenue')}</span>
+                <span className="font-semibold">{formatCurrency(stats?.total_revenue || 0)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-muted-foreground">{t('Total Products')}</span>
+                <span className="font-semibold">{stats?.total_products || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm font-medium text-muted-foreground">{t('Total Customers')}</span>
+                <span className="font-semibold">{stats?.total_customers || 0}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </PageTemplate>
+  );
+}

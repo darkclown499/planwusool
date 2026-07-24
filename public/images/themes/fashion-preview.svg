@@ -1,0 +1,8 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#fdf2f8"/>
+  <rect x="20" y="20" width="360" height="60" fill="#ec4899" rx="8"/>
+  <text x="200" y="55" font-family="Arial" font-size="20" fill="white" text-anchor="middle">Fashion Theme</text>
+  <rect x="20" y="100" width="170" height="120" fill="#f472b6" rx="4"/>
+  <rect x="210" y="100" width="170" height="120" fill="#be185d" rx="4"/>
+  <rect x="20" y="240" width="360" height="40" fill="#9d174d" rx="4"/>
+</svg>
