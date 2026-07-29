@@ -9,10 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
+import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
 
 export default function Shipping() {
   const { t } = useTranslation();
-  const { shippings, stats, auth } = usePage().props as any;
+  const { shippings, stats, auth, shippingEnabled = true } = usePage().props as any;
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedShipping, setSelectedShipping] = useState<any>(null);
 
@@ -83,6 +84,9 @@ export default function Shipping() {
           { title: t('Shipping Management') }
         ]}
       >
+        {!shippingEnabled ? (
+          <FeatureLockedOverlay featureName="Shipping Methods" requiredPlan="Growth" />
+        ) : (
         <div className="space-y-4">
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -206,6 +210,7 @@ export default function Shipping() {
             </CardContent>
           </Card>
         </div>
+        )}
       </PageTemplate>
 
       {/* Delete Confirmation Dialog */}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\StoreCoupon;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -14,7 +15,8 @@ class CouponController extends Controller
         $request->validate([
             'code' => 'required|string',
             'store_id' => 'required|exists:stores,id',
-            'subtotal' => 'required|numeric|min:0'
+            'subtotal' => 'required|numeric|min:0',
+            'customer_email' => 'nullable|email'
         ]);
 
         $coupon = StoreCoupon::where('code', $request->code)
@@ -23,40 +25,50 @@ class CouponController extends Controller
             ->first();
 
         if (!$coupon) {
-            return response()->json(['error' => 'Invalid coupon code'], 400);
+            return response()->json(['valid' => false, 'error' => 'Invalid coupon code', 'message' => 'Invalid coupon code'], 400);
         }
 
-        // Check if coupon is active
         $now = Carbon::now();
+
         if ($coupon->start_date && $now->lt($coupon->start_date)) {
-            return response()->json(['error' => 'Coupon is not yet active'], 400);
+            return response()->json(['valid' => false, 'error' => 'Coupon is not yet active', 'message' => 'Coupon is not yet active'], 400);
         }
 
         if ($coupon->expiry_date && $now->gt($coupon->expiry_date)) {
-            return response()->json(['error' => 'Coupon has expired'], 400);
+            return response()->json(['valid' => false, 'error' => 'Coupon has expired', 'message' => 'Coupon has expired'], 400);
         }
 
-        // Check usage limits
         if ($coupon->use_limit_per_coupon && $coupon->used_count >= $coupon->use_limit_per_coupon) {
-            return response()->json(['error' => 'Coupon usage limit exceeded'], 400);
+            return response()->json(['valid' => false, 'error' => 'Coupon usage limit exceeded', 'message' => 'Coupon usage limit exceeded'], 400);
         }
 
-        // Check minimum spend
+        if ($coupon->use_limit_per_user && $request->customer_email) {
+            $userUsage = Order::where('store_id', $request->store_id)
+                ->where('coupon_code', $coupon->code)
+                ->where('customer_email', $request->customer_email)
+                ->count();
+            if ($userUsage >= $coupon->use_limit_per_user) {
+                return response()->json(['valid' => false, 'error' => 'You have exceeded the usage limit for this coupon', 'message' => 'You have exceeded the usage limit for this coupon'], 400);
+            }
+        }
+
         if ($coupon->minimum_spend && $request->subtotal < $coupon->minimum_spend) {
-            return response()->json(['error' => "Minimum spend of {$coupon->minimum_spend} required"], 400);
+            return response()->json(['valid' => false, 'error' => "Minimum spend of {$coupon->minimum_spend} required", 'message' => "Minimum spend of {$coupon->minimum_spend} required"], 400);
         }
 
-        // Check maximum spend
         if ($coupon->maximum_spend && $request->subtotal > $coupon->maximum_spend) {
-            return response()->json(['error' => "Maximum spend of {$coupon->maximum_spend} exceeded"], 400);
+            return response()->json(['valid' => false, 'error' => "Maximum spend of {$coupon->maximum_spend} exceeded", 'message' => "Maximum spend of {$coupon->maximum_spend} exceeded"], 400);
         }
 
-        // Calculate discount
         $discount = 0;
         if ($coupon->type === 'percentage') {
             $discount = ($request->subtotal * $coupon->discount_amount) / 100;
         } else {
             $discount = $coupon->discount_amount;
+        }
+
+        if ($discount > $request->subtotal) {
+            $discount = $request->subtotal;
         }
 
         return response()->json([
@@ -66,7 +78,7 @@ class CouponController extends Controller
                 'name' => $coupon->name,
                 'type' => $coupon->type,
                 'discount_amount' => $coupon->discount_amount,
-                'discount' => $discount
+                'discount' => round($discount, 2)
             ]
         ]);
     }

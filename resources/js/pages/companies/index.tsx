@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Filter, Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, ExternalLink, Info, ArrowUpRight, CreditCard } from 'lucide-react';
+import { Filter, Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, ExternalLink, Info, ArrowUpRight, CreditCard, ChevronRight, ChevronLeft } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslation } from 'react-i18next';
@@ -31,6 +31,7 @@ export default function Companies() {
   const [startDate, setStartDate] = useState<Date | undefined>(pageFilters.start_date ? new Date(pageFilters.start_date) : undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(pageFilters.end_date ? new Date(pageFilters.end_date) : undefined);
   const [selectedStatus, setSelectedStatus] = useState(pageFilters.status || 'all');
+  const [selectedPlan, setSelectedPlan] = useState(pageFilters.plan_id || 'all');
   const [showFilters, setShowFilters] = useState(false);
 
   // Modal state
@@ -44,12 +45,13 @@ export default function Companies() {
 
   // Check if any filters are active
   const hasActiveFilters = () => {
-    return selectedStatus !== 'all' || searchTerm !== '' || startDate !== undefined || endDate !== undefined;
+    return selectedStatus !== 'all' || selectedPlan !== 'all' || searchTerm !== '' || startDate !== undefined || endDate !== undefined;
   };
 
   // Count active filters
   const activeFilterCount = () => {
     return (selectedStatus !== 'all' ? 1 : 0) +
+      (selectedPlan !== 'all' ? 1 : 0) +
       (searchTerm ? 1 : 0) +
       (startDate ? 1 : 0) +
       (endDate ? 1 : 0);
@@ -69,6 +71,10 @@ export default function Companies() {
 
     if (selectedStatus !== 'all') {
       params.status = selectedStatus;
+    }
+
+    if (selectedPlan !== 'all') {
+      params.plan_id = selectedPlan;
     }
 
     if (startDate) {
@@ -98,6 +104,10 @@ export default function Companies() {
 
     if (value !== 'all') {
       params.status = value;
+    }
+
+    if (selectedPlan !== 'all') {
+      params.plan_id = selectedPlan;
     }
 
     if (startDate) {
@@ -132,6 +142,10 @@ export default function Companies() {
 
     if (selectedStatus !== 'all') {
       params.status = selectedStatus;
+    }
+
+    if (selectedPlan !== 'all') {
+      params.plan_id = selectedPlan;
     }
 
     if (startDate) {
@@ -250,6 +264,7 @@ export default function Companies() {
 
   const handleResetFilters = () => {
     setSelectedStatus('all');
+    setSelectedPlan('all');
     setSearchTerm('');
     setStartDate(undefined);
     setEndDate(undefined);
@@ -300,8 +315,8 @@ export default function Companies() {
   // Define page actions
   const pageActions = [
     {
-      label: 'Add Company',
-      icon: <Plus className="h-4 w-4 mr-2" />,
+      label: t('Add Company'),
+      icon: <Plus className="h-4 w-4 me-2" />,
       variant: 'default',
       onClick: () => handleAddNew()
     }
@@ -342,6 +357,36 @@ export default function Companies() {
       render: (value: string) => <span className="capitalize">{value}</span>
     },
     {
+      key: 'stores_count',
+      label: t('Stores'),
+      sortable: false,
+      render: (value: number) => (
+        <span className="inline-flex items-center justify-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+          {value || 0}
+        </span>
+      )
+    },
+    {
+      key: 'subscription_status',
+      label: t('Subscription'),
+      sortable: false,
+      render: (value: string) => {
+        const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
+          active: { color: 'text-green-700', bg: 'bg-green-100', label: t('Active') },
+          expired: { color: 'text-red-700', bg: 'bg-red-100', label: t('Expired') },
+          trial: { color: 'text-blue-700', bg: 'bg-blue-100', label: t('Trial') },
+          pending: { color: 'text-amber-700', bg: 'bg-amber-100', label: t('Pending') },
+        };
+        const config = statusConfig[value] || statusConfig.pending;
+        return (
+          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${config.bg} ${config.color}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${value === 'active' ? 'bg-green-500' : value === 'expired' ? 'bg-red-500' : value === 'trial' ? 'bg-blue-500' : 'bg-amber-500'}`} />
+            {config.label}
+          </span>
+        );
+      }
+    },
+    {
       key: 'created_at',
       label: t('Created At'),
       sortable: true,
@@ -364,31 +409,31 @@ export default function Companies() {
             <div className="flex items-center gap-2">
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={t("Search companies...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9"
+                    className="w-full ps-9"
                   />
                 </div>
                 <Button type="submit" size="sm">
-                  <Search className="h-4 w-4 mr-1.5" />
+                  <Search className="h-4 w-4 me-1.5" />
                   {t("Search")}
                 </Button>
               </form>
 
-              <div className="ml-2">
+              <div className="ms-2">
                 <Button
                   variant={hasActiveFilters() ? "default" : "outline"}
                   size="sm"
                   className="h-8 px-2 py-1"
                   onClick={() => setShowFilters(!showFilters)}
                 >
-                  <Filter className="h-3.5 w-3.5 mr-1.5" />
-                  {showFilters ? 'Hide Filters' : 'Filters'}
+                  <Filter className="h-3.5 w-3.5 me-1.5" />
+                  {showFilters ? t('Hide Filters') : t('Filters')}
                   {hasActiveFilters() && (
-                    <span className="ml-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    <span className="ms-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
                       {activeFilterCount()}
                     </span>
                   )}
@@ -397,7 +442,7 @@ export default function Companies() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="border rounded-md p-0.5 mr-2">
+              <div className="border rounded-md p-0.5 me-2">
                 <Button
                   size="sm"
                   variant={activeView === 'list' ? "default" : "ghost"}
@@ -428,6 +473,10 @@ export default function Companies() {
 
                   if (selectedStatus !== 'all') {
                     params.status = selectedStatus;
+                  }
+
+                  if (selectedPlan !== 'all') {
+                    params.plan_id = selectedPlan;
                   }
 
                   if (startDate) {
@@ -470,6 +519,34 @@ export default function Companies() {
                       <SelectItem value="all">{t("All Status")}</SelectItem>
                       <SelectItem value="active">{t("Active")}</SelectItem>
                       <SelectItem value="inactive">{t("Inactive")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t("Plan")}</Label>
+                  <Select
+                    value={selectedPlan}
+                    onValueChange={(value) => {
+                      setSelectedPlan(value);
+                      const params: any = { page: 1 };
+                      if (searchTerm) params.search = searchTerm;
+                      if (selectedStatus !== 'all') params.status = selectedStatus;
+                      if (value !== 'all') params.plan_id = value;
+                      if (startDate) params.start_date = startDate.toISOString().split('T')[0];
+                      if (endDate) params.end_date = endDate.toISOString().split('T')[0];
+                      if (pageFilters.per_page) params.per_page = pageFilters.per_page;
+                      router.get(route('companies.index'), params, { preserveState: true, preserveScroll: true });
+                    }}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder={t("All Plans")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("All Plans")}</SelectItem>
+                      {plans?.map((plan: any) => (
+                        <SelectItem key={plan.id} value={plan.id.toString()}>{plan.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -532,13 +609,13 @@ export default function Companies() {
                   {columns.map((column) => (
                     <th
                       key={column.key}
-                      className="px-4 py-3 text-left font-medium text-gray-500"
+                      className="px-4 py-3 text-start font-medium text-gray-500"
                       onClick={() => column.sortable && handleSort(column.key)}
                     >
                       <div className="flex items-center">
                         {column.label}
                         {column.sortable && (
-                          <span className="ml-1">
+                          <span className="ms-1">
                             {pageFilters.sort_field === column.key ? (
                               pageFilters.sort_direction === 'asc' ? '↑' : '↓'
                             ) : ''}
@@ -547,7 +624,7 @@ export default function Companies() {
                       </div>
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-right font-medium text-gray-500">
+                  <th className="px-4 py-3 text-end font-medium text-gray-500">
                     {t("Actions")}
                   </th>
                 </tr>
@@ -560,7 +637,7 @@ export default function Companies() {
                         {column.render ? column.render(company[column.key], company) : company[column.key]}
                       </td>
                     ))}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-end">
                       <div className="flex justify-end gap-1">
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -684,21 +761,33 @@ export default function Companies() {
             </div>
 
             <div className="flex gap-1">
-              {companies?.links?.map((link: any, i: number) => {
-                // Check if the link is "Next" or "Previous" to use text instead of icon
-                const isTextLink = link.label === "&laquo; Previous" || link.label === "Next &raquo;";
-                const label = link.label.replace("&laquo; ", "").replace(" &raquo;", "");
+              {companies?.links?.map((link: any, i: number, arr: any[]) => {
+                const isFirst = i === 0 && link.url;
+                const isLast = i === arr.length - 1 && link.url;
+                const isTextLink = isFirst || isLast;
 
                 return (
                   <Button
                     key={i}
                     variant={link.active ? 'default' : 'outline'}
                     size={isTextLink ? "sm" : "icon"}
-                    className={isTextLink ? "px-3" : "h-8 w-8"}
+                    className={`${isTextLink ? 'px-3 gap-1' : 'h-8 w-8'} min-w-[32px]`}
                     disabled={!link.url}
                     onClick={() => link.url && router.get(link.url)}
                   >
-                    {isTextLink ? label : <span dangerouslySetInnerHTML={{ __html: link.label }} />}
+                    {isFirst ? (
+                      <>
+                        <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                        <span className="hidden sm:inline">{t('Previous')}</span>
+                      </>
+                    ) : isLast ? (
+                      <>
+                        <span className="hidden sm:inline">{t('Next')}</span>
+                        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                      </>
+                    ) : (
+                      <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                    )}
                   </Button>
                 );
               })}
@@ -726,7 +815,7 @@ export default function Companies() {
                         <h3 className="text-lg font-bold text-gray-900 mb-2">{company.name}</h3>
                         <p className="text-sm text-gray-600 mb-3">{company.email}</p>
                         <div className="flex items-center">
-                          <div className={`h-2 w-2 rounded-full mr-2 ${company.status === 'active' ? 'bg-gray-800' : 'bg-gray-400'
+                          <div className={`h-2 w-2 rounded-full me-2 ${company.status === 'active' ? 'bg-gray-800' : 'bg-gray-400'
                             }`}></div>
                           <span className="text-sm font-medium text-gray-700">
                             {company.status === 'active' ? t('Active') : t('Inactive')}
@@ -748,36 +837,36 @@ export default function Companies() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48 z-50" sideOffset={5}>
                         <DropdownMenuItem onClick={() => handleAction('login-as', company)}>
-                          <ArrowUpRight className="h-4 w-4 mr-2" />
+                          <ArrowUpRight className="h-4 w-4 me-2" />
                           <span>{t("Login as Company")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAction('company-info', company)}>
-                          <Info className="h-4 w-4 mr-2" />
+                          <Info className="h-4 w-4 me-2" />
                           <span>{t("Company Info")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAction('upgrade-plan', company)}>
-                          <CreditCard className="h-4 w-4 mr-2" />
+                          <CreditCard className="h-4 w-4 me-2" />
                           <span>{t("Upgrade Plan")}</span>
                         </DropdownMenuItem>
 
                         <DropdownMenuItem onClick={() => handleAction('reset-password', company)}>
-                          <KeyRound className="h-4 w-4 mr-2" />
+                          <KeyRound className="h-4 w-4 me-2" />
                           <span>{t("Reset Password")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAction('toggle-status', company)}>
                           {company.status === 'active' ?
-                            <Lock className="h-4 w-4 mr-2" /> :
-                            <Unlock className="h-4 w-4 mr-2" />
+                            <Lock className="h-4 w-4 me-2" /> :
+                            <Unlock className="h-4 w-4 me-2" />
                           }
                           <span>{company.status === 'active' ? t("Disable Login") : t("Enable Login")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleAction('edit', company)} className="text-amber-600">
-                          <Edit className="h-4 w-4 mr-2" />
+                          <Edit className="h-4 w-4 me-2" />
                           <span>{t("Edit")}</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAction('delete', company)} className="text-rose-600">
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          <Trash2 className="h-4 w-4 me-2" />
                           <span>{t("Delete")}</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -812,7 +901,7 @@ export default function Companies() {
                       onClick={() => handleAction('edit', company)}
                       className="flex-1 h-9 text-sm border-gray-300"
                     >
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit className="h-4 w-4 me-2" />
                       {t("Edit")}
                     </Button>
 
@@ -822,7 +911,7 @@ export default function Companies() {
                       onClick={() => handleAction('company-info', company)}
                       className="flex-1 h-9 text-sm border-gray-300"
                     >
-                      <Eye className="h-4 w-4 mr-2" />
+                      <Eye className="h-4 w-4 me-2" />
                       {t("View")}
                     </Button>
 
@@ -832,7 +921,7 @@ export default function Companies() {
                       onClick={() => handleAction('delete', company)}
                       className="flex-1 h-9 text-sm text-gray-700 border-gray-300"
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="h-4 w-4 me-2" />
                       {t("Delete")}
                     </Button>
                   </div>
@@ -854,20 +943,33 @@ export default function Companies() {
             </div>
 
             <div className="flex gap-1">
-              {companies?.links?.map((link: any, i: number) => {
-                const isTextLink = link.label === "&laquo; Previous" || link.label === "Next &raquo;";
-                const label = link.label.replace("&laquo; ", "").replace(" &raquo;", "");
+              {companies?.links?.map((link: any, i: number, arr: any[]) => {
+                const isFirst = i === 0 && link.url;
+                const isLast = i === arr.length - 1 && link.url;
+                const isTextLink = isFirst || isLast;
 
                 return (
                   <Button
                     key={i}
                     variant={link.active ? 'default' : 'outline'}
                     size={isTextLink ? "sm" : "icon"}
-                    className={isTextLink ? "px-3" : "h-8 w-8"}
+                    className={`${isTextLink ? 'px-3 gap-1' : 'h-8 w-8'} min-w-[32px]`}
                     disabled={!link.url}
                     onClick={() => link.url && router.get(link.url)}
                   >
-                    {isTextLink ? label : <span dangerouslySetInnerHTML={{ __html: link.label }} />}
+                    {isFirst ? (
+                      <>
+                        <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                        <span className="hidden sm:inline">{t('Previous')}</span>
+                      </>
+                    ) : isLast ? (
+                      <>
+                        <span className="hidden sm:inline">{t('Next')}</span>
+                        <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                      </>
+                    ) : (
+                      <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                    )}
                   </Button>
                 );
               })}

@@ -30,7 +30,7 @@ export default function DeleteUser() {
   return (
     <div className="rounded-lg border p-6">
       <h3 className="text-lg font-medium mb-4">{t("Delete Account")}</h3>
-      <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+      <p className="text-sm text-neutral-500 mb-6">
         {t("Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.")}
       </p>
 

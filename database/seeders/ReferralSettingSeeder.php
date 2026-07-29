@@ -187,23 +187,23 @@ class ReferralSettingSeeder extends Seeder
             'is_enabled' => true,
             'commission_percentage' => 15.00,
             'threshold_amount' => 25.00,
-            'guidelines' => 'Welcome to our referral program! Earn 15% commission when users sign up using your referral link and purchase any plan. 
+            'guidelines' => 'مرحباً بك في برنامج الإحالة لدينا! اكسب عمولة بنسبة 15% عندما يسجل المستخدمون باستخدام رابط الإحالة الخاص بك ويشترون أي خطة.
 
-Key Benefits:
-• Earn 15% commission on all successful referrals
-• Low $25 minimum payout threshold
-• Fast payouts within 7 business days
-• Real-time tracking dashboard
-• Lifetime earnings tracking
+المزايا الرئيسية:
+• اكسب عمولة بنسبة 15% على جميع الإحالات الناجحة
+• حد أدنى منخفض لسحب الأرباح: 25$
+• مدفوعات سريعة خلال 7 أيام عمل
+• لوحة تتبع الأرباح في الوقت الفعلي
+• تتبع الأرباح مدى الحياة
 
-How it works:
-1. Share your unique referral link with friends and colleagues
-2. When someone signs up and purchases a plan using your link, you earn commission
-3. Track your earnings in real-time through your dashboard
-4. Request payout once you reach the $25 threshold
-5. Receive payment within 7 business days
+كيف يعمل البرنامج:
+1. شارك رابط الإحالة الفريد الخاص بك مع الأصدقاء والزملاء
+2. عندما يسجل شخص ما ويشتري خطة باستخدام رابطك، تكسب عمولة
+3. تتبع أرباحك في الوقت الفعلي من خلال لوحة التحكم
+4. اطلب سحب الأرباح بمجرد وصولك للحد الأدنى 25$
+5. استلم المدفوعات خلال 7 أيام عمل
 
-Commission is calculated based on the plan price and will be available for payout once you reach the minimum threshold. All referrals are tracked automatically and commissions are credited instantly upon successful plan purchase.',
+تُحسب العمولة بناءً على سعر الخطة وستكون متاحة للسحب بمجرد الوصول للحد الأدنى. يتم تتبع جميع الإحالات تلقائياً وتطبق العمولات فوراً بعد الشراء الناجح للخطة.',
         ];
     }
 
@@ -213,21 +213,21 @@ Commission is calculated based on the plan price and will be available for payou
             'is_enabled' => true,
             'commission_percentage' => 10.00,
             'threshold_amount' => 50.00,
-            'guidelines' => 'Welcome to our referral program! Earn commission when users sign up using your referral link and purchase a plan. 
+            'guidelines' => 'مرحباً بك في برنامج الإحالة لدينا! اكسب عمولة عندما يسجل المستخدمون باستخدام رابط الإحالة الخاص بك ويشترون خطة.
 
-Program Details:
-• Earn 10% commission on successful referrals
-• Minimum payout threshold: $50
-• Commission calculated on plan purchase price
-• Payouts processed monthly
+تفاصيل البرنامج:
+• اكسب عمولة بنسبة 10% على الإحالات الناجحة
+• الحد الأدنى لسحب الأرباح: 50$
+• تُحسب العمولة بناءً على سعر شراء الخطة
+• تتم معالجة المدفوعات شهرياً
 
-How to participate:
-1. Share your unique referral link
-2. Track referrals in your dashboard
-3. Earn commission when referred users purchase plans
-4. Request payout once threshold is reached
+كيف تشارك:
+1. شارك رابط الإحالة الفريد الخاص بك
+2. تتبع الإحالات من خلال لوحة التحكم
+3. اكسب عمولة عندما يشترون المستخدمون المُحالون خطط
+4. اطلب سحب الأرباح بمجرد الوصول للحد الأدنى
 
-Commission is calculated based on the plan price and will be available for payout once you reach the minimum threshold.',
+تُحسب العمولة بناءً على سعر الخطة وستكون متاحة للسحب بمجرد الوصول للحد الأدنى.',
         ];
     }
 }

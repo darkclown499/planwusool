@@ -36,8 +36,7 @@ class CheckStoreStatus
                 }
                 
                 if ($store->enable_custom_subdomain) {
-                    $appUrl = config('app.url');
-                    $appHost = parse_url($appUrl, PHP_URL_HOST) ?? $appUrl;
+                    $appHost = getBaseDomain();
                     
                     $subdomain = $store->custom_subdomain . '.' . $appHost;
                     if ($subdomain === $host) {

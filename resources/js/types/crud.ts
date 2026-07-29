@@ -2,6 +2,7 @@
 export interface EntityConfig {
   name: string;
   endpoint: string;
+  searchPlaceholder?: string;
   permissions: {
     view: string;
     create: string;

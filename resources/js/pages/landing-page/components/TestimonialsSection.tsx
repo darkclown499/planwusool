@@ -3,20 +3,22 @@ import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
 import { useTranslation } from 'react-i18next';
 
 const PARTNER_LOGOS = [
-  { name: 'متجر بال جاردنز', nameEn: 'Pal Gardens', src: '/images/logos/pal-gardens.svg' },
-  { name: 'سوبرماركت البطة', nameEn: 'Al-Batta Supermarket', src: '/images/logos/albatta.svg' },
-  { name: 'شركة القدس للتكنولوجيا', nameEn: 'Jerusalem Tech', src: '/images/logos/jerusalem-tech.svg' },
-  { name: 'متجر العباسي للأزياء', nameEn: 'Al-Abbasi Fashion', src: '/images/logos/abbasi.svg' },
-  { name: 'مخابز الشام', nameEn: 'Al-Sham Bakeries', src: '/images/logos/sham-bakery.svg' },
-  { name: 'صيدليات الوفاء', nameEn: 'Wafaa Pharmacies', src: '/images/logos/wafaa.svg' },
-  { name: 'همسة لزهور', nameEn: 'Hamsa Flowers', src: '/images/logos/hamsa.svg' },
-  { name: 'رويال سنتر', nameEn: 'Royal Center', src: '/images/logos/royal.svg' },
-  { name: 'كوانتوم ستور', nameEn: 'Quantum Store', src: '/images/logos/quantum.svg' },
-  { name: 'معرض النورس', nameEn: 'Al-Nawras Exhibition', src: '/images/logos/nawras.svg' },
-  { name: 'مطاعم بيت لحم', nameEn: 'Bethlehem Restaurants', src: '/images/logos/bethlehem.svg' },
-  { name: 'بازار فلسطين', nameEn: 'Palestine Bazaar', src: '/images/logos/bazaar.svg' },
-  { name: 'تكنو شوب', nameEn: 'Techno Shop', src: '/images/logos/technoshop.svg' },
-  { name: 'مؤسسة الأرز الرقمية', nameEn: 'Cedar Digital', src: '/images/logos/cedar.svg' },
+  { name: 'Twilio', src: '/images/logos/twilio.png' },
+  { name: 'HotSMS', src: '/images/logos/hotsms.png' },
+  { name: 'PayPal', src: '/images/logos/paypal.png' },
+  { name: 'Stripe', src: '/images/logos/stripe.png' },
+  { name: 'Jawwal', src: '/images/logos/jawwal.png' },
+  { name: 'Reflect', src: '/images/logos/reflect.png' },
+  { name: 'PalPay', src: '/images/logos/palpay.png' },
+  { name: 'Aramaex', src: '/images/logos/aramaex.png' },
+  { name: 'Mada', src: '/images/logos/mada.png' },
+  { name: 'Ooredoo', src: '/images/logos/ooredoo.png' },
+  { name: 'Laravel', src: '/images/logos/laravel.png' },
+  { name: 'SSL', src: '/images/logos/ssl.png' },
+  { name: 'LetsEncrypt', src: '/images/logos/LetsEncrypt.png' },
+  { name: 'Cloudflare', src: '/images/logos/Cloudflare.png' },
+  { name: 'MasterCard', src: '/images/logos/MasterCard.png' },
+  { name: 'Visa', src: '/images/logos/Visa.png' },
 ];
 
 interface TestimonialsSectionProps {
@@ -71,45 +73,28 @@ export default function TestimonialsSection({
           <p className="mt-4 text-lg leading-relaxed text-gray-500">
             {t(
               sectionData?.subtitle ||
-                'شركاؤنا من المتاجر والشركات الفلسطينية التي تدير أعمالها عبر منصة وصول'
+                'نوفر لك أفضل بوابات الدفع، خوادم الحماية، وخدمات الربط لتوفير تجربة متكاملة وآمنة لعملائك.'
             )}
           </p>
         </div>
 
         {/* Logos Grid */}
         <div
-          className={`mt-14 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 transition-all duration-700 delay-200 ${
+          className={`mt-14 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 transition-all duration-700 delay-200 ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
           {PARTNER_LOGOS.map((logo) => (
             <div
               key={logo.src}
-              className="group flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gray-200 hover:shadow-lg"
+              className="flex items-center justify-center h-24 w-full rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gray-200 hover:shadow-md"
             >
-              <div className="flex h-20 w-full items-center justify-center">
-                <img
-                  src={logo.src}
-                  alt={logo.name}
-                  className="max-h-16 w-auto max-w-full object-contain transition-all duration-300 grayscale group-hover:grayscale-0 group-hover:scale-110"
-                  loading="lazy"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector('.logo-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'logo-fallback flex h-14 w-14 items-center justify-center rounded-xl text-lg font-bold text-white';
-                      fallback.style.backgroundColor = brandColor;
-                      fallback.textContent = logo.name.charAt(0);
-                      parent.appendChild(fallback);
-                    }
-                  }}
-                />
-              </div>
-              <p className="mt-3 text-center text-[12px] font-semibold leading-tight text-gray-500 transition-colors duration-300 group-hover:text-gray-900">
-                {logo.name}
-              </p>
+              <img
+                src={logo.src}
+                alt={logo.name}
+                className="max-h-24 max-w-full object-contain transition-all duration-300"
+                loading="lazy"
+              />
             </div>
           ))}
         </div>

@@ -11,6 +11,9 @@ interface AppLayoutProps {
 }
 
 export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
+    // Force RTL direction
+    document.documentElement.dir = 'rtl';
+    
     // Apply all brand settings dynamically
     useFavicon();
     useDynamicTitle();

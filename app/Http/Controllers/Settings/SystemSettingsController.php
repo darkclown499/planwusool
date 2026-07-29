@@ -73,63 +73,6 @@ class SystemSettingsController extends Controller
     }
     
     /**
-     * Update the brand settings.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function updateBrand(Request $request)
-    {
-        $user = Auth::user();
-        
-        // Permission check
-        if (!$user->hasPermissionTo('manage-settings')) {
-            return redirect()->back()->with('error', __('You do not have permission to update brand settings.'));
-        }
-        
-        try {
-            $validated = $request->validate([
-                'settings' => 'required|array',
-                'settings.logoDark' => 'nullable|string',
-                'settings.logoLight' => 'nullable|string',
-                'settings.favicon' => 'nullable|string',
-                'settings.titleText' => 'nullable|string|max:255',
-                'settings.footerText' => 'nullable|string|max:500',
-                'settings.themeColor' => 'nullable|string|in:blue,green,purple,orange,red,custom',
-                'settings.customColor' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-                'settings.sidebarVariant' => 'nullable|string|in:inset,floating,minimal',
-                'settings.sidebarStyle' => 'nullable|string|in:plain,colored,gradient',
-                'settings.layoutDirection' => 'nullable|string|in:left,right',
-                'settings.themeMode' => 'nullable|string|in:light,dark,system',
-            ]);
-
-            $user = Auth::user();
-            
-            // Determine the correct user_id and store_id for settings
-            if ($user->type === 'superadmin') {
-                $settingsUserId = $user->id;
-                $storeId = null;
-            } elseif ($user->type === 'company') {
-                $settingsUserId = $user->id;
-                $storeId = getCurrentStoreId($user);
-            } else {
-                // For sub-users, save settings under their company (created_by)
-                $settingsUserId = $user->created_by;
-                $companyUser = User::find($user->created_by);
-                $storeId = $companyUser ? getCurrentStoreId($companyUser) : null;
-            }
-            
-            foreach ($validated['settings'] as $key => $value) {
-                updateSetting($key, $value, $settingsUserId, $storeId);
-            }
-
-            return redirect()->back()->with('success', __('Brand settings updated successfully.'));
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', __('Failed to update brand settings: :error', ['error' => $e->getMessage()]));
-        }
-    }
-
-    /**
      * Update the recaptcha settings.
      *
      * @param  \Illuminate\Http\Request  $request

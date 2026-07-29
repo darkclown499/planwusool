@@ -94,9 +94,6 @@ class ReferralController extends BaseController
         $totalReferrals = Referral::where('company_id', $user->id)->count();
         $totalEarned = Referral::where('company_id', $user->id)->sum('amount');
         $totalPayoutRequests = PayoutRequest::where('company_id', $user->id)->count();
-        $pendingAmount = PayoutRequest::where('company_id', $user->id)
-            ->where('status', 'pending')
-            ->sum('amount');
         $availableBalance = max(0, $totalEarned - PayoutRequest::where('company_id', $user->id)
             ->whereIn('status', ['pending', 'approved'])
             ->sum('amount'));
@@ -116,8 +113,6 @@ class ReferralController extends BaseController
             return $request;
         });
 
-        $referredUsersCount = User::where('used_referral_code', $user->referral_code)->count();
-        
         $recentReferredUsers = User::where('used_referral_code', $user->referral_code)
             ->with(['plan', 'planOrders' => function($query) {
                 $query->where('status', 'approved')->orderBy('created_at', 'desc')->limit(1);
@@ -147,7 +142,6 @@ class ReferralController extends BaseController
                 'totalPayoutRequests' => $totalPayoutRequests,
                 'availableBalance' => $availableBalance,
                 'formattedAvailableBalance' => $formattedAvailableBalance,
-                'referredUsersCount' => $referredUsersCount,
             ],
             'formattedSettings' => [
                 'formattedThresholdAmount' => $formattedThresholdAmount,
@@ -160,7 +154,7 @@ class ReferralController extends BaseController
 
     public function updateSettings(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'commission_percentage' => 'required|numeric|min:0|max:100',
             'threshold_amount' => 'required|numeric|min:0',
             'guidelines' => 'nullable|string',
@@ -172,7 +166,7 @@ class ReferralController extends BaseController
         ]);
 
         $settings = ReferralSetting::current();
-        $settings->update($request->all());
+        $settings->update($validated);
 
         return back()->with('success', __('Referral settings updated successfully'));
     }
@@ -203,7 +197,7 @@ class ReferralController extends BaseController
         }
 
         if ($request->amount < $settings->threshold_amount) {
-            return back()->withErrors(['amount' => __('Amount must be at least $ :amount', ['amount' => $settings->threshold_amount])]);
+            return back()->withErrors(['amount' => __('Amount must be at least :amount', ['amount' => formatCurrencyAmount($settings->threshold_amount)])]);
         }
 
         PayoutRequest::create([
@@ -217,12 +211,23 @@ class ReferralController extends BaseController
 
     public function approvePayoutRequest(PayoutRequest $payoutRequest)
     {
+        if ($payoutRequest->status !== 'pending') {
+            return back()->withErrors(['error' => __('This request has already been processed.')]);
+        }
         $payoutRequest->update(['status' => 'approved']);
         return back()->with('success', __('Payout request approved'));
     }
 
     public function rejectPayoutRequest(PayoutRequest $payoutRequest, Request $request)
     {
+        if ($payoutRequest->status !== 'pending') {
+            return back()->withErrors(['error' => __('This request has already been processed.')]);
+        }
+        $request->validate([
+            'notes' => 'nullable|string',
+        ], [], [
+            'notes' => __('Rejection Reason'),
+        ]);
         $payoutRequest->update([
             'status' => 'rejected',
             'notes' => $request->notes,

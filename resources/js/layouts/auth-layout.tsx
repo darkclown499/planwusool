@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useBrand } from '@/contexts/BrandContext';
-import { useAppearance, THEME_COLORS } from '@/hooks/use-appearance';
+import { THEME_COLORS } from '@/hooks/use-appearance';
 import { getImageUrl } from '@/utils/image-helper';
 import { Store, Palette, CreditCard, BarChart3 } from 'lucide-react';
 
@@ -28,11 +28,9 @@ export default function AuthLayout({
     const [mounted, setMounted] = useState(false);
     const [imageError, setImageError] = useState(false);
     const { logoLight, logoDark, themeColor, customColor, titleText } = useBrand();
-    const { appearance } = useAppearance();
-
     const appName = titleText;
 
-    const currentLogo = appearance === 'dark' ? logoLight : logoDark;
+    const currentLogo = logoLight;
     const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
 
     useEffect(() => {
@@ -47,7 +45,7 @@ export default function AuthLayout({
     ];
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-900 relative font-sans">
+        <div className="min-h-screen bg-white relative font-sans">
             <Head title={title} />
 
             {/* Language Dropdown */}
@@ -112,7 +110,7 @@ export default function AuthLayout({
                 </div>
 
                 {/* Right Panel — Form */}
-                <div className="w-full lg:w-1/2 xl:w-[45%] flex items-center justify-center p-6 sm:p-10 bg-gray-50 dark:bg-slate-900">
+                <div className="w-full lg:w-1/2 xl:w-[45%] flex items-center justify-center p-6 sm:p-10 bg-gray-50">
                     <div className="w-full max-w-[420px]">
                         {/* Mobile Logo */}
                         <div className="lg:hidden text-center mb-8">
@@ -123,12 +121,12 @@ export default function AuthLayout({
                                     className="h-8 mx-auto object-contain"
                                 />
                             ) : (
-                                <span className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{appName}</span>
+                                <span className="text-2xl font-bold text-gray-900 tracking-tight">{appName}</span>
                             )}
                         </div>
 
                         {/* Card */}
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-black/20 border border-gray-100 dark:border-slate-700 p-8 sm:p-10">
+                        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 sm:p-10">
                             {/* Logo */}
                             <div className="text-center mb-6">
                                 <img
@@ -141,17 +139,17 @@ export default function AuthLayout({
                             {/* Header */}
                             <div className="text-center mb-8">
                                 {title && (
-                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">{title}</h1>
+                                    <h1 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">{title}</h1>
                                 )}
                                 {description && (
-                                    <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{description}</p>
+                                    <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
                                 )}
                             </div>
 
                             {status && (
                                 <div className={`mb-6 text-center text-sm font-medium ${statusType === 'success'
-                                    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30'
-                                    : 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30'
+                                    ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
+                                    : 'text-red-700 bg-red-50 border border-red-200'
                                     } rounded-xl p-3`}>
                                     {status}
                                 </div>
@@ -162,7 +160,7 @@ export default function AuthLayout({
 
                         {/* Footer */}
                         <div className="text-center mt-6">
-                            <p className="text-sm text-gray-400 dark:text-gray-500">
+                            <p className="text-sm text-gray-400">
                                 © {new Date().getFullYear()} {appName}. {t('All rights reserved.')}
                             </p>
                         </div>

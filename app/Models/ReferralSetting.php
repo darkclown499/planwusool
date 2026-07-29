@@ -25,7 +25,7 @@ class ReferralSetting extends Model
             'is_enabled' => true,
             'commission_percentage' => 10.00,
             'threshold_amount' => 50.00,
-            'guidelines' => 'Welcome to our referral program! Earn commission when users sign up using your referral link and purchase a plan. Commission is calculated based on the plan price and will be available for payout once you reach the minimum threshold.',
+            'guidelines' => 'مرحباً بك في برنامج الإحالة لدينا! اكسب عمولة عندما يسجل المستخدمون باستخدام رابط الإحالة الخاص بك ويشترون خطة. تُحسب العمولة بناءً على سعر الخطة وستكون متاحة للسحب بمجرد الوصول للحد الأدنى.',
         ]);
     }
 

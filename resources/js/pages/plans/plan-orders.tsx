@@ -113,7 +113,7 @@ export default function PlanOrdersPage() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Plans'), href: route('plans.index') },
-    { title: t('Plan Orders') }
+    { title: t('Subscription Invoices') }
   ];
 
   const hasActiveFilters = () => {
@@ -126,7 +126,7 @@ export default function PlanOrdersPage() {
 
   return (
     <PageTemplate 
-      title={t('Plan Orders')} 
+      title={t('Subscription Invoices')} 
       url="/plan-orders"
       breadcrumbs={breadcrumbs}
       noPadding

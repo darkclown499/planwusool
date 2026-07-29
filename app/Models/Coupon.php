@@ -15,17 +15,20 @@ class Coupon extends Model
         'discount_amount',
         'use_limit_per_coupon',
         'use_limit_per_user',
+        'start_date',
         'expiry_date',
         'code',
         'code_type',
         'status',
-        'created_by'
+        'created_by',
+        'used_count'
     ];
 
     protected $casts = [
         'minimum_spend' => 'decimal:2',
         'maximum_spend' => 'decimal:2',
         'discount_amount' => 'decimal:2',
+        'start_date' => 'date',
         'expiry_date' => 'date',
         'status' => 'boolean'
     ];

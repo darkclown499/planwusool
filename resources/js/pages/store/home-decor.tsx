@@ -1,6 +1,6 @@
 import React from 'react';
-import { Head } from '@inertiajs/react';
 import { HomeDecorStore } from '../../themes/home-decor-store/HomeDecorStore';
+import StoreHead from '@/components/StoreHead';
 
 interface HomeDecorPageProps {
   config: any;
@@ -24,10 +24,12 @@ interface HomeDecorPageProps {
 const HomeDecorPage: React.FC<HomeDecorPageProps> = (props) => {
   return (
     <>
-      <Head title={`${props.config.storeName} - Premium Home Décor & Furniture`}>
-        <meta name="description" content="Transform your living space with our curated collection of premium furniture and home décor pieces." />
-        <meta name="keywords" content="furniture, home decor, interior design, living room, bedroom, dining room" />
-      </Head>
+      <StoreHead
+        store={props.store}
+        defaultTitle={`${props.config?.storeName || 'Home Decor'} - Premium Home Décor & Furniture`}
+        defaultDescription="Transform your living space with our curated collection of premium furniture and home décor pieces."
+        defaultKeywords="furniture, home decor, interior design, living room, bedroom, dining room"
+      />
       <HomeDecorStore {...props} />
     </>
   );

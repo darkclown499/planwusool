@@ -1,5 +1,6 @@
 import React from 'react';
 import { SupermarketStore } from '../../themes/supermarket-store/SupermarketStore';
+import StoreHead from '@/components/StoreHead';
 
 interface SupermarketPageProps {
   config: any;
@@ -16,5 +17,10 @@ interface SupermarketPageProps {
 }
 
 export default function SupermarketPage(props: SupermarketPageProps) {
-  return <SupermarketStore {...props} />;
+  return (
+    <>
+      <StoreHead store={props.store} defaultTitle="Wusool - Supermarket" />
+      <SupermarketStore {...props} />
+    </>
+  );
 }

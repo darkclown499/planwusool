@@ -407,36 +407,44 @@ class PlanController extends Controller
     {
         $request->validate([
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly'
+            'billing_cycle' => 'required|in:monthly,yearly',
+            'coupon_code' => 'nullable|string',
         ]);
         
         $user = auth()->user();
         $plan = Plan::findOrFail($request->plan_id);
         
-        // Check if user already has this plan
         if ($user->plan_id == $plan->id && $user->hasActivePlan()) {
             return back()->withErrors(['error' => __('You already have this plan active.')]);
         }
         
-        // Check if plan is enabled
         if ($plan->is_plan_enable !== 'on') {
             return back()->withErrors(['error' => __('This plan is not available for subscription.')]);
         }
         
         try {
-            // Use helper function to calculate proper pricing
-            $pricing = calculatePlanPricing($plan, null, $request->billing_cycle);
+            $pricing = calculatePlanPricing($plan, $request->coupon_code, $request->billing_cycle, $user->id);
+            
+            if ($request->coupon_code && !$pricing['coupon_id']) {
+                return back()->withErrors(['coupon_code' => __('Invalid or expired coupon code.')]);
+            }
             
             $planOrder = \App\Models\PlanOrder::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
+                'coupon_id' => $pricing['coupon_id'],
+                'coupon_code' => $request->coupon_code,
                 'billing_cycle' => $request->billing_cycle,
                 'original_price' => $pricing['original_price'],
+                'discount_amount' => $pricing['discount_amount'],
                 'final_price' => $pricing['final_price'],
                 'status' => 'approved'
             ]);
             
-            // Assign plan to user with proper resource management
+            if ($pricing['coupon_id']) {
+                \App\Models\Coupon::where('id', $pricing['coupon_id'])->increment('used_count');
+            }
+            
             assignPlanToUser($user, $plan, $request->billing_cycle);
             
             return back()->with('success', __('Plan assigned successfully'));

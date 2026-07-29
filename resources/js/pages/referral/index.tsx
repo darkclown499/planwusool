@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { useEffect, useRef, useState } from 'react';
-import { BarChart3, DollarSign, Users, Gift, Settings as SettingsIcon, Copy, Check } from 'lucide-react';
+import { BarChart3, DollarSign, Users, Settings as SettingsIcon } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toaster } from '@/components/ui/toaster';
 import { useTranslation } from 'react-i18next';
@@ -18,53 +18,53 @@ export default function Referral() {
   const { props } = usePage();
   const { userType, settings, stats, payoutRequests, referralLink, formattedSettings } = props as any;
   const [activeSection, setActiveSection] = useState('dashboard');
-  
+
   const sidebarNavItems: NavItem[] = [
     {
       title: t('Dashboard'),
       href: '#dashboard',
-      icon: <BarChart3 className="h-4 w-4 mr-2" />,
+      icon: <BarChart3 className="h-4 w-4 shrink-0" />,
     },
     {
       title: t('Referred Users'),
       href: route('referral.referred-users'),
-      icon: <Users className="h-4 w-4 mr-2" />,
+      icon: <Users className="h-4 w-4 shrink-0" />,
     },
     ...(hasPermission('manage-payout-referral') ? [{
       title: t('Payout Requests'),
       href: '#payout-requests',
-      icon: <DollarSign className="h-4 w-4 mr-2" />,
+      icon: <DollarSign className="h-4 w-4 shrink-0" />,
     }] : []),
     ...(userType === 'superadmin' ? [{
       title: t('Settings'),
       href: '#settings',
-      icon: <SettingsIcon className="h-4 w-4 mr-2" />,
+      icon: <SettingsIcon className="h-4 w-4 shrink-0" />,
     }] : [])
   ];
-  
+
   const dashboardRef = useRef<HTMLDivElement>(null);
   const payoutRequestsRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 100;
-      
+
       const dashboardPosition = dashboardRef.current?.offsetTop || 0;
       const payoutRequestsPosition = payoutRequestsRef.current?.offsetTop || 0;
       const settingsPosition = settingsRef.current?.offsetTop || 0;
-      
-      if (userType === 'superadmin' && scrollPosition >= settingsPosition) {
+
+      if (settingsPosition > 0 && scrollPosition >= settingsPosition) {
         setActiveSection('settings');
-      } else if (scrollPosition >= payoutRequestsPosition) {
+      } else if (payoutRequestsPosition > 0 && scrollPosition >= payoutRequestsPosition) {
         setActiveSection('payout-requests');
       } else {
         setActiveSection('dashboard');
       }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
-    
+
     const hash = window.location.hash.replace('#', '');
     if (hash) {
       const element = document.getElementById(hash);
@@ -73,7 +73,7 @@ export default function Referral() {
         setActiveSection(hash);
       }
     }
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
@@ -93,8 +93,8 @@ export default function Referral() {
   };
 
   return (
-    <PageTemplate 
-      title={t('Referral Program')} 
+    <PageTemplate
+      title={t('Referral Program')}
       url="/referral"
       breadcrumbs={[
         { title: t('Dashboard'), href: route('dashboard') },
@@ -105,29 +105,35 @@ export default function Referral() {
         <div className="md:w-64 flex-shrink-0">
           <div className="sticky top-20">
             <ScrollArea className="h-[calc(100vh-5rem)]">
-              <div className="pr-4 space-y-1">
-                {sidebarNavItems.map((item) => (
-                  <Button
-                    key={item.href}
-                    variant="ghost"
-                    className={cn('w-full justify-start', {
-                      'bg-muted font-medium': activeSection === item.href.replace('#', ''),
-                    })}
-                    onClick={() => handleNavClick(item.href)}
-                  >
-                    {item.icon}
-                    {item.title}
-                  </Button>
-                ))}
+              <div className="flex flex-col gap-1 px-3">
+                {sidebarNavItems.map((item) => {
+                  const isActive = activeSection === item.href.replace('#', '');
+                  return (
+                    <button
+                      key={item.href}
+                      dir="rtl"
+                      className={cn(
+                        'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-normal transition-colors',
+                        isActive
+                          ? 'bg-primary/10 text-primary font-medium shadow-sm'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      )}
+                      onClick={() => handleNavClick(item.href)}
+                    >
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </button>
+                  );
+                })}
               </div>
             </ScrollArea>
           </div>
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <section id="dashboard" ref={dashboardRef} className="mb-8">
             <h2 className="text-xl font-semibold mb-4">{t('Dashboard')}</h2>
-            <ReferralDashboard 
+            <ReferralDashboard
               userType={userType}
               stats={stats}
               referralLink={referralLink}
@@ -138,7 +144,7 @@ export default function Referral() {
           {hasPermission('manage-payout-referral') && (
             <section id="payout-requests" ref={payoutRequestsRef} className="mb-8">
               <h2 className="text-xl font-semibold mb-4">{t('Payout Requests')}</h2>
-              <PayoutRequests 
+              <PayoutRequests
                 userType={userType}
                 payoutRequests={payoutRequests}
                 settings={settings}

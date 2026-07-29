@@ -12,7 +12,7 @@ interface ThemePreviewProps {
 }
 
 export function ThemePreview({ logoLight: propLogoLight, logoDark: propLogoDark, titleText: propTitleText }: ThemePreviewProps = {}) {
-  const { appearance, themeColor, position, variant, collapsible, style } = useThemePreview();
+  const { themeColor, position, variant, collapsible, style } = useThemePreview();
   const { logoLight: contextLogoLight, logoDark: contextLogoDark, titleText: contextTitleText } = useBrand();
   
   const logoLight = propLogoLight || contextLogoLight;
@@ -23,7 +23,7 @@ export function ThemePreview({ logoLight: propLogoLight, logoDark: propLogoDark,
   // Reset logo error when logo sources change
   React.useEffect(() => {
     setLogoError(false);
-  }, [logoLight, logoDark, appearance]);
+  }, [logoLight, logoDark]);
   
   // Determine sidebar style class
   const getSidebarStyleClass = () => {
@@ -32,11 +32,10 @@ export function ThemePreview({ logoLight: propLogoLight, logoDark: propLogoDark,
     return 'bg-sidebar text-sidebar-foreground';
   };
   
-  // Logo preview based on appearance
   const getLogoSrc = () => {
     if (logoError) return '';
     
-    const currentLogo = appearance === 'dark' ? logoLight : logoDark;
+    const currentLogo = logoDark;
     return currentLogo ? getImageUrl(currentLogo) : '';
   };
   
@@ -47,10 +46,9 @@ export function ThemePreview({ logoLight: propLogoLight, logoDark: propLogoDark,
   
   return (
     <div className="border rounded-lg overflow-hidden">
-      <div className="bg-neutral-100 dark:bg-neutral-800 p-2 text-xs font-medium flex justify-between items-center">
+      <div className="bg-neutral-100 p-2 text-xs font-medium flex justify-between items-center">
         <div>Theme Preview</div>
         <div className="flex gap-2">
-          <span className="px-2 py-1 bg-primary/10 text-primary rounded">{appearance}</span>
           <span className="px-2 py-1 bg-primary/10 text-primary rounded">{themeColor}</span>
           <span className="px-2 py-1 bg-primary/10 text-primary rounded">{position}</span>
         </div>
@@ -71,7 +69,7 @@ export function ThemePreview({ logoLight: propLogoLight, logoDark: propLogoDark,
           <div className={`p-1 border-b border-sidebar-border flex items-center justify-center overflow-hidden ${getSidebarStyleClass()}`}>
             {!logoError && getLogoSrc() ? (
               <img 
-                key={`preview-${appearance}-${getLogoSrc()}`} 
+                key={`preview-${getLogoSrc()}`} 
                 src={getLogoSrc()} 
                 alt={getTitleText()} 
                 className="h-5 max-w-[60px] object-contain" 

@@ -20,6 +20,11 @@ class Store extends BaseModel
         'enable_custom_domain',
         'enable_custom_subdomain',
         'email',
+        // SEO Settings
+        'seo_title',
+        'seo_description',
+        'seo_keywords',
+        'seo_image',
         // PWA Settings
         'enable_pwa',
         'pwa_name',

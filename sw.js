@@ -1,4 +1,4 @@
-const CACHE_NAME = 'whatsstore-pwa-v1';
+const CACHE_NAME = 'wusool-pwa-v1';
 const assets = [];
 
 self.addEventListener("install", installEvent => {

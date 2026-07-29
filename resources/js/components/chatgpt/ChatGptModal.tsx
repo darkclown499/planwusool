@@ -176,7 +176,7 @@ export function ChatGptModal({
           >
             <div
               ref={modalContainerRef}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 border relative"
+              className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 border relative"
               style={{ zIndex: zIndex + 1 }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -188,7 +188,7 @@ export function ChatGptModal({
                 <DialogPrimitive.Close asChild>
                   <button
                     onClick={handleClose}
-                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors cursor-pointer focus:outline-none"
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer focus:outline-none"
                   >
                     <X className="h-5 w-5" />
                   </button>

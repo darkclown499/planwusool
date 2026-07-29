@@ -1,5 +1,4 @@
 import '../css/app.css';
-import '../css/dark-mode.css';
 
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -104,11 +103,27 @@ createInertiaApp({
                 const savedTheme = localStorage.getItem('themeSettings');
                 if (savedTheme) {
                     const themeSettings = JSON.parse(savedTheme);
-                    const isDark = themeSettings.appearance === 'dark' ||
-                        (themeSettings.appearance === 'system' &&
-                            window.matchMedia('(prefers-color-scheme: dark)').matches);
-                    document.documentElement.classList.toggle('dark', isDark);
-                    document.body.classList.toggle('dark', isDark);
+
+                    const THEME_COLORS_MAP: Record<string, string> = {
+                        blue: '#3b82f6',
+                        green: '#10b77f',
+                        purple: '#8b5cf6',
+                        orange: '#f97316',
+                        red: '#ef4444',
+                    };
+                    const color = themeSettings.themeColor === 'custom'
+                        ? themeSettings.customColor
+                        : THEME_COLORS_MAP[themeSettings.themeColor] || THEME_COLORS_MAP.green;
+                    document.documentElement.style.setProperty('--theme-color', color);
+                    document.documentElement.style.setProperty('--primary', color);
+                    document.documentElement.style.setProperty('--primary-foreground', '#ffffff');
+                    document.documentElement.style.setProperty('--chart-1', color);
+                }
+
+                const savedDirection = localStorage.getItem('layoutDirection');
+                if (savedDirection === 'rtl' || savedDirection === 'ltr') {
+                    document.documentElement.dir = savedDirection;
+                    document.documentElement.setAttribute('dir', savedDirection);
                 }
             } catch (e) {
                 console.error('Navigation error:', e);
@@ -118,16 +133,6 @@ createInertiaApp({
     progress: {
         color: '#4B5563',
     },
-});
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const savedTheme = localStorage.getItem('themeSettings');
-    if (savedTheme) {
-        const themeSettings = JSON.parse(savedTheme);
-        if (themeSettings.appearance === 'system') {
-            initializeTheme();
-        }
-    }
 });
 
 setupFlashMessages();

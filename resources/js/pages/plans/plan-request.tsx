@@ -87,7 +87,7 @@ export default function PlanRequestsPage() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Plans'), href: route('plans.index') },
-    { title: t('Plan Requests') }
+    { title: t('Subscription Requests') }
   ];
 
   const hasActiveFilters = () => {
@@ -100,7 +100,7 @@ export default function PlanRequestsPage() {
 
   return (
     <PageTemplate 
-      title={t('Plan Requests')} 
+      title={t('Subscription Requests')} 
       url="/plan-requests"
       breadcrumbs={breadcrumbs}
       noPadding

@@ -11,6 +11,7 @@ use App\Http\Controllers\PlanOrderController;
 use App\Http\Controllers\Settings\PaymentSettingController;
 use App\Http\Controllers\Settings\TwilioSettingController;
 use App\Http\Controllers\Settings\WebhookController;
+use App\Http\Controllers\Settings\AccountingSettingController;
 use App\Http\Controllers\StripePaymentController;
 use App\Http\Controllers\PayPalPaymentController;
 use App\Http\Controllers\BankPaymentController;
@@ -67,9 +68,7 @@ Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     // General settings page with system and company settings
     Route::get('settings', [SettingsController::class, 'index'])->name('settings');
     
-    // System Settings routes
-    Route::post('settings/system', [SystemSettingsController::class, 'update'])->name('settings.system.update');
-    Route::post('settings/brand', [SystemSettingsController::class, 'updateBrand'])->name('settings.brand.update');
+    // Brand Settings routes
     Route::post('settings/storage', [SystemSettingsController::class, 'updateStorage'])->name('settings.storage.update');
     Route::post('settings/recaptcha', [SystemSettingsController::class, 'updateRecaptcha'])->name('settings.recaptcha.update');
     Route::post('settings/chatgpt', [SystemSettingsController::class, 'updateChatgpt'])->name('settings.chatgpt.update');
@@ -92,5 +91,11 @@ Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     Route::put('settings/webhooks/{webhook}', [WebhookController::class, 'update'])->name('settings.webhooks.update');
     Route::delete('settings/webhooks/{webhook}', [WebhookController::class, 'destroy'])->name('settings.webhooks.destroy');
     
+    // Accounting Integration routes
+    Route::get('settings/accounting', [AccountingSettingController::class, 'index'])->name('settings.accounting.index');
+    Route::post('settings/accounting', [AccountingSettingController::class, 'store'])->name('settings.accounting.store');
+    Route::delete('settings/accounting', [AccountingSettingController::class, 'destroy'])->name('settings.accounting.destroy');
+    Route::post('settings/accounting/test-connection', [AccountingSettingController::class, 'testConnection'])->name('settings.accounting.test-connection');
+    Route::post('settings/accounting/sync-now', [AccountingSettingController::class, 'syncNow'])->name('settings.accounting.sync-now');
 
 });

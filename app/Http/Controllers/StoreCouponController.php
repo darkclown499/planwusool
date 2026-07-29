@@ -63,14 +63,24 @@ class StoreCouponController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $currentStoreId = $user->current_store;
+
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:store_coupons,code',
+            'code' => 'required_if:code_type,manual|string|max:50|unique:store_coupons,code,NULL,id,store_id,' . $currentStoreId,
             'description' => 'nullable|string',
             'type' => 'required|in:percentage,flat',
-            'discount_amount' => 'required|numeric|min:0',
+            'discount_amount' => [
+                'required', 'numeric', 'min:0',
+                function ($attribute, $value, $fail) {
+                    if ($this->type === 'percentage' && $value > 99) {
+                        $fail(__('The discount amount cannot exceed 99% for percentage discounts.'));
+                    }
+                },
+            ],
             'minimum_spend' => 'nullable|numeric|min:0',
-            'maximum_spend' => 'nullable|numeric|min:0',
+            'maximum_spend' => 'nullable|numeric|min:0|gte:minimum_spend',
             'use_limit_per_coupon' => 'nullable|integer|min:1',
             'use_limit_per_user' => 'nullable|integer|min:1',
             'start_date' => 'nullable|date',
@@ -83,18 +93,15 @@ class StoreCouponController extends Controller
             'discount_amount' => __('Discount Amount'),
         ]);
 
-        $user = Auth::user();
-        $currentStoreId = $user->current_store;
-
         $data = $request->all();
         $data['store_id'] = $currentStoreId;
         $data['created_by'] = Auth::id();
+        unset($data['used_count']);
 
-        // Generate code if auto-generate is selected
         if ($request->code_type === 'auto') {
             do {
                 $data['code'] = strtoupper(Str::random(10));
-            } while (StoreCoupon::where('code', $data['code'])->exists());
+            } while (StoreCoupon::where('code', $data['code'])->where('store_id', $currentStoreId)->exists());
         }
 
         $coupon = StoreCoupon::create($data);
@@ -120,22 +127,13 @@ class StoreCouponController extends Controller
                                   ->get();
         
         $totalUsage = $orders->count();
-        $totalSavings = 0;
         $uniqueUsers = $orders->pluck('customer_id')->unique()->count();
         $recentUsage = $orders->where('created_at', '>=', now()->subDays(30))->count();
         
-        // Calculate total savings based on coupon type
+        // Calculate total savings from actual recorded discounts on orders
+        $totalSavings = 0;
         foreach ($orders as $order) {
-            if ($storeCoupon->type === 'percentage') {
-                $savings = ($order->subtotal * $storeCoupon->discount_amount) / 100;
-                // Cap at maximum discount if set
-                if ($storeCoupon->maximum_spend && $savings > $storeCoupon->maximum_spend) {
-                    $savings = $storeCoupon->maximum_spend;
-                }
-            } else {
-                $savings = $storeCoupon->discount_amount;
-            }
-            $totalSavings += $savings;
+            $totalSavings += $order->coupon_discount ?? 0;
         }
         
         // Update used_count if it's different
@@ -187,12 +185,19 @@ class StoreCouponController extends Controller
         
         $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:store_coupons,code,' . $storeCoupon->id,
+            'code' => 'required_if:code_type,manual|string|max:50|unique:store_coupons,code,' . $storeCoupon->id . ',store_id,' . $currentStoreId,
             'description' => 'nullable|string',
             'type' => 'required|in:percentage,flat',
-            'discount_amount' => 'required|numeric|min:0',
+            'discount_amount' => [
+                'required', 'numeric', 'min:0',
+                function ($attribute, $value, $fail) {
+                    if ($this->type === 'percentage' && $value > 99) {
+                        $fail(__('The discount amount cannot exceed 99% for percentage discounts.'));
+                    }
+                },
+            ],
             'minimum_spend' => 'nullable|numeric|min:0',
-            'maximum_spend' => 'nullable|numeric|min:0',
+            'maximum_spend' => 'nullable|numeric|min:0|gte:minimum_spend',
             'use_limit_per_coupon' => 'nullable|integer|min:1',
             'use_limit_per_user' => 'nullable|integer|min:1',
             'start_date' => 'nullable|date',
@@ -206,12 +211,12 @@ class StoreCouponController extends Controller
         ]);
 
         $data = $request->all();
+        unset($data['used_count']);
 
-        // Generate new code if switching to auto-generate
         if ($request->code_type === 'auto' && $storeCoupon->code_type !== 'auto') {
             do {
                 $data['code'] = strtoupper(Str::random(10));
-            } while (StoreCoupon::where('code', $data['code'])->where('id', '!=', $storeCoupon->id)->exists());
+            } while (StoreCoupon::where('code', $data['code'])->where('store_id', $currentStoreId)->where('id', '!=', $storeCoupon->id)->exists());
         }
 
         $storeCoupon->update($data);
@@ -280,15 +285,22 @@ class StoreCouponController extends Controller
             ], 400);
         }
         
-        // Check if coupon is expired
-        if ($coupon->expiry_date && $coupon->expiry_date < now()) {
+        $now = now();
+        
+        if ($coupon->start_date && $now->lt($coupon->start_date)) {
+            return response()->json([
+                'valid' => false,
+                'message' => __('Coupon is not yet active')
+            ], 400);
+        }
+        
+        if ($coupon->expiry_date && $now->gt($coupon->expiry_date)) {
             return response()->json([
                 'valid' => false,
                 'message' => __('Coupon has expired')
             ], 400);
         }
         
-        // Check usage limit
         if ($coupon->use_limit_per_coupon && $coupon->used_count >= $coupon->use_limit_per_coupon) {
             return response()->json([
                 'valid' => false,
@@ -296,7 +308,26 @@ class StoreCouponController extends Controller
             ], 400);
         }
         
-        // Check minimum amount
+        if ($coupon->use_limit_per_user) {
+            $customerEmail = session('checkout_customer_email') ?? ($user->email ?? null);
+            if (!$customerEmail) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => __('Email is required to validate per-user coupon limits')
+                ], 400);
+            }
+            $userUsage = \App\Models\Order::where('store_id', $currentStoreId)
+                ->where('coupon_code', $coupon->code)
+                ->where('customer_email', $customerEmail)
+                ->count();
+            if ($userUsage >= $coupon->use_limit_per_user) {
+                return response()->json([
+                    'valid' => false,
+                    'message' => __('You have exceeded the usage limit for this coupon')
+                ], 400);
+            }
+        }
+        
         if ($coupon->minimum_spend && $request->amount < $coupon->minimum_spend) {
             return response()->json([
                 'valid' => false,
@@ -304,7 +335,6 @@ class StoreCouponController extends Controller
             ], 400);
         }
         
-        // Check maximum amount
         if ($coupon->maximum_spend && $request->amount > $coupon->maximum_spend) {
             return response()->json([
                 'valid' => false,

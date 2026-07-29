@@ -77,11 +77,8 @@ class PlanOrder extends Model
             'processed_by' => $processedBy
         ]);
         
-        // Assign plan to user when approved
+        // Assign plan to user when approved (also creates referral record internally)
         assignPlanToUser($this->user, $this->plan, $this->billing_cycle);
-        
-        // Create referral record if user was referred
-        \App\Http\Controllers\ReferralController::createReferralRecord($this->user, $this->billing_cycle);
     }
 
     public function reject($processedBy = null, $notes = null)

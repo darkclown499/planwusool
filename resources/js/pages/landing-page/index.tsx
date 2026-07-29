@@ -20,8 +20,8 @@ import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { useFavicon } from '@/hooks/use-favicon';
 import { useTranslation } from 'react-i18next';
-import { FaWhatsapp } from 'react-icons/fa';
 import languageData from '@/../../resources/lang/language.json';
+import AIChatWidget from '@/components/AIChatWidget';
 
 interface Plan {
   id: number;
@@ -360,17 +360,8 @@ export default function LandingPage() {
           return Component ? <React.Fragment key={sectionKey}>{Component()}</React.Fragment> : null;
         })}
 
-        {/* WhatsApp Floating Button */}
-        <a
-          href="https://wa.me/970591234567"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl sm:bottom-8 sm:left-8"
-          style={{ boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4)' }}
-          aria-label="WhatsApp"
-        >
-          <FaWhatsapp className="h-7 w-7" />
-        </a>
+        {/* AI Chat Widget */}
+        <AIChatWidget position="left" enabled={true} />
       </div>
     </>
   );

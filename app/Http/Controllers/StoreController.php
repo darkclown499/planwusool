@@ -98,6 +98,16 @@ class StoreController extends Controller
             'enable_custdomain' => $plan->enable_custdomain === 'on',
             'enable_custsubdomain' => $plan->enable_custsubdomain === 'on',
             'pwa_business' => $plan->pwa_business === 'on',
+            'enable_shipping_method' => $plan->enable_shipping_method === 'on',
+            'enable_mobile_app' => $plan->enable_mobile_app === 'on',
+        ];
+        
+        // Store limit check
+        $storeCheck = $user->canCreateStore();
+        $storeLimits = [
+            'can_create' => $storeCheck['allowed'],
+            'current_stores' => $user->stores()->count(),
+            'max_stores' => $plan->max_stores ?? 0,
         ];
         
         // Get server IP address
@@ -106,7 +116,9 @@ class StoreController extends Controller
         return Inertia::render('stores/create', [
             'availableThemes' => $availableThemes,
             'planPermissions' => $planPermissions,
-            'serverIp' => $serverIp
+            'storeLimits' => $storeLimits,
+            'serverIp' => $serverIp,
+            'baseDomain' => getBaseDomain(),
         ]);
     }
 
@@ -138,10 +150,18 @@ class StoreController extends Controller
             'enable_custom_subdomain' => 'boolean',
             'custom_domain' => 'required_if:enable_custom_domain,true|nullable|string|max:255',
             'custom_subdomain' => 'required_if:enable_custom_subdomain,true|nullable|string|max:255',
+            'seo_title' => 'nullable|string|max:60',
+            'seo_description' => 'nullable|string|max:160',
+            'seo_keywords' => 'nullable|string|max:255',
+            'seo_image' => 'nullable|string',
         ], [], [
             'name' => __('Store Name'),
             'custom_domain' => __('Custom Domain'),
             'custom_subdomain' => __('Custom Subdomain'),
+            'seo_title' => __('Meta Title'),
+            'seo_description' => __('Meta Description'),
+            'seo_keywords' => __('Meta Keywords'),
+            'seo_image' => __('Meta Image'),
         ]);
         
         // Validate plan permissions for domain features
@@ -174,7 +194,10 @@ class StoreController extends Controller
         $store->enable_custom_domain = $request->enable_custom_domain ?? false;
         $store->enable_custom_subdomain = $request->enable_custom_subdomain ?? false;
         $store->custom_domain = $request->enable_custom_domain ? $request->custom_domain : null;
-        $store->custom_subdomain = $request->enable_custom_subdomain ? $request->custom_subdomain : null;
+        $store->custom_subdomain = $request->enable_custom_subdomain ? ($request->custom_subdomain ?: $store->slug) : null;
+        if ($store->enable_custom_subdomain && empty($store->custom_subdomain)) {
+            $store->custom_subdomain = $store->slug;
+        }
         
         // PWA Settings
         $store->enable_pwa = $request->enable_pwa ?? false;
@@ -185,6 +208,12 @@ class StoreController extends Controller
         $store->pwa_background_color = $request->pwa_background_color ?? '#ffffff';
         $store->pwa_display = $request->pwa_display ?? 'standalone';
         $store->pwa_orientation = $request->pwa_orientation ?? 'portrait';
+        
+        // SEO Settings
+        $store->seo_title = $request->seo_title;
+        $store->seo_description = $request->seo_description;
+        $store->seo_keywords = $request->seo_keywords;
+        $store->seo_image = $request->seo_image;
         
         $store->save();
         
@@ -257,6 +286,8 @@ class StoreController extends Controller
             'enable_custdomain' => $plan->enable_custdomain === 'on',
             'enable_custsubdomain' => $plan->enable_custsubdomain === 'on',
             'pwa_business' => $plan->pwa_business === 'on',
+            'enable_shipping_method' => $plan->enable_shipping_method === 'on',
+            'enable_mobile_app' => $plan->enable_mobile_app === 'on',
         ];
         
         // Get server IP address
@@ -266,7 +297,8 @@ class StoreController extends Controller
             'store' => $store,
             'availableThemes' => $availableThemes,
             'planPermissions' => $planPermissions,
-            'serverIp' => $serverIp
+            'serverIp' => $serverIp,
+            'baseDomain' => getBaseDomain(),
         ]);
     }
 
@@ -293,10 +325,18 @@ class StoreController extends Controller
             'enable_custom_subdomain' => 'boolean',
             'custom_domain' => 'required_if:enable_custom_domain,true|nullable|string|max:255',
             'custom_subdomain' => 'required_if:enable_custom_subdomain,true|nullable|string|max:255',
+            'seo_title' => 'nullable|string|max:60',
+            'seo_description' => 'nullable|string|max:160',
+            'seo_keywords' => 'nullable|string|max:255',
+            'seo_image' => 'nullable|string',
         ], [], [
             'name' => __('Store Name'),
             'custom_domain' => __('Custom Domain'),
             'custom_subdomain' => __('Custom Subdomain'),
+            'seo_title' => __('Meta Title'),
+            'seo_description' => __('Meta Description'),
+            'seo_keywords' => __('Meta Keywords'),
+            'seo_image' => __('Meta Image'),
         ]);
         
         // Validate plan permissions for domain features
@@ -326,7 +366,7 @@ class StoreController extends Controller
         $store->enable_custom_domain = $request->enable_custom_domain ?? false;
         $store->enable_custom_subdomain = $request->enable_custom_subdomain ?? false;
         $store->custom_domain = $request->enable_custom_domain ? $request->custom_domain : null;
-        $store->custom_subdomain = $request->enable_custom_subdomain ? $request->custom_subdomain : null;
+        $store->custom_subdomain = $request->enable_custom_subdomain ? ($request->custom_subdomain ?: $store->slug) : null;
         
         // PWA Settings
         $store->enable_pwa = $request->enable_pwa ?? false;
@@ -337,6 +377,12 @@ class StoreController extends Controller
         $store->pwa_background_color = $request->pwa_background_color ?? '#ffffff';
         $store->pwa_display = $request->pwa_display ?? 'standalone';
         $store->pwa_orientation = $request->pwa_orientation ?? 'portrait';
+        
+        // SEO Settings
+        $store->seo_title = $request->seo_title;
+        $store->seo_description = $request->seo_description;
+        $store->seo_keywords = $request->seo_keywords;
+        $store->seo_image = $request->seo_image;
         
         $store->save();
 

@@ -162,7 +162,10 @@ class CheckPlanAccess
             'pwa' => 'pwa_business',
             'custom_domain' => 'enable_custdomain',
             'custom_subdomain' => 'enable_custsubdomain',
-            'chatgpt' => 'enable_chatgpt'
+            'chatgpt' => 'enable_chatgpt',
+            'mobile_app' => 'enable_mobile_app',
+            'branding' => 'enable_branding',
+            'accounting_integration' => 'enable_accounting_integration'
         ];
         
         if (!isset($featureMap[$feature])) {

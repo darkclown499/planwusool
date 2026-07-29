@@ -49,7 +49,7 @@ const defaultPlans = [
     limits: [
       { icon: Boxes, value: '18', label: 'منتج' },
       { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'مخزن' },
+      { icon: Warehouse, value: '1', label: 'متجر' },
     ],
     features: [
       'نطاق فرعي مجاني (store.wusool.ps)',
@@ -65,12 +65,13 @@ const defaultPlans = [
     name: 'باقة النمو',
     description: 'الباقة الأكثر مبيعاً، مصممة لتوسيع نشاطك التجاري وزيادة مبيعاتك.',
     price: 120,
+    original_price: 170,
     yearly_price: 120,
     duration: 'yearly',
     limits: [
       { icon: Boxes, value: '500', label: 'منتج' },
       { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'مخزن' },
+      { icon: Warehouse, value: '1', label: 'متجر' },
     ],
     features: [
       'نطاق فرعي مجاني (store.wusool.ps)',
@@ -88,12 +89,13 @@ const defaultPlans = [
     name: 'باقة الاحتراف',
     description: 'الحل الشامل للمؤسسات، مع قابلية التخصيص الكامل حسب احتياج عملك.',
     price: 200,
+    original_price: 270,
     yearly_price: 200,
     duration: 'yearly',
     limits: [
       { icon: Boxes, value: '1000+', label: 'منتج' },
       { icon: Store, value: '2', label: 'متجر' },
-      { icon: Warehouse, value: '3', label: 'مخازن' },
+      { icon: Warehouse, value: '3', label: 'متاجر' },
     ],
     features: [
       'إمكانية ربط نطاق مخصص (store.ps / store.com)',
@@ -127,7 +129,7 @@ const arabicOverrides: Record<number, { name: string; description: string; limit
     limits: [
       { icon: Boxes, value: '18', label: 'منتج' },
       { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'مخزن' },
+      { icon: Warehouse, value: '1', label: 'متجر' },
     ],
     features: [
       'نطاق فرعي مجاني (store.wusool.ps)',
@@ -140,7 +142,7 @@ const arabicOverrides: Record<number, { name: string; description: string; limit
     limits: [
       { icon: Boxes, value: '500', label: 'منتج' },
       { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'مخزن' },
+      { icon: Warehouse, value: '1', label: 'متجر' },
     ],
     features: [
       'نطاق فرعي مجاني (store.wusool.ps)',
@@ -157,7 +159,7 @@ const arabicOverrides: Record<number, { name: string; description: string; limit
     limits: [
       { icon: Boxes, value: '1000+', label: 'منتج' },
       { icon: Store, value: '2', label: 'متجر' },
-      { icon: Warehouse, value: '3', label: 'مخازن' },
+      { icon: Warehouse, value: '3', label: 'متاجر' },
     ],
     features: [
       'إمكانية ربط نطاق مخصص (store.ps / store.com)',
@@ -266,7 +268,12 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
                 </div>
 
                 <div className="mt-6">
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-baseline gap-2">
+                    {'original_price' in plan && (plan as any).original_price > 0 && getPrice(plan) < (plan as any).original_price && (
+                      <span className="text-lg text-gray-400 line-through">
+                        {formatCurrency((plan as any).original_price)}
+                      </span>
+                    )}
                     <span className="text-4xl font-semibold tracking-tight text-gray-900">
                       {getPrice(plan) === 0 ? formatCurrency(0) : formatCurrency(getPrice(plan))}
                     </span>

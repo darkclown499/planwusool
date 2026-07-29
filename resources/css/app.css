@@ -8,8 +8,6 @@
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
-@custom-variant dark (&:is(.dark *));
-
 @theme {
     --font-sans:
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -116,41 +114,6 @@
     --sidebar-ring: oklch(0.87 0 0);
 }
 
-.dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
-}
-
 @layer base {
     * {
         @apply border-border;
@@ -184,43 +147,6 @@
     *::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
     }
-    
-    /* Dark mode scrollbar */
-    .dark * {
-        scrollbar-color: #4b5563 #1f2937;
-    }
-    
-    .dark *::-webkit-scrollbar-track {
-        background: #1f2937;
-    }
-    
-    .dark *::-webkit-scrollbar-thumb {
-        background: #4b5563;
-    }
-    
-    .dark *::-webkit-scrollbar-thumb:hover {
-        background: #6b7280;
-    }
-    
-    /* Ensure all text inputs have proper dark mode styling */
-    .dark input[type="text"],
-    .dark input[type="email"],
-    .dark input[type="password"],
-    .dark input[type="number"],
-    .dark input[type="tel"],
-    .dark input[type="url"],
-    .dark input[type="search"],
-    .dark textarea,
-    .dark select {
-        background-color: var(--color-card);
-        color: var(--color-card-foreground);
-        border-color: var(--color-border);
-    }
-    
-    /* Ensure all SVG icons respect dark mode */
-    .dark svg:not([fill="none"]) {
-        fill: currentColor;
-    }
 }
 
 /* Theme color variables */
@@ -251,11 +177,6 @@
   --chart-1: var(--theme-color);
 }
 
-.dark {
-  --primary: var(--theme-color);
-  --chart-1: var(--theme-color);
-}
-
 /* Apply theme color to buttons and interactive elements */
 .btn-primary,
 .bg-primary,
@@ -263,9 +184,19 @@
   background-color: var(--theme-color);
 }
 
-a:hover,
+a:hover:not(.bg-primary):not([style*="background-color"]),
 .text-primary {
   color: var(--theme-color);
+}
+
+a:hover {
+  color: inherit;
+}
+
+.btn-green:hover,
+a.bg-primary:hover,
+a[style*="background-color"]:hover {
+  color: white !important;
 }
 
 .border-primary {
@@ -274,82 +205,6 @@ a:hover,
 
 .ring-primary {
   --tw-ring-color: var(--theme-color);
-}
-
-/* Dark mode table styles */
-.dark table {
-  color: var(--foreground);
-}
-
-.dark thead tr {
-  background-color: var(--secondary);
-  border-color: var(--border);
-}
-
-.dark tbody tr {
-  border-color: var(--border);
-  background-color: var(--card);
-}
-
-.dark tbody tr:hover {
-  background-color: var(--secondary);
-}
-
-.dark th,
-.dark td {
-  color: var(--foreground);
-}
-
-.dark th {
-  color: var(--muted-foreground);
-}
-
-/* Ensure all tables in dark mode have proper styling */
-.dark [role="table"],
-.dark table {
-  --tw-border-opacity: 1;
-  border-color: rgba(55, 65, 81, var(--tw-border-opacity));
-}
-
-.dark [role="row"],
-.dark tr {
-  border-color: var(--border);
-}
-
-.dark [role="cell"],
-.dark [role="columnheader"],
-.dark td,
-.dark th {
-  color: var(--foreground);
-}
-
-.dark [role="cell"] p,
-.dark td p {
-  color: var(--foreground);
-}
-
-.dark [role="cell"] .text-muted-foreground,
-.dark td .text-muted-foreground {
-  color: var(--muted-foreground);
-}
-
-/* Dark mode pagination styles */
-.dark .pagination-container {
-  background-color: var(--card);
-  border-color: var(--border);
-}
-
-.dark .pagination-text {
-  color: var(--muted-foreground);
-}
-
-.dark .pagination-text span {
-  color: var(--foreground);
-}
-
-.dark button[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Iyzipay Checkout Form Styles */
@@ -367,14 +222,6 @@ a:hover,
   height: 600px;
   border: none;
   border-radius: 8px;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .iyzipay-checkout-form {
-    border-color: #374151;
-    background-color: #1f2937;
-  }
 }
 
 /* Responsive design */
@@ -491,12 +338,6 @@ a:hover,
     opacity: 1;
     transform: translateX(0);
   }
-}
-
-/* Dark mode support */
-.dark .demo-store-preview {
-  background: #1f2937;
-  border-color: #374151;
 }
 
 a, 

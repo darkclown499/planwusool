@@ -20,11 +20,11 @@ export default function CookieConsentBanner() {
 
   const globalSettings = (props as any).globalSettings || {};
   const settings = {
-    cookieTitle: globalSettings.cookieTitle || 'Cookie Consent',
-    cookieDescription: globalSettings.cookieDescription || 'We use cookies to enhance your browsing experience and provide personalized content.',
-    strictlyCookieTitle: globalSettings.strictlyCookieTitle || 'Strictly Necessary Cookies',
-    strictlyCookieDescription: globalSettings.strictlyCookieDescription || 'These cookies are essential for the website to function properly.',
-    contactUsDescription: globalSettings.contactUsDescription || 'If you have any questions about our cookie policy, please contact us.',
+    cookieTitle: globalSettings.cookieTitle || t('Cookie Consent'),
+    cookieDescription: globalSettings.cookieDescription || t('We use cookies to enhance your browsing experience and provide personalized content.'),
+    strictlyCookieTitle: globalSettings.strictlyCookieTitle || t('Strictly Necessary Cookies'),
+    strictlyCookieDescription: globalSettings.strictlyCookieDescription || t('These cookies are essential for the website to function properly.'),
+    contactUsDescription: globalSettings.contactUsDescription || t('If you have any questions about our cookie policy, please contact us.'),
     contactUsUrl: globalSettings.contactUsUrl || '#'
   };
 

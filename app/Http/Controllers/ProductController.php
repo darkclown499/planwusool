@@ -32,8 +32,20 @@ class ProductController extends Controller
             return $product->price * $product->stock;
         });
         
+        $planLimits = null;
+        $plan = $user->getCurrentPlan();
+        if ($plan) {
+            $maxProducts = $plan->max_products_per_store ?? 0;
+            $planLimits = [
+                'current_products' => $totalProducts,
+                'max_products' => $maxProducts,
+                'can_create' => $maxProducts <= 0 || $totalProducts < $maxProducts,
+            ];
+        }
+        
         return Inertia::render('products/index', [
             'products' => $products,
+            'planLimits' => $planLimits,
             'stats' => [
                 'total' => $totalProducts,
                 'active' => $activeProducts,
@@ -61,9 +73,23 @@ class ProductController extends Controller
                             ->where('is_active', true)
                             ->get();
         
+        // Plan limits
+        $planLimits = null;
+        $plan = $user->getCurrentPlan();
+        if ($plan) {
+            $currentProducts = \App\Models\Product::where('store_id', $currentStoreId)->count();
+            $maxProducts = $plan->max_products_per_store ?? 0;
+            $planLimits = [
+                'can_create' => $maxProducts <= 0 || $currentProducts < $maxProducts,
+                'current_products' => $currentProducts,
+                'max_products' => $maxProducts,
+            ];
+        }
+        
         return Inertia::render('products/create', [
             'categories' => $categories,
-            'taxes' => $taxes
+            'taxes' => $taxes,
+            'planLimits' => $planLimits,
         ]);
     }
 

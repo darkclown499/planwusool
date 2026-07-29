@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
@@ -18,6 +19,17 @@ Route::middleware(['guest', 'landing.enabled'])->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store'])
         ->middleware('registration.enabled');
+
+    // OTP verification for registration
+    Route::post('otp/send', [OtpController::class, 'send'])
+        ->middleware('registration.enabled')
+        ->name('otp.send');
+
+    Route::post('otp/verify', [OtpController::class, 'verify'])
+        ->name('otp.verify');
+
+    Route::post('otp/resend', [OtpController::class, 'resend'])
+        ->name('otp.resend');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
@@ -38,11 +50,11 @@ Route::middleware(['guest', 'landing.enabled'])->group(function () {
 
     // Social authentication redirects/callbacks
     Route::get('auth/redirect/{provider}', [SocialAuthController::class, 'redirect'])
-        ->where('provider', 'google|facebook|apple|plankton')
+        ->where('provider', 'google|facebook|github|apple|plankton')
         ->name('social.redirect');
 
     Route::get('auth/callback/{provider}', [SocialAuthController::class, 'callback'])
-        ->where('provider', 'google|facebook|apple|plankton')
+        ->where('provider', 'google|facebook|github|apple|plankton')
         ->name('social.callback');
 });
 

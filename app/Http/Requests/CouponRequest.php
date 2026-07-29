@@ -41,7 +41,8 @@ class CouponRequest extends FormRequest
             ],
             'use_limit_per_coupon' => 'nullable|integer|min:1',
             'use_limit_per_user' => 'nullable|integer|min:1',
-            'expiry_date' => 'nullable|date|after:today',
+            'start_date' => 'nullable|date|before_or_equal:expiry_date',
+            'expiry_date' => 'nullable|date',
             'code' => [
                 'required_if:code_type,manual',
                 'string',

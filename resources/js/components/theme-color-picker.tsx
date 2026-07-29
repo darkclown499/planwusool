@@ -91,7 +91,7 @@ export default function ThemeColorPicker() {
                     </div>
                     <button
                         onClick={handleCustomColorClick}
-                        className="rounded bg-neutral-100 px-2 py-1 text-xs hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                        className="rounded bg-neutral-100 px-2 py-1 text-xs hover:bg-neutral-200"
                     >
                         {t("Change")}
                     </button>

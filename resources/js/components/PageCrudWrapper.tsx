@@ -1,8 +1,9 @@
 // components/PageCrudWrapper.tsx
 import { useState, useEffect, ReactNode } from 'react';
 import { PageTemplate, PageAction } from '@/components/page-template';
-import { PlusIcon } from 'lucide-react';
+import { PlusIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -393,7 +394,7 @@ export function PageCrudWrapper({
   // Add the default "Add New" button if allowed and user has permission
   if (showAddButton && hasPermission(permissions, entity.permissions.create)) {
     pageActions.push({
-      label: `Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`,
+      label: t(`Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`),
       icon: <PlusIcon className="h-4 w-4" />,
       variant: 'default',
       onClick: () => handleAddNew()
@@ -427,7 +428,7 @@ export function PageCrudWrapper({
                 <div className="relative w-64">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder={`Search ${entity.name}...`}
+                    placeholder={entity.searchPlaceholder || t("Search") + " " + entity.name + "..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-9"
@@ -448,7 +449,7 @@ export function PageCrudWrapper({
                     onClick={() => setShowFilters(!showFilters)}
                   >
                     <Filter className="h-3.5 w-3.5 mr-1.5" />
-                    {showFilters ? 'Hide Filters' : 'Filters'}
+                    {showFilters ? t('Hide Filters') : t('Filters')}
                     {hasActiveFilters() && (
                       <span className="ml-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
                         {activeFilterCount()}
@@ -553,27 +554,39 @@ export function PageCrudWrapper({
         />
 
         {/* Pagination section */}
-        <div className="p-4 border-t flex items-center justify-between">
+        <div className="p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-sm text-muted-foreground">
-            {t("Showing")} <span className="font-medium">{data.from || 0}</span> {t("to")} <span className="font-medium">{data.to || 0}</span> {t("of")} <span className="font-medium">{data.total}</span> {entity.name}
+            {t("Showing {{from}} to {{to}} of {{total}} {{item}}", { from: data.from || 0, to: data.to || 0, total: data.total, item: entity.name })}
           </div>
           
-          <div className="flex gap-1">
-            {data.links?.map((link: any, i: number) => {
-              // Check if the link is "Next" or "Previous" to use text instead of icon
-              const isTextLink = link.label === "&laquo; Previous" || link.label === "Next &raquo;";
-              const label = link.label.replace("&laquo; ", "").replace(" &raquo;", "");
+          <div className="flex flex-row items-center gap-1">
+            {data.links?.map((link: any, i: number, arr: any[]) => {
+              const isFirst = i === 0 && link.url;
+              const isLast = i === arr.length - 1 && link.url;
+              const isTextLink = isFirst || isLast;
               
               return (
                 <Button
                   key={`pagination-${i}-${link.label}`}
                   variant={link.active ? 'default' : 'outline'}
                   size={isTextLink ? "sm" : "icon"}
-                  className={isTextLink ? "px-3" : "h-8 w-8"}
+                  className={cn(isTextLink ? "px-3 min-w-[40px] gap-1" : "h-8 w-8", "shrink-0")}
                   disabled={!link.url}
                   onClick={() => link.url && router.get(link.url)}
                 >
-                  {isTextLink ? label : <span dangerouslySetInnerHTML={{ __html: link.label }} />}
+                  {isFirst ? (
+                    <span className="flex items-center gap-1">
+                      <ChevronRight className="h-4 w-4 rtl:rotate-180" />
+                      <span className="hidden sm:inline">{t("Previous")}</span>
+                    </span>
+                  ) : isLast ? (
+                    <span className="flex items-center gap-1">
+                      <span className="hidden sm:inline">{t("Next")}</span>
+                      <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                    </span>
+                  ) : (
+                    <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                  )}
                 </Button>
               );
             })}
@@ -592,10 +605,10 @@ export function PageCrudWrapper({
         initialData={currentItem}
         title={
           formMode === 'create' 
-            ? `Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}` 
+            ? t(`Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`) 
             : formMode === 'edit' 
-              ? `Edit ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}` 
-              : `View ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`
+              ? t(`Edit ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`) 
+              : t(`View ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`)
         }
         mode={formMode}
         description={config.description}

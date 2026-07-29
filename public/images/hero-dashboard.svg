@@ -7,7 +7,7 @@
   
   <!-- Header -->
   <rect x="30" y="30" width="540" height="60" fill="#10b77f" rx="16 16 0 0"/>
-  <text x="50" y="65" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">WhatsStore Dashboard</text>
+  <text x="50" y="65" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#ffffff">Wusool Dashboard</text>
   <circle cx="520" cy="60" r="15" fill="#ffffff" fill-opacity="0.2"/>
   <circle cx="520" cy="60" r="8" fill="#ffffff"/>
   

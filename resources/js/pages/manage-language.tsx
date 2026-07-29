@@ -3,7 +3,7 @@ import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { usePage, router } from '@inertiajs/react';
@@ -150,16 +150,19 @@ export default function ManageLanguagePage() {
         </div>
         {/* Main Content: Language Labels */}
         <div className="flex-1">
-          <Card className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-              <h2 className="text-lg font-semibold">{t('Edit Labels for')} {languages.find(l => l.code === selectedLang)?.name}</h2>
-              <Input
-                placeholder={t('Search labels...')}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full md:w-72"
-              />
-            </div>
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full">
+                <CardTitle className="text-lg">{t('Edit Labels for')} {languages.find(l => l.code === selectedLang)?.name}</CardTitle>
+                <Input
+                  placeholder={t('Search labels...')}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full md:w-72"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
             {loading ? (
               <div>{t('Loading...')}</div>
             ) : (
@@ -195,6 +198,7 @@ export default function ManageLanguagePage() {
                 </div>
               </form>
             )}
+            </CardContent>
           </Card>
         </div>
       </div>

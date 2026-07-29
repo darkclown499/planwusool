@@ -92,21 +92,18 @@ export default function HeroSection({ settings, sectionData, brandColor = '#22c5
               {announcement}
             </div>
 
-            {/* Title */}
-            <h1
-              className="font-bold leading-[1.05]"
-              style={{
-                fontSize: 'clamp(2.8rem, 6vw, 5rem)',
-                background: `linear-gradient(135deg, #ffffff 0%, ${brandColor} 60%, #ffffff 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: 'gradientShift 6s ease-in-out infinite',
-                backgroundSize: '200% 200%',
-              }}
-            >
-              {title}
-            </h1>
+            {/* Logo */}
+            <div className="mb-6">
+              <img
+                src="/images/logos/hero-logo.png"
+                alt="Wusool"
+                className="mx-auto lg:mx-0 h-24 sm:h-32 md:h-40 w-auto object-contain"
+                style={{
+                  filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.15))',
+                  animation: 'logoFloat 4s ease-in-out infinite',
+                }}
+              />
+            </div>
 
             {/* Subtitle */}
             <p className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-white/50 sm:text-xl lg:mx-0 lg:max-w-xl">
@@ -117,7 +114,7 @@ export default function HeroSection({ settings, sectionData, brandColor = '#22c5
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 href={route('register')}
-                className="group inline-flex items-center gap-2.5 rounded-xl px-8 py-4 text-[16px] font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02]"
+                className="group btn-green inline-flex items-center gap-2.5 rounded-xl px-8 py-4 text-[16px] font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02]"
                 style={{
                   backgroundColor: brandColor,
                   boxShadow: `0 4px 24px ${brandColor}50, 0 0 60px ${brandColor}20`,
@@ -147,12 +144,12 @@ export default function HeroSection({ settings, sectionData, brandColor = '#22c5
             ) : (
               <div className="mt-14 grid grid-cols-3 gap-6 border-t border-white/10 pt-10">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white sm:text-3xl">١٠ آلاف+</div>
-                  <div className="mt-1.5 text-[12px] font-medium text-white/40 sm:text-[13px]">متجر</div>
+                  <div className="text-2xl font-bold text-white sm:text-3xl">٥ دقائق</div>
+                  <div className="mt-1.5 text-[12px] font-medium text-white/40 sm:text-[13px]">لإعداد متجرك</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-white sm:text-3xl">+٥٠</div>
-                  <div className="mt-1.5 text-[12px] font-medium text-white/40 sm:text-[13px]">دولة</div>
+                  <div className="text-2xl font-bold text-white sm:text-3xl">24/7</div>
+                  <div className="mt-1.5 text-[12px] font-medium text-white/40 sm:text-[13px]">دعم فني مستمر</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-white sm:text-3xl">٩٩.٩٪</div>
@@ -177,7 +174,7 @@ export default function HeroSection({ settings, sectionData, brandColor = '#22c5
               {/* Dashboard header bar */}
               <div className="mb-4 flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-4 py-3">
                 <div className="flex items-center gap-2.5">
-                  <img src="/images/logos/logo-light.png" alt="Wusool" className="h-5 w-auto" />
+                  <img src="/images/logos/dashboard-logo.png" alt="Wusool" className="h-5 w-auto" />
                   <span className="text-sm font-semibold text-white/80">لوحة التحكم</span>
                 </div>
                 <div className="flex gap-1.5">
@@ -342,6 +339,10 @@ export default function HeroSection({ settings, sectionData, brandColor = '#22c5
         @keyframes gradientShift {
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
+        }
+        @keyframes logoFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
         }
         @keyframes dashboardFloat {
           0%, 100% { transform: rotateY(-8deg) rotateX(4deg) translateY(0); }

@@ -69,10 +69,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-blue-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-blue-100 text-blue-600 shadow-sm">
                       <Building2 className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300">
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
                       {stats.totalCompanies || 0}
                     </Badge>
                   </div>
@@ -94,10 +94,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-green-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-green-100 text-green-600 shadow-sm">
                       <CreditCard className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-300">
+                    <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-100">
                       {stats.activePlans || 0}
                     </Badge>
                   </div>
@@ -119,10 +119,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-purple-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-purple-100 text-purple-600 shadow-sm">
                       <Users className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:text-purple-300">
+                    <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100">
                       <TrendingUp className="h-2 w-2 mr-1" />
                       {t('Active')}
                     </Badge>
@@ -145,10 +145,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-orange-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-orange-100 text-orange-600 shadow-sm">
                       <Settings className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300">
+                    <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-100">
                       <Zap className="h-2 w-2 mr-1" />
                       {t('Live')}
                     </Badge>
@@ -168,16 +168,16 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
           </div>
 
           {/* Platform Features */}
-          <div className={`mt-6 p-4 rounded-lg bg-gradient-to-r from-${themeColorName}-50 to-${themeColorName === 'green' ? 'emerald' : themeColorName}-50 dark:from-${themeColorName}-950/20 dark:to-${themeColorName === 'green' ? 'emerald' : themeColorName}-950/20 border border-${themeColorName}-200 dark:border-${themeColorName}-800`}>
+          <div className={`mt-6 p-4 rounded-lg bg-gradient-to-r from-${themeColorName}-50 to-${themeColorName === 'green' ? 'emerald' : themeColorName}-50 border border-${themeColorName}-200`}>
             <div className="flex items-start gap-3">
-              <div className={`rounded-full p-2 bg-${themeColorName}-100 text-${themeColorName}-600 dark:bg-${themeColorName}-900 dark:text-${themeColorName}-400`}>
+              <div className={`rounded-full p-2 bg-${themeColorName}-100 text-${themeColorName}-600`}>
                 <Globe className="h-5 w-5" />
               </div>
               <div className="flex-1">
-                <h3 className={`font-semibold text-${themeColorName}-900 dark:text-${themeColorName}-100 mb-1`}>
+                <h3 className={`font-semibold text-${themeColorName}-900 mb-1`}>
                   {t(`${titleText || 'Wusool'} SaaS Platform`)}
                 </h3>
-                <p className={`text-sm text-${themeColorName}-700 dark:text-${themeColorName}-300 mb-3`}>
+                <p className={`text-sm text-${themeColorName}-700 mb-3`}>
                   {t('Complete multi-tenant e-commerce solution enabling companies to create and manage multiple online stores with advanced subscription management.')}
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -222,10 +222,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-blue-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-blue-100 text-blue-600 shadow-sm">
                       <Package className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-300">
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100">
                       {stats.products || 0}
                     </Badge>
                   </div>
@@ -249,10 +249,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-green-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-green-100 text-green-600 shadow-sm">
                       <ShoppingCart className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-300">
+                    <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-100">
                       {stats.orders || 0}
                     </Badge>
                   </div>
@@ -276,10 +276,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-purple-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-purple-100 text-purple-600 shadow-sm">
                       <Users className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:text-purple-300">
+                    <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100">
                       {stats.customers || 0}
                     </Badge>
                   </div>
@@ -303,10 +303,10 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm h-full transition-all duration-300 hover:shadow-md hover:border-orange-500/50 hover:-translate-y-1">
                 <div className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="rounded-lg p-2.5 bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 shadow-sm">
+                    <div className="rounded-lg p-2.5 bg-orange-100 text-orange-600 shadow-sm">
                       <TrendingUp className="h-5 w-5" />
                     </div>
-                    <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300">
+                    <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-100">
                       <BarChart3 className="h-2 w-2 mr-1" />
                       {t('Live')}
                     </Badge>
@@ -327,16 +327,16 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
         </div>
 
         {/* Wusool Features */}
-        <div className={`mt-6 p-4 rounded-lg bg-gradient-to-r from-${themeColorName}-50 to-${themeColorName === 'green' ? 'emerald' : themeColorName}-50 dark:from-${themeColorName}-950/20 dark:to-${themeColorName === 'green' ? 'emerald' : themeColorName}-950/20 border border-${themeColorName}-200 dark:border-${themeColorName}-800`}>
+        <div className={`mt-6 p-4 rounded-lg bg-gradient-to-r from-${themeColorName}-50 to-${themeColorName === 'green' ? 'emerald' : themeColorName}-50 border border-${themeColorName}-200`}>
           <div className="flex items-start gap-3">
-            <div className={`rounded-full p-2 bg-${themeColorName}-100 text-${themeColorName}-600 dark:bg-${themeColorName}-900 dark:text-${themeColorName}-400`}>
+            <div className={`rounded-full p-2 bg-${themeColorName}-100 text-${themeColorName}-600`}>
               <Store className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <h3 className={`font-semibold text-${themeColorName}-900 dark:text-${themeColorName}-100 mb-1`}>
+              <h3 className={`font-semibold text-${themeColorName}-900 mb-1`}>
                 {t(`${titleText || 'Wusool'} Features`)}
               </h3>
-              <p className={`text-sm text-${themeColorName}-700 dark:text-${themeColorName}-300 mb-3`}>
+              <p className={`text-sm text-${themeColorName}-700 mb-3`}>
                 {t('Complete e-commerce solution with powerful store management tools and comprehensive analytics.')}
               </p>
               <div className="flex flex-wrap gap-2">

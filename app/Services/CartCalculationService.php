@@ -50,29 +50,53 @@ class CartCalculationService
             $coupon = \App\Models\StoreCoupon::where('store_id', $storeId)
                 ->where('code', $couponCode)
                 ->where('status', true)
-                ->where('start_date', '<=', now())
-                ->where('expiry_date', '>=', now())
+                ->where(function ($q) {
+                    $q->whereNull('start_date')->orWhere('start_date', '<=', now());
+                })
+                ->where(function ($q) {
+                    $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now());
+                })
                 ->first();
 
-            if ($coupon && $subtotal >= ($coupon->minimum_spend ?? 0)) {
-                // Check usage limits
+            if ($coupon && $subtotal >= ($coupon->minimum_spend ?? 0)
+                && (!$coupon->maximum_spend || $subtotal <= $coupon->maximum_spend)) {
                 if ($coupon->use_limit_per_coupon && $coupon->used_count >= $coupon->use_limit_per_coupon) {
-                    $coupon = null; // Coupon usage limit exceeded
+                    $coupon = null;
                 } else {
-                    if ($coupon->type === 'percentage') {
-                        $discount = ($subtotal * $coupon->discount_amount) / 100;
-                    } else {
-                        $discount = $coupon->discount_amount;
+                    $userLimitOk = true;
+                    if ($coupon->use_limit_per_user) {
+                        $customerEmail = null;
+                        if (auth()->guard('customer')->check()) {
+                            $customer = auth()->guard('customer')->user();
+                            $customerEmail = $customer->email;
+                        } else {
+                            $customerEmail = session('checkout_customer_email');
+                        }
+                        if ($customerEmail) {
+                            $userUsage = \App\Models\Order::where('store_id', $storeId)
+                                ->where('coupon_code', $coupon->code)
+                                ->where('customer_email', $customerEmail)
+                                ->count();
+                            if ($userUsage >= $coupon->use_limit_per_user) {
+                                $userLimitOk = false;
+                                $coupon = null;
+                            }
+                        } else {
+                            $userLimitOk = false;
+                            $coupon = null;
+                        }
                     }
-                    
-                    // Apply maximum discount limit if set
-                    if ($coupon->maximum_spend && $discount > $coupon->maximum_spend) {
-                        $discount = $coupon->maximum_spend;
-                    }
-                    
-                    // Ensure discount doesn't exceed subtotal
-                    if ($discount > $subtotal) {
-                        $discount = $subtotal;
+
+                    if ($userLimitOk && $coupon) {
+                        if ($coupon->type === 'percentage') {
+                            $discount = ($subtotal * $coupon->discount_amount) / 100;
+                        } else {
+                            $discount = $coupon->discount_amount;
+                        }
+
+                        if ($discount > $subtotal) {
+                            $discount = $subtotal;
+                        }
                     }
                 }
             }

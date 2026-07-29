@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 
-import { Save, CreditCard, AlertCircle, Banknote, IndianRupee, Wallet, Coins, Search, X } from 'lucide-react';
+import { Save, CreditCard, AlertCircle, Banknote, IndianRupee, Wallet, Coins, Search, X, Copy, Undo2 } from 'lucide-react';
 import { route } from 'ziggy-js';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PAYMENT_METHOD_HELP_URLS } from '@/utils/payment';
 import { SettingsSection } from '@/components/settings-section';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
 import { useForm, usePage } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { PaymentMethodCard } from '@/components/payment/payment-method-card';
 import { PaymentInputField } from '@/components/payment/payment-input-field';
 import { PaymentModeSelector } from '@/components/payment/payment-mode-selector';
@@ -159,8 +159,43 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
   // Dynamic variables from backend
   const orderVariables = messagingVariables?.orderVariables || [];
   const itemVariables = messagingVariables?.itemVariables || [];
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+  const itemRef = useRef<HTMLTextAreaElement>(null);
 
+  const DEFAULT_MSG_TEMPLATE = "طلب جديد رقم {order_no} من متجر {store_name}\nالعميل: {customer_name}\nالمجموع الكلي: {final_total}\n\nالمنتجات:\n{item_variable}";
+  const DEFAULT_ITEM_TEMPLATE = "• {اسم_المنتج} ({اسم_المتغير}) × {كمية} = {مجموع_السلعة}";
 
+  const EMOTICONS = ['🛒', '✅', '📦', '📞', '🔔', '⭐', '💰', '🚚'];
+
+  const toPlaceholder = (v: string) => v.startsWith('{') ? v : `{${v}}`;
+
+  const insertAtCursor = (ref: React.RefObject<HTMLTextAreaElement>, text: string, setter: (val: string) => void) => {
+    const ta = ref.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const newVal = ta.value.substring(0, start) + text + ta.value.substring(end);
+    setter(newVal.replace(/\n/g, '\\n'));
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(start + text.length, start + text.length);
+    });
+  };
+
+  const restoreDefaults = () => {
+    setData('messaging_message_template', DEFAULT_MSG_TEMPLATE.replace(/\n/g, '\\n'));
+    setData('messaging_item_template', DEFAULT_ITEM_TEMPLATE.replace(/\n/g, '\\n'));
+    toast.success('تمت استعادة القالب الافتراضي');
+  };
+
+  const copyToClipboard = async (label: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`تم نسخ ${label}`);
+    } catch {
+      toast.error('فشل النسخ');
+    }
+  };
 
   // Form state
   const { data, setData, post, processing, errors } = useForm<PaymentSettings>({
@@ -286,50 +321,76 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
     payfast_mode: settings.payfast_mode || 'sandbox',
   });
 
+  const previewText = useMemo(() => {
+    const msgTmpl = (data.messaging_message_template || '').replace(/\\n/g, '\n');
+    const itemTmpl = (data.messaging_item_template || DEFAULT_ITEM_TEMPLATE).replace(/\\n/g, '\n');
+    const samples = [
+      { a: 'قميص', b: 'أبيض - كبير', c: '2', d: '100.00 ر.س' },
+      { a: 'بنطلون', b: 'أسود - وسيط', c: '1', d: '50.00 ر.س' },
+    ];
+    const items = samples.map(s =>
+      itemTmpl
+        .replace(/\{product_name\}/g, s.a).replace(/\{اسم_المنتج\}/g, s.a)
+        .replace(/\{variant_name\}/g, s.b).replace(/\{اسم_المتغير\}/g, s.b)
+        .replace(/\{quantity\}/g, s.c).replace(/\{كمية\}/g, s.c)
+        .replace(/\{item_total\}/g, s.d).replace(/\{مجموع_السلعة\}/g, s.d)
+    ).join('\n');
+    return msgTmpl
+      .replace(/\{order_no\}/g, '1234')
+      .replace(/\{store_name\}/g, 'متجر الأزياء')
+      .replace(/\{customer_name\}/g, 'أحمد محمد')
+      .replace(/\{final_total\}/g, '150.00 ر.س')
+      .replace(/\{item_variable\}/g, items);
+  }, [data.messaging_message_template, data.messaging_item_template]);
 
+  // Structured bank fields (local state, combined into bank_detail on submit)
+  const parseBankDetail = (detail: string) => {
+    const result = { bankName: '', accountHolder: '', accountNumber: '', iban: '' };
+    if (!detail) return result;
+    const lines = detail.split('\n');
+    for (const line of lines) {
+      const colonIndex = line.indexOf(':');
+      if (colonIndex === -1) continue;
+      const key = line.substring(0, colonIndex).trim();
+      const value = line.substring(colonIndex + 1).trim();
+      if (key === 'اسم البنك' || key === 'Bank') result.bankName = value;
+      else if (key === 'اسم صاحب الحساب') result.accountHolder = value;
+      else if (key === 'رقم الحساب' || key === 'Account Number') result.accountNumber = value;
+      else if (key === 'رقم الآيبان (IBAN)' || key === 'Routing Number' || key === 'IBAN') result.iban = value;
+    }
+    return result;
+  };
+
+  const [bankName, setBankName] = useState('');
+  const [accountHolder, setAccountHolder] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [iban, setIban] = useState('');
+
+  useEffect(() => {
+    const parsed = parseBankDetail(data.bank_detail);
+    setBankName(parsed.bankName);
+    setAccountHolder(parsed.accountHolder);
+    setAccountNumber(parsed.accountNumber);
+    setIban(parsed.iban);
+  }, []);
 
   // Payment methods data for search
   const paymentMethods = useMemo(() => {
-    const methods = [
-      { key: 'bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK]) },
-      { key: 'stripe', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.STRIPE]) },
-      { key: 'paypal', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYPAL]) },
-      { key: 'razorpay', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.RAZORPAY]) },
-      { key: 'mercadopago', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.MERCADOPAGO]) },
-      { key: 'paystack', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYSTACK]) },
-      { key: 'flutterwave', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.FLUTTERWAVE]) },
-      { key: 'paytabs', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYTABS]) },
-      { key: 'skrill', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.SKRILL]) },
-      { key: 'coingate', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.COINGATE]) },
-      { key: 'payfast', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYFAST]) },
-      { key: 'tap', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.TAP]) },
-      { key: 'xendit', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.XENDIT]) },
-      { key: 'paytr', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYTR]) },
-      { key: 'mollie', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.MOLLIE]) },
-      { key: 'toyyibpay', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.TOYYIBPAY]) },
-      { key: 'benefit', name: t('Benefit') },
-      { key: 'iyzipay', name: t('Iyzipay') },
-      { key: 'aamarpay', name: t('Aamarpay') },
-      { key: 'midtrans', name: t('Midtrans') },
-      { key: 'yookassa', name: t('YooKassa') },
-      { key: 'nepalste', name: t('Nepalste') },
-      { key: 'paiement', name: t('Paiement Pro') },
-      { key: 'cinetpay', name: t('CinetPay') },
-      { key: 'payhere', name: t('PayHere') },
-      { key: 'fedapay', name: t('FedaPay') },
-      { key: 'authorizenet', name: t('AuthorizeNet') },
-      { key: 'khalti', name: t('Khalti') },
-      { key: 'easebuzz', name: t('Easebuzz') },
-      { key: 'ozow', name: t('Ozow') },
-      { key: 'cashfree', name: t('Cashfree') },
-    ];
+    const methods: { key: string; name: string }[] = [];
 
-    // Add COD, WhatsApp and Telegram for company users and sub-users
+    // Add COD for company users and sub-users
     if (auth?.user?.type === 'company' || (auth?.user?.type !== 'superadmin' && auth?.user?.created_by)) {
-      methods.unshift({ key: 'cod', name: t('Cash on Delivery (COD)') });
-      methods.push({ key: 'whatsapp', name: t('WhatsApp') });
-      methods.push({ key: 'telegram', name: t('Telegram') });
+      methods.push({ key: 'cod', name: t('Cash on Delivery (COD)') });
     }
+
+    // Bank Transfer
+    methods.push({ key: 'bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK]) });
+
+    // Stripe
+    methods.push({ key: 'stripe', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.STRIPE]) });
+
+    // PayPal
+    methods.push({ key: 'paypal', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYPAL]) });
 
     return methods;
   }, [t, auth]);
@@ -364,6 +425,8 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const combined = `اسم البنك: ${bankName}\nاسم صاحب الحساب: ${accountHolder}\nرقم الحساب: ${accountNumber}\nرقم الآيبان (IBAN): ${iban}`;
+    setData('bank_detail', combined);
     post(route('payment.settings'), {
       onError: (errs: any) => {
         toast.error(t('Failed to update payment settings'));
@@ -377,34 +440,34 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
       description={t("Configure payment gateway for subscription plans")}
       action={
         <Button type="submit" form="payment-settings-form" size="sm" disabled={processing}>
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-4 w-4 ml-2" />
           {processing ? t("Saving...") : t("Save Changes")}
         </Button>
       }
     >
-      <form id="payment-settings-form" onSubmit={handleSubmit}>
+      <form id="payment-settings-form" onSubmit={handleSubmit} dir="rtl">
         <div className="space-y-6">
           {/* Payment Methods */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("Payment Methods")}</CardTitle>
-              <CardDescription>
+          <Card dir="rtl">
+            <CardHeader dir="rtl">
+              <CardTitle className="text-right w-full">{t("Payment Methods")}</CardTitle>
+              <CardDescription className="text-right w-full">
                 {t("Configure available payment methods for subscription plans")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Search and Filter Controls */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
+                <div className="relative flex-1" dir="rtl">
                   {/* Fake password field to absorb autofill */}
                   <input type="password" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0 }} tabIndex={-1} />
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     type="text"
                     placeholder={t("Search payment methods...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-10"
+                    className="pr-10 pl-10 text-right"
                     autoComplete="new-password"
                   />
                   {searchTerm && (
@@ -412,15 +475,15 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
                       onClick={() => setSearchTerm('')}
                     >
                       <X className="h-3 w-3" />
                     </Button>
                   )}
                 </div>
-                <Select value={statusFilter} onValueChange={(value: 'all' | 'enabled' | 'disabled') => setStatusFilter(value)}>
-                  <SelectTrigger className="w-[140px]">
+                <Select value={statusFilter} onValueChange={(value: 'all' | 'enabled' | 'disabled') => setStatusFilter(value)} dir="rtl">
+                  <SelectTrigger className="w-[140px] text-right">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -442,7 +505,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="ml-1 h-3 w-3 p-0 hover:bg-transparent"
+                        className="mr-1 h-3 w-3 p-0 hover:bg-transparent"
                         onClick={() => setSearchTerm('')}
                       >
                         <X className="h-2 w-2" />
@@ -456,7 +519,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="ml-1 h-3 w-3 p-0 hover:bg-transparent"
+                        className="mr-1 h-3 w-3 p-0 hover:bg-transparent"
                         onClick={() => setStatusFilter('all')}
                       >
                         <X className="h-2 w-2" />
@@ -505,7 +568,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
               {shouldShowMethod('cod') && (
                 <PaymentMethodCard
                   title={t('Cash on Delivery (COD)')}
-                  icon={<Banknote className="h-5 w-5" />}
+                  methodKey="cod"
                   enabled={data.is_cod_enabled}
                   onToggle={(checked) => setData('is_cod_enabled', checked)}
                 >
@@ -527,21 +590,55 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
               {shouldShowMethod('bank') && (
                 <PaymentMethodCard
                   title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK])}
-                  icon={<Banknote className="h-5 w-5" />}
+                  methodKey="bank"
                   enabled={data.is_bank_enabled}
                   onToggle={(checked) => setData('is_bank_enabled', checked)}
                 >
-                  <div className="space-y-2">
-                    <Label htmlFor="bank_detail">{t("Bank Details")}</Label>
-                    <Textarea
-                      id="bank_detail"
-                      value={data.bank_detail}
-                      onChange={(e) => setData('bank_detail', e.target.value)}
-                      placeholder={t("Bank: Your Bank Name\nAccount Number: 0000 0000\nRouting Number: 000000000")}
-                      rows={6}
-                    />
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="bank_name">{t("اسم البنك")}</Label>
+                        <Input
+                          id="bank_name"
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          placeholder={t("[اسم البنك الخاص بك]")}
+                          dir="rtl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="account_holder">{t("اسم صاحب الحساب")}</Label>
+                        <Input
+                          id="account_holder"
+                          value={accountHolder}
+                          onChange={(e) => setAccountHolder(e.target.value)}
+                          placeholder={t("[اسم صاحب الحساب]")}
+                          dir="rtl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="account_number">{t("رقم الحساب")}</Label>
+                        <Input
+                          id="account_number"
+                          value={accountNumber}
+                          onChange={(e) => setAccountNumber(e.target.value)}
+                          placeholder={t("[رقم الحساب]")}
+                          dir="rtl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="iban">{t("رقم الآيبان (IBAN)")}</Label>
+                        <Input
+                          id="iban"
+                          value={iban}
+                          onChange={(e) => setIban(e.target.value)}
+                          placeholder={t("[رقم الآيبان أو السويفت كود]")}
+                          dir="rtl"
+                        />
+                      </div>
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      {t("Enter your bank details that customers will use for manual transfers")}
+                      {t("ملاحظة: يرجى تحويل قيمة الطلب إلى الحساب البنكي أعلاه وإرفاق إيصال التحويل لتأكيد الطلب يدويًا.")}
                     </p>
                     {errors.bank_detail && (
                       <p className="text-sm text-destructive">{errors.bank_detail}</p>
@@ -554,7 +651,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
               {shouldShowMethod('stripe') && (
                 <PaymentMethodCard
                   title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.STRIPE])}
-                  icon={<CreditCard className="h-5 w-5" />}
+                  methodKey="stripe"
                   enabled={data.is_stripe_enabled}
                   onToggle={(checked) => setData('is_stripe_enabled', checked)}
                   helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.STRIPE]}
@@ -586,7 +683,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
               {shouldShowMethod('paypal') && (
                 <PaymentMethodCard
                   title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYPAL])}
-                  icon={<CreditCard className="h-5 w-5" />}
+                  methodKey="paypal"
                   enabled={data.is_paypal_enabled}
                   onToggle={(checked) => setData('is_paypal_enabled', checked)}
                   helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.PAYPAL]}
@@ -1746,66 +1843,140 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
 
               {/* Shared Messaging Templates - For company users and sub-users */}
               {(auth?.user?.type === 'company' || (auth?.user?.type !== 'superadmin' && auth?.user?.created_by)) && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t("Messaging Templates")}</CardTitle>
-                    <CardDescription>
-                      {t("Shared message templates for WhatsApp and Telegram notifications")}
-                    </CardDescription>
+                <Card dir="rtl">
+                  <CardHeader dir="rtl" className="flex flex-col items-end w-full text-right">
+                    <div dir="rtl" className="w-full text-right">
+                      <CardTitle>{"قوالب الرسائل"}</CardTitle>
+                      <CardDescription>
+                        {"قوالب رسائل مشتركة لإشعارات الواتساب والتليجرام"}
+                      </CardDescription>
+                    </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 text-right" dir="rtl">
+                    {/* Message Template */}
                     <div className="space-y-2">
-                      <Label htmlFor="messaging_message_template">{t("Message Template")}</Label>
+                      <Label htmlFor="messaging_message_template" className="block text-right">{t("Message Template")}</Label>
+                      <div className="flex flex-wrap gap-1">
+                        {EMOTICONS.map(emoji => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            className="px-2 py-1 text-sm border rounded hover:bg-gray-100 transition cursor-pointer"
+                            onClick={() => insertAtCursor(messageRef, emoji, (v) => setData('messaging_message_template', v))}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
                       <Textarea
                         id="messaging_message_template"
+                        ref={messageRef}
+                        dir="rtl"
+                        className="text-right"
                         value={(data.messaging_message_template || '').replace(/\\n/g, '\n')}
                         onChange={(e) => setData('messaging_message_template', e.target.value.replace(/\n/g, '\\n'))}
-                        placeholder={t("🛍️ Order {order_no} from {store_name}\nCustomer: {customer_name}\nTotal: {final_total}\n\nItems:\n{item_variable}")}
+                        placeholder={t("طلب جديد رقم {order_no} من متجر {store_name}\nالعميل: {customer_name}\nالمجموع الكلي: {final_total}\n\nالمنتجات:\n{item_variable}")}
                         rows={6}
                       />
-                      <div className="text-xs text-muted-foreground">
-                        <p className="font-medium mb-1">{t("Order Variables:")} ({orderVariables?.length || 0})</p>
-                        <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-xs">
+                      <div className="text-xs text-muted-foreground text-right">
+                        <p className="font-medium mb-1 text-right">{"متغيرات الطلب:"} ({orderVariables?.length || 0})</p>
+                        <div className="flex flex-wrap gap-1">
                           {orderVariables?.length > 0 ? (
                             orderVariables.map((variable) => (
-                              <span key={variable}>{variable}</span>
+                              <button
+                                key={variable}
+                                type="button"
+                                className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200 hover:bg-blue-100 transition text-xs cursor-pointer"
+                                onClick={() => insertAtCursor(messageRef, toPlaceholder(variable), (v) => setData('messaging_message_template', v))}
+                              >
+                                {toPlaceholder(variable)}
+                              </button>
                             ))
                           ) : (
-                            <span className="col-span-3 text-muted-foreground">No variables available</span>
+                            <span className="text-muted-foreground">{"لا توجد متغيرات متاحة"}</span>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {t("Note: Telegram supports HTML formatting (<b>bold</b>, <i>italic</i>), WhatsApp uses plain text")}
+                        <p className="text-xs text-muted-foreground mt-2 text-right">
+                          {"ملاحظة: يدعم التليجرام تنسيق HTML، بينما يستخدم الواتساب نصاً عادياً"}
                         </p>
                       </div>
                       {errors.messaging_message_template && (
-                        <p className="text-sm text-destructive">{errors.messaging_message_template}</p>
+                        <p className="text-sm text-destructive text-right">{errors.messaging_message_template}</p>
                       )}
                     </div>
+
+                    {/* Item Variable Format */}
                     <div className="space-y-2">
-                      <Label htmlFor="messaging_item_template">{t("Item Variable Format")}</Label>
+                      <Label htmlFor="messaging_item_template" className="block text-right">{t("Item Variable Format")}</Label>
                       <Textarea
                         id="messaging_item_template"
+                        ref={itemRef}
+                        dir="rtl"
+                        className="text-right"
                         value={(data.messaging_item_template || '').replace(/\\n/g, '\n')}
                         onChange={(e) => setData('messaging_item_template', e.target.value.replace(/\n/g, '\\n'))}
-                        placeholder={t("• {product_name} ({variant_name}) x{quantity} = {item_total}")}
+                        placeholder={t("• {اسم_المنتج} ({اسم_المتغير}) × {كمية} = {مجموع_السلعة}")}
                         rows={3}
                       />
-                      <div className="text-xs text-muted-foreground">
-                        <p className="font-medium mb-1">{t("Item Variables:")} ({itemVariables?.length || 0})</p>
-                        <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-xs">
+                      <div className="text-xs text-muted-foreground text-right">
+                        <p className="font-medium mb-1 text-right">{"متغيرات المنتج:"} ({itemVariables?.length || 0})</p>
+                        <div className="flex flex-wrap gap-1">
                           {itemVariables?.length > 0 ? (
                             itemVariables.map((variable) => (
-                              <span key={variable}>{variable}</span>
+                              <button
+                                key={variable}
+                                type="button"
+                                className="px-2 py-0.5 bg-green-50 text-green-700 rounded-full border border-green-200 hover:bg-green-100 transition text-xs cursor-pointer"
+                                onClick={() => insertAtCursor(itemRef, toPlaceholder(variable), (v) => setData('messaging_item_template', v))}
+                              >
+                                {toPlaceholder(variable)}
+                              </button>
                             ))
                           ) : (
-                            <span className="col-span-3 text-muted-foreground">No variables available</span>
+                            <span className="text-muted-foreground">{"لا توجد متغيرات متاحة"}</span>
                           )}
                         </div>
                       </div>
                       {errors.messaging_item_template && (
-                        <p className="text-sm text-destructive">{errors.messaging_item_template}</p>
+                        <p className="text-sm text-destructive text-right">{errors.messaging_item_template}</p>
                       )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex flex-wrap gap-2 justify-start">
+                      <Button type="button" variant="outline" size="sm" onClick={restoreDefaults}>
+                        <Undo2 className="h-4 w-4 ml-1" />
+                        {"استعادة القالب الافتراضي"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard('قالب الرسالة', (data.messaging_message_template || '').replace(/\\n/g, '\n'))}
+                      >
+                        <Copy className="h-4 w-4 ml-1" />
+                        {"نسخ قالب الرسالة"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard('قالب المنتج', (data.messaging_item_template || '').replace(/\\n/g, '\n'))}
+                      >
+                        <Copy className="h-4 w-4 ml-1" />
+                        {"نسخ قالب المنتج"}
+                      </Button>
+                    </div>
+
+                    {/* Live Preview */}
+                    <div className="space-y-2">
+                      <p className="font-medium text-right">{"معاينة مباشرة:"}</p>
+                      <div
+                        dir="rtl"
+                        className="text-right p-3 bg-gray-50 border rounded-md text-sm whitespace-pre-line min-h-[60px]"
+                      >
+                        {previewText || "..."}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -28,7 +28,7 @@ class SendOrderStatusChangedEmail
             '{order_url}' => route('store.order-detail', ['storeSlug' => $store->slug, 'orderNumber' => $order->order_number]),
             '{store_url}' => route('store.home', ['storeSlug' => $store->slug]),
             '{app_name}' => config('app.name', 'Wusool'),
-            '{app_url}' => config('app.url')
+            '{app_url}' => getSchemeAwareUrl()
         ];
 
         $this->emailTemplateService->sendTemplateEmailWithLanguage(

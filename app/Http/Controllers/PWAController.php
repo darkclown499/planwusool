@@ -136,19 +136,15 @@ self.addEventListener('message', function(event) {
         $iconUrl = getPWAIconUrl($store);
         $path = '';
 
-        // Extract path from URL and try to find physical file
         $urlPath = parse_url($iconUrl, PHP_URL_PATH);
         if ($urlPath) {
-            // Case 1: Storage directory
             if (str_contains($urlPath, '/storage/')) {
                 $relativePath = explode('/storage/', $urlPath)[1];
                 $path = storage_path('app/public/' . $relativePath);
-            } 
-            
-            // Case 2: Direct public path (handle subfolder installations)
+            }
+
             if (!$path || !file_exists($path)) {
                 $segments = explode('/', ltrim($urlPath, '/'));
-                // Common markers for image locations in this project
                 foreach (['uploads', 'media', 'images', 'favicon', 'logo'] as $marker) {
                     $index = array_search($marker, $segments);
                     if ($index !== false) {
@@ -161,13 +157,50 @@ self.addEventListener('message', function(event) {
                     }
                 }
             }
+
+            if (!$path || !file_exists($path)) {
+                $relativeFromUrl = ltrim($urlPath, '/');
+                $publicPath = public_path($relativeFromUrl);
+                if (file_exists($publicPath)) {
+                    $path = $publicPath;
+                }
+            }
         }
 
-        // Final Fallback for missing/inaccessible images
         if (!$path || !file_exists($path) || is_dir($path)) {
-            $path = public_path('images/logos/favicon.png');
-            if (!file_exists($path)) {
-                return response(base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='), 200, ['Content-Type' => 'image/png']);
+            $tempPath = null;
+            try {
+                \App\Services\DynamicStorageService::configureDynamicDisks();
+                $disk = \App\Services\StorageConfigService::getActiveDisk();
+
+                if ($urlPath && str_contains($urlPath, '/storage/')) {
+                    $relativePath = explode('/storage/', $urlPath)[1];
+
+                    if ($disk !== 'public' && $disk !== 'local') {
+                        if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($relativePath)) {
+                            $tempPath = tempnam(sys_get_temp_dir(), 'pwa_icon_');
+                            $contents = \Illuminate\Support\Facades\Storage::disk($disk)->get($relativePath);
+                            file_put_contents($tempPath, $contents);
+                            $path = $tempPath;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+            }
+
+            if (!$path || !file_exists($path)) {
+                $path = public_path('images/logos/favicon.png');
+                if (!file_exists($path)) {
+                    $faviconMediaPath = storage_path('app/public/media/favicon.png');
+                    if (file_exists($faviconMediaPath)) {
+                        $path = $faviconMediaPath;
+                    } else {
+                        if (isset($tempPath) && $tempPath && file_exists($tempPath)) {
+                            @unlink($tempPath);
+                        }
+                        return response(base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='), 200, ['Content-Type' => 'image/png']);
+                    }
+                }
             }
         }
 
@@ -178,7 +211,6 @@ self.addEventListener('message', function(event) {
             $imageInfo = getimagesize($path);
             if (!$imageInfo) throw new \Exception('Invalid image');
 
-            // Resource management
             switch ($imageInfo[2]) {
                 case IMAGETYPE_JPEG: $sourceImg = @imagecreatefromjpeg($path); break;
                 case IMAGETYPE_PNG: $sourceImg = @imagecreatefrompng($path); break;
@@ -204,12 +236,19 @@ self.addEventListener('message', function(event) {
             imagedestroy($sourceImg);
             imagedestroy($destImg);
 
+            if (isset($tempPath) && $tempPath && file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
+
             return response($imageData, 200, [
                 'Content-Type' => 'image/png',
                 'Cache-Control' => 'public, max-age=86400',
             ]);
 
         } catch (\Exception $e) {
+            if (isset($tempPath) && $tempPath && file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
             return response()->file($path, ['Content-Type' => 'image/png']);
         }
     }

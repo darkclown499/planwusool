@@ -53,6 +53,12 @@ return [
         'redirect' => env('APP_URL') . '/auth/callback/apple',
     ],
 
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('APP_URL') . '/auth/callback/github',
+    ],
+
     'plankton' => [
         // Plankton is a custom OAuth2 provider; configure these in .env
         'authorize_url' => env('PLANKTON_AUTHORIZE_URL'),

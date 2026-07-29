@@ -17,6 +17,12 @@ class ShippingController extends Controller
         $user = Auth::user();
         $currentStoreId = $user->current_store;
         
+        // Check plan feature access for shipping
+        $shippingEnabled = true;
+        if ($user->type === 'company' && $user->plan) {
+            $shippingEnabled = $user->plan->enable_shipping_method === 'on';
+        }
+        
         $shippings = Shipping::where('store_id', $currentStoreId)
             ->orderBy('sort_order')
             ->get();
@@ -29,6 +35,7 @@ class ShippingController extends Controller
 
         return Inertia::render('shipping/index', [
             'shippings' => $shippings,
+            'shippingEnabled' => $shippingEnabled,
             'stats' => [
                 'totalShippings' => $totalShippings,
                 'activeShippings' => $activeShippings,

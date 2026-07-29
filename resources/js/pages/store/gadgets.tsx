@@ -1,12 +1,12 @@
 import React from 'react';
-import { Head } from '@inertiajs/react';
 import { GadgetsStore } from '../../themes/gadgets-store/GadgetsStore';
 import { BaseThemeProps } from '../../types/theme';
+import StoreHead from '@/components/StoreHead';
 
 const Gadgets: React.FC<BaseThemeProps> = (props) => {
   return (
     <>
-      <Head title="Gadgets Store" />
+      <StoreHead store={props.store} defaultTitle="Wusool - Gadgets Store" />
       <GadgetsStore {...props} />
     </>
   );

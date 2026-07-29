@@ -95,7 +95,7 @@ export function StoreSwitcher({
       </PopoverTrigger>
       <PopoverContent className="w-[250px] p-2 shadow-lg border-gray-200" align="end">
         {/* Search input */}
-        <div className="flex items-center border-b border-gray-200 dark:border-gray-700 pb-2 mb-2">
+        <div className="flex items-center border-b border-gray-200 pb-2 mb-2">
           <Store className="mr-2 h-4 w-4 opacity-50" />
           <input
             type="text"
@@ -120,7 +120,7 @@ export function StoreSwitcher({
                   key={store.id}
                   type="button"
                   onClick={() => onStoreSelect(store)}
-                  className="flex w-full items-center text-sm cursor-pointer rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-2 my-1"
+                  className="flex w-full items-center text-sm cursor-pointer rounded-md hover:bg-gray-100 px-2 py-2 my-1"
                 >
                   <Store className="mr-2 h-4 w-4" />
                   <span className="flex-grow text-left">{store.name}</span>
@@ -135,10 +135,10 @@ export function StoreSwitcher({
         
         {/* Create new store link - Only show if user has create-stores permission */}
         {hasCreateStoresPermission && (
-          <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
+          <div className="border-t border-gray-200 mt-2 pt-2">
             <Link 
               href={route('stores.create')} 
-              className="flex w-full items-center px-2 py-2 text-sm cursor-pointer rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-blue-600 dark:text-blue-400"
+              className="flex w-full items-center px-2 py-2 text-sm cursor-pointer rounded-md hover:bg-gray-100 text-blue-600"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               {t('Create New Store')}

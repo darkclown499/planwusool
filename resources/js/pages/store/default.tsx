@@ -1,7 +1,6 @@
 import React from 'react';
-import { Head } from '@inertiajs/react';
 import PWAProvider from '@/components/pwa/PWAProvider';
-// import { StoreLayout } from '@/layouts/store-layout';
+import StoreHead from '@/components/StoreHead';
 
 interface Props {
     store: any;
@@ -13,8 +12,8 @@ interface Props {
 export default function DefaultStore({ store, categories, products, settings }: Props) {
     return (
         <PWAProvider store={store}>
-            <Head title={store.name} />
-            
+            <StoreHead store={store} />
+
             <div className="min-h-screen bg-gray-50">
                 <div className="container mx-auto px-4 py-8">
                     <div className="text-center">
@@ -24,7 +23,7 @@ export default function DefaultStore({ store, categories, products, settings }: 
                         <p className="text-lg text-gray-600 mb-8">
                             {store.description}
                         </p>
-                        
+
                         {products && products.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {products.slice(0, 8).map((product: any) => (

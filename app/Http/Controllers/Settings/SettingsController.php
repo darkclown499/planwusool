@@ -60,6 +60,21 @@ class SettingsController extends Controller
         $webhooks = Webhook::where('user_id', $settingsUserId)->get();
         $templates = Notification::all();
         
+        // Get user's plan features for frontend feature gating
+        $planFeatures = null;
+        if ($user->type === 'company' && $user->plan) {
+            $planFeatures = [
+                'enable_chatgpt'        => $user->plan->enable_chatgpt === 'on',
+                'enable_mobile_app'     => $user->plan->enable_mobile_app === 'on',
+                'enable_shipping_method'=> $user->plan->enable_shipping_method === 'on',
+                'enable_custdomain'     => $user->plan->enable_custdomain === 'on',
+                'enable_custsubdomain'  => $user->plan->enable_custsubdomain === 'on',
+                'pwa_business'          => $user->plan->pwa_business === 'on',
+                'enable_branding'       => $user->plan->enable_branding === 'on',
+                'enable_accounting_integration' => $user->plan->enable_accounting_integration === 'on',
+            ];
+        }
+        
         // Get messaging variables
         $orderVars = isset($paymentSettings['messaging_order_variables']) ? json_decode($paymentSettings['messaging_order_variables'], true) : [];
         $itemVars = isset($paymentSettings['messaging_item_variables']) ? json_decode($paymentSettings['messaging_item_variables'], true) : [];
@@ -82,6 +97,7 @@ class SettingsController extends Controller
             'webhooks' => $webhooks,
             'availableModules' => Webhook::modules(),
             'templates' => $templates,
+            'planFeatures' => $planFeatures,
         ]);
     }
 }

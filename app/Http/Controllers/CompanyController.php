@@ -16,7 +16,8 @@ class CompanyController extends Controller
     {
         $query = User::query()
             ->where('type', 'company')
-            ->with('plan');
+            ->with('plan')
+            ->withCount('stores');
             
         // Apply search filter
         if ($request->has('search') && !empty($request->search)) {
@@ -29,6 +30,11 @@ class CompanyController extends Controller
         // Apply status filter
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
+        }
+
+        // Apply plan filter
+        if ($request->has('plan_id') && !empty($request->plan_id)) {
+            $query->where('plan_id', $request->plan_id);
         }
         
         // Apply date filters
@@ -65,6 +71,19 @@ class CompanyController extends Controller
         
         // Transform data for frontend
         $companies->getCollection()->transform(function ($company) {
+            // Determine subscription status
+            if ($company->plan_is_active && $company->plan_expire_date === null) {
+                $subscription_status = 'active';
+            } elseif ($company->plan_expire_date && $company->plan_expire_date->isFuture()) {
+                $subscription_status = 'active';
+            } elseif ($company->is_trial && $company->trial_expire_date && $company->trial_expire_date->isFuture()) {
+                $subscription_status = 'trial';
+            } elseif ($company->plan_expire_date && $company->plan_expire_date->isPast()) {
+                $subscription_status = 'expired';
+            } else {
+                $subscription_status = 'pending';
+            }
+
             return [
                 'id' => $company->id,
                 'name' => $company->name,
@@ -73,8 +92,11 @@ class CompanyController extends Controller
                 'avatar' => $company->avatar,
                 'created_at' => $company->created_at,
                 'plan_name' => $company->plan ? $company->plan->name : __('No Plan'),
+                'plan_id' => $company->plan_id,
                 'plan_expiry_date' => $company->plan_expire_date,
                 'plan_duration' => $company->plan_duration ?? null,
+                'stores_count' => $company->stores_count ?? 0,
+                'subscription_status' => $subscription_status,
             ];
         });
         
@@ -84,7 +106,7 @@ class CompanyController extends Controller
         return Inertia::render('companies/index', [
             'companies' => $companies,
             'plans' => $plans,
-            'filters' => $request->only(['search', 'status', 'start_date', 'end_date', 'sort_field', 'sort_direction', 'per_page'])
+            'filters' => $request->only(['search', 'status', 'start_date', 'end_date', 'sort_field', 'sort_direction', 'per_page', 'plan_id'])
         ]);
     }
     

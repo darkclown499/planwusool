@@ -84,7 +84,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
               <div className="space-y-4">
                 {stats.topCompanies?.slice(0, 5).map((company: any, index: number) => (
                   <div key={company.id} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-3">
                       <Badge variant="outline" className="w-6 h-6 rounded-full p-0 flex items-center justify-center">
                         {index + 1}
                       </Badge>
@@ -93,9 +93,9 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
                         <p className="text-sm text-muted-foreground">{company.email}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-medium">{company.referral_count} referrals</p>
-                      <p className="text-sm text-muted-foreground">{company.formatted_total_earned || '0'}</p>
+                    <div className="text-end">
+                      <p className="font-medium">{company.referral_count} {t('referrals')}</p>
+                      <p className="text-sm text-muted-foreground" dir="ltr">{company.formatted_total_earned || '0'}</p>
                     </div>
                   </div>
                 ))}
@@ -181,11 +181,12 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
             <CardTitle>{t('Your Referral Link')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <Input
                 value={referralLink || ''}
                 readOnly
-                className="flex-1"
+                className="flex-1 font-mono text-sm"
+                dir="ltr"
               />
               <Button
                 onClick={copyReferralLink}
@@ -215,7 +216,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
               <div className="space-y-3">
                 {recentReferredUsers.map((user: any) => (
                   <div key={user.id} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                         <span className="text-xs font-medium text-primary">
                           {user.name.charAt(0).toUpperCase()}
@@ -226,7 +227,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
                         <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       {user.plan ? (
                         <Badge variant="default" className="text-xs">
                           {user.plan.name}

@@ -351,8 +351,8 @@ export function CrudFormModal({
             disabled={false}
           >
             <SelectTrigger aria-invalid={!!errors[field.name]} className={errors[field.name] ? 'border-destructive text-destructive' : ''}>
-              <SelectValue placeholder={field.placeholder || `Select ${field.label}`}>
-                {displayText || (field.placeholder || `Select ${field.label}`)}
+              <SelectValue placeholder={field.placeholder || `${t('Select')} ${field.label}`}>
+                {displayText || (field.placeholder || `${t('Select')} ${field.label}`)}
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="z-[60000]">

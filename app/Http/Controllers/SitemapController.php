@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Store;
+use App\Models\Product;
+use App\Models\Category;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Route;
+
+class SitemapController extends Controller
+{
+    public function index(): Response
+    {
+        $baseUrl = getSchemeAwareUrl();
+        $stores = Store::whereHas('user', fn($q) => $q->where('is_active', 1))
+            ->where('is_active', 1)
+            ->get();
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"' . "\n";
+        $xml .= '        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' . "\n";
+        $xml .= '        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9' . "\n";
+        $xml .= '        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">' . "\n";
+
+        // Home page
+        $xml .= $this->urlEntry($baseUrl, '1.0', 'daily');
+
+        // Plans page
+        $xml .= $this->urlEntry($baseUrl . '/plans', '0.8', 'weekly');
+
+        // Features page
+        $xml .= $this->urlEntry($baseUrl . '/features', '0.7', 'monthly');
+
+        // About page
+        $xml .= $this->urlEntry($baseUrl . '/about', '0.6', 'monthly');
+
+        foreach ($stores as $store) {
+            $storeUrl = $this->getStoreUrl($store);
+
+            // Store home
+            $xml .= $this->urlEntry($storeUrl, '0.9', 'daily');
+
+            // Store products page
+            $xml .= $this->urlEntry($storeUrl . '/products', '0.8', 'daily');
+
+            // Categories
+            $categories = Category::where('store_id', $store->id)->where('is_active', 1)->get();
+            foreach ($categories as $category) {
+                $xml .= $this->urlEntry($storeUrl . '/category/' . $category->slug, '0.7', 'weekly');
+            }
+
+            // Individual products
+            $products = Product::where('store_id', $store->id)
+                ->where('is_active', 1)
+                ->where('is_draft', 0)
+                ->get();
+
+            foreach ($products as $product) {
+                $xml .= $this->urlEntry($storeUrl . '/product/' . $product->slug, '0.8', 'daily');
+            }
+        }
+
+        $xml .= '</urlset>';
+
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    private function urlEntry(string $url, string $priority, string $changefreq): string
+    {
+        return "  <url>\n" .
+               "    <loc>{$url}</loc>\n" .
+               "    <lastmod>" . now()->format('Y-m-d') . "</lastmod>\n" .
+               "    <changefreq>{$changefreq}</changefreq>\n" .
+               "    <priority>{$priority}</priority>\n" .
+               "  </url>\n";
+    }
+
+    private function getStoreUrl(Store $store): string
+    {
+        if ($store->enable_custom_domain && $store->custom_domain) {
+            return 'https://' . $store->custom_domain;
+        }
+        if ($store->enable_custom_subdomain && $store->custom_subdomain) {
+            return 'https://' . $store->custom_subdomain . '.' . getBaseDomain();
+        }
+        return getSchemeAwareUrl() . '/store/' . $store->slug;
+    }
+}

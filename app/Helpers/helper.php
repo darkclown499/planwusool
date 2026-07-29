@@ -895,29 +895,64 @@ if (! function_exists('validatePaymentMethodConfig')) {
 }
 
 if (! function_exists('calculatePlanPricing')) {
-    function calculatePlanPricing($plan, $couponCode = null, $billingCycle = 'monthly')
+    function calculatePlanPricing($plan, $couponCode = null, $billingCycle = 'monthly', $userId = null)
     {
         $originalPrice = $plan->getPriceForCycle($billingCycle);
         $discountAmount = 0;
         $finalPrice = $originalPrice;
         $couponId = null;
-        
+
         if ($couponCode) {
             $coupon = Coupon::where('code', $couponCode)
                 ->where('status', 1)
                 ->first();
-            
+
             if ($coupon) {
-                if ($coupon->type === 'percentage') {
-                    $discountAmount = ($originalPrice * $coupon->discount_amount) / 100;
-                } else {
-                    $discountAmount = min($coupon->discount_amount, $originalPrice);
+                $now = now();
+                $isValid = true;
+
+                if ($coupon->start_date && $now->lt($coupon->start_date)) {
+                    $isValid = false;
                 }
-                $finalPrice = max(0, $originalPrice - $discountAmount);
-                $couponId = $coupon->id;
+
+                if ($isValid && $coupon->expiry_date && $now->gt($coupon->expiry_date)) {
+                    $isValid = false;
+                }
+
+                if ($isValid && $coupon->use_limit_per_coupon && $coupon->used_count >= $coupon->use_limit_per_coupon) {
+                    $isValid = false;
+                }
+
+                if ($isValid && $userId && $coupon->use_limit_per_user) {
+                    $userUsage = PlanOrder::where('coupon_id', $coupon->id)
+                        ->where('user_id', $userId)
+                        ->whereIn('status', ['approved', 'pending'])
+                        ->count();
+                    if ($userUsage >= $coupon->use_limit_per_user) {
+                        $isValid = false;
+                    }
+                }
+
+                if ($isValid && $coupon->minimum_spend && $originalPrice < $coupon->minimum_spend) {
+                    $isValid = false;
+                }
+
+                if ($isValid && $coupon->maximum_spend && $originalPrice > $coupon->maximum_spend) {
+                    $isValid = false;
+                }
+
+                if ($isValid) {
+                    if ($coupon->type === 'percentage') {
+                        $discountAmount = ($originalPrice * $coupon->discount_amount) / 100;
+                    } else {
+                        $discountAmount = min($coupon->discount_amount, $originalPrice);
+                    }
+                    $finalPrice = max(0, $originalPrice - $discountAmount);
+                    $couponId = $coupon->id;
+                }
             }
         }
-        
+
         return [
             'original_price' => $originalPrice,
             'discount_amount' => $discountAmount,
@@ -931,9 +966,10 @@ if (! function_exists('createPlanOrder')) {
     function createPlanOrder($data)
     {
         $plan = Plan::findOrFail($data['plan_id']);
-        $pricing = calculatePlanPricing($plan, $data['coupon_code'] ?? null, $data['billing_cycle'] ?? 'monthly');
+        $userId = $data['user_id'] ?? null;
+        $pricing = calculatePlanPricing($plan, $data['coupon_code'] ?? null, $data['billing_cycle'] ?? 'monthly', $userId);
         
-        return PlanOrder::create([
+        $planOrder = PlanOrder::create([
             'user_id' => $data['user_id'],
             'plan_id' => $plan->id,
             'coupon_id' => $pricing['coupon_id'],
@@ -948,6 +984,12 @@ if (! function_exists('createPlanOrder')) {
             'status' => $data['status'] ?? 'pending',
             'ordered_at' => now(),
         ]);
+
+        if ($pricing['coupon_id'] && ($data['status'] ?? 'pending') === 'approved') {
+            Coupon::where('id', $pricing['coupon_id'])->increment('used_count');
+        }
+
+        return $planOrder;
     }
 }
 
@@ -1010,17 +1052,16 @@ if (! function_exists('defaultSettings')) {
     {
         return [
             // System Settings
-            'defaultLanguage' => 'en',
-            'dateFormat' => 'Y-m-d',
-            'timeFormat' => 'H:i',
+            'defaultLanguage' => 'ar',
+            'dateFormat' => 'm/d/Y',
+            'timeFormat' => 'h:i A',
             'calendarStartDay' => 'sunday',
-            'defaultTimezone' => 'UTC',
+            'defaultTimezone' => 'Asia/Hebron',
             'emailVerification' => false,
             'landingPageEnabled' => true,
             'registrationEnabled' => true,
             
             // Brand Settings
-            'logoDark' => '/images/logos/logo-dark.png',
             'logoLight' => '/images/logos/logo-light.png',
             'favicon' => '/images/logos/favicon.png',
             'titleText' => 'Wusool',
@@ -1030,7 +1071,6 @@ if (! function_exists('defaultSettings')) {
             'sidebarVariant' => 'inset',
             'sidebarStyle' => 'plain',
             'layoutDirection' => 'left',
-            'themeMode' => 'light',
             
             // Storage Settings
             'storage_type' => 'local',
@@ -1051,22 +1091,22 @@ if (! function_exists('defaultSettings')) {
             
             // Currency Settings
             'decimalFormat' => '2',
-            'defaultCurrency' => 'USD',
+            'defaultCurrency' => 'ILS',
             'decimalSeparator' => '.',
             'thousandsSeparator' => ',',
             'floatNumber' => true,
             'currencySymbolSpace' => false,
-            'currencySymbolPosition' => 'before',
+            'currencySymbolPosition' => 'after',
             
             // Cookie Settings
-            'enableLogging' => false,
+            'enableLogging' => true,
             'strictlyNecessaryCookies' => true,
-            'cookieTitle' => 'Cookie Consent',
-            'strictlyCookieTitle' => 'Strictly Necessary Cookies',
-            'cookieDescription' => 'We use cookies to enhance your browsing experience and provide personalized content.',
-            'strictlyCookieDescription' => 'These cookies are essential for the website to function properly.',
-            'contactUsDescription' => 'If you have any questions about our cookie policy, please contact us.',
-            'contactUsUrl' => 'https://example.com/contact',
+            'cookieTitle' => 'موافقة ملفات تعريف الارتباط',
+            'strictlyCookieTitle' => 'ملفات تعريف الارتباط الضرورية',
+            'cookieDescription' => 'نستخدم ملفات تعريف الارتباط لتحسين تجربة التصفح وتوفير محتوى مخصص.',
+            'strictlyCookieDescription' => 'هذه الملفات ضرورية لتشغيل الموقع بشكل صحيح.',
+            'contactUsDescription' => 'إذا كان لديك أي أسئلة حول سياسة ملفات تعريف الارتباط، يرجى التواصل معنا.',
+            'contactUsUrl' => 'https://wusool.ps/contact',
         ];
     }
 }
@@ -1114,9 +1154,9 @@ if (! function_exists('copySettingsFromSuperAdmin')) {
         $settingsToCopy = [
             'defaultLanguage', 'dateFormat', 'timeFormat', 'calendarStartDay', 
             'defaultTimezone',
-            'logoDark', 'logoLight', 'favicon', 'titleText', 'footerText',
+            'logoLight', 'favicon', 'titleText', 'footerText',
             'themeColor', 'customColor', 'sidebarVariant', 'sidebarStyle',
-            'layoutDirection', 'themeMode'
+            'layoutDirection'
         ];
         
         $superAdminSettings = Setting::where('user_id', $superAdmin->id)
@@ -1884,7 +1924,7 @@ if (! function_exists('get_file')) {
 
         try {
             if ($disk === 'public') {
-                $baseUrl = rtrim(config('app.url'), '/');
+                $baseUrl = rtrim(getSchemeAwareUrl(), '/');
                 $path = ltrim($path, '/');
                 return $baseUrl . '/storage/' . $path;
             }
@@ -1892,9 +1932,70 @@ if (! function_exists('get_file')) {
             return \Illuminate\Support\Facades\Storage::disk($disk)->url($path);
         } catch (\Exception $e) {
             // Fallback to local public url
-            $baseUrl = rtrim(config('app.url'), '/');
+            $baseUrl = rtrim(getSchemeAwareUrl(), '/');
             $path = ltrim($path, '/');
             return $baseUrl . '/storage/' . $path;
         }
+    }
+}
+
+if (!function_exists('getSubdomainUrl')) {
+    /**
+     * Get the full subdomain URL for a store
+     *
+     * @param string $slug Store slug/subdomain
+     * @return string e.g. https://mystore.wusool.ps
+     */
+    function getSubdomainUrl($slug)
+    {
+        $baseDomain = parse_url(config('app.url'), PHP_URL_HOST) ?? 'wusool.ps';
+        return "https://{$slug}.{$baseDomain}";
+    }
+}
+
+if (!function_exists('getBaseDomain')) {
+    /**
+     * Get the base domain from APP_URL
+     *
+     * @return string e.g. wusool.ps
+     */
+    function getBaseDomain()
+    {
+        return parse_url(config('app.url'), PHP_URL_HOST) ?? 'wusool.ps';
+    }
+}
+
+if (!function_exists('getSchemeAwareUrl')) {
+    /**
+     * Get the app URL with the correct protocol (HTTP/HTTPS).
+     * Respects X-Forwarded-Proto header from proxies (LocalTunnel, ngrok, etc.)
+     *
+     * @return string e.g. https://eager-places-sniff.loca.lt
+     */
+    function getSchemeAwareUrl()
+    {
+        $request = request();
+        if ($request) {
+            return $request->getSchemeAndHttpHost();
+        }
+        return config('app.url', 'http://localhost');
+    }
+}
+
+if (!function_exists('getSchemeAwareStorageUrl')) {
+    /**
+     * Get the full URL for a storage/public file, using the correct protocol.
+     * Replaces all config('app.url') usages for storage URLs.
+     *
+     * @param string $path Relative path (e.g. 'images/logos/wusool.png')
+     * @return string Full URL with correct scheme
+     */
+    function getSchemeAwareStorageUrl($path = '')
+    {
+        $baseUrl = rtrim(getSchemeAwareUrl(), '/');
+        if ($path) {
+            return $baseUrl . '/' . ltrim($path, '/');
+        }
+        return $baseUrl;
     }
 }

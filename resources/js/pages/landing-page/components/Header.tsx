@@ -180,7 +180,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
               {user ? (
                 <Link
                   href={route('dashboard')}
-                  className="rounded-lg px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90"
+                  className="btn-green rounded-lg px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: brandColor }}
                 >
                   {t('Dashboard')}
@@ -195,7 +195,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                   </Link>
                   <Link
                     href={route('register')}
-                    className="rounded-lg px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90"
+                    className="btn-green rounded-lg px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90"
                     style={{ backgroundColor: brandColor }}
                   >
                     {t('Get Started')}

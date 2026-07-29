@@ -96,7 +96,7 @@ export default function CreateCoupon() {
         { title: t('Create Coupon') }
       ]}
     >
-      <form noValidate onSubmit={handleSubmit} className="space-y-6">
+      <form noValidate className="space-y-6">
         <Tabs defaultValue="general" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="general">{t('General')}</TabsTrigger>

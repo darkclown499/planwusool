@@ -39,6 +39,14 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        // Override OAuth redirect URLs with scheme-aware URLs (fixes Mixed Content behind proxies)
+        $schemeAwareUrl = $request->getSchemeAndHttpHost();
+        foreach (['google', 'facebook', 'apple', 'github', 'plankton'] as $provider) {
+            config(["services.{$provider}.redirect" => $schemeAwareUrl . '/auth/callback/' . $provider]);
+        }
+        // Also override the public filesystem URL
+        config(['filesystems.disks.public.url' => $schemeAwareUrl . '/storage']);
+
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
         
         // Skip database queries during installation
@@ -46,7 +54,7 @@ class HandleInertiaRequests extends Middleware
             $globalSettings = [
                 'currencySymbol' => '$',
                 'currencyNname' => 'US Dollar',
-                'base_url' => config('app.url')
+                'base_url' => $request->getSchemeAndHttpHost()
             ];
             $storeCurrency = [
                 'code' => 'USD',
@@ -78,7 +86,7 @@ class HandleInertiaRequests extends Middleware
             
             // Merge currency settings with other settings
             $globalSettings = array_merge($settings, $currencySettings);
-            $globalSettings['base_url'] = config('app.url');
+            $globalSettings['base_url'] = $request->getSchemeAndHttpHost();
             
             
             // Get store-specific currency settings for authenticated users
@@ -88,7 +96,7 @@ class HandleInertiaRequests extends Middleware
         return [
              ...parent::share($request),
             'name'  => config('app.name'),
-            'base_url'  => config('app.url'),
+            'base_url'  => $request->getSchemeAndHttpHost(),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'csrf_token' => csrf_token(),
             // Customer auth (for store frontend)
@@ -140,7 +148,7 @@ class HandleInertiaRequests extends Middleware
                 if (config('app.is_demo', false) && $request->cookie('demo_language')) {
                     $locale = $request->cookie('demo_language');
                 } else {
-                    $locale = $user ? ($user->lang ?? 'en') : 'en';
+                    $locale = $user ? ($user->lang ?? 'ar') : 'ar';
                 }
                 
                 return [
@@ -176,7 +184,10 @@ class HandleInertiaRequests extends Middleware
             },
             'isImpersonating' => session('impersonated_by') ? true : false,
             'ziggy' => fn(): array=> [
-                 ...(new Ziggy)->toArray(),
+                 ...array_merge((new Ziggy)->toArray(), [
+                    'url' => $request->getSchemeAndHttpHost(),
+                    'port' => $request->getPort() ?: null,
+                ]),
                 'location' => $request->url(),
             ],
             'flash' => [

@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Plan;
-use App\Models\Referral;
-use App\Models\ReferralSetting;
 use App\Services\UserService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -63,6 +61,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'terms' => 'accepted',
         ];
         
         $recaptchaEnabled = Setting::where('key', 'recaptchaEnabled')->value('value');
@@ -100,6 +99,7 @@ class RegisteredUserController extends Controller
             'is_enable_login' => 1,
             'created_by' => 0,
             'plan_is_active' => 0,
+            'terms_accepted_at' => now(),
         ];
         
         // Handle referral code
@@ -118,11 +118,6 @@ class RegisteredUserController extends Controller
         // Assign role and settings to the user
         defaultRoleAndSetting($user);
         
-        // Create referral record when user purchases a plan
-        if ($user->used_referral_code && $user->plan_id) {
-            $this->createReferralRecord($user);
-        }
-
         Auth::login($user);
         
         // Check if email verification is enabled
@@ -176,34 +171,4 @@ class RegisteredUserController extends Controller
         }
     }
     
-    /**
-     * Create referral record when user purchases a plan
-     */
-    private function createReferralRecord(User $user)
-    {
-        $settings = ReferralSetting::current();
-        
-        if (!$settings->is_enabled) {
-            return;
-        }
-        
-        $referrer = User::where('referral_code', $user->used_referral_code)->first();
-        if (!$referrer || !$user->plan) {
-            return;
-        }
-        
-        // Calculate commission based on plan price
-        $planPrice = $user->plan->price ?? 0;
-        $commissionAmount = ($planPrice * $settings->commission_percentage) / 100;
-        
-        if ($commissionAmount > 0) {
-            Referral::create([
-                'user_id' => $user->id,
-                'company_id' => $referrer->id,
-                'commission_percentage' => $settings->commission_percentage,
-                'amount' => $commissionAmount,
-                'plan_id' => $user->plan_id,
-            ]);
-        }
-    }
 }

@@ -44,8 +44,7 @@ class SeoSettingsSeeder extends Seeder
         return [
             'metaKeywords' => 'ecommerce, online store, shopping, multi-store, saas platform, Wusool',
             'metaDescription' => 'Wusool - A powerful SaaS platform for creating and managing multiple online stores with professional themes and complete e-commerce features.',
-            'metaImage' => '/images/logos/logo-dark.png',
-            'themeMode' => 'light',
+            'metaImage' => '/images/logos/wusool.png',
             'titleText' => 'Wusool',
             'timeFormat' => 'H:i',
             'dateFormat' => 'Y-m-d',

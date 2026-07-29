@@ -1,2 +1,9 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /storage/private/
+
+Sitemap: https://wusool.ps/sitemap.xml

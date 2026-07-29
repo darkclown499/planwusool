@@ -656,6 +656,21 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
           </div>
         </div>
 
+        {/* External services notice */}
+        {!isAdmin && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-semibold text-blue-800 mb-1">{t('External Services Notice')}</h4>
+                <p className="text-sm text-blue-700">
+                  {t('Some features in Growth and Professional plans (e.g., ChatGPT integration, mobile app publishing) require external service subscriptions. These costs are separate from the basic subscription fee and are billed directly by the service provider.')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Plans grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.map((plan) => (

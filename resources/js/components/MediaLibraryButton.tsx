@@ -6,15 +6,19 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { usePage } from '@inertiajs/react';
 import { Search, Image as ImageIcon, Check } from 'lucide-react';
+import { getImageUrl } from '@/utils/image-helper';
 
 interface MediaItem {
   id: number;
   name: string;
   file_name: string;
+  disk: string;
+  mime_type: string;
+  size: number;
   url: string;
   thumb_url: string;
-  size: number;
-  mime_type: string;
+  model_id: number;
+  user_id: number;
   created_at: string;
 }
 
@@ -131,11 +135,11 @@ export default function MediaLibraryButton({
                       {/* Image Container */}
                       <div className="relative aspect-square bg-muted">
                         <img
-                          src={item.thumb_url}
+                          src={getImageUrl(item.thumb_url)}
                           alt={item.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = item.url;
+                            e.currentTarget.src = getImageUrl(item.url);
                           }}
                         />
                         

@@ -58,6 +58,7 @@ use App\Http\Controllers\YooKassaPaymentController;
 use App\Http\Controllers\AamarpayPaymentController;
 use App\Http\Controllers\MidtransPaymentController;
 use App\Http\Controllers\ThemeController;
+use App\Http\Controllers\SitemapController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -65,6 +66,9 @@ use Inertia\Inertia;
 
 // Main landing page
 Route::get('/', [LandingPageController::class, 'show'])->name('home');
+
+// Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Static pages
 Route::get('/about', [LandingPageController::class, 'about'])->name('page.about');
@@ -250,6 +254,9 @@ Route::get('/demo-order/{orderNumber}', function($orderNumber) {
 
 // Cashfree webhook (public route)
 Route::post('cashfree/webhook', [CashfreeController::class, 'webhook'])->name('cashfree.webhook');
+
+// Accounting integration webhook (public route - secured via API key in request)
+Route::post('webhook/accounting/{store}', [\App\Http\Controllers\AccountingWebhookController::class, 'handle'])->name('accounting.webhook');
 
 // Benefit webhook (public route)
 Route::post('benefit/webhook', [BenefitPaymentController::class, 'webhook'])->name('benefit.webhook');
@@ -714,6 +721,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ChatGPT routes
     Route::post('api/chatgpt/generate', [\App\Http\Controllers\ChatGptController::class, 'generate'])->name('chatgpt.generate');
+    Route::post('api/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])->name('api.ai-chat');
     
 
     

@@ -15,11 +15,11 @@ export default function EmailNotificationSettings() {
   const settingsData = pageProps.systemSettings || pageProps.settings || pageProps.globalSettings || {};
   
   const emailTemplates = [
-    { key: 'Order Created', label: 'Order Created' },
-    { key: 'Order Created For Owner', label: 'Order Created For Owner' },
-    { key: 'Owner And Store Created', label: 'Owner And Store Created' },
-    { key: 'Status Change', label: 'Status Change' },
-    { key: 'User Created', label: 'User Created' },
+    { key: 'Order Created', label: 'تأكيد الطلب للعميل', description: 'إرسال رسالة بريدية تلقائية عند تأكيد الطلب.' },
+    { key: 'Order Created For Owner', label: 'إشعار المالك عند استلام طلب جديد', description: 'إرسال رسالة بريدية تلقائية للمالك عند استلام طلب جديد.' },
+    { key: 'Owner And Store Created', label: 'إنشاء حساب المالك والمتجر', description: 'إرسال رسالة بريدية تلقائية عند إنشاء حساب جديد.' },
+    { key: 'Status Change', label: 'تحديث حالة الطلب', description: 'إرسال رسالة بريدية تلقائية عند تغير حالة الطلب.' },
+    { key: 'User Created', label: 'تسجيل مستخدم جديد', description: 'إرسال رسالة بريدية تلقائية عند تسجيل مستخدم جديد.' },
   ];
   
   const [notifications, setNotifications] = useState(() => {
@@ -77,13 +77,18 @@ export default function EmailNotificationSettings() {
         </Button>
       }
     >
-      <form id="email-notification-form" onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <form id="email-notification-form" onSubmit={handleSubmit} className="space-y-6" dir="rtl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
           {emailTemplates.map((template) => (
-            <div key={template.key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <Label htmlFor={template.key} className="font-medium text-gray-900">
-                {t(template.label)}
-              </Label>
+            <div key={template.key} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-slate-300">
+              <div className="flex flex-col">
+                <Label htmlFor={template.key} className="font-medium text-gray-900">
+                  {template.label}
+                </Label>
+                {template.description && (
+                  <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
+                )}
+              </div>
               <Switch
                 id={template.key}
                 checked={notifications[template.key] || false}

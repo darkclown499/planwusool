@@ -1,6 +1,6 @@
 import React from 'react';
-import { Head } from '@inertiajs/react';
 import { ToyStore } from '../../themes/toy-store/ToyStore';
+import StoreHead from '@/components/StoreHead';
 
 interface ToyStorePageProps {
   config: any;
@@ -19,11 +19,12 @@ interface ToyStorePageProps {
 export default function ToyStorePage(props: ToyStorePageProps) {
   return (
     <>
-      <Head>
-        <title>{props.config?.storeName || 'Toy Store'}</title>
-        <meta name="description" content={props.config?.description || 'Fun and colorful toy store with educational toys, games, and activities for children of all ages.'} />
-        <meta name="keywords" content="toys, games, educational toys, children toys, kids games, puzzles, action figures, dolls" />
-      </Head>
+      <StoreHead
+        store={props.store}
+        defaultTitle={props.config?.storeName || 'Toy Store'}
+        defaultDescription="Fun and colorful toy store with educational toys, games, and activities for children of all ages."
+        defaultKeywords="toys, games, educational toys, children toys, kids games, puzzles, action figures, dolls"
+      />
       <ToyStore {...props} />
     </>
   );

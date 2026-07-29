@@ -6,6 +6,7 @@ export const currenciesConfig: CrudConfig = {
   entity: {
     name: 'currencys',
     endpoint: route('currencies.index'),
+    searchPlaceholder: t('Search currencys'),
     permissions: {
       view: 'manage-currencies',
       create: 'manage-currencies',

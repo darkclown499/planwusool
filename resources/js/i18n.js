@@ -22,7 +22,7 @@ function getInitialLanguage() {
         var saved = localStorage.getItem('i18nextLng');
         if (saved) return saved;
     } catch (e) { /* ignore */ }
-    return 'en';
+    return 'ar';
 }
 
 var initialLang = getInitialLanguage();
@@ -31,9 +31,11 @@ i18n
     .use(initReactI18next)
     .init({
         lng: initialLang,
-        fallbackLng: 'en',
+        fallbackLng: 'ar',
         load: 'currentOnly',
         debug: false,
+        keySeparator: false,
+        nsSeparator: false,
         interpolation: { escapeValue: false },
         ns: ['translation'],
         defaultNS: 'translation',

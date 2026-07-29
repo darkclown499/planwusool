@@ -16,10 +16,13 @@ interface MediaItem {
   id: number;
   name: string;
   file_name: string;
+  disk: string;
+  mime_type: string;
+  size: number;
   url: string;
   thumb_url: string;
-  size: number;
-  mime_type: string;
+  model_id: number;
+  user_id: number;
   created_at: string;
 }
 
@@ -131,13 +134,15 @@ export default function MediaLibraryDemo() {
           });
         }
       } else {
-        // Show individual errors if available, otherwise show main message
+        const serverMessage = result.message || result.error || '';
         if (result.errors && result.errors.length > 0) {
           result.errors.forEach((error: string) => {
-            toast.error(error);
+            toast.error(error, { duration: 6000 });
           });
+        } else if (serverMessage) {
+          toast.error(serverMessage, { duration: 6000 });
         } else {
-          toast.error(result.message || 'Failed to upload files');
+          toast.error(t('Failed to upload files'));
         }
       }
     } catch (error) {
@@ -218,6 +223,12 @@ export default function MediaLibraryDemo() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const getCountLabel = (count: number, singularKey: string, dualKey: string, pluralKey: string) => {
+    if (count === 1) return t(singularKey);
+    if (count === 2) return t(dualKey);
+    return t(pluralKey, { count });
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
@@ -258,12 +269,12 @@ export default function MediaLibraryDemo() {
               {/* Search Section */}
               <div className="flex-1">
                 <div className="relative max-w-sm">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     placeholder={t('Search media files...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="ps-9"
                   />
                 </div>
                 {searchTerm && (
@@ -279,14 +290,14 @@ export default function MediaLibraryDemo() {
                   <div className="p-1.5 bg-primary/10 rounded-md">
                     <ImageIcon className="h-4 w-4 text-primary" />
                   </div>
-                  <span className="text-sm font-semibold">{filteredMedia.length} {t('Files')}</span>
+                  <span className="text-sm font-semibold">{filteredMedia.length} {getCountLabel(filteredMedia.length, 'file', '2 files', '{{count}} files')}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 bg-green-500/10 rounded-md">
                     <HardDrive className="h-4 w-4 text-green-600" />
                   </div>
-                  <span className="text-sm font-semibold">
+                  <span className="text-sm font-semibold" dir="ltr">
                     {formatFileSize(filteredMedia.reduce((acc, item) => acc + item.size, 0))}
                   </span>
                 </div>
@@ -296,7 +307,7 @@ export default function MediaLibraryDemo() {
                     <ImageIcon className="h-4 w-4 text-blue-600" />
                   </div>
                   <span className="text-sm font-semibold">
-                    {filteredMedia.filter(item => item.mime_type.startsWith('image/')).length} {t('Images')}
+                    {filteredMedia.filter(item => item.mime_type.startsWith('image/')).length} {getCountLabel(filteredMedia.filter(item => item.mime_type.startsWith('image/')).length, 'image', '2 images', '{{count}} images')}
                   </span>
                 </div>
               </div>
@@ -326,7 +337,7 @@ export default function MediaLibraryDemo() {
                     onClick={() => setIsUploadModalOpen(true)}
                     size="lg"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4 ms-2" />
                     {t('Upload Media')}
                   </Button>
                 )}
@@ -354,7 +365,7 @@ export default function MediaLibraryDemo() {
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200" />
                         
                         {/* Action Dropdown */}
-                        <div className="absolute top-2 right-2">
+                        <div className="absolute top-2 end-2">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
@@ -367,16 +378,16 @@ export default function MediaLibraryDemo() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-40">
                               <DropdownMenuItem onClick={() => handleShowInfo(item)}>
-                                <Info className="h-4 w-4 mr-2" />
+                                <Info className="h-4 w-4 ms-2" />
                                 {t('View Info')}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleCopyLink(item.url)}>
-                                <Copy className="h-4 w-4 mr-2" />
+                                <Copy className="h-4 w-4 ms-2" />
                                 {t('Copy Link')}
                               </DropdownMenuItem>
                               {canDownloadMedia && (
                                 <DropdownMenuItem onClick={() => handleDownload(item.id, item.file_name)}>
-                                  <Download className="h-4 w-4 mr-2" />
+                                  <Download className="h-4 w-4 ms-2" />
                                   {t('Download')}
                                 </DropdownMenuItem>
                               )}
@@ -386,7 +397,7 @@ export default function MediaLibraryDemo() {
                                   onClick={() => deleteMedia(item.id)}
                                   className="text-destructive focus:text-destructive"
                                 >
-                                  <X className="h-4 w-4 mr-2" />
+                                  <X className="h-4 w-4 ms-2" />
                                   {t('Delete')}
                                 </DropdownMenuItem>
                               )}
@@ -395,7 +406,7 @@ export default function MediaLibraryDemo() {
                         </div>
                         
                         {/* File Type Badge */}
-                        <div className="absolute top-2 left-2">
+                        <div className="absolute top-2 start-2">
                           <Badge variant="secondary" className="text-xs bg-background/95">
                             {item.mime_type.split('/')[1].toUpperCase()}
                           </Badge>
@@ -408,8 +419,8 @@ export default function MediaLibraryDemo() {
                           <h3 className="text-sm font-medium truncate" title={item.name}>
                             {item.name}
                           </h3>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                            <HardDrive className="h-3 w-3" />
+                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1" dir="ltr">
+                            <HardDrive className="h-3 w-3 shrink-0" />
                             {formatFileSize(item.size)}
                           </p>
                         </div>
@@ -539,12 +550,12 @@ export default function MediaLibraryDemo() {
                   >
                     {uploading ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ms-2"></div>
                         {t('Uploading...')}
                       </>
                     ) : (
                       <>
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="h-4 w-4 ms-2" />
                         {t('Choose Files')}
                       </>
                     )}
@@ -588,7 +599,7 @@ export default function MediaLibraryDemo() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
                       <span className="text-sm font-medium text-muted-foreground">{t('File Name')}</span>
-                      <span className="text-sm text-right max-w-xs truncate" title={selectedMediaInfo.file_name}>
+                      <span className="text-sm text-end max-w-xs truncate" title={selectedMediaInfo.file_name}>
                         {selectedMediaInfo.file_name}
                       </span>
                     </div>
@@ -600,7 +611,7 @@ export default function MediaLibraryDemo() {
                     
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-muted-foreground">{t('File Size')}</span>
-                      <span className="text-sm">{formatFileSize(selectedMediaInfo.size)}</span>
+                      <span className="text-sm" dir="ltr">{formatFileSize(selectedMediaInfo.size)}</span>
                     </div>
                     
                     <div className="flex justify-between items-center">
@@ -634,7 +645,7 @@ export default function MediaLibraryDemo() {
                     onClick={() => handleCopyLink(selectedMediaInfo.url)}
                     className="flex-1"
                   >
-                    <Copy className="h-4 w-4 mr-2" />
+                    <Copy className="h-4 w-4 ms-2" />
                     {t('Copy Link')}
                   </Button>
                   <Button 
@@ -642,7 +653,7 @@ export default function MediaLibraryDemo() {
                     onClick={() => handleDownload(selectedMediaInfo.id, selectedMediaInfo.file_name)}
                     className="flex-1"
                   >
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className="h-4 w-4 ms-2" />
                     {t('Download')}
                   </Button>
                 </div>

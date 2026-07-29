@@ -17,7 +17,7 @@ class SocialAuthController extends Controller
     public function redirect(Request $request, $provider)
     {
         $provider = strtolower($provider);
-        if (in_array($provider, ['google', 'facebook', 'apple'])) {
+        if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
             return Socialite::driver($provider)->stateless()->redirect();
         }
 
@@ -41,7 +41,7 @@ class SocialAuthController extends Controller
     {
         $provider = strtolower($provider);
 
-        if (in_array($provider, ['google', 'facebook', 'apple'])) {
+        if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
             $socialUser = Socialite::driver($provider)->stateless()->user();
             // Try multiple places for email (providers differ)
             $email = $socialUser->getEmail()
@@ -95,7 +95,7 @@ class SocialAuthController extends Controller
         if (!$email) {
             // Special-case: Apple may not return email (private relay or withheld)
             // Generate a placeholder email using provider id and app host so we can create an account.
-            $host = parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost';
+            $host = getBaseDomain() ?: 'localhost';
             $generated = ($provider ? $provider : 'social') . '_' . ($providerId ?? Str::random(8));
             $email = $generated . '@' . $host;
             $emailMissing = true;

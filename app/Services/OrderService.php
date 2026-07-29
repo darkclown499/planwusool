@@ -120,6 +120,13 @@ class OrderService
             // Fire OrderCreated event for notifications
             event(new \App\Events\OrderCreated($order));
 
+            // Dispatch accounting sync job
+            try {
+                dispatch(new \App\Jobs\SyncOrderToAccounting($order))->onQueue('accounting');
+            } catch (\Exception $e) {
+                Log::warning('Failed to dispatch accounting sync', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+
             return $order;
         });
     }
@@ -1367,7 +1374,7 @@ class OrderService
             ];
 
             // Only add webhook URL if not localhost
-            $appUrl = config('app.url');
+            $appUrl = getSchemeAwareUrl();
             if (!str_contains($appUrl, 'localhost')) {
                 $paymentData['webhookUrl'] = $storeModel->route('mollie/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : ''));
             }

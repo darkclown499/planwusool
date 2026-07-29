@@ -31,58 +31,59 @@ export function AppSidebar() {
     };
 
     const getSuperAdminNavItems = (): NavItem[] => [
-        // ── الإدارة والتشغيل ──
         {
-            groupLabel: t('Operations & Management'),
             title: t('Dashboard'),
             href: route('dashboard'),
             icon: LayoutGrid,
+            groupLabel: t('Main'),
         },
         {
             title: t('Companies'),
             href: route('companies.index'),
             icon: Briefcase,
+            groupLabel: t('Main'),
         },
         {
             title: t('Subscription Plans'),
             icon: CreditCard,
+            groupLabel: t('Administration'),
             children: [
                 {
                     title: t('Plan'),
                     href: route('plans.index')
                 },
                 {
-                    title: t('Plan Request'),
+                    title: t('Subscription Requests'),
                     href: route('plan-requests.index')
                 },
                 {
-                    title: t('Plan Orders'),
+                    title: t('Subscription Invoices'),
                     href: route('plan-orders.index')
                 }
             ]
         },
-        // ── التسويق والمبيعات ──
         {
-            groupLabel: t('Marketing & Sales'),
             title: t('Coupons'),
             href: route('coupons.index'),
             icon: Ticket,
+            groupLabel: t('Administration'),
         },
         {
             title: t('Referral Program'),
             href: route('referral.index'),
             icon: Gift,
+            groupLabel: t('Administration'),
         },
-        // ── إدارة المحتوى ──
         {
-            groupLabel: t('Content Management'),
             title: t('Media Library'),
             href: route('media-library'),
             icon: Image,
+            groupLabel: t('Content'),
         },
         {
             title: t('Landing Page'),
             icon: Palette,
+            groupLabel: t('Content'),
             children: [
                 {
                     title: t('Landing Page'),
@@ -102,11 +103,10 @@ export function AppSidebar() {
                 }
             ]
         },
-        // ── النظام والإعدادات ──
         {
-            groupLabel: t('System & Settings'),
             title: t('Location Management'),
             icon: Globe2,
+            groupLabel: t('System'),
             children: [
                 {
                     title: t('Countries'),
@@ -126,21 +126,25 @@ export function AppSidebar() {
             title: t('Currencies'),
             href: route('currencies.index'),
             icon: DollarSign,
+            groupLabel: t('System'),
         },
         {
             title: t('Email Templates'),
             href: route('email-templates.index'),
             icon: Mail,
+            groupLabel: t('System'),
         },
         {
             title: t('Notification Templates'),
             href: route('notification-templates.index'),
             icon: MessageSquare,
+            groupLabel: t('System'),
         },
         {
             title: t('Settings'),
             href: route('settings'),
             icon: Settings,
+            groupLabel: t('System'),
         }
     ];
 
@@ -153,7 +157,14 @@ export function AppSidebar() {
             if (userRole === 'superadmin') return true;
             if (!plan) return true;
             const featureMap: { [key: string]: string } = {
-                'shipping_method': 'enable_shipping_method'
+                'shipping_method': 'enable_shipping_method',
+                'pwa': 'pwa_business',
+                'custom_domain': 'enable_custdomain',
+                'custom_subdomain': 'enable_custsubdomain',
+                'chatgpt': 'enable_chatgpt',
+                'mobile_app': 'enable_mobile_app',
+                'branding': 'enable_branding',
+                'accounting_integration': 'enable_accounting_integration',
             };
             const planFeature = featureMap[feature];
             return planFeature ? plan[planFeature] === 'on' : true;
@@ -164,6 +175,7 @@ export function AppSidebar() {
             title: t('Dashboard'),
             href: route('dashboard'),
             icon: LayoutGrid,
+            groupLabel: t('Main'),
         });
 
         // ── المنتجات والمتجر ──
@@ -182,9 +194,9 @@ export function AppSidebar() {
         }
         if (productChildren.length > 0) {
             items.push({
-                groupLabel: t('Products & Store'),
                 title: t('Product Management'),
                 icon: Package,
+                groupLabel: t('Store'),
                 children: productChildren,
             });
         }
@@ -202,9 +214,9 @@ export function AppSidebar() {
         }
         if (orderChildren.length > 0) {
             items.push({
-                groupLabel: t('Orders & Customers'),
                 title: t('Order Management'),
                 icon: ShoppingCart,
+                groupLabel: t('Store'),
                 children: orderChildren,
             });
         }
@@ -222,9 +234,9 @@ export function AppSidebar() {
         }
         if (marketingChildren.length > 0) {
             items.push({
-                groupLabel: t('Marketing & Sales'),
                 title: t('Marketing & Sales'),
                 icon: Megaphone,
+                groupLabel: t('Sales'),
                 children: marketingChildren,
             });
         }
@@ -232,10 +244,10 @@ export function AppSidebar() {
         // ── التقارير والتحليلات ──
         if (hasPermission('manage-analytics')) {
             items.push({
-                groupLabel: t('Analytics'),
                 title: t('Analytics & Reporting'),
                 href: route('analytics.index'),
                 icon: BarChart,
+                groupLabel: t('Sales'),
             });
         }
 
@@ -261,9 +273,9 @@ export function AppSidebar() {
         }
         if (settingsChildren.length > 0) {
             items.push({
-                groupLabel: t('Staff & Settings'),
                 title: t('Staff & Settings'),
                 icon: Settings,
+                groupLabel: t('Settings'),
                 children: settingsChildren,
             });
         }
@@ -413,8 +425,31 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                {/* <NavFooter items={footerNavItems} className="mt-auto" position={position} /> */}
-                {/* Profile menu moved to header */}
+                {userRole !== 'superadmin' && auth.user?.plan && (
+                    <div className="mx-2 mb-2">
+                        <div className="rounded-xl bg-white border border-gray-200 p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="h-7 w-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                    <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{t('Current Plan')}</p>
+                                    <p className="text-[13px] font-semibold text-gray-800 truncate">{auth.user.plan?.name || t('Free')}</p>
+                                </div>
+                            </div>
+                            <Link
+                                href={route('plans.index')}
+                                prefetch
+                                className="flex items-center justify-center w-full rounded-lg bg-emerald-50 py-1.5 text-[12px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+                            >
+                                {t('Upgrade Plan')}
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                <div className="px-2 pb-2">
+                    <NavUser position={position} />
+                </div>
             </SidebarFooter>
         </Sidebar>
     );

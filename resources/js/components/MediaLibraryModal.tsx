@@ -13,10 +13,13 @@ interface MediaItem {
   id: number;
   name: string;
   file_name: string;
+  disk: string;
+  mime_type: string;
+  size: number;
   url: string;
   thumb_url: string;
-  size: number;
-  mime_type: string;
+  model_id: number;
+  user_id: number;
   created_at: string;
 }
 
@@ -154,11 +157,15 @@ export default function MediaLibraryModal({
           toast.success(result.message || `${result.data?.length || 0} file(s) uploaded successfully`);
         }
       } else {
-        toast.error(result.message || 'Failed to upload files');
-        if (result.errors) {
+        const serverMessage = result.message || result.error || '';
+        if (result.errors && result.errors.length > 0) {
           result.errors.forEach((error: string) => {
-            toast.error(error, { duration: 5000 });
+            toast.error(error, { duration: 6000 });
           });
+        } else if (serverMessage) {
+          toast.error(serverMessage, { duration: 6000 });
+        } else {
+          toast.error('Failed to upload files');
         }
       }
     } catch (error) {

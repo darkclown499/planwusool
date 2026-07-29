@@ -44,7 +44,7 @@ class EmailSettingController extends Controller
             'password' => getSetting('email_password', '', $settingsUserId, $storeId),
             'encryption' => getSetting('email_encryption', 'tls', $settingsUserId, $storeId),
             'fromAddress' => getSetting('email_from_address', 'noreply@example.com', $settingsUserId, $storeId),
-            'fromName' => getSetting('email_from_name', 'WorkDo System', $settingsUserId, $storeId)
+            'fromName' => getSetting('email_from_name', 'Wusool System', $settingsUserId, $storeId)
         ];
 
         // Mask password if it exists
@@ -159,7 +159,7 @@ class EmailSettingController extends Controller
             'username' => getSetting('email_username', 'user@example.com', $settingsUserId, $storeId),
             'encryption' => getSetting('email_encryption', 'tls', $settingsUserId, $storeId),
             'fromAddress' => getSetting('email_from_address', 'noreply@example.com', $settingsUserId, $storeId),
-            'fromName' => getSetting('email_from_name', 'WorkDo System', $settingsUserId, $storeId)
+            'fromName' => getSetting('email_from_name', 'Wusool System', $settingsUserId, $storeId)
         ];
         
         // Get the actual password (not masked)

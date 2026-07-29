@@ -3,14 +3,12 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { useEffect, useRef, useState } from 'react';
-import { Settings as SettingsIcon, Building, DollarSign, Users, RefreshCw, Palette, BookOpen, Award, FileText, Mail, Bell, Link2, CreditCard, Calendar, HardDrive, Shield, Bot, Cookie, Search, Webhook, Wallet, MessageSquare } from 'lucide-react';
+import { DollarSign, Mail, Bell, Link2, CreditCard, HardDrive, Shield, Bot, Cookie, Search, Webhook, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import SystemSettings from './components/system-settings';
 import { usePage } from '@inertiajs/react';
 
 import CurrencySettings from './components/currency-settings';
 
-import BrandSettings from './components/brand-settings';
 import EmailSettings from './components/email-settings';
 import PaymentSettings from './components/payment-settings';
 import StorageSettings from './components/storage-settings';
@@ -22,100 +20,94 @@ import CacheSettings from './components/cache-settings';
 import EmailNotificationSettings from './components/email-notification-settings';
 import TwilioSettings from './components/twilio-settings';
 import WebhookSettings from './components/webhook-settings';
-
+import AccountingIntegration from './components/accounting-integration';
 
 import { useTranslation } from 'react-i18next';
-import { hasPermission } from '@/utils/permissions';
+import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
 
 export default function Settings() {
   const { t } = useTranslation();
-  const { systemSettings = {}, cacheSize = '0.00', timezones = {}, dateFormats = {}, timeFormats = {}, paymentSettings = {}, messagingVariables = {}, webhooks = [], availableModules = {}, templates = [], auth = {} } = usePage().props as any;
-  const [activeSection, setActiveSection] = useState('system-settings');
+  const { systemSettings = {}, cacheSize = '0.00', paymentSettings = {}, messagingVariables = {}, webhooks = [], availableModules = {}, templates = [], auth = {}, planFeatures = null } = usePage().props as any;
+  const [activeSection, setActiveSection] = useState('currency-settings');
   
   // Define all possible sidebar navigation items
   const allSidebarNavItems: (NavItem & { permission?: string })[] = [
     {
-      title: t('System Settings'),
-      href: '#system-settings',
-      icon: <SettingsIcon className="h-4 w-4 mr-2" />,
-      permission: 'manage-settings'
-    },
-    {
-      title: t('Brand Settings'),
-      href: '#brand-settings',
-      icon: <Palette className="h-4 w-4 mr-2" />,
-      permission: 'manage-settings'
-    },
-    {
       title: t('Currency Settings'),
       href: '#currency-settings',
-      icon: <DollarSign className="h-4 w-4 mr-2" />,
+      icon: <DollarSign className="w-5 h-5 shrink-0" />,
       permission: 'manage-settings'
     },
     {
       title: t('Email Settings'),
       href: '#email-settings',
-      icon: <Mail className="h-4 w-4 mr-2" />,
+      icon: <Mail className="w-5 h-5 shrink-0" />,
       permission: 'manage-settings'
     },
     {
       title: t('Email Notification Settings'),
       href: '#email-notification-settings',
-      icon: <Bell className="h-4 w-4 mr-2" />,
+      icon: <Bell className="w-5 h-5 shrink-0" />,
       permission: 'manage-settings'
     },
     {
       title: t('Payment Settings'),
       href: '#payment-settings',
-      icon: <CreditCard className="h-4 w-4 mr-2" />,
+      icon: <CreditCard className="w-5 h-5 shrink-0" />,
       permission: 'manage-settings'
     },
     {
       title: t('Twilio Settings'),
       href: '#twilio-settings',
-      icon: <MessageSquare className="h-4 w-4 mr-2" />,
+      icon: <MessageSquare className="w-5 h-5 shrink-0" />,
       permission: 'manage-settings'
     },
     {
       title: t('Storage Settings'),
       href: '#storage-settings',
-      icon: <HardDrive className="h-4 w-4 mr-2" />,
+      icon: <HardDrive className="w-5 h-5 shrink-0" />,
       permission: 'manage-storage-settings'
     },
     {
       title: t('ReCaptcha Settings'),
       href: '#recaptcha-settings',
-      icon: <Shield className="h-4 w-4 mr-2" />,
+      icon: <Shield className="w-5 h-5 shrink-0" />,
       permission: 'manage-recaptcha-settings'
     },
     {
       title: t('Chat GPT Settings'),
       href: '#chatgpt-settings',
-      icon: <Bot className="h-4 w-4 mr-2" />,
+      icon: <Bot className="w-5 h-5 shrink-0" />,
       permission: 'manage-chatgpt-settings'
     },
     {
       title: t('Cookie Settings'),
       href: '#cookie-settings',
-      icon: <Cookie className="h-4 w-4 mr-2" />,
+      icon: <Cookie className="w-5 h-5 shrink-0" />,
       permission: 'manage-cookie-settings'
     },
     {
       title: t('SEO Settings'),
       href: '#seo-settings',
-      icon: <Search className="h-4 w-4 mr-2" />,
+      icon: <Search className="w-5 h-5 shrink-0" />,
       permission: 'manage-seo-settings'
     },
     {
       title: t('Cache Settings'),
       href: '#cache-settings',
-      icon: <HardDrive className="h-4 w-4 mr-2" />,
+      icon: <HardDrive className="w-5 h-5 shrink-0" />,
       permission: 'manage-cache-settings'
     },
     {
       title: t('Webhook Settings'),
       href: '#webhook-settings',
-      icon: <Webhook className="h-4 w-4 mr-2" />,
+      icon: <Webhook className="w-5 h-5 shrink-0" />,
+      permission: 'manage-settings'
+    },
+    {
+      title: t('الربط المحاسبي'),
+      href: '#accounting-integration',
+      icon: <Link2 className="w-5 h-5 shrink-0" />,
       permission: 'manage-settings'
     },
 
@@ -151,9 +143,6 @@ export default function Settings() {
   });
   
   // Refs for each section
-  const systemSettingsRef = useRef<HTMLDivElement>(null);
-  const brandSettingsRef = useRef<HTMLDivElement>(null);
-
   const currencySettingsRef = useRef<HTMLDivElement>(null);
   const emailSettingsRef = useRef<HTMLDivElement>(null);
   const emailNotificationSettingsRef = useRef<HTMLDivElement>(null);
@@ -166,7 +155,7 @@ export default function Settings() {
   const seoSettingsRef = useRef<HTMLDivElement>(null);
   const cacheSettingsRef = useRef<HTMLDivElement>(null);
   const webhookSettingsRef = useRef<HTMLDivElement>(null);
-
+  const accountingIntegrationRef = useRef<HTMLDivElement>(null);
 
   
   // Smart scroll functionality
@@ -175,9 +164,6 @@ export default function Settings() {
       const scrollPosition = window.scrollY + 100; // Add offset for better UX
       
       // Get positions of each section
-      const systemSettingsPosition = systemSettingsRef.current?.offsetTop || 0;
-      const brandSettingsPosition = brandSettingsRef.current?.offsetTop || 0;
-
       const currencySettingsPosition = currencySettingsRef.current?.offsetTop || 0;
       const emailSettingsPosition = emailSettingsRef.current?.offsetTop || 0;
       const emailNotificationSettingsPosition = emailNotificationSettingsRef.current?.offsetTop || 0;
@@ -190,10 +176,13 @@ export default function Settings() {
       const seoSettingsPosition = seoSettingsRef.current?.offsetTop || 0;
       const cacheSettingsPosition = cacheSettingsRef.current?.offsetTop || 0;
       const webhookSettingsPosition = webhookSettingsRef.current?.offsetTop || 0;
+      const accountingIntegrationPosition = accountingIntegrationRef.current?.offsetTop || 0;
 
       
       // Determine active section based on scroll position
-      if (scrollPosition >= webhookSettingsPosition) {
+      if (scrollPosition >= accountingIntegrationPosition) {
+        setActiveSection('accounting-integration');
+      } else if (scrollPosition >= webhookSettingsPosition) {
         setActiveSection('webhook-settings');
       } else if (scrollPosition >= cacheSettingsPosition) {
         setActiveSection('cache-settings');
@@ -218,10 +207,8 @@ export default function Settings() {
       } else if (scrollPosition >= currencySettingsPosition) {
         setActiveSection('currency-settings');
 
-      } else if (scrollPosition >= brandSettingsPosition) {
-        setActiveSection('brand-settings');
       } else {
-        setActiveSection('system-settings');
+        setActiveSection('currency-settings');
       }
     };
     
@@ -267,18 +254,18 @@ export default function Settings() {
         <div className="md:w-64 flex-shrink-0">
           <div className="sticky top-20">
             <ScrollArea className="h-[calc(100vh-5rem)]">
-              <div className="pr-4 space-y-1">
+              <div className="space-y-1">
                 {sidebarNavItems.map((item) => (
                   <Button
                     key={item.href}
                     variant="ghost"
-                    className={cn('w-full justify-start', {
+                    className={cn('flex flex-row-reverse items-center justify-end gap-3 w-full text-right', {
                       'bg-muted font-medium': activeSection === item.href.replace('#', ''),
                     })}
                     onClick={() => handleNavClick(item.href)}
                   >
                     {item.icon}
-                    {item.title}
+                    <span className="grow text-right">{item.title}</span>
                   </Button>
                 ))}
               </div>
@@ -288,25 +275,6 @@ export default function Settings() {
 
         {/* Main Content */}
         <div className="flex-1">
-          {/* System Settings Section */}
-          {(auth.permissions?.includes('manage-settings') || auth.user?.type === 'superadmin') && (
-            <section id="system-settings" ref={systemSettingsRef} className="mb-8">
-              <SystemSettings 
-                settings={systemSettings} 
-                timezones={timezones}
-                dateFormats={dateFormats}
-                timeFormats={timeFormats}
-              />
-            </section>
-          )}
-
-          {/* Brand Settings Section */}
-          {(auth.permissions?.includes('manage-settings') || auth.user?.type === 'superadmin') && (
-            <section id="brand-settings" ref={brandSettingsRef} className="mb-8">
-              <BrandSettings />
-            </section>
-          )}
-
           {/* Currency Settings Section */}
           {(auth.permissions?.includes('manage-settings') || auth.user?.type === 'superadmin') && (
             <section id="currency-settings" ref={currencySettingsRef} className="mb-8">
@@ -338,7 +306,11 @@ export default function Settings() {
           {/* Twilio Settings Section */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
             <section id="twilio-settings" ref={twilioSettingsRef} className="mb-8">
-              <TwilioSettings systemSettings={systemSettings} templates={templates} />
+              {planFeatures?.enable_shipping_method || planFeatures?.enable_mobile_app ? (
+                <TwilioSettings systemSettings={systemSettings} templates={templates} />
+              ) : (
+                <FeatureLockedOverlay featureName="Twilio / SMS Settings" requiredPlan="Growth" />
+              )}
             </section>
           )}
 
@@ -359,7 +331,11 @@ export default function Settings() {
           {/* Chat GPT Settings Section */}
           {(auth.permissions?.includes('manage-chatgpt-settings') || auth.user?.type === 'superadmin') && (
             <section id="chatgpt-settings" ref={chatgptSettingsRef} className="mb-8">
-              <ChatGptSettings settings={systemSettings} />
+              {auth.user?.type === 'superadmin' || planFeatures?.enable_chatgpt ? (
+                <ChatGptSettings settings={systemSettings} />
+              ) : (
+                <FeatureLockedOverlay featureName="ChatGPT Settings" requiredPlan="Growth" />
+              )}
             </section>
           )}
 
@@ -387,13 +363,24 @@ export default function Settings() {
           {/* Webhook Settings Section */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
             <section id="webhook-settings" ref={webhookSettingsRef} className="mb-8">
-              <WebhookSettings webhooks={webhooks} availableModules={availableModules} />
+              {planFeatures?.enable_custdomain || auth.user?.type === 'superadmin' ? (
+                <WebhookSettings webhooks={webhooks} availableModules={availableModules} />
+              ) : (
+                <FeatureLockedOverlay featureName="Webhook Settings" requiredPlan="Growth" />
+              )}
             </section>
           )}
 
-
-
-
+          {/* Accounting Integration Section */}
+          {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
+            <section id="accounting-integration" ref={accountingIntegrationRef} className="mb-8">
+              {planFeatures?.enable_accounting_integration ? (
+                <AccountingIntegration />
+              ) : (
+                <FeatureLockedOverlay featureName="الربط المحاسبي" requiredPlan="Growth" />
+              )}
+            </section>
+          )}
 
         </div>
       </div>

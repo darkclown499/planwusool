@@ -1,5 +1,77 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getBrandSettings, type BrandSettings } from '@/pages/settings/components/brand-settings';
+import { THEME_COLORS, type ThemeColor } from '@/hooks/use-appearance';
+import { type LayoutPosition } from '@/contexts/LayoutContext';
+
+export interface BrandSettings {
+ logoDark: string;
+ logoLight: string;
+ favicon: string;
+ titleText: string;
+ footerText: string;
+ themeColor: string;
+ customColor: string;
+ sidebarVariant: string;
+ sidebarStyle: string;
+ layoutDirection: string;
+}
+
+const DEFAULT_BRAND_SETTINGS: BrandSettings = {
+ logoDark: '/images/logos/logo-dark.png',
+ logoLight: '/images/logos/logo-light.png',
+ favicon: '/images/logos/favicon.png',
+ titleText: 'Wusool',
+ footerText: '© 2024 Wusool. All rights reserved.',
+ themeColor: 'green',
+ customColor: '#10b77f',
+ sidebarVariant: 'inset',
+ sidebarStyle: 'plain',
+ layoutDirection: 'rtl',
+};
+
+const getBrandSettings = (userSettings?: Record<string, string>): BrandSettings => {
+ if (userSettings) {
+ return {
+ logoDark: userSettings.logoDark || DEFAULT_BRAND_SETTINGS.logoDark,
+ logoLight: userSettings.logoLight || DEFAULT_BRAND_SETTINGS.logoLight,
+ favicon: userSettings.favicon || DEFAULT_BRAND_SETTINGS.favicon,
+ titleText: userSettings.titleText || DEFAULT_BRAND_SETTINGS.titleText,
+ footerText: userSettings.footerText || DEFAULT_BRAND_SETTINGS.footerText,
+ themeColor: userSettings.themeColor || DEFAULT_BRAND_SETTINGS.themeColor,
+ customColor: userSettings.customColor || DEFAULT_BRAND_SETTINGS.customColor,
+ sidebarVariant: userSettings.sidebarVariant || DEFAULT_BRAND_SETTINGS.sidebarVariant,
+ sidebarStyle: userSettings.sidebarStyle || DEFAULT_BRAND_SETTINGS.sidebarStyle,
+ layoutDirection: userSettings.layoutDirection || DEFAULT_BRAND_SETTINGS.layoutDirection,
+   };
+ }
+
+ if (typeof localStorage === 'undefined') {
+ return DEFAULT_BRAND_SETTINGS;
+ }
+
+ try {
+ const savedSettings = localStorage.getItem('brandSettings');
+ return savedSettings ? JSON.parse(savedSettings) : DEFAULT_BRAND_SETTINGS;
+ } catch (error) {
+ return DEFAULT_BRAND_SETTINGS;
+ }
+};
+
+const applyThemeColor = (themeColor?: string, customColor?: string) => {
+  if (typeof document === 'undefined' || !themeColor) return;
+
+  const color = themeColor === 'custom' && customColor ? customColor : (THEME_COLORS[themeColor as keyof typeof THEME_COLORS] || THEME_COLORS.green);
+  document.documentElement.style.setProperty('--theme-color', color);
+  document.documentElement.style.setProperty('--primary', color);
+  document.documentElement.style.setProperty('--primary-foreground', '#ffffff');
+  document.documentElement.style.setProperty('--chart-1', color);
+};
+
+const applyDirectionToDOM = (direction?: string) => {
+  if (typeof document === 'undefined' || !direction) return;
+  if (direction !== 'rtl' && direction !== 'ltr') return;
+  document.documentElement.dir = direction;
+  document.documentElement.setAttribute('dir', direction);
+};
 
 interface BrandContextType extends BrandSettings {
   updateBrandSettings: (settings: Partial<BrandSettings>) => void;
@@ -36,33 +108,16 @@ export function BrandProvider({ children, globalSettings, user }: { children: Re
 
   useEffect(() => {
     const effectiveSettings = getEffectiveSettings();
-    if (effectiveSettings?.themeMode && typeof window !== 'undefined') {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const isDark = effectiveSettings.themeMode === 'dark' || 
-        (effectiveSettings.themeMode === 'system' && systemDark);
-      
-      document.documentElement.classList.toggle('dark', isDark);
-      document.body.classList.toggle('dark', isDark);
-    }
+    applyThemeColor(effectiveSettings?.themeColor, effectiveSettings?.customColor);
+    applyDirectionToDOM(effectiveSettings?.layoutDirection);
   }, []);
 
   useEffect(() => {
     const effectiveSettings = getEffectiveSettings();
     const updatedSettings = getBrandSettings(effectiveSettings);
     setBrandSettings(updatedSettings);
-    if (effectiveSettings?.themeMode && typeof window !== 'undefined') {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const isDark = effectiveSettings.themeMode === 'dark' || 
-        (effectiveSettings.themeMode === 'system' && systemDark);
-      
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-        document.body.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.body.classList.remove('dark');
-      }
-    }
+    applyThemeColor(effectiveSettings?.themeColor, effectiveSettings?.customColor);
+    applyDirectionToDOM(effectiveSettings?.layoutDirection);
   }, [globalSettings, user]);
 
   const updateBrandSettings = (newSettings: Partial<BrandSettings>) => {

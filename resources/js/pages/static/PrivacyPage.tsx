@@ -7,8 +7,8 @@ export default function PrivacyPage() {
 
   return (
     <StaticPageLayout title={t('سياسة الخصوصية')}>
-      <div className="space-y-8 text-sm leading-relaxed text-gray-600">
-        <p className="text-gray-400">{t('آخر تحديث: يوليو ٢٠٢٦')}</p>
+      <div className="space-y-10 text-sm leading-relaxed text-gray-300">
+        <p className="text-gray-500">{t('آخر تحديث: يوليو ٢٠٢٦')}</p>
 
         <section>
           <p>
@@ -17,21 +17,21 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('١. المعلومات التي نجمعها')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('١. المعلومات التي نجمعها')}</h2>
           <p className="mb-3">{t('نقوم بجمع الأنواع التالية من المعلومات:')}</p>
-          <h3 className="text-base font-semibold text-gray-800 mb-2">{t('معلومات التسجيل:')}</h3>
-          <ul className="list-disc space-y-1 pr-6 mb-4">
+          <h3 className="text-base font-semibold text-emerald-400 mb-2">{t('معلومات التسجيل:')}</h3>
+          <ul className="list-disc space-y-1.5 pr-6 mb-4">
             <li>{t('الاسم الكامل وعنوان البريد الإلكتروني')}</li>
             <li>{t('رقم الهاتف')}</li>
             <li>{t('اسم المتجر ومعلوماته')}</li>
           </ul>
-          <h3 className="text-base font-semibold text-gray-800 mb-2">{t('معلومات الدفع:')}</h3>
-          <ul className="list-disc space-y-1 pr-6 mb-4">
+          <h3 className="text-base font-semibold text-emerald-400 mb-2">{t('معلومات الدفع:')}</h3>
+          <ul className="list-disc space-y-1.5 pr-6 mb-4">
             <li>{t('معلومات فاتورة الدفع (لا نخزّن بيانات بطاقات الائتمان مباشرة)')}</li>
             <li>{t('سجل المعاملات والاشتراكات')}</li>
           </ul>
-          <h3 className="text-base font-semibold text-gray-800 mb-2">{t('معلومات الاستخدام:')}</h3>
-          <ul className="list-disc space-y-1 pr-6">
+          <h3 className="text-base font-semibold text-emerald-400 mb-2">{t('معلومات الاستخدام:')}</h3>
+          <ul className="list-disc space-y-1.5 pr-6">
             <li>{t('بيانات سجل النشاط (العناوين IP، نوع المتصفح، نظام التشغيل)')}</li>
             <li>{t('صفحات المنصة التي تزورها والمدة')}</li>
             <li>{t('مصدر الانتقال إلى المنصة')}</li>
@@ -39,9 +39,9 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٢. كيف نستخدم معلوماتك')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٢. كيف نستخدم معلوماتك')}</h2>
           <p className="mb-3">{t('نستخدم المعلومات المجمعة للأغراض التالية:')}</p>
-          <ul className="list-disc space-y-2 pr-6">
+          <ul className="list-disc space-y-2.5 pr-6">
             <li>{t('تشغيل وصيانة منصتنا وتحسين تجربة المستخدم.')}</li>
             <li>{t('معالجة المعاملات المالية وإدارة اشتراكاتك.')}</li>
             <li>{t('إرسال إشعارات مهمة حول حسابك والخدمات.')}</li>
@@ -53,16 +53,16 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٣. حماية البيانات')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٣. حماية البيانات')}</h2>
           <p>
             {t('نستخدم تقنيات تشفير متقدمة (SSL/TLS ٢٥٦ بت) لحماية جميع البيانات المنقولة بين أجهزتك وخوادمنا. نطبق معايير أمان صارمة تشمل جدران الحماية ومراقبة الوصول والنسخ الاحتياطي الدوري. لا نسمح بالوصول إلى بياناتك إلا للموظفين المصرح لهم لتقديم الخدمات.')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٤. مشاركة المعلومات')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٤. مشاركة المعلومات')}</h2>
           <p className="mb-3">{t('لا نبيع أو نؤجر أو نشارك معلوماتك الشخصية مع أطراف ثالثة إلا في الحالات التالية:')}</p>
-          <ul className="list-disc space-y-2 pr-6">
+          <ul className="list-disc space-y-2.5 pr-6">
             <li>{t('بموافقتك الصريحة.')}</li>
             <li>{t('مع مزودي الخدمات الذين يساعدوننا في تشغيل المنصة (مزودو الدفع، الاستضافة) وملزمين بحماية بياناتك.')}</li>
             <li>{t('عند الاقتضاء القانوني أو للامتثال لإجراءات قانونية.')}</li>
@@ -71,16 +71,16 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٥. ملفات تعريف الارتباط')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٥. ملفات تعريف الارتباط')}</h2>
           <p>
             {t('نستخدم ملفات تعريف الارتباط (Cookies) لتحسين تجربتك على المنصة. تشمل ملفات تعريف الارتباط الضرورية لتشغيل الموقع وملفات التحليلات وملفات التفضيلات. يمكنك التحكم في إعدادات ملفات تعريف الارتباط من متصفحك. يُلاحظ أن تعطيل بعض الملفات قد يؤثر على وظائف المنصة.')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٦. حقوقك')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٦. حقوقك')}</h2>
           <p className="mb-3">{t('لك الحق في:')}</p>
-          <ul className="list-disc space-y-2 pr-6">
+          <ul className="list-disc space-y-2.5 pr-6">
             <li>{t('الوصول إلى بياناتك الشخصية المخزّنة لدينا.')}</li>
             <li>{t('طلب تصحيح أي بيانات غير دقيقة.')}</li>
             <li>{t('طلب حذف بياناتك الشخصية ("الحق في النسيان").')}</li>
@@ -91,34 +91,40 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٧. الاحتفاظ بالبيانات')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٧. الاحتفاظ بالبيانات')}</h2>
           <p>
             {t('نحتفظ ببياناتك الشخصية فقط للمدة اللازمة لتحقيق الأغراض التي جُمعت من أجلها، أو كما تتطلبها القوانين المعمول بها. عند إلغاء حسابك، نقوم بحذف بياناتك خلال ٩٠ يوماً مع الاحتفاظ بالسجلات المالية المطلوبة قانونياً لمدة تتراوح بين ٥ إلى ٧ سنوات.')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٨. النقل الدولي للبيانات')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٨. النقل الدولي للبيانات')}</h2>
           <p>
             {t('قد يتم نقل بياناتك إلى خوادم خارج بلدك. في هذه الحالة، نضمن وجود ضمانات مناسبة لحماية بياناتك وفقاً لمعايير الأمان المعتمدة.')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('٩. تحديثات السياسة')}</h2>
+          <h2 className="text-xl font-bold text-white mb-3">{t('٩. تحديثات السياسة')}</h2>
           <p>
-            {t('نحتفظ بالحق في تحديث هذه السياسة في أي время. سيتم إشعارك بالتغييرات الجوهرية عبر البريد الإلكتروني أو من خلال إشعار على المنصة. استمرارك في استخدام المنصة بعد التحديث يُعتبر موافقة على السياسة المحدّثة.')}
+            {t('نحتفظ بالحق في تحديث هذه السياسة في أي وقت. سيتم إشعارك بالتغييرات الجوهرية عبر البريد الإلكتروني أو من خلال إشعار على المنصة. استمرارك في استخدام المنصة بعد التحديث يُعتبر موافقة على السياسة المحدّثة.')}
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-3">{t('١٠. التواصل معنا')}</h2>
+          <h2 className="text-xl font-bold text-emerald-400 mb-3">{t('١٠. التواصل معنا')}</h2>
           <p>
             {t('لأي استفسارات أو طلبات تتعلق بخصوصيتك وبياناتك، يُرجى التواصل معنا عبر:')}
           </p>
-          <div className="mt-3 space-y-1">
-            <p>{t('البريد الإلكتروني:')} info@wusool.ps</p>
-            <p>{t('الواتساب:')} +970 59 123 4567</p>
+          <div className="mt-4 space-y-2">
+            <p>
+              {t('البريد الإلكتروني:')}{' '}
+              <a href="mailto:info@wusool.ps" className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">info@wusool.ps</a>
+            </p>
+            <p>
+              {t('الواتساب:')}{' '}
+              <a href="https://wa.me/970591234567" dir="ltr" className="inline-block text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">+970 59 123 4567</a>
+            </p>
             <p>{t('العنوان:')} وكالة بلانكتون، قلقيلية، فلسطين</p>
           </div>
         </section>

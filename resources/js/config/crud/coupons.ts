@@ -9,6 +9,28 @@ import { formatCurrency } from '@/utils/currency-helper';
 import { router } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 
+const CouponStatusToggle: React.FC<{ row: any }> = ({ row }) => {
+  const [isChecked, setIsChecked] = React.useState(!!row.status);
+
+  const handleToggle = () => {
+    const newState = !isChecked;
+    setIsChecked(newState);
+    router.put(route('coupons.toggle-status', row.id), {}, {
+      onSuccess: () => {
+        toast.success(t('Coupon status updated'));
+      },
+      onError: () => {
+        setIsChecked(!newState);
+        toast.error(t('Error updating status'));
+      }
+    });
+  };
+
+  return React.createElement('div', { className: 'flex items-center justify-center' },
+    React.createElement(Switch, { checked: isChecked, onCheckedChange: handleToggle })
+  );
+};
+
 export const couponsConfig: CrudConfig = {
   entity: {
     name: 'coupons',
@@ -16,7 +38,7 @@ export const couponsConfig: CrudConfig = {
     permissions: {
       view: 'view-coupons',
       create: 'create-coupons',
-      edit: 'create-coupons',
+      edit: 'edit-coupons',
       delete: 'delete-coupons'
     }
   },
@@ -64,6 +86,12 @@ export const couponsConfig: CrudConfig = {
         sortable: true, 
         render: columnRenderers.date() 
       },
+      { 
+        key: 'start_date', 
+        label: t('Start Date'), 
+        sortable: true, 
+        render: columnRenderers.date() 
+      },
       {
         key: 'code',
         label: t('Code'),
@@ -80,28 +108,7 @@ export const couponsConfig: CrudConfig = {
       { 
         key: 'status', 
         label: t('Status'), 
-        render: (value, row) => {
-          const [isChecked, setIsChecked] = React.useState(!!value);
-          
-          const handleToggle = async () => {
-            router.put(route('coupons.toggle-status', row.id), {}, {
-              onSuccess: (page) => {
-                // Don't show success toast - let backend handle the message
-              },
-              onError: (errors) => {
-                toast.error('Error updating status');
-              }
-            });
-          };
-          
-          return React.createElement('div', { className: 'flex items-center justify-center' }, [
-            React.createElement(Switch, {
-              key: 'status-switch',
-              checked: isChecked,
-              onCheckedChange: handleToggle
-            })
-          ]);
-        }
+        render: (value, row) => React.createElement(CouponStatusToggle, { row })
       }
     ],
     actions: [
@@ -158,6 +165,12 @@ export const couponsConfig: CrudConfig = {
         colSpan: 6,
         placeholder: t('Enter coupon name')
       },
+      { 
+        name: 'start_date', 
+        label: t('Start Date'),
+        type: 'date',
+        colSpan: 6
+      },
       {
         name: 'expiry_date',
         label: t('Expiry Date'),
@@ -180,7 +193,6 @@ export const couponsConfig: CrudConfig = {
         name: 'code', 
         label: t('Coupon Code'), 
         type: 'custom',
-        required: true,
         colSpan: 6,
         render: (field: any, formData: any, onChange: any) => {
           const generateCode = () => {

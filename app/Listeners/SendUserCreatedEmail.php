@@ -30,7 +30,7 @@ class SendUserCreatedEmail
 
         // Prepare email variables
         $variables = [
-            '{app_url}' => config('app.url'),
+            '{app_url}' => getSchemeAwareUrl(),
             '{user_name}' => $user->name,
             '{user_email}' => $user->email,
             '{user_password}' => $plainPassword ?: 'Password set by user',

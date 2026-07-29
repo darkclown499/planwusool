@@ -102,6 +102,10 @@ class ThemeController extends Controller
             'custom_css' => $configuration['custom_css'] ?: '',
             'custom_javascript' => $configuration['custom_javascript'] ?: '',
             'pwa' => $pwaData,
+            'seo_title' => $store->seo_title,
+            'seo_description' => $store->seo_description,
+            'seo_keywords' => $store->seo_keywords,
+            'seo_image' => $store->seo_image,
         ];
     }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PageWrapper } from '@/components/PageWrapper';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -43,22 +43,25 @@ export default function ChatGptDemo() {
     <PageWrapper title="ChatGPT Integration Demo" breadcrumbs={breadcrumbs}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Modal Stacking Demo */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">{t('Modal Stacking Demo')}</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            {t('Test independent modal stacking: Open the Coupon Dialog, then open ChatGPT Modal on top of it.')}
-          </p>
-          <div className="space-x-2">
-            <Button onClick={() => setShowCouponDialog(true)}>
-              Open Add Coupon Dialog
-            </Button>
-            <Button variant="outline" onClick={() => setShowChatGptModal(true)}>
-              Open ChatGPT Modal
-            </Button>
-          </div>
+        <Card>
+          <CardHeader><CardTitle className="text-lg">{t('Modal Stacking Demo')}</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600 mb-4">
+              {t('Test independent modal stacking: Open the Coupon Dialog, then open ChatGPT Modal on top of it.')}
+            </p>
+            <div className="space-x-2">
+              <Button onClick={() => setShowCouponDialog(true)}>
+                Open Add Coupon Dialog
+              </Button>
+              <Button variant="outline" onClick={() => setShowChatGptModal(true)}>
+                Open ChatGPT Modal
+              </Button>
+            </div>
+          </CardContent>
         </Card>
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">{t('Product Information Form')}</h2>
+        <Card>
+          <CardHeader><CardTitle className="text-lg">{t('Product Information Form')}</CardTitle></CardHeader>
+          <CardContent>
           
           <div className="space-y-4">
             {/* Example 1: ChatGptField for single input */}
@@ -117,16 +120,19 @@ export default function ChatGptDemo() {
               </div>
             </div>
           </div>
+          </CardContent>
         </Card>
 
         {/* Display current form data */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">{t('Current Form Data')}</h3>
-          <div className="space-y-2 text-sm">
-            <div><strong>{t('Product Name')}:</strong> {formData.productName || t('Not set')}</div>
-            <div><strong>{t('Description')}:</strong> {formData.description || t('Not set')}</div>
-            <div><strong>{t('Marketing Copy')}:</strong> {formData.marketingCopy || t('Not set')}</div>
-          </div>
+        <Card>
+          <CardHeader><CardTitle className="text-lg">{t('Current Form Data')}</CardTitle></CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <div><strong>{t('Product Name')}:</strong> {formData.productName || t('Not set')}</div>
+              <div><strong>{t('Description')}:</strong> {formData.description || t('Not set')}</div>
+              <div><strong>{t('Marketing Copy')}:</strong> {formData.marketingCopy || t('Not set')}</div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 

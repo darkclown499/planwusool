@@ -20,14 +20,14 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
   
   // Default settings
   const defaultSettings = {
-    enableLogging: false,
+    enableLogging: true,
     strictlyNecessaryCookies: true,
-    cookieTitle: 'Cookie Consent',
-    strictlyCookieTitle: 'Strictly Necessary Cookies',
-    cookieDescription: 'We use cookies to enhance your browsing experience and provide personalized content.',
-    strictlyCookieDescription: 'These cookies are essential for the website to function properly.',
-    contactUsDescription: 'If you have any questions about our cookie policy, please contact us.',
-    contactUsUrl: 'https://example.com/contact'
+    cookieTitle: 'موافقة ملفات تعريف الارتباط',
+    strictlyCookieTitle: 'ملفات تعريف الارتباط الضرورية',
+    cookieDescription: 'نستخدم ملفات تعريف الارتباط لتحسين تجربة التصفح وتوفير محتوى مخصص.',
+    strictlyCookieDescription: 'هذه الملفات ضرورية لتشغيل الموقع بشكل صحيح.',
+    contactUsDescription: 'إذا كان لديك أي أسئلة حول سياسة ملفات تعريف الارتباط، يرجى التواصل معنا.',
+    contactUsUrl: 'https://wusool.ps/contact'
   };
   
   // Combine settings from props and page props

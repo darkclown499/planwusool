@@ -234,7 +234,6 @@ const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(({
       <EditorContent 
         editor={editor} 
         className="min-h-[200px]"
-        placeholder={placeholder}
       />
     </div>
   )

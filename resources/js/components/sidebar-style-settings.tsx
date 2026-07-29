@@ -67,7 +67,7 @@ export function SidebarStyleSettings() {
     <div className="space-y-6 rounded-lg border p-6">
       <div>
         <h3 className="text-lg font-medium">{t("Sidebar Style")}</h3>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="text-sm text-neutral-500">
           {t("Choose how your sidebar looks and behaves")}
         </p>
         
