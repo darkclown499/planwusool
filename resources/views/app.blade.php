@@ -168,7 +168,7 @@
         <link rel="apple-touch-icon" href="{{ $faviconUrl }}">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&family=tajawal:400,500,700,800,900&family=cairo:400,500,600,700,800,900&family=ibm-plex-sans-arabic:400,500,600,700" rel="stylesheet" />
         <script src="{{ asset('js/jquery.min.js') }}"></script>
 
         <script>

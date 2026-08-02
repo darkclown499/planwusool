@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
+import { formatLocalDate } from '@/utils/date-helper';
 
 export default function ViewStore({ store, stats }) {
   const { t } = useTranslation();
@@ -78,16 +79,16 @@ export default function ViewStore({ store, stats }) {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('Status')}</p>
                 <Badge variant={store.config_status ? "default" : "secondary"}>
-                  {store.config_status ? "Active" : "Inactive"}
+                  {store.config_status ? t('Active') : t('Inactive')}
                 </Badge>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('Domain')}</p>
-                <p>{store.domain || 'No domain set'}</p>
+                <p>{store.domain ? <span dir="ltr">{store.domain}</span> : t('No domain set')}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('Email')}</p>
-                <p>{store.email || 'No email set'}</p>
+                <p>{store.email ? <span dir="ltr">{store.email}</span> : t('No email set')}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('Theme')}</p>
@@ -95,7 +96,7 @@ export default function ViewStore({ store, stats }) {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('Created')}</p>
-                <p>{new Date(store.created_at).toLocaleDateString()}</p>
+                <p>{formatLocalDate(store.created_at)}</p>
               </div>
             </CardContent>
           </Card>
@@ -104,7 +105,7 @@ export default function ViewStore({ store, stats }) {
             <CardHeader>
               <CardTitle>{t('Store Statistics')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4" dir="rtl">
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-muted-foreground">{t('Total Orders')}</span>
                 <span className="font-semibold">{stats?.total_orders || 0}</span>

@@ -29,8 +29,8 @@ export const Footer: React.FC<FooterProps> = ({
     <footer className="bg-gray-100 border-t border-gray-200 py-6 md:py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          {/* Left side - Brand info */}
-          <div className="text-center md:text-left">
+          {/* Right side - Brand info */}
+          <div className="text-center md:text-right">
             {logo ? (
               <img src={getImageUrl(logo)} alt={storeName} className="max-w-28 mx-auto md:mx-0 mb-2 object-contain" />
             ) : (
@@ -43,11 +43,11 @@ export const Footer: React.FC<FooterProps> = ({
             )}
           </div>
           
-          {/* Right side - Social and Copyright */}
-          <div className="text-center md:text-right">
+          {/* Left side - Social and Copyright */}
+          <div className="text-center md:text-left">
             {/* Social Media */}
             {socialMedia && (
-              <div className="flex justify-center md:justify-end gap-3 mb-2">
+              <div className="flex justify-center md:justify-start gap-3 mb-2">
                 {socialMedia.facebook && (
                   <a
                     href={socialMedia.facebook}
@@ -127,7 +127,7 @@ export const Footer: React.FC<FooterProps> = ({
             )}
             
             <p className="text-gray-500 text-sm">
-              {copyrightText || `© ${currentYear} ${storeName}. All rights reserved.`}
+              {copyrightText || `© ${currentYear} ${storeName}. جميع الحقوق محفوظة.`}
             </p>
           </div>
         </div>

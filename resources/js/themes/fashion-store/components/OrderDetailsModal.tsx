@@ -43,7 +43,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
         <div className="absolute inset-0 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading order details...</p>
+            <p className="text-gray-600">جارٍ تحميل تفاصيل الطلب...</p>
           </div>
         </div>
       </div>
@@ -79,8 +79,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-rose-100 flex-shrink-0">
             <div>
-              <h2 className="text-lg md:text-xl font-bold text-gray-900">Order Details</h2>
-              <p className="text-rose-600 text-sm">Order #{orderNumber}</p>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">تفاصيل الطلب</h2>
+              <p className="text-rose-600 text-sm">الطلب رقم #{orderNumber}</p>
             </div>
             <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-rose-50 rounded-full transition-colors cursor-pointer">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,11 +98,11 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                   <span className="text-rose-700 font-semibold capitalize text-sm">{order.status}</span>
                 </div>
                 <div className="text-gray-600 text-sm">
-                  <span className="font-medium">Date:</span> {new Date(order.date).toLocaleDateString()}
+                  <span className="font-medium">التاريخ:</span> {new Date(order.date).toLocaleDateString()}
                 </div>
               </div>
               <div className="text-sm">
-                <span className="text-gray-600">Order ID:</span> <span className="font-semibold text-gray-900">{order.id}</span>
+                <span className="text-gray-600">رقم الطلب:</span> <span className="font-semibold text-gray-900">{order.id}</span>
               </div>
             </div>
 
@@ -110,15 +110,15 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
             <div className="bg-white border-2 border-rose-100 rounded-xl p-4 mb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-semibold text-rose-800 mb-3 text-base">Customer Information</h3>
+                  <h3 className="font-semibold text-rose-800 mb-3 text-base">معلومات العميل</h3>
                   <div className="text-gray-600 space-y-2 text-sm">
-                    <p><span className="font-medium text-gray-700">Name:</span> {order.customer.name}</p>
-                    <p><span className="font-medium text-gray-700">Email:</span> <span className="break-all">{order.customer.email}</span></p>
-                    <p><span className="font-medium text-gray-700">Phone:</span> {order.customer.phone}</p>
+                    <p><span className="font-medium text-gray-700">الاسم:</span> {order.customer.name}</p>
+                    <p><span className="font-medium text-gray-700">البريد الإلكتروني:</span> <span className="break-all">{order.customer.email}</span></p>
+                    <p><span className="font-medium text-gray-700">الهاتف:</span> {order.customer.phone}</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-rose-800 mb-3 text-base">Shipping Address</h3>
+                  <h3 className="font-semibold text-rose-800 mb-3 text-base">عنوان الشحن</h3>
                   <div className="text-gray-600 space-y-1 text-sm">
                     <p className="font-medium text-gray-700">{order.shipping_address.name}</p>
                     <p>{order.shipping_address.address}</p>
@@ -131,16 +131,16 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
 
             {/* Order Items */}
             <div className="bg-white border-2 border-rose-100 rounded-xl p-4 mb-6">
-              <h3 className="font-semibold text-rose-800 mb-4 text-base">Order Items</h3>
+              <h3 className="font-semibold text-rose-800 mb-4 text-base">منتجات الطلب</h3>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[500px]">
                   <thead>
                     <tr className="border-b border-rose-200">
-                      <th className="text-left py-2 px-2 font-semibold text-rose-800 text-sm">Item</th>
-                      <th className="text-center py-2 px-2 font-semibold text-rose-800 text-sm">Qty</th>
-                      <th className="text-right py-2 px-2 font-semibold text-rose-800 text-sm">Price</th>
-                      <th className="text-right py-2 px-2 font-semibold text-rose-800 text-sm">Tax</th>
-                      <th className="text-right py-2 px-2 font-semibold text-rose-800 text-sm">Total</th>
+                      <th className="text-right py-2 px-2 font-semibold text-rose-800 text-sm">المنتج</th>
+                      <th className="text-center py-2 px-2 font-semibold text-rose-800 text-sm">الكمية</th>
+                      <th className="text-left py-2 px-2 font-semibold text-rose-800 text-sm">السعر</th>
+                      <th className="text-left py-2 px-2 font-semibold text-rose-800 text-sm">الضريبة</th>
+                      <th className="text-left py-2 px-2 font-semibold text-rose-800 text-sm">الإجمالي</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -166,12 +166,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                             })()}
                           </td>
                           <td className="py-3 px-2 text-center text-gray-600 text-sm">{item.quantity}</td>
-                          <td className="py-3 px-2 text-right text-gray-600 text-sm">{formatCurrency(item.price, storeSettings, currencies)}</td>
-                          <td className="py-3 px-2 text-right text-gray-600 text-sm">
+                          <td className="py-3 px-2 text-left text-gray-600 text-sm">{formatCurrency(item.price, storeSettings, currencies)}</td>
+                          <td className="py-3 px-2 text-left text-gray-600 text-sm">
                             <div>{formatCurrency(item.tax_amount || 0, storeSettings, currencies)}</div>
-                            <div className="text-xs text-gray-500">{item.tax_name || 'Tax'} {item.tax_percentage ? `(${item.tax_percentage}%)` : ''}</div>
+                            <div className="text-xs text-gray-500">{item.tax_name || 'الضريبة'} {item.tax_percentage ? `(${item.tax_percentage}%)` : ''}</div>
                           </td>
-                          <td className="py-3 px-2 text-right font-semibold text-gray-900 text-sm">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</td>
+                          <td className="py-3 px-2 text-left font-semibold text-gray-900 text-sm">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</td>
                         </tr>
                       );
                     })}
@@ -182,36 +182,36 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
 
             {/* Order Summary */}
             <div className="bg-rose-50 border-2 border-rose-100 rounded-xl p-4">
-              <h3 className="font-semibold text-rose-800 mb-4 text-base">Order Summary</h3>
+              <h3 className="font-semibold text-rose-800 mb-4 text-base">ملخص الطلب</h3>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-600">المجموع الفرعي</span>
                   <span className="text-gray-900">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between text-green-600 text-sm">
-                    <span>Coupon Discount ({order.coupon})</span>
+                    <span>خصم الكوبون ({order.coupon})</span>
                     <span>-{formatCurrency(order.discount, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Tax</span>
+                  <span className="text-gray-600">الضريبة</span>
                   <span className="text-gray-900">{formatCurrency(order.tax, storeSettings, currencies)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping</span>
+                  <span className="text-gray-600">الشحن</span>
                   <span className="text-gray-900">{formatCurrency(order.shipping, storeSettings, currencies)}</span>
                 </div>
                 <div className="border-t border-rose-200 pt-2">
                   <div className="flex justify-between">
-                    <span className="text-base font-semibold text-gray-900">Total</span>
+                    <span className="text-base font-semibold text-gray-900">الإجمالي</span>
                     <span className="text-lg font-bold text-rose-600">{formatCurrency(order.total, storeSettings, currencies)}</span>
                   </div>
                 </div>
                 {order.payment_method && (
                   <div className="border-t border-rose-200 pt-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Payment Method</span>
+                      <span className="text-gray-600">طريقة الدفع</span>
                       <span className="text-gray-900">{order.payment_method}</span>
                     </div>
                   </div>
@@ -222,7 +222,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
           
           {/* Footer */}
           <div className="border-t border-rose-100 p-4 md:p-6 flex-shrink-0">
-            <div className="flex justify-end">
+            <div className="flex justify-start">
               <button
                 onClick={() => {
                   window.location.href = route('store.order.pdf', { 
@@ -235,7 +235,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Download PDF
+                تحميل PDF
               </button>
             </div>
           </div>

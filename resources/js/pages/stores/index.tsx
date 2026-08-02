@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
+import { formatLocalDate } from '@/utils/date-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 
 interface PageAction {
@@ -162,7 +163,11 @@ export default function StoreManagement({ stores = [], storeStats = {} }) {
             ) : (
               <div className="space-y-4">
               {stores.map((store) => (
-                <div key={store.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div
+                  key={store.id}
+                  className="flex flex-wrap items-center justify-between gap-3 p-4 border rounded-lg cursor-pointer transition-shadow hover:shadow-md"
+                  onClick={() => handleActionClick('view', 'view-stores', store.id)}
+                >
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                       <Building2 className="h-6 w-6 text-primary" />
@@ -175,41 +180,49 @@ export default function StoreManagement({ stores = [], storeStats = {} }) {
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {store.custom_domain || store.custom_subdomain || t('No domain set')}
+                        {(() => {
+                          const domain = store.custom_domain || store.custom_subdomain;
+                          return domain ? <span dir="ltr">{domain}</span> : t('No domain set');
+                        })()}
                       </p>
-                      <div className="flex items-center space-x-4 mt-1">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
                         <span className="text-xs text-muted-foreground">{t('Theme: {{theme}}', { theme: store.theme })}</span>
-                        <span className="text-xs text-muted-foreground">{t('Created: {{date}}', { date: new Date(store.created_at).toLocaleDateString() })}</span>
+                        <span className="text-xs text-muted-foreground">{t('Created: {{date}}', { date: formatLocalDate(store.created_at) })}</span>
                         <span className="text-xs text-muted-foreground">{t('{{orders}} orders', { orders: store.orders_count || 0 })}</span>
                         <span className="text-xs text-muted-foreground">{t('{{revenue}} revenue', { revenue: formatCurrency(store.revenue || 0) })}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {hasPermission('view-stores') && (
-                      <Button variant="ghost" size="sm" onClick={() => handleActionClick('view', 'view-stores', store.id)}>
-                        <Eye className="h-4 w-4" />
+                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('view', 'view-stores', store.id); }}>
+                        <Eye className="h-3.5 w-3.5" />
+                        {t('View')}
                       </Button>
                     )}
                     {hasPermission('edit-stores') && (
-                      <Button variant="ghost" size="sm" onClick={() => handleActionClick('edit', 'edit-stores', store.id)}>
-                        <Edit className="h-4 w-4" />
+                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('edit', 'edit-stores', store.id); }}>
+                        <Edit className="h-3.5 w-3.5" />
+                        {t('Edit')}
                       </Button>
                     )}
                     {hasPermission('settings-stores') && (
-                      <Button variant="ghost" size="sm" onClick={() => handleActionClick('settings', 'settings-stores', store.id)}>
-                        <Settings className="h-4 w-4" />
+                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('settings', 'settings-stores', store.id); }}>
+                        <Settings className="h-3.5 w-3.5" />
+                        {t('Settings')}
                       </Button>
                     )}
                     {hasPermission('delete-stores') && (
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        onClick={() => handleActionClick('delete', 'delete-stores', store.id)}
+                        className="gap-1.5 text-destructive hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); handleActionClick('delete', 'delete-stores', store.id); }}
                         disabled={stores.length <= 1}
                         title={stores.length <= 1 ? t('Cannot delete the last store') : ''}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {t('Delete')}
                       </Button>
                     )}
                   </div>

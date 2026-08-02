@@ -28,19 +28,19 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
       storeSlug,
       resetToken,
       () => {
-        toast.success('Password has been reset successfully!');
+        toast.success('تمت إعادة تعيين كلمة المرور بنجاح!');
         router.visit(route('store.home', { storeSlug }));
       },
       (errors) => {
         if (errors.token) {
-          toast.error('Reset link has expired or is invalid. Please request a new one.');
+          toast.error('انتهت صلاحية رابط إعادة التعيين أو أنه غير صالح. يرجى طلب رابط جديد.');
           onClose();
         } else if (errors.email) {
           toast.error(errors.email);
         } else if (errors.password) {
           toast.error(errors.password);
         } else {
-          toast.error('Failed to reset password. Please try again.');
+          toast.error('فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى.');
         }
       }
     );
@@ -58,7 +58,7 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-amber-900">Reset Password</h2>
+              <h2 className="text-xl font-bold text-amber-900">إعادة تعيين كلمة المرور</h2>
             </div>
             <button 
               onClick={() => router.visit(route('store.home', { storeSlug }))} 
@@ -73,19 +73,19 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
           <div className="p-6 overflow-y-auto">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Email</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">البريد الإلكتروني</label>
                 <input 
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                  placeholder="Enter your email"
+                  placeholder="أدخل بريدك الإلكتروني"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">New Password</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">كلمة المرور الجديدة</label>
                 <input 
                   type="password" 
                   value={password}
@@ -93,12 +93,12 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
                   required
                   minLength={8}
                   className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                  placeholder="Enter new password"
+                  placeholder="أدخل كلمة المرور الجديدة"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Confirm Password</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">تأكيد كلمة المرور</label>
                 <input 
                   type="password" 
                   value={confirmPassword}
@@ -106,7 +106,7 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
                   required
                   minLength={8}
                   className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                  placeholder="Confirm new password"
+                  placeholder="أكد كلمة المرور الجديدة"
                 />
               </div>
               
@@ -114,17 +114,17 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
                 type="submit" 
                 className="w-full py-3 px-4 rounded-lg font-semibold transition-colors bg-amber-600 hover:bg-amber-700 text-white"
               >
-                Reset Password
+                إعادة تعيين كلمة المرور
               </button>
               
               <p className="text-center text-sm text-amber-700">
-                Remember your password? 
+                تذكرت كلمة المرور؟ 
                 <button 
                   onClick={onClose}
                   type="button" 
-                  className="text-amber-600 hover:text-amber-800 font-medium ml-1"
+                  className="text-amber-600 hover:text-amber-800 font-medium mr-1"
                 >
-                  Login
+                  تسجيل الدخول
                 </button>
               </p>
             </form>

@@ -38,10 +38,10 @@ const StateDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl">
-          <SelectValue placeholder="Select Country First" />
+          <SelectValue placeholder="اختر الدولة أولاً" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="disabled">Select Country First</SelectItem>
+          <SelectItem value="disabled">اختر الدولة أولاً</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -51,10 +51,10 @@ const StateDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl">
-          <SelectValue placeholder="Loading states..." />
+          <SelectValue placeholder="جارٍ تحميل المحافظات..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="loading">Loading states...</SelectItem>
+          <SelectItem value="loading">جارٍ تحميل المحافظات...</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -73,7 +73,7 @@ const StateDropdown: React.FC<{
       }}
     >
       <SelectTrigger className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600">
-        <SelectValue placeholder="Select State" />
+        <SelectValue placeholder="اختر المحافظة" />
       </SelectTrigger>
       <SelectContent>
         {states.map(state => (
@@ -120,10 +120,10 @@ const CityDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl">
-          <SelectValue placeholder="Select State First" />
+          <SelectValue placeholder="اختر المحافظة أولاً" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="disabled">Select State First</SelectItem>
+          <SelectItem value="disabled">اختر المحافظة أولاً</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -133,10 +133,10 @@ const CityDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl">
-          <SelectValue placeholder="Loading cities..." />
+          <SelectValue placeholder="جارٍ تحميل المدن..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="loading">Loading cities...</SelectItem>
+          <SelectItem value="loading">جارٍ تحميل المدن...</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -155,7 +155,7 @@ const CityDropdown: React.FC<{
       }}
     >
       <SelectTrigger className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600">
-        <SelectValue placeholder="Select City" />
+        <SelectValue placeholder="اختر المدينة" />
       </SelectTrigger>
       <SelectContent>
         {cities.map(city => (
@@ -274,7 +274,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
           <div className="relative bg-stone-700 p-4 sm:p-5 flex-shrink-0">
             <button 
               onClick={onClose}
-              className="absolute top-3 right-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
+              className="absolute top-3 left-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -283,8 +283,8 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
               <div className="w-12 h-12 bg-stone-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <User className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1">My Profile</h2>
-              <p className="text-stone-200 text-xs sm:text-sm">Manage your account information</p>
+              <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1">ملفي الشخصي</h2>
+              <p className="text-stone-200 text-xs sm:text-sm">إدارة معلومات حسابك</p>
             </div>
           </div>
 
@@ -301,7 +301,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
               >
                 <div className="flex items-center justify-center gap-2">
                   <Edit3 className="w-4 h-4" />
-                  <span className="text-sm">Personal Info</span>
+                  <span className="text-sm">المعلومات الشخصية</span>
                 </div>
               </button>
               <button
@@ -314,7 +314,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
               >
                 <div className="flex items-center justify-center gap-2">
                   <Lock className="w-4 h-4" />
-                  <span className="text-sm">Security</span>
+                  <span className="text-sm">الأمان</span>
                 </div>
               </button>
             </div>
@@ -326,7 +326,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
               <form onSubmit={(e) => {
                 e.preventDefault();
                 handleProfileUpdate(storeSlug, (updatedProfile) => {
-                  toast.success('Profile updated successfully!');
+                  toast.success('تم تحديث الملف الشخصي بنجاح!');
                   onUpdateProfile();
                   onClose();
                 });
@@ -335,28 +335,28 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                 <div className="bg-stone-50 rounded-2xl p-5 border border-stone-200 shadow-sm">
                   <h3 className="font-serif font-bold text-stone-800 mb-4 flex items-center gap-2">
                     <User className="w-5 h-5 text-stone-600" />
-                    Full Name
+                    الاسم الكامل
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">First Name *</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">الاسم الأول *</label>
                       <input
                         type="text"
                         value={profile.firstName || ''}
                         onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                        placeholder="Enter your first name"
+                        placeholder="أدخل اسمك الأول"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">Last Name *</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">اسم العائلة *</label>
                       <input
                         type="text"
                         value={profile.lastName || ''}
                         onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                        placeholder="Enter your last name"
+                        placeholder="أدخل اسم عائلتك"
                         required
                       />
                     </div>
@@ -367,28 +367,28 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                 <div className="bg-stone-50 rounded-2xl p-5 border border-stone-200 shadow-sm">
                   <h3 className="font-serif font-bold text-stone-800 mb-4 flex items-center gap-2">
                     <Mail className="w-5 h-5 text-stone-600" />
-                    Contact Information
+                    معلومات التواصل
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">Email Address *</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">البريد الإلكتروني *</label>
                       <input
                         type="email"
                         value={profile.email || ''}
                         onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                        placeholder="Enter your email address"
+                        placeholder="أدخل بريدك الإلكتروني"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">Phone Number *</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">رقم الهاتف *</label>
                       <input
                         type="tel"
                         value={profile.phone || ''}
                         onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                        placeholder="Enter your phone number"
+                        placeholder="أدخل رقم هاتفك"
                         required
                       />
                     </div>
@@ -399,21 +399,21 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                 <div className="bg-stone-50 rounded-2xl p-5 border border-stone-200 shadow-sm">
                   <h3 className="font-serif font-bold text-stone-800 mb-4 flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-stone-600" />
-                    Address Details
+                    تفاصيل العنوان
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">Street Address</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">العنوان</label>
                       <textarea
                         value={profile.address || ''}
                         onChange={(e) => setProfile(prev => ({ ...prev, address: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors resize-none"
-                        placeholder="Enter your street address"
+                        placeholder="أدخل عنوانك"
                         rows={3}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">Country</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">الدولة</label>
                       <Select
                         value={(() => {
                           const countries = (window as any).page?.props?.countries || [];
@@ -431,7 +431,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                         }}
                       >
                         <SelectTrigger className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600">
-                          <SelectValue placeholder="Select Country" />
+                          <SelectValue placeholder="اختر الدولة" />
                         </SelectTrigger>
                         <SelectContent>
                           {((window as any).page?.props?.countries || []).map(country => (
@@ -444,7 +444,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-stone-700 mb-2">State</label>
+                        <label className="block text-sm font-medium text-stone-700 mb-2">المحافظة</label>
                         <StateDropdown
                           countryId={countryId}
                           value={profile.state?.toString() || ''}
@@ -456,7 +456,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-stone-700 mb-2">City</label>
+                        <label className="block text-sm font-medium text-stone-700 mb-2">المدينة</label>
                         <CityDropdown
                           stateId={stateId}
                           value={profile.city?.toString() || ''}
@@ -467,13 +467,13 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-stone-700 mb-2">Postal Code</label>
+                        <label className="block text-sm font-medium text-stone-700 mb-2">الرمز البريدي</label>
                         <input
                           type="text"
                           value={profile.postalCode || ''}
                           onChange={(e) => setProfile(prev => ({ ...prev, postalCode: e.target.value }))}
                           className="w-full px-4 py-1.5 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                          placeholder="Enter postal code"
+                          placeholder="أدخل الرمز البريدي"
                         />
                       </div>
                     </div>
@@ -486,54 +486,54 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                   className="w-full bg-stone-700 hover:bg-stone-800 disabled:bg-stone-400 text-white font-serif font-bold py-4 px-8 rounded-2xl transition-colors flex items-center justify-center gap-3 shadow-lg"
                 >
                   <Save className="w-5 h-5" />
-                  {isLoading ? 'Saving Changes...' : 'Save Profile'}
+                  {isLoading ? 'جارٍ حفظ التغييرات...' : 'حفظ الملف الشخصي'}
                 </button>
               </form>
             ) : (
               <form onSubmit={(e) => {
                 e.preventDefault();
                 handlePasswordUpdate(storeSlug, () => {
-                  toast.success('Password updated successfully!');
+                  toast.success('تم تحديث كلمة المرور بنجاح!');
                   onUpdatePassword();
                 });
               }} className="space-y-5">
                 <div className="bg-stone-50 rounded-2xl p-5 border border-stone-200 shadow-sm">
                   <h3 className="font-serif font-bold text-stone-800 mb-4 flex items-center gap-2">
                     <Lock className="w-5 h-5 text-stone-600" />
-                    Change Password
+                    تغيير كلمة المرور
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">Current Password *</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">كلمة المرور الحالية *</label>
                       <input
                         type="password"
                         value={passwords.currentPassword}
                         onChange={(e) => setPasswords(prev => ({ ...prev, currentPassword: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                        placeholder="Enter your current password"
+                        placeholder="أدخل كلمة المرور الحالية"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">New Password *</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">كلمة المرور الجديدة *</label>
                       <input
                         type="password"
                         value={passwords.newPassword}
                         onChange={(e) => setPasswords(prev => ({ ...prev, newPassword: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                        placeholder="Enter new password (min 8 characters)"
+                        placeholder="أدخل كلمة مرور جديدة (8 أحرف على الأقل)"
                         required
                         minLength={8}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-2">Confirm New Password *</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-2">تأكيد كلمة المرور الجديدة *</label>
                       <input
                         type="password"
                         value={passwords.confirmPassword}
                         onChange={(e) => setPasswords(prev => ({ ...prev, confirmPassword: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-stone-300 rounded-xl focus:outline-none focus:border-stone-600 transition-colors"
-                        placeholder="Confirm your new password"
+                        placeholder="أكد كلمة المرور الجديدة"
                         required
                         minLength={8}
                       />
@@ -547,7 +547,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                   className="w-full bg-stone-700 hover:bg-stone-800 disabled:bg-stone-400 text-white font-serif font-bold py-4 px-8 rounded-2xl transition-colors flex items-center justify-center gap-3 shadow-lg"
                 >
                   <Lock className="w-5 h-5" />
-                  {isLoading ? 'Updating Password...' : 'Update Password'}
+                  {isLoading ? 'جارٍ تحديث كلمة المرور...' : 'تحديث كلمة المرور'}
                 </button>
               </form>
             )}

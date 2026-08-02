@@ -26,7 +26,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
           <div className="relative p-6 text-center bg-purple-100">
             <button 
               onClick={onClose}
-              className="absolute top-3 right-3 p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-200 rounded-full transition-colors"
+              className="absolute top-3 left-3 p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-200 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -35,8 +35,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               <ShoppingBag className="w-8 h-8 text-white" />
             </div>
             
-            <h2 className="text-2xl font-bold text-purple-800 mb-2">Ready to Shop?</h2>
-            <p className="text-purple-600 text-sm">Choose how you'd like to get your toys!</p>
+            <h2 className="text-2xl font-bold text-purple-800 mb-2">مستعد لإتمام الطلب؟</h2>
+            <p className="text-purple-600 text-sm">اختر كيف تريد المتابعة مع طلبك</p>
           </div>
 
           {/* Content */}
@@ -47,7 +47,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-3 group transform hover:scale-105"
             >
               <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span>Login to Account</span>
+              <span>تسجيل الدخول إلى حسابك</span>
             </button>
 
             {/* Divider */}
@@ -56,7 +56,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
                 <div className="w-full border-t-2 border-purple-200"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="px-4 bg-white text-sm text-purple-600 font-bold">or</span>
+                <span className="px-4 bg-white text-sm text-purple-600 font-bold">أو</span>
               </div>
             </div>
 
@@ -66,7 +66,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               className="w-full bg-green-400 hover:bg-green-500 text-white font-bold py-4 px-6 rounded-xl transition-all border-2 border-green-300 hover:border-green-400 flex items-center justify-center gap-3 group transform hover:scale-105"
             >
               <UserCheck className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span>Shop as Guest</span>
+              <span>المتابعة كضيف</span>
             </button>
           </div>
         </div>

@@ -58,15 +58,15 @@ const ProductCard: React.FC<{
         
         {/* Sale Badge */}
         {isOnSale && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-            -{discountPercentage}% OFF
+          <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+            -{discountPercentage}% خصم
           </div>
         )}
         
         {/* Variant Badge */}
         {product.variants && product.variants.length > 0 && (
-          <div className="absolute top-3 right-3 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
-            Variants
+          <div className="absolute top-3 left-3 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
+            خيارات
           </div>
         )}
         
@@ -74,7 +74,7 @@ const ProductCard: React.FC<{
         {product.availability === 'out_of_stock' && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <span className="bg-white text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
-              Out of Stock
+              غير متوفر
             </span>
           </div>
         )}
@@ -99,8 +99,8 @@ const ProductCard: React.FC<{
               : 'bg-gray-200 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {product.availability === 'out_of_stock' ? 'Out of Stock' : 
-           product.variants && product.variants.length > 0 ? 'Select Options' : 'Add to Cart'
+          {product.availability === 'out_of_stock' ? 'غير متوفر' : 
+           product.variants && product.variants.length > 0 ? 'اختر الخيارات' : 'أضف إلى السلة'
           }
         </button>
         
@@ -124,7 +124,7 @@ const ProductCard: React.FC<{
             )}
           </div>
           
-          <p className="text-xs text-gray-500">SKU: {product.id}</p>
+          <p className="text-xs text-gray-500">الرمز: {product.id}</p>
         </div>
       </div>
     </div>
@@ -148,10 +148,10 @@ export const ProductSections: React.FC<ProductSectionsProps> = ({
           <div>
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                Search Results for "{searchQuery}"
+                نتائج البحث عن "{searchQuery}"
               </h2>
               <p className="text-gray-600">
-                Found {filteredProducts.length} products
+                تم العثور على {filteredProducts.length} منتجات
               </p>
             </div>
             
@@ -171,10 +171,10 @@ export const ProductSections: React.FC<ProductSectionsProps> = ({
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  No products found
+                  لا توجد منتجات
                 </h3>
                 <p className="text-gray-600">
-                  Try searching with different keywords
+                  جرّب البحث بكلمات مختلفة
                 </p>
               </div>
             )}
@@ -196,7 +196,7 @@ export const ProductSections: React.FC<ProductSectionsProps> = ({
                         {category.name}
                       </h2>
                       <p className="text-gray-600">
-                        {category.description || `Fresh and quality ${category.name.toLowerCase()} for your family`}
+                        {category.description || `منتجات ${category.name} طازجة وعالية الجودة لعائلتك`}
                       </p>
                     </div>
                   </div>

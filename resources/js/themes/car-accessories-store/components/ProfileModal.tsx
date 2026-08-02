@@ -156,8 +156,8 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 <User className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">MY PROFILE</h2>
-                <p className="text-sm text-slate-300 font-medium">MANAGE ACCOUNT SETTINGS</p>
+                <h2 className="text-xl font-bold text-white">ملفي الشخصي</h2>
+                <p className="text-sm text-slate-300 font-medium">إدارة إعدادات الحساب</p>
               </div>
             </div>
             <button 
@@ -181,7 +181,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
             >
               <div className="flex items-center justify-center gap-2">
                 <User className="w-4 h-4" />
-                <span>PROFILE INFO</span>
+                <span>معلومات الملف الشخصي</span>
               </div>
             </button>
             <button
@@ -195,7 +195,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
             >
               <div className="flex items-center justify-center gap-2">
                 <Lock className="w-4 h-4" />
-                <span>PASSWORD</span>
+                <span>كلمة المرور</span>
               </div>
             </button>
           </div>
@@ -208,12 +208,12 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-slate-700 pb-2">
                     <User className="w-5 h-5 text-red-400" />
-                    PERSONAL INFORMATION
+                    المعلومات الشخصية
                   </h3>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-bold text-white mb-2">FIRST NAME</label>
+                      <label className="block text-sm font-bold text-white mb-2">الاسم الأول</label>
                       <input
                         type="text"
                         value={profile.firstName}
@@ -221,14 +221,14 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                         className={`w-full px-4 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
                           errors.first_name ? 'border-red-500' : 'border-slate-600'
                         }`}
-                        placeholder="First name"
+                        placeholder="أدخل اسمك الأول"
                         required
                       />
                       {errors.first_name && <p className="text-red-400 text-xs mt-1 font-medium">{errors.first_name}</p>}
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-bold text-white mb-2">LAST NAME</label>
+                      <label className="block text-sm font-bold text-white mb-2">اسم العائلة</label>
                       <input
                         type="text"
                         value={profile.lastName}
@@ -236,7 +236,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                         className={`w-full px-4 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
                           errors.last_name ? 'border-red-500' : 'border-slate-600'
                         }`}
-                        placeholder="Last name"
+                        placeholder="أدخل اسم عائلتك"
                         required
                       />
                       {errors.last_name && <p className="text-red-400 text-xs mt-1 font-medium">{errors.last_name}</p>}
@@ -248,21 +248,21 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-slate-700 pb-2">
                     <Mail className="w-5 h-5 text-red-400" />
-                    CONTACT INFORMATION
+                    معلومات الاتصال
                   </h3>
                   
                   <div>
-                    <label className="block text-sm font-bold text-white mb-2">EMAIL ADDRESS</label>
+                    <label className="block text-sm font-bold text-white mb-2">البريد الإلكتروني</label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                      <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                       <input
                         type="email"
                         value={profile.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
-                        className={`w-full pl-10 pr-4 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                        className={`w-full pr-10 pl-4 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
                           errors.email ? 'border-red-500' : 'border-slate-600'
                         }`}
-                        placeholder="your@email.com"
+                        placeholder="أدخل بريدك الإلكتروني"
                         required
                       />
                     </div>
@@ -270,14 +270,14 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-white mb-2">PHONE NUMBER</label>
+                    <label className="block text-sm font-bold text-white mb-2">رقم الهاتف</label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                      <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                       <input
                         type="tel"
                         value={profile.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="w-full pr-10 pl-4 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                         placeholder="+91 1234567890"
                         required
                       />
@@ -289,23 +289,23 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-white flex items-center gap-2 border-b border-slate-700 pb-2">
                     <MapPin className="w-5 h-5 text-red-400" />
-                    ADDRESS INFORMATION
+                    معلومات العنوان
                   </h3>
                   
                   <div>
-                    <label className="block text-sm font-bold text-white mb-2">STREET ADDRESS</label>
+                    <label className="block text-sm font-bold text-white mb-2">العنوان</label>
                     <textarea
                       value={profile.address}
                       onChange={(e) => handleInputChange('address', e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="Enter your full address"
+                      placeholder="أدخل عنوانك الكامل"
                       rows={3}
                       required
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-white mb-2">COUNTRY</label>
+                    <label className="block text-sm font-bold text-white mb-2">الدولة</label>
                     <Select
                       value={profile.country || undefined}
                       onValueChange={(countryId) => {
@@ -321,7 +321,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                       }}
                     >
                       <SelectTrigger className="w-full focus:ring-red-500 focus:border-red-500 bg-slate-800 border-slate-600 text-white">
-                        <SelectValue placeholder="Select Country" />
+                        <SelectValue placeholder="اختر الدولة" />
                       </SelectTrigger>
                       <SelectContent>
                         {((window as any).page?.props?.countries || []).map(country => (
@@ -334,7 +334,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-white mb-2">STATE</label>
+                    <label className="block text-sm font-bold text-white mb-2">المحافظة</label>
                     <Select
                       value={profile.state || undefined}
                       onValueChange={(stateId) => {
@@ -348,7 +348,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                       disabled={!countryId || loadingStates}
                     >
                       <SelectTrigger className="w-full focus:ring-red-500 focus:border-red-500 bg-slate-800 border-slate-600 text-white">
-                        <SelectValue placeholder={loadingStates ? "Loading states..." : "Select State"} />
+                        <SelectValue placeholder={loadingStates ? "جارٍ تحميل المحافظات..." : "اختر المحافظة"} />
                       </SelectTrigger>
                       <SelectContent>
                         {states.map(state => (
@@ -361,7 +361,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-white mb-2">CITY</label>
+                    <label className="block text-sm font-bold text-white mb-2">المدينة</label>
                     <Select
                       value={profile.city || undefined}
                       onValueChange={(cityId) => {
@@ -373,7 +373,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                       disabled={!stateId || loadingCities}
                     >
                       <SelectTrigger className="w-full focus:ring-red-500 focus:border-red-500 bg-slate-800 border-slate-600 text-white">
-                        <SelectValue placeholder={loadingCities ? "Loading cities..." : "Select City"} />
+                        <SelectValue placeholder={loadingCities ? "جارٍ تحميل المدن..." : "اختر المدينة"} />
                       </SelectTrigger>
                       <SelectContent>
                         {cities.map(city => (
@@ -386,13 +386,13 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-bold text-white mb-2">POSTAL CODE</label>
+                    <label className="block text-sm font-bold text-white mb-2">الرمز البريدي</label>
                     <input
                       type="text"
                       value={profile.postalCode}
                       onChange={(e) => handleInputChange('postalCode', e.target.value)}
                       className="w-full px-4 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="ZIP/Postal Code"
+                      placeholder="أدخل الرمز البريدي"
                       required
                     />
                   </div>
@@ -404,7 +404,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     onClick={onClose}
                     className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 sm:px-6 transition-colors border-2 border-slate-600 text-sm sm:text-base"
                   >
-                    CANCEL
+                    إلغاء
                   </button>
                   <button
                     type="submit"
@@ -416,8 +416,8 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     } text-white`}
                   >
                     <Save className="w-4 h-4" />
-                    <span className="hidden sm:inline">{isLoading ? 'SAVING...' : 'SAVE CHANGES'}</span>
-                    <span className="sm:hidden">{isLoading ? 'SAVING...' : 'SAVE'}</span>
+                    <span className="hidden sm:inline">{isLoading ? 'جارٍ الحفظ...' : 'حفظ التغييرات'}</span>
+                    <span className="sm:hidden">{isLoading ? 'جارٍ الحفظ...' : 'حفظ'}</span>
                   </button>
                 </div>
               </form>
@@ -427,28 +427,28 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                   <div className="w-16 h-16 bg-red-600 flex items-center justify-center mx-auto mb-4">
                     <Lock className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-white">CHANGE PASSWORD</h3>
-                  <p className="text-slate-300 text-sm font-medium">SECURE YOUR ACCOUNT</p>
+                  <h3 className="text-lg font-bold text-white">تغيير كلمة المرور</h3>
+                  <p className="text-slate-300 text-sm font-medium">قم بتأمين حسابك</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-white mb-2">CURRENT PASSWORD</label>
+                  <label className="block text-sm font-bold text-white mb-2">كلمة المرور الحالية</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                     <input
                       type={showCurrentPassword ? "text" : "password"}
                       value={passwords.currentPassword}
                       onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                      className={`w-full pl-10 pr-12 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                      className={`w-full pr-10 pl-12 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
                         errors.current_password ? 'border-red-500' : 'border-slate-600'
                       }`}
-                      placeholder="Enter current password"
+                      placeholder="أدخل كلمة المرور الحالية"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
                     >
                       {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -457,24 +457,24 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-bold text-white mb-2">NEW PASSWORD</label>
+                  <label className="block text-sm font-bold text-white mb-2">كلمة المرور الجديدة</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                     <input
                       type={showNewPassword ? "text" : "password"}
                       value={passwords.newPassword}
                       onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-                      className={`w-full pl-10 pr-12 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                      className={`w-full pr-10 pl-12 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
                         errors.password ? 'border-red-500' : 'border-slate-600'
                       }`}
-                      placeholder="Enter new password (min 8 characters)"
+                      placeholder="أدخل كلمة مرور جديدة (8 أحرف على الأقل)"
                       required
                       minLength={8}
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
                     >
                       {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -483,24 +483,24 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-bold text-white mb-2">CONFIRM NEW PASSWORD</label>
+                  <label className="block text-sm font-bold text-white mb-2">تأكيد كلمة المرور الجديدة</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       value={passwords.confirmPassword}
                       onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-                      className={`w-full pl-10 pr-12 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                      className={`w-full pr-10 pl-12 py-3 bg-slate-800 border-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 ${
                         errors.password_confirmation ? 'border-red-500' : 'border-slate-600'
                       }`}
-                      placeholder="Confirm your new password"
+                      placeholder="أكد كلمة المرور الجديدة"
                       required
                       minLength={8}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
                     >
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -514,7 +514,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     onClick={onClose}
                     className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 sm:px-6 transition-colors border-2 border-slate-600 text-sm sm:text-base"
                   >
-                    CANCEL
+                    إلغاء
                   </button>
                   <button
                     type="submit"
@@ -526,8 +526,8 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     } text-white`}
                   >
                     <Lock className="w-4 h-4" />
-                    <span className="hidden sm:inline">{isLoading ? 'UPDATING...' : 'UPDATE PASSWORD'}</span>
-                    <span className="sm:hidden">{isLoading ? 'UPDATING...' : 'UPDATE'}</span>
+                    <span className="hidden sm:inline">{isLoading ? 'جارٍ التحديث...' : 'تحديث كلمة المرور'}</span>
+                    <span className="sm:hidden">{isLoading ? 'جارٍ التحديث...' : 'تحديث'}</span>
                   </button>
                 </div>
               </form>

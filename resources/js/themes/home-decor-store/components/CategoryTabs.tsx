@@ -56,7 +56,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
             onClick={scrollLeft}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 md:p-2 bg-white shadow-lg rounded-full border border-amber-200 hover:bg-amber-50 transition-colors"
           >
-            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-amber-700" />
+            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-amber-700 rtl-flip" />
           </button>
 
           {/* Categories Container */}
@@ -96,7 +96,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
             onClick={scrollRight}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 md:p-2 bg-white shadow-lg rounded-full border border-amber-200 hover:bg-amber-50 transition-colors"
           >
-            <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-700" />
+            <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-700 rtl-flip" />
           </button>
         </div>
 

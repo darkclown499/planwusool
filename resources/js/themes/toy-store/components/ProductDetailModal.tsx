@@ -73,7 +73,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         >
           {/* Simple Header */}
           <div className="flex items-center justify-between p-6 bg-purple-400 rounded-t-[2rem] md:rounded-t-2xl">
-            <h2 className="text-lg font-bold text-white truncate flex-1 mr-4">
+            <h2 className="text-lg font-bold text-white truncate flex-1 ml-4">
               {product.name}
             </h2>
             <button 
@@ -88,8 +88,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {/* Image Section */}
             <div className="w-full md:w-1/2 bg-blue-50 relative flex-shrink-0">
               {isOnSale && (
-                <div className="absolute top-2 left-2 md:top-4 md:left-4 z-10 bg-red-400 text-white px-2 py-1 md:px-4 md:py-2 rounded-full font-bold text-xs md:text-sm">
-                  {discountPercentage}% OFF
+                <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10 bg-red-400 text-white px-2 py-1 md:px-4 md:py-2 rounded-full font-bold text-xs md:text-sm">
+                  {discountPercentage}% خصم
                 </div>
               )}
 
@@ -104,17 +104,17 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <>
                     <button 
                       onClick={() => onImageSelect(selectedImageIndex === 0 ? product.images!.length - 1 : selectedImageIndex - 1)}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-purple-400 hover:bg-purple-500 p-3 rounded-full transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-400 hover:bg-purple-500 p-3 rounded-full transition-colors"
                     >
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-white rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
                     <button 
                       onClick={() => onImageSelect(selectedImageIndex === product.images!.length - 1 ? 0 : selectedImageIndex + 1)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-purple-400 hover:bg-purple-500 p-3 rounded-full transition-colors"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-purple-400 hover:bg-purple-500 p-3 rounded-full transition-colors"
                     >
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-white rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -185,7 +185,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             }))}
                           >
                             <SelectTrigger className="rounded-xl border-2 border-purple-200 h-9 md:h-10">
-                              <SelectValue placeholder={`Select ${variant.name}`} />
+                              <SelectValue placeholder={`اختر ${variant.name}`} />
                             </SelectTrigger>
                             <SelectContent>
                               {(variant.options || variant.values) && (variant.options || variant.values).map((option, optionIndex) => (
@@ -212,8 +212,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     product.availability === 'in_stock' ? 'text-green-700' : 'text-red-700'
                   }`}>
                     {product.availability === 'in_stock' 
-                      ? `${product.stockQuantity} available` 
-                      : 'Out of stock'
+                      ? `${product.stockQuantity} متاح` 
+                      : 'غير متوفر'
                     }
                   </span>
                 </div>
@@ -229,7 +229,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           : 'border-transparent text-purple-400'
                       }`}
                     >
-                      Details
+                      التفاصيل
                     </button>
                     {product.description && (
                       <button
@@ -240,7 +240,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             : 'border-transparent text-purple-400'
                         }`}
                       >
-                        Description
+                        الوصف
                       </button>
                     )}
                   </div>
@@ -250,12 +250,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <div className="space-y-2 md:space-y-3">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 text-xs md:text-sm">
                           <div>
-                            <span className="text-purple-500">SKU:</span>
+                            <span className="text-purple-500">الرمز:</span>
                             <div className="font-bold text-purple-700 break-all">{product.sku}</div>
                           </div>
                           <div>
-                            <span className="text-purple-500">Category:</span>
-                            <div className="font-bold text-purple-700">{product.category || 'N/A'}</div>
+                            <span className="text-purple-500">الفئة:</span>
+                            <div className="font-bold text-purple-700">{product.category || 'لا يوجد'}</div>
                           </div>
                         </div>
                         {product.customFields && product.customFields.length > 0 && (
@@ -263,7 +263,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             {product.customFields.map((field, index) => (
                               <div key={index} className="flex justify-between text-xs md:text-sm">
                                 <span className="text-purple-500 flex-shrink-0">{field.name}:</span>
-                                <span className="font-bold text-purple-700 text-right ml-2">{field.value}</span>
+                                <span className="font-bold text-purple-700 text-left mr-2">{field.value}</span>
                               </div>
                             ))}
                           </div>
@@ -285,7 +285,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div className="border-t-2 border-purple-100 p-6 flex-shrink-0 sticky bottom-0 bg-white">
                 <div className="flex items-center gap-3 md:flex-col md:items-start md:gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs md:text-sm font-bold text-purple-700">Qty:</span>
+                    <span className="text-xs md:text-sm font-bold text-purple-700">الكمية:</span>
                     <div className="flex items-center bg-purple-100 rounded-full">
                       <button
                         onClick={() => handleQuantityChange(-1)}
@@ -348,11 +348,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     }`}
                   >
                     {product.availability === 'out_of_stock' 
-                      ? 'Out of Stock'
+                      ? 'غير متوفر'
                       : (product.variants && product.variants.length > 0 && 
                          product.variants.some(variant => !selectedVariants[variant.name]))
-                        ? 'Select Options'
-                        : `Add ${quantity} to Cart`
+                        ? 'اختر الخيارات'
+                        : `أضف ${quantity} إلى السلة`
                     }
                   </button>
                 </div>

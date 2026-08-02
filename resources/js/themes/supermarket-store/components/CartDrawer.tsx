@@ -67,8 +67,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <ShoppingCart className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Shopping Cart</h2>
-                <p className="text-green-100 text-sm">{cartItems.length} items • Fresh & Ready</p>
+                <h2 className="text-xl font-bold">سلة التسوق</h2>
+                <p className="text-green-100 text-sm">{cartItems.length} منتجات • طازجة وجاهزة</p>
               </div>
             </div>
             <button onClick={onClose} className="w-10 h-10 flex items-center justify-center text-green-100 hover:text-white hover:bg-green-500 rounded-lg transition-colors">
@@ -84,13 +84,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <ShoppingBag className="w-10 h-10 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Your cart is empty</h3>
-              <p className="text-gray-600 mb-6">Add fresh products to get started!</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">سلتك فارغة</h3>
+              <p className="text-gray-600 mb-6">أضف منتجات طازجة للبدء!</p>
               <button
                 onClick={onClose}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
               >
-                Shop Now
+                تسوق الآن
               </button>
             </div>
           ) : (
@@ -99,10 +99,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="bg-white rounded-t-lg border-b-2 border-green-200 p-3 mb-2">
                 <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-700 uppercase tracking-wide">
                   <div className="col-span-1">#</div>
-                  <div className="col-span-5">Product</div>
-                  <div className="col-span-2 text-center">Qty</div>
-                  <div className="col-span-2 text-right">Price</div>
-                  <div className="col-span-2 text-center">Action</div>
+                  <div className="col-span-5">المنتج</div>
+                  <div className="col-span-2 text-center">الكمية</div>
+                  <div className="col-span-2 text-right">السعر</div>
+                  <div className="col-span-2 text-center">إجراء</div>
                 </div>
               </div>
               
@@ -134,7 +134,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                             >
                               {item.name}
                             </h3>
-                            <p className="text-xs text-gray-500">{formatCurrency(item.price, storeSettings, currencies)} each</p>
+                            <p className="text-xs text-gray-500">{formatCurrency(item.price, storeSettings, currencies)} للقِطعة</p>
                             
                             {/* Variants */}
                             {(() => {
@@ -142,7 +142,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                               return variants && Object.keys(variants).length > 0 && (
                                 <div className="text-xs text-green-600 mt-1">
                                   {Object.entries(variants).map(([key, value], index) => (
-                                    <span key={key} className="bg-green-100 px-1 py-0.5 rounded mr-1">
+                                    <span key={key} className="bg-green-100 px-1 py-0.5 rounded ml-1">
                                       {key}: {value}
                                     </span>
                                   ))}
@@ -181,7 +181,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </div>
                         {item.taxName && item.taxPercentage && (
                           <div className="text-xs text-gray-500">
-                            +{item.taxPercentage}% tax
+                            +{item.taxPercentage}% ضريبة
                           </div>
                         )}
                       </div>
@@ -210,23 +210,23 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="bg-gray-50 rounded-lg p-4 mb-4 border-2 border-dashed border-gray-300">
               <div className="text-center mb-3">
                 <Receipt className="w-5 h-5 text-green-600 mx-auto mb-1" />
-                <h3 className="font-bold text-gray-900">RECEIPT SUMMARY</h3>
+                <h3 className="font-bold text-gray-900">ملخص الإيصال</h3>
                 <div className="w-full h-px bg-gray-300 my-2"></div>
               </div>
               
               <div className="space-y-2 font-mono text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">SUBTOTAL:</span>
+                  <span className="text-gray-600">المجموع الفرعي:</span>
                   <span className="font-bold">{formatCurrency(subtotal, storeSettings, currencies)}</span>
                 </div>
                 {totalTax > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">TAX:</span>
+                    <span className="text-gray-600">الضريبة:</span>
                     <span className="font-bold">{formatCurrency(totalTax, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="border-t border-gray-400 pt-2 flex justify-between text-lg">
-                  <span className="font-bold text-gray-900">TOTAL:</span>
+                  <span className="font-bold text-gray-900">الإجمالي:</span>
                   <span className="font-bold text-green-600">{formatCurrency(total, storeSettings, currencies)}</span>
                 </div>
               </div>
@@ -238,7 +238,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition-colors shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span>Proceed to Checkout</span>
+              <span>إتمام عملية الشراء</span>
             </button>
           </div>
         )}

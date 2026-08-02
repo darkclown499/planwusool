@@ -72,7 +72,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
                 {/* Product Count */}
                 {category.product_count !== undefined && (
                   <p className="text-xs opacity-90">
-                    {category.product_count} items
+                    {category.product_count} منتجات
                   </p>
                 )}
               </div>
@@ -82,7 +82,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
               
               {/* Active Indicator */}
               {activeCategory === category.id && (
-                <div className="absolute top-2 right-2 w-3 h-3 bg-white rounded-full shadow-lg" />
+                <div className="absolute top-2 left-2 w-3 h-3 bg-white rounded-full shadow-lg" />
               )}
             </button>
           ))}

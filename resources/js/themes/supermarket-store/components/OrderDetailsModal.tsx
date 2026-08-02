@@ -43,7 +43,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
         <div className="flex items-center justify-center h-full p-4">
           <div className="bg-white rounded-2xl shadow-2xl p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading order details...</p>
+            <p className="text-gray-600">جارٍ تحميل تفاصيل الطلب...</p>
           </div>
         </div>
       </div>
@@ -70,6 +70,18 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
         return 'text-gray-800 bg-gray-100 border-gray-200';
     }
   };
+
+  const getStatusLabel = (status: string) => {
+    const statusMap: {[key: string]: string} = {
+      pending: 'قيد الانتظار',
+      processing: 'قيد المعالجة',
+      confirmed: 'مؤكد',
+      shipped: 'تم الشحن',
+      delivered: 'تم التسليم',
+      cancelled: 'ملغي',
+    };
+    return statusMap[status.toLowerCase()] || status;
+  };
   
   return (
     <div className="fixed inset-0 z-60 bg-black/50" onClick={onClose}>
@@ -85,8 +97,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 <Package className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Order Details</h2>
-                <p className="text-sm text-gray-600">#{orderNumber}</p>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">تفاصيل الطلب</h2>
+                <p className="text-sm text-gray-600">الطلب رقم #{orderNumber}</p>
               </div>
             </div>
             <button 
@@ -104,11 +116,11 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(order.status)}`}>
-                    {order.status}
+                    {getStatusLabel(order.status)}
                   </span>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Calendar className="w-4 h-4" />
-                    <span className="text-sm">{new Date(order.date).toLocaleDateString()}</span>
+                    <span className="text-sm">{new Date(order.date).toLocaleDateString('ar')}</span>
                   </div>
                 </div>
                 <div className="text-2xl font-bold text-green-600">
@@ -125,19 +137,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                     <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                       <User className="w-4 h-4 text-green-600" />
                     </div>
-                    <h3 className="font-semibold text-gray-900">Customer Information</h3>
+                    <h3 className="font-semibold text-gray-900">معلومات العميل</h3>
                   </div>
                   <div className="space-y-3 text-sm">
                     <div>
-                      <span className="text-gray-500">Name:</span>
+                      <span className="text-gray-500">الاسم:</span>
                       <p className="font-medium text-gray-900">{order.customer.name}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">Email:</span>
+                      <span className="text-gray-500">البريد الإلكتروني:</span>
                       <p className="font-medium text-gray-900 break-all">{order.customer.email}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">Phone:</span>
+                      <span className="text-gray-500">الهاتف:</span>
                       <p className="font-medium text-gray-900">{order.customer.phone}</p>
                     </div>
                   </div>
@@ -148,7 +160,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                     <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                       <MapPin className="w-4 h-4 text-green-600" />
                     </div>
-                    <h3 className="font-semibold text-gray-900">Shipping Address</h3>
+                    <h3 className="font-semibold text-gray-900">عنوان الشحن</h3>
                   </div>
                   <div className="text-sm space-y-1">
                     <p className="font-medium text-gray-900">{order.shipping_address.name}</p>
@@ -167,7 +179,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                   <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                     <ShoppingCart className="w-4 h-4 text-green-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900">Order Items</h3>
+                  <h3 className="font-semibold text-gray-900">منتجات الطلب</h3>
                 </div>
                 
                 <div className="divide-y divide-gray-100">
@@ -193,14 +205,14 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                               );
                             })()}
                             <div className="flex items-center gap-4 text-sm text-gray-600">
-                              <span>Qty: {item.quantity}</span>
-                              <span>Price: {formatCurrency(item.price, storeSettings, currencies)}</span>
+                              <span>الكمية: {item.quantity}</span>
+                              <span>السعر: {formatCurrency(item.price, storeSettings, currencies)}</span>
                               {item.tax_amount > 0 && (
-                                <span>Tax: {formatCurrency(item.tax_amount, storeSettings, currencies)}</span>
+                                <span>الضريبة: {formatCurrency(item.tax_amount, storeSettings, currencies)}</span>
                               )}
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-left">
                             <div className="text-lg font-semibold text-gray-900">
                               {formatCurrency(itemTotalWithTax, storeSettings, currencies)}
                             </div>
@@ -218,38 +230,38 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                   <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                     <CreditCard className="w-4 h-4 text-green-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900">Order Summary</h3>
+                  <h3 className="font-semibold text-gray-900">ملخص الطلب</h3>
                 </div>
                 
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-600">المجموع الفرعي</span>
                     <span className="text-gray-900">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between text-green-600 text-sm">
-                      <span>Coupon Discount ({order.coupon})</span>
+                      <span>خصم الكوبون ({order.coupon})</span>
                       <span>-{formatCurrency(order.discount, storeSettings, currencies)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax</span>
+                    <span className="text-gray-600">الضريبة</span>
                     <span className="text-gray-900">{formatCurrency(order.tax, storeSettings, currencies)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Shipping</span>
+                    <span className="text-gray-600">الشحن</span>
                     <span className="text-gray-900">{formatCurrency(order.shipping, storeSettings, currencies)}</span>
                   </div>
                   <div className="border-t border-green-200 pt-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-gray-900">Total</span>
+                      <span className="text-lg font-semibold text-gray-900">الإجمالي</span>
                       <span className="text-2xl font-bold text-green-600">{formatCurrency(order.total, storeSettings, currencies)}</span>
                     </div>
                   </div>
                   {order.payment_method && (
                     <div className="border-t border-green-200 pt-3">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Payment Method</span>
+                        <span className="text-gray-600">طريقة الدفع</span>
                         <span className="text-gray-900">{order.payment_method}</span>
                       </div>
                     </div>
@@ -271,7 +283,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
               className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" />
-              Download PDF
+              تحميل PDF
             </button>
           </div>
         </div>

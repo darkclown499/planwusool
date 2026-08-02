@@ -508,34 +508,46 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  )}
  </div>
  
- {/* Quick Actions */}
- {userHasPermission('manage-products') && (
- <Card>
- <CardContent className="py-4">
- <div className="flex flex-wrap items-center gap-3" dir="rtl">
- <span className="text-sm font-medium text-muted-foreground">{t('Quick Actions')}:</span>
- {userHasPermission('manage-products') && (
- <Button size="sm" onClick={() => router.visit(route('products.create'))} className="h-8 gap-1.5">
- <Package className="h-3.5 w-3.5" />
- {t('Add New Product')}
- </Button>
- )}
- {userHasPermission('manage-coupon-system') && (
- <Button size="sm" variant="outline" onClick={() => router.visit(route('coupon-system.index'))} className="h-8 gap-1.5">
- <Tag className="h-3.5 w-3.5" />
- {t('Add Coupon')}
- </Button>
- )}
- {userHasPermission('manage-orders') && (
- <Button size="sm" variant="outline" onClick={() => router.visit(route('orders.index'))} className="h-8 gap-1.5">
- <FileText className="h-3.5 w-3.5" />
- {t('Create Manual Order')}
- </Button>
- )}
- </div>
- </CardContent>
- </Card>
- )}
+  {/* Quick Actions */}
+  {(userHasPermission('manage-products') || userHasPermission('manage-coupon-system') || userHasPermission('manage-orders') || userHasPermission('settings-stores') || userHasPermission('manage-stores')) && (
+  <Card>
+  <CardContent className="py-4">
+  <div className="flex flex-wrap items-center gap-3" dir="rtl">
+  <span className="text-sm font-medium text-muted-foreground">{t('Quick Actions')}:</span>
+  {userHasPermission('manage-products') && (
+  <Button size="sm" onClick={() => router.visit(route('products.create'))} className="h-8 gap-1.5">
+  <Package className="h-3.5 w-3.5" />
+  {t('Add New Product')}
+  </Button>
+  )}
+  {userHasPermission('manage-coupon-system') && (
+  <Button size="sm" variant="outline" onClick={() => router.visit(route('coupon-system.index'))} className="h-8 gap-1.5">
+  <Tag className="h-3.5 w-3.5" />
+  {t('Add Coupon')}
+  </Button>
+  )}
+  {userHasPermission('manage-orders') && (
+  <Button size="sm" variant="outline" onClick={() => router.visit(route('orders.index'))} className="h-8 gap-1.5">
+  <FileText className="h-3.5 w-3.5" />
+  {t('Create Manual Order')}
+  </Button>
+  )}
+  {currentStore && userHasPermission('settings-stores') && (
+  <Button size="sm" variant="outline" onClick={() => router.visit(route('stores.settings', currentStore.id))} className="h-8 gap-1.5">
+  <Settings className="h-3.5 w-3.5" />
+  {t('Store Settings')}
+  </Button>
+  )}
+  {userHasPermission('manage-stores') && (
+  <Button size="sm" variant="outline" onClick={() => router.visit(route('stores.index'))} className="h-8 gap-1.5">
+  <Store className="h-3.5 w-3.5" />
+  {t('Manage Stores')}
+  </Button>
+  )}
+  </div>
+  </CardContent>
+  </Card>
+  )}
 
  {/* Vital Alerts */}
  {userHasPermission('manage-orders') && (

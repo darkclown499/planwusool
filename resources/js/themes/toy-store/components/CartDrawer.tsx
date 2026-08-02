@@ -74,8 +74,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <ShoppingCart className="w-7 h-7 text-purple-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Shopping Cart</h2>
-                <p className="text-purple-200 text-sm font-medium">{cartItems.length} items in cart</p>
+                <h2 className="text-xl font-bold text-white">سلة التسوق</h2>
+                <p className="text-purple-200 text-sm font-medium">{cartItems.length} عنصر{cartItems.length > 1 ? 'ات' : ''}</p>
               </div>
             </div>
             <button onClick={onClose} className="w-10 h-10 flex items-center justify-center text-purple-200 hover:text-white hover:bg-purple-500 rounded-full transition-colors">
@@ -91,13 +91,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <ShoppingCart className="w-12 h-12 text-purple-600" />
               </div>
-              <h3 className="text-xl font-bold text-purple-800 mb-3">Your cart is empty</h3>
-              <p className="text-purple-600 mb-6">Add some amazing toys to get started!</p>
+              <h3 className="text-xl font-bold text-purple-800 mb-3">سلتك فارغة</h3>
+              <p className="text-purple-600 mb-6">أضف بعض المنتجات للبدء</p>
               <button
                 onClick={onClose}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg"
               >
-                Continue Shopping
+                متابعة التسوق
               </button>
             </div>
           ) : (
@@ -128,7 +128,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </h3>
                         <button 
                           onClick={() => onRemoveFromCart(index)}
-                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors ml-2"
+                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors mr-2"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -140,7 +140,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         return variants && Object.keys(variants).length > 0 && (
                           <div className="mb-2">
                             {Object.entries(variants).map(([key, value]) => (
-                              <span key={key} className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium mr-1 mb-1">
+                              <span key={key} className="inline-block bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-medium ml-1 mb-1">
                                 {key}: {value}
                               </span>
                             ))}
@@ -160,11 +160,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       
                       {/* Quantity Controls */}
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-purple-700">Quantity:</span>
+                        <span className="text-sm font-bold text-purple-700">الكمية:</span>
                         <div className="flex items-center bg-purple-100 rounded-xl">
                           <button 
                             onClick={() => item.quantity > 1 && onUpdateQuantity(index, -1)}
-                            className={`w-8 h-8 rounded-l-xl flex items-center justify-center text-sm font-bold transition-all ${
+                            className={`w-8 h-8 rounded-r-xl flex items-center justify-center text-sm font-bold transition-all ${
                               item.quantity > 1 ? 'bg-purple-500 text-white hover:bg-purple-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                           >
@@ -175,7 +175,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           </div>
                           <button 
                             onClick={() => onUpdateQuantity(index, 1)}
-                            className="w-8 h-8 rounded-r-xl flex items-center justify-center bg-purple-500 text-white hover:bg-purple-600 text-sm font-bold transition-all"
+                            className="w-8 h-8 rounded-l-xl flex items-center justify-center bg-purple-500 text-white hover:bg-purple-600 text-sm font-bold transition-all"
                           >
                             <Plus className="w-3 h-3" />
                           </button>
@@ -202,22 +202,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             {/* Order Summary */}
             <div className="bg-purple-50 rounded-2xl p-4 mb-4 border-2 border-purple-200">
               <div className="text-center mb-3">
-                <h3 className="font-bold text-purple-800">Order Summary</h3>
+                <h3 className="font-bold text-purple-800">ملخص الطلب</h3>
               </div>
               
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-purple-700">Subtotal</span>
+                  <span className="text-purple-700">المجموع الفرعي</span>
                   <span className="font-bold text-purple-800">{formatCurrency(subtotal, storeSettings, currencies)}</span>
                 </div>
                 {totalTax > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-purple-700">Tax</span>
+                    <span className="text-purple-700">الضريبة</span>
                     <span className="font-bold text-purple-800">{formatCurrency(totalTax, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="border-t-2 border-purple-300 pt-2 flex justify-between">
-                  <span className="font-bold text-purple-900">Total</span>
+                  <span className="font-bold text-purple-900">الإجمالي</span>
                   <span className="text-xl font-bold text-purple-600">{formatCurrency(total, storeSettings, currencies)}</span>
                 </div>
               </div>
@@ -229,7 +229,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span>Proceed to Checkout</span>
+              <span>إتمام عملية الشراء</span>
             </button>
           </div>
         )}

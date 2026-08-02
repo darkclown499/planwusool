@@ -67,7 +67,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
           <div className="relative bg-stone-700 p-4 sm:p-5 flex-shrink-0">
             <button 
               onClick={onClose}
-              className="absolute top-3 right-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
+              className="absolute top-3 left-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -76,8 +76,8 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
               <div className="w-12 h-12 bg-stone-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Package className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1">My Orders</h2>
-              <p className="text-stone-200 text-xs sm:text-sm">View your order history</p>
+              <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1">طلباتي</h2>
+              <p className="text-stone-200 text-xs sm:text-sm">عرض سجل طلباتك</p>
             </div>
           </div>
 
@@ -85,13 +85,13 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
           <div className="p-4 sm:p-6 border-b border-stone-200 bg-stone-50">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
                   type="text"
-                  placeholder="Search by order number..."
+                  placeholder="ابحث برقم الطلب..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 text-sm"
+                  className="w-full pr-10 pl-4 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 text-sm"
                 />
               </div>
               <div className="relative min-w-[140px]">
@@ -103,7 +103,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                   <SelectContent>
                     {statusOptions.map(status => (
                       <SelectItem key={status} value={status}>
-                        {status === 'all' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
+                        {status === 'all' ? 'كل الحالات' : status.charAt(0).toUpperCase() + status.slice(1)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -117,7 +117,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <div className="w-16 h-16 border-4 border-stone-200 border-t-stone-700 rounded-full animate-spin mb-4"></div>
-                <p className="text-stone-600 font-medium">Loading your orders...</p>
+                <p className="text-stone-600 font-medium">جارٍ تحميل الطلبات...</p>
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-16">
@@ -125,18 +125,18 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                   <Package className="w-10 h-10 text-stone-400" />
                 </div>
                 <h3 className="text-xl font-serif font-bold text-stone-900 mb-3">
-                  {searchQuery || statusFilter !== 'all' ? 'No Orders Found' : 'No Orders Yet'}
+                  {searchQuery || statusFilter !== 'all' ? 'لا توجد طلبات' : 'لا توجد طلبات بعد'}
                 </h3>
                 <p className="text-stone-600 mb-8 max-w-sm mx-auto">
                   {searchQuery || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filter criteria.' 
-                    : 'Start shopping to see your orders here.'}
+                    ? 'جرّب تعديل البحث أو معايير التصفية.' 
+                    : 'ابدأ التسوق لترى طلباتك هنا.'}
                 </p>
                 <button
                   onClick={onClose}
                   className="bg-stone-700 hover:bg-stone-800 text-white px-8 py-3 rounded-xl font-serif font-semibold transition-all shadow-lg hover:shadow-xl"
                 >
-                  Continue Shopping
+                  متابعة التسوق
                 </button>
               </div>
             ) : (
@@ -162,7 +162,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                               </span>
                               <div className="flex items-center gap-3 text-xs sm:text-sm">
                                 <span className="text-stone-600">
-                                  {order.items} item{order.items > 1 ? 's' : ''}
+                                  {order.items} منتج
                                 </span>
                                 <span className="font-bold text-base sm:text-lg text-stone-900">
                                   {formatCurrency(order.total, storeSettings, currencies)}
@@ -177,8 +177,8 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                           className="bg-stone-700 hover:bg-stone-800 text-white px-3 py-2 sm:px-6 sm:py-3 rounded-xl font-serif font-semibold transition-all flex items-center gap-2 shadow-md hover:shadow-lg flex-shrink-0"
                         >
                           <Eye className="w-4 h-4" />
-                          <span className="hidden sm:inline">View Details</span>
-                          <span className="sm:hidden text-xs">View</span>
+                          <span className="hidden sm:inline">عرض التفاصيل</span>
+                          <span className="sm:hidden text-xs">عرض</span>
                         </button>
                       </div>
                     </div>

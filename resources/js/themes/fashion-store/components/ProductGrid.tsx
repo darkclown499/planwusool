@@ -47,8 +47,8 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-        <p className="text-gray-500">Try adjusting your search or browse other categories</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">لا توجد منتجات</h3>
+        <p className="text-gray-500">حاول تعديل بحثك أو تصفح فئات أخرى</p>
       </div>
     );
   }
@@ -74,7 +74,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             <div className="absolute top-3 left-3 flex flex-col space-y-2">
               {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
                 <div className="bg-rose-600 text-white text-xs font-medium px-2 py-1 rounded-full">
-                  In Variants
+                  متوفر بخيارات
                 </div>
               )}
               {product.originalPrice && (
@@ -88,7 +88,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             {product.availability === 'out_of_stock' && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
                 <span className="bg-white text-gray-900 px-3 py-1 rounded-lg text-sm font-medium">
-                  Out of Stock
+                  غير متوفر
                 </span>
               </div>
             )}
@@ -122,10 +122,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 className="w-full bg-rose-600 hover:bg-rose-700 disabled:bg-gray-400 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors duration-300 shadow-lg"
               >
                 {product.availability === 'out_of_stock' 
-                  ? 'Out of Stock' 
+                  ? 'غير متوفر' 
                   : (product.variants && Array.isArray(product.variants) && product.variants.length > 0)
-                    ? 'Select Options'
-                    : 'Add to Cart'
+                    ? 'اختر الخيارات'
+                    : 'أضف إلى السلة'
                 }
               </button>
             </div>
@@ -171,10 +171,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
 
             {/* Stock Info */}
             <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>SKU: {product.sku}</span>
+              <span>الرمز: {product.sku}</span>
               {product.stockQuantity <= 5 && product.stockQuantity > 0 && (
                 <span className="text-orange-500 font-medium">
-                  Only {product.stockQuantity} left
+                  بقي {product.stockQuantity} فقط
                 </span>
               )}
             </div>

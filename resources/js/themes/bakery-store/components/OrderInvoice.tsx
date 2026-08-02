@@ -77,7 +77,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
 
   return (
     <>
-      <Head title={`Order Invoice - ${orderNumber}`} />
+      <Head title={`فاتورة الطلب - ${orderNumber}`} />
       
       <div className="min-h-screen bg-stone-50 py-4 md:py-8">
         <div className="max-w-4xl mx-auto px-4">
@@ -90,7 +90,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                     <Receipt className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-serif font-bold text-stone-900">Order Invoice</h1>
+                    <h1 className="text-2xl font-serif font-bold text-stone-900">فاتورة الطلب</h1>
                     <p className="text-stone-600">#{orderNumber}</p>
                   </div>
                 </div>
@@ -101,14 +101,14 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   className="bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2 rounded-xl transition-colors flex items-center gap-2 font-serif font-semibold"
                 >
                   <Printer className="w-4 h-4" />
-                  <span className="hidden sm:inline">Print</span>
+                  <span className="hidden sm:inline">طباعة</span>
                 </button>
                 <button
                   onClick={handleDownload}
                   className="bg-stone-700 hover:bg-stone-800 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 font-serif font-semibold"
                 >
                   <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Download PDF</span>
+                  <span className="hidden sm:inline">تحميل PDF</span>
                 </button>
               </div>
             </div>
@@ -136,25 +136,25 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
               <div className="bg-stone-50 rounded-xl p-5">
                 <div className="flex items-center gap-3 mb-4">
                   <Receipt className="w-5 h-5 text-stone-700" />
-                  <h3 className="font-serif font-bold text-stone-900">Customer Information</h3>
+                  <h3 className="font-serif font-bold text-stone-900">معلومات العميل</h3>
                 </div>
                 <div className="space-y-2 text-sm">
-                  <p><span className="font-semibold text-stone-700">Name:</span> {order.customer.name}</p>
-                  <p><span className="font-semibold text-stone-700">Email:</span> <span className="break-all">{order.customer.email}</span></p>
-                  <p><span className="font-semibold text-stone-700">Phone:</span> {order.customer.phone}</p>
+                  <p><span className="font-semibold text-stone-700">الاسم:</span> {order.customer.name}</p>
+                  <p><span className="font-semibold text-stone-700">البريد الإلكتروني:</span> <span className="break-all">{order.customer.email}</span></p>
+                  <p><span className="font-semibold text-stone-700">الهاتف:</span> {order.customer.phone}</p>
                 </div>
               </div>
               
               <div className="bg-stone-50 rounded-xl p-5">
                 <div className="flex items-center gap-3 mb-4">
                   <MapPin className="w-5 h-5 text-stone-700" />
-                  <h3 className="font-serif font-bold text-stone-900">Shipping Address</h3>
+                  <h3 className="font-serif font-bold text-stone-900">عنوان الشحن</h3>
                 </div>
                 <div className="text-sm text-stone-600 leading-relaxed">
                   <p className="font-semibold text-stone-900 mb-1">{order.shipping_address.name}</p>
                   <p>{order.shipping_address.address}</p>
-                  <p>{order.shipping_address.city}, {order.shipping_address.state}</p>
-                  <p>{order.shipping_address.postal_code}, {order.shipping_address.country}</p>
+                  <p>{order.shipping_address.city}، {order.shipping_address.state}</p>
+                  <p>{order.shipping_address.postal_code}، {order.shipping_address.country}</p>
                 </div>
               </div>
             </div>
@@ -164,7 +164,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-stone-200">
             <div className="flex items-center gap-3 mb-6">
               <Package className="w-5 h-5 text-stone-700" />
-              <h3 className="font-serif font-bold text-stone-900 text-lg">Order Items ({order.items.length})</h3>
+              <h3 className="font-serif font-bold text-stone-900 text-lg">منتجات الطلب ({order.items.length})</h3>
             </div>
             
             <div className="space-y-4">
@@ -188,10 +188,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                           </div>
                         )}
                         <div className="flex items-center gap-4 text-sm text-stone-600">
-                          <span className="bg-stone-700 text-white px-2 py-1 rounded font-medium">Qty: {item.quantity}</span>
+                          <span className="bg-stone-700 text-white px-2 py-1 rounded font-medium">الكمية: {item.quantity}</span>
                           <span>{formatCurrency(item.price, storeSettings, currencies)}</span>
                           {item.tax_amount > 0 && (
-                            <span>Tax: {formatCurrency(item.tax_amount, storeSettings, currencies)}</span>
+                            <span>الضريبة: {formatCurrency(item.tax_amount, storeSettings, currencies)}</span>
                           )}
                         </div>
                       </div>
@@ -207,37 +207,37 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
 
           {/* Order Summary */}
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-stone-200">
-            <h3 className="font-serif font-bold text-stone-900 text-lg mb-6">Payment Summary</h3>
+            <h3 className="font-serif font-bold text-stone-900 text-lg mb-6">ملخص الطلب</h3>
             <div className="bg-stone-50 rounded-xl p-5">
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-stone-600">Subtotal</span>
+                  <span className="text-stone-600">المجموع الفرعي</span>
                   <span className="font-semibold">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span>Discount {order.coupon && `(${order.coupon})`}</span>
+                    <span>خصم الكوبون {order.coupon && `(${order.coupon})`}</span>
                     <span className="font-semibold">-{formatCurrency(order.discount, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-stone-600">Tax</span>
+                  <span className="text-stone-600">الضريبة</span>
                   <span className="font-semibold">{formatCurrency(order.tax, storeSettings, currencies)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-stone-600">Shipping</span>
+                  <span className="text-stone-600">الشحن</span>
                   <span className="font-semibold">{formatCurrency(order.shipping, storeSettings, currencies)}</span>
                 </div>
                 <div className="border-t-2 border-stone-300 pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-serif font-bold text-stone-900">Total Amount</span>
+                    <span className="text-lg font-serif font-bold text-stone-900">الإجمالي</span>
                     <span className="text-2xl font-serif font-bold text-stone-700">{formatCurrency(order.total, storeSettings, currencies)}</span>
                   </div>
                 </div>
                 {order.payment_method && (
                   <div className="border-t border-stone-300 pt-4">
                     <div className="flex justify-between">
-                      <span className="text-stone-600">Payment Method</span>
+                      <span className="text-stone-600">طريقة الدفع</span>
                       <span className="bg-stone-700 text-white px-3 py-1 rounded-lg font-medium">{order.payment_method}</span>
                     </div>
                   </div>
@@ -249,9 +249,9 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
           {/* Footer */}
           <div className="text-center mt-8 text-stone-600">
             <div className="bg-white rounded-2xl p-6 border border-stone-200">
-              <h4 className="font-serif font-bold text-stone-900 mb-2">Thank You for Your Order!</h4>
-              <p className="text-sm">We appreciate your business and hope you enjoy your delicious treats.</p>
-              <p className="text-sm mt-1">For any questions or support, please contact our customer service team.</p>
+              <h4 className="font-serif font-bold text-stone-900 mb-2">شكراً لتعاملك معنا!</h4>
+              <p className="text-sm">نقدّر ثقتك ونتمنى أن تستمتع بمخبوزاتك اللذيذة.</p>
+              <p className="text-sm mt-1">لأي استفسارات أو دعم، يرجى التواصل مع فريق خدمة العملاء لدينا.</p>
             </div>
           </div>
         </div>

@@ -26,7 +26,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
           <div className="relative p-4 sm:p-8 text-center bg-black border-b-2 border-red-600">
             <button 
               onClick={onClose}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors"
+              className="absolute top-2 left-2 sm:top-4 sm:left-4 p-2 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
@@ -35,8 +35,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               <ShoppingCart className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
             
-            <h2 className="text-lg sm:text-2xl font-bold text-white mb-2">CHECKOUT REQUIRED</h2>
-            <p className="text-sm sm:text-base text-slate-300 font-medium">SELECT YOUR CHECKOUT METHOD</p>
+            <h2 className="text-lg sm:text-2xl font-bold text-white mb-2">مستعد لإتمام الطلب؟</h2>
+            <p className="text-sm sm:text-base text-slate-300 font-medium">اختر كيف تريد المتابعة مع طلبك</p>
           </div>
 
           {/* Content */}
@@ -47,7 +47,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 transition-all border-2 border-red-600 hover:border-red-500 flex items-center justify-center gap-2 sm:gap-3 group text-sm sm:text-base"
             >
               <User className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
-              <span>LOGIN TO ACCOUNT</span>
+              <span>تسجيل الدخول إلى حسابك</span>
             </button>
 
             {/* Divider */}
@@ -56,7 +56,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
                 <div className="w-full border-t-2 border-slate-700"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="px-4 bg-slate-800 text-slate-400 font-bold">OR</span>
+                <span className="px-4 bg-slate-800 text-slate-400 font-bold">أو</span>
               </div>
             </div>
 
@@ -66,7 +66,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 sm:py-4 px-4 sm:px-6 transition-all border-2 border-slate-600 hover:border-slate-500 flex items-center justify-center gap-2 sm:gap-3 group text-sm sm:text-base"
             >
               <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
-              <span>CONTINUE AS GUEST</span>
+              <span>المتابعة كضيف</span>
             </button>
           </div>
         </div>

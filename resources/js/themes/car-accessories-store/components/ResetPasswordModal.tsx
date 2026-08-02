@@ -32,19 +32,19 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
       storeSlug,
       resetToken,
       () => {
-        toast.success('Password has been reset successfully!');
+        toast.success('تمت إعادة تعيين كلمة المرور بنجاح!');
         router.visit(route('store.home', { storeSlug }));
       },
       (errors) => {
         if (errors.token) {
-          toast.error('Reset link has expired or is invalid. Please request a new one.');
+          toast.error('انتهت صلاحية رابط إعادة التعيين أو أنه غير صالح. يرجى طلب رابط جديد.');
           onClose();
         } else if (errors.email) {
           toast.error(errors.email);
         } else if (errors.password) {
           toast.error(errors.password);
         } else {
-          toast.error('Failed to reset password. Please try again.');
+          toast.error('فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى.');
         }
       }
     );
@@ -64,8 +64,8 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
                 <Lock className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">RESET PASSWORD</h2>
-                <p className="text-sm text-slate-300 font-medium">CREATE NEW PASSWORD</p>
+                <h2 className="text-xl font-bold text-white">استعادة كلمة المرور</h2>
+                <p className="text-sm text-slate-300 font-medium">إنشاء كلمة مرور جديدة</p>
               </div>
             </div>
             <button 
@@ -80,37 +80,37 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-bold text-white mb-2">EMAIL ADDRESS</label>
+                <label className="block text-sm font-bold text-white mb-2">البريد الإلكتروني</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full pl-10 pr-4 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="your@email.com"
+                    className="w-full pr-10 pl-4 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="أدخل بريدك الإلكتروني"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-white mb-2">NEW PASSWORD</label>
+                <label className="block text-sm font-bold text-white mb-2">كلمة المرور الجديدة</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input 
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={8}
-                    className="w-full pl-10 pr-12 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="Enter new password (min 8 characters)"
+                    className="w-full pr-10 pl-12 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="أدخل كلمة المرور الجديدة (8 أحرف على الأقل)"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -118,22 +118,22 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-white mb-2">CONFIRM PASSWORD</label>
+                <label className="block text-sm font-bold text-white mb-2">تأكيد كلمة المرور</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input 
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={8}
-                    className="w-full pl-10 pr-12 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="Confirm your new password"
+                    className="w-full pr-10 pl-12 py-3 bg-slate-800 border-2 border-slate-600 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="أكد كلمة المرور الجديدة"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-red-400"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -145,17 +145,17 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 transition-colors flex items-center justify-center gap-2 border-2 border-red-600"
               >
                 <Lock className="w-4 h-4" />
-                RESET PASSWORD
+                إعادة تعيين كلمة المرور
               </button>
               
               <p className="text-center text-sm text-slate-300 font-medium">
-                REMEMBER YOUR PASSWORD? 
+                تذكرت كلمة المرور؟ 
                 <button 
                   onClick={onClose}
                   type="button" 
-                  className="text-red-400 hover:text-red-300 font-bold ml-1"
+                  className="text-red-400 hover:text-red-300 font-bold mr-1"
                 >
-                  LOGIN
+                  تسجيل الدخول
                 </button>
               </p>
             </form>

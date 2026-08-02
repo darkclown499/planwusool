@@ -65,8 +65,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <ShoppingCart className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">SHOPPING CART</h2>
-              <span className="text-xs text-slate-300 font-medium">{cartItems.length} ITEM{cartItems.length !== 1 ? 'S' : ''}</span>
+              <h2 className="text-lg sm:text-xl font-bold text-white">سلة التسوق</h2>
+              <span className="text-xs text-slate-300 font-medium">{cartItems.length} عنصر{cartItems.length !== 1 ? 'ات' : ''}</span>
             </div>
           </div>
           <button 
@@ -84,13 +84,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="w-20 h-20 bg-red-600 flex items-center justify-center mb-4">
                 <ShoppingBag className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">CART IS EMPTY</h3>
-              <p className="text-slate-300 text-sm mb-6 font-medium">ADD AUTOMOTIVE PARTS TO GET STARTED</p>
+              <h3 className="text-lg font-bold text-white mb-2">سلتك فارغة</h3>
+              <p className="text-slate-300 text-sm mb-6 font-medium">أضف بعض المنتجات للبدء</p>
               <button
                 onClick={onClose}
                 className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 font-bold transition-colors border-2 border-red-600"
               >
-                CONTINUE SHOPPING
+                متابعة التسوق
               </button>
             </div>
           ) : (
@@ -120,7 +120,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </h3>
                         <button 
                           onClick={() => onRemoveFromCart(index)}
-                          className="p-1 sm:p-1.5 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors ml-1 sm:ml-2 flex-shrink-0"
+                          className="p-1 sm:p-1.5 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors mr-1 sm:mr-2 flex-shrink-0"
                         >
                           <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
@@ -148,7 +148,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                             {formatCurrency(item.price * item.quantity, storeSettings, currencies)}
                           </div>
                           <div className="text-xs text-slate-400 font-medium">
-                            {formatCurrency(item.price, storeSettings, currencies)} EACH
+                            {formatCurrency(item.price, storeSettings, currencies)} للقطعة
                           </div>
                         </div>
                       </div>
@@ -162,7 +162,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       
                       {/* Quantity Controls */}
                       <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm text-slate-300 font-bold">QTY</span>
+                        <span className="text-xs sm:text-sm text-slate-300 font-bold">الكمية</span>
                         <div className="flex items-center gap-1 bg-slate-700 p-1">
                           <button 
                             onClick={() => item.quantity > 1 && onUpdateQuantity(index, -1)}
@@ -202,22 +202,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="bg-slate-700 border-2 border-slate-600 p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
                 <Receipt className="w-4 h-4 text-red-400" />
-                <span className="font-bold text-white">ORDER SUMMARY</span>
+                <span className="font-bold text-white">ملخص الطلب</span>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-300 font-medium">SUBTOTAL</span>
+                    <span className="text-slate-300 font-medium">المجموع الفرعي</span>
                   <span className="font-bold text-white">{formatCurrency(subtotal, storeSettings, currencies)}</span>
                 </div>
                 {totalTax > 0 && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-300 font-medium">TOTAL TAX</span>
+                    <span className="text-slate-300 font-medium">الضريبة</span>
                     <span className="font-bold text-white">{formatCurrency(totalTax, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="border-t-2 border-slate-600 pt-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-white">TOTAL</span>
+                    <span className="text-lg font-bold text-white">الإجمالي</span>
                     <span className="text-xl font-bold text-red-400">{formatCurrency(total, storeSettings, currencies)}</span>
                   </div>
                 </div>
@@ -230,8 +230,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 transition-all border-2 border-red-600 flex items-center justify-center gap-3"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span className="hidden sm:inline">PROCEED TO CHECKOUT</span>
-              <span className="sm:hidden">CHECKOUT</span>
+              <span className="hidden sm:inline">إتمام عملية الشراء</span>
+              <span className="sm:hidden">الدفع</span>
             </button>
           </div>
         )}

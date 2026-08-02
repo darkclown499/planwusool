@@ -55,7 +55,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-amber-900">Forgot Password</h2>
+                <h2 className="text-xl font-bold text-amber-900">استعادة كلمة المرور</h2>
               </div>
               <button onClick={onClose} className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-lg transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,12 +66,12 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
             <div className="p-6 overflow-y-auto">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">البريد الإلكتروني</label>
                   <input 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email" 
+                    placeholder="أدخل بريدك الإلكتروني" 
                     required 
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                       errors.email ? 'border-red-500' : 'border-amber-200'
@@ -88,16 +88,16 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                       : 'bg-amber-600 hover:bg-amber-700'
                   } text-white`}
                 >
-                  {isLoading ? 'Sending...' : 'Send Reset Link'}
+                  {isLoading ? 'جاري الإرسال...' : 'إرسال رابط الاستعادة'}
                 </button>
                 <p className="text-center text-sm text-amber-700">
-                  Remember your password? 
+                  تذكرت كلمة المرور؟ 
                   <button 
                     onClick={() => setShowForgot(false)}
                     type="button" 
-                    className="text-amber-600 hover:text-amber-800 font-medium ml-1"
+                    className="text-amber-600 hover:text-amber-800 font-medium mr-1"
                   >
-                    Login
+                    تسجيل الدخول
                   </button>
                 </p>
               </form>
@@ -120,7 +120,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-amber-900">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+              <h2 className="text-xl font-bold text-amber-900">{isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}</h2>
             </div>
             <button onClick={onClose} className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-lg transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,12 +133,12 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
               {!isLogin && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-amber-800 mb-2">First Name</label>
+                    <label className="block text-sm font-medium text-amber-800 mb-2">الاسم الأول</label>
                     <input 
                       type="text" 
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Enter your first name" 
+                      placeholder="أدخل اسمك الأول" 
                       required 
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                         errors.first_name ? 'border-red-500' : 'border-amber-200'
@@ -147,12 +147,12 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                     {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-amber-800 mb-2">Last Name</label>
+                    <label className="block text-sm font-medium text-amber-800 mb-2">اسم العائلة</label>
                     <input 
                       type="text" 
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Enter your last name" 
+                      placeholder="أدخل اسم عائلتك" 
                       required 
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                         errors.last_name ? 'border-red-500' : 'border-amber-200'
@@ -163,12 +163,12 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                 </>
               )}
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Email</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">البريد الإلكتروني</label>
                 <input 
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email" 
+                  placeholder="أدخل بريدك الإلكتروني" 
                   required 
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                     errors.email ? 'border-red-500' : 'border-amber-200'
@@ -178,7 +178,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
               </div>
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">Phone No</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">رقم الهاتف</label>
                   <input 
                     type="tel" 
                     value={phone}
@@ -187,16 +187,16 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                     required 
                     className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white" 
                   />
-                  <p className="text-xs text-amber-600 mt-1">Please use with country code. (ex. +91)</p>
+                  <p className="text-xs text-amber-600 mt-1">يرجى استخدام رمز الدولة (مثال: 970+)</p>
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Password</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">كلمة المرور</label>
                 <input 
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password" 
+                  placeholder="أدخل كلمة المرور" 
                   required 
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                     errors.password ? 'border-red-500' : 'border-amber-200'
@@ -206,12 +206,12 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
               </div>
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">Confirm Password</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">تأكيد كلمة المرور</label>
                   <input 
                     type="password" 
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your password" 
+                    placeholder="أكد كلمة المرور" 
                     required 
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                       errors.password_confirmation ? 'border-red-500' : 'border-amber-200'
@@ -226,7 +226,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                   type="button" 
                   className="text-amber-600 hover:text-amber-800 text-sm"
                 >
-                  Forgot your password?
+                  نسيت كلمة المرور؟
                 </button>
               )}
               <button 
@@ -238,16 +238,16 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                     : 'bg-amber-600 hover:bg-amber-700'
                 } text-white`}
               >
-                {isLoading ? 'Please wait...' : (isLogin ? 'Login' : 'Register')}
+                {isLoading ? 'الرجاء الانتظار...' : (isLogin ? 'تسجيل الدخول' : 'إنشاء حساب')}
               </button>
               <p className="text-center text-sm text-amber-700">
-                {isLogin ? "Don't have account?" : "Already have account?"}
+                {isLogin ? "ليس لديك حساب؟" : "لديك حساب بالفعل؟"}
                 <button 
                   onClick={() => setIsLogin(!isLogin)}
                   type="button" 
-                  className="text-amber-600 hover:text-amber-800 font-medium ml-1"
+                  className="text-amber-600 hover:text-amber-800 font-medium mr-1"
                 >
-                  {isLogin ? 'Register' : 'Login'}
+                  {isLogin ? 'إنشاء حساب' : 'تسجيل الدخول'}
                 </button>
               </p>
             </form>

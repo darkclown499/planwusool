@@ -16,6 +16,10 @@ interface StoreConfig {
   description?: string;
   copyrightText?: string;
   welcomeMessage?: string;
+  meta_title?: string;
+  meta_description?: string;
+  google_analytics_id?: string;
+  meta_pixel_id?: string;
   socialMedia?: {
     facebook?: string;
     instagram?: string;
@@ -76,6 +80,72 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({
       favicon.href = getImageUrl(config.favicon);
     }
   }, [config.favicon]);
+
+  // Inject SEO meta tags and tracking scripts once on mount
+  useEffect(() => {
+    const injectedIds: string[] = [];
+
+    // Meta description
+    if (config.meta_description && config.meta_description.trim()) {
+      let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement;
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.name = 'description';
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.content = config.meta_description;
+      injectedIds.push('meta-description');
+    }
+
+    // Google Analytics 4
+    if (config.google_analytics_id && config.google_analytics_id.trim()) {
+      const gaId = config.google_analytics_id.trim();
+      const gaIdAttr = 'data-store-ga';
+      if (!document.querySelector(`script[${gaIdAttr}]`)) {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+        script.setAttribute(gaIdAttr, 'true');
+        document.head.appendChild(script);
+        
+        const inline = document.createElement('script');
+        inline.textContent = `window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '${gaId.replace(/'/g, "\\'")}');`;
+        document.head.appendChild(inline);
+      }
+      injectedIds.push('store-ga');
+    }
+
+    // Meta Pixel
+    if (config.meta_pixel_id && config.meta_pixel_id.trim()) {
+      const pixelId = config.meta_pixel_id.trim();
+      const pixelAttr = 'data-store-pixel';
+      if (!document.querySelector(`script[${pixelAttr}]`)) {
+        const noscript = document.createElement('noscript');
+        const img = document.createElement('img');
+        img.height = 1;
+        img.width = 1;
+        img.style.display = 'none';
+        img.src = `https://www.facebook.com/tr?id=${encodeURIComponent(pixelId)}&ev=PageView&noscript=1`;
+        noscript.appendChild(img);
+        document.body.appendChild(noscript);
+        
+        const inline = document.createElement('script');
+        inline.textContent = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '${pixelId.replace(/'/g, "\\'")}');fbq('track', 'PageView');`;
+        inline.setAttribute(pixelAttr, 'true');
+        document.head.appendChild(inline);
+      }
+      injectedIds.push('store-pixel');
+    }
+
+    return () => {
+      if (injectedIds.includes('store-ga')) {
+        document.querySelectorAll('script[data-store-ga]').forEach((el) => el.remove());
+      }
+      if (injectedIds.includes('store-pixel')) {
+        document.querySelectorAll('script[data-store-pixel]').forEach((el) => el.remove());
+      }
+    };
+  }, [config.meta_description, config.google_analytics_id, config.meta_pixel_id]);
 
   const value: StoreContextType = {
     config,

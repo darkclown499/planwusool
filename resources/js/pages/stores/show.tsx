@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
+import { formatLocalDate } from '@/utils/date-helper';
 
 export default function StoreView({ store }) {
   const { t } = useTranslation();
@@ -58,7 +59,7 @@ export default function StoreView({ store }) {
                       {store.config_status ? t('Active') : t('Inactive')}
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground">{store.domain || t('No domain set')}</p>
+                  <p className="text-muted-foreground">{store.domain ? <span dir="ltr">{store.domain}</span> : t('No domain set')}</p>
                 </div>
               </div>
               <div className="mt-4 md:mt-0">
@@ -66,7 +67,7 @@ export default function StoreView({ store }) {
                   <span className="font-medium">{t('Theme')}:</span> {store.theme}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">{t('Created')}:</span> {new Date(store.created_at).toLocaleDateString()}
+                  <span className="font-medium">{t('Created')}:</span> {formatLocalDate(store.created_at)}
                 </p>
               </div>
             </div>

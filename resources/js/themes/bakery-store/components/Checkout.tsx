@@ -121,29 +121,29 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
           <div className="relative bg-stone-700 p-4 sm:p-5 flex-shrink-0">
             <button 
               onClick={onClose}
-              className="absolute top-3 right-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
+              className="absolute top-3 left-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
             
-            <div className="flex items-center justify-center text-white pr-10">
-              <div className="w-10 h-10 bg-stone-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+            <div className="flex items-center justify-center text-white pl-10">
+              <div className="w-10 h-10 bg-stone-600 rounded-full flex items-center justify-center ml-3 flex-shrink-0">
                 <ShoppingBag className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-serif font-bold">Checkout</h2>
-                <p className="text-stone-200 text-xs sm:text-sm">Complete your order</p>
+                <h2 className="text-xl sm:text-2xl font-serif font-bold">إتمام الطلب</h2>
+                <p className="text-stone-200 text-xs sm:text-sm">أكمل طلبك</p>
               </div>
             </div>
           </div>
 
           {/* Progress Steps */}
           <div className="px-4 sm:px-6 py-4 bg-stone-50 border-b border-stone-200">
-            <div className="flex items-center justify-center space-x-2 sm:space-x-8">
+            <div className="flex items-center justify-center gap-2 sm:gap-8">
               {[
-                { num: 1, label: 'Information', icon: '👤' },
-                { num: 2, label: 'Review', icon: '📋' },
-                { num: 3, label: 'Payment', icon: '💳' }
+                { num: 1, label: 'المعلومات', icon: '👤' },
+                { num: 2, label: 'المراجعة', icon: '📋' },
+                { num: 3, label: 'الدفع', icon: '💳' }
               ].map((stepItem, index) => (
                 <div key={stepItem.num} className="flex items-center">
                   <div className="flex items-center">
@@ -154,14 +154,14 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     }`}>
                       {stepItem.icon}
                     </div>
-                    <span className={`ml-2 sm:ml-3 text-xs sm:text-sm font-medium hidden sm:block ${
+                    <span className={`mr-2 sm:mr-3 text-xs sm:text-sm font-medium hidden sm:block ${
                       step >= stepItem.num ? 'text-stone-700' : 'text-stone-500'
                     }`}>
                       {stepItem.label}
                     </span>
                   </div>
                   {index < 2 && (
-                    <div className={`w-4 sm:w-16 h-1 ml-2 sm:ml-4 rounded-full ${
+                    <div className={`w-4 sm:w-16 h-1 mr-2 sm:mr-4 rounded-full ${
                       step > stepItem.num ? 'bg-stone-700' : 'bg-stone-200'
                     }`}></div>
                   )}
@@ -175,32 +175,32 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
             {step === 1 && (
               <div className="p-4 sm:p-6">
                 <div className="max-w-2xl mx-auto">
-                  <h3 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4 sm:mb-6 text-center">Customer Information</h3>
+                  <h3 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4 sm:mb-6 text-center">معلومات العميل / الشحن</h3>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">First Name *</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">الاسم الأول *</label>
                         <input
                           type="text"
                           value={customerInfo.firstName}
                           onChange={(e) => handleInputChange('firstName', e.target.value)}
                           className="w-full px-4 py-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 transition-colors"
-                          placeholder="Enter first name"
+                          placeholder="أدخل الاسم الأول"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">Last Name *</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">اسم العائلة *</label>
                         <input
                           type="text"
                           value={customerInfo.lastName}
                           onChange={(e) => handleInputChange('lastName', e.target.value)}
                           className="w-full px-4 py-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 transition-colors"
-                          placeholder="Enter last name"
+                          placeholder="أدخل اسم العائلة"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">Email *</label>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">البريد الإلكتروني *</label>
                       <input
                         type="email"
                         value={customerInfo.email}
@@ -208,12 +208,12 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${
                           emailError ? 'border-red-500 focus:border-red-600' : 'border-stone-300 focus:border-stone-600'
                         }`}
-                        placeholder="Enter your email"
+                        placeholder="أدخل بريدك الإلكتروني"
                       />
                       {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">Phone *</label>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">رقم الهاتف *</label>
                       <input
                         type="tel"
                         value={customerInfo.phone}
@@ -221,23 +221,23 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors ${
                           phoneError ? 'border-red-500 focus:border-red-600' : 'border-stone-300 focus:border-stone-600'
                         }`}
-                        placeholder="Enter your phone number"
+                        placeholder="أدخل رقم هاتفك"
                       />
                       {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-stone-700 mb-2">Address *</label>
+                      <label className="block text-sm font-semibold text-stone-700 mb-2">العنوان *</label>
                       <textarea
                         value={customerInfo.address}
                         onChange={(e) => handleInputChange('address', e.target.value)}
                         className="w-full px-4 py-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 transition-colors"
                         rows={3}
-                        placeholder="Enter your full address"
+                        placeholder="أدخل عنوانك الكامل"
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">Country *</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">الدولة *</label>
                         <Select
                           value={(() => {
                             const countries = (window as any).page?.props?.countries || [];
@@ -258,7 +258,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                           }}
                         >
                           <SelectTrigger className="w-full px-4 border-2 border-stone-300 focus:border-stone-600 focus:ring-stone-600">
-                            <SelectValue placeholder="Select Country" />
+                            <SelectValue placeholder="اختر الدولة" />
                           </SelectTrigger>
                           <SelectContent>
                             {((window as any).page?.props?.countries || []).map(country => (
@@ -270,7 +270,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         </Select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">State *</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">المحافظة *</label>
                         <StateDropdown
                           countryId={countryId}
                           value={customerInfo.state}
@@ -287,7 +287,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">City *</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">المدينة *</label>
                         <CityDropdown
                           stateId={stateId}
                           value={customerInfo.city}
@@ -300,13 +300,13 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-stone-700 mb-2">Postal Code *</label>
+                        <label className="block text-sm font-semibold text-stone-700 mb-2">الرمز البريدي *</label>
                         <input
                           type="text"
                           value={customerInfo.postalCode}
                           onChange={(e) => handleInputChange('postalCode', e.target.value)}
                           className="w-full px-4 py-1.5 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 transition-colors"
-                          placeholder="Enter postal code"
+                          placeholder="أدخل الرمز البريدي"
                         />
                       </div>
                     </div>
@@ -317,7 +317,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
 
             {step === 2 && (
               <div className="p-4 sm:p-6">
-                <h3 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4 sm:mb-6 text-center">Order Review</h3>
+                <h3 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4 sm:mb-6 text-center">مراجعة الطلب</h3>
                 
                 {/* Cart Items */}
                 <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
@@ -341,10 +341,10 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             );
                           })()}
                           <div className="mb-2">
-                            <p className="text-sm text-stone-600">Price: {formatCurrency(item.price, storeSettings, currencies)} × {item.quantity}</p>
+                            <p className="text-sm text-stone-600">السعر: {formatCurrency(item.price, storeSettings, currencies)} × {item.quantity}</p>
                             {item.taxPercentage && (
                               <p className="text-xs text-stone-500">
-                                Tax ({item.taxName || 'Tax'}): {item.taxPercentage}% = {formatCurrency((item.price * item.quantity * item.taxPercentage) / 100, storeSettings, currencies)}
+                                الضريبة ({item.taxName || 'الضريبة'}): {item.taxPercentage}% = {formatCurrency((item.price * item.quantity * item.taxPercentage) / 100, storeSettings, currencies)}
                               </p>
                             )}
                           </div>
@@ -354,7 +354,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                               <div className="flex items-center bg-white rounded-lg border-2 border-stone-300">
                                 <button 
                                   onClick={() => item.quantity > 1 && onUpdateQuantity(index, -1)}
-                                  className={`p-1.5 sm:p-2 rounded-l-lg transition-colors ${
+                                  className={`p-1.5 sm:p-2 rounded-r-lg transition-colors ${
                                     item.quantity > 1 ? 'hover:bg-stone-100 cursor-pointer' : 'cursor-not-allowed opacity-50'
                                   }`}
                                 >
@@ -369,7 +369,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                                 />
                                 <button 
                                   onClick={() => onUpdateQuantity(index, 1)}
-                                  className="p-1.5 sm:p-2 hover:bg-stone-100 rounded-r-lg transition-colors"
+                                  className="p-1.5 sm:p-2 hover:bg-stone-100 rounded-l-lg transition-colors"
                                 >
                                   <Plus className="w-3 h-3 sm:w-4 sm:h-4 text-stone-600" />
                                 </button>
@@ -392,35 +392,35 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                 <div className="space-y-4 sm:space-y-6">
                   <div className="bg-stone-50 rounded-xl p-4 sm:p-6 border-2 border-stone-200">
                     <h4 className="font-serif font-bold text-stone-900 mb-4 flex items-center gap-2 text-sm sm:text-base">
-                      🎟️ Apply Coupon
+                      🎟️ تطبيق كوبون الخصم
                     </h4>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
-                        placeholder="Enter coupon code"
+                        placeholder="أدخل رمز الكوبون"
                         className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 border-stone-300 rounded-lg focus:outline-none focus:border-stone-600 text-sm sm:text-base"
                       />
                       <button
                         onClick={() => handleApplyCoupon(subtotal)}
                         className="px-4 sm:px-6 py-2 sm:py-3 bg-stone-700 hover:bg-stone-800 text-white rounded-lg transition-colors font-semibold text-sm sm:text-base"
                       >
-                        Apply
+                        تطبيق
                       </button>
                     </div>
                     {couponError && <p className="text-red-500 text-sm mt-2">{couponError}</p>}
-                    {appliedCoupon && <p className="text-green-600 text-sm mt-2">✓ Coupon "{appliedCoupon.code}" applied</p>}
+                    {appliedCoupon && <p className="text-green-600 text-sm mt-2">✓ تم تطبيق الكوبون "{appliedCoupon.code}"</p>}
                   </div>
 
                   <div className="bg-stone-50 rounded-xl p-4 sm:p-6 border-2 border-stone-200">
                     <h4 className="font-serif font-bold text-stone-900 mb-4 flex items-center gap-2 text-sm sm:text-base">
-                      <Truck className="w-4 h-4 sm:w-5 sm:h-5" /> Shipping Methods
+                      <Truck className="w-4 h-4 sm:w-5 sm:h-5" /> طرق الشحن
                     </h4>
                     {loadingShipping ? (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-stone-700 mx-auto"></div>
-                        <p className="text-sm text-stone-500 mt-2">Loading options...</p>
+                        <p className="text-sm text-stone-500 mt-2">جاري تحميل خيارات الشحن...</p>
                       </div>
                     ) : shippingMethods.length > 0 ? (
                       <div className="space-y-3">
@@ -436,48 +436,48 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             />
                             <div className="flex-1 min-w-0">
                               <div className="font-semibold text-sm truncate">{method.name}</div>
-                              <div className="text-xs text-stone-500 truncate">{method.delivery_time || 'Standard delivery'}</div>
+                              <div className="text-xs text-stone-500 truncate">{method.delivery_time || 'توصيل قياسي'}</div>
                             </div>
                             <div className="font-bold text-sm whitespace-nowrap">
-                              {method.type === 'free' ? 'Free' : formatCurrency(parseFloat(method.cost || 0), storeSettings, currencies)}
+                              {method.type === 'free' ? 'مجاني' : formatCurrency(parseFloat(method.cost || 0), storeSettings, currencies)}
                             </div>
                           </label>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-stone-500 text-center py-4">No shipping methods available</p>
+                      <p className="text-sm text-stone-500 text-center py-4">لا تتوفر طرق شحن</p>
                     )}
                   </div>
                   
                   {/* Order Summary */}
                   <div className="bg-stone-50 rounded-xl p-4 sm:p-6 border-2 border-stone-200">
-                    <h4 className="font-serif font-bold text-stone-900 mb-4 text-sm sm:text-base">Order Summary</h4>
+                    <h4 className="font-serif font-bold text-stone-900 mb-4 text-sm sm:text-base">ملخص الطلب</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-stone-600">Subtotal:</span>
+                        <span className="text-stone-600">المجموع الفرعي:</span>
                         <span className="font-semibold">{formatCurrency(subtotal, storeSettings, currencies)}</span>
                       </div>
                       {totalTax > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-600">Tax:</span>
+                          <span className="text-stone-600">الضريبة:</span>
                           <span className="font-semibold">{formatCurrency(totalTax, storeSettings, currencies)}</span>
                         </div>
                       )}
                       {couponDiscount > 0 && (
                         <div className="flex justify-between text-green-600">
-                          <span>Discount:</span>
+                          <span>خصم الكوبون:</span>
                           <span className="font-semibold">-{formatCurrency(couponDiscount, storeSettings, currencies)}</span>
                         </div>
                       )}
                       {shippingCost > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-600">Shipping:</span>
+                          <span className="text-stone-600">الشحن:</span>
                           <span className="font-semibold">{formatCurrency(shippingCost, storeSettings, currencies)}</span>
                         </div>
                       )}
                       <div className="border-t-2 border-stone-300 pt-2 mt-3">
                         <div className="flex justify-between text-base sm:text-lg font-bold text-stone-900">
-                          <span>Total:</span>
+                          <span>الإجمالي:</span>
                           <span>{formatCurrency(total, storeSettings, currencies)}</span>
                         </div>
                       </div>
@@ -491,12 +491,12 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
               <div className="p-4 sm:p-6">
                 <div className="max-w-2xl mx-auto">
                   <h3 className="text-lg sm:text-xl font-serif font-bold text-stone-900 mb-4 sm:mb-6 text-center flex items-center justify-center gap-2">
-                    <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" /> Payment Method
+                    <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" /> طريقة الدفع
                   </h3>
                   {loadingPayments ? (
                     <div className="text-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-stone-700 mx-auto"></div>
-                      <p className="text-sm text-stone-500 mt-2">Loading payment methods...</p>
+                      <p className="text-sm text-stone-500 mt-2">جاري تحميل طرق الدفع...</p>
                     </div>
                   ) : paymentMethods.length > 0 ? (
                     <div className="space-y-4">
@@ -529,12 +529,12 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                           {selectedPayment === method.name && method.name === 'bank' && method.details && (
                             <div className="px-4 pb-4 border-t border-stone-200 mt-2 pt-4">
                               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                                <h5 className="font-semibold text-blue-900 mb-2">Bank Transfer Details</h5>
+                                <h5 className="font-semibold text-blue-900 mb-2">تفاصيل التحويل البنكي</h5>
                                 <div className="text-sm text-blue-800 whitespace-pre-line">{method.details}</div>
                               </div>
                               <div>
                                 <label className="block text-sm font-semibold text-stone-800 mb-2">
-                                  Upload Payment Receipt *
+                                  ارفع إيصال الدفع *
                                 </label>
                                 <input
                                   type="file"
@@ -552,12 +552,12 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                           {selectedPayment === method.name && method.name === 'whatsapp' && (
                             <div className="px-4 pb-4 border-t border-stone-200 mt-2 pt-4">
                               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                                <h5 className="font-serif font-bold text-green-900 mb-2">WhatsApp Payment</h5>
-                                <div className="text-sm text-green-800">You will be redirected to WhatsApp to complete your payment.</div>
+                                <h5 className="font-serif font-bold text-green-900 mb-2">الدفع عبر واتساب</h5>
+                                <div className="text-sm text-green-800">سيتم تحويلك إلى واتساب لإتمام عملية الدفع.</div>
                               </div>
                               <div>
                                 <label className="block text-sm font-semibold text-stone-800 mb-2">
-                                  WhatsApp Number *
+                                  رقم واتساب *
                                 </label>
                                 <input
                                   type="tel"
@@ -575,7 +575,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                                   <p className="mt-1 text-sm text-red-600">{whatsappError}</p>
                                 )}
                                 <p className="mt-1 text-sm text-stone-600">
-                                  Enter your WhatsApp number with country code (e.g., +91 9876543210)
+                                  أدخل رقم واتساب مع رمز الدولة (مثال: 970595123456+)
                                 </p>
                               </div>
                             </div>
@@ -584,7 +584,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                       ))}
                     </div>
                   ) : (
-                    <p className="text-stone-500 text-center py-8">No payment methods available</p>
+                    <p className="text-stone-500 text-center py-8">لا تتوفر طرق دفع</p>
                   )}
                 </div>
               </div>
@@ -596,7 +596,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
             {/* Mobile Layout */}
             <div className="sm:hidden">
               <div className="text-center mb-4">
-                <p className="text-sm text-stone-600 font-medium">Total Amount</p>
+                <p className="text-sm text-stone-600 font-medium">الإجمالي</p>
                 <p className="text-xl font-bold text-stone-800">{formatCurrency(total, storeSettings, currencies)}</p>
               </div>
               <div className="flex gap-3">
@@ -605,7 +605,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     onClick={handlePrevStep}
                     className="flex-1 px-4 py-3 border-2 border-stone-300 text-stone-700 rounded-lg hover:bg-stone-100 transition-colors font-semibold text-sm"
                   >
-                    ← Back
+                    رجوع
                   </button>
                 )}
                 {step < 3 ? (
@@ -617,7 +617,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     }
                     className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-800 disabled:bg-stone-300 text-white font-bold rounded-lg transition-colors disabled:cursor-not-allowed shadow-lg text-sm"
                   >
-                    Continue →
+                    متابعة
                   </button>
                 ) : (
                   <button
@@ -626,7 +626,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     className="flex-1 px-4 py-3 bg-stone-700 hover:bg-stone-800 disabled:bg-stone-300 text-white font-bold rounded-lg transition-colors disabled:cursor-not-allowed shadow-lg text-sm flex items-center justify-center gap-2"
                   >
                     <CreditCard className="w-4 h-4" />
-                    {isPlacingOrder ? 'Processing...' : 'Place Order'}
+                    {isPlacingOrder ? 'جاري المعالجة...' : 'تأكيد الطلب'}
                   </button>
                 )}
               </div>
@@ -640,13 +640,13 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     onClick={handlePrevStep}
                     className="px-6 py-3 border-2 border-stone-300 text-stone-700 rounded-lg hover:bg-stone-100 transition-colors font-semibold"
                   >
-                    ← Back
+                    رجوع
                   </button>
                 )}
               </div>
               <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <p className="text-sm text-stone-600 font-medium">Total Amount</p>
+                <div className="text-left">
+                  <p className="text-sm text-stone-600 font-medium">الإجمالي</p>
                   <p className="text-2xl font-bold text-stone-800">{formatCurrency(total, storeSettings, currencies)}</p>
                 </div>
                 {step < 3 ? (
@@ -658,7 +658,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     }
                     className="px-8 py-3 bg-stone-700 hover:bg-stone-800 disabled:bg-stone-300 text-white font-bold rounded-lg transition-colors disabled:cursor-not-allowed shadow-lg"
                   >
-                    Continue →
+                    متابعة
                   </button>
                 ) : (
                   <button
@@ -667,7 +667,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                     className="px-8 py-3 bg-stone-700 hover:bg-stone-800 disabled:bg-stone-300 text-white font-bold rounded-lg transition-colors disabled:cursor-not-allowed shadow-lg flex items-center gap-2"
                   >
                     <CreditCard className="w-5 h-5" />
-                    {isPlacingOrder ? 'Processing...' : 'Place Order'}
+                    {isPlacingOrder ? 'جاري المعالجة...' : 'تأكيد الطلب'}
                   </button>
                 )}
               </div>

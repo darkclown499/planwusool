@@ -60,8 +60,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-serif font-bold text-gray-900">My Fashion Bag</h2>
-                <p className="text-sm text-rose-600 font-medium">{cartItems.length} {cartItems.length === 1 ? 'item' : 'pieces'} selected</p>
+                <h2 className="text-xl font-serif font-bold text-gray-900">حقيبة التسوق</h2>
+                <p className="text-sm text-rose-600 font-medium">{cartItems.length} {cartItems.length === 1 ? 'قطعة' : 'قطع'} مختارة</p>
               </div>
             </div>
             <button onClick={onClose} className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-100 rounded-full transition-all duration-200">
@@ -81,13 +81,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-serif font-semibold text-gray-900 mb-3">Your bag awaits</h3>
-              <p className="text-gray-500 text-sm mb-8 leading-relaxed">Discover our curated collection<br/>and add your favorite pieces</p>
+              <h3 className="text-xl font-serif font-semibold text-gray-900 mb-3">سلتك في انتظارك</h3>
+              <p className="text-gray-500 text-sm mb-8 leading-relaxed">اكتشف مجموعتنا المختارة<br/>وأضف قطعك المفضلة</p>
               <button
                 onClick={onClose}
                 className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                Start Shopping
+                متابعة التسوق
               </button>
             </div>
           ) : (
@@ -150,7 +150,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                             {formatCurrency(item.price * item.quantity, storeSettings, currencies)}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {formatCurrency(item.price, storeSettings, currencies)} each
+                            {formatCurrency(item.price, storeSettings, currencies)} للقطعة
                           </span>
                         </div>
                         
@@ -199,18 +199,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="bg-rose-50 rounded-2xl p-5 mb-4 border border-rose-100">
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600 font-medium">Subtotal</span>
+                  <span className="text-gray-600 font-medium">المجموع الفرعي</span>
                   <span className="font-semibold text-gray-900">{formatCurrency(subtotal, storeSettings, currencies)}</span>
                 </div>
                 {totalTax > 0 && (
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 font-medium">Tax</span>
+                    <span className="text-gray-600 font-medium">الضريبة</span>
                     <span className="font-semibold text-gray-900">{formatCurrency(totalTax, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="h-px bg-rose-200 my-3"></div>
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-serif font-bold text-gray-900">Total</span>
+                  <span className="text-lg font-serif font-bold text-gray-900">الإجمالي</span>
                   <span className="text-2xl font-bold text-rose-600">
                     {formatCurrency(total, storeSettings, currencies)}
                   </span>
@@ -226,7 +226,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
               </svg>
-              <span className="font-serif">Proceed to Checkout</span>
+              <span className="font-serif">إتمام عملية الشراء</span>
             </button>
           </div>
         )}

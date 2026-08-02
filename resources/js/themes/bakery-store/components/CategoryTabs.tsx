@@ -40,7 +40,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
       <div className="max-w-7xl mx-auto px-2 md:px-4">
         <div
           ref={scrollContainerRef}
-          className="flex space-x-2 md:space-x-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+          className="flex gap-2 md:gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {categories.map((category) => {

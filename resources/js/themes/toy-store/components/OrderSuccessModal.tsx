@@ -30,7 +30,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       const copyOrderLink = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(orderLink);
-      toast.success("Order link copied to clipboard!");
+      toast.success("تم نسخ رابط الطلب!");
     } else {
       // Fallback for non-HTTPS or older browsers
       const textArea = document.createElement("textarea");
@@ -39,9 +39,9 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       textArea.select();
       try {
         document.execCommand("copy");
-        toast.success("Order link copied to clipboard!");
+        toast.success("تم نسخ رابط الطلب!");
       } catch (err) {
-        toast.error("Failed to copy link");
+        toast.error("فشل نسخ الرابط");
       }
       document.body.removeChild(textArea);
     }
@@ -56,7 +56,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 bg-purple-100 border-b-2 border-purple-200">
-            <h2 className="text-xl font-bold text-purple-800">Order Confirmed!</h2>
+            <h2 className="text-xl font-bold text-purple-800">تم إتمام الطلب بنجاح!</h2>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-purple-200 rounded-full transition-colors cursor-pointer"
@@ -75,14 +75,14 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                   </svg>
                 </div>
               </div>
-              <p className="text-purple-700 font-medium">Your order has been placed successfully</p>
+              <p className="text-purple-700 font-medium">شكراً لطلبك. سنقوم بمعالجته قريباً.</p>
             </div>
             
             {/* Order Number */}
             <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4 mb-6 text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Package className="w-5 h-5 text-purple-600" />
-                <span className="text-purple-600 text-sm font-bold">Order Number</span>
+                <span className="text-purple-600 text-sm font-bold">رقم الطلب</span>
               </div>
               <p className="text-xl font-bold text-purple-800">#{orderNumber}</p>
             </div>
@@ -94,7 +94,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                 className="w-full py-3 px-4 font-bold rounded-xl transition-all bg-purple-500 hover:bg-purple-600 transform hover:scale-105 text-white shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ShoppingBag className="w-5 h-5" />
-                <span>Continue Shopping</span>
+                <span>متابعة التسوق</span>
               </button>
               
               {orderNumber && (
@@ -106,7 +106,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                     className="w-full py-3 px-4 font-bold rounded-xl transition-all bg-green-500 hover:bg-green-600 transform hover:scale-105 text-white shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Package className="w-5 h-5" />
-                    <span>View Order</span>
+                    <span>عرض تفاصيل الطلب</span>
                   </a>
                   
                   <button
@@ -114,7 +114,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                     className="w-full py-3 px-4 font-bold rounded-xl transition-all bg-purple-100 hover:bg-purple-200 text-purple-700 border-2 border-purple-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Copy className="w-5 h-5" />
-                    <span>Copy Order Link</span>
+                    <span>نسخ رابط الطلب</span>
                   </button>
                 </div>
               )}

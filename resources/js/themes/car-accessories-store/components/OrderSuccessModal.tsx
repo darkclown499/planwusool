@@ -30,7 +30,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       const copyOrderLink = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(orderLink);
-      toast.success("Order link copied to clipboard!");
+      toast.success("تم نسخ رابط الطلب!");
     } else {
       // Fallback for non-HTTPS or older browsers
       const textArea = document.createElement("textarea");
@@ -39,9 +39,9 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       textArea.select();
       try {
         document.execCommand("copy");
-        toast.success("Order link copied to clipboard!");
+        toast.success("تم نسخ رابط الطلب!");
       } catch (err) {
-        toast.error("Failed to copy link");
+        toast.error("فشل نسخ الرابط");
       }
       document.body.removeChild(textArea);
     }
@@ -58,14 +58,14 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-600 flex items-center justify-center mx-auto mb-3 sm:mb-4">
               <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-white mb-2">ORDER CONFIRMED</h2>
-            <p className="text-slate-300 text-xs sm:text-sm font-bold">PARTS SUCCESSFULLY ORDERED</p>
+            <h2 className="text-lg sm:text-xl font-bold text-white mb-2">تم إتمام طلبك بنجاح!</h2>
+            <p className="text-slate-300 text-xs sm:text-sm font-bold">تم استلام طلبك وسنبدأ في تجهيزه</p>
           </div>
           
           <div className="p-4 sm:p-6 bg-slate-800">
             {/* Order Number */}
             <div className="bg-slate-900 border-2 border-slate-700 p-3 sm:p-4 mb-4 text-center">
-              <div className="text-red-400 text-xs font-bold mb-1">ORDER NUMBER</div>
+              <div className="text-red-400 text-xs font-bold mb-1">رقم الطلب</div>
               <div className="text-white text-lg sm:text-xl font-bold">{orderNumber}</div>
             </div>
             
@@ -74,7 +74,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
               <div className="bg-black border border-slate-700 p-3 sm:p-4 mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <FileText className="w-4 h-4 text-red-400" />
-                  <span className="text-red-400 text-xs sm:text-sm font-bold">ORDER TRACKING LINK</span>
+                  <span className="text-red-400 text-xs sm:text-sm font-bold">رابط فاتورة الطلب</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input 
@@ -88,7 +88,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                     className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer"
                   >
                     <Copy className="w-3 h-3" />
-                    <span className="hidden sm:inline">COPY</span>
+                    <span className="hidden sm:inline">نسخ الرابط</span>
                   </button>
                 </div>
               </div>
@@ -101,7 +101,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer"
               >
                 <ShoppingCart className="w-4 h-4" />
-                <span>CONTINUE SHOPPING</span>
+                <span>متابعة التسوق</span>
               </button>
               
               {orderNumber && (
@@ -112,7 +112,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                   className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 transition-colors flex items-center justify-center gap-2 text-sm sm:text-base cursor-pointer"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>VIEW ORDER DETAILS</span>
+                  <span>عرض تفاصيل الطلب</span>
                 </a>
               )}
             </div>
@@ -120,8 +120,8 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             {/* Footer Message */}
             <div className="bg-slate-900 border border-slate-700 p-3 mt-4 text-center">
               <p className="text-slate-300 text-xs font-bold">
-                ORDER PROCESSING INITIATED<br/>
-                TRACKING INFO WILL BE SENT VIA EMAIL
+                تم بدء معالجة الطلب<br/>
+                سيتم إرسال معلومات التتبع عبر البريد الإلكتروني
               </p>
             </div>
           </div>

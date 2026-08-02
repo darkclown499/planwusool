@@ -77,7 +77,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
 
   return (
     <>
-      <Head title={`Order Invoice - ${orderNumber}`} />
+      <Head title={`فاتورة الطلب - ${orderNumber}`} />
       
       <div className="min-h-screen bg-gray-50 py-4 md:py-8">
         <div className="max-w-3xl mx-auto px-4">
@@ -90,8 +90,8 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   <Package className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold text-gray-900">Order Receipt</h1>
-                  <p className="text-purple-600 font-medium text-sm md:text-base">#{orderNumber}</p>
+                  <h1 className="text-xl md:text-2xl font-bold text-gray-900">فاتورة الطلب</h1>
+                  <p className="text-purple-600 font-medium text-sm md:text-base">الطلب رقم #{orderNumber}</p>
                 </div>
               </div>
               <div className="flex gap-2 md:gap-3 print:hidden">
@@ -100,14 +100,14 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 md:px-4 md:py-2 rounded-xl transition-colors flex items-center gap-2 text-sm md:text-base"
                 >
                   <Printer className="w-4 h-4" />
-                  <span className="hidden sm:inline">Print</span>
+                  <span className="hidden sm:inline">طباعة</span>
                 </button>
                 <button
                   onClick={handleDownload}
                   className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-xl transition-colors flex items-center gap-2 text-sm md:text-base"
                 >
                   <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Download</span>
+                  <span className="hidden sm:inline">تحميل PDF</span>
                 </button>
               </div>
             </div>
@@ -134,19 +134,19 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
             <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6">
               <h3 className="font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2 text-sm md:text-base">
                 <Package className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
-                Customer
+                معلومات العميل
               </h3>
               <div className="space-y-2 text-xs md:text-sm">
-                <p><span className="text-gray-500">Name:</span> <span className="font-medium break-words">{order.customer.name}</span></p>
-                <p><span className="text-gray-500">Email:</span> <span className="font-medium break-all">{order.customer.email}</span></p>
-                <p><span className="text-gray-500">Phone:</span> <span className="font-medium">{order.customer.phone}</span></p>
+                <p><span className="text-gray-500">الاسم:</span> <span className="font-medium break-words">{order.customer.name}</span></p>
+                <p><span className="text-gray-500">البريد الإلكتروني:</span> <span className="font-medium break-all">{order.customer.email}</span></p>
+                <p><span className="text-gray-500">الهاتف:</span> <span className="font-medium">{order.customer.phone}</span></p>
               </div>
             </div>
             
             <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6">
               <h3 className="font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2 text-sm md:text-base">
                 <MapPin className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
-                Delivery Address
+                عنوان الشحن
               </h3>
               <div className="text-xs md:text-sm text-gray-600">
                 <p className="font-medium text-gray-900 break-words">{order.shipping_address.name}</p>
@@ -159,7 +159,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
 
           {/* Order Items */}
           <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-4 md:mb-6">
-            <h3 className="font-bold text-gray-900 text-base md:text-lg mb-3 md:mb-4">Order Items ({order.items.length})</h3>
+            <h3 className="font-bold text-gray-900 text-base md:text-lg mb-3 md:mb-4">منتجات الطلب ({order.items.length})</h3>
             <div className="space-y-3 md:space-y-4">
               {order.items.map((item, index) => {
                 const itemTotal = item.price * item.quantity;
@@ -181,14 +181,14 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                           </div>
                         )}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs md:text-sm text-gray-600">
-                          <span>Qty: {item.quantity}</span>
-                          <span>{formatCurrency(item.price, storeSettings, currencies)} each</span>
+                          <span>الكمية: {item.quantity}</span>
+                          <span>{formatCurrency(item.price, storeSettings, currencies)} للقطعة</span>
                           {item.tax_amount > 0 && (
-                            <span>Tax: {formatCurrency(item.tax_amount, storeSettings, currencies)}</span>
+                            <span>الضريبة: {formatCurrency(item.tax_amount, storeSettings, currencies)}</span>
                           )}
                         </div>
                       </div>
-                      <div className="text-left sm:text-right">
+                      <div className="text-right sm:text-left">
                         <div className="font-bold text-gray-900 text-sm md:text-base">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</div>
                       </div>
                     </div>
@@ -200,36 +200,36 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
 
           {/* Order Summary */}
           <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-4 md:mb-6">
-            <h3 className="font-bold text-gray-900 text-base md:text-lg mb-3 md:mb-4">Order Summary</h3>
+            <h3 className="font-bold text-gray-900 text-base md:text-lg mb-3 md:mb-4">ملخص الطلب</h3>
             <div className="space-y-2 md:space-y-3">
               <div className="flex justify-between text-sm md:text-base">
-                <span className="text-gray-600">Subtotal</span>
+                <span className="text-gray-600">المجموع الفرعي</span>
                 <span className="font-medium">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between text-green-600 text-sm md:text-base">
-                  <span className="break-words">Discount {order.coupon && `(${order.coupon})`}</span>
+                  <span className="break-words">خصم الكوبون {order.coupon && `(${order.coupon})`}</span>
                   <span className="font-medium">-{formatCurrency(order.discount, storeSettings, currencies)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm md:text-base">
-                <span className="text-gray-600">Tax</span>
+                <span className="text-gray-600">الضريبة</span>
                 <span className="font-medium">{formatCurrency(order.tax, storeSettings, currencies)}</span>
               </div>
               <div className="flex justify-between text-sm md:text-base">
-                <span className="text-gray-600">Shipping</span>
+                <span className="text-gray-600">الشحن</span>
                 <span className="font-medium">{formatCurrency(order.shipping, storeSettings, currencies)}</span>
               </div>
               <div className="border-t pt-2 md:pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-base md:text-lg font-bold text-gray-900">Total</span>
+                  <span className="text-base md:text-lg font-bold text-gray-900">الإجمالي</span>
                   <span className="text-lg md:text-xl font-bold text-purple-600">{formatCurrency(order.total, storeSettings, currencies)}</span>
                 </div>
               </div>
               {order.payment_method && (
                 <div className="border-t pt-2 md:pt-3">
                   <div className="flex justify-between text-sm md:text-base">
-                    <span className="text-gray-600">Payment Method</span>
+                    <span className="text-gray-600">طريقة الدفع</span>
                     <span className="font-medium break-words">{order.payment_method}</span>
                   </div>
                 </div>
@@ -242,8 +242,8 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
             <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
               <Star className="w-5 h-5 md:w-6 md:h-6 text-purple-500 fill-current" />
             </div>
-            <h4 className="font-bold text-gray-900 text-base md:text-lg mb-2">Thank You!</h4>
-            <p className="text-gray-600 text-sm md:text-base">Thanks for your order. We hope you enjoy your purchase!</p>
+            <h4 className="font-bold text-gray-900 text-base md:text-lg mb-2">شكراً لك!</h4>
+            <p className="text-gray-600 text-sm md:text-base">شكراً لطلبك. نأمل أن تستمتع بمشترياتك!</p>
           </div>
         </div>
       </div>

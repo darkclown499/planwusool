@@ -16,8 +16,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
           <div className="p-6 text-center border-b border-gray-100 relative">
             <button 
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-              aria-label="Close modal"
+              className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+              aria-label="إغلاق النافذة"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -28,8 +28,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Checkout?</h2>
-            <p className="text-gray-600 text-sm">Choose how you'd like to proceed with your order</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">مستعد لإتمام الطلب؟</h2>
+            <p className="text-gray-600 text-sm">اختر كيف تريد المتابعة مع طلبك</p>
           </div>
 
           {/* Content */}
@@ -41,7 +41,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
-              Login to Your Account
+              تسجيل الدخول إلى حسابك
             </button>
 
             <div className="relative">
@@ -49,7 +49,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">or</span>
+                <span className="px-4 bg-white text-gray-500">أو</span>
               </div>
             </div>
 
@@ -60,14 +60,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              Continue as Guest
+              المتابعة كضيف
             </button>
           </div>
 
           {/* Footer */}
           <div className="p-4 bg-gray-50 text-center">
             <p className="text-xs text-gray-500">
-              By continuing, you agree to our Terms of Service and Privacy Policy
+              بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية
             </p>
           </div>
         </div>

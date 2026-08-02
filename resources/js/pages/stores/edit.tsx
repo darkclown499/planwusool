@@ -14,6 +14,19 @@ import { getStoreThemes } from '@/data/storeThemes';
 import MediaPicker from '@/components/MediaPicker';
 import InputError from '@/components/input-error';
 
+function ToggleStatus({ enabled }: { enabled: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <span
+      className={`inline-flex items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+        enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+      }`}
+    >
+      {enabled ? t('Enabled') : t('Disabled')}
+    </span>
+  );
+}
+
 interface EditStoreProps {
  store: any;
  availableThemes: any[];
@@ -95,8 +108,8 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  )}
  </TabsList>
 
- <TabsContent value="info" className="space-y-4 pt-4">
- <Card>
+  <TabsContent value="info" dir="rtl" className="space-y-4 pt-4">
+  <Card>
  <CardHeader>
  <CardTitle>{t('Store Information')}</CardTitle>
  </CardHeader>
@@ -114,7 +127,7 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  </div>
  <div>
  <Label htmlFor="slug">{t('Store Slug')}</Label>
- <Input id="slug" value={store?.slug || ''} disabled />
+  <Input id="slug" value={store?.slug || ''} dir="ltr" disabled />
  </div>
  </div>
  <div>
@@ -123,10 +136,11 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  </div>
  <div className="grid gap-1 mb-4">
  <Label htmlFor="email" required>{t('Store Email')}</Label>
- <Input
- id="email"
- type="email"
- value={formData.email}
+  <Input
+  id="email"
+  type="email"
+  dir="ltr"
+  value={formData.email}
  onChange={handleChange}
  aria-invalid={!!errors.email}
  />
@@ -151,18 +165,22 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  {t('Use your own domain (e.g., example.com)')}
  </p>
  </div>
- <Switch
- id="enable_custom_domain"
- checked={formData.enable_custom_domain}
- onCheckedChange={(checked) => handleSwitchChange('enable_custom_domain', checked)}
- />
- </div>
+  <div className="flex items-center gap-2">
+  <Switch
+  id="enable_custom_domain"
+  checked={formData.enable_custom_domain}
+  onCheckedChange={(checked) => handleSwitchChange('enable_custom_domain', checked)}
+  />
+  <ToggleStatus enabled={formData.enable_custom_domain} />
+  </div>
+  </div>
  {formData.enable_custom_domain && (
  <div className="grid gap-1 mb-4">
  <Label htmlFor="custom_domain">{t('Custom Domain')}</Label>
- <Input
- id="custom_domain"
- placeholder={t('example.com')}
+  <Input
+  id="custom_domain"
+  dir="ltr"
+  placeholder={t('example.com')}
  value={formData.custom_domain}
  onChange={handleChange}
  aria-invalid={!!errors.custom_domain}
@@ -196,18 +214,22 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  {t('Use a subdomain (e.g., mystore.yourdomain.com)')}
  </p>
  </div>
- <Switch
- id="enable_custom_subdomain"
- checked={formData.enable_custom_subdomain}
- onCheckedChange={(checked) => handleSwitchChange('enable_custom_subdomain', checked)}
- />
- </div>
+  <div className="flex items-center gap-2">
+  <Switch
+  id="enable_custom_subdomain"
+  checked={formData.enable_custom_subdomain}
+  onCheckedChange={(checked) => handleSwitchChange('enable_custom_subdomain', checked)}
+  />
+  <ToggleStatus enabled={formData.enable_custom_subdomain} />
+  </div>
+  </div>
  {formData.enable_custom_subdomain && (
  <div className="grid gap-1 mb-4">
  <Label htmlFor="custom_subdomain">{t('Subdomain')}</Label>
- <Input
- id="custom_subdomain"
- placeholder={t('mystore')}
+  <Input
+  id="custom_subdomain"
+  dir="ltr"
+  placeholder={t('mystore')}
  value={formData.custom_subdomain}
  onChange={handleChange}
  aria-invalid={!!errors.custom_subdomain}
@@ -270,36 +292,41 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  {getStoreThemes().filter(theme =>
  availableThemes === null || availableThemes.includes(theme.id)
  ).map((theme) => (
- <div
- key={theme.id}
- className={`cursor-pointer rounded-lg border-2 p-1 transition-all duration-200 ${formData.theme === theme.id ? 'border-primary' : 'border-gray-200 hover:border-gray-300'
- }`}
- onClick={() => setFormData(prev => ({ ...prev, theme: theme.id }))}
- >
- <div className="relative aspect-video overflow-hidden rounded-md theme-preview-container">
- <img
- src={theme.thumbnail}
- alt={theme.name}
- className="h-full w-full object-cover theme-preview-image"
- onError={(e) => {
- (e.target as HTMLImageElement).src = `https://placehold.co/300x180?text=${encodeURIComponent(theme.name)}`;
- }}
- />
- {formData.theme === theme.id && (
- <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
- <div className="rounded-full bg-primary p-1">
- <Check className="h-4 w-4 text-white" />
- </div>
- </div>
- )}
- </div>
- <div className="p-2">
- <h3 className="font-medium text-sm">{theme.name}</h3>
- <p className="text-xs text-muted-foreground line-clamp-2">
- {theme.description}
- </p>
- </div>
- </div>
+  <div
+  key={theme.id}
+  className={`flex cursor-pointer flex-col rounded-lg border-2 p-1 transition-all duration-200 ${formData.theme === theme.id ? 'border-primary ring-2 ring-primary/30' : 'border-gray-200 hover:border-gray-300'
+  }`}
+  onClick={() => setFormData(prev => ({ ...prev, theme: theme.id }))}
+  >
+  <div className="relative aspect-video overflow-hidden rounded-md bg-muted theme-preview-container">
+  <img
+  src={theme.thumbnail}
+  alt={theme.name}
+  loading="lazy"
+  className="h-full w-full object-cover object-top theme-preview-image"
+  onError={(e) => {
+  const img = e.target as HTMLImageElement;
+  img.onerror = null;
+  img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="100%" height="100%" fill="#f3f4f6"/><text x="50%" y="50%" fill="#6b7280" font-family="Arial" font-size="24" text-anchor="middle" dominant-baseline="middle">${theme.name}</text></svg>`
+  )}`;
+  }}
+  />
+  {formData.theme === theme.id && (
+  <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
+  <div className="rounded-full bg-primary p-1">
+  <Check className="h-4 w-4 text-white" />
+  </div>
+  </div>
+  )}
+  </div>
+  <div className="flex flex-1 flex-col gap-1 p-2">
+  <h3 className="font-medium text-sm">{theme.name}</h3>
+  <p className="text-xs text-muted-foreground line-clamp-2">
+  {theme.description}
+  </p>
+  </div>
+  </div>
  ))}
  </div>
  </CardContent>
@@ -320,12 +347,15 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  {t('Make your store installable as a mobile app')}
  </p>
  </div>
- <Switch
- id="enable_pwa"
- checked={formData.enable_pwa}
- onCheckedChange={(checked) => handleSwitchChange('enable_pwa', checked)}
- />
- </div>
+  <div className="flex items-center gap-2">
+  <Switch
+  id="enable_pwa"
+  checked={formData.enable_pwa}
+  onCheckedChange={(checked) => handleSwitchChange('enable_pwa', checked)}
+  />
+  <ToggleStatus enabled={formData.enable_pwa} />
+  </div>
+  </div>
 
  {formData.enable_pwa && (
  <div className="space-y-4">

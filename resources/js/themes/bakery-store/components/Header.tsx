@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="w-full relative">
                 <input
                   type="text"
-                  placeholder="Search bakery items..."
+                  placeholder="ابحث عن المنتجات..."
                   value={searchQuery}
                   onChange={handleSearchChange}
                   className="w-full pl-4 pr-12 py-2 border-2 border-stone-300 focus:border-stone-500 focus:outline-none rounded-lg bg-white text-stone-900 placeholder-stone-600"
@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center gap-4">
               {/* Cart */}
               <button
                 onClick={onCartClick}
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <ShoppingBag className="h-6 w-6" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-stone-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -left-1 bg-stone-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
                     {cartCount}
                   </span>
                 )}
@@ -95,31 +95,31 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center space-x-2 p-2 text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
+                    className="flex items-center gap-2 p-2 text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
                   >
                     <User className="h-5 w-5" />
                     <span className="text-sm font-medium">{userName}</span>
                   </button>
                   
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-stone-300 py-2 z-50">
+                    <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-stone-300 py-2 z-50">
                       <button
                         onClick={() => {
                           onProfileClick();
                           setShowUserMenu(false);
                         }}
-                        className="w-full text-left px-4 py-2 text-stone-800 hover:bg-stone-50 transition-colors cursor-pointer"
+                        className="w-full text-right px-4 py-2 text-stone-800 hover:bg-stone-50 transition-colors cursor-pointer"
                       >
-                        My Profile
+                        ملفي الشخصي
                       </button>
                       <button
                         onClick={() => {
                           onOrdersClick();
                           setShowUserMenu(false);
                         }}
-                        className="w-full text-left px-4 py-2 text-stone-800 hover:bg-stone-50 transition-colors cursor-pointer"
+                        className="w-full text-right px-4 py-2 text-stone-800 hover:bg-stone-50 transition-colors cursor-pointer"
                       >
-                        My Orders
+                        طلباتي
                       </button>
                       <hr className="my-2 border-stone-200" />
                       <button
@@ -127,9 +127,9 @@ export const Header: React.FC<HeaderProps> = ({
                           onLogoutClick();
                           setShowUserMenu(false);
                         }}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        className="w-full text-right px-4 py-2 text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                       >
-                        Logout
+                        تسجيل الخروج
                       </button>
                     </div>
                   )}
@@ -140,13 +140,13 @@ export const Header: React.FC<HeaderProps> = ({
                   className="flex items-center space-x-2 px-4 py-2 bg-stone-600 text-white hover:bg-stone-700 transition-colors rounded-lg font-medium cursor-pointer"
                 >
                   <User className="h-4 w-4" />
-                  <span>Login</span>
+                  <span>تسجيل الدخول</span>
                 </button>
               )}
             </div>
 
             {/* Mobile Actions */}
-            <div className="md:hidden flex items-center space-x-2">
+            <div className="md:hidden flex items-center gap-2">
               {/* Mobile Search Icon */}
               <button
                 onClick={toggleMobileSearch}
@@ -162,7 +162,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <ShoppingBag className="h-6 w-6" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-stone-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -left-1 bg-stone-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
                     {cartCount}
                   </span>
                 )}
@@ -195,7 +195,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="relative">
             <input
               type="text"
-              placeholder="Search bakery items..."
+              placeholder="ابحث عن المنتجات..."
               value={searchQuery}
               onChange={handleSearchChange}
               className="w-full pl-4 pr-12 py-3 border-2 border-stone-300 focus:border-stone-500 focus:outline-none rounded-lg bg-white text-stone-900 placeholder-stone-600"
@@ -220,27 +220,27 @@ export const Header: React.FC<HeaderProps> = ({
                 onProfileClick();
                 setShowUserMenu(false);
               }}
-              className="w-full text-left px-4 py-3 text-stone-800 hover:bg-stone-50 rounded-lg transition-colors cursor-pointer"
+              className="w-full text-right px-4 py-3 text-stone-800 hover:bg-stone-50 rounded-lg transition-colors cursor-pointer"
             >
-              My Profile
+              ملفي الشخصي
             </button>
             <button
               onClick={() => {
                 onOrdersClick();
                 setShowUserMenu(false);
               }}
-              className="w-full text-left px-4 py-3 text-stone-800 hover:bg-stone-50 rounded-lg transition-colors cursor-pointer"
+              className="w-full text-right px-4 py-3 text-stone-800 hover:bg-stone-50 rounded-lg transition-colors cursor-pointer"
             >
-              My Orders
+              طلباتي
             </button>
             <button
               onClick={() => {
                 onLogoutClick();
                 setShowUserMenu(false);
               }}
-              className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+              className="w-full text-right px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
             >
-              Logout
+              تسجيل الخروج
             </button>
           </div>
         </div>

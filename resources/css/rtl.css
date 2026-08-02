@@ -81,3 +81,39 @@ html[dir="rtl"] .group-has-data-[sidebar=menu-action]/menu-item:pr-8 {
   padding-right: 0.5rem !important;
   padding-left: 2rem !important;
 }
+
+/* ===== Storefront Theme RTL Support ===== */
+
+/* Arabic font for storefront themes */
+[data-storefront="true"] {
+  font-family: 'Tajawal', 'Cairo', 'IBM Plex Sans Arabic', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+/* Flip arrows and chevrons for RTL storefronts */
+[data-storefront="true"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* Modal drawers should slide from the left in RTL */
+[data-storefront="true"] .cart-drawer {
+  right: 0;
+  left: auto;
+}
+
+/* Fix absolute positioned left/right elements */
+html[dir="rtl"] .md\:border-l {
+  border-left-width: 0;
+  border-right-width: 1px;
+}
+
+html[dir="rtl"] .border-l {
+  border-left-width: 0;
+  border-right-width: 1px;
+}
+
+html[dir="rtl"] .border-r {
+  border-right-width: 0;
+  border-left-width: 1px;
+}

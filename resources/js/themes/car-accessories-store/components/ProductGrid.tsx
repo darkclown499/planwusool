@@ -39,7 +39,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
     return (
       <div className="text-center py-12 bg-slate-800 border-2 border-slate-800">
         <div className="text-6xl mb-4">🚗</div>
-        <p className="text-white text-lg font-bold">NO PRODUCTS FOUND</p>
+        <p className="text-white text-lg font-bold">لا توجد منتجات</p>
       </div>
     );
   }
@@ -61,9 +61,9 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
           {/* Header Bar */}
           <div className="bg-slate-800 p-1 sm:p-2 flex justify-between items-center">
             <span className="text-white text-xs font-bold truncate">
-              {product.category || 'AUTO'}
+              {product.category || 'سيارات'}
             </span>
-            <span className="text-slate-300 text-xs ml-1 flex-shrink-0">
+            <span className="text-slate-300 text-xs mr-1 flex-shrink-0">
               #{product.sku}
             </span>
           </div>
@@ -80,14 +80,14 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             {product.availability === 'out_of_stock' && (
               <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center">
                 <span className="bg-red-600 text-white px-3 py-1 text-xs font-bold">
-                  SOLD OUT
+                  غير متوفر
                 </span>
               </div>
             )}
             
             {product.variants && product.variants.length > 0 && (
               <div className="absolute bottom-2 right-2 bg-red-600 text-white px-2 py-1 text-xs font-bold">
-                VARIANTS
+                بالخيارات
               </div>
             )}
             
@@ -112,7 +112,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                   {formatCurrency(product.price, storeSettings, currencies)}
                 </span>
                 {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="text-xs text-slate-500 line-through ml-1 flex-shrink-0">
+                  <span className="text-xs text-slate-500 line-through mr-1 flex-shrink-0">
                     {formatCurrency(product.originalPrice, storeSettings, currencies)}
                   </span>
                 )}
@@ -122,11 +122,11 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               <div className="text-xs font-medium">
                 {product.stockQuantity > 0 ? (
                   <span className="text-green-600">
-                    ✓ {product.stockQuantity > 10 ? 'IN STOCK' : `${product.stockQuantity} LEFT`}
+                    ✓ {product.stockQuantity > 10 ? 'متوفر' : `بقي ${product.stockQuantity} فقط`}
                   </span>
                 ) : (
                   <span className="text-red-600">
-                    ✗ OUT OF STOCK
+                    ✗ غير متوفر
                   </span>
                 )}
               </div>
@@ -151,15 +151,15 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               }`}
             >
               {product.availability === 'out_of_stock' ? (
-                'SOLD OUT'
+                'غير متوفر'
               ) : product.variants && product.variants.length > 0 ? (
-                <span className="hidden sm:inline">SELECT OPTIONS</span>
+                <span className="hidden sm:inline">اختر الخيارات</span>
               ) : (
-                <span className="hidden sm:inline">ADD TO CART</span>
+                <span className="hidden sm:inline">أضف إلى السلة</span>
               )}
               {product.availability === 'in_stock' && (
                 <span className="sm:hidden">
-                  {product.variants && product.variants.length > 0 ? 'OPTIONS' : 'ADD'}
+                  {product.variants && product.variants.length > 0 ? 'الخيارات' : 'أضف'}
                 </span>
               )}
             </button>

@@ -45,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({
             </a>
           </div>
           <p className="text-xs text-slate-400 md:text-sm">
-            {copyrightText || `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`}
+            {copyrightText || `© ${new Date().getFullYear()} ${storeName}. جميع الحقوق محفوظة.`}
           </p>
         </div>
       </div>

@@ -61,7 +61,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-serif font-bold text-amber-900">My Orders</h2>
+              <h2 className="text-2xl font-serif font-bold text-amber-900">طلباتي</h2>
             </div>
             <button onClick={onClose} className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-full transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,15 +73,15 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
           {/* Search */}
           <div className="px-6 py-4 border-b border-amber-100 bg-amber-25">
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
-                placeholder="Search by order number or status..."
+                placeholder="ابحث برقم الطلب أو الحالة..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                className="w-full pr-12 pl-4 py-3 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
               />
             </div>
           </div>
@@ -91,7 +91,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
             {loading ? (
               <div className="text-center py-16">
                 <div className="w-16 h-16 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-6"></div>
-                <p className="text-amber-700 font-medium">Loading your orders...</p>
+                <p className="text-amber-700 font-medium">جارٍ تحميل الطلبات...</p>
               </div>
             ) : filteredOrders.length === 0 ? (
               searchQuery ? (
@@ -101,13 +101,13 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-amber-900 mb-3">No Orders Found</h3>
-                  <p className="text-amber-700 mb-8 max-w-md mx-auto">No orders match your search criteria.</p>
+                  <h3 className="text-2xl font-bold text-amber-900 mb-3">لا توجد طلبات</h3>
+                  <p className="text-amber-700 mb-8 max-w-md mx-auto">لا توجد طلبات مطابقة لمعايير البحث.</p>
                   <button
                     onClick={() => setSearchQuery('')}
                     className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-semibold transition-colors shadow-md hover:shadow-lg"
                   >
-                    Clear Search
+                    مسح البحث
                   </button>
                 </div>
               ) : (
@@ -117,20 +117,20 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-amber-900 mb-3">No Orders Yet</h3>
-                  <p className="text-amber-700 mb-8 max-w-md mx-auto">Start shopping to see your order history here. We'll keep track of all your purchases.</p>
+                  <h3 className="text-2xl font-bold text-amber-900 mb-3">لا توجد طلبات بعد</h3>
+                  <p className="text-amber-700 mb-8 max-w-md mx-auto">لم تقم بإجراء أي طلبات حتى الآن.</p>
                   <button
                     onClick={onClose}
                     className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-semibold transition-colors shadow-md hover:shadow-lg"
                   >
-                    Start Shopping
+                    متابعة التسوق
                   </button>
                 </div>
               )
             ) : (
               <div className="space-y-6">
                 {filteredOrders.map((order, index) => (
-                  <div key={order.id} className="bg-white rounded-2xl border-l-4 border-amber-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-amber-600 group">
+                  <div key={order.id} className="bg-white rounded-2xl border-r-4 border-amber-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-amber-600 group">
                     <div className="p-6">
                       <div className="flex items-start gap-4">
                         <div className="flex-1 min-w-0">
@@ -138,7 +138,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                           <div className="flex flex-col gap-4 mb-6">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                               <div>
-                                <h3 className="text-xl md:text-2xl font-bold text-amber-900 group-hover:text-amber-800 transition-colors">Order #{order.id}</h3>
+                                <h3 className="text-xl md:text-2xl font-bold text-amber-900 group-hover:text-amber-800 transition-colors">الطلب رقم #{order.id}</h3>
                                 <div className="flex items-center gap-2 text-amber-600 mt-1">
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V7a2 2 0 012-2h4a2 2 0 012 2v0M8 7v8a2 2 0 002 2h4a2 2 0 002-2V7M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2h-2" />
@@ -167,7 +167,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                                   </svg>
                                   <span className="text-2xl md:text-3xl font-bold text-amber-900">{order.items}</span>
                                 </div>
-                                <div className="text-xs md:text-sm text-amber-600 font-medium">Item{order.items > 1 ? 's' : ''}</div>
+                                <div className="text-xs md:text-sm text-amber-600 font-medium">{order.items > 1 ? 'منتجات' : 'منتج'}</div>
                               </div>
                               <div className="text-center">
                                 <div className="flex flex-col items-center mb-2">
@@ -176,7 +176,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                                   </svg>
                                   <span className="text-xl md:text-2xl font-bold text-amber-900">{formatCurrency(order.total, storeSettings, currencies)}</span>
                                 </div>
-                                <div className="text-xs md:text-sm text-amber-600 font-medium">Total</div>
+                                <div className="text-xs md:text-sm text-amber-600 font-medium">الإجمالي</div>
                               </div>
                             </div>
                           </div>
@@ -184,7 +184,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                           {/* Enhanced action button */}
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                             <div className="text-sm text-amber-500 order-2 sm:order-1">
-                              {Math.floor((new Date().getTime() - new Date(order.date).getTime()) / (1000 * 60 * 60 * 24))} days ago
+                              منذ {Math.floor((new Date().getTime() - new Date(order.date).getTime()) / (1000 * 60 * 60 * 24))} يوم
                             </div>
                             <button
                               onClick={() => onViewOrder(order.id)}
@@ -193,8 +193,8 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                               <svg className="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
-                              <span>View Details</span>
-                              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <span>عرض التفاصيل</span>
+                              <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </button>

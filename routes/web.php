@@ -461,6 +461,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/toggle-status', [\App\Http\Controllers\StoreController::class, 'toggleStatus'])->middleware('permission:edit-stores')->name('stores.toggle-status');
         Route::get('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.settings');
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
+        Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
+        Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');
         Route::get('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'show'])->middleware('permission:settings-stores')->name('stores.appearance');
         Route::put('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'update'])->middleware('permission:settings-stores')->name('stores.appearance.update');
         Route::put('stores/{id}/appearance/autosave', [\App\Http\Controllers\StoreAppearanceController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.appearance.autosave');

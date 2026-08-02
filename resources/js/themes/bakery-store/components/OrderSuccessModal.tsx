@@ -30,7 +30,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       const copyOrderLink = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(orderLink);
-      toast.success("Order link copied to clipboard!");
+      toast.success("تم نسخ رابط الطلب!");
     } else {
       // Fallback for non-HTTPS or older browsers
       const textArea = document.createElement("textarea");
@@ -39,9 +39,9 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       textArea.select();
       try {
         document.execCommand("copy");
-        toast.success("Order link copied to clipboard!");
+        toast.success("تم نسخ رابط الطلب!");
       } catch (err) {
-        toast.error("Failed to copy link");
+        toast.error("فشل نسخ الرابط");
       }
       document.body.removeChild(textArea);
     }
@@ -57,7 +57,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
           <div className="relative bg-green-600 p-4 sm:p-5 flex-shrink-0">
             <button 
               onClick={onClose}
-              className="absolute top-3 right-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer"
+              className="absolute top-3 left-3 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -66,8 +66,8 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Receipt className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1">Order Confirmed!</h2>
-              <p className="text-green-100 text-xs sm:text-sm">Your delicious treats are on their way</p>
+              <h2 className="text-xl sm:text-2xl font-serif font-bold mb-1">تم إتمام الطلب بنجاح!</h2>
+              <p className="text-green-100 text-xs sm:text-sm">مخبوزاتك اللذيذة في الطريق إليك</p>
             </div>
           </div>
 
@@ -78,7 +78,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             <div className="bg-stone-50 rounded-2xl p-4 mb-4 border border-stone-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">Order Number</p>
+                  <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">رقم الطلب</p>
                   <p className="text-lg sm:text-xl font-serif font-bold text-stone-900 mt-1">#{orderNumber}</p>
                 </div>
                 <svg className="w-6 h-6 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +94,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
               <div className="bg-stone-100 rounded-xl p-4 mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Receipt className="w-4 h-4 text-stone-600" />
-                  <span className="text-sm font-medium text-stone-700">Track Your Order</span>
+                  <span className="text-sm font-medium text-stone-700">رابط فاتورة الطلب</span>
                 </div>
                 <div className="flex gap-2">
                   <input 
@@ -108,7 +108,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                     className="bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 flex-shrink-0 cursor-pointer"
                   >
                     <Copy className="w-3 h-3" />
-                    <span className="hidden sm:inline">Copy</span>
+                    <span className="hidden sm:inline">نسخ</span>
                   </button>
                 </div>
               </div>
@@ -121,7 +121,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                 className="w-full bg-stone-700 hover:bg-stone-800 text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg cursor-pointer"
               >
                 <ShoppingBag className="w-5 h-5" />
-                <span className="font-serif">Continue Shopping</span>
+                <span className="font-serif">متابعة التسوق</span>
               </button>
               {orderNumber && (
                 <a
@@ -131,7 +131,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                   className="w-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold py-3 px-6 rounded-2xl transition-all flex items-center justify-center gap-3 border border-stone-300 cursor-pointer"
                 >
                   <Receipt className="w-4 h-4" />
-                  <span>View Details</span>
+                  <span>عرض التفاصيل</span>
                 </a>
               )}
             </div>

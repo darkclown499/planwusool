@@ -36,19 +36,19 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
       storeSlug,
       resetToken,
       () => {
-        toast.success('Password has been reset successfully!');
+        toast.success('تمت إعادة تعيين كلمة المرور بنجاح!');
         router.visit(route('store.home', { storeSlug }));
       },
       (errors) => {
         if (errors.token) {
-          toast.error('Reset link has expired or is invalid. Please request a new one.');
+          toast.error('انتهت صلاحية رابط إعادة التعيين أو أنه غير صالح. يرجى طلب رابط جديد.');
           onClose();
         } else if (errors.email) {
           toast.error(errors.email);
         } else if (errors.password) {
           toast.error(errors.password);
         } else {
-          toast.error('Failed to reset password. Please try again.');
+          toast.error('فشل إعادة تعيين كلمة المرور. يرجى المحاولة مرة أخرى.');
         }
       }
     );
@@ -62,7 +62,7 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
           <div className="relative bg-purple-100 p-6 flex-shrink-0 border-b-2 border-purple-200">
             <button 
               onClick={() => router.visit(route('store.home', { storeSlug }))}
-              className="absolute top-3 right-3 p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-200 rounded-full transition-colors"
+              className="absolute top-3 left-3 p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-200 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -71,56 +71,56 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
               <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Lock className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold mb-2">Reset Password</h2>
-              <p className="text-purple-600 text-sm font-medium">Create a new password for your account</p>
+              <h2 className="text-2xl font-bold mb-2">إعادة تعيين كلمة المرور</h2>
+              <p className="text-purple-600 text-sm font-medium">أنشئ كلمة مرور جديدة لحسابك</p>
             </div>
           </div>
           
           <div className="p-6 overflow-y-auto">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-purple-700 mb-2">Email</label>
+                <label className="block text-sm font-bold text-purple-700 mb-2">البريد الإلكتروني</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                   <input 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full pl-10 pr-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-colors"
-                    placeholder="Enter your email"
+                    className="w-full pr-10 pl-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-colors"
+                    placeholder="أدخل بريدك الإلكتروني"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-purple-700 mb-2">New Password</label>
+                <label className="block text-sm font-bold text-purple-700 mb-2">كلمة المرور الجديدة</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                   <input 
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={8}
-                    className="w-full pl-10 pr-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-colors"
-                    placeholder="Enter new password"
+                    className="w-full pr-10 pl-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-colors"
+                    placeholder="أدخل كلمة مرور جديدة"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-bold text-purple-700 mb-2">Confirm Password</label>
+                <label className="block text-sm font-bold text-purple-700 mb-2">تأكيد كلمة المرور</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                   <input 
                     type="password" 
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     minLength={8}
-                    className="w-full pl-10 pr-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-colors"
-                    placeholder="Confirm new password"
+                    className="w-full pr-10 pl-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 transition-colors"
+                    placeholder="أكد كلمة المرور الجديدة"
                   />
                 </div>
               </div>
@@ -129,17 +129,17 @@ const ResetPasswordModalContent: React.FC<ResetPasswordModalProps> = ({
                 type="submit" 
                 className="w-full py-3 px-4 rounded-xl font-bold transition-all bg-purple-500 hover:bg-purple-600 text-white shadow-md transform hover:scale-105"
               >
-                Reset Password
+                إعادة تعيين كلمة المرور
               </button>
               
               <p className="text-center text-sm text-purple-600">
-                Remember your password? 
+                تذكرت كلمة المرور؟ 
                 <button 
                   onClick={onClose}
                   type="button" 
-                  className="text-purple-700 hover:text-purple-900 font-bold ml-1 transition-colors"
+                  className="text-purple-700 hover:text-purple-900 font-bold mr-1 transition-colors"
                 >
-                  Login
+                  تسجيل الدخول
                 </button>
               </p>
             </form>

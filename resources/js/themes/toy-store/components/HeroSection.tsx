@@ -22,7 +22,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   country,
   postalCode,
 }) => {
-  const fullAddress = [address, city, state, country, postalCode].filter(Boolean).join(', ');
+  const fullAddress = [address, city, state, country, postalCode].filter(Boolean).join('، ');
 
   return (
     <div className="relative bg-purple-500 overflow-hidden">
@@ -45,7 +45,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </h1>
           ) : (
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight opacity-0 animate-[fadeInUp_1s_ease-out_0.3s_forwards]">
-              Welcome to {storeName}
+              مرحباً بك في {storeName}
             </h1>
           )}
           

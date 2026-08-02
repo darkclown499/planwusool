@@ -28,8 +28,14 @@ class StoreConfiguration extends Model
         $defaults = [
             'default_currency' => 'usd',
             'timezone' => 'utc',
+            'language' => 'ar',
+            'meta_title' => '',
+            'meta_description' => '',
+            'google_analytics_id' => '',
+            'meta_pixel_id' => '',
             'store_status' => 'true',
             'maintenance_mode' => 'false',
+            'maintenance_message' => '',
             'logo' => '',
             'favicon' => '',
             'welcome_message' => '',
@@ -40,6 +46,7 @@ class StoreConfiguration extends Model
             'twitter_url' => '',
             'youtube_url' => '',
             'whatsapp_url' => '',
+            'social_links' => '[]',
             'address' => '',
             'city' => '',
             'state' => '',
@@ -67,6 +74,12 @@ class StoreConfiguration extends Model
                 $result[$key] = $result[$key] === 'true' || $result[$key] === true;
             }
         }
+
+        // Decode social_links JSON
+        if (isset($result['social_links'])) {
+            $decoded = json_decode($result['social_links'], true);
+            $result['social_links'] = is_array($decoded) ? $decoded : [];
+        }
         
         return $result;
     }
@@ -88,11 +101,33 @@ class StoreConfiguration extends Model
     public static function updateConfiguration($storeId, $settings)
     {
         foreach ($settings as $key => $value) {
+            if (is_array($value) || is_object($value)) {
+                $storedValue = json_encode($value);
+            } elseif (is_bool($value)) {
+                $storedValue = $value ? 'true' : 'false';
+            } else {
+                $storedValue = (string) $value;
+            }
+
             self::updateOrCreate(
                 ['store_id' => $storeId, 'key' => $key],
-                ['value' => is_bool($value) ? ($value ? 'true' : 'false') : (string)$value]
+                ['value' => $storedValue]
             );
         }
+    }
+
+    /**
+     * Delete configuration rows for a given set of keys so defaults apply.
+     */
+    public static function resetKeys($storeId, array $keys)
+    {
+        if (empty($keys)) {
+            return;
+        }
+
+        self::where('store_id', $storeId)
+            ->whereIn('key', $keys)
+            ->delete();
     }
     
     /**

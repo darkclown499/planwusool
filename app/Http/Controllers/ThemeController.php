@@ -187,6 +187,12 @@ class ThemeController extends Controller
                 'whatsapp_widget_position' => $configuration['whatsapp_widget_position'] ?? 'right',
                 'whatsapp_widget_show_on_mobile' => $configuration['whatsapp_widget_show_on_mobile'] ?? true,
                 'whatsapp_widget_show_on_desktop' => $configuration['whatsapp_widget_show_on_desktop'] ?? true,
+                // SEO
+                'meta_title' => $configuration['meta_title'] ?? '',
+                'meta_description' => $configuration['meta_description'] ?? '',
+                // Tracking & Analytics
+                'google_analytics_id' => $configuration['google_analytics_id'] ?? '',
+                'meta_pixel_id' => $configuration['meta_pixel_id'] ?? '',
             ],
             'storeSettings' => $storeSettings,
         ];

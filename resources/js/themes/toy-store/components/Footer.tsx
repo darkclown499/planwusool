@@ -78,8 +78,8 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           
           {/* Copyright */}
-          <p className="text-purple-700 text-sm text-center md:text-right">
-            {copyrightText || `© ${currentYear} ${storeName}. All rights reserved.`}
+          <p className="text-purple-700 text-sm text-center md:text-left">
+            {copyrightText || `© ${currentYear} ${storeName}. جميع الحقوق محفوظة.`}
           </p>
         </div>
       </div>

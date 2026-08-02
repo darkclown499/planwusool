@@ -100,7 +100,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
                   onClick={scrollLeft}
                   className="bg-pink-400 hover:bg-pink-500 text-white rounded-full p-2 md:p-3 shadow-lg transform hover:scale-110 transition-all duration-200"
                 >
-                  <svg className="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-6 md:h-6 rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
@@ -110,7 +110,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
                   onClick={scrollRight}
                   className="bg-green-400 hover:bg-green-500 text-white rounded-full p-2 md:p-3 shadow-lg transform hover:scale-110 transition-all duration-200"
                 >
-                  <svg className="w-4 h-4 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-6 md:h-6 rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>

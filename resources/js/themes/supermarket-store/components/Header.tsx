@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {logo ? (
                   <img 
                     src={getImageUrl(logo)} 
-                    alt="Store Logo" 
+                    alt="شعار المتجر" 
                     className="max-w-28 md:max-w-32 object-contain"
                   />
                 ) : (
@@ -75,20 +75,20 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search for groceries, fruits, vegetables..."
+                    placeholder="ابحث عن المنتجات..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       onSearch(e.target.value);
                     }}
-                    className="w-full pl-12 pr-4 py-3 border-2 border-green-200 rounded-full focus:outline-none focus:border-green-500 text-gray-700"
+                    className="w-full pr-12 pl-4 py-3 border-2 border-green-200 rounded-full focus:outline-none focus:border-green-500 text-gray-700"
                   />
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-green-500 w-5 h-5" />
+                  <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-green-500 w-5 h-5" />
                   <button
                     type="submit"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors"
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition-colors"
                   >
-                    Search
+                    بحث
                   </button>
                 </div>
               </form>
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-green-700" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 md:-top-2 md:-right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -left-1 md:-top-2 md:-left-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center font-bold">
                     {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 )}
@@ -127,8 +127,8 @@ export const Header: React.FC<HeaderProps> = ({
                     <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                       <User className="w-5 h-5 text-white" />
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-700">Hello,</p>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-700">مرحباً،</p>
                       <p className="text-sm text-green-600 font-semibold">{userName}</p>
                     </div>
                   </button>
@@ -138,30 +138,30 @@ export const Header: React.FC<HeaderProps> = ({
                     className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   >
                     <User className="w-5 h-5" />
-                    <span>Sign In</span>
+                    <span>تسجيل الدخول</span>
                   </button>
                 )}
 
                 {/* User Dropdown */}
                 {showUserMenu && isLoggedIn && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
+                  <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-2 z-50">
                     <button
                       onClick={() => {
                         onProfileClick();
                         setShowUserMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                      className="w-full text-right px-4 py-2 hover:bg-gray-100 text-gray-700"
                     >
-                      My Profile
+                      ملفي الشخصي
                     </button>
                     <button
                       onClick={() => {
                         onOrdersClick();
                         setShowUserMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-gray-700"
+                      className="w-full text-right px-4 py-2 hover:bg-gray-100 text-gray-700"
                     >
-                      My Orders
+                      طلباتي
                     </button>
                     <hr className="my-2" />
                     <button
@@ -169,9 +169,9 @@ export const Header: React.FC<HeaderProps> = ({
                         onLogoutClick();
                         setShowUserMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                      className="w-full text-right px-4 py-2 hover:bg-gray-100 text-red-600"
                     >
-                      Sign Out
+                      تسجيل الخروج
                     </button>
                   </div>
                 )}
@@ -186,20 +186,20 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search groceries..."
+                    placeholder="ابحث عن المنتجات..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       onSearch(e.target.value);
                     }}
-                    className="w-full pl-9 pr-9 py-2.5 border border-green-200 rounded-lg focus:outline-none focus:border-green-500 text-sm"
+                    className="w-full pr-9 pl-9 py-2.5 border border-green-200 rounded-lg focus:outline-none focus:border-green-500 text-sm"
                     autoFocus
                   />
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-green-500 w-4 h-4" />
+                  <Search className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-green-500 w-4 h-4" />
                   <button
                     type="button"
                     onClick={() => setShowMobileSearch(false)}
-                    className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -216,7 +216,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="bg-white w-80 h-full shadow-lg">
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Menu</h2>
+                <h2 className="text-lg font-semibold">القائمة</h2>
                 <button
                   onClick={() => setShowMobileMenu(false)}
                   className="p-2 rounded-lg hover:bg-gray-100"
@@ -233,7 +233,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-700">Hello,</p>
+                      <p className="font-medium text-gray-700">مرحباً،</p>
                       <p className="text-green-600 font-semibold">{userName}</p>
                     </div>
                   </div>
@@ -242,27 +242,27 @@ export const Header: React.FC<HeaderProps> = ({
                       onProfileClick();
                       setShowMobileMenu(false);
                     }}
-                    className="w-full text-left p-3 hover:bg-gray-100 rounded-lg"
+                    className="w-full text-right p-3 hover:bg-gray-100 rounded-lg"
                   >
-                    My Profile
+                    ملفي الشخصي
                   </button>
                   <button
                     onClick={() => {
                       onOrdersClick();
                       setShowMobileMenu(false);
                     }}
-                    className="w-full text-left p-3 hover:bg-gray-100 rounded-lg"
+                    className="w-full text-right p-3 hover:bg-gray-100 rounded-lg"
                   >
-                    My Orders
+                    طلباتي
                   </button>
                   <button
                     onClick={() => {
                       onLogoutClick();
                       setShowMobileMenu(false);
                     }}
-                    className="w-full text-left p-3 hover:bg-gray-100 rounded-lg text-red-600"
+                    className="w-full text-right p-3 hover:bg-gray-100 rounded-lg text-red-600"
                   >
-                    Sign Out
+                    تسجيل الخروج
                   </button>
                 </div>
               ) : (
@@ -273,7 +273,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  Sign In
+                  تسجيل الدخول
                 </button>
               )}
             </div>

@@ -58,7 +58,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-rose-100">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900">Product Details</h2>
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">تفاصيل المنتج</h2>
             <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-rose-50 rounded-full transition-colors">
               <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -83,7 +83,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <>
                       <button 
                         onClick={() => onImageSelect(selectedImageIndex === 0 ? product.images!.length - 1 : selectedImageIndex - 1)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer shadow-lg"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer shadow-lg rtl-flip"
                       >
                         <svg className="w-4 h-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -91,13 +91,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       </button>
                       <button 
                         onClick={() => onImageSelect(selectedImageIndex === product.images!.length - 1 ? 0 : selectedImageIndex + 1)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer shadow-lg"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer shadow-lg rtl-flip"
                       >
                         <svg className="w-4 h-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
-                      <div className="absolute bottom-3 right-3 bg-black/70 text-white px-2 py-1 text-xs rounded">
+                      <div className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 text-xs rounded">
                         {selectedImageIndex + 1} / {product.images.length}
                       </div>
                     </>
@@ -140,7 +140,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </span>
                   )}
                   <h1 className="text-xl md:text-2xl font-serif text-gray-900 leading-tight mb-2">{product.name}</h1>
-                  <p className="text-gray-500 text-sm">SKU: {product.sku}</p>
+                  <p className="text-gray-500 text-sm">الرمز: {product.sku}</p>
                 </div>
 
                 {/* Pricing Section */}
@@ -155,7 +155,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           {formatCurrency(product.originalPrice, storeSettings, currencies)}
                         </span>
                         <span className="bg-rose-500 text-white text-xs md:text-sm font-bold px-2 md:px-3 py-1 rounded-full">
-                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% خصم
                         </span>
                       </div>
                     )}
@@ -165,28 +165,28 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <div className="flex items-center gap-2">
                       <div className={`w-3 h-3 rounded-full ${product.availability === 'in_stock' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                       <span className={`font-medium text-sm md:text-base ${product.availability === 'in_stock' ? 'text-green-700' : 'text-red-700'}`}>
-                        {product.availability === 'in_stock' ? 'In Stock' : 'Out of Stock'}
+                        {product.availability === 'in_stock' ? 'متوفر' : 'غير متوفر'}
                       </span>
                     </div>
-                    <span className="text-gray-600 text-sm md:text-base">{product.stockQuantity} pieces available</span>
+                    <span className="text-gray-600 text-sm md:text-base">({product.stockQuantity} متاح)</span>
                   </div>
                 </div>
 
                 {/* Variants Selection */}
                 {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
                   <div className="space-y-3 md:space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Choose Your Style</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">اختر أسلوبك</h3>
                     {product.variants.map((variant, index) => (
                       <div key={index}>
                         <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                          {variant?.name || 'Option'}
+                          {variant?.name || 'خيار'}
                         </label>
                         <Select 
                           value={selectedVariants[variant.name] || ''}
                           onValueChange={(value) => setSelectedVariants(prev => ({...prev, [variant.name]: value}))}
                         >
                           <SelectTrigger className="w-full focus:ring-rose-300 focus:border-rose-300">
-                            <SelectValue placeholder={`Select ${variant?.name || 'Option'}`} />
+                            <SelectValue placeholder={`اختر ${variant?.name || 'الخيار'}`} />
                           </SelectTrigger>
                           <SelectContent>
                             {((variant?.options && Array.isArray(variant.options)) ? variant.options : (variant?.values && Array.isArray(variant.values)) ? variant.values : []).map((option, optIndex) => (
@@ -202,7 +202,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* Description */}
                 {product.description && (
                   <div>
-                    <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3">About This Item</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3">الوصف</h3>
                     <div 
                       className="text-gray-600 leading-relaxed prose prose-sm max-w-none text-sm md:text-base"
                       dangerouslySetInnerHTML={{ __html: product.description }} 
@@ -213,7 +213,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* Specifications */}
                 {product.customFields && product.customFields.length > 0 && (
                   <div>
-                    <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3">Product Details</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3">تفاصيل المنتج</h3>
                     <div className="bg-rose-50 rounded-2xl p-4 space-y-3">
                       {product.customFields.map((field, index) => (
                         <div key={index} className="flex justify-between items-center py-2 border-b border-rose-200 last:border-0">
@@ -237,7 +237,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       const selectedVariantsCount = Object.keys(selectedVariants).length;
                       
                       if (selectedVariantsCount < requiredVariants) {
-                        toast.error('Please select all options before adding to cart');
+                        toast.error('يرجى اختيار جميع الخيارات قبل الإضافة إلى السلة');
                         return;
                       }
                     }
@@ -259,10 +259,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
                   </svg>
                   {product.availability === 'out_of_stock' 
-                    ? 'Out of Stock' 
+                    ? 'غير متوفر' 
                     : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)
-                      ? 'Select Options'
-                      : 'Add to Cart'
+                      ? 'اختر الخيارات'
+                      : 'أضف إلى السلة'
                   }
                 </button>
               </div>

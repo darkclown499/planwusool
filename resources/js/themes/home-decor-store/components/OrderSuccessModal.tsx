@@ -29,7 +29,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       const copyOrderLink = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(orderLink);
-      toast.success("Order link copied to clipboard!");
+      toast.success("تم نسخ رابط الطلب!");
     } else {
       // Fallback for non-HTTPS or older browsers
       const textArea = document.createElement("textarea");
@@ -38,9 +38,9 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
       textArea.select();
       try {
         document.execCommand("copy");
-        toast.success("Order link copied to clipboard!");
+        toast.success("تم نسخ رابط الطلب!");
       } catch (err) {
-        toast.error("Failed to copy link");
+        toast.error("فشل نسخ الرابط");
       }
       document.body.removeChild(textArea);
     }
@@ -59,14 +59,14 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
               </svg>
             </div>
             
-            <h2 className="text-xl md:text-3xl font-serif font-bold text-amber-900 mb-2 md:mb-3">Order Placed Successfully!</h2>
-            <p className="text-amber-700 mb-4 md:mb-6 text-sm md:text-lg">Thank you for choosing us. Your beautiful items are on their way!</p>
+            <h2 className="text-xl md:text-3xl font-serif font-bold text-amber-900 mb-2 md:mb-3">تم إتمام الطلب بنجاح!</h2>
+            <p className="text-amber-700 mb-4 md:mb-6 text-sm md:text-lg">شكراً لطلبك. سنقوم بمعالجته قريباً.</p>
             
             {/* Order Number */}
             <div className="bg-amber-50 rounded-2xl p-4 md:p-6 mb-4 md:mb-6 border-2 border-amber-100">
               <div className="flex items-center justify-center gap-2 md:gap-3 mb-2">
                 <span className="text-xl md:text-2xl">🏠</span>
-                <p className="text-xs md:text-sm font-semibold text-amber-800">Order Number</p>
+                <p className="text-xs md:text-sm font-semibold text-amber-800">رقم الطلب</p>
               </div>
               <p className="text-lg md:text-2xl font-bold text-amber-900 font-mono">{orderNumber}</p>
             </div>
@@ -76,7 +76,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
               <div className="bg-white rounded-2xl p-4 md:p-6 mb-4 md:mb-6 border-2 border-amber-100">
                 <div className="flex items-center justify-center gap-2 mb-3 md:mb-4">
                   <span className="text-lg md:text-xl">📋</span>
-                  <p className="text-xs md:text-sm font-semibold text-amber-800">Order Invoice Link</p>
+                  <p className="text-xs md:text-sm font-semibold text-amber-800">رابط فاتورة الطلب</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                   <input 
@@ -89,7 +89,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                     onClick={copyOrderLink}
                     className="bg-amber-600 hover:bg-amber-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-xl text-xs md:text-sm font-semibold transition-colors shadow-md hover:shadow-lg cursor-pointer"
                   >
-                    📋 Copy
+                    📋 نسخ الرابط
                   </button>
                 </div>
               </div>
@@ -102,7 +102,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                 className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 md:py-4 px-4 md:px-6 rounded-2xl text-base md:text-lg transition-colors shadow-lg hover:shadow-xl flex items-center justify-center gap-2 md:gap-3 cursor-pointer"
               >
                 <span className="text-lg md:text-xl">🛍️</span>
-                Continue Shopping
+                متابعة التسوق
               </button>
               {orderNumber && (
                 <a
@@ -112,7 +112,7 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                   className="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 font-semibold py-3 md:py-4 px-4 md:px-6 rounded-2xl text-base md:text-lg transition-colors shadow-md hover:shadow-lg block text-center flex items-center justify-center gap-2 md:gap-3 cursor-pointer"
                 >
                   <span className="text-lg md:text-xl">📄</span>
-                  View Order Details
+                  عرض تفاصيل الطلب
                 </a>
               )}
             </div>

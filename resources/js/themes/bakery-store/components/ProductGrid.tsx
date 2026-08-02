@@ -34,8 +34,8 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   if (!products || products.length === 0) {
     return (
       <div className="text-center py-12 bg-stone-50 rounded-lg border border-stone-200">
-        <p className="text-stone-800 text-lg font-medium">No delicious treats in {categoryName} yet!</p>
-        <p className="text-stone-700 text-sm mt-2">Check back soon for fresh additions.</p>
+        <p className="text-stone-800 text-lg font-medium">لا توجد منتجات لذيذة في {categoryName} بعد!</p>
+        <p className="text-stone-700 text-sm mt-2">ترقّب وصول إضافات جديدة قريباً.</p>
       </div>
     );
   }
@@ -77,10 +77,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 </button>
                 
                 {/* Badges */}
-                <div className="absolute top-1 left-1 flex flex-col gap-1 items-start">
+                <div className="absolute top-1 right-1 flex flex-col gap-1 items-start">
                   {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
                     <span className="bg-blue-500 text-white px-1.5 py-0.5 rounded text-xs font-bold">
-                      Variants
+                      بالخيارات
                     </span>
                   )}
                   {product.originalPrice && (
@@ -94,14 +94,14 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 {product.availability === 'out_of_stock' && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <span className="bg-white text-stone-900 px-2 py-1 rounded text-xs font-bold">
-                      Out
+                      غير متوفر
                     </span>
                   </div>
                 )}
               </div>
 
               {/* Product Info */}
-              <div className="flex-1 ml-3 flex flex-col justify-between min-w-0">
+              <div className="flex-1 mr-3 flex flex-col justify-between min-w-0">
                 <div>
                   <h3
                     className="font-serif font-bold text-stone-900 text-sm cursor-pointer hover:text-stone-700 transition-colors line-clamp-2 mb-1 leading-tight"
@@ -151,13 +151,13 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                   `}
                 >
                   {product.availability === 'out_of_stock' ? (
-                    <span>Sold Out</span>
+                    <span>غير متوفر</span>
                   ) : product.variants && Array.isArray(product.variants) && product.variants.length > 0 ? (
-                    <span>Select Options</span>
+                    <span>اختر الخيارات</span>
                   ) : (
                     <>
                       <Plus className="h-3 w-3" />
-                      <span>Add</span>
+                      <span>أضف</span>
                     </>
                   )}
                 </button>
@@ -193,15 +193,15 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 
                 {/* Sale Badge */}
                 {hasDiscount && (
-                  <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold shadow-lg">
+                  <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold shadow-lg">
                     -{getDiscountPercentage(product.originalPrice!, product.price)}%
                   </div>
                 )}
                 
                 {/* Variant Badge */}
                 {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
-                  <div className="absolute top-2 left-2 bg-stone-600 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
-                    In Variants
+                  <div className="absolute top-2 right-2 bg-stone-600 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                    بالخيارات
                   </div>
                 )}
                 
@@ -209,7 +209,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 {isOutOfStock && (
                   <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center rounded-xl">
                     <div className="bg-white text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-lg">
-                      Sold Out
+                      غير متوفر
                     </div>
                   </div>
                 )}
@@ -263,17 +263,17 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                   `}
                 >
                   {isOutOfStock ? (
-                    'Sold Out'
+                    'غير متوفر'
                   ) : product.variants && Array.isArray(product.variants) && product.variants.length > 0 ? (
-                    'Select Options'
+                    'اختر الخيارات'
                   ) : (
-                    'Add to Cart'
+                    'أضف إلى السلة'
                   )}
                 </button>
                 
                 {/* SKU */}
                 <div className="text-center mt-2 text-xs text-stone-500">
-                  SKU: {product.sku}
+                  الرمز: {product.sku}
                 </div>
                 </div>
               </div>

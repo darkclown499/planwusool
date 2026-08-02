@@ -36,7 +36,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <h1 className="text-3xl md:text-5xl font-serif font-light text-gray-900 mb-4 tracking-wide">
             {welcomeMessage || (
               <>
-                Welcome to <br />
+                مرحباً بك في <br />
                 <span className="font-medium text-rose-600">{storeName}</span>
               </>
             )}
@@ -57,7 +57,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span className="text-sm md:text-base font-light">
-                {[address, city, state, country, postalCode].filter(Boolean).join(', ')}
+                {[address, city, state, country, postalCode].filter(Boolean).join('، ')}
               </span>
             </div>
           )}

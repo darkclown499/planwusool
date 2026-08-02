@@ -43,7 +43,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </h1>
           ) : (
             <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-6 text-white">
-              Fresh Groceries Delivered Daily
+              منتجات طازجة تصلك يومياً
             </h1>
           )}
           
@@ -55,7 +55,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           
           {fullAddress && (
             <div className="bg-white rounded-lg p-4 mx-auto max-w-md mb-4 md:mb-0">
-              <h3 className="font-semibold text-green-700 mb-2">📍 Store Location</h3>
+              <h3 className="font-semibold text-green-700 mb-2">📍 موقع المتجر</h3>
               <p className="text-gray-700 text-sm md:text-base">{fullAddress}</p>
             </div>
           )}

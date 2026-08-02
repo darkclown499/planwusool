@@ -63,13 +63,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <div className="relative bg-stone-700 p-3 sm:p-4 flex-shrink-0">
             <button
               onClick={onClose}
-              className="absolute top-2 right-2 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
+              className="absolute top-2 left-2 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center justify-center text-white pr-10">
-              <ShoppingBag className="w-5 h-5 mr-2 flex-shrink-0" />
+            <div className="flex items-center justify-center text-white pl-10">
+              <ShoppingBag className="w-5 h-5 ml-2 flex-shrink-0" />
               <h2 className="text-lg sm:text-xl font-serif font-bold truncate">{product.name}</h2>
             </div>
           </div>
@@ -109,7 +109,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
 
             {/* Product Info */}
-            <div className="w-full flex-1 flex flex-col lg:w-1/2 p-4 sm:p-6 lg:border-l border-stone-200 md:overflow-y-auto">
+            <div className="w-full flex-1 flex flex-col lg:w-1/2 p-4 sm:p-6 lg:border-r border-stone-200 md:overflow-y-auto">
               <div className="flex-1 space-y-4 sm:space-y-6">
 
                 {/* Category */}
@@ -139,16 +139,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${product.availability === 'in_stock' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                     <span className={`font-medium text-sm ${product.availability === 'in_stock' ? 'text-green-700' : 'text-red-700'}`}>
-                      {product.availability === 'in_stock' ? 'In Stock' : 'Out of Stock'}
+                      {product.availability === 'in_stock' ? 'متوفر' : 'غير متوفر'}
                     </span>
                   </div>
-                  <span className="text-xs text-stone-500">{product.stockQuantity} available • SKU: {product.sku}</span>
+                  <span className="text-xs text-stone-500">{product.stockQuantity} متاح • الرمز: {product.sku}</span>
                 </div>
 
                 {/* Description */}
                 {product.description && (
                   <div>
-                    <h4 className="font-serif font-semibold text-stone-900 mb-2">Description</h4>
+                    <h4 className="font-serif font-semibold text-stone-900 mb-2">الوصف</h4>
                     <div className="text-stone-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description }} />
                   </div>
                 )}
@@ -156,7 +156,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* Variants */}
                 {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
                   <div>
-                    <h4 className="font-serif font-semibold text-stone-900 mb-3">Options</h4>
+                    <h4 className="font-serif font-semibold text-stone-900 mb-3">الخيارات</h4>
                     <div className="space-y-3">
                       {product.variants.map((variant, index) => (
                         <div key={index}>
@@ -166,7 +166,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             onValueChange={(value) => setSelectedVariants(prev => ({ ...prev, [variant.name]: value }))}
                           >
                             <SelectTrigger className="w-full border-stone-300 focus:border-stone-500 focus:ring-stone-500">
-                              <SelectValue placeholder={`Select ${variant?.name || 'Option'}`} />
+                              <SelectValue placeholder={`اختر ${variant?.name || 'الخيار'}`} />
                             </SelectTrigger>
                             <SelectContent>
                               {((variant?.options && Array.isArray(variant.options)) ? variant.options : (variant?.values && Array.isArray(variant.values)) ? variant.values : []).map((option, optIndex) => (
@@ -183,7 +183,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* Custom Fields */}
                 {product.customFields && product.customFields.length > 0 && (
                   <div>
-                    <h4 className="font-serif font-semibold text-stone-900 mb-3">Specifications</h4>
+                    <h4 className="font-serif font-semibold text-stone-900 mb-3">المواصفات</h4>
                     <div className="bg-stone-50 rounded-lg p-4">
                       <div className="space-y-2">
                         {product.customFields.map((field, index) => (
@@ -207,11 +207,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
               {/* Quantity Section */}
               <div className="flex items-center justify-center sm:justify-start gap-3">
-                <span className="font-serif font-semibold text-stone-900">Qty:</span>
+                <span className="font-serif font-semibold text-stone-900">الكمية:</span>
                 <div className="flex items-center bg-white rounded-lg border border-stone-300 shadow-sm">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-2 hover:bg-stone-100 rounded-l-lg transition-colors cursor-pointer"
+                    className="p-2 hover:bg-stone-100 rounded-r-lg transition-colors cursor-pointer"
                   >
                     <Minus className="w-4 h-4 text-stone-600" />
                   </button>
@@ -228,7 +228,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   />
                   <button
                     onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
-                    className="p-2 hover:bg-stone-100 rounded-r-lg transition-colors cursor-pointer"
+                    className="p-2 hover:bg-stone-100 rounded-l-lg transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4 text-stone-600" />
                   </button>
@@ -240,7 +240,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 onClick={() => {
                   const hasVariants = product.variants && Array.isArray(product.variants) && product.variants.length > 0;
                   if (hasVariants && Object.keys(selectedVariants).length < product.variants.length) {
-                    toast.error('Please select all options');
+                    toast.error('يرجى اختيار جميع الخيارات قبل الإضافة إلى السلة');
                     return;
                   }
                   const productToAdd = hasVariants ? { ...product, selectedVariants, quantity } : { ...product, quantity };
@@ -260,11 +260,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <ShoppingBag className="w-5 h-5" />
                 <span className="font-serif text-base">
                   {product.availability === 'out_of_stock'
-                    ? 'Out of Stock'
+                    ? 'غير متوفر'
                     : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 &&
                       Object.keys(selectedVariants).length < product.variants.length)
-                      ? 'Select All Options'
-                      : `Add ${quantity} • ${formatCurrency(product.price * quantity, storeSettings, currencies)}`
+                      ? 'اختر الخيارات'
+                      : `أضف ${quantity} • ${formatCurrency(product.price * quantity, storeSettings, currencies)}`
                   }
                 </span>
               </button>

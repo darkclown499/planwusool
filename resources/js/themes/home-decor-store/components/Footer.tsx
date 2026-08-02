@@ -83,7 +83,7 @@ export const Footer: React.FC<FooterProps> = ({
       <div className="bg-amber-950/50 border-t border-amber-700">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="text-center text-amber-200 text-sm">
-            {copyrightText || `© ${currentYear} ${storeName}. All rights reserved.`}
+            {copyrightText || `© ${currentYear} ${storeName}. جميع الحقوق محفوظة.`}
           </div>
         </div>
       </div>

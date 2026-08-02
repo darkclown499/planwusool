@@ -42,7 +42,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
         <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-4xl h-[95vh] md:h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-100 flex-shrink-0">
-            <h2 className="text-lg md:text-xl font-bold text-gray-900">My Orders</h2>
+            <h2 className="text-lg md:text-xl font-bold text-gray-900">طلباتي</h2>
             <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -55,7 +55,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
             {loading ? (
               <div className="text-center py-8 md:py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-sm text-gray-500">Loading orders...</p>
+                <p className="text-sm text-gray-500">جارٍ تحميل الطلبات...</p>
               </div>
             ) : orders.length === 0 ? (
               <div className="text-center py-8 md:py-12">
@@ -64,13 +64,13 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
                   </svg>
                 </div>
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">No Orders Yet</h3>
-                <p className="text-sm md:text-base text-gray-500 mb-6">You haven't placed any orders yet.</p>
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-2">لا توجد طلبات بعد</h3>
+                <p className="text-sm md:text-base text-gray-500 mb-6">لم تقم بإجراء أي طلبات حتى الآن.</p>
                 <button
                   onClick={onClose}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors cursor-pointer"
                 >
-                  Continue Shopping
+                  متابعة التسوق
                 </button>
               </div>
             ) : (
@@ -91,7 +91,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                       
                       <div className="flex items-center justify-between mt-3">
                         <div className="text-xs text-gray-600">
-                          <span>{order.items} item{order.items > 1 ? 's' : ''}</span>
+                          <span>{order.items} منتج</span>
                           <span className="mx-2">•</span>
                           <span className="font-semibold text-gray-900">{formatCurrency(order.total, storeSettings, currencies)}</span>
                         </div>
@@ -100,7 +100,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                           onClick={() => onViewOrder(order.id)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer"
                         >
-                          View
+                          عرض
                         </button>
                       </div>
                     </div>
@@ -109,7 +109,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                     <div className="hidden md:block">
                       <div className="flex items-center justify-between mb-3">
                         <div>
-                          <h3 className="font-semibold text-gray-900">Order #{order.id}</h3>
+                          <h3 className="font-semibold text-gray-900">الطلب رقم #{order.id}</h3>
                           <p className="text-sm text-gray-600">{new Date(order.date).toLocaleDateString()}</p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
@@ -119,7 +119,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                       
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-gray-600">
-                          <span>{order.items} item{order.items > 1 ? 's' : ''}</span>
+                          <span>{order.items} منتج</span>
                           <span className="mx-2">•</span>
                           <span className="font-semibold text-gray-900">{formatCurrency(order.total, storeSettings, currencies)}</span>
                         </div>
@@ -128,7 +128,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                           onClick={() => onViewOrder(order.id)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                         >
-                          View Details
+                          عرض التفاصيل
                         </button>
                       </div>
                     </div>

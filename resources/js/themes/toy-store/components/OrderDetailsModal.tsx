@@ -61,7 +61,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
         <div className="absolute inset-0 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl shadow-2xl p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <p className="text-purple-600 font-medium">Loading order details...</p>
+            <p className="text-purple-600 font-medium">جارٍ تحميل تفاصيل الطلب...</p>
           </div>
         </div>
       </div>
@@ -86,8 +86,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 <Package className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-lg md:text-xl font-bold text-purple-800">Order Details</h2>
-                <p className="text-purple-600 text-sm font-medium">#{orderNumber}</p>
+                <h2 className="text-lg md:text-xl font-bold text-purple-800">تفاصيل الطلب</h2>
+                <p className="text-purple-600 text-sm font-medium">الطلب رقم #{orderNumber}</p>
               </div>
             </div>
             <button 
@@ -115,7 +115,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                     </p>
                   </div>
                 </div>
-                <div className="text-left sm:text-right">
+                <div className="text-right sm:text-left">
                   <div className="text-lg md:text-xl font-bold text-purple-600 mb-1">{formatCurrency(order.total, storeSettings, currencies)}</div>
                   <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold w-fit ${getStatusColor(order.status)}`}>
                     {order.status.toUpperCase()}
@@ -129,19 +129,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
               <div className="bg-white border-2 border-purple-200 rounded-xl p-3 md:p-4">
                 <h4 className="font-bold text-purple-800 mb-3 flex items-center gap-2 text-sm md:text-base">
                   <Package className="w-4 h-4 text-purple-500" />
-                  Customer
+                  معلومات العميل
                 </h4>
                 <div className="space-y-2 text-xs md:text-sm">
-                  <p><span className="text-purple-500">Name:</span> <span className="font-medium text-purple-800 break-words">{order.customer.name}</span></p>
-                  <p><span className="text-purple-500">Email:</span> <span className="font-medium text-purple-800 break-all">{order.customer.email}</span></p>
-                  <p><span className="text-purple-500">Phone:</span> <span className="font-medium text-purple-800">{order.customer.phone}</span></p>
+                  <p><span className="text-purple-500">الاسم:</span> <span className="font-medium text-purple-800 break-words">{order.customer.name}</span></p>
+                  <p><span className="text-purple-500">البريد الإلكتروني:</span> <span className="font-medium text-purple-800 break-all">{order.customer.email}</span></p>
+                  <p><span className="text-purple-500">الهاتف:</span> <span className="font-medium text-purple-800">{order.customer.phone}</span></p>
                 </div>
               </div>
               
               <div className="bg-white border-2 border-purple-200 rounded-xl p-3 md:p-4">
                 <h4 className="font-bold text-purple-800 mb-3 flex items-center gap-2 text-sm md:text-base">
                   <MapPin className="w-4 h-4 text-purple-500" />
-                  Delivery Address
+                  عنوان الشحن
                 </h4>
                 <div className="text-xs md:text-sm text-purple-600">
                   <p className="font-medium text-purple-800 break-words">{order.shipping_address.name}</p>
@@ -157,7 +157,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
               <div className="p-3 md:p-4 border-b-2 border-purple-200">
                 <h4 className="font-bold text-purple-800 flex items-center gap-2 text-sm md:text-base">
                   <Package className="w-4 h-4 text-purple-500" />
-                  Order Items ({order.items.length})
+                  منتجات الطلب ({order.items.length})
                 </h4>
               </div>
               
@@ -182,14 +182,14 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                             </div>
                           )}
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs md:text-sm text-purple-600">
-                            <span>Qty: {item.quantity}</span>
-                            <span>{formatCurrency(item.price, storeSettings, currencies)} each</span>
+                            <span>الكمية: {item.quantity}</span>
+                            <span>{formatCurrency(item.price, storeSettings, currencies)} للقطعة</span>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right">
+                <div className="text-right sm:text-left">
                           <div className="font-bold text-purple-800 text-sm md:text-base">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</div>
                           {item.tax_amount > 0 && (
-                            <div className="text-xs text-purple-500">includes tax</div>
+                            <div className="text-xs text-purple-500">شامل الضريبة</div>
                           )}
                         </div>
                       </div>
@@ -204,39 +204,39 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
               <div className="p-3 md:p-4 border-b-2 border-purple-200">
                 <h4 className="font-bold text-purple-800 flex items-center gap-2 text-sm md:text-base">
                   <CreditCard className="w-4 h-4 text-purple-500" />
-                  Order Summary
+                  ملخص الطلب
                 </h4>
               </div>
               
               <div className="p-3 md:p-4 space-y-2 md:space-y-3">
                 <div className="flex justify-between text-sm md:text-base">
-                  <span className="text-purple-600">Subtotal</span>
+                  <span className="text-purple-600">المجموع الفرعي</span>
                   <span className="font-medium text-purple-800">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between text-green-600 text-sm md:text-base">
-                    <span className="break-words">Discount ({order.coupon})</span>
+                    <span className="break-words">خصم الكوبون ({order.coupon})</span>
                     <span className="font-medium">-{formatCurrency(order.discount, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm md:text-base">
-                  <span className="text-purple-600">Tax</span>
+                  <span className="text-purple-600">الضريبة</span>
                   <span className="font-medium text-purple-800">{formatCurrency(order.tax, storeSettings, currencies)}</span>
                 </div>
                 <div className="flex justify-between text-sm md:text-base">
-                  <span className="text-purple-600">Shipping</span>
+                  <span className="text-purple-600">الشحن</span>
                   <span className="font-medium text-purple-800">{formatCurrency(order.shipping, storeSettings, currencies)}</span>
                 </div>
                 <div className="border-t-2 border-purple-200 pt-2 md:pt-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-base md:text-lg font-bold text-purple-800">Total</span>
+                    <span className="text-base md:text-lg font-bold text-purple-800">الإجمالي</span>
                     <span className="text-lg md:text-xl font-bold text-purple-600">{formatCurrency(order.total, storeSettings, currencies)}</span>
                   </div>
                 </div>
                 {order.payment_method && (
                   <div className="border-t-2 border-purple-200 pt-2 md:pt-3">
                     <div className="flex justify-between text-sm md:text-base">
-                      <span className="text-purple-600">Payment Method</span>
+                      <span className="text-purple-600">طريقة الدفع</span>
                       <span className="font-medium text-purple-800 break-words">{order.payment_method}</span>
                     </div>
                   </div>
@@ -247,7 +247,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
           
           {/* Footer */}
           <div className="border-t-2 border-purple-200 p-4 md:p-6 bg-purple-50">
-            <div className="flex justify-center md:justify-end">
+            <div className="flex justify-center md:justify-start">
               <button
                 onClick={() => {
                   window.location.href = route('store.order.pdf', { 
@@ -258,7 +258,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 md:px-6 md:py-3 rounded-xl font-bold transition-all transform hover:scale-105 flex items-center gap-2 text-sm md:text-base shadow-md w-full md:w-auto justify-center"
               >
                 <Download className="w-4 h-4" />
-                Download PDF
+                تحميل PDF
               </button>
             </div>
           </div>

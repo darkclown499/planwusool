@@ -58,8 +58,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Shopping Cart</h2>
-              <span className="text-xs text-gray-500">{cartItems.length} item{cartItems.length > 1 ? 's' : ''}</span>
+              <h2 className="text-lg font-bold text-gray-900">سلة التسوق</h2>
+              <span className="text-xs text-gray-500">{cartItems.length} عنصر{cartItems.length > 1 ? 'ات' : ''}</span>
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
@@ -77,13 +77,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
-              <p className="text-gray-500 text-sm mb-6">Add some products to get started</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">سلتك فارغة</h3>
+              <p className="text-gray-500 text-sm mb-6">أضف بعض المنتجات للبدء</p>
               <button
                 onClick={onClose}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors cursor-pointer"
               >
-                Continue Shopping
+                متابعة التسوق
               </button>
             </div>
           ) : (
@@ -132,7 +132,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </button>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">{formatCurrency(item.price, storeSettings, currencies)} each</span>
+                        <span className="text-xs text-gray-500">{formatCurrency(item.price, storeSettings, currencies)} للقطعة</span>
                       </div>
                       {item.taxName && item.taxPercentage && (
                         <p className="text-xs text-gray-400 mt-2">
@@ -177,17 +177,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="bg-gray-50 rounded-2xl p-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Subtotal</span>
+                  <span className="text-sm text-gray-600">المجموع الفرعي</span>
                   <span className="text-sm font-semibold text-gray-900">{formatCurrency(subtotal, storeSettings, currencies)}</span>
                 </div>
                 {totalTax > 0 && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Total Tax</span>
+                    <span className="text-sm text-gray-600">الضريبة</span>
                     <span className="text-sm font-semibold text-gray-900">{formatCurrency(totalTax, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                  <span className="text-lg font-bold text-gray-900">Total</span>
+                  <span className="text-lg font-bold text-gray-900">الإجمالي</span>
                   <span className="text-2xl font-bold text-blue-600">{formatCurrency(total, storeSettings, currencies)}</span>
                 </div>
               </div>
@@ -199,7 +199,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
               </svg>
-              Proceed to Checkout
+              إتمام عملية الشراء
             </button>
           </div>
         )}

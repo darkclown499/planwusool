@@ -48,7 +48,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-[800px] max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900">Product Details</h2>
+            <h2 className="text-xl font-bold text-gray-900">تفاصيل المنتج</h2>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -72,7 +72,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <>
                       <button 
                         onClick={() => onImageSelect(selectedImageIndex === 0 ? product.images!.length - 1 : selectedImageIndex - 1)}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer group"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer group rtl-flip"
                       >
                         <svg className="w-4 h-4 text-gray-800 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -80,13 +80,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       </button>
                       <button 
                         onClick={() => onImageSelect(selectedImageIndex === product.images!.length - 1 ? 0 : selectedImageIndex + 1)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer group"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full transition-colors cursor-pointer group rtl-flip"
                       >
                         <svg className="w-4 h-4 text-gray-800 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
-                      <div className="absolute bottom-3 right-3 bg-black/70 text-white px-2 py-1 text-xs rounded">
+                      <div className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 text-xs rounded">
                         {selectedImageIndex + 1} / {product.images.length}
                       </div>
                     </>
@@ -135,7 +135,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <>
                         <span className="text-lg text-gray-500 line-through">{formatCurrency(product.originalPrice, storeSettings, currencies)}</span>
                         <span className="bg-red-100 text-red-700 text-sm text-center font-medium px-2 py-1 rounded-full">
-                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% خصم
                         </span>
                       </>
                     )}
@@ -146,28 +146,28 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <div className="flex items-center gap-2">
                     <div className={`w-3 md:w-2 h-3 md:h-2 rounded-full ${product.availability === 'in_stock' ? 'bg-green-500' : 'bg-red-500'}`}></div>
                     <span className={`font-medium md:text-sm ${product.availability === 'in_stock' ? 'text-green-700' : 'text-red-700'}`}>
-                      {product.availability === 'in_stock' ? 'In Stock' : 'Out of Stock'}
+                      {product.availability === 'in_stock' ? 'متوفر' : 'غير متوفر'}
                     </span>
                   </div>
-                  <span className="text-gray-600 md:text-sm">({product.stockQuantity} available)</span>
-                  <span className="hidden md:inline text-xs text-gray-600 ml-auto">SKU: {product.sku}</span>
+                  <span className="text-gray-600 md:text-sm">({product.stockQuantity} متاح)</span>
+                  <span className="hidden md:inline text-xs text-gray-600 mr-auto">الرمز: {product.sku}</span>
                 </div>
                 
                 <div className="block md:hidden text-sm text-gray-600">
-                  <span className="font-medium">SKU:</span> {product.sku}
+                  <span className="font-medium">الرمز:</span> {product.sku}
                 </div>
                 
                 {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
                   <div className="space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 md:border-b md:border-gray-100">
                     {product.variants.map((variant, index) => (
                       <div key={index}>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-1">{variant?.name || 'Option'}</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2 md:mb-1">{variant?.name || 'خيار'}</label>
                         <Select 
                           value={selectedVariants[variant.name] || ''}
                           onValueChange={(value) => setSelectedVariants(prev => ({...prev, [variant.name]: value}))}
                         >
                           <SelectTrigger className="w-full focus:ring-blue-500 focus:border-blue-500">
-                            <SelectValue placeholder={`Select ${variant?.name || 'Option'}`} />
+                            <SelectValue placeholder={`اختر ${variant?.name || 'الخيار'}`} />
                           </SelectTrigger>
                           <SelectContent>
                             {(variant?.options || variant?.values || []).map((option, optIndex) => (
@@ -190,7 +190,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       const selectedVariantsCount = Object.keys(selectedVariants).length;
                       
                       if (selectedVariantsCount < requiredVariants) {
-                        toast.error('Please select all options before adding to cart');
+                        toast.error('يرجى اختيار جميع الخيارات قبل الإضافة إلى السلة');
                         return;
                       }
                     }
@@ -209,16 +209,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   }`}
                 >
                   {product.availability === 'out_of_stock' 
-                    ? 'Out of Stock' 
+                    ? 'غير متوفر' 
                     : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)
-                      ? 'Select Options'
-                      : 'Add to Cart'
+                      ? 'اختر الخيارات'
+                      : 'أضف إلى السلة'
                   }
                 </button>
                 
                 {product.description && (
                   <div className="pb-3 md:border-b md:border-gray-100">
-                    <h4 className="font-semibold md:text-sm text-gray-900 mb-2 md:mb-1">Description</h4>
+                    <h4 className="font-semibold md:text-sm text-gray-900 mb-2 md:mb-1">الوصف</h4>
                     <div 
                       className="text-gray-600 md:text-sm leading-relaxed" 
                       dangerouslySetInnerHTML={{ __html: product.description }} 
@@ -228,13 +228,13 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 
                 {product.customFields && product.customFields.length > 0 && (
                   <div>
-                    <h4 className="font-semibold md:text-sm text-gray-900 mb-3 md:mb-2">Specifications</h4>
+                    <h4 className="font-semibold md:text-sm text-gray-900 mb-3 md:mb-2">المواصفات</h4>
                     <div className="bg-gray-50 rounded-lg p-3 md:p-0 md:bg-transparent md:rounded-none">
                       <div className="space-y-2 md:grid md:grid-cols-1 md:gap-2 md:space-y-0">
                         {product.customFields.map((field, index) => (
                           <div key={index} className="flex justify-between py-2 md:py-1.5 px-0 md:px-2 border-b md:border-0 md:bg-gray-50 md:rounded border-gray-200 last:border-0 text-sm">
                             <span className="font-medium text-gray-700">{field.name}:</span>
-                            <span className="text-gray-600 text-right">{field.value}</span>
+                            <span className="text-gray-600 text-left">{field.value}</span>
                           </div>
                         ))}
                       </div>

@@ -65,8 +65,8 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                 <Package className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-purple-800">My Orders</h2>
-                <p className="text-purple-600 text-sm font-medium">View your toy orders</p>
+                <h2 className="text-xl font-bold text-purple-800">طلباتي</h2>
+                <p className="text-purple-600 text-sm font-medium">عرض طلباتك</p>
               </div>
             </div>
             <button 
@@ -80,13 +80,13 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
           {/* Search */}
           <div className="p-4 md:p-6 bg-purple-50 border-b-2 border-purple-200">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
               <input
                 type="text"
-                placeholder="Search orders..."
+                placeholder="البحث في الطلبات..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-purple-200 rounded-xl bg-purple-50 text-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 text-sm md:text-base"
+                className="w-full pr-10 pl-4 py-3 border-2 border-purple-200 rounded-xl bg-purple-50 text-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 text-sm md:text-base"
               />
             </div>
           </div>
@@ -96,7 +96,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 md:py-16">
                 <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin mb-4"></div>
-                <p className="text-purple-600 font-medium">Loading orders...</p>
+                <p className="text-purple-600 font-medium">جارٍ تحميل الطلبات...</p>
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12 md:py-16">
@@ -104,18 +104,18 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                   <Package className="w-8 h-8 text-purple-500" />
                 </div>
                 <h3 className="text-lg font-bold text-purple-800 mb-2">
-                  {searchQuery ? 'No Orders Found' : 'No Orders Yet'}
+                  {searchQuery ? 'لا توجد طلبات' : 'لا توجد طلبات بعد'}
                 </h3>
                 <p className="text-purple-600 mb-6 font-medium">
                   {searchQuery 
-                    ? 'Try a different search term.' 
-                    : 'Start shopping to see your orders here!'}
+                    ? 'جرّب مصطلح بحث مختلف.' 
+                    : 'ابدأ التسوق لترى طلباتك هنا!'}
                 </p>
                 <button
                   onClick={onClose}
                   className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-md"
                 >
-                  {searchQuery ? 'Clear Search' : 'Start Shopping'}
+                  {searchQuery ? 'مسح البحث' : 'متابعة التسوق'}
                 </button>
               </div>
             ) : (
@@ -136,7 +136,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                           </div>
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs md:text-sm text-purple-600">
                             <span>{new Date(order.date).toLocaleDateString()}</span>
-                            <span>{order.items} item{order.items > 1 ? 's' : ''}</span>
+                            <span>{order.items} منتج</span>
                             <span className="font-bold text-purple-700">
                               {formatCurrency(order.total, storeSettings, currencies)}
                             </span>
@@ -149,7 +149,7 @@ export const MyOrdersModal: React.FC<MyOrdersModalProps> = ({ onClose, orders, c
                         className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 md:px-4 md:py-2 rounded-xl font-bold transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-sm md:text-base w-full sm:w-auto"
                       >
                         <Eye className="w-4 h-4" />
-                        <span>View</span>
+                        <span>عرض</span>
                       </button>
                     </div>
                   </div>

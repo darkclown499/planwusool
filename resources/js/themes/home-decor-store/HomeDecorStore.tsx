@@ -161,7 +161,7 @@ const HomeDecorStoreContent: React.FC = () => {
   const groupedProducts = groupProductsByCategory();
 
   return (
-    <div className="min-h-screen bg-amber-50">
+    <div data-storefront="true" dir="rtl" className="min-h-screen bg-amber-50">
       {/* Inject custom CSS and JavaScript */}
       <CustomCodeInjector 
         customCss={store?.custom_css} 
@@ -313,7 +313,7 @@ const HomeDecorStoreContent: React.FC = () => {
             setShowCheckout(false);
             setShowCart(false);
             handleCloseCart();
-            toast.success('Order placed successfully!');
+            toast.success('تم إتمام الطلب بنجاح!');
           }}
           showOrderSuccess={showOrderSuccess}
           setShowOrderSuccess={setShowOrderSuccess}
@@ -388,7 +388,7 @@ const HomeDecorStoreContent: React.FC = () => {
       {/* WhatsApp Widget */}
       <WhatsAppWidget
         phone={config.whatsapp_widget_phone || ''}
-        message={config.whatsapp_widget_message || 'Hello! I need help with...'}
+        message={config.whatsapp_widget_message || 'مرحباً! أحتاج مساعدة في...'}
         position={config.whatsapp_widget_position || 'right'}
         showOnMobile={config.whatsapp_widget_show_on_mobile !== false}
         showOnDesktop={config.whatsapp_widget_show_on_desktop !== false}

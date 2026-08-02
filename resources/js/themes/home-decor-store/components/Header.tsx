@@ -70,13 +70,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:flex flex-1 max-w-2xl mx-8">
             <form onSubmit={handleSearchSubmit} className="w-full relative">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5" />
+                <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search for furniture, décor, and more..."
+                  placeholder="ابحث عن المنتجات..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-amber-200 rounded-full focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white/80 backdrop-blur-sm text-amber-900 placeholder-amber-600/60"
+                  className="w-full pr-12 pl-4 py-3 border-2 border-amber-200 rounded-full focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white/80 backdrop-blur-sm text-amber-900 placeholder-amber-600/60"
                 />
               </div>
             </form>
@@ -96,26 +96,26 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-amber-100 py-2 z-50">
+                  <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-amber-100 py-2 z-50">
                     <button
                       onClick={() => {
                         onProfileClick();
                         setIsUserMenuOpen(false);
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-amber-50 flex items-center space-x-2 text-amber-800"
+                      className="w-full px-4 py-2 text-right hover:bg-amber-50 flex items-center space-x-2 text-amber-800"
                     >
                       <User className="w-4 h-4" />
-                      <span>My Profile</span>
+                      <span>ملفي الشخصي</span>
                     </button>
                     <button
                       onClick={() => {
                         onOrdersClick();
                         setIsUserMenuOpen(false);
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-amber-50 flex items-center space-x-2 text-amber-800"
+                      className="w-full px-4 py-2 text-right hover:bg-amber-50 flex items-center space-x-2 text-amber-800"
                     >
                       <Package className="w-4 h-4" />
-                      <span>My Orders</span>
+                      <span>طلباتي</span>
                     </button>
                     <hr className="my-2 border-amber-100" />
                     <button
@@ -123,10 +123,10 @@ export const Header: React.FC<HeaderProps> = ({
                         onLogoutClick();
                         setIsUserMenuOpen(false);
                       }}
-                      className="w-full px-4 py-2 text-left hover:bg-amber-50 flex items-center space-x-2 text-red-600"
+                      className="w-full px-4 py-2 text-right hover:bg-amber-50 flex items-center space-x-2 text-red-600"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>Logout</span>
+                      <span>تسجيل الخروج</span>
                     </button>
                   </div>
                 )}
@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="hidden md:flex items-center space-x-2 px-4 py-2 text-amber-800 hover:bg-amber-100 rounded-lg"
               >
                 <User className="w-4 h-4" />
-                <span>Sign In</span>
+                <span>تسجيل الدخول</span>
               </button>
             )}
 
@@ -170,7 +170,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <ShoppingBag className="w-5 h-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -left-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <ShoppingBag className="w-6 h-6" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                <span className="absolute -top-2 -left-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
@@ -196,13 +196,13 @@ export const Header: React.FC<HeaderProps> = ({
         {isMobileSearchOpen && (
           <div className="md:hidden mt-4">
             <form onSubmit={handleSearchSubmit} className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5" />
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-amber-600 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search furniture & décor..."
+                placeholder="ابحث عن المنتجات..."
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="w-full pl-12 pr-4 py-3 border-2 border-amber-200 rounded-full focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white/80 backdrop-blur-sm text-amber-900 placeholder-amber-600/60"
+                className="w-full pr-12 pl-4 py-3 border-2 border-amber-200 rounded-full focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 bg-white/80 backdrop-blur-sm text-amber-900 placeholder-amber-600/60"
                 autoFocus
               />
             </form>
@@ -211,26 +211,26 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile User Menu */}
         {isUserMenuOpen && isLoggedIn && (
-          <div className="md:hidden absolute right-4 top-16 w-36 bg-white rounded-lg shadow-lg border border-amber-100 py-1 z-50">
+          <div className="md:hidden absolute left-4 top-16 w-36 bg-white rounded-lg shadow-lg border border-amber-100 py-1 z-50">
             <button
               onClick={() => {
                 onProfileClick();
                 setIsUserMenuOpen(false);
               }}
-              className="w-full px-3 py-2 text-left hover:bg-amber-50 flex items-center space-x-2 text-amber-800 text-sm"
+              className="w-full px-3 py-2 text-right hover:bg-amber-50 flex items-center space-x-2 text-amber-800 text-sm"
             >
               <User className="w-4 h-4" />
-              <span>My Profile</span>
+              <span>ملفي الشخصي</span>
             </button>
             <button
               onClick={() => {
                 onOrdersClick();
                 setIsUserMenuOpen(false);
               }}
-              className="w-full px-3 py-2 text-left hover:bg-amber-50 flex items-center space-x-2 text-amber-800 text-sm"
+              className="w-full px-3 py-2 text-right hover:bg-amber-50 flex items-center space-x-2 text-amber-800 text-sm"
             >
               <Package className="w-4 h-4" />
-              <span>My Orders</span>
+              <span>طلباتي</span>
             </button>
             <hr className="my-1 border-amber-100" />
             <button
@@ -238,10 +238,10 @@ export const Header: React.FC<HeaderProps> = ({
                 onLogoutClick();
                 setIsUserMenuOpen(false);
               }}
-              className="w-full px-3 py-2 text-left hover:bg-amber-50 flex items-center space-x-2 text-red-600 text-sm"
+              className="w-full px-3 py-2 text-right hover:bg-amber-50 flex items-center space-x-2 text-red-600 text-sm"
             >
               <LogOut className="w-4 h-4" />
-              <span>Logout</span>
+              <span>تسجيل الخروج</span>
             </button>
           </div>
         )}

@@ -41,8 +41,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     return (
       <div className="text-center py-16">
         <div className="text-6xl mb-4">🏠</div>
-        <h3 className="text-xl font-semibold text-amber-800 mb-2">No products in {categoryName}</h3>
-        <p className="text-amber-600">Check back soon for new arrivals!</p>
+        <h3 className="text-xl font-semibold text-amber-800 mb-2">لا توجد منتجات في {categoryName}</h3>
+        <p className="text-amber-600">ترقب قريباً منتجات جديدة!</p>
       </div>
     );
   }
@@ -73,15 +73,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
 
             {/* Badges */}
-            <div className="absolute top-4 left-4 flex flex-col space-y-2">
+            <div className="absolute top-4 right-4 flex flex-col space-y-2">
               {product.availability === 'out_of_stock' && (
                 <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
-                  Out of Stock
+                  غير متوفر
                 </span>
               )}
               {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
                 <span className="px-3 py-1 bg-amber-600 text-white text-xs font-bold rounded-full">
-                  In Variants
+                  بالخيارات
                 </span>
               )}
               {product.originalPrice && (
@@ -93,9 +93,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             {/* Stock Indicator */}
             {product.stockQuantity <= 5 && product.stockQuantity > 0 && (
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 left-4">
                 <span className="px-2 py-1 bg-orange-500 text-white text-xs font-medium rounded-full">
-                  Only {product.stockQuantity} left
+                  متبقي {product.stockQuantity} فقط
                 </span>
               </div>
             )}
@@ -157,18 +157,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <ShoppingBag className="w-3 h-3 sm:w-4 sm:h-4" />
                 {product.availability === 'out_of_stock' ? (
                   <>
-                    <span className="hidden sm:inline">Out of Stock</span>
-                    <span className="sm:hidden">Out</span>
+                    <span className="hidden sm:inline">غير متوفر</span>
+                    <span className="sm:hidden">غير متوفر</span>
                   </>
                 ) : product.variants && Array.isArray(product.variants) && product.variants.length > 0 ? (
                   <>
-                    <span className="hidden sm:inline">Select Options</span>
-                    <span className="sm:hidden">Options</span>
+                    <span className="hidden sm:inline">اختر الخيارات</span>
+                    <span className="sm:hidden">الخيارات</span>
                   </>
                 ) : (
                   <>
-                    <span className="hidden sm:inline">Add to Cart</span>
-                    <span className="sm:hidden">Add</span>
+                    <span className="hidden sm:inline">أضف إلى السلة</span>
+                    <span className="sm:hidden">أضف</span>
                   </>
                 )}
               </button>
@@ -176,7 +176,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             {/* SKU - Hidden on mobile */}
             <div className="hidden sm:block mt-3 text-xs text-amber-600/60">
-              SKU: {product.sku}
+              الرمز: {product.sku}
             </div>
             </div>
           </div>

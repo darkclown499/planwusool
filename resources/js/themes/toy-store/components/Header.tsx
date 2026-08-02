@@ -69,15 +69,15 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Desktop Search */}
           <div className="hidden md:block flex-1 max-w-lg mx-8">
             <form onSubmit={handleSearch} className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-blue-400" />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="block w-full pl-10 pr-3 py-3 border-2 border-blue-200 rounded-full leading-5 bg-blue-50 placeholder-blue-400 focus:outline-none focus:bg-white focus:border-purple-400 focus:ring-2 focus:ring-purple-200 text-gray-900"
-                placeholder="Search for toys..."
+                className="block w-full pr-10 pl-3 py-3 border-2 border-blue-200 rounded-full leading-5 bg-blue-50 placeholder-blue-400 focus:outline-none focus:bg-white focus:border-purple-400 focus:ring-2 focus:ring-purple-200 text-gray-900"
+                placeholder="ابحث عن المنتجات..."
               />
             </form>
           </div>
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <ShoppingCart className="h-6 w-6" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-green-400 text-purple-800 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white">
+                <span className="absolute -top-1 -left-1 bg-green-400 text-purple-800 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white">
                   {cartCount}
                 </span>
               )}
@@ -105,11 +105,11 @@ export const Header: React.FC<HeaderProps> = ({
                   className="flex items-center space-x-2 p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors duration-200"
                 >
                   <User className="h-6 w-6" />
-                  <span className="text-sm font-medium">{userName}</span>
+                  <span className="text-sm font-medium">{userName || 'حسابي'}</span>
                 </button>
                 
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border-2 border-purple-100 py-2 z-50">
+                  <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border-2 border-purple-100 py-2 z-50">
                     <button
                       onClick={() => {
                         onProfileClick();
@@ -117,8 +117,8 @@ export const Header: React.FC<HeaderProps> = ({
                       }}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600"
                     >
-                      <User className="h-4 w-4 mr-3" />
-                      My Profile
+                      <User className="h-4 w-4 ml-3" />
+                      ملفي الشخصي
                     </button>
                     <button
                       onClick={() => {
@@ -127,8 +127,8 @@ export const Header: React.FC<HeaderProps> = ({
                       }}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600"
                     >
-                      <Package className="h-4 w-4 mr-3" />
-                      My Orders
+                      <Package className="h-4 w-4 ml-3" />
+                      طلباتي
                     </button>
                     <hr className="my-2 border-purple-100" />
                     <button
@@ -138,8 +138,8 @@ export const Header: React.FC<HeaderProps> = ({
                       }}
                       className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50"
                     >
-                      <LogOut className="h-4 w-4 mr-3" />
-                      Logout
+                      <LogOut className="h-4 w-4 ml-3" />
+                      تسجيل الخروج
                     </button>
                   </div>
                 )}
@@ -149,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={onLoginClick}
                 className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-full font-medium transition-colors duration-200"
               >
-                Login
+                تسجيل الدخول
               </button>
             )}
           </div>
@@ -169,7 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <ShoppingCart className="h-6 w-6" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-green-400 text-purple-800 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -left-1 bg-green-400 text-purple-800 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
@@ -197,15 +197,15 @@ export const Header: React.FC<HeaderProps> = ({
         {showMobileSearch && (
           <div className="md:hidden pb-4">
             <form onSubmit={handleSearch} className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-blue-400" />
               </div>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="block w-full pl-10 pr-3 py-3 border-2 border-blue-200 rounded-full leading-5 bg-blue-50 placeholder-blue-400 focus:outline-none focus:bg-white focus:border-purple-400 text-gray-900"
-                placeholder="Search for toys..."
+                className="block w-full pr-10 pl-3 py-3 border-2 border-blue-200 rounded-full leading-5 bg-blue-50 placeholder-blue-400 focus:outline-none focus:bg-white focus:border-purple-400 text-gray-900"
+                placeholder="ابحث عن المنتجات..."
                 autoFocus
               />
             </form>
@@ -215,7 +215,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile User Menu */}
       {showMobileMenu && isLoggedIn && (
-        <div className="md:hidden absolute right-4 top-16 w-48 bg-white shadow-lg border-2 border-purple-100 py-2 z-50">
+        <div className="md:hidden absolute left-4 top-16 w-48 bg-white shadow-lg border-2 border-purple-100 py-2 z-50">
           <button
             onClick={() => {
               onProfileClick();
@@ -223,8 +223,8 @@ export const Header: React.FC<HeaderProps> = ({
             }}
             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600"
           >
-            <User className="h-4 w-4 mr-3" />
-            My Profile
+            <User className="h-4 w-4 ml-3" />
+            ملفي الشخصي
           </button>
           <button
             onClick={() => {
@@ -233,8 +233,8 @@ export const Header: React.FC<HeaderProps> = ({
             }}
             className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600"
           >
-            <Package className="h-4 w-4 mr-3" />
-            My Orders
+            <Package className="h-4 w-4 ml-3" />
+            طلباتي
           </button>
           <hr className="my-2 border-purple-100" />
           <button
@@ -244,8 +244,8 @@ export const Header: React.FC<HeaderProps> = ({
             }}
             className="flex items-center w-full px-4 py-2 text-sm text-purple-600 hover:bg-purple-50"
           >
-            <LogOut className="h-4 w-4 mr-3" />
-            Logout
+            <LogOut className="h-4 w-4 ml-3" />
+            تسجيل الخروج
           </button>
         </div>
       )}

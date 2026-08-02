@@ -27,7 +27,7 @@ export const Footer: React.FC<FooterProps> = ({
   return (
     <footer className="bg-stone-800 text-stone-100 py-6">
       <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center md:items-center space-y-4 md:space-y-0">
-        <div className="text-center md:text-left">
+        <div className="text-center md:text-right">
           {logo ? (
             <img src={getImageUrl(logo)} alt={storeName} className="max-w-28 object-contain mb-2" />
           ) : (
@@ -35,8 +35,8 @@ export const Footer: React.FC<FooterProps> = ({
           )}
           {email && <p className="text-stone-300 text-sm">{email}</p>}
         </div>
-        <p className="text-stone-200 text-sm text-center md:text-right">
-          {copyrightText || `© ${currentYear} ${storeName}. All rights reserved.`}
+        <p className="text-stone-200 text-sm text-center md:text-left">
+          {copyrightText || `© ${currentYear} ${storeName}. جميع الحقوق محفوظة.`}
         </p>
       </div>
     </footer>

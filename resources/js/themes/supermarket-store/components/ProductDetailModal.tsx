@@ -90,8 +90,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="w-full md:w-1/2 bg-gray-50 relative flex-shrink-0">
               {/* Sale Badge */}
               {isOnSale && (
-                <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10 bg-red-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold">
-                  -{discountPercentage}% OFF
+                <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10 bg-red-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold">
+                  -{discountPercentage}% خصم
                 </div>
               )}
 
@@ -108,7 +108,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <>
                     <button 
                       onClick={() => onImageSelect(selectedImageIndex === 0 ? product.images!.length - 1 : selectedImageIndex - 1)}
-                      className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-lg transition-colors"
+                      className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-lg transition-colors rtl-flip"
                     >
                       <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -116,7 +116,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </button>
                     <button 
                       onClick={() => onImageSelect(selectedImageIndex === product.images!.length - 1 ? 0 : selectedImageIndex + 1)}
-                      className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-lg transition-colors"
+                      className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-1.5 sm:p-2 rounded-full shadow-lg transition-colors rtl-flip"
                     >
                       <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -190,7 +190,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             }))}
                           >
                             <SelectTrigger className="focus:ring-green-500 focus:border-green-500">
-                              <SelectValue placeholder={`Select ${variant.name}`} />
+                              <SelectValue placeholder={`اختر ${variant.name}`} />
                             </SelectTrigger>
                             <SelectContent>
                               {(variant.options || variant.values) && (variant.options || variant.values).map((option, optionIndex) => (
@@ -214,8 +214,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       product.availability === 'in_stock' ? 'text-green-700' : 'text-red-700'
                     }`}>
                       {product.availability === 'in_stock' 
-                        ? `${product.stockQuantity} in stock` 
-                        : 'Out of stock'
+                        ? `${product.stockQuantity} متاح` 
+                        : 'غير متوفر'
                       }
                     </span>
                   </div>
@@ -231,7 +231,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                       >
-                        Details
+                        المواصفات
                       </button>
                       {product.description && (
                         <button
@@ -242,7 +242,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                               : 'border-transparent text-gray-500 hover:text-gray-700'
                           }`}
                         >
-                          Description
+                          الوصف
                         </button>
                       )}
                     </div>
@@ -254,22 +254,22 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <div className="space-y-3 sm:space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                           <div className="flex justify-between sm:block">
-                            <span className="text-gray-500">SKU:</span>
-                            <span className="sm:ml-0 ml-2 font-medium">{product.sku}</span>
+                            <span className="text-gray-500">الرمز:</span>
+                            <span className="sm:mr-0 mr-2 font-medium">{product.sku}</span>
                           </div>
                           <div className="flex justify-between sm:block">
-                            <span className="text-gray-500">Category:</span>
-                            <span className="sm:ml-0 ml-2 font-medium">{product.category || 'N/A'}</span>
+                            <span className="text-gray-500">الفئة:</span>
+                            <span className="sm:mr-0 mr-2 font-medium">{product.category || 'غير متوفر'}</span>
                           </div>
                         </div>
                         {product.customFields && product.customFields.length > 0 && (
                           <div className="space-y-2 sm:space-y-3">
-                            <h4 className="text-sm sm:text-base font-medium text-gray-900">Additional Information</h4>
+                            <h4 className="text-sm sm:text-base font-medium text-gray-900">المواصفات</h4>
                             <div className="space-y-1 sm:space-y-2">
                               {product.customFields.map((field, index) => (
                                 <div key={index} className="flex justify-between text-xs sm:text-sm py-1">
                                   <span className="text-gray-500">{field.name}:</span>
-                                  <span className="font-medium text-right break-words">{field.value}</span>
+                                  <span className="font-medium text-left break-words">{field.value}</span>
                                 </div>
                               ))}
                             </div>
@@ -293,12 +293,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                   {/* Quantity Selector */}
                   <div className="flex items-center justify-center sm:justify-start">
-                    <span className="text-xs sm:text-sm text-gray-600 mr-2 sm:mr-3">Quantity:</span>
+                    <span className="text-xs sm:text-sm text-gray-600 ml-2 sm:ml-3">الكمية:</span>
                     <div className="flex items-center border border-gray-300 rounded-lg sm:rounded-xl">
                       <button
                         onClick={() => handleQuantityChange(-1)}
                         disabled={quantity <= 1}
-                        className="p-2 sm:p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-l-lg sm:rounded-l-xl"
+                        className="p-2 sm:p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-r-lg sm:rounded-r-xl"
                       >
                         <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
@@ -318,7 +318,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <button
                         onClick={() => handleQuantityChange(1)}
                         disabled={quantity >= product.stockQuantity}
-                        className="p-2 sm:p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-r-lg sm:rounded-r-xl"
+                        className="p-2 sm:p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-l-lg sm:rounded-l-xl"
                       >
                         <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
@@ -357,11 +357,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     }`}
                   >
                     {product.availability === 'out_of_stock' 
-                      ? 'Out of Stock'
+                      ? 'غير متوفر'
                       : (product.variants && product.variants.length > 0 && 
                          product.variants.some(variant => !selectedVariants[variant.name]))
-                        ? 'Select Options'
-                        : `Add ${quantity} to Cart`
+                        ? 'اختر الخيارات'
+                        : `أضف ${quantity} إلى السلة`
                     }
                   </button>
                 </div>

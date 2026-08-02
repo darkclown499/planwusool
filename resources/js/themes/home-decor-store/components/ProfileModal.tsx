@@ -20,7 +20,7 @@ const CountryDropdown: React.FC<{
       }}
     >
       <SelectTrigger className="w-full focus:ring-amber-500 focus:border-amber-500">
-        <SelectValue placeholder="Select Country" />
+        <SelectValue placeholder="اختر الدولة" />
       </SelectTrigger>
       <SelectContent>
         {countries.map(country => (
@@ -74,10 +74,10 @@ const StateDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full focus:ring-amber-500 focus:border-amber-500">
-          <SelectValue placeholder="Select Country First" />
+          <SelectValue placeholder="اختر الدولة أولاً" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="disabled">Select Country First</SelectItem>
+          <SelectItem value="disabled">اختر الدولة أولاً</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -87,10 +87,10 @@ const StateDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full focus:ring-amber-500 focus:border-amber-500">
-          <SelectValue placeholder="Loading states..." />
+          <SelectValue placeholder="جارٍ تحميل المحافظات..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="loading">Loading states...</SelectItem>
+          <SelectItem value="loading">جارٍ تحميل المحافظات...</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -105,7 +105,7 @@ const StateDropdown: React.FC<{
       }}
     >
       <SelectTrigger className="w-full focus:ring-amber-500 focus:border-amber-500">
-        <SelectValue placeholder="Select State" />
+        <SelectValue placeholder="اختر المحافظة" />
       </SelectTrigger>
       <SelectContent>
         {states.map(state => (
@@ -159,10 +159,10 @@ const CityDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full focus:ring-amber-500 focus:border-amber-500">
-          <SelectValue placeholder="Select State First" />
+          <SelectValue placeholder="اختر المحافظة أولاً" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="disabled">Select State First</SelectItem>
+          <SelectItem value="disabled">اختر المحافظة أولاً</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -172,10 +172,10 @@ const CityDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className="w-full focus:ring-amber-500 focus:border-amber-500">
-          <SelectValue placeholder="Loading cities..." />
+          <SelectValue placeholder="جارٍ تحميل المدن..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="loading">Loading cities...</SelectItem>
+          <SelectItem value="loading">جارٍ تحميل المدن...</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -190,7 +190,7 @@ const CityDropdown: React.FC<{
       }}
     >
       <SelectTrigger className="w-full focus:ring-amber-500 focus:border-amber-500">
-        <SelectValue placeholder="Select City" />
+        <SelectValue placeholder="اختر المدينة" />
       </SelectTrigger>
       <SelectContent>
         {cities.map(city => (
@@ -309,7 +309,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-serif font-bold text-amber-900">My Profile</h2>
+              <h2 className="text-2xl font-serif font-bold text-amber-900">ملفي الشخصي</h2>
             </div>
             <button onClick={onClose} className="p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-full transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,7 +333,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                Profile
+                معلومات الملف الشخصي
               </div>
             </button>
             <button
@@ -349,7 +349,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                Security
+                تغيير كلمة المرور
               </div>
             </button>
           </div>
@@ -360,7 +360,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
               <form onSubmit={handleProfileSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">First Name</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">الاسم الأول</label>
                   <input
                     type="text"
                     value={profile.firstName}
@@ -368,14 +368,14 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                       errors.first_name ? 'border-red-500' : 'border-amber-200'
                     }`}
-                    placeholder="Enter your first name"
+                    placeholder="أدخل اسمك الأول"
                     required
                   />
                   {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>}
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">Last Name</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">اسم العائلة</label>
                   <input
                     type="text"
                     value={profile.lastName}
@@ -383,7 +383,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                       errors.last_name ? 'border-red-500' : 'border-amber-200'
                     }`}
-                    placeholder="Enter your last name"
+                    placeholder="أدخل اسم عائلتك"
                     required
                   />
                   {errors.last_name && <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>}
@@ -391,7 +391,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Email</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">البريد الإلكتروني</label>
                 <input
                   type="email"
                   value={profile.email}
@@ -399,38 +399,38 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                     errors.email ? 'border-red-500' : 'border-amber-200'
                   }`}
-                  placeholder="Enter your email address"
+                  placeholder="أدخل بريدك الإلكتروني"
                   required
                 />
                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Phone</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">الهاتف</label>
                 <input
                   type="tel"
                   value={profile.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
-                  placeholder="Enter your phone number"
+                  placeholder="أدخل رقم هاتفك"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Address</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">العنوان</label>
                 <textarea
                   value={profile.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
-                  placeholder="Enter your full address"
+                  placeholder="أدخل عنوانك الكامل"
                   rows={3}
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Country</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">الدولة</label>
                 <CountryDropdown
                   value={profile.country}
                   onChange={(value, id) => {
@@ -448,7 +448,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">State</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">المحافظة</label>
                 <StateDropdown
                   countryId={countryId}
                   value={profile.state}
@@ -466,7 +466,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">City</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">المدينة</label>
                 <CityDropdown
                   stateId={stateId}
                   value={profile.city}
@@ -482,13 +482,13 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-amber-800 mb-2">Postal Code</label>
+                <label className="block text-sm font-medium text-amber-800 mb-2">الرمز البريدي</label>
                 <input
                   type="text"
                   value={profile.postalCode}
                   onChange={(e) => handleInputChange('postalCode', e.target.value)}
                   className="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
-                  placeholder="Enter postal code"
+                  placeholder="أدخل الرمز البريدي"
                   required
                 />
               </div>
@@ -499,20 +499,20 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     onClick={onClose}
                     className="flex-1 bg-amber-100 hover:bg-amber-200 text-amber-700 font-semibold py-3 px-6 rounded-lg transition-colors"
                   >
-                    Cancel
+                    إلغاء
                   </button>
                   <button
                     type="submit"
                     className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                   >
-                    Update
+                    تحديث
                   </button>
                 </div>
               </form>
             ) : (
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">Current Password</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">كلمة المرور الحالية</label>
                   <input
                     type="password"
                     value={passwords.currentPassword}
@@ -520,14 +520,14 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                       errors.current_password ? 'border-red-500' : 'border-amber-200'
                     }`}
-                    placeholder="Enter current password"
+                    placeholder="أدخل كلمة المرور الحالية"
                     required
                   />
                   {errors.current_password && <p className="text-red-500 text-xs mt-1">{errors.current_password}</p>}
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">New Password</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">كلمة المرور الجديدة</label>
                   <input
                     type="password"
                     value={passwords.newPassword}
@@ -535,7 +535,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                       errors.password ? 'border-red-500' : 'border-amber-200'
                     }`}
-                    placeholder="Enter new password (min 8 characters)"
+                    placeholder="أدخل كلمة مرور جديدة (6 أحرف على الأقل)"
                     required
                     minLength={8}
                   />
@@ -543,7 +543,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-amber-800 mb-2">Confirm New Password</label>
+                  <label className="block text-sm font-medium text-amber-800 mb-2">تأكيد كلمة المرور الجديدة</label>
                   <input
                     type="password"
                     value={passwords.confirmPassword}
@@ -551,7 +551,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white ${
                       errors.password_confirmation ? 'border-red-500' : 'border-amber-200'
                     }`}
-                    placeholder="Confirm your new password"
+                    placeholder="أكد كلمة المرور الجديدة"
                     required
                     minLength={8}
                   />
@@ -564,7 +564,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                     onClick={onClose}
                     className="flex-1 bg-amber-100 hover:bg-amber-200 text-amber-700 font-semibold py-3 px-6 rounded-lg transition-colors"
                   >
-                    Cancel
+                    إلغاء
                   </button>
                   <button
                     type="submit"
@@ -575,7 +575,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                         : 'bg-amber-600 hover:bg-amber-700'
                     } text-white`}
                   >
-                    {isLoading ? 'Updating...' : 'Update'}
+                    {isLoading ? 'جارٍ التحديث...' : 'تحديث'}
                   </button>
                 </div>
               </form>

@@ -20,7 +20,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-rose-100">
-          <h2 className="text-xl font-bold text-gray-900">Complete Your Order</h2>
+          <h2 className="text-xl font-bold text-gray-900">أكمل طلبك</h2>
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-rose-50 rounded-full transition-colors"
@@ -42,11 +42,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-medium text-gray-900 mb-1">Sign In to Your Account</h3>
-                <p className="text-sm text-gray-600 mb-3">Access your saved addresses, order history, and faster checkout</p>
+                <h3 className="font-medium text-gray-900 mb-1">تسجيل الدخول إلى حسابك</h3>
+                <p className="text-sm text-gray-600 mb-3">استمتع بإدارة عناوينك المحفوظة وسجل طلباتك وإتمام أسرع للشراء</p>
                 <div className="flex items-center text-rose-600 text-sm font-medium">
-                  <span>Continue with Account</span>
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span>المتابعة بحسابك</span>
+                  <svg className="w-4 h-4 mr-1 rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -63,11 +63,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLogin, onContin
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="font-medium text-gray-900 mb-1">Continue as Guest</h3>
-                <p className="text-sm text-gray-600 mb-3">Quick checkout without creating an account</p>
+                <h3 className="font-medium text-gray-900 mb-1">المتابعة كضيف</h3>
+                <p className="text-sm text-gray-600 mb-3">إتمام سريع للشراء دون إنشاء حساب</p>
                 <div className="flex items-center text-gray-600 text-sm font-medium">
-                  <span>Proceed to Checkout</span>
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span>إتمام عملية الشراء</span>
+                  <svg className="w-4 h-4 mr-1 rtl-flip" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>

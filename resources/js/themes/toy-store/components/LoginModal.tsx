@@ -63,7 +63,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 bg-purple-100 border-b-2 border-purple-200">
-              <h2 className="text-xl font-bold text-purple-800">Reset Password</h2>
+              <h2 className="text-xl font-bold text-purple-800">استعادة كلمة المرور</h2>
               <button 
                 onClick={onClose}
                 className="p-2 hover:bg-purple-200 rounded-full transition-colors"
@@ -78,21 +78,21 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                 <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Mail className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-purple-700 font-medium">Enter your email to reset password</p>
+                <p className="text-purple-700 font-medium">أدخل بريدك الإلكتروني لاستعادة كلمة المرور</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-purple-700 mb-2">Email Address</label>
+                  <label className="block text-sm font-bold text-purple-700 mb-2">البريد الإلكتروني</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                    <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                     <input 
                       type="email" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email" 
+                      placeholder="أدخل بريدك الإلكتروني" 
                       required 
-                      className={`w-full pl-10 pr-4 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
+                      className={`w-full pr-10 pl-4 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
                         errors.email ? 'border-red-400' : 'border-purple-200'
                       }`}
                     />
@@ -109,7 +109,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                       : 'bg-purple-500 hover:bg-purple-600 transform hover:scale-105'
                   } text-white shadow-md`}
                 >
-                  {isLoading ? 'Sending...' : 'Send Reset Link'}
+                  {isLoading ? 'جاري الإرسال...' : 'إرسال رابط الاستعادة'}
                 </button>
 
                 <button 
@@ -117,7 +117,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                   type="button" 
                   className="w-full text-center text-purple-600 hover:text-purple-800 font-bold py-2 transition-colors"
                 >
-                  ← Back to Login
+                  → رجوع إلى تسجيل الدخول
                 </button>
               </form>
             </div>
@@ -136,7 +136,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 bg-purple-100 border-b-2 border-purple-200">
-            <h2 className="text-xl font-bold text-purple-800">{isLogin ? 'Welcome Back!' : 'Join the Fun!'}</h2>
+            <h2 className="text-xl font-bold text-purple-800">{isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}</h2>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-purple-200 rounded-full transition-colors"
@@ -152,7 +152,7 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                 <User className="w-8 h-8 text-white" />
               </div>
               <p className="text-purple-700 font-medium">
-                {isLogin ? 'Login to your account' : 'Create your toy account'}
+                {isLogin ? 'تسجيل الدخول إلى حسابك' : 'إنشاء حسابك'}
               </p>
             </div>
 
@@ -160,12 +160,12 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
               {!isLogin && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-bold text-purple-700 mb-2">First Name</label>
+                    <label className="block text-sm font-bold text-purple-700 mb-2">الاسم الأول</label>
                     <input 
                       type="text" 
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="First name" 
+                      placeholder="أدخل اسمك الأول" 
                       required 
                       className={`w-full px-3 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
                         errors.first_name ? 'border-red-400' : 'border-purple-200'
@@ -174,12 +174,12 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                     {errors.first_name && <p className="text-red-500 text-xs mt-1 font-medium">{errors.first_name}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-purple-700 mb-2">Last Name</label>
+                    <label className="block text-sm font-bold text-purple-700 mb-2">اسم العائلة</label>
                     <input 
                       type="text" 
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Last name" 
+                      placeholder="أدخل اسم عائلتك" 
                       required 
                       className={`w-full px-3 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
                         errors.last_name ? 'border-red-400' : 'border-purple-200'
@@ -191,16 +191,16 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
               )}
 
               <div>
-                <label className="block text-sm font-bold text-purple-700 mb-2">Email Address</label>
+                <label className="block text-sm font-bold text-purple-700 mb-2">البريد الإلكتروني</label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                   <input 
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email" 
+                    placeholder="أدخل بريدك الإلكتروني" 
                     required 
-                    className={`w-full pl-10 pr-4 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
+                    className={`w-full pr-10 pl-4 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
                       errors.email ? 'border-red-400' : 'border-purple-200'
                     }`}
                   />
@@ -210,40 +210,40 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
 
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-bold text-purple-700 mb-2">Phone Number</label>
+                  <label className="block text-sm font-bold text-purple-700 mb-2">رقم الهاتف</label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                    <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                     <input 
                       type="tel" 
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 1234567890" 
+                      placeholder="+970 59 1234567" 
                       required 
-                      className="w-full pl-10 pr-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300" 
+                      className="w-full pr-10 pl-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300" 
                     />
                   </div>
-                  <p className="text-xs text-purple-500 mt-1 font-medium">Include country code</p>
+                  <p className="text-xs text-purple-500 mt-1 font-medium">يرجى استخدام رمز الدولة (مثال: 970+)</p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-bold text-purple-700 mb-2">Password</label>
+                <label className="block text-sm font-bold text-purple-700 mb-2">كلمة المرور</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                  <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                   <input 
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password" 
+                    placeholder="أدخل كلمة المرور" 
                     required 
-                    className={`w-full pl-10 pr-12 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
+                    className={`w-full pr-10 pl-12 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
                       errors.password ? 'border-red-400' : 'border-purple-200'
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-purple-600"
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-purple-600"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -253,23 +253,23 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
 
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-bold text-purple-700 mb-2">Confirm Password</label>
+                  <label className="block text-sm font-bold text-purple-700 mb-2">تأكيد كلمة المرور</label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
+                    <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 w-5 h-5" />
                     <input 
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm your password" 
+                      placeholder="أكد كلمة المرور" 
                       required 
-                      className={`w-full pl-10 pr-12 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
+                      className={`w-full pr-10 pl-12 py-3 bg-purple-50 border-2 rounded-xl text-purple-800 placeholder-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
                         errors.password_confirmation ? 'border-red-400' : 'border-purple-200'
                       }`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-purple-600"
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 hover:text-purple-600"
                     >
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -279,13 +279,13 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
               )}
 
               {isLogin && (
-                <div className="flex justify-end">
+                <div className="flex justify-start">
                   <button 
                     onClick={() => setShowForgot(true)}
                     type="button" 
                     className="text-purple-600 hover:text-purple-800 text-sm font-bold transition-colors"
                   >
-                    Forgot Password?
+                    نسيت كلمة المرور؟
                   </button>
                 </div>
               )}
@@ -299,19 +299,19 @@ const LoginModalContent: React.FC<LoginModalProps> = ({ onClose, onLoginSuccess,
                     : 'bg-purple-500 hover:bg-purple-600 transform hover:scale-105'
                 } text-white shadow-md`}
               >
-                {isLoading ? 'Please Wait...' : (isLogin ? 'Login' : 'Create Account')}
+                {isLoading ? 'الرجاء الانتظار...' : (isLogin ? 'تسجيل الدخول' : 'إنشاء حساب')}
               </button>
 
               <div className="text-center">
                 <span className="text-purple-600 text-sm font-medium">
-                  {isLogin ? "Don't have an account?" : "Already have an account?"}
+                  {isLogin ? "ليس لديك حساب؟" : "لديك حساب بالفعل؟"}
                 </span>
                 <button 
                   onClick={() => setIsLogin(!isLogin)}
                   type="button" 
-                  className="text-purple-700 hover:text-purple-900 font-bold ml-2 text-sm transition-colors"
+                  className="text-purple-700 hover:text-purple-900 font-bold mr-2 text-sm transition-colors"
                 >
-                  {isLogin ? 'Sign Up' : 'Login'}
+                  {isLogin ? 'إنشاء حساب' : 'تسجيل الدخول'}
                 </button>
               </div>
             </form>

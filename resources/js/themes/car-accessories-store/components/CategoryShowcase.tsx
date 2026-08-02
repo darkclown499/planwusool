@@ -54,7 +54,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
             onClick={scrollLeft}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors"
           >
-            <ChevronLeft className="w-4 h-4 text-slate-600" />
+            <ChevronLeft className="w-4 h-4 text-slate-600 rtl-flip" />
           </button>
 
           {/* Categories Container */}
@@ -78,7 +78,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
               >
                 {category.name}
                 {category.product_count !== undefined && (
-                  <span className="ml-2 text-xs opacity-80">({category.product_count})</span>
+                  <span className="mr-2 text-xs opacity-80">({category.product_count})</span>
                 )}
               </button>
             ))}
@@ -89,7 +89,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
             onClick={scrollRight}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 hover:bg-gray-50 transition-colors"
           >
-            <ChevronRight className="w-4 h-4 text-slate-600" />
+            <ChevronRight className="w-4 h-4 text-slate-600 rtl-flip" />
           </button>
         </div>
       </div>

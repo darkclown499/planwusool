@@ -35,7 +35,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
     return (
       <div className="text-center py-8 md:py-12">
         <Package className="h-12 w-12 md:h-16 md:w-16 text-purple-300 mx-auto mb-3 md:mb-4" />
-        <p className="text-base md:text-lg text-purple-600 font-medium">No toys found in this category</p>
+        <p className="text-base md:text-lg text-purple-600 font-medium">لا توجد ألعاب في هذه الفئة</p>
       </div>
     );
   }
@@ -66,10 +66,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               />
               
               {/* Badges */}
-              <div className="absolute top-1 sm:top-2 left-1 sm:left-2 flex flex-col gap-1 items-start">
+              <div className="absolute top-1 sm:top-2 right-1 sm:right-2 flex flex-col gap-1 items-start">
                 {hasVariants && (
                   <span className="bg-blue-500 text-white px-1 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-bold shadow-sm">
-                    In Variants
+                    بالخيارات
                   </span>
                 )}
                 {isOnSale && (
@@ -83,7 +83,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               {product.availability === 'out_of_stock' && (
                 <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center">
                   <span className="bg-red-100 text-red-700 px-3 py-2 rounded font-medium text-sm">
-                    Sold Out
+                    غير متوفر
                   </span>
                 </div>
               )}
@@ -108,7 +108,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                   {formatCurrency(product.price, storeSettings, currencies)}
                 </span>
                 {isOnSale && (
-                  <span className="text-sm text-gray-500 line-through ml-2">
+                  <span className="text-sm text-gray-500 line-through mr-2">
                     {formatCurrency(product.originalPrice!, storeSettings, currencies)}
                   </span>
                 )}
@@ -131,10 +131,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 }`}
               >
                 {product.availability === 'out_of_stock' 
-                  ? 'Sold Out' 
+                  ? 'غير متوفر' 
                   : hasVariants 
-                    ? 'View Options'
-                    : 'Add to Cart'
+                    ? 'اختر الخيارات'
+                    : 'أضف إلى السلة'
                 }
               </button>
               </div>
