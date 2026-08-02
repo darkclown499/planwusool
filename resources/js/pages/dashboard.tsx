@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Download, Building2, ShoppingCart, Users, DollarSign, Package, TrendingUp, QrCode, Copy, Check, CreditCard, FileText, Tag, Activity, ArrowRight, Sparkles, Store, Clock, Zap, ChevronRight, Settings } from 'lucide-react';
+import { RefreshCw, BarChart3, Download, Building2, ShoppingCart, Users, DollarSign, Package, TrendingUp, QrCode, Copy, Check, CreditCard, FileText, Tag, Activity, ArrowRight, Sparkles, Store, Clock, Zap, ChevronRight, Settings, Palette } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -536,6 +536,12 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   <Button size="sm" variant="outline" onClick={() => router.visit(route('stores.settings', currentStore.id))} className="h-8 gap-1.5">
   <Settings className="h-3.5 w-3.5" />
   {t('Store Settings')}
+  </Button>
+  )}
+  {currentStore && userHasPermission('settings-stores') && (
+  <Button size="sm" variant="outline" onClick={() => router.visit(route('stores.appearance', currentStore.id))} className="h-8 gap-1.5">
+  <Palette className="h-3.5 w-3.5" />
+  {t('Appearance')}
   </Button>
   )}
   {userHasPermission('manage-stores') && (
