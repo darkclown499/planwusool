@@ -12,6 +12,7 @@ export interface PageAction {
   icon?: ReactNode;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   onClick?: () => void;
+  disabled?: boolean;
 }
 
 export interface PageTemplateProps {
@@ -23,6 +24,7 @@ export interface PageTemplateProps {
   noPadding?: boolean;
   breadcrumbs?: BreadcrumbItem[];
   backUrl?: string;
+  stickyHeader?: boolean;
 }
 
 export function PageTemplate({ 
@@ -33,7 +35,8 @@ export function PageTemplate({
   children, 
   noPadding = false,
   breadcrumbs,
-  backUrl
+  backUrl,
+  stickyHeader = false
 }: PageTemplateProps) {
   const { t } = useTranslation();
   // Default breadcrumbs if none provided
@@ -50,7 +53,9 @@ export function PageTemplate({
       
       <div className="flex h-full flex-1 flex-col gap-4 p-4">
         {/* Header with action buttons */}
-        <div className="flex items-center justify-between">
+        <div className={stickyHeader
+          ? "sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-sm -mx-4"
+          : "flex items-center justify-between"}>
           <h1 className="text-xl font-semibold text-right">{title}</h1>
           <div className="flex items-center gap-2">
             {backUrl && (
@@ -72,6 +77,7 @@ export function PageTemplate({
                     variant={action.variant || 'outline'}
                     size="sm"
                     onClick={action.onClick}
+                    disabled={action.disabled}
                   >
                     {action.icon}
                     {action.label}

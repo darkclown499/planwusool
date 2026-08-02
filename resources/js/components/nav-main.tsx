@@ -114,7 +114,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
 
     const activeSubItemClasses = (active: boolean) =>
         active
-            ? 'bg-emerald-50 text-emerald-800 font-medium'
+            ? 'bg-emerald-100 text-emerald-800 font-medium'
             : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700';
 
     const renderSubMenu = (children: NavItem[], level: number = 1) => {
@@ -219,7 +219,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                                 data-current={false}
                                                 tooltip={{ children: item.title }}
                                                 onClick={() => toggleExpand(item.title)}
-                                                className="rounded-lg py-2 px-2.5 font-medium text-gray-700 hover:bg-gray-100 data-[active=true]:text-emerald-700"
+                                                className="rounded-lg py-2 px-2.5 font-medium text-gray-700 hover:bg-gray-100 data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-700"
                                                 style={activeItemStyle(isChildActive(item.children))}
                                             >
                                                 <div className="flex items-center justify-between w-full">
@@ -246,7 +246,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                         isActive={isActive(item.href, item.activePaths)}
                                         data-current={false}
                                         tooltip={{ children: item.title }}
-                                        className="rounded-lg py-2 px-2.5 font-medium text-gray-700 hover:bg-gray-100 data-[active=true]:text-emerald-700"
+                                        className="rounded-lg py-2 px-2.5 font-medium text-gray-700 hover:bg-gray-100 data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-700"
                                         style={activeItemStyle(isActive(item.href, item.activePaths))}
                                     >
                                         {item.target === '_blank' ? (

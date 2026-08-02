@@ -221,6 +221,21 @@ export function AppSidebar() {
             });
         }
 
+        // ── إعدادات المتجر ──
+        const currentStoreId = auth.user?.current_store;
+        if (hasPermission('settings-stores') && currentStoreId) {
+            const storeSettingsChildren: NavItem[] = [
+                { title: t('Store Settings'), href: route('stores.settings', currentStoreId) },
+                { title: t('Appearance'), href: route('stores.appearance', currentStoreId) },
+            ];
+            items.push({
+                title: t('Store Settings'),
+                icon: Store,
+                groupLabel: t('Store'),
+                children: storeSettingsChildren,
+            });
+        }
+
         // ── التسويق والمبيعات ──
         const marketingChildren: NavItem[] = [];
         if (hasPermission('manage-coupon-system')) {

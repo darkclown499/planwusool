@@ -1,0 +1,58 @@
+import React from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { css } from '@codemirror/lang-css';
+import { javascript } from '@codemirror/lang-javascript';
+import { EditorView } from '@codemirror/view';
+
+interface CodeEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  language?: 'css' | 'javascript';
+  height?: string;
+  readOnly?: boolean;
+  placeholder?: string;
+}
+
+export function CodeEditor({
+  value,
+  onChange,
+  language = 'css',
+  height = '280px',
+  readOnly = false,
+  placeholder,
+}: CodeEditorProps) {
+  return (
+    <div
+      dir="ltr"
+      className="overflow-hidden rounded-lg border border-input bg-background text-left"
+    >
+      <CodeMirror
+        value={value}
+        height={height}
+        onChange={onChange}
+        readOnly={readOnly}
+        placeholder={placeholder}
+        extensions={[
+          language === 'css' ? css() : javascript(),
+          EditorView.lineWrapping,
+        ]}
+        basicSetup={{
+          lineNumbers: true,
+          highlightActiveLineGutter: true,
+          foldGutter: true,
+          dropCursor: true,
+          allowMultipleSelections: true,
+          indentOnInput: true,
+          bracketMatching: true,
+          closeBrackets: true,
+          autocompletion: false,
+          highlightActiveLine: true,
+          highlightSelectionMatches: true,
+          tabSize: 2,
+        }}
+      />
+    </div>
+  );
+}
+
+export default CodeEditor;
