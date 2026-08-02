@@ -69,6 +69,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Store Domain
+    |--------------------------------------------------------------------------
+    |
+    | The base domain used to serve stores on their own subdomain, e.g.
+    | {store_slug}.wusool.ps. In production set APP_DOMAIN=wusool.ps;
+    | locally it defaults to "localhost" so stores are reachable at
+    | http://{store_slug}.localhost.
+    |
+    */
+
+    'store_domain' => env('APP_DOMAIN', 'localhost'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

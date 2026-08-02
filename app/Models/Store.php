@@ -86,7 +86,18 @@ class Store extends BaseModel
             }
         }
         
-        return url('/store/' . $this->slug);
+        // Default: every store is served on its own subdomain, e.g. techvibe.wusool.ps
+        return $this->getStoreSubdomainUrl();
+    }
+    
+    /**
+     * Get the default store subdomain URL, e.g. http://techvibe.localhost:8000
+     */
+    public function getStoreSubdomainUrl(): string
+    {
+        $port = request()->getPort();
+        $port = in_array($port, [80, 443]) || $port === null ? '' : ':' . $port;
+        return $this->getProtocol() . $this->slug . '.' . config('app.store_domain') . $port;
     }
     
     /**

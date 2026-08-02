@@ -64,6 +64,100 @@ use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// ===========================================================================
+// Store frontend routes — every store is served on its own subdomain:
+// {storeSlug}.{APP_DOMAIN} (e.g. techvibe.wusool.ps, techvibe.localhost).
+// Registered before the landing page route so the subdomain root ("/")
+// resolves to the store instead of the app landing page.
+// ===========================================================================
+Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.status')->group(function () {
+    // PWA routes
+    Route::get('manifest.json', [\App\Http\Controllers\PWAController::class, 'manifest'])->name('store.pwa.manifest');
+    Route::get('service-worker', [\App\Http\Controllers\PWAController::class, 'serviceWorker'])->name('store.pwa.sw');
+    Route::get('pwa-icon/{size}', [\App\Http\Controllers\PWAController::class, 'icon'])->name('store.pwa.icon');
+
+    // Main store routes
+    Route::get('/', [ThemeController::class, 'home'])->name('store.home');
+    Route::get('/order/{orderNumber}', [ThemeController::class, 'orderDetail'])->name('store.order-detail');
+
+    // Auth routes
+    Route::post('/login', [\App\Http\Controllers\Store\AuthController::class, 'login'])->name('store.login');
+    Route::post('/register', [\App\Http\Controllers\Store\AuthController::class, 'register'])->name('store.register');
+    Route::post('/logout', [\App\Http\Controllers\Store\AuthController::class, 'logout'])->name('store.logout');
+
+    // Profile routes
+    Route::post('/profile/update', [\App\Http\Controllers\Store\ProfileController::class, 'updateProfile'])->name('store.profile.update');
+    Route::post('/profile/password', [\App\Http\Controllers\Store\ProfileController::class, 'updatePassword'])->name('store.profile.password');
+
+    // Password reset routes
+    Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->name('store.forgot-password');
+    Route::get('/reset-password/{token}', [\App\Http\Controllers\Store\AuthController::class, 'showResetForm'])->name('store.reset-password');
+    Route::post('/reset-password', [\App\Http\Controllers\Store\AuthController::class, 'resetPassword'])->name('store.reset-password.update');
+
+    // Order routes
+    Route::post('/order/place', [\App\Http\Controllers\Store\OrderController::class, 'placeOrder'])->name('store.order.place');
+    Route::get('/stripe/success/{orderNumber}', [\App\Http\Controllers\Store\StripeController::class, 'success'])->name('store.stripe.success');
+    Route::get('/paypal/success/{orderNumber}', [\App\Http\Controllers\Store\PayPalController::class, 'success'])->name('store.paypal.success');
+    Route::get('/xendit/success/{orderNumber}', [\App\Http\Controllers\Store\XenditController::class, 'success'])->name('store.xendit.success');
+    Route::match(['GET', 'POST'], '/toyyibpay/success/{orderNumber}', [\App\Http\Controllers\Store\ToyyibPayController::class, 'success'])->name('store.toyyibpay.success');
+    Route::get('/cashfree/success/{orderNumber}', [\App\Http\Controllers\Store\CashfreeController::class, 'success'])->name('store.cashfree.success');
+    Route::match(['GET', 'POST'], '/flutterwave/success/{orderNumber}', [\App\Http\Controllers\Store\FlutterwaveController::class, 'success'])->name('store.flutterwave.success');
+    Route::get('/paytabs/success/{orderNumber}', [\App\Http\Controllers\Store\PayTabsController::class, 'success'])->name('store.paytabs.success');
+    Route::match(['GET', 'POST'], '/paytabs/callback/{orderNumber}', [\App\Http\Controllers\Store\PayTabsController::class, 'callback'])->name('store.paytabs.callback');
+    Route::post('/cashfree/verify-payment', [\App\Http\Controllers\Store\CashfreeController::class, 'verifyPayment'])->name('store.cashfree.verify-payment');
+    Route::post('store-cashfree/webhook', [\App\Http\Controllers\Store\CashfreeController::class, 'webhook'])->name('store.cashfree.webhook');
+    Route::post('/razorpay/verify-payment', [\App\Http\Controllers\Store\RazorpayController::class, 'verifyPayment'])->name('store.razorpay.verify-payment');
+
+    // Store-side Paystack routes
+    Route::get('/paystack/success/{orderNumber}', [StorePaystackController::class, 'success'])->name('store.paystack.success');
+
+    // Store-side MercadoPago routes
+    Route::get('/mercadopago/success/{orderNumber}', [StoreMercadoPagoController::class, 'success'])->name('store.mercadopago.success');
+    Route::get('/mercadopago/failure', [StoreMercadoPagoController::class, 'failure'])->name('store.mercadopago.failure');
+    Route::get('/mercadopago/pending', [StoreMercadoPagoController::class, 'pending'])->name('store.mercadopago.pending');
+
+    // Checkout routes
+    Route::get('/order-confirmation/{orderNumber?}', [ThemeController::class, 'orderConfirmation'])->name('store.order-confirmation');
+
+    // Skrill
+    Route::get('/skrill/success/{orderNumber}', [\App\Http\Controllers\Store\SkrillController::class, 'success'])->name('store.skrill.success');
+    Route::post('/skrill/callback', [\App\Http\Controllers\Store\SkrillController::class, 'callback'])->name('store.skrill.callback');
+
+    // CoinGate
+    Route::get('/coingate/success/{orderNumber}', [\App\Http\Controllers\Store\CoinGateController::class, 'success'])->name('store.coingate.success');
+    Route::post('/coingate/callback', [\App\Http\Controllers\Store\CoinGateController::class, 'callback'])->name('store.coingate.callback');
+
+    // Midtrans
+    Route::get('/midtrans/success/{orderNumber}', [\App\Http\Controllers\Store\MidtransController::class, 'success'])->name('store.midtrans.success');
+    Route::post('/midtrans/callback', [\App\Http\Controllers\Store\MidtransController::class, 'callback'])->name('store.midtrans.callback');
+
+    // Mollie
+    Route::get('/mollie/success/{orderNumber}', [\App\Http\Controllers\Store\MollieController::class, 'success'])->name('store.mollie.success');
+    Route::post('/mollie/callback', [\App\Http\Controllers\Store\MollieController::class, 'callback'])->name('store.mollie.callback');
+
+    // Benefit
+    Route::get('/benefit/success/{orderNumber}', [\App\Http\Controllers\Store\BenefitController::class, 'success'])->name('store.benefit.success');
+    Route::post('/benefit/callback', [\App\Http\Controllers\Store\BenefitController::class, 'callback'])->name('store.benefit.callback');
+
+    // YooKassa
+    Route::get('/yookassa/success/{orderNumber}', [\App\Http\Controllers\Store\YooKassaController::class, 'success'])->name('store.yookassa.success');
+    Route::post('/yookassa/callback', [\App\Http\Controllers\Store\YooKassaController::class, 'callback'])->name('store.yookassa.callback');
+
+    // Catch-all: any unmatched GET on a store subdomain renders the store homepage
+    // (mirrors the previous "unknown route -> home" behaviour for custom domains)
+    Route::get('{any}', [ThemeController::class, 'home'])->where('any', '.*');
+});
+
+// Legacy redirects: keep old /store/{slug} links working after the move to subdomains
+Route::get('store/{storeSlug}', function ($storeSlug) {
+    return redirect()->route('store.home', ['storeSlug' => $storeSlug]);
+})->name('store.legacy.home');
+
+Route::get('store/{storeSlug}/{any}', function ($storeSlug, $any) {
+    $query = request()->getQueryString();
+    return redirect(route('store.home', ['storeSlug' => $storeSlug]) . '/' . $any . ($query ? '?' . $query : ''));
+})->where('any', '.*')->name('store.legacy.any');
+
 // Main landing page
 Route::get('/', [LandingPageController::class, 'show'])->name('home');
 
@@ -115,76 +209,8 @@ Route::prefix('api/locations')->group(function () {
     Route::get('cities/{stateId}', [\App\Http\Controllers\Api\LocationController::class, 'getCitiesByState'])->name('api.locations.cities');
 });
 
-// PWA routes (outside middleware to avoid conflicts)
-Route::get('store/{storeSlug}/manifest.json', [\App\Http\Controllers\PWAController::class, 'manifest'])->name('store.pwa.manifest');
-Route::get('store/{storeSlug}/service-worker', [\App\Http\Controllers\PWAController::class, 'serviceWorker'])->name('store.pwa.sw');
-Route::get('store/{storeSlug}/pwa-icon/{size}', [\App\Http\Controllers\PWAController::class, 'icon'])->name('store.pwa.icon');
-
-// Store frontend routes with store prefix
-Route::prefix('store/{storeSlug}')->middleware('store.status')->group(function () {
-    // Main store routes
-    Route::get('/', [ThemeController::class, 'home'])->name('store.home');
-    Route::get('/order/{orderNumber}', [ThemeController::class, 'orderDetail'])->name('store.order-detail');
-    
-    // Auth routes
-    Route::post('/login', [\App\Http\Controllers\Store\AuthController::class, 'login'])->name('store.login');
-    Route::post('/register', [\App\Http\Controllers\Store\AuthController::class, 'register'])->name('store.register');
-    Route::post('/logout', [\App\Http\Controllers\Store\AuthController::class, 'logout'])->name('store.logout');
-    
-    // Profile routes
-    Route::post('/profile/update', [\App\Http\Controllers\Store\ProfileController::class, 'updateProfile'])->name('store.profile.update');
-    Route::post('/profile/password', [\App\Http\Controllers\Store\ProfileController::class, 'updatePassword'])->name('store.profile.password');
-    
-    // Password reset routes
-    Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->name('store.forgot-password');
-    Route::get('/reset-password/{token}', [\App\Http\Controllers\Store\AuthController::class, 'showResetForm'])->name('store.reset-password');
-    Route::post('/reset-password', [\App\Http\Controllers\Store\AuthController::class, 'resetPassword'])->name('store.reset-password.update');
-    
-    // Order routes
-    Route::post('/order/place', [\App\Http\Controllers\Store\OrderController::class, 'placeOrder'])->name('store.order.place');
-    Route::get('/stripe/success/{orderNumber}', [\App\Http\Controllers\Store\StripeController::class, 'success'])->name('store.stripe.success');
-    Route::get('/paypal/success/{orderNumber}', [\App\Http\Controllers\Store\PayPalController::class, 'success'])->name('store.paypal.success');
-    Route::get('/xendit/success/{orderNumber}', [\App\Http\Controllers\Store\XenditController::class, 'success'])->name('store.xendit.success');
-    Route::match(['GET', 'POST'], '/toyyibpay/success/{orderNumber}', [\App\Http\Controllers\Store\ToyyibPayController::class, 'success'])->name('store.toyyibpay.success');
-    Route::get('/cashfree/success/{orderNumber}', [\App\Http\Controllers\Store\CashfreeController::class, 'success'])->name('store.cashfree.success');
-    Route::match(['GET', 'POST'], '/flutterwave/success/{orderNumber}', [\App\Http\Controllers\Store\FlutterwaveController::class, 'success'])->name('store.flutterwave.success');
-    Route::match(['GET', 'POST'], '/flutterwave/success/{orderNumber}', [\App\Http\Controllers\Store\FlutterwaveController::class, 'success'])->name('store.flutterwave.success');
-    Route::get('/paytabs/success/{orderNumber}', [\App\Http\Controllers\Store\PayTabsController::class, 'success'])->name('store.paytabs.success');
-    Route::match(['GET', 'POST'], '/paytabs/callback/{orderNumber}', [\App\Http\Controllers\Store\PayTabsController::class, 'callback'])->name('store.paytabs.callback');
-    Route::post('/cashfree/verify-payment', [\App\Http\Controllers\Store\CashfreeController::class, 'verifyPayment'])->name('store.cashfree.verify-payment');
-    Route::post('store-cashfree/webhook', [\App\Http\Controllers\Store\CashfreeController::class, 'webhook'])->name('store.cashfree.webhook');
-    Route::post('/razorpay/verify-payment', [\App\Http\Controllers\Store\RazorpayController::class, 'verifyPayment'])->name('store.razorpay.verify-payment');
-    // Route::get('/forgot-password', [ThemeController::class, 'forgotPassword'])->name('store.forgot-password');
-    // Route::get('/reset-password/{token}', [ThemeController::class, 'resetPassword'])->name('store.reset-password');
-    
-    // Checkout routes
-    Route::get('/order-confirmation/{orderNumber?}', [ThemeController::class, 'orderConfirmation'])->name('store.order-confirmation');
-
-    // Skrill
-    Route::get('/skrill/success/{orderNumber}', [\App\Http\Controllers\Store\SkrillController::class, 'success'])->name('store.skrill.success');
-    Route::post('/skrill/callback', [\App\Http\Controllers\Store\SkrillController::class, 'callback'])->name('store.skrill.callback');
-
-    // CoinGate
-    Route::get('/coingate/success/{orderNumber}', [\App\Http\Controllers\Store\CoinGateController::class, 'success'])->name('store.coingate.success');
-    Route::post('/coingate/callback', [\App\Http\Controllers\Store\CoinGateController::class, 'callback'])->name('store.coingate.callback');
-
-    // Midtrans
-    Route::get('/midtrans/success/{orderNumber}', [\App\Http\Controllers\Store\MidtransController::class, 'success'])->name('store.midtrans.success');
-    Route::post('/midtrans/callback', [\App\Http\Controllers\Store\MidtransController::class, 'callback'])->name('store.midtrans.callback');
-
-    // Mollie
-    Route::get('/mollie/success/{orderNumber}', [\App\Http\Controllers\Store\MollieController::class, 'success'])->name('store.mollie.success');
-    Route::post('/mollie/callback', [\App\Http\Controllers\Store\MollieController::class, 'callback'])->name('store.mollie.callback');
-
-    // Benefit
-    Route::get('/benefit/success/{orderNumber}', [\App\Http\Controllers\Store\BenefitController::class, 'success'])->name('store.benefit.success');
-    Route::post('/benefit/callback', [\App\Http\Controllers\Store\BenefitController::class, 'callback'])->name('store.benefit.callback');
-
-    // YooKassa
-    Route::get('/yookassa/success/{orderNumber}', [\App\Http\Controllers\Store\YooKassaController::class, 'success'])->name('store.yookassa.success');
-    Route::post('/yookassa/callback', [\App\Http\Controllers\Store\YooKassaController::class, 'callback'])->name('store.yookassa.callback');
-
-});
+// Store frontend routes now live in the subdomain group at the top of this file.
+// Legacy /store/{storeSlug} redirects are also defined there.
 
 
 // WhatsApp Store Theme Demo Routes
@@ -356,8 +382,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('payments/bank', [BankPaymentController::class, 'processPayment'])->name('bank.payment');
     Route::post('payments/paystack', [PaystackPaymentController::class, 'processPayment'])->name('paystack.payment');
     
-    // Store-side Paystack routes
-    Route::get('store/{storeSlug}/paystack/success/{orderNumber}', [StorePaystackController::class, 'success'])->name('store.paystack.success');
+    // Store-side Paystack webhook (webhooks stay on the base domain)
     Route::post('store/paystack/webhook', [StorePaystackController::class, 'webhook'])->name('store.paystack.webhook');
     Route::post('payments/flutterwave', [FlutterwavePaymentController::class, 'processPayment'])->name('flutterwave.payment');
     Route::post('payments/paytabs', [PayTabsPaymentController::class, 'processPayment'])->name('paytabs.payment');
@@ -431,10 +456,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('mercadopago/pending', [MercadoPagoController::class, 'pending'])->name('mercadopago.pending');
     Route::post('mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopago.webhook');
     
-    // Store-side MercadoPago routes (using Store\MercadoPagoController)
-    Route::get('store/{storeSlug}/mercadopago/success/{orderNumber}', [StoreMercadoPagoController::class, 'success'])->name('store.mercadopago.success');
-    Route::get('store/{storeSlug}/mercadopago/failure', [StoreMercadoPagoController::class, 'failure'])->name('store.mercadopago.failure');
-    Route::get('store/{storeSlug}/mercadopago/pending', [StoreMercadoPagoController::class, 'pending'])->name('store.mercadopago.pending');
+    // Store-side MercadoPago webhook (webhooks stay on the base domain)
     Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->name('store.mercadopago.webhook');
     Route::post('authorizenet/test-connection', [AuthorizeNetPaymentController::class, 'testConnection'])->name('authorizenet.test-connection');
 

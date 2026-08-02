@@ -116,7 +116,7 @@ export const handleCashfreePayment = async (
     });
 
     // 4. Open Checkout (Mirroring Plan side functionality)
-    const storeUrl = window.location.origin + '/product/Wusool/Wusool-saas/main_file/store/' + store.slug + '/cashfree/success/' + data.order_number;
+    const storeUrl = generateStoreUrl('store.cashfree.success', store, { orderNumber: data.order_number });
 
     const checkoutOptions = {
       paymentSessionId: data.payment_session_id,

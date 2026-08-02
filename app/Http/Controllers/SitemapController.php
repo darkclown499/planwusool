@@ -86,6 +86,6 @@ class SitemapController extends Controller
         if ($store->enable_custom_subdomain && $store->custom_subdomain) {
             return 'https://' . $store->custom_subdomain . '.' . getBaseDomain();
         }
-        return getSchemeAwareUrl() . '/store/' . $store->slug;
+        return 'https://' . $store->slug . '.' . getBaseDomain();
     }
 }

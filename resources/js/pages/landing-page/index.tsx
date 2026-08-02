@@ -281,7 +281,7 @@ export default function LandingPage() {
                 <h3 className="text-xl font-semibold mb-2">{store.name}</h3>
                 <p className="text-gray-600 mb-4">{store.description}</p>
                 <a
-                  href={`/store/${store.slug}`}
+                  href={route('store.home', store.slug)}
                   className="inline-block px-4 py-2 rounded-lg text-white transition-colors"
                   style={{ backgroundColor: primaryColor }}
                 >

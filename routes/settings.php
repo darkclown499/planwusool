@@ -32,8 +32,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/enabled-payment-methods', [PaymentSettingController::class, 'getEnabledMethods'])->name('payment.enabled-methods');
     Route::post('/plan-orders', [PlanOrderController::class, 'create'])->name('plan-orders.create');
     Route::post('/stripe-payment', [StripePaymentController::class, 'processPayment'])->name('settings.stripe.payment');
-    Route::post('/paypal-payment', [PayPalPaymentController::class, 'processPayment'])->name('paypal.payment');
-    Route::post('/bank-payment', [BankPaymentController::class, 'processPayment'])->name('bank.payment');
+    Route::post('/paypal-payment', [PayPalPaymentController::class, 'processPayment'])->name('settings.paypal.payment');
+    Route::post('/bank-payment', [BankPaymentController::class, 'processPayment'])->name('settings.bank.payment');
 });
 
 Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
