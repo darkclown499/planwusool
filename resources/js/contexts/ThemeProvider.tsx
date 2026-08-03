@@ -5,6 +5,10 @@ import { CartProvider } from './CartContext';
 import { ProductProvider } from './ProductContext';
 import { OrderProvider } from './OrderContext';
 import { UIProvider } from './UIContext';
+import { WishlistProvider } from './WishlistContext';
+import { StorefrontLocaleProvider } from './StorefrontLocaleContext';
+import { AccountArea } from '@/components/storefront/AccountArea';
+import { LanguageSwitcher } from '@/components/storefront/LanguageSwitcher';
 
 interface Product {
   id: string;
@@ -35,6 +39,17 @@ interface StoreConfig {
   logo?: string;
   phoneNumber: string;
   currency: string;
+  locale?: string;
+  secondaryCurrency?: {
+    code: string;
+    symbol: string;
+    name: string;
+    exchangeRate: number;
+  } | null;
+  vat?: {
+    vat_number?: string | null;
+    tax_registration_number?: string | null;
+  };
   address?: string;
   city?: string;
   state?: string;
@@ -117,33 +132,39 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   action = null
 }) => {
   return (
-    <StoreProvider config={config} store={store}>
-      <AuthProvider 
-        isLoggedIn={isLoggedIn} 
-        customer={customer} 
-        customerAddress={customerAddress}
-      >
-        <CartProvider storeId={store.id}>
-          <ProductProvider categories={categories} products={products}>
-            <OrderProvider 
-              storeId={store.id} 
-              isLoggedIn={isLoggedIn}
-              paymentStatus={paymentStatus}
-              orderNumber={orderNumber}
-            >
-              <UIProvider 
-                showResetModal={showResetModal}
-                resetToken={resetToken}
-                paymentStatus={paymentStatus}
-                orderNumber={orderNumber}
-                action={action}
-              >
-                {children}
-              </UIProvider>
-            </OrderProvider>
-          </ProductProvider>
-        </CartProvider>
-      </AuthProvider>
-    </StoreProvider>
+    <StorefrontLocaleProvider defaultLocale={config.locale}>
+      <StoreProvider config={config} store={store}>
+        <AuthProvider 
+          isLoggedIn={isLoggedIn} 
+          customer={customer} 
+          customerAddress={customerAddress}
+        >
+          <WishlistProvider storeId={store.id} isLoggedIn={isLoggedIn}>
+            <CartProvider storeId={store.id}>
+              <ProductProvider categories={categories} products={products}>
+                <OrderProvider 
+                  storeId={store.id} 
+                  isLoggedIn={isLoggedIn}
+                  paymentStatus={paymentStatus}
+                  orderNumber={orderNumber}
+                >
+                  <UIProvider 
+                    showResetModal={showResetModal}
+                    resetToken={resetToken}
+                    paymentStatus={paymentStatus}
+                    orderNumber={orderNumber}
+                    action={action}
+                  >
+                    {children}
+                    <AccountArea />
+                    <LanguageSwitcher />
+                  </UIProvider>
+                </OrderProvider>
+              </ProductProvider>
+            </CartProvider>
+          </WishlistProvider>
+        </AuthProvider>
+      </StoreProvider>
+    </StorefrontLocaleProvider>
   );
 };

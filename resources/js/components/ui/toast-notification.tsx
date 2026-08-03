@@ -36,7 +36,7 @@ export function showToast(
   
   toast(
     <div className="flex items-start">
-      <div className={`p-1 rounded-full ${bgColor} mr-3`}>
+      <div className={`p-1 rounded-full ${bgColor} me-3`}>
         <Icon className={`h-5 w-5 ${iconColor}`} />
       </div>
       <div>

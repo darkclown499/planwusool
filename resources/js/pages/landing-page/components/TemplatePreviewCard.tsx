@@ -66,7 +66,7 @@ export default function TemplatePreviewCard({
             }}
           >
             <Button size="sm" variant="secondary" className="text-xs bg-white hover:bg-gray-100 shadow-sm">
-              <Eye className="h-3 w-3 mr-1" />
+              <Eye className="h-3 w-3 me-1" />
               {previewButtonText}
             </Button>
           </div>

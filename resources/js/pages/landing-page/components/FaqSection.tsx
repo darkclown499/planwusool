@@ -95,7 +95,7 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
             >
               <button
                 onClick={() => toggleFaq(faq.id)}
-                className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-100 transition-colors"
+                className="w-full px-6 py-4 text-start flex justify-between items-center hover:bg-gray-100 transition-colors"
                 aria-expanded={openFaq === faq.id}
                 aria-controls={`faq-answer-${faq.id}`}
                 aria-describedby={`faq-question-${faq.id}`}

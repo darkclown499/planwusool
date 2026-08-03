@@ -131,7 +131,7 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  description={t("Configure SEO settings to improve your website's search engine visibility")}
  action={
  <Button onClick={submitSeoSettings} disabled={isLoading} size="sm" className="bg-emerald-500 hover:bg-emerald-600">
- <Save className="h-4 w-4 mr-2" />
+ <Save className="h-4 w-4 me-2" />
  {isLoading ? t('Saving...') : t("Save Changes")}
  </Button>
  }
@@ -282,7 +282,7 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  {/* SEO Tips */}
  <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3">
  <h5 className="text-xs font-semibold text-blue-900 flex items-center mb-1.5 uppercase tracking-wider">
- <Info className="h-3.5 w-3.5 mr-1.5" /> {t("SEO Tips")}
+ <Info className="h-3.5 w-3.5 me-1.5" /> {t("SEO Tips")}
  </h5>
  <ul className="text-[11px] text-blue-800 space-y-1.5 list-none pl-0">
  <li className="flex items-start gap-2">

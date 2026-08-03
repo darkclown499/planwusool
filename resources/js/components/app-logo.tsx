@@ -1,12 +1,12 @@
 import AppLogoIcon from './app-logo-icon';
 
-export default function AppLogo({ position }: { position: 'left' | 'right' }) {
+export default function AppLogo({ position }: { position?: 'left' | 'right' }) {
     return (
-        <div className={`w-full flex items-center ${position === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div dir={position === 'right' ? 'rtl' : position === 'left' ? 'ltr' : undefined} className="flex w-full items-center">
             <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
                 <AppLogoIcon className="size-5 fill-current text-white" />
             </div>
-            <div className={`grid flex-1 truncate text-sm leading-none font-semibold ${position === 'right' ? 'mr-1 text-right' : 'ml-1 text-left'}`}>
+            <div className="ms-1 grid flex-1 truncate text-sm leading-none font-semibold text-start">
                 Laravel Starter Kit
             </div>
         </div>

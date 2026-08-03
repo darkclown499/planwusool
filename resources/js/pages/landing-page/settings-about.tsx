@@ -304,7 +304,7 @@ export default function AboutSection({ data, setData, errors, handleInputChange,
               updateSectionData('about', { stats: newStats });
             }}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 me-2" />
             {t('Add Statistic')}
           </Button>
         </div>
@@ -409,7 +409,7 @@ export default function AboutSection({ data, setData, errors, handleInputChange,
               updateSectionData('about', { values: newValues });
             }}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 me-2" />
             {t('Add Value')}
           </Button>
         </div>

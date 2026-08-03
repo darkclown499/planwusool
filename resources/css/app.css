@@ -297,10 +297,10 @@ a[style*="background-color"]:hover {
 .demo-store-preview {
   position: absolute;
   top: 0;
-  left: 100%;
+  inset-inline-start: 100%;
   width: 200px;
   height: 120px;
-  margin-left: 8px;
+  margin-inline-start: 8px;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -341,6 +341,22 @@ a[style*="background-color"]:hover {
   }
 }
 
+/* Mirror the demo preview slide animation for RTL */
+html[dir="rtl"] .demo-store-preview {
+  animation-name: slideInRtl;
+}
+
+@keyframes slideInRtl {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 a, 
 button, 
 [role="button"],
@@ -369,9 +385,12 @@ button[disabled],
 
       /* DEFAULT: Show background for parents in path */
       background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
-      border-left: 2px solid var(--primary);
-      border-radius: 0 4px 4px 0;
-      margin-left: -2px;
+      border-inline-start: 2px solid var(--primary);
+      border-start-start-radius: 0;
+      border-start-end-radius: 4px;
+      border-end-end-radius: 4px;
+      border-end-start-radius: 0;
+      margin-inline-start: -2px;
 
       svg {
         color: var(--primary) !important;
@@ -381,9 +400,9 @@ button[disabled],
       /* EXCEPTION: If it is the CURRENT exact page, remove background and border */
       &[data-current="true"] {
         background-color: transparent !important;
-        border-left-width: 0px;
+        border-inline-start-width: 0px;
         @apply font-bold;
-        margin-left: 0;
+        margin-inline-start: 0;
 
         svg {
           filter: none;

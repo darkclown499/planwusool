@@ -52,7 +52,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                                     {store.name}
                                 </p>
                                 <p className="text-sm text-orange-600 mt-1 flex items-center justify-center">
-                                    <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                    <RefreshCw className="w-3 h-3 me-1 animate-spin" />
                                     Getting better for you
                                 </p>
                             </div>
@@ -75,7 +75,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                                     href={route('home')}
                                     className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-amber-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 >
-                                    <Home className="w-4 h-4 mr-2" />
+                                    <Home className="w-4 h-4 me-2" />
                                     Visit Homepage
                                 </Link>
                                 
@@ -83,7 +83,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                                     onClick={() => window.location.reload()}
                                     className="w-full inline-flex items-center justify-center px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all duration-200"
                                 >
-                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                    <RefreshCw className="w-4 h-4 me-2" />
                                     Check Again
                                 </button>
                             </div>

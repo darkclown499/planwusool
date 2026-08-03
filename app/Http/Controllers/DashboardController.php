@@ -14,6 +14,7 @@ use App\Models\Plan;
 use App\Models\PlanOrder;
 use App\Models\PlanRequest;
 use App\Models\Coupon;
+use App\Services\MerchantNotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -203,7 +204,8 @@ class DashboardController extends Controller
                 'totalCoupons' => $totalCoupons
             ],
             'recentOrders' => $recentOrders,
-            'topPlans' => $topPlans
+            'topPlans' => $topPlans,
+            'alerts' => $this->getMerchantAlerts(auth()->id(), null)
         ];
     }
     
@@ -260,7 +262,8 @@ class DashboardController extends Controller
                 'revenue' => $totalRevenue
             ],
             'recentOrders' => $recentOrders,
-            'topProducts' => $topProducts
+            'topProducts' => $topProducts,
+            'alerts' => $this->getMerchantAlerts(auth()->id(), $storeId)
         ];
     }
     
@@ -274,8 +277,39 @@ class DashboardController extends Controller
                 'revenue' => 0
             ],
             'recentOrders' => [],
-            'topProducts' => []
+            'topProducts' => [],
+            'alerts' => []
         ];
+    }
+    
+    /**
+     * أحدث التنبيهات الهامة للتاجر من جدول merchant_notifications.
+     */
+    private function getMerchantAlerts(?int $userId, ?int $storeId = null)
+    {
+        if (!$userId) {
+            return [];
+        }
+
+        return MerchantNotificationService::getUrgentForUser($userId, $storeId, 10)
+            ->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'type' => $notification->type,
+                    'title' => $notification->title,
+                    'body' => $notification->body,
+                    'icon' => $notification->icon,
+                    'color' => $notification->color,
+                    'action_url' => $notification->action_url,
+                    'related_id' => $notification->related_id,
+                    'related_type' => $notification->related_type,
+                    'is_read' => $notification->is_read,
+                    'is_urgent' => $notification->is_urgent,
+                    'created_at' => $notification->created_at?->diffForHumans(),
+                ];
+            })
+            ->values()
+            ->toArray();
     }
     
     public function export()

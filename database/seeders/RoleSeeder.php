@@ -180,6 +180,18 @@ class RoleSeeder extends Seeder
             'process-transactions-pos',
             'view-transactions-pos',
             'manage-settings-pos',
+
+            // Advanced COD (Cash on Delivery) permissions
+            'manage-cod-payments',
+            'view-cod-payments',
+            'collect-cod-payments',
+            'export-cod-payments',
+
+            // Smart Notifications permissions
+            'manage-notifications',
+            'view-notifications',
+            'send-notifications',
+            'delete-notifications',
             
         ])->get();
 

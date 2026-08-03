@@ -101,7 +101,7 @@ export default function SectionNavigation({ activeSection, onSectionChange, t }:
                     }`}
                     onClick={() => onSectionChange(section.key)}
                   >
-                    <Icon className="h-4 w-4 mr-2" />
+                    <Icon className="h-4 w-4 me-2" />
                     {t(section.label)}
                   </Button>
                 );

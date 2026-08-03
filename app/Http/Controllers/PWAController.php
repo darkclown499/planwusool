@@ -117,6 +117,63 @@ self.addEventListener('message', function(event) {
         self.skipWaiting();
     }
 });
+
+// Web Push Notifications
+self.addEventListener('push', function(event) {
+    var data = {};
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch (err) {
+        data = { title: '{$store->name}', body: event.data ? event.data.text() : '' };
+    }
+
+    var title = data.title || '{$store->name}';
+    var options = {
+        body: data.body || '',
+        icon: data.icon || '{$storeUrl}/pwa-icon/192',
+        badge: data.badge || '{$storeUrl}/pwa-icon/96',
+        data: {
+            url: data.url || '{$storeUrl}/',
+            notification_id: data.notification_id || null,
+            type: data.type || null
+        }
+    };
+
+    if (data.image) options.image = data.image;
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+
+    var url = (event.notification.data && event.notification.data.url) || '{$storeUrl}/';
+    var notificationId = event.notification.data && event.notification.data.notification_id;
+
+    // Record notification click
+    if (notificationId) {
+        fetch('{$storeUrl}/api/notifications/' + notificationId + '/click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        }).catch(function() {});
+    }
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+            for (var i = 0; i < clientList.length; i++) {
+                var client = clientList[i];
+                if ('focus' in client) {
+                    return client.navigate(url).then(function() { return client.focus(); });
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
+        })
+    );
+});
 ";
 
         return response($serviceWorker)

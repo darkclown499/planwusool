@@ -1,0 +1,3 @@
+=== GadgetsStore.tsx ===
+  Line 321: toast.success('تم إتمام الطلب بنجاح!');
+  Line 396: message={config.whatsapp_widget_message || 'مرحباً! أحتاج مساعدة في...'}

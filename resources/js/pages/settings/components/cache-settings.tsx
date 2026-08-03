@@ -57,7 +57,7 @@ export default function CacheSettings({ cacheSize = '0.00' }: CacheSettingsProps
             variant="destructive"
             size="sm"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="h-4 w-4 me-2" />
             {isClearing ? t("Clearing...") : t("Clear Cache")}
           </Button>
         </div>

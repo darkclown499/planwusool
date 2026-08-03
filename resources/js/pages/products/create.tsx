@@ -313,7 +313,7 @@ export default function CreateProduct() {
           <TabsContent value="general" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-base">{t('Product Information')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-1.5">
                     <Label htmlFor="name" required>{t('Product Name')}</Label>
@@ -376,7 +376,7 @@ export default function CreateProduct() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
-                  <div className="text-right">
+                  <div className="text-start">
                     <Label>{t('Product Display')}</Label>
                     <p className="text-sm text-muted-foreground">{t('Show product on store')}</p>
                   </div>
@@ -390,7 +390,7 @@ export default function CreateProduct() {
           <TabsContent value="pricing" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-base">{t('Pricing Information')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="grid gap-1.5">
                     <Label htmlFor="cost_price" required>{t('Cost Price')}</Label>
@@ -413,7 +413,7 @@ export default function CreateProduct() {
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
-                  <div className="text-right">
+                  <div className="text-start">
                     <Label>{t('Include tax in price?')}</Label>
                     <p className="text-sm text-muted-foreground">{t('Should price include tax?')}</p>
                   </div>
@@ -427,7 +427,7 @@ export default function CreateProduct() {
           <TabsContent value="inventory" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-base">{t('Inventory Management')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-1.5">
                     <Label htmlFor="stock" required>{t('Stock Quantity')}</Label>
@@ -440,7 +440,7 @@ export default function CreateProduct() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
-                  <div className="text-right">
+                  <div className="text-start">
                     <Label>{t('Downloadable Product')}</Label>
                     <p className="text-sm text-muted-foreground">{t('Is this a digital product?')}</p>
                   </div>
@@ -457,7 +457,7 @@ export default function CreateProduct() {
           <TabsContent value="content" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-base">{t('Product Content')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div>
                   <Label>{t('Product Description')}</Label>
                   <RichTextEditor value={formData.description} onChange={(v) => handleSelectChange('description', v)} placeholder={t('Enter product description...')} />
@@ -496,7 +496,7 @@ export default function CreateProduct() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 {variants.map((variant, index) => (
                   <div key={index} className="rounded-xl border border-gray-200 overflow-hidden">
                     <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 border-b border-gray-100">
@@ -566,7 +566,7 @@ export default function CreateProduct() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 {customFields.map((field, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Input placeholder={t('Field name')} value={field.name} onChange={(e) => { const f = [...customFields]; f[index].name = e.target.value; setCustomFields(f); }} />
@@ -609,7 +609,7 @@ export default function CreateProduct() {
                 <ChevronLeft className="h-4 w-4" />
                 {t('Next')}
               </Button>
-              <span className="text-xs text-muted-foreground mr-2 hidden sm:inline">
+              <span className="text-xs text-muted-foreground me-2 hidden sm:inline">
                 {TAB_ORDER.indexOf(activeTab) + 1}/{TAB_ORDER.length}
               </span>
             </div>

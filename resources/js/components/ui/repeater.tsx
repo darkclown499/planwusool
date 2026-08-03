@@ -252,7 +252,7 @@ export function Repeater({
                 onClick={() => removeItem(index)}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
-                <Trash2 className="h-4 w-4 mr-1" />
+                <Trash2 className="h-4 w-4 me-1" />
                 {removeButtonText}
               </Button>
             )}
@@ -264,7 +264,7 @@ export function Repeater({
               <div key={field.name} className="space-y-2">
                 <Label htmlFor={`${field.name}_${index}`} className="text-sm font-medium">
                   {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                  {field.required && <span className="text-red-500 ms-1">*</span>}
                 </Label>
                 {renderField(
                   field,
@@ -286,7 +286,7 @@ export function Repeater({
           onClick={addItem}
           className="w-full border-dashed border-2 hover:border-primary hover:bg-primary/5"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4 me-2" />
           {addButtonText}
         </Button>
       )}

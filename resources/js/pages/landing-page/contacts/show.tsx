@@ -132,7 +132,7 @@ export default function ContactShow() {
           variant="outline"
           onClick={() => router.get(route('landing-page.contacts.index'))}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="h-4 w-4 me-2" />
           {t('Back to Contacts')}
         </Button>
       }
@@ -208,7 +208,7 @@ export default function ContactShow() {
                     rows={6}
                   />
                   <Button onClick={updateContact} disabled={processing}>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit className="h-4 w-4 me-2" />
                     {processing ? t('Updating...') : t('Update Notes')}
                   </Button>
                 </div>
@@ -253,14 +253,14 @@ export default function ContactShow() {
                   className="w-full justify-start"
                   onClick={() => window.open(`mailto:${contact.email}?subject=Re: ${contact.subject}`)}
                 >
-                  <Mail className="h-4 w-4 mr-2" />
+                  <Mail className="h-4 w-4 me-2" />
                   {t('Send Email')}
                 </Button>
                 
                 <Dialog open={showReplyDialog} onOpenChange={setShowReplyDialog}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
-                      <Send className="h-4 w-4 mr-2" />
+                      <Send className="h-4 w-4 me-2" />
                       {t('Quick Reply')}
                     </Button>
                   </DialogTrigger>
@@ -284,7 +284,7 @@ export default function ContactShow() {
                         {t('Cancel')}
                       </Button>
                       <Button onClick={sendReply} disabled={replyProcessing}>
-                        <Send className="h-4 w-4 mr-2" />
+                        <Send className="h-4 w-4 me-2" />
                         {replyProcessing ? t('Sending...') : t('Send Reply')}
                       </Button>
                     </DialogFooter>

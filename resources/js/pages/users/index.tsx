@@ -248,7 +248,7 @@ export default function Users() {
     const canCreate = !planLimits || planLimits.can_create;
     pageActions.push({
       label: planLimits && !canCreate ? t('User Limit Reached ({{current}}/{{max}})', { current: planLimits.current_users, max: planLimits.max_users }) : t('Add User'),
-      icon: <Plus className="h-4 w-4 mr-2" />,
+      icon: <Plus className="h-4 w-4 me-2" />,
       variant: canCreate ? 'default' : 'outline',
       onClick: canCreate ? () => handleAddNew() : () => toast.error(t('User limit exceeded. Your plan allows maximum {{max}} users. Please upgrade your plan.', { max: planLimits.max_users })),
       disabled: !canCreate
@@ -292,7 +292,7 @@ export default function Users() {
         if (!value || !value.length) return <span className="text-muted-foreground">No roles assigned</span>;
 
         return value.map((role: any) => {
-          return <span key={role.id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mr-1">{role.label || role.name}</span>;
+          return <span key={role.id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 me-1">{role.label || role.name}</span>;
         });
       }
     },
@@ -358,31 +358,31 @@ export default function Users() {
             <div className="flex items-center gap-2">
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={t("Search users...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9"
+                    className="w-full ps-9"
                   />
                 </div>
                 <Button type="submit" size="sm">
-                  <Search className="h-4 w-4 mr-1.5" />
+                  <Search className="h-4 w-4 me-1.5" />
                   {t("Search")}
                 </Button>
               </form>
 
-              <div className="ml-2">
+              <div className="ms-2">
                 <Button
                   variant={hasActiveFilters() ? "default" : "outline"}
                   size="sm"
                   className="h-8 px-2 py-1"
                   onClick={() => setShowFilters(!showFilters)}
                 >
-                  <Filter className="h-3.5 w-3.5 mr-1.5" />
+                  <Filter className="h-3.5 w-3.5 me-1.5" />
                   {showFilters ? 'Hide Filters' : 'Filters'}
                   {hasActiveFilters() && (
-                    <span className="ml-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    <span className="ms-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
                       {activeFilterCount()}
                     </span>
                   )}
@@ -391,7 +391,7 @@ export default function Users() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="border rounded-md p-0.5 mr-2">
+              <div className="border rounded-md p-0.5 me-2">
                 <Button
                   size="sm"
                   variant={activeView === 'list' ? "default" : "ghost"}

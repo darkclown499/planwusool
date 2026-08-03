@@ -102,7 +102,7 @@ export default function ShowShipping() {
             <CardContent className="space-y-4">
               <div className="text-center p-4 border rounded-lg">
                 <div className="flex items-center justify-center mb-2">
-                  <Package className="h-5 w-5 text-primary mr-2" />
+                  <Package className="h-5 w-5 text-primary me-2" />
                   <span className="text-2xl font-bold">{stats?.total_orders || 0}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{t('Total Orders')}</p>
@@ -121,7 +121,7 @@ export default function ShowShipping() {
               </div>
               <div className="text-center p-4 border rounded-lg">
                 <div className="flex items-center justify-center mb-2">
-                  <Clock className="h-5 w-5 text-primary mr-2" />
+                  <Clock className="h-5 w-5 text-primary me-2" />
                   <span className="text-2xl font-bold">{stats?.avg_delivery_days || 0}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{t('Avg. Delivery Days')}</p>
@@ -228,7 +228,7 @@ export default function ShowShipping() {
                       <p className="text-sm text-muted-foreground">{order.customer_name}</p>
                       <p className="text-sm text-muted-foreground">{order.date}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="font-medium">{formatCurrency(order.shipping_cost || 0)}</p>
                       <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'}>
                         {order.status}

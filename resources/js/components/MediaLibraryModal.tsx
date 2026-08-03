@@ -249,7 +249,7 @@ export default function MediaLibraryModal({
             <ImageIcon className="h-5 w-5" />
             Media Library
             {filteredMedia.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ms-2">
                 {filteredMedia.length}
               </Badge>
             )}
@@ -260,12 +260,12 @@ export default function MediaLibraryModal({
           {/* Header with Search and Upload */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search media files..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="ps-10"
               />
             </div>
             
@@ -286,7 +286,7 @@ export default function MediaLibraryModal({
                   disabled={uploading}
                   size="sm"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 me-2" />
                   {uploading ? 'Uploading...' : 'Upload'}
                 </Button>
               </div>
@@ -347,7 +347,7 @@ export default function MediaLibraryModal({
                       onClick={() => document.getElementById('file-upload')?.click()}
                       disabled={uploading}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="h-4 w-4 me-2" />
                       Upload Images
                     </Button>
                   )}

@@ -8,6 +8,12 @@ interface StoreCurrency {
   decimals: number;
   decimal_separator: string;
   thousands_separator: string;
+  secondary?: {
+    code: string;
+    symbol: string;
+    name: string;
+    exchangeRate: number;
+  } | null;
 }
 
 interface PageProps {
@@ -56,8 +62,26 @@ export function useCurrencyFormatter() {
     const finalNumber = parts.join(storeCurrency.decimal_separator);
 
     // Return with currency symbol in correct position
-    return storeCurrency.position === 'after' 
+    const primary = storeCurrency.position === 'after' 
       ? `${finalNumber} ${storeCurrency.symbol}`
       : `${storeCurrency.symbol} ${finalNumber}`;
+
+    // Dual currency: append the secondary currency value when configured
+    const secondary = storeCurrency.secondary;
+    if (secondary && secondary.exchangeRate > 0) {
+      const secondaryFormatted = numAmount * secondary.exchangeRate;
+      const secondaryNumber = secondaryFormatted.toFixed(storeCurrency.decimals);
+      const secondaryParts = secondaryNumber.split('.');
+      if (storeCurrency.thousands_separator) {
+        secondaryParts[0] = secondaryParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, storeCurrency.thousands_separator);
+      }
+      const secondaryFinalNumber = secondaryParts.join(storeCurrency.decimal_separator);
+      const secondaryStr = storeCurrency.position === 'after'
+        ? `${secondaryFinalNumber} ${secondary.symbol}`
+        : `${secondary.symbol} ${secondaryFinalNumber}`;
+      return `${primary} ≈ ${secondaryStr}`;
+    }
+
+    return primary;
   };
 }

@@ -178,10 +178,61 @@ const baseThemeData = [
   }
 ];
 
+// Ordered categories used to group themes in the theme picker
+export const storeThemeCategories = [
+  'إلكترونيات وأجهزة ذكية',
+  'أزياء وملابس',
+  'تجميل وعطور',
+  'مجوهرات',
+  'منزل وديكور',
+  'أطعمة ومشروبات',
+  'أطفال وألعاب',
+  'رياضة ولياقة',
+  'قرطاسية وكتب',
+  'صحة وعناية',
+  'حيوانات أليفة',
+  'ورود وهدايا',
+  'سيارات وإكسسوارات'
+];
+
+// Maps every theme id to a single category so pickers never repeat a category
+const themeCategoryMap: Record<string, string> = {
+  gadgets: 'إلكترونيات وأجهزة ذكية',
+  electronics: 'إلكترونيات وأجهزة ذكية',
+  fashion: 'أزياء وملابس',
+  clothing: 'أزياء وملابس',
+  beauty: 'تجميل وعطور',
+  cosmetics: 'تجميل وعطور',
+  perfumes: 'تجميل وعطور',
+  fragrances: 'تجميل وعطور',
+  jewelry: 'مجوهرات',
+  'jewelry-gold': 'مجوهرات',
+  'home-decor': 'منزل وديكور',
+  'home-tools': 'منزل وديكور',
+  supermarket: 'أطعمة ومشروبات',
+  food: 'أطعمة ومشروبات',
+  bakery: 'أطعمة ومشروبات',
+  spices: 'أطعمة ومشروبات',
+  coffee: 'أطعمة ومشروبات',
+  'coffee-dates': 'أطعمة ومشروبات',
+  toy: 'أطفال وألعاب',
+  kids: 'أطفال وألعاب',
+  sport: 'رياضة ولياقة',
+  sports: 'رياضة ولياقة',
+  stationery: 'قرطاسية وكتب',
+  'stationery-books': 'قرطاسية وكتب',
+  books: 'قرطاسية وكتب',
+  pharmacy: 'صحة وعناية',
+  pets: 'حيوانات أليفة',
+  flowers: 'ورود وهدايا',
+  'car-accessories': 'سيارات وإكسسوارات'
+};
+
 // Function to get store themes with proper thumbnail URLs
 export function getStoreThemes() {
   return baseThemeData.map(theme => ({
     ...theme,
+    category: themeCategoryMap[theme.id] ?? 'أخرى',
     thumbnail: getImageUrl(theme.imagePath)
   }));
 }

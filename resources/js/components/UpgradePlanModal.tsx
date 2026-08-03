@@ -164,18 +164,18 @@ export function UpgradePlanModal({
                       <div className="flex items-center">
                         <p className="text-base font-medium">{plan.name}</p>
                         {isPlanCurrentForTab(plan) && (
-                          <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800 border-blue-200">
+                          <Badge variant="outline" className="ms-2 bg-blue-100 text-blue-800 border-blue-200">
                             {t("Current")}
                           </Badge>
                         )}
                       </div>
                       <div className="flex items-center">
-                        <CreditCard className="mr-1.5 h-4 w-4 text-muted-foreground" />
+                        <CreditCard className="me-1.5 h-4 w-4 text-muted-foreground" />
                         <p className="text-sm font-medium">
                           {getPriceForSelectedCycle(plan)} / {getDurationLabel().toLowerCase()}
                         </p>
                         {billingCycle === 'yearly' && (
-                          <Badge variant="secondary" className="ml-2 text-xs bg-orange-100 text-orange-800">
+                          <Badge variant="secondary" className="ms-2 text-xs bg-orange-100 text-orange-800">
                             {t('Best Value')}
                           </Badge>
                         )}
@@ -187,7 +187,7 @@ export function UpgradePlanModal({
                         <div className="mt-2 flex flex-wrap gap-2">
                           {plan.features.map((feature, index) => (
                             <div key={index} className="flex items-center text-xs text-muted-foreground">
-                              <CheckCircle2 className="mr-1 h-3 w-3 text-green-500" />
+                              <CheckCircle2 className="me-1 h-3 w-3 text-green-500" />
                               {feature}
                             </div>
                           ))}

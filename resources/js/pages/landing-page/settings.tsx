@@ -232,7 +232,7 @@ export default function LandingPageSettings() {
  description={t('Customize your landing page content and appearance')}
  action={
  <Button onClick={saveSettings} disabled={isLoading} size="sm">
- <Save className="h-4 w-4 mr-2" />
+ <Save className="h-4 w-4 me-2" />
  {isLoading ? t('Saving...') : t('Save Changes')}
  </Button>
  }
@@ -790,7 +790,7 @@ export default function LandingPageSettings() {
  updateSectionData('hero', { stats: newStats });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Statistic')}
  </Button>
  </div>
@@ -1081,7 +1081,7 @@ export default function LandingPageSettings() {
  updateSectionData('screenshots', { screenshots_list: newScreenshots });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Screenshot')}
  </Button>
  </div>
@@ -1386,7 +1386,7 @@ export default function LandingPageSettings() {
  updateSectionData('why_choose_us', { reasons: newReasons });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Reason')}
  </Button>
  </div>
@@ -1501,7 +1501,7 @@ export default function LandingPageSettings() {
  updateSectionData('why_choose_us', { stats: newStats });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Statistic')}
  </Button>
  </div>
@@ -1737,7 +1737,7 @@ export default function LandingPageSettings() {
  updateSectionData('team', { members: newMembers });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Team Member')}
  </Button>
  </div>
@@ -1933,7 +1933,7 @@ export default function LandingPageSettings() {
  updateSectionData('testimonials', { trust_stats: newStats });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Trust Statistic')}
  </Button>
  </div>
@@ -2063,7 +2063,7 @@ export default function LandingPageSettings() {
  updateSectionData('testimonials', { testimonials: newTestimonials });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Default Testimonial')}
  </Button>
  </div>
@@ -2130,7 +2130,7 @@ export default function LandingPageSettings() {
 
  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
  <div className="flex items-start">
- <Info className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
+ <Info className="h-5 w-5 text-blue-600 me-2 mt-0.5" />
  <div>
  <h4 className="text-sm font-medium mb-1" style={{ color: brandColor }}>{t('Plans Management')}</h4>
  <p className="text-sm" style={{ color: brandColor + 'cc' }}>
@@ -2285,7 +2285,7 @@ export default function LandingPageSettings() {
  updateSectionData('faq', { faqs: newFaqs });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add FAQ')}
  </Button>
  </div>
@@ -2440,7 +2440,7 @@ export default function LandingPageSettings() {
  updateSectionData('newsletter', { benefits: newBenefits });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Benefit')}
  </Button>
  </div>
@@ -2648,7 +2648,7 @@ export default function LandingPageSettings() {
  updateSectionData('contact', { faqs: newFaqs });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add FAQ')}
  </Button>
  </div>
@@ -2819,7 +2819,7 @@ export default function LandingPageSettings() {
  updateSectionData('footer', { social_links: newSocials });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Social Link')}
  </Button>
  </div>
@@ -2915,7 +2915,7 @@ export default function LandingPageSettings() {
  updateSectionData('footer', { links: newLinks });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t("Add")} {getSectionData('footer').section_titles?.[category] || category.charAt(0).toUpperCase() + category.slice(1)} {t("Link")}
  </Button>
  </div>
@@ -2930,7 +2930,7 @@ export default function LandingPageSettings() {
  <div className="space-y-6">
  <div className="space-y-4">
  <div className="flex items-center">
- <Palette className="h-5 w-5 mr-2 text-muted-foreground" />
+ <Palette className="h-5 w-5 me-2 text-muted-foreground" />
  <h3 className="text-base font-medium">{t("Colors & Theme")}</h3>
  </div>
  <Separator className="my-2" />
@@ -2992,7 +2992,7 @@ export default function LandingPageSettings() {
 
  <div className="space-y-4">
  <div className="flex items-center">
- <Image className="h-5 w-5 mr-2 text-muted-foreground" />
+ <Image className="h-5 w-5 me-2 text-muted-foreground" />
  <h3 className="text-base font-medium">{t("Images & Logos")}</h3>
  </div>
  <Separator className="my-2" />
@@ -3097,7 +3097,7 @@ export default function LandingPageSettings() {
 
  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
  <div className="flex items-start">
- <Info className="h-5 w-5 text-blue-600 mr-2 mt-0.5" />
+ <Info className="h-5 w-5 text-blue-600 me-2 mt-0.5" />
  <div>
  <h4 className="text-sm font-medium text-blue-900 mb-1">{t('How to reorder')}</h4>
  <p className="text-sm text-blue-700">
@@ -3115,7 +3115,7 @@ export default function LandingPageSettings() {
  <div className="space-y-6">
  <div className="space-y-4">
  <div className="flex items-center">
- <Search className="h-5 w-5 mr-2 text-muted-foreground" />
+ <Search className="h-5 w-5 me-2 text-muted-foreground" />
  <h3 className="text-base font-medium">{t("SEO Settings")}</h3>
  </div>
  <Separator className="my-2" />
@@ -3146,7 +3146,7 @@ export default function LandingPageSettings() {
 
  <div className="space-y-4">
  <div className="flex items-center">
- <Code className="h-5 w-5 mr-2 text-muted-foreground" />
+ <Code className="h-5 w-5 me-2 text-muted-foreground" />
  <h3 className="text-base font-medium">{t("Custom CSS")}</h3>
  </div>
  <Separator className="my-2" />
@@ -3169,7 +3169,7 @@ export default function LandingPageSettings() {
 
  <div className="space-y-4">
  <div className="flex items-center">
- <Code className="h-5 w-5 mr-2 text-muted-foreground" />
+ <Code className="h-5 w-5 me-2 text-muted-foreground" />
  <h3 className="text-base font-medium">{t('Custom JavaScript')}</h3>
  </div>
  <Separator className="my-2" />

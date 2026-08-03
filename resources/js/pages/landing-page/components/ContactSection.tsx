@@ -150,81 +150,81 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
-                    <span className="text-red-500 ml-1">*</span>{t('الاسم الكامل')}
+                    <span className="text-red-500 ms-1">*</span>{t('الاسم الكامل')}
                   </label>
                   <input
                     type="text"
                     id="name"
                     value={data.name}
                     onChange={(e) => setData('name', e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-right text-[14px]"
+                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-start text-[14px]"
                     placeholder={t("اسمك الكامل")}
                     required
                     dir="rtl"
                     disabled={processing}
                   />
                   {errors.name && (
-                    <p className="text-red-600 text-xs mt-1 text-right">{errors.name}</p>
+                    <p className="text-red-600 text-xs mt-1 text-start">{errors.name}</p>
                   )}
                 </div>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                    <span className="text-red-500 ml-1">*</span>{t('البريد الإلكتروني')}
+                    <span className="text-red-500 ms-1">*</span>{t('البريد الإلكتروني')}
                   </label>
                   <input
                     type="email"
                     id="email"
                     value={data.email}
                     onChange={(e) => setData('email', e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-right text-[14px]"
+                    className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-start text-[14px]"
                     placeholder={t("بريدك@الإلكتروني.com")}
                     required
                     dir="rtl"
                     disabled={processing}
                   />
                   {errors.email && (
-                    <p className="text-red-600 text-xs mt-1 text-right">{errors.email}</p>
+                    <p className="text-red-600 text-xs mt-1 text-start">{errors.email}</p>
                   )}
                 </div>
               </div>
 
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  <span className="text-red-500 ml-1">*</span>{t('الموضوع')}
+                  <span className="text-red-500 ms-1">*</span>{t('الموضوع')}
                 </label>
                 <input
                   type="text"
                   id="subject"
                   value={data.subject}
                   onChange={(e) => setData('subject', e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-right text-[14px]"
+                  className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed text-start text-[14px]"
                   placeholder={t("ما موضوع رسالتك؟")}
                   required
                   dir="rtl"
                   disabled={processing}
                 />
                 {errors.subject && (
-                  <p className="text-red-600 text-xs mt-1 text-right">{errors.subject}</p>
+                  <p className="text-red-600 text-xs mt-1 text-start">{errors.subject}</p>
                 )}
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  <span className="text-red-500 ml-1">*</span>{t('الرسالة')}
+                  <span className="text-red-500 ms-1">*</span>{t('الرسالة')}
                 </label>
                 <textarea
                   id="message"
                   rows={5}
                   value={data.message}
                   onChange={(e) => setData('message', e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed text-right text-[14px]"
+                  className="w-full px-4 py-3 bg-slate-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all resize-none disabled:bg-gray-100 disabled:cursor-not-allowed text-start text-[14px]"
                   placeholder={t("اكتب تفاصيل رسالتك هنا...")}
                   required
                   dir="rtl"
                   disabled={processing}
                 />
                 {errors.message && (
-                  <p className="text-red-600 text-xs mt-1 text-right">{errors.message}</p>
+                  <p className="text-red-600 text-xs mt-1 text-start">{errors.message}</p>
                 )}
               </div>
 

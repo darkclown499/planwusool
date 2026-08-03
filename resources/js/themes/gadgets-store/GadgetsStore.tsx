@@ -4,6 +4,7 @@ import { toast } from '@/components/custom-toast';
 import { ThemeProvider } from '../../contexts/ThemeProvider';
 import { useStore } from '../../contexts/StoreContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import { useProduct } from '../../contexts/ProductContext';
 import { useOrder } from '../../contexts/OrderContext';
@@ -28,6 +29,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { ResetPasswordModal } from './components/ResetPasswordModal';
 import { OrderSuccessModal } from './components/OrderSuccessModal';
+import { NotificationPreferencesModal } from '@/components/storefront/NotificationPreferencesModal';
 
 interface GadgetsStoreProps {
   config: any;
@@ -46,6 +48,7 @@ interface GadgetsStoreProps {
 
 const GadgetsStoreContent: React.FC = () => {
   const { config, store } = useStore();
+  const [showNotificationPreferences, setShowNotificationPreferences] = React.useState(false);
   const { 
     isLoggedIn, 
     userProfile, 
@@ -55,8 +58,11 @@ const GadgetsStoreContent: React.FC = () => {
     setShowLoginModal, 
     setShowProfileModal, 
     setShowOrdersModal,
+    setShowWishlistModal,
     logout 
   } = useAuth();
+
+  const { wishlistCount } = useWishlist();
   
   const { 
     cartItems, 
@@ -171,7 +177,7 @@ const GadgetsStoreContent: React.FC = () => {
         customJavascript={store?.custom_javascript} 
       />
       
-      <Header 
+<Header 
         storeName={config.storeName} 
         logo={config.logo} 
         onSearch={handleSearch}
@@ -183,6 +189,10 @@ const GadgetsStoreContent: React.FC = () => {
         onProfileClick={() => setShowProfileModal(true)}
         onOrdersClick={() => setShowOrdersModal(true)}
         onLogoutClick={() => logout(store?.slug)}
+        storeId={store?.id}
+        onNotificationPreferencesClick={() => setShowNotificationPreferences(true)}
+        onWishlistClick={() => setShowWishlistModal(true)}
+        wishlistCount={wishlistCount}
       />
       
       <HeroSection 
@@ -380,7 +390,7 @@ const GadgetsStoreContent: React.FC = () => {
         />
       )}
       
-      {/* WhatsApp Widget */}
+{/* WhatsApp Widget */}
       <WhatsAppWidget
         phone={config.whatsapp_widget_phone || ''}
         message={config.whatsapp_widget_message || 'مرحباً! أحتاج مساعدة في...'}
@@ -389,6 +399,15 @@ const GadgetsStoreContent: React.FC = () => {
         showOnDesktop={config.whatsapp_widget_show_on_desktop !== false}
         enabled={config.whatsapp_widget_enabled || false}
       />
+
+      {/* Notification Preferences Modal */}
+      {showNotificationPreferences && (
+        <NotificationPreferencesModal
+          storeId={store?.id}
+          isLoggedIn={isLoggedIn}
+          onClose={() => setShowNotificationPreferences(false)}
+        />
+      )}
     </div>
   );
 };

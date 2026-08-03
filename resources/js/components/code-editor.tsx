@@ -24,7 +24,7 @@ export function CodeEditor({
   return (
     <div
       dir="ltr"
-      className="overflow-hidden rounded-lg border border-input bg-background text-left"
+      className="overflow-hidden rounded-lg border border-input bg-background text-start"
     >
       <CodeMirror
         value={value}

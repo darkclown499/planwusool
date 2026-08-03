@@ -77,7 +77,7 @@ export default function NewsletterShow() {
           variant="outline"
           onClick={() => router.get(route('landing-page.newsletters.index'))}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="h-4 w-4 me-2" />
           {t('Back to Newsletters')}
         </Button>
       }
@@ -153,7 +153,7 @@ export default function NewsletterShow() {
                     className="w-full justify-start text-orange-600 hover:text-orange-700"
                     onClick={() => updateStatus('unsubscribed')}
                   >
-                    <UserX className="h-4 w-4 mr-2" />
+                    <UserX className="h-4 w-4 me-2" />
                     {t('Unsubscribe')}
                   </Button>
                 ) : (
@@ -162,7 +162,7 @@ export default function NewsletterShow() {
                     className="w-full justify-start text-green-600 hover:text-green-700"
                     onClick={() => updateStatus('active')}
                   >
-                    <UserCheck className="h-4 w-4 mr-2" />
+                    <UserCheck className="h-4 w-4 me-2" />
                     {t('Reactivate')}
                   </Button>
                 )}
@@ -172,7 +172,7 @@ export default function NewsletterShow() {
                   className="w-full justify-start"
                   onClick={() => window.open(`mailto:${newsletter.email}`)}
                 >
-                  <Mail className="h-4 w-4 mr-2" />
+                  <Mail className="h-4 w-4 me-2" />
                   {t('Send Email')}
                 </Button>
               </CardContent>

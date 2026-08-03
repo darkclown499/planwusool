@@ -367,7 +367,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  <div>
  <Label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">{t("Full name")}</Label>
  <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+ <div className="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none">
  <User className="h-4 w-4 text-gray-400" />
  </div>
  <Input
@@ -380,7 +380,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  value={data.name}
  onChange={(e) => setData('name', e.target.value)}
  placeholder={t("John Doe")}
- className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
+ className="w-full ps-10 pe-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
  style={{ '--tw-ring-color': `${primaryColor}33` } as React.CSSProperties}
  aria-invalid={!!errors.name}
  />
@@ -392,7 +392,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  <div>
  <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">{t("Email address")}</Label>
  <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+ <div className="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none">
  <Mail className="h-4 w-4 text-gray-400" />
  </div>
  <Input
@@ -404,7 +404,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  value={data.email}
  onChange={(e) => setData('email', e.target.value)}
  placeholder="email@example.com"
- className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
+ className="w-full ps-10 pe-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
  style={{ '--tw-ring-color': `${primaryColor}33` } as React.CSSProperties}
  aria-invalid={!!errors.email}
  />
@@ -416,7 +416,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  <div>
  <Label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">{t("Password")}</Label>
  <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+ <div className="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none">
  <Lock className="h-4 w-4 text-gray-400" />
  </div>
  <Input
@@ -428,14 +428,14 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  value={data.password}
  onChange={(e) => setData('password', e.target.value)}
  placeholder="••••••••"
- className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
+ className="w-full ps-10 pe-10 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
  style={{ '--tw-ring-color': `${primaryColor}33` } as React.CSSProperties}
  aria-invalid={!!errors.password}
  />
  <button
  type="button"
  onClick={() => setShowPassword(!showPassword)}
- className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+ className="absolute inset-y-0 end-0 pe-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
  >
  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
  </button>
@@ -447,7 +447,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  <div>
  <Label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-700 mb-1.5">{t("Confirm password")}</Label>
  <div className="relative">
- <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+ <div className="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none">
  <Lock className="h-4 w-4 text-gray-400" />
  </div>
  <Input
@@ -459,14 +459,14 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  value={data.password_confirmation}
  onChange={(e) => setData('password_confirmation', e.target.value)}
  placeholder="••••••••"
- className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
+ className="w-full ps-10 pe-10 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
  style={{ '--tw-ring-color': `${primaryColor}33` } as React.CSSProperties}
  aria-invalid={!!errors.password_confirmation}
  />
  <button
  type="button"
  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
- className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+ className="absolute inset-y-0 end-0 pe-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
  >
  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
  </button>
@@ -486,7 +486,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  style={{ color: primaryColor } as React.CSSProperties}
  aria-invalid={!!errors.terms}
  />
- <Label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+ <Label htmlFor="terms" className="ms-2 text-sm text-gray-600">
  {t("I agree to the")}{' '}
  <a
  href={route('page.terms')}

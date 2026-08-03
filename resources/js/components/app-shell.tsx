@@ -1,9 +1,7 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { useLayout } from '@/contexts/LayoutContext';
 import { BrandProvider } from '@/contexts/BrandContext';
 import { FloatingChatGpt } from '@/components/FloatingChatGpt';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
-import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 
@@ -39,12 +37,10 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
         );
     }
 
-    const { position } = useLayout();
-
     return (
         <BrandProvider globalSettings={globalSettings} user={user}>
             <SidebarProvider defaultOpen={isOpen} open={isOpen} onOpenChange={handleSidebarChange}>
-                <div className={cn('flex w-full', position === 'right' ? 'flex-row-reverse' : 'flex-row')}>
+                <div className="flex w-full">
                     {children}
                     <FloatingChatGpt />
                     {shouldShowCookie && <CookieConsentBanner />}

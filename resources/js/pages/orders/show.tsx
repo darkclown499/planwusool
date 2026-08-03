@@ -237,7 +237,7 @@ export default function ShowOrder({ order }: OrderShowProps) {
                     <p className="text-sm text-muted-foreground">{t('SKU: {{sku}}', { sku: item.sku })}</p>
                     <p className="text-sm text-muted-foreground">{t('Quantity: {{quantity}}', { quantity: item.quantity })}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-medium">{formatCurrency(item.price)}</p>
                     <p className="text-sm text-muted-foreground">
                       {t('{{total}} total', { total: formatCurrency(item.price * item.quantity) })}

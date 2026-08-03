@@ -27,7 +27,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             <header className="border-sidebar-border/50 flex h-14 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-3">
             <div className="flex w-full items-center justify-between">
                 <div className="flex items-center gap-2">
-                    {position === 'left' && <SidebarTrigger className="-ml-1" />}
+                    {position === 'left' && <SidebarTrigger className="-ms-1" />}
                     <div className="text-sm font-medium">
                         <Breadcrumbs items={breadcrumbs.map(b => ({ label: b.title, href: b.href }))} />
                     </div>
@@ -36,7 +36,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     {/* Search Bar */}
                     <form onSubmit={handleSearch} className="hidden md:flex items-center gap-2">
                         <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                             <input
                                 type="text"
                                 value={searchQuery}
@@ -74,7 +74,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     )}
                     <LanguageSwitcher />
                     <ProfileMenu />
-                    {position === 'right' && <SidebarTrigger className="-mr-1" />}
+                    {position === 'right' && <SidebarTrigger className="-me-1" />}
                 </div>
             </div>
         </header>

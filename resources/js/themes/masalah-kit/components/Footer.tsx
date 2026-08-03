@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMasalahTheme } from '../MasalahThemeProvider';
+import { useStorefrontLocale } from '../../../contexts/StorefrontLocaleContext';
 
 interface FooterProps {
   storeName: string;
@@ -36,6 +37,7 @@ export const Footer: React.FC<FooterProps> = ({
   socialMedia
 }) => {
   const theme = useMasalahTheme();
+  const { t } = useStorefrontLocale();
 
   return (
     <footer className="mt-10 text-white">
@@ -55,11 +57,11 @@ export const Footer: React.FC<FooterProps> = ({
               )}
               <span className="font-bold text-lg">{storeName}</span>
             </div>
-            <p className="text-sm opacity-80 leading-relaxed">{theme.copy.footerAbout}</p>
+            <p className="text-sm opacity-80 leading-relaxed">{t(theme.copy.footerAbout)}</p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-3">تواصل معنا</h3>
+            <h3 className="font-bold mb-3">{t('تواصل معنا')}</h3>
             <ul className="space-y-2 text-sm opacity-90">
               {phone && (
                 <li className="flex items-center gap-2" dir="ltr">
@@ -86,7 +88,7 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
 
           <div>
-            <h3 className="font-bold mb-3">تابعنا</h3>
+            <h3 className="font-bold mb-3">{t('تابعنا')}</h3>
             <div className="flex items-center gap-2">
               {socialIcons.map((social) => {
                 const url = socialMedia?.[social.key as keyof typeof socialMedia];
@@ -97,7 +99,7 @@ export const Footer: React.FC<FooterProps> = ({
                     href={url}
                     target="_blank"
                     rel="noreferrer"
-                    title={social.label}
+                    title={t(social.label)}
                     className="p-2.5 rounded-lg hover:bg-white/10 transition-colors"
                     style={{ background: 'rgba(255,255,255,0.1)' }}
                   >
@@ -119,7 +121,7 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
       </div>
       <div className="py-4 text-center text-xs opacity-80" style={{ background: theme.colors.primary }}>
-        {copyrightText || `© ${new Date().getFullYear()} ${storeName} - جميع الحقوق محفوظة`}
+        {copyrightText || `© ${new Date().getFullYear()} ${storeName} - ${t('جميع الحقوق محفوظة')}`}
       </div>
     </footer>
   );

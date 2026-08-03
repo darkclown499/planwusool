@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { useMasalahTheme } from '../MasalahThemeProvider';
+import { useStorefrontLocale } from '../../../contexts/StorefrontLocaleContext';
 
 interface Product {
   id: string;
@@ -39,6 +40,7 @@ function getWeightLabel(product: Product): string {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onProductClick }) => {
   const theme = useMasalahTheme();
+  const { t } = useStorefrontLocale();
   const [favorite, setFavorite] = useState(false);
 
   const storeSettings = (window as any).page?.props?.storeSettings || {};
@@ -101,7 +103,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
             className="mt-2 text-xs font-bold py-1.5 rounded-lg text-white transition-colors cursor-pointer"
             style={{ background: theme.colors.primary }}
           >
-            {hasVariants ? 'اختر الخيارات' : 'أضف إلى السلة'}
+            {hasVariants ? t('اختر الخيارات') : t('أضف إلى السلة')}
           </button>
         </div>
       </div>
@@ -130,14 +132,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
               className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow"
               style={{ background: theme.colors.primary }}
             >
-              بالخيارات
+               {t('بالخيارات')}
             </span>
           )}
         </div>
         <button
           onClick={() => setFavorite(!favorite)}
           className="absolute bottom-2 left-2 p-1.5 bg-white rounded-full shadow cursor-pointer"
-          aria-label="المفضلة"
+          aria-label={t('المفضلة')}
         >
           <svg
             className="w-4 h-4"
@@ -184,7 +186,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
           className="w-full text-xs font-bold py-2 rounded-lg text-white transition-colors cursor-pointer"
           style={{ background: theme.colors.primary }}
         >
-          {hasVariants ? 'اختر الخيارات' : 'أضف إلى السلة'}
+           {hasVariants ? t('اختر الخيارات') : t('أضف إلى السلة')}
         </button>
       </div>
     </div>

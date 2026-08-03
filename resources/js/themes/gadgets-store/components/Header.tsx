@@ -1,5 +1,6 @@
 import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
+import { NotificationBell } from '../../../components/storefront/NotificationBell';
 
 interface HeaderProps {
   storeName: string;
@@ -13,9 +14,13 @@ interface HeaderProps {
   onProfileClick: () => void;
   onOrdersClick: () => void;
   onLogoutClick: () => void;
+  storeId?: string | number;
+  onNotificationPreferencesClick?: () => void;
+  onWishlistClick?: () => void;
+  wishlistCount?: number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartCount, onCartClick, onLoginClick, isLoggedIn, userName, onProfileClick, onOrdersClick, onLogoutClick }) => {
+export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartCount, onCartClick, onLoginClick, isLoggedIn, userName, onProfileClick, onOrdersClick, onLogoutClick, storeId, onNotificationPreferencesClick, onWishlistClick, wishlistCount = 0 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [showMobileSearch, setShowMobileSearch] = React.useState(false);
   const [showDropdown, setShowDropdown] = React.useState(false);
@@ -61,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartC
             />
           </div>
           
-          <div className="flex items-center gap-2">
+<div className="flex items-center gap-2">
           {/* Mobile Search Icon */}
           <button 
             onClick={toggleMobileSearch}
@@ -71,6 +76,30 @@ export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartC
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
+
+          {/* Notification Bell */}
+          {storeId && (
+            <NotificationBell
+              storeId={storeId}
+              isLoggedIn={isLoggedIn}
+              onRequireLogin={onLoginClick}
+            />
+          )}
+
+          {/* Notification Preferences */}
+          {storeId && onNotificationPreferencesClick && (
+            <button
+              onClick={onNotificationPreferencesClick}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors cursor-pointer"
+              aria-label="إعدادات الإشعارات"
+              title="إعدادات الإشعارات"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          )}
           
           {isLoggedIn ? (
             <div className="relative">
@@ -141,6 +170,24 @@ export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartC
             </button>
           )}
           
+          {onWishlistClick && (
+            <button
+              onClick={onWishlistClick}
+              className="relative flex-shrink-0 p-2 text-gray-600 hover:text-red-500 cursor-pointer"
+              aria-label="المفضلة"
+              title="المفضلة"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -left-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
+          )}
+
           <button 
             onClick={onCartClick}
             className="relative flex-shrink-0 p-2 text-gray-600 hover:text-gray-900 cursor-pointer"

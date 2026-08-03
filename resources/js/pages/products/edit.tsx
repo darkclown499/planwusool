@@ -173,21 +173,21 @@ export default function EditProduct() {
           <TabsContent value="general" className="space-y-4">
             <Card>
               <CardHeader><CardTitle>{t('Product Information')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="name" required>{t('Product Name')}</Label>
                     <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder={t('Enter product name')} aria-invalid={!!errors.name} />
                     <InputError message={errors.name} />
                   </div>
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="sku" required>{t('SKU')}</Label>
                     <Input id="sku" name="sku" value={formData.sku} onChange={handleChange} placeholder={t('PROD-001')} aria-invalid={!!errors.sku} />
                     <InputError message={errors.sku} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="category_id" required>{t('Category')}</Label>
                     <Select value={formData.category_id} onValueChange={(v) => handleSelectChange('category_id', v)}>
                       <SelectTrigger aria-invalid={!!errors.category_id}>
@@ -218,7 +218,7 @@ export default function EditProduct() {
                   <MediaPicker label={t('Product Images')} value={formData.images} onChange={(v) => handleSelectChange('images', v)} multiple={true} placeholder={t('Select product images...')} />
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-right">
+                  <div className="text-start">
                     <Label>{t('Product Display')}</Label>
                     <p className="text-sm text-muted-foreground">{t('Show product on store')}</p>
                   </div>
@@ -232,18 +232,18 @@ export default function EditProduct() {
           <TabsContent value="pricing" className="space-y-4">
             <Card>
               <CardHeader><CardTitle>{t('Pricing Information')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="price" required>{t('Price')}</Label>
                     <Input id="price" name="price" type="number" step="0.01" value={formData.price} onChange={handleChange} placeholder="0.00" aria-invalid={!!errors.price} />
                     <InputError message={errors.price} />
                   </div>
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="cost_price">{t('Cost Price')}</Label>
                     <Input id="cost_price" name="cost_price" type="number" step="0.01" value={formData.cost_price} onChange={handleChange} placeholder="0.00" />
                   </div>
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="sale_price">{t('Sale Price')}</Label>
                     <Input id="sale_price" name="sale_price" type="number" step="0.01" value={formData.sale_price} onChange={handleChange} placeholder="0.00" />
                   </div>
@@ -254,7 +254,7 @@ export default function EditProduct() {
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-3 pt-4">
-                  <div className="text-right">
+                  <div className="text-start">
                     <Label>{t('Include tax in price?')}</Label>
                     <p className="text-sm text-muted-foreground">{t('Should price include tax?')}</p>
                   </div>
@@ -268,20 +268,20 @@ export default function EditProduct() {
           <TabsContent value="inventory" className="space-y-4">
             <Card>
               <CardHeader><CardTitle>{t('Inventory Management')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="stock" required>{t('Stock Quantity')}</Label>
                     <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleChange} placeholder="0" aria-invalid={!!errors.stock} />
                     <InputError message={errors.stock} />
                   </div>
-                  <div className="grid gap-1 mb-4 text-right">
+                  <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="low_stock_warning">{t('Low Stock Warning')}</Label>
                     <Input id="low_stock_warning" name="low_stock_warning" type="number" value={formData.low_stock_warning} onChange={handleChange} placeholder="5" />
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-right">
+                  <div className="text-start">
                     <Label>{t('Downloadable Product')}</Label>
                     <p className="text-sm text-muted-foreground">{t('Is this a digital product?')}</p>
                   </div>
@@ -298,7 +298,7 @@ export default function EditProduct() {
           <TabsContent value="content" className="space-y-4">
             <Card>
               <CardHeader><CardTitle>{t('Product Content')}</CardTitle></CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 <div>
                   <Label>{t('Product Description')}</Label>
                   <RichTextEditor key={`desc-${product.id}`} value={formData.description} onChange={(v) => handleSelectChange('description', v)} placeholder={t('Enter product description...')} />
@@ -337,7 +337,7 @@ export default function EditProduct() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 {variants.map((variant: any, index: number) => (
                   <div key={index} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-center justify-between">
@@ -362,19 +362,19 @@ export default function EditProduct() {
                       ))}
                     </div>
                     <div className="grid grid-cols-4 gap-3 border-t pt-3">
-                      <div className="grid gap-1 text-right">
+                      <div className="grid gap-1 text-start">
                         <Label className="text-xs">{t('Price')}</Label>
                         <Input type="number" step="0.01" placeholder="0.00" value={variant.price || ''} onChange={(e) => handleVariantChange(index, 'price', e.target.value)} />
                       </div>
-                      <div className="grid gap-1 text-right">
+                      <div className="grid gap-1 text-start">
                         <Label className="text-xs">{t('Cost Price')}</Label>
                         <Input type="number" step="0.01" placeholder="0.00" value={variant.cost_price || ''} onChange={(e) => handleVariantChange(index, 'cost_price', e.target.value)} />
                       </div>
-                      <div className="grid gap-1 text-right">
+                      <div className="grid gap-1 text-start">
                         <Label className="text-xs">{t('Stock')}</Label>
                         <Input type="number" placeholder="0" value={variant.stock || 0} onChange={(e) => handleVariantChange(index, 'stock', parseInt(e.target.value) || 0)} />
                       </div>
-                      <div className="grid gap-1 text-right">
+                      <div className="grid gap-1 text-start">
                         <Label className="text-xs">{t('Low Stock')}</Label>
                         <Input type="number" placeholder="0" value={variant.low_stock_warning || 0} onChange={(e) => handleVariantChange(index, 'low_stock_warning', parseInt(e.target.value) || 0)} />
                       </div>
@@ -396,7 +396,7 @@ export default function EditProduct() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 text-right">
+              <CardContent className="space-y-4 text-start">
                 {customFields.map((field: any, index: number) => (
                   <div key={index} className="flex items-center gap-2">
                     <Input placeholder={t('Field name')} value={field.name || ''} onChange={(e) => { const f = [...customFields]; f[index].name = e.target.value; setCustomFields(f); }} />

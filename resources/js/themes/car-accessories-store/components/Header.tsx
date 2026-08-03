@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingCart, User, Menu, X, LogOut, Package } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Heart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 
 interface HeaderProps {
@@ -14,6 +14,8 @@ interface HeaderProps {
   onProfileClick: () => void;
   onOrdersClick: () => void;
   onLogoutClick: () => void;
+  onWishlistClick?: () => void;
+  wishlistCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -27,7 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   userName,
   onProfileClick,
   onOrdersClick,
-  onLogoutClick
+  onLogoutClick,
+  onWishlistClick,
+  wishlistCount = 0
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -93,6 +97,22 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Search className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
+
+            {/* Wishlist */}
+            {onWishlistClick && (
+              <button
+                onClick={onWishlistClick}
+                className="relative p-1 sm:p-2 text-slate-300 hover:text-red-400 transition-colors"
+                aria-label="المفضلة"
+              >
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-red-600 text-white text-xs h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center font-bold shadow-lg">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Cart */}
             <button

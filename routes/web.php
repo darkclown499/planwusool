@@ -63,6 +63,10 @@ use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\AbandonedCartController;
 use App\Http\Controllers\DigitalDownloadController;
+use App\Http\Controllers\CodPaymentController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\MerchantNotificationController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\Store\CartTrackingController;
 
 
@@ -101,6 +105,7 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
 
     // Order routes
     Route::post('/order/place', [\App\Http\Controllers\Store\OrderController::class, 'placeOrder'])->name('store.order.place');
+    Route::get('/order/{orderNumber}/pdf', [\App\Http\Controllers\ThemeController::class, 'downloadOrderPdf'])->name('store.order.pdf');
     Route::get('/stripe/success/{orderNumber}', [\App\Http\Controllers\Store\StripeController::class, 'success'])->name('store.stripe.success');
     Route::get('/paypal/success/{orderNumber}', [\App\Http\Controllers\Store\PayPalController::class, 'success'])->name('store.paypal.success');
     Route::get('/xendit/success/{orderNumber}', [\App\Http\Controllers\Store\XenditController::class, 'success'])->name('store.xendit.success');
@@ -202,6 +207,35 @@ Route::prefix('api/digital-downloads')->name('api.digital-downloads.')->group(fu
     Route::get('/', [DigitalDownloadController::class, 'customerDownloads'])->name('index');
     Route::get('order/{orderNumber}', [DigitalDownloadController::class, 'orderDownloads'])->name('order');
     Route::get('download/{token}', [DigitalDownloadController::class, 'download'])->name('download');
+});
+
+// Customer notifications API (storefront)
+Route::prefix('api/notifications')->name('api.notifications.')->group(function () {
+    Route::get('/', [NotificationController::class, 'indexApi'])->name('index');
+    Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+    Route::post('{id}/read', [NotificationController::class, 'markRead'])->name('mark-read');
+    Route::post('read-all', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+    Route::post('{id}/click', [NotificationController::class, 'markClicked'])->name('mark-clicked');
+    Route::delete('{id}', [NotificationController::class, 'destroyApi'])->name('destroy');
+    Route::get('preferences', [NotificationController::class, 'getPreferences'])->name('preferences');
+    Route::put('preferences', [NotificationController::class, 'updatePreferences'])->name('preferences.update');
+    Route::post('unsubscribe-all', [NotificationController::class, 'unsubscribeAll'])->name('unsubscribe-all');
+});
+
+// Web Push subscription API (storefront)
+Route::prefix('api/push-subscriptions')->name('api.push-subscriptions.')->group(function () {
+    Route::post('subscribe', [PushSubscriptionController::class, 'subscribe'])->name('subscribe');
+    Route::post('unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
+    Route::get('status', [PushSubscriptionController::class, 'status'])->name('status');
+    Route::get('vapid-public-key', [PushSubscriptionController::class, 'vapidPublicKey'])->name('vapid-public-key');
+});
+
+// Merchant notifications API (admin panel)
+Route::middleware('auth')->prefix('api/merchant-notifications')->name('api.merchant-notifications.')->group(function () {
+    Route::get('/', [MerchantNotificationController::class, 'apiIndex'])->name('index');
+    Route::get('unread-count', [MerchantNotificationController::class, 'unreadCount'])->name('unread-count');
+    Route::post('{id}/read', [MerchantNotificationController::class, 'markRead'])->name('mark-read');
+    Route::post('read-all', [MerchantNotificationController::class, 'markAllRead'])->name('mark-all-read');
 });
 
 // Coupon API routes
@@ -500,6 +534,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('dashboard/redirect', [DashboardController::class, 'redirectToFirstAvailablePage'])->name('dashboard.redirect');
         Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
+
+        // Merchant notifications page (admin panel)
+        Route::get('merchant-notifications', [MerchantNotificationController::class, 'index'])->name('merchant-notifications.index');
         
         // Store Management routes with permissions
         Route::get('stores', [\App\Http\Controllers\StoreController::class, 'index'])->middleware('permission:manage-stores')->name('stores.index');
@@ -656,6 +693,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('advanced-coupons/{advancedCoupon}', [\App\Http\Controllers\AdvancedCouponController::class, 'update'])->middleware('permission:edit-advanced-coupons')->name('advanced-coupons.update');
             Route::post('advanced-coupons/{advancedCoupon}/toggle-status', [\App\Http\Controllers\AdvancedCouponController::class, 'toggleStatus'])->middleware('permission:toggle-status-advanced-coupons')->name('advanced-coupons.toggle-status');
             Route::delete('advanced-coupons/{advancedCoupon}', [\App\Http\Controllers\AdvancedCouponController::class, 'destroy'])->middleware('permission:delete-advanced-coupons')->name('advanced-coupons.destroy');
+        });
+
+        // Advanced COD Payment routes (cash on delivery tracking & collection)
+        Route::middleware('permission:manage-cod-payments')->group(function () {
+            Route::get('cod-payments', [CodPaymentController::class, 'index'])->name('cod-payments.index');
+            Route::get('cod-payments/export', [CodPaymentController::class, 'export'])->middleware('permission:export-cod-payments')->name('cod-payments.export');
+            Route::get('cod-payments/{codPayment}', [CodPaymentController::class, 'show'])->name('cod-payments.show');
+            Route::post('cod-payments/{codPayment}/collect', [CodPaymentController::class, 'recordCollection'])->middleware('permission:collect-cod-payments')->name('cod-payments.collect');
+            Route::post('cod-payments/{codPayment}/delivery-info', [CodPaymentController::class, 'updateDeliveryInfo'])->middleware('permission:manage-cod-payments')->name('cod-payments.delivery-info');
+            Route::post('cod-payments/{codPayment}/status', [CodPaymentController::class, 'changeStatus'])->middleware('permission:manage-cod-payments')->name('cod-payments.status');
+        });
+
+        // Smart Notifications routes (admin panel)
+        Route::middleware('permission:manage-notifications')->group(function () {
+            Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+            Route::get('notifications/create', [NotificationController::class, 'create'])->middleware('permission:send-notifications')->name('notifications.create');
+            Route::get('notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
+            Route::post('notifications/send', [NotificationController::class, 'send'])->middleware('permission:send-notifications')->name('notifications.send');
+            Route::delete('notifications/{notification}', [NotificationController::class, 'destroy'])->middleware('permission:delete-notifications')->name('notifications.destroy');
         });
 
         // Express Checkout routes with permissions

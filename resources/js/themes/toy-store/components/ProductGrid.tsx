@@ -2,6 +2,8 @@ import React from 'react';
 import { ShoppingCart, Package } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -67,6 +69,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               
               {/* Badges */}
               <div className="absolute top-1 sm:top-2 right-1 sm:right-2 flex flex-col gap-1 items-start">
+                <WishlistButton productId={product.id} iconOnly />
                 {hasVariants && (
                   <span className="bg-blue-500 text-white px-1 py-0.5 sm:px-2 sm:py-1 rounded text-xs font-bold shadow-sm">
                     بالخيارات
@@ -137,6 +140,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                     : 'أضف إلى السلة'
                 }
               </button>
+              <WhatsAppOrderButton
+                product={{ name: product.name, price: product.price }}
+                className="w-full mt-2 py-2 px-4 rounded-lg font-medium text-xs sm:text-sm bg-[#25D366] hover:bg-[#1eb85a] text-white flex items-center justify-center gap-2"
+              />
               </div>
             </div>
           </div>

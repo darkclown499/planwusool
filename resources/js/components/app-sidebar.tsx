@@ -7,7 +7,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles } from 'lucide-react';
+import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -35,6 +35,12 @@ export function AppSidebar() {
             title: t('Dashboard'),
             href: route('dashboard'),
             icon: LayoutGrid,
+            groupLabel: t('Main'),
+        },
+        {
+            title: t('Notifications'),
+            href: route('merchant-notifications.index'),
+            icon: Bell,
             groupLabel: t('Main'),
         },
         {
@@ -178,6 +184,14 @@ export function AppSidebar() {
             groupLabel: t('Main'),
         });
 
+        // ── الإشعارات ──
+        items.push({
+            title: t('Notifications'),
+            href: route('merchant-notifications.index'),
+            icon: Bell,
+            groupLabel: t('Main'),
+        });
+
         // ── المنتجات والمتجر ──
         const productChildren: NavItem[] = [];
         if (hasPermission('manage-products')) {
@@ -265,6 +279,13 @@ export function AppSidebar() {
                 href: route('abandoned-carts.index')
             });
         }
+        if (hasPermission('manage-cod-payments')) {
+            marketingChildren.push({ 
+                title: t('COD Payments'),
+                icon: DollarSign,
+                href: route('cod-payments.index')
+            });
+        }
         if (hasPermission('manage-pos')) {
             marketingChildren.push({ title: t('POS System'), href: route('pos.index') });
         }
@@ -322,6 +343,9 @@ export function AppSidebar() {
         }
         if (hasPermission('manage-media')) {
             settingsChildren.push({ title: t('Media Library'), href: route('media-library') });
+        }
+        if (hasPermission('manage-notifications')) {
+            settingsChildren.push({ title: t('Notifications'), href: route('notifications.index') });
         }
         if (hasPermission('manage-plans')) {
             settingsChildren.push({ title: t('My Plan'), href: route('plans.index') });

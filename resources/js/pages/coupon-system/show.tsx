@@ -120,14 +120,14 @@ export default function ShowCoupon() {
             <CardContent className="space-y-4">
               <div className="text-center p-4 border rounded-lg">
                 <div className="flex items-center justify-center mb-2">
-                  <Users className="h-5 w-5 text-primary mr-2" />
+                  <Users className="h-5 w-5 text-primary me-2" />
                   <span className="text-2xl font-bold">{stats?.total_usage || coupon.used_count || 0}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{t('Times Used')}</p>
               </div>
               <div className="text-center p-4 border rounded-lg">
                 <div className="flex items-center justify-center mb-2">
-                  <ShoppingCart className="h-5 w-5 text-primary mr-2" />
+                  <ShoppingCart className="h-5 w-5 text-primary me-2" />
                   <span className="text-2xl font-bold">{formatCurrency(stats?.total_savings || 0)}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{t('Total Savings')}</p>
@@ -203,7 +203,7 @@ export default function ShowCoupon() {
                       <p className="text-sm text-muted-foreground">{order.customer_name}</p>
                       <p className="text-sm text-muted-foreground">{order.date}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="font-medium">{formatCurrency(order.total)}</p>
                     </div>
                   </div>

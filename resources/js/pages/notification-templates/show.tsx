@@ -109,9 +109,9 @@ export default function NotificationTemplateShow({ notification, languages }: Pr
                 <Button 
                   onClick={handleSave}
                   size="sm"
-                  className="ml-4"
+                  className="ms-4"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 me-2" />
                   {t("Save")}
                 </Button>
               </div>
@@ -156,7 +156,7 @@ export default function NotificationTemplateShow({ notification, languages }: Pr
                   size="sm"
                   className="shrink-0"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 me-2" />
                   {t("Save Content")}
                 </Button>
               </div>
@@ -212,7 +212,7 @@ export default function NotificationTemplateShow({ notification, languages }: Pr
                         </div>
                         <InputError message={errors[`templates.${languages.findIndex(l => l.code === language.code)}.content`] || errors.content} />
                         <div className="flex justify-between items-center">
-                          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 flex-1 mr-4">
+                          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 flex-1 me-4">
                             <p className="text-xs text-amber-800 flex items-center gap-2">
                               <span>💡</span>
                               {t("Pro tip: Keep SMS messages under 160 characters for best delivery")}

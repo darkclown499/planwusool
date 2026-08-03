@@ -99,7 +99,7 @@ export default function ShowCustomer() {
             <CardContent className="space-y-4">
               <div className="text-center p-4 border rounded-lg">
                 <div className="flex items-center justify-center mb-2">
-                  <ShoppingBag className="h-5 w-5 text-primary mr-2" />
+                  <ShoppingBag className="h-5 w-5 text-primary me-2" />
                   <span className="text-2xl font-bold">{customer.total_orders}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{t('Total Orders')}</p>
@@ -269,7 +269,7 @@ export default function ShowCustomer() {
                       <p className="font-medium">{order.order_number}</p>
                       <p className="text-sm text-muted-foreground">{order.date}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="font-medium">{formatCurrency(order.total)}</p>
                       <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'}>
                         {order.status}

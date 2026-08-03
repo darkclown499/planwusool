@@ -3,6 +3,9 @@ import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface Product {
   id: string;
@@ -59,11 +62,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-rose-100">
             <h2 className="text-lg md:text-xl font-bold text-gray-900">تفاصيل المنتج</h2>
-            <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-rose-50 rounded-full transition-colors">
+            <div className="flex items-center gap-1">
+              <WishlistButton productId={product.id} iconOnly />
+              <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-rose-50 rounded-full transition-colors">
               <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row max-h-[calc(85vh-80px)] md:max-h-[calc(70vh-80px)] overflow-y-auto md:overflow-hidden">
@@ -224,6 +230,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </div>
                   </div>
                 )}
+                <div className="mt-6 pt-6 border-t border-rose-100">
+                  <ProductReviews productId={product.id} />
+                </div>
               </div>
               
               {/* Sticky Add to Cart Button */}
@@ -265,6 +274,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       : 'أضف إلى السلة'
                   }
                 </button>
+                <WhatsAppOrderButton
+                  product={{ name: product.name, price: product.price }}
+                  variants={Object.keys(selectedVariants).length > 0 ? selectedVariants : null}
+                  className="w-full py-2 md:py-3 rounded-lg font-medium text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1eb85a] text-white"
+                />
               </div>
             </div>
           </div>

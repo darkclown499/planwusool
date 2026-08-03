@@ -31,7 +31,7 @@ export default function AuthButton({
                 boxShadow: `0 4px 14px ${primaryColor}40`,
             }}
         >
-            {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2 inline" />}
+            {processing && <LoaderCircle className="h-4 w-4 animate-spin me-2 inline" />}
             {children}
         </button>
     );

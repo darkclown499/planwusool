@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { useStore } from '../../contexts/StoreContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import { useProduct } from '../../contexts/ProductContext';
 import { useOrder } from '../../contexts/OrderContext';
@@ -16,6 +17,7 @@ import { ProductGrid } from './components/ProductGrid';
 import { ProductDetail } from './components/ProductDetail';
 import { Footer } from './components/Footer';
 import { useMasalahTheme } from './MasalahThemeProvider';
+import { useStorefrontLocale } from '../../contexts/StorefrontLocaleContext';
 import { CartDrawer } from '../gadgets-store/components/CartDrawer';
 import { Checkout } from '../gadgets-store/components/Checkout';
 import { AuthModal } from '../gadgets-store/components/AuthModal';
@@ -28,6 +30,7 @@ import { OrderSuccessModal } from '../gadgets-store/components/OrderSuccessModal
 
 export const MasalahStore: React.FC = () => {
   const theme = useMasalahTheme();
+  const { t, dir } = useStorefrontLocale();
   const { config, store } = useStore();
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
@@ -40,8 +43,11 @@ export const MasalahStore: React.FC = () => {
     setShowLoginModal,
     setShowProfileModal,
     setShowOrdersModal,
+    setShowWishlistModal,
     logout
   } = useAuth();
+
+  const { wishlistCount } = useWishlist();
 
   const {
     cartItems,
@@ -159,8 +165,8 @@ export const MasalahStore: React.FC = () => {
       return (
         <ProductGrid
           id="masalah-products"
-          title="نتائج البحث"
-          subtitle={`${filteredProducts.length} منتج مطابق`}
+          title={t('نتائج البحث')}
+          subtitle={`${filteredProducts.length} ${t('منتج مطابق')}`}
           products={filteredProducts}
           onAddToCart={addToCart}
           onProductClick={handleProductClick}
@@ -176,7 +182,7 @@ export const MasalahStore: React.FC = () => {
           key={category.id}
           id={`category-${category.id}`}
           title={category.name}
-          subtitle={`${products.length} منتج`}
+          subtitle={`${products.length} ${t('منتج')}`}
           products={products}
           onAddToCart={addToCart}
           onProductClick={handleProductClick}
@@ -192,8 +198,8 @@ export const MasalahStore: React.FC = () => {
           {featuredProducts.length > 0 && (
             <ProductGrid
               id="masalah-products"
-              title="منتجات مميزة"
-              subtitle="اختيارات مختارة بعناية لكم"
+          title={t('منتجات مميزة')}
+          subtitle={t('اختيارات مختارة بعناية لكم')}
               products={featuredProducts}
               onAddToCart={addToCart}
               onProductClick={handleProductClick}
@@ -226,6 +232,8 @@ export const MasalahStore: React.FC = () => {
         onOrdersClick={() => setShowOrdersModal(true)}
         onLogoutClick={() => logout(store?.slug)}
         onMenuClick={() => setShowMobileSidebar(true)}
+        onWishlistClick={() => setShowWishlistModal(true)}
+        wishlistCount={wishlistCount}
       />
 
       <div className="max-w-7xl mx-auto px-4 py-4 flex gap-6 items-start">
@@ -245,11 +253,11 @@ export const MasalahStore: React.FC = () => {
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowMobileSidebar(false)} />
             <div className="absolute top-0 right-0 bottom-0 w-72 bg-gray-50 overflow-y-auto p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="font-bold text-gray-800">القائمة</span>
+                <span className="font-bold text-gray-800">{t('القائمة')}</span>
                 <button
                   onClick={() => setShowMobileSidebar(false)}
                   className="p-1.5 rounded-full bg-white shadow cursor-pointer"
-                  aria-label="إغلاق"
+                  aria-label={t('إغلاق')}
                 >
                   <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -363,7 +371,7 @@ export const MasalahStore: React.FC = () => {
             setShowCheckout(false);
             setShowCart(false);
             handleCloseCart();
-            toast.success('تم إتمام الطلب بنجاح!');
+            toast.success(t('تم إتمام الطلب بنجاح!'));
           }}
           showOrderSuccess={showOrderSuccess}
           setShowOrderSuccess={setShowOrderSuccess}

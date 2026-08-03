@@ -30,8 +30,8 @@ export const LayoutRtlSettings = () => {
                             : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black',
                         )}
                     >
-                        <Icon className="-ml-1 h-4 w-4" />
-                        <span className="ml-1.5 text-sm">{label}</span>
+                        <Icon className="-ms-1 h-4 w-4" />
+                        <span className="ms-1.5 text-sm">{label}</span>
                     </button>
                 ))}
             </div>

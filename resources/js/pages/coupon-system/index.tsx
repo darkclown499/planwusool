@@ -154,7 +154,7 @@ export default function CouponSystem() {
                       className="mt-4"
                       onClick={() => handleActionClick('create', 'create-coupon-system')}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="h-4 w-4 me-2" />
                       {t('Create your first coupon')}
                     </Button>
                   )}
@@ -214,7 +214,7 @@ export default function CouponSystem() {
                         </Button>
                       )}
                       {hasPermission('toggle-status-coupon-system') && (
-                        <div className="flex items-center space-x-2 mr-2">
+                        <div className="flex items-center space-x-2 me-2">
                           <Switch
                             checked={!!coupon.status}
                             onCheckedChange={() => handleActionClick('toggle-status', 'toggle-status-coupon-system', coupon.id)}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMasalahTheme } from '../MasalahThemeProvider';
+import { useStorefrontLocale } from '../../../contexts/StorefrontLocaleContext';
 
 interface SidebarProps {
   categories: { id: string; name: string }[];
@@ -35,6 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose
 }) => {
   const theme = useMasalahTheme();
+  const { t } = useStorefrontLocale();
 
   const handleCategoryClick = (id: string) => {
     onCategoryClick(id);
@@ -49,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="px-4 py-3 text-white font-bold text-sm"
             style={{ background: theme.colors.primary }}
           >
-            الأقسام
+             {t('الأقسام')}
           </div>
           <nav className="py-2">
             {categories.map((category) => {
@@ -76,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div className="mt-4 bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-          <h3 className="text-sm font-bold text-gray-800 mb-3">تواصل معنا</h3>
+           <h3 className="text-sm font-bold text-gray-800 mb-3">{t('تواصل معنا')}</h3>
           {phone && (
             <a
               href={`tel:${phone}`}
@@ -108,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     href={url}
                     target="_blank"
                     rel="noreferrer"
-                    title={social.label}
+                    title={t(social.label)}
                     className="p-2 rounded-lg text-gray-500 hover:text-white transition-colors"
                     style={{ background: theme.colors.primarySoft }}
                   >

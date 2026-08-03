@@ -117,9 +117,9 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                     })
                   }}
                   size="sm"
-                  className="ml-4"
+                  className="ms-4"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 me-2" />
                   {t("Save")}
                 </Button>
               </div>
@@ -175,7 +175,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
                   size="sm"
                   className="shrink-0"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 me-2" />
                   {t("Save Content")}
                 </Button>
               </div>

@@ -1,0 +1,13 @@
+{
+    "amiri": {
+        "normal": "amiri_normal_869fa28666716c7d83a0cc470e5a2109",
+        "500": "amiri_normal_869fa28666716c7d83a0cc470e5a2109",
+        "italic": "amiri_normal_869fa28666716c7d83a0cc470e5a2109",
+        "bold": "amiri_bold_827eb7abbed0b97184e40cd1bb440811",
+        "600": "amiri_bold_827eb7abbed0b97184e40cd1bb440811",
+        "800": "amiri_bold_827eb7abbed0b97184e40cd1bb440811",
+        "900": "amiri_bold_827eb7abbed0b97184e40cd1bb440811",
+        "bold_italic": "amiri_bold_827eb7abbed0b97184e40cd1bb440811",
+        "600_italic": "amiri_bold_827eb7abbed0b97184e40cd1bb440811"
+    }
+}

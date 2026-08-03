@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useMasalahTheme } from '../MasalahThemeProvider';
+import { useStorefrontLocale } from '../../../contexts/StorefrontLocaleContext';
 
 interface HeroSliderProps {
   storeName: string;
@@ -21,6 +22,7 @@ const slideIcons = [
 
 export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessage }) => {
   const theme = useMasalahTheme();
+  const { t } = useStorefrontLocale();
   const [current, setCurrent] = useState(0);
 
   const slides: Slide[] = [
@@ -32,14 +34,14 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
     },
     {
       title: theme.copy.tagline,
-      subtitle: `${theme.copy.features[0]?.title}: ${theme.copy.features[0]?.desc} ${theme.copy.features[1]?.title}: ${theme.copy.features[1]?.desc}`,
-      cta: 'اكتشف المزيد',
+      subtitle: `${t(theme.copy.features[0]?.title)}: ${t(theme.copy.features[0]?.desc)} ${t(theme.copy.features[1]?.title)}: ${t(theme.copy.features[1]?.desc)}`,
+      cta: t('اكتشف المزيد'),
       icon: slideIcons[1]
     },
     {
-      title: 'الدفع عند الاستلام',
-      subtitle: `نوصل طلبك إلى: ${theme.copy.deliveryAreas.join('، ')}`,
-      cta: 'أطلب الآن',
+      title: t('الدفع عند الاستلام'),
+      subtitle: `${t('نوصل طلبك إلى:')} ${theme.copy.deliveryAreas.join(t('،'))}`,
+      cta: t('أطلب الآن'),
       icon: slideIcons[2]
     }
   ];
@@ -62,15 +64,15 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
         }}
       >
         <div className="px-6 py-8 md:px-10 md:py-10 text-center">
-          <p className="text-sm opacity-90 mb-1">{theme.copy.tagline}</p>
-          <h1 className="text-xl md:text-3xl font-bold mb-2">{slides[current].title}</h1>
-          <p className="text-sm opacity-90 max-w-2xl mx-auto mb-4">{slides[current].subtitle}</p>
+          <p className="text-sm opacity-90 mb-1">{t(theme.copy.tagline)}</p>
+          <h1 className="text-xl md:text-3xl font-bold mb-2">{t(slides[current].title)}</h1>
+          <p className="text-sm opacity-90 max-w-2xl mx-auto mb-4">{t(slides[current].subtitle)}</p>
           <div className="flex items-center justify-center gap-2">
             <span
               className="text-xs font-bold px-4 py-2 rounded-full"
               style={{ background: 'rgba(255,255,255,0.2)' }}
             >
-              {slides[current].cta}
+              {t(slides[current].cta)}
             </span>
           </div>
         </div>
@@ -80,7 +82,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
               key={index}
               onClick={() => setCurrent(index)}
               className={`h-1.5 rounded-full transition-all cursor-pointer ${index === current ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
-              aria-label={`شريحة ${index + 1}`}
+              aria-label={`${t('شريحة')} ${index + 1}`}
             />
           ))}
         </div>
@@ -98,9 +100,9 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
       >
         <div className="px-6 py-6 md:px-10 md:py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <p className="text-xs opacity-90 mb-1">{theme.copy.tagline}</p>
-            <h1 className="text-lg md:text-2xl font-bold">{slides[current].title}</h1>
-            <p className="text-sm opacity-90 mt-1 max-w-lg">{slides[current].subtitle}</p>
+            <p className="text-xs opacity-90 mb-1">{t(theme.copy.tagline)}</p>
+            <h1 className="text-lg md:text-2xl font-bold">{t(slides[current].title)}</h1>
+            <p className="text-sm opacity-90 mt-1 max-w-lg">{t(slides[current].subtitle)}</p>
           </div>
           <span
             className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-full shrink-0"
@@ -109,7 +111,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={slides[current].icon || ''} />
             </svg>
-            {slides[current].cta}
+            {t(slides[current].cta)}
           </span>
         </div>
         <div className="absolute bottom-2 inset-x-0 flex justify-center gap-1.5">
@@ -118,7 +120,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
               key={index}
               onClick={() => setCurrent(index)}
               className={`h-1.5 rounded-full transition-all cursor-pointer ${index === current ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
-              aria-label={`شريحة ${index + 1}`}
+              aria-label={`${t('شريحة')} ${index + 1}`}
             />
           ))}
         </div>
@@ -145,16 +147,16 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={slides[current].icon || ''} />
             </svg>
           </span>
-          <p className="text-sm opacity-90">{theme.copy.tagline}</p>
+          <p className="text-sm opacity-90">{t(theme.copy.tagline)}</p>
         </div>
-        <h1 className="text-2xl md:text-4xl font-bold mb-3 max-w-2xl">{slides[current].title}</h1>
-        <p className="text-sm md:text-base opacity-90 mb-6 max-w-2xl">{slides[current].subtitle}</p>
+        <h1 className="text-2xl md:text-4xl font-bold mb-3 max-w-2xl">{t(slides[current].title)}</h1>
+        <p className="text-sm md:text-base opacity-90 mb-6 max-w-2xl">{t(slides[current].subtitle)}</p>
         <button
           onClick={() => document.getElementById('masalah-products')?.scrollIntoView({ behavior: 'smooth' })}
           className="text-sm font-bold px-6 py-3 rounded-full cursor-pointer transition-transform hover:scale-105"
           style={{ background: theme.colors.primaryDark, color: theme.colors.onPrimary }}
         >
-          {slides[current].cta}
+          {t(slides[current].cta)}
         </button>
       </div>
       <div className="absolute bottom-3 inset-x-0 flex justify-center gap-1.5">
@@ -162,8 +164,8 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ storeName, welcomeMessag
           <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`h-1.5 rounded-full transition-all cursor-pointer ${index === current ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
-            aria-label={`شريحة ${index + 1}`}
+               className={`h-1.5 rounded-full transition-all cursor-pointer ${index === current ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
+               aria-label={`${t('شريحة')} ${index + 1}`}
           />
         ))}
       </div>

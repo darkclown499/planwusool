@@ -2,6 +2,8 @@ import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -96,6 +98,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 -{getDiscountPercentage(product.originalPrice, product.price)}%
               </div>
             )}
+
+            <div className="absolute top-2 right-2">
+              <WishlistButton productId={product.id} iconOnly />
+            </div>
           </div>
 
           {/* Product Info */}
@@ -163,6 +169,10 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 </span>
               )}
             </button>
+            <WhatsAppOrderButton
+              product={{ name: product.name, price: product.price }}
+              className="w-full mt-1 py-1 sm:py-2 text-xs font-bold bg-[#25D366] hover:bg-[#1eb85a] text-white flex items-center justify-center gap-1"
+            />
           </div>
         </div>
       ))}

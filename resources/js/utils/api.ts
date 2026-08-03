@@ -53,5 +53,7 @@ export const apiRequest = async (
   return data;
 };
 
+export const apiGet = (url: string) => apiRequest('GET', url);
 export const apiPut = (url: string, body?: any) => apiRequest('PUT', url, body);
 export const apiPost = (url: string, body?: any) => apiRequest('POST', url, body);
+export const apiDelete = (url: string) => apiRequest('DELETE', url);

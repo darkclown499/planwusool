@@ -91,7 +91,7 @@ export default function ShowExpressCheckout() {
             <CardContent className="space-y-4">
               <div className="text-center p-4 border rounded-lg">
                 <div className="flex items-center justify-center mb-2">
-                  <TrendingUp className="h-5 w-5 text-primary mr-2" />
+                  <TrendingUp className="h-5 w-5 text-primary me-2" />
                   <span className="text-2xl font-bold">{checkout.conversions}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{t('Conversions')}</p>
@@ -229,7 +229,7 @@ export default function ShowExpressCheckout() {
                         <p className="text-sm text-muted-foreground">{transaction.method}</p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="font-medium">{formatCurrency(transaction.amount)}</p>
                       <p className="text-sm text-muted-foreground">{transaction.date}</p>
                     </div>

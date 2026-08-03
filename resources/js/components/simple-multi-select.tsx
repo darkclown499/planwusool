@@ -80,7 +80,7 @@ export function SimpleMultiSelect({
               {option?.label || value}
               <button
                 type="button"
-                className="ml-1 rounded-sm"
+                className="ms-1 rounded-sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleRemove(value);

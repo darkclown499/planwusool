@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingCart, User, Menu, X, LogOut, Package } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, LogOut, Package, Heart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 
 interface HeaderProps {
@@ -14,6 +14,8 @@ interface HeaderProps {
   onProfileClick: () => void;
   onOrdersClick: () => void;
   onLogoutClick: () => void;
+  onWishlistClick?: () => void;
+  wishlistCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,6 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
   onProfileClick,
   onOrdersClick,
   onLogoutClick,
+  onWishlistClick,
+  wishlistCount = 0,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -84,6 +88,22 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Wishlist */}
+            {onWishlistClick && (
+              <button
+                onClick={onWishlistClick}
+                className="relative p-3 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-full transition-colors duration-200"
+                aria-label="المفضلة"
+              >
+                <Heart className="h-6 w-6" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-white">
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             {/* Cart */}
             <button
               onClick={onCartClick}
@@ -156,6 +176,21 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
+            {onWishlistClick && (
+              <button
+                onClick={onWishlistClick}
+                className="relative p-2 text-purple-600 hover:text-purple-800"
+                aria-label="المفضلة"
+              >
+                <Heart className="h-6 w-6" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             <button
               onClick={() => setShowMobileSearch(!showMobileSearch)}
               className="p-2 text-purple-600 hover:text-purple-800"

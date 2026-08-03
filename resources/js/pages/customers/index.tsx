@@ -110,7 +110,7 @@ export default function Customers() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.avgOrderValue)}</div>
+                <div className="text-2xl font-bold ltr-num">{formatCurrency(stats.avgOrderValue)}</div>
                 <p className="text-xs text-muted-foreground">{t('Per order')}</p>
               </CardContent>
             </Card>
@@ -135,7 +135,7 @@ export default function Customers() {
                         onClick={() => handleActionClick('create-customers', () => router.visit(route('customers.create')))} 
                         className="mt-4"
                       >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="h-4 w-4 me-2" />
                         {t('Create Customer')}
                       </Button>
                     )}
@@ -161,7 +161,7 @@ export default function Customers() {
                               <span>{customer.email}</span>
                               {customer.phone && (
                                 <>
-                                  <Phone className="h-3 w-3 ml-2" />
+                                  <Phone className="h-3 w-3 ms-2" />
                                   <span>{customer.phone}</span>
                                 </>
                               )}

@@ -14,6 +14,8 @@ interface HeaderProps {
   onProfileClick: () => void;
   onOrdersClick: () => void;
   onLogoutClick: () => void;
+  onWishlistClick?: () => void;
+  wishlistCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -27,7 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   userName,
   onProfileClick,
   onOrdersClick,
-  onLogoutClick
+  onLogoutClick,
+  onWishlistClick,
+  wishlistCount = 0
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -93,6 +97,24 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Search className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
+
+            {onWishlistClick && (
+              <button
+                onClick={onWishlistClick}
+                className="relative flex-shrink-0 p-1 sm:p-2 text-slate-300 hover:text-amber-400 transition-colors cursor-pointer"
+                aria-label="المفضلة"
+                title="المفضلة"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-amber-600 text-white text-xs h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center font-bold shadow-lg">
+                    {wishlistCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Cart */}
             <button

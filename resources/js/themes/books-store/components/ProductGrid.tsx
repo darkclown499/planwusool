@@ -3,6 +3,8 @@ import { Plus, Eye } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -75,6 +77,11 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                     <Eye className="h-4 w-4 text-white" />
                   </div>
                 </button>
+
+                {/* Wishlist */}
+                <div className="absolute top-1 left-1">
+                  <WishlistButton productId={product.id} iconOnly />
+                </div>
                 
                 {/* Badges */}
                 <div className="absolute top-1 right-1 flex flex-col gap-1 items-start">
@@ -161,6 +168,13 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                     </>
                   )}
                 </button>
+                <div className="mt-2 flex justify-center">
+                  <WhatsAppOrderButton
+                    product={{ name: product.name, price: product.price }}
+                    compact
+                    className="w-8 h-8 flex items-center justify-center rounded-full bg-[#25D366] hover:bg-[#1eb85a] text-white [&_span]:hidden"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -198,12 +212,15 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                   </div>
                 )}
                 
-                {/* Variant Badge */}
-                {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
-                  <div className="absolute top-2 right-2 bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
-                    بالخيارات
-                  </div>
-                )}
+                {/* Wishlist + Variant Badge */}
+                <div className="absolute top-2 right-2 flex flex-col items-end space-y-2">
+                  <WishlistButton productId={product.id} iconOnly />
+                  {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
+                    <div className="bg-amber-600 text-white px-2 py-1 rounded text-xs font-medium shadow-lg">
+                      بالخيارات
+                    </div>
+                  )}
+                </div>
                 
                 {/* Out of Stock Overlay */}
                 {isOutOfStock && (
@@ -270,6 +287,11 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                     'أضف إلى السلة'
                   )}
                 </button>
+
+                <WhatsAppOrderButton
+                  product={{ name: product.name, price: product.price }}
+                  className="w-full mt-2 py-3 px-4 rounded-full font-bold text-sm transition-all duration-300 shadow-md bg-[#25D366] hover:bg-[#1eb85a] text-white"
+                />
                 
                 {/* SKU */}
                 <div className="text-center mt-2 text-xs text-amber-500">

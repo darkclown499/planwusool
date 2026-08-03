@@ -70,8 +70,58 @@ export function formatStoreCurrency(
     : `${currency.symbol} ${finalNumber}`;
 }
 
+interface SecondaryCurrency {
+  code: string;
+  symbol: string;
+  name: string;
+  exchangeRate: number;
+}
+
 /**
- * Format currency based on store settings (legacy function - kept for backward compatibility)
+ * Resolve the configured secondary currency (code/symbol + manual exchange rate).
+ * Reads from the provided storeSettings or from the Inertia page props.
+ */
+function getSecondaryCurrencyInfo(storeSettings: CurrencySettings, currencies: Currency[]): { symbol: string; exchangeRate: number } | null {
+  const propsSecondary: SecondaryCurrency | null =
+    typeof window !== 'undefined' && (window as any).page?.props?.secondaryCurrency
+      ? (window as any).page.props.secondaryCurrency
+      : null;
+
+  const rawStoreSettings = storeSettings as any;
+  const code = rawStoreSettings?.secondaryCurrency || propsSecondary?.code || null;
+  let exchangeRate = parseFloat(rawStoreSettings?.exchangeRate) || 0;
+
+  if (!exchangeRate && propsSecondary?.exchangeRate) {
+    exchangeRate = parseFloat(String(propsSecondary.exchangeRate));
+  }
+  if (!code || !exchangeRate || exchangeRate <= 0) return null;
+
+  const currency = currencies.find((c) => c.code === code);
+  const symbol = propsSecondary?.symbol || currency?.symbol || code;
+
+  return { symbol, exchangeRate };
+}
+
+/**
+ * Format a plain number with the given decimal/separator settings (no symbol).
+ */
+function formatNumberValue(
+  value: number,
+  decimalPlaces: number,
+  decimalSeparator: string,
+  thousandsSeparator: string
+): string {
+  const formatted = value.toFixed(decimalPlaces);
+  const parts = formatted.split('.');
+  if (thousandsSeparator && thousandsSeparator !== 'none') {
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
+  }
+  return parts.join(decimalSeparator);
+}
+
+/**
+ * Format currency based on store settings (legacy function - kept for backward compatibility).
+ * When a secondary currency is configured, appends the converted value (e.g. "₪ 100.00 ≈ $ 26.97").
  */
 export function formatCurrency(
   amount: number | string, 
@@ -103,23 +153,28 @@ export function formatCurrency(
 
   // Format decimal places
   const decimalPlaces = parseInt(decimalFormat) || 2;
-  const formattedNumber = finalAmount.toFixed(decimalPlaces);
-
-  // Split into integer and decimal parts
-  const parts = formattedNumber.split('.');
-  
-  // Add thousands separator
-  if (thousandsSeparator && thousandsSeparator !== 'none') {
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
-  }
-
-  // Join with decimal separator
-  const finalNumber = parts.join(decimalSeparator);
 
   // Add currency symbol with proper positioning and spacing
   const space = (currencySymbolSpace === true || currencySymbolSpace === '1') ? ' ' : '';
   
-  return currencySymbolPosition === 'after' 
-    ? `${finalNumber}${space}${symbol}`
-    : `${symbol}${space}${finalNumber}`;
+  const primary = currencySymbolPosition === 'after' 
+    ? `${formatNumberValue(finalAmount, decimalPlaces, decimalSeparator, thousandsSeparator)}${space}${symbol}`
+    : `${symbol}${space}${formatNumberValue(finalAmount, decimalPlaces, decimalSeparator, thousandsSeparator)}`;
+
+  // Dual currency: append the secondary currency value when configured
+  const secondary = getSecondaryCurrencyInfo(storeSettings, currencies);
+  if (secondary) {
+    const secondaryNumber = formatNumberValue(
+      numAmount * secondary.exchangeRate,
+      decimalPlaces,
+      decimalSeparator,
+      thousandsSeparator
+    );
+    const secondaryStr = currencySymbolPosition === 'after'
+      ? `${secondaryNumber}${space}${secondary.symbol}`
+      : `${secondary.symbol}${space}${secondaryNumber}`;
+    return `${primary} ≈ ${secondaryStr}`;
+  }
+
+  return primary;
 }

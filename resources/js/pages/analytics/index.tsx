@@ -166,7 +166,7 @@ export default function Analytics({ analytics }: Props) {
                       <p className="font-medium">{product.name}</p>
                       <p className="text-sm text-muted-foreground">{product.sales} units sold</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="font-semibold text-green-600">{product.revenue}</p>
                     </div>
                   </div>
@@ -187,7 +187,7 @@ export default function Analytics({ analytics }: Props) {
                       <p className="font-medium">{customer.name}</p>
                       <p className="text-sm text-muted-foreground">{customer.orders} orders</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="font-semibold text-green-600">{customer.spent}</p>
                     </div>
                   </div>

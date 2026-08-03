@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, User } from 'lucide-react';
+import { Search, ShoppingBag, User, Heart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 
 interface HeaderProps {
@@ -14,6 +14,8 @@ interface HeaderProps {
   onProfileClick: () => void;
   onOrdersClick: () => void;
   onLogoutClick: () => void;
+  onWishlistClick?: () => void;
+  wishlistCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -27,7 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   userName,
   onProfileClick,
   onOrdersClick,
-  onLogoutClick
+  onLogoutClick,
+  onWishlistClick,
+  wishlistCount = 0
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -77,6 +81,23 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-4">
+              {/* Wishlist */}
+              {onWishlistClick && (
+                <button
+                  onClick={onWishlistClick}
+                  className="relative p-3 text-amber-700 hover:text-red-500 hover:bg-amber-100 rounded-full transition-colors cursor-pointer"
+                  aria-label="المفضلة"
+                  title="المفضلة"
+                >
+                  <Heart className="h-6 w-6" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -left-1 bg-amber-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </button>
+              )}
+
               {/* Cart */}
               <button
                 onClick={onCartClick}
@@ -154,6 +175,23 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Search className="h-6 w-6" />
               </button>
+
+              {/* Mobile Wishlist */}
+              {onWishlistClick && (
+                <button
+                  onClick={onWishlistClick}
+                  className="relative p-2 text-amber-700 cursor-pointer"
+                  aria-label="المفضلة"
+                  title="المفضلة"
+                >
+                  <Heart className="h-6 w-6" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -left-1 bg-amber-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </button>
+              )}
 
               {/* Mobile Cart */}
               <button

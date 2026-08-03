@@ -208,7 +208,7 @@ export default function ReferredUsers() {
  </div>
  
  <div className="flex items-center space-x-4">
- <div className="text-right">
+ <div className="text-end">
  {(() => {
  const planInfo = getPlanDisplayInfo(user);
  return planInfo ? (
@@ -232,7 +232,7 @@ export default function ReferredUsers() {
  </div>
  
  {getTotalCommission(user) > 0 && (
- <div className="text-right">
+ <div className="text-end">
  <div className="text-sm font-medium text-green-600">
  +{getFormattedTotalCommission(user)}
  </div>

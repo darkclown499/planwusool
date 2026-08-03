@@ -60,6 +60,35 @@ class Store extends BaseModel
     }
 
     /**
+     * All custom domains attached to the store.
+     */
+    public function storeDomains()
+    {
+        return $this->hasMany(StoreDomain::class);
+    }
+
+    /**
+     * Custom domains that passed ownership verification.
+     */
+    public function verifiedDomains()
+    {
+        return $this->hasMany(StoreDomain::class)->where('is_verified', true);
+    }
+
+    /**
+     * Get the active custom domain used for the store, if any.
+     */
+    public function getVerifiedDomain(): ?StoreDomain
+    {
+        $domain = $this->verifiedDomains()
+            ->orderByDesc('is_primary')
+            ->orderBy('id')
+            ->first();
+
+        return $domain ?: null;
+    }
+
+    /**
      * Generate a unique slug for the store.
      */
     public static function generateUniqueSlug($name)
@@ -75,10 +104,18 @@ class Store extends BaseModel
      */
     public function getStoreUrl()
     {
+        // Priority 1: Verified custom domain from the store_domains table
+        $verifiedDomain = $this->getVerifiedDomain();
+        if ($verifiedDomain) {
+            return $this->getProtocol() . $verifiedDomain->domain_name;
+        }
+
+        // Priority 2: Legacy custom domain column
         if ($this->enable_custom_domain && !empty($this->custom_domain)) {
             return $this->getProtocol() . $this->custom_domain;
         }
         
+        // Priority 3: Legacy custom subdomain column
         if ($this->enable_custom_subdomain && !empty($this->custom_subdomain)) {
             $baseDomain = $this->getBaseDomain();
             if ($baseDomain) {
@@ -105,6 +142,10 @@ class Store extends BaseModel
      */
     public function getDomainType()
     {
+        if ($this->getVerifiedDomain()) {
+            return 'custom_domain';
+        }
+
         if ($this->enable_custom_domain && $this->custom_domain) {
             return 'custom_domain';
         }
@@ -158,7 +199,12 @@ class Store extends BaseModel
     public function isCurrentDomain(): bool
     {
         $host = request()->getHost();
-        
+
+        // Verified custom domains from the store_domains table
+        if ($this->storeDomains()->where('domain_name', $host)->where('is_verified', true)->exists()) {
+            return true;
+        }
+
         if ($this->enable_custom_domain && $this->custom_domain === $host) {
             return true;
         }
@@ -197,11 +243,28 @@ class Store extends BaseModel
     public static function isDomainAvailable(string $domain, ?int $excludeStoreId = null): bool
     {
         if (empty($domain)) return true;
-        
-        $query = static::where('custom_domain', $domain)->where('enable_custom_domain', true);
+
+        $query = static::where(function ($q) use ($domain) {
+            $q->where(function ($legacy) use ($domain) {
+                $legacy->where('custom_domain', $domain)->where('enable_custom_domain', true);
+            })->orWhereHas('storeDomains', function ($domains) use ($domain) {
+                $domains->where('domain_name', $domain);
+            });
+        });
         if ($excludeStoreId) $query->where('id', '!=', $excludeStoreId);
         
         return !$query->exists();
+    }
+
+    /**
+     * Find a store by its custom domain (store_domains table).
+     */
+    public static function findByDomain(string $domain): ?self
+    {
+        return static::whereHas('storeDomains', function ($query) use ($domain) {
+            $query->where('domain_name', $domain)
+                ->where('is_verified', true);
+        })->first();
     }
     
     /**

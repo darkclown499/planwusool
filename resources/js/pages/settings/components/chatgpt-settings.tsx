@@ -76,7 +76,7 @@ export default function ChatGptSettings({ settings = {} }: ChatGptSettingsProps)
       description={t("Configure Chat GPT integration settings for AI-powered features")}
       action={
         <Button type="submit" form="chatgpt-settings-form" size="sm">
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-4 w-4 me-2" />
           {t("Save Changes")}
         </Button>
       }

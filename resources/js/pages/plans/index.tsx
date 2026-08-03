@@ -487,7 +487,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
               variant="outline"
               className="w-full"
             >
-              <Zap className="h-4 w-4 mr-2" />
+              <Zap className="h-4 w-4 me-2" />
               {t(`Start ${plan.trial_days} Day Trial`)}
             </Button>
           )}
@@ -513,7 +513,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
             variant="outline"
             className="w-full"
           >
-            <Clock className="h-4 w-4 mr-2" />
+            <Clock className="h-4 w-4 me-2" />
             {t('Request Plan')}
           </Button>
         )}
@@ -649,7 +649,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
             </div>
             {isAdmin && hasPermission('create-plans', auth) && (
               <Button className="w-full sm:w-auto" onClick={() => router.get(route('plans.create'))}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 me-2" />
                 {t("Add Plan")}
               </Button>
             )}
@@ -693,8 +693,8 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                 overflow-hidden
               `}>
                 {/* Decorative background elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full -mr-16 -mt-16 opacity-70"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-primary/10 to-transparent rounded-full -ml-12 -mb-12 opacity-50"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full -me-16 -mt-16 opacity-70"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-primary/10 to-transparent rounded-full -ms-12 -mb-12 opacity-50"></div>
               </div>
 
               {/* Recommended indicator */}

@@ -178,7 +178,7 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                 <div className="flex items-center justify-between">
                   <CardTitle>{t('Order Items')}</CardTitle>
                   <Button type="button" variant="outline" size="sm" onClick={addOrderItem}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4 me-2" />
                     {t('Add Item')}
                   </Button>
                 </div>

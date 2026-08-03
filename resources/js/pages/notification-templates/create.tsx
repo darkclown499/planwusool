@@ -59,7 +59,7 @@ export default function NotificationTemplatesCreate({ languages }: Props) {
       action={
         <Link href={route('notification-templates.index')}>
           <Button variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 me-2" />
             {t('Back')}
           </Button>
         </Link>
@@ -153,7 +153,7 @@ export default function NotificationTemplatesCreate({ languages }: Props) {
 
         <div className="flex justify-end">
           <Button type="submit" disabled={processing}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="h-4 w-4 me-2" />
             {processing ? t('Creating...') : t('Create Template')}
           </Button>
         </div>

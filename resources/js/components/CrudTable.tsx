@@ -62,11 +62,11 @@ export function CrudTable({
     
     if (sortField === column.key) {
       return sortDirection === 'asc' ? 
-        <ChevronUp className="ml-1 h-4 w-4" /> : 
-        <ChevronDown className="ml-1 h-4 w-4" />;
+        <ChevronUp className="ms-1 h-4 w-4" /> : 
+        <ChevronDown className="ms-1 h-4 w-4" />;
     }
     
-    return <ChevronsUpDown className="ml-1 h-4 w-4 opacity-50" />;
+    return <ChevronsUpDown className="ms-1 h-4 w-4 opacity-50" />;
   };
 
   const handleSort = (column: TableColumn) => {
@@ -258,7 +258,7 @@ export function CrudTable({
               </TableHead>
             ))}
             {actions && actions.length > 0 && (
-              <TableHead className="w-24 py-2.5 font-semibold text-right">{t("Actions")}</TableHead>
+              <TableHead className="w-24 py-2.5 font-semibold text-end">{t("Actions")}</TableHead>
             )}
           </TableRow>
         </TableHeader>
@@ -279,7 +279,7 @@ export function CrudTable({
                   </TableCell>
                 ))}
                 {actions && actions.length > 0 && (
-                  <TableCell className="py-2.5 text-right">
+                  <TableCell className="py-2.5 text-end">
                     {renderActionButtons(row)}
                   </TableCell>
                 )}

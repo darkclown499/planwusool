@@ -61,7 +61,7 @@ export default function Welcome() {
  <a
  href="https://laravel.com/docs"
  target="_blank"
- className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4"
+ className="ms-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4"
  >
  <span>{t('Documentation')}</span>
  <svg
@@ -92,7 +92,7 @@ export default function Welcome() {
  <a
  href="https://laracasts.com"
  target="_blank"
- className="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4"
+ className="ms-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4"
  >
  <span>{t('Laracasts')}</span>
  <svg
@@ -125,7 +125,7 @@ export default function Welcome() {
  </li>
  </ul>
  </div>
- <div className="relative -mb-px aspect-[335/376] w-full shrink-0 overflow-hidden rounded-t-lg bg-[#fff2f2] lg:mb-0 lg:-ml-px lg:aspect-auto lg:w-[438px] lg:rounded-t-none lg:rounded-r-lg">
+ <div className="relative -mb-px aspect-[335/376] w-full shrink-0 overflow-hidden rounded-t-lg bg-[#fff2f2] lg:mb-0 lg:-ms-px lg:aspect-auto lg:w-[438px] lg:rounded-t-none lg:rounded-r-lg">
  <svg
  className="w-full max-w-none translate-y-0 text-[#F53003] opacity-100 transition-all duration-750 starting:translate-y-6 starting:opacity-0"
  viewBox="0 0 438 104"
@@ -153,7 +153,7 @@ export default function Welcome() {
  />
  </svg>
  <svg
- className="relative -mt-[4.9rem] -ml-8 w-[448px] max-w-none lg:-mt-[6.6rem] lg:ml-0"
+ className="relative -mt-[4.9rem] -ms-8 w-[448px] max-w-none lg:-mt-[6.6rem] lg:ms-0"
  viewBox="0 0 440 376"
  fill="none"
  xmlns="http://www.w3.org/2000/svg"
@@ -474,7 +474,7 @@ export default function Welcome() {
  </g>
  </svg>
  <svg
- className="relative -mt-[4.9rem] -ml-8 hidden w-[448px] max-w-none lg:-mt-[6.6rem] lg:ml-0"
+ className="relative -mt-[4.9rem] -ms-8 hidden w-[448px] max-w-none lg:-mt-[6.6rem] lg:ms-0"
  viewBox="0 0 440 376"
  fill="none"
  xmlns="http://www.w3.org/2000/svg"

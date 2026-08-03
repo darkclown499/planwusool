@@ -54,7 +54,7 @@ export function ProfileMenu() {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href={route('profile')}>
-              <User className="mr-2 h-4 w-4" />
+              <User className="me-2 h-4 w-4" />
               <span>{t("Profile")}</span>
             </Link>
           </DropdownMenuItem>
@@ -62,7 +62,7 @@ export function ProfileMenu() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="me-2 h-4 w-4" />
           <span>{t("Log out")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

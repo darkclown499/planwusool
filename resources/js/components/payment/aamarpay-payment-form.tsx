@@ -146,12 +146,12 @@ export function AamarpayPaymentForm({
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
                 {t('Redirecting...')}
               </>
             ) : (
               <>
-                <ExternalLink className="mr-2 h-4 w-4" />
+                <ExternalLink className="me-2 h-4 w-4" />
                 {t('Pay with Aamarpay')}
               </>
             )}

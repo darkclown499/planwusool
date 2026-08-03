@@ -1,63 +1,55 @@
-# ✅ TODO — المرحلة الثانية: الميزات التنافسية المتقدمة
+# ✅ تتبع تنفيذ نظام إشعارات التاجر (Merchant Notification System)
 
-## المرحلة 1: الكوبونات المتقدمة (Advanced Coupons) — ✅ مكتملة
+## المرحلة 1: البنية التحتية (Backend)
 
-### حالة التنفيذ الحالية
-- [x] 1.1 إنشاء migrations (5 جداول): `advanced_coupons`, `coupon_product`, `coupon_category`, `coupon_regions`, `coupon_usages`
-- [x] 1.2 إنشاء Models (3): `AdvancedCoupon`, `CouponRegion`, `CouponUsage`
-- [x] 1.3 إنشاء Service `AdvancedCouponService` (تحقق + حساب خصم + تسجيل استخدام + إحصائيات)
-- [x] 1.4 إنشاء Controller + Routes + API تحقق (`api/advanced-coupon/validate`)
-- [x] 1.5 إنشاء صفحات React (index/create/edit)
-- [x] 1.6 تكامل `CartCalculationService` + `OrderService` (تسجيل الاستخدام عند الطلب)
-- [x] 1.7 إضافة عناصر القائمة الجانبية في `app-sidebar.tsx`
-- [x] 1.8 إضافة أذونات مخصصة للكوبونات المتقدمة في `PermissionSeeder`
-- [x] 1.9 إضافة الأذونات لدور الشركة (company) في `RoleSeeder`
-- [x] 1.10 تحديث `routes/web.php` لاستخدام الأذونات المخصصة
-- [x] 1.11 تحديث `app-sidebar.tsx` لاستخدام `manage-advanced-coupons`
-- [x] 1.12 تشغيل `php artisan migrate` (تم — جميع الجداول موجودة)
-- [x] 1.13 تشغيل `php artisan db:seed --class=PermissionSeeder` + `RoleSeeder` (تم بدون أخطاء)
-- [x] 1.14 تحديث `config/role-permissions.php` + التحقق من صلاحيات دور الشركة
+### 1.1 إنشاء جدول merchant_notifications
+- [x] إنشاء ملف migration لجدول `merchant_notifications`
+- [x] تشغيل `php artisan migrate`
 
-### ملاحظات التحقق
-- تم التحقق من إرفاق أذونات الكوبونات المتقدمة (7 أذونات) بدور الشركة (company) بنجاح
-- جميع الفحوصات اللغوية (PHP syntax) سليمة
+### 1.2 إنشاء Model `MerchantNotification`
+- [x] Model مع الخصائص والـ scopes المناسبة
 
----
+### 1.3 إنشاء `MerchantNotificationService`
+- [x] Service مع دوال: إنشاء إشعار، جلب إشعارات التاجر، عدد غير المقروء، علام مقروء
 
-## المرحلة 2: نظام الدفع عند الاستلام المتقدم (Advanced COD) — 🏗️ قيد التنفيذ
+### 1.4 إنشاء `MerchantNotificationController`
+- [x] Controller مع API: index, unreadCount, markRead, markAllRead
 
-### قواعد البيانات ✅
-- [x] 2.1 إنشاء migration لجدول `cod_payments` (تتبع المدفوعات + تسوية)
-- [x] 2.2 إنشاء migration لجدول `cod_payment_history` (سجل الأقساط/الدفعات الجزئية)
-- [x] 2.3 تنفيذ عمليات التهجير (Migration) — تم بنجاح
+### 1.5 إنشاء Listeners للأحداث
+- [x] مستمع `HandleOrderCreatedNotifications` لإشعار الطلب الجديد
+- [x] مستمع `HandleLowStockNotification` للمنتجات منخفضة المخزون
+- [x] مستمع `HandleNewReviewNotification` للمراجعات الجديدة
+- [x] مستمع `HandleCanceledOrderNotification` للطلبات الملغية
 
-### المنطق البرمجي والربط
-- [ ] 2.4 إنشاء Models (`CodPayment` + `CodPaymentHistory`)
-- [ ] 2.5 إنشاء Service `CodPaymentService` (تسجيل دفعة، أقساط جزئية، تسوية، تحليلات)
-- [ ] 2.6 إنشاء Controller + Routes
-- [ ] 2.7 تكامل مع `OrderService` (إنشاء سجل COD تلقائياً عند طلب COD)
-- [ ] 2.8 ربط مع شركات التوصيل (API Integration)
+### 1.6 تسجيل الأحداث في EventServiceProvider
+- [x] ربط events مع listeners
 
-### الواجهات
-- [ ] 2.9 صفحة إدارة المدفوعات React
-- [ ] 2.10 صفحة تفاصيل الطلب + التحليلات
-- [ ] 2.11 أذونات في `PermissionSeeder` + `RoleSeeder`
-- [ ] 2.12 عناصر القائمة الجانبية في `app-sidebar.tsx`
+### 1.7 إضافة route للإشعارات
+- [x] إضافة route API في web.php
 
----
+## المرحلة 2: واجهة المستخدم (Frontend)
 
-## المرحلة 3: الميزات القادمة (اختياري)
-- نظام الإشعارات الذكية
-- نظام المخزون المتقدم
-- تحسينات واجهة المتجر (Quick View / Recently Viewed / Compare)
+### 2.1 إنشاء `AdminNotificationBell` Component
+- [x] أيقونة جرس مع عداد
+- [x] قائمة منسدلة بالإشعارات
+- [x] علام مقروء عند النقر
+- [x] رابط لكل إشعار
 
-## المرحلة 4: الخطوات النهائية
+### 2.2 تحديث `app-header.tsx`
+- [x] إضافة زر الجرس بين زر البحث وصورة المستخدم
+
+### 2.3 تحديث `dashboard.tsx` - تفعيل Vital Alerts
+- [x] إظهار الإشعارات الحقيقية من `dashboardData`
+- [x] استخدام `dashboardData.alerts` من `DashboardController`
+
+### 2.4 تحديث `DashboardController`
+- [x] إضافة بيانات الإشعارات (alerts) إلى `dashboardData`
+
+### 2.5 تحديث `app-sidebar.tsx`
+- [x] ضمان ظهور تبويب الإشعارات بشكل بارز
+
+## المرحلة 3: اختبار وتشغيل
 - [ ] تشغيل `php artisan migrate`
-- [ ] تشغيل `php artisan db:seed`
-- [ ] بناء الواجهات الأمامية `npm run build`
-- [ ] اختبار شامل للميزات
-
-## ملاحظات
-- كل مرحلة تُنفذ بشكل مستقل لتقليل تداخل الأخطاء
-- بعد كل مرحلة: حفظ التغييرات (Commit)
+- [ ] اختبار جرس الإشعارات
+- [ ] اختبار Vital Alerts في لوحة التحكم
 

@@ -72,7 +72,7 @@ export default function ThemesSection({ settings, sectionData, brandColor }: The
                   <Monitor className="w-4 h-4 text-gray-400" />
                   <Tablet className="w-4 h-4 text-gray-400" />
                   <Smartphone className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs text-gray-500 ml-2">{t('Responsive Design')}</span>
+                  <span className="text-xs text-gray-500 ms-2">{t('Responsive Design')}</span>
                 </div>
 
 

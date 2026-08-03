@@ -3,6 +3,8 @@ import { ShoppingBag, Heart, Eye, Star } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -74,6 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             {/* Badges */}
             <div className="absolute top-4 right-4 flex flex-col space-y-2">
+              <WishlistButton productId={product.id} iconOnly />
               {product.availability === 'out_of_stock' && (
                 <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
                   غير متوفر
@@ -173,6 +176,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 )}
               </button>
             </div>
+
+            <WhatsAppOrderButton
+              product={{ name: product.name, price: product.price }}
+              className="w-full mt-3 bg-[#25D366] hover:bg-[#1eb85a] text-white font-medium py-2 sm:py-3 px-4 rounded-xl transition-all duration-300 text-xs sm:text-sm flex items-center justify-center gap-2"
+            />
 
             {/* SKU - Hidden on mobile */}
             <div className="hidden sm:block mt-3 text-xs text-amber-600/60">

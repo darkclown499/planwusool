@@ -151,18 +151,18 @@ export default function ActiveCampaignsSection({
 
  <div className="space-y-2 mb-4">
  <div className="flex items-center text-sm text-gray-600">
- <MapPin className="h-4 w-4 mr-2" />
+ <MapPin className="h-4 w-4 me-2" />
  <span className="font-medium">{campaign.business.name}</span>
  </div>
  
  <div className="flex items-center text-sm text-gray-600">
- <Calendar className="h-4 w-4 mr-2" />
+ <Calendar className="h-4 w-4 me-2" />
  <span>{formatDate(campaign.start_date)} - {formatDate(campaign.end_date)}</span>
  </div>
  
  {daysRemaining > 0 && (
  <div className="flex items-center text-sm text-gray-600">
- <Clock className="h-4 w-4 mr-2" />
+ <Clock className="h-4 w-4 me-2" />
  <span>{t('Ends in')} {daysRemaining} {t('day', { count: daysRemaining })}</span>
  </div>
  )}
@@ -174,7 +174,7 @@ export default function ActiveCampaignsSection({
  onClick={() => window.open(businessUrl, '_blank', 'noopener,noreferrer')}
  >
  <span>{t('Visit Business')}</span>
- <ExternalLink className="h-4 w-4 ml-2" />
+ <ExternalLink className="h-4 w-4 ms-2" />
  </Button>
  </CardContent>
  </Card>

@@ -185,7 +185,7 @@ export default function ManageLanguagePage() {
                         </div>
                       ))}
                   </div>
-                  <div className="pt-6 text-right">
+                  <div className="pt-6 text-start">
                     <Button 
                       type="submit" 
                       disabled={saving}

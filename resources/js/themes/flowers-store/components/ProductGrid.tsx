@@ -2,6 +2,8 @@ import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -94,7 +96,8 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             )}
 
             {/* Quick Actions */}
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col space-y-2">
+              <WishlistButton productId={product.id} iconOnly />
               {/* Quick View */}
               <button 
                 onClick={() => onProductClick(product)}
@@ -178,6 +181,11 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 </span>
               )}
             </div>
+
+            <WhatsAppOrderButton
+              product={{ name: product.name, price: product.price }}
+              className="w-full mt-3 bg-[#25D366] hover:bg-[#1eb85a] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-300 text-sm flex items-center justify-center gap-2"
+            />
           </div>
         </div>
       ))}

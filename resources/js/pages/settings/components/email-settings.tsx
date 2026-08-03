@@ -114,19 +114,19 @@ export default function EmailSettings() {
       description={t("Configure email server settings for system notifications and communications")}
       action={
         <Button type="submit" form="email-settings-form" size="sm">
-          <Save className="h-4 w-4 ml-2" />
+          <Save className="h-4 w-4 ms-2" />
           {t("Save Changes")}
         </Button>
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" dir="rtl">
         {/* Main Email Settings */}
-        <div className="lg:col-span-2 text-right">
+        <div className="lg:col-span-2 text-start">
           <form id="email-settings-form" onSubmit={submitEmailSettings}>
             <Card>
               <CardContent className="pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6" dir="rtl">
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="provider" className="font-medium">{t("Email Provider")}</Label>
@@ -146,7 +146,7 @@ export default function EmailSettings() {
                       }}
                       dir="rtl"
                     >
-                      <SelectTrigger className="text-right">
+                      <SelectTrigger className="text-start">
                         <SelectValue placeholder="Select provider" />
                       </SelectTrigger>
                       <SelectContent>
@@ -158,7 +158,7 @@ export default function EmailSettings() {
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <Server className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="driver" className="font-medium">{t("Mail Driver")}</Label>
@@ -171,7 +171,7 @@ export default function EmailSettings() {
                     />
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <Server className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="host" className="font-medium">{t("SMTP Host")}</Label>
@@ -184,7 +184,7 @@ export default function EmailSettings() {
                     />
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <Server className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="port" className="font-medium">{t("SMTP Port")}</Label>
@@ -207,7 +207,7 @@ export default function EmailSettings() {
                     />
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="username" className="font-medium">{t("SMTP Username")}</Label>
@@ -221,7 +221,7 @@ export default function EmailSettings() {
                     />
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="password" className="font-medium">{t("SMTP Password")}</Label>
@@ -236,7 +236,7 @@ export default function EmailSettings() {
                     />
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="encryption" className="font-medium">{t("Mail Encryption")}</Label>
@@ -246,7 +246,7 @@ export default function EmailSettings() {
                       onValueChange={(value) => handleEmailSettingsChange('encryption', value)}
                       dir="rtl"
                     >
-                      <SelectTrigger className="text-right">
+                      <SelectTrigger className="text-start">
                         <SelectValue placeholder="Select encryption" />
                       </SelectTrigger>
                       <SelectContent>
@@ -257,7 +257,7 @@ export default function EmailSettings() {
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="fromAddress" className="font-medium">{t("From Address")}</Label>
@@ -270,7 +270,7 @@ export default function EmailSettings() {
                     />
                   </div>
 
-                  <div className="space-y-1.5 text-right" dir="rtl">
+                  <div className="space-y-1.5 text-start" dir="rtl">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground shrink-0" />
                       <Label htmlFor="fromName" className="font-medium">{t("From Name")}</Label>
@@ -298,7 +298,7 @@ export default function EmailSettings() {
                   <h3 className="text-base font-medium">{t("Test Email Configuration")}</h3>
                 </div>
                 
-                <div className="space-y-1.5 text-right" dir="rtl">
+                <div className="space-y-1.5 text-start" dir="rtl">
                   <Label htmlFor="testEmail" className="font-medium">{t("Send Test To")}</Label>
                   <Input
                     id="testEmail"
@@ -328,12 +328,12 @@ export default function EmailSettings() {
                 >
                   {isSending ? (
                     <>
-                      <span className="animate-spin ml-2">◌</span>
+                      <span className="animate-spin ms-2">◌</span>
                       {t("Sending...")}
                     </>
                   ) : (
                     <>
-                      <Send className="h-4 w-4 ml-2" />
+                      <Send className="h-4 w-4 ms-2" />
                       {t("Send Test Email")}
                     </>
                   )}

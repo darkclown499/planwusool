@@ -128,7 +128,7 @@ export default function Products() {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</div>
+              <div className="text-2xl font-bold ltr-num">{formatCurrency(stats.totalValue)}</div>
               <p className="text-xs text-muted-foreground">{t('Inventory value')}</p>
             </CardContent>
           </Card>
@@ -147,7 +147,7 @@ export default function Products() {
                   <p className="mt-2 text-muted-foreground">{t('No products found')}</p>
                   {hasPermission('create-products') && (
                     <Button variant="outline" className="mt-4" onClick={() => handleActionClick('create', 'create-products')}>
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="h-4 w-4 me-2" />
                       {t('Create your first product')}
                     </Button>
                   )}

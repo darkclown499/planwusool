@@ -3,6 +3,9 @@ import { X, Plus, Minus, Star, Truck, Shield, Heart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface Product {
   id: string;
@@ -77,12 +80,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate pr-2 sm:pr-4">
               {product.name}
             </h2>
-            <button 
-              onClick={onClose}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-emerald-100 rounded-full transition-colors flex-shrink-0"
-            >
-              <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
-            </button>
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <WishlistButton productId={product.id} iconOnly className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-emerald-100 rounded-full transition-colors" />
+              <button 
+                onClick={onClose}
+                className="p-1.5 sm:p-2 hover:bg-gray-100 sm:hover:bg-emerald-100 rounded-full transition-colors flex-shrink-0"
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row flex-1 md:overflow-hidden overflow-y-auto">
@@ -285,6 +291,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       />
                     )}
                   </div>
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <ProductReviews productId={product.id} />
+                  </div>
                 </div>
               </div>
 
@@ -364,6 +373,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         : `أضف ${quantity} إلى السلة`
                     }
                   </button>
+                  <WhatsAppOrderButton
+                    product={{ name: product.name, price: product.price }}
+                    className="w-full py-3 sm:py-4 px-4 sm:px-6 rounded-lg sm:rounded-xl font-semibold transition-colors text-center text-sm sm:text-base bg-[#25D366] hover:bg-[#1eb85a] text-white flex items-center justify-center gap-2"
+                  />
                 </div>
               </div>
             </div>

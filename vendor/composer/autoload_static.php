@@ -61,38 +61,38 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
     );
 
     public static $prefixLengthsPsr4 = array (
-        'v' => 
+        'v' =>
         array (
             'voku\\' => 5,
         ),
-        'p' => 
+        'p' =>
         array (
             'phpseclib3\\' => 11,
             'phpDocumentor\\Reflection\\' => 25,
         ),
-        'Z' => 
+        'Z' =>
         array (
             'ZipStream\\' => 10,
         ),
-        'Y' => 
+        'Y' =>
         array (
             'YooKassa\\Validator\\' => 19,
             'YooKassa\\' => 9,
         ),
-        'W' => 
+        'W' =>
         array (
             'WpOrg\\Requests\\' => 15,
             'Whoops\\' => 7,
             'Webmozart\\Assert\\' => 17,
         ),
-        'T' => 
+        'T' =>
         array (
             'TijsVerkoyen\\CssToInlineStyles\\' => 31,
             'Tighten\\Ziggy\\' => 14,
             'Tests\\' => 6,
             'Termwind\\' => 9,
         ),
-        'S' => 
+        'S' =>
         array (
             'Symfony\\Polyfill\\Uuid\\' => 22,
             'Symfony\\Polyfill\\Php83\\' => 23,
@@ -127,6 +127,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'Symfony\\Component\\Clock\\' => 24,
             'Svg\\' => 4,
             'Stripe\\' => 7,
+            'SpomkyLabs\\Pki\\' => 15,
             'Spatie\\TemporaryDirectory\\' => 26,
             'Spatie\\Permission\\' => 18,
             'Spatie\\MediaLibrary\\' => 20,
@@ -136,7 +137,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'Sentry\\' => 7,
             'Sabberworm\\CSS\\' => 15,
         ),
-        'R' => 
+        'R' =>
         array (
             'Razorpay\\Tests\\' => 15,
             'Razorpay\\Api\\' => 13,
@@ -144,7 +145,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'Ramsey\\Collection\\' => 18,
             'RachidLaasri\\LaravelInstaller\\' => 30,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psy\\' => 4,
             'Psr\\SimpleCache\\' => 16,
@@ -168,24 +169,25 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'PHPUnit\\Architecture\\' => 21,
             'PHPStan\\PhpDocParser\\' => 21,
         ),
-        'O' => 
+        'O' =>
         array (
             'OpenAI\\' => 7,
         ),
-        'N' => 
+        'N' =>
         array (
             'Nyholm\\Psr7\\' => 12,
             'NunoMaduro\\Collision\\' => 21,
         ),
-        'M' => 
+        'M' =>
         array (
             'Monolog\\' => 8,
             'Mollie\\Api\\' => 11,
             'Mockery\\' => 8,
+            'Minishlink\\WebPush\\' => 19,
             'MercadoPago\\' => 12,
             'Masterminds\\' => 12,
         ),
-        'L' => 
+        'L' =>
         array (
             'League\\Uri\\' => 11,
             'League\\OAuth1\\Client\\' => 21,
@@ -204,19 +206,20 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'LaraBug\\' => 8,
             'Lab404\\Impersonate\\' => 19,
         ),
-        'J' => 
+        'J' =>
         array (
+            'Jose\\Component\\' => 15,
             'JmesPath\\' => 9,
             'Jean85\\' => 7,
         ),
-        'I' => 
+        'I' =>
         array (
             'Iyzipay\\' => 8,
             'Inertia\\' => 8,
             'Illuminate\\Support\\' => 19,
             'Illuminate\\' => 11,
         ),
-        'H' => 
+        'H' =>
         array (
             'Http\\Promise\\' => 13,
             'Http\\Message\\MultipartStream\\' => 29,
@@ -226,7 +229,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'Http\\Client\\Common\\' => 19,
             'Http\\Client\\' => 12,
         ),
-        'G' => 
+        'G' =>
         array (
             'GuzzleHttp\\UriTemplate\\' => 23,
             'GuzzleHttp\\Psr7\\' => 16,
@@ -234,7 +237,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'GuzzleHttp\\' => 11,
             'GrahamCampbell\\ResultType\\' => 26,
         ),
-        'F' => 
+        'F' =>
         array (
             'Fruitcake\\Cors\\' => 15,
             'FontLib\\' => 8,
@@ -243,11 +246,11 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'FedaPay\\' => 8,
             'Faker\\' => 6,
         ),
-        'E' => 
+        'E' =>
         array (
             'Egulias\\EmailValidator\\' => 23,
         ),
-        'D' => 
+        'D' =>
         array (
             'Ds\\' => 3,
             'Dotenv\\' => 7,
@@ -263,7 +266,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'Database\\Seeders\\' => 17,
             'Database\\Factories\\' => 19,
         ),
-        'C' => 
+        'C' =>
         array (
             'Cron\\' => 5,
             'Composer\\Semver\\' => 16,
@@ -274,12 +277,13 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             'Carbon\\Doctrine\\' => 16,
             'Carbon\\' => 7,
         ),
-        'B' => 
+        'B' =>
         array (
             'Brick\\Math\\' => 11,
+            'Base64Url\\' => 10,
             'Barryvdh\\DomPDF\\' => 16,
         ),
-        'A' => 
+        'A' =>
         array (
             'Aws\\' => 4,
             'App\\' => 4,
@@ -287,354 +291,362 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
     );
 
     public static $prefixDirsPsr4 = array (
-        'voku\\' => 
+        'voku\\' =>
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
         ),
-        'phpseclib3\\' => 
+        'phpseclib3\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
         ),
-        'phpDocumentor\\Reflection\\' => 
+        'phpDocumentor\\Reflection\\' =>
         array (
-            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
-            1 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
-            2 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
+            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
+            1 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
+            2 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
         ),
-        'ZipStream\\' => 
+        'ZipStream\\' =>
         array (
             0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
         ),
-        'YooKassa\\Validator\\' => 
+        'YooKassa\\Validator\\' =>
         array (
             0 => __DIR__ . '/..' . '/yoomoney/yookassa-sdk-validator/src',
         ),
-        'YooKassa\\' => 
+        'YooKassa\\' =>
         array (
             0 => __DIR__ . '/..' . '/yoomoney/yookassa-sdk-php/lib',
         ),
-        'WpOrg\\Requests\\' => 
+        'WpOrg\\Requests\\' =>
         array (
             0 => __DIR__ . '/..' . '/rmccue/requests/src',
         ),
-        'Whoops\\' => 
+        'Whoops\\' =>
         array (
             0 => __DIR__ . '/..' . '/filp/whoops/src/Whoops',
         ),
-        'Webmozart\\Assert\\' => 
+        'Webmozart\\Assert\\' =>
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
         ),
-        'TijsVerkoyen\\CssToInlineStyles\\' => 
+        'TijsVerkoyen\\CssToInlineStyles\\' =>
         array (
             0 => __DIR__ . '/..' . '/tijsverkoyen/css-to-inline-styles/src',
         ),
-        'Tighten\\Ziggy\\' => 
+        'Tighten\\Ziggy\\' =>
         array (
             0 => __DIR__ . '/..' . '/tightenco/ziggy/src',
         ),
-        'Tests\\' => 
+        'Tests\\' =>
         array (
             0 => __DIR__ . '/../..' . '/tests',
         ),
-        'Termwind\\' => 
+        'Termwind\\' =>
         array (
             0 => __DIR__ . '/..' . '/nunomaduro/termwind/src',
         ),
-        'Symfony\\Polyfill\\Uuid\\' => 
+        'Symfony\\Polyfill\\Uuid\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-uuid',
         ),
-        'Symfony\\Polyfill\\Php83\\' => 
+        'Symfony\\Polyfill\\Php83\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
         ),
-        'Symfony\\Polyfill\\Php80\\' => 
+        'Symfony\\Polyfill\\Php80\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
         ),
-        'Symfony\\Polyfill\\Mbstring\\' => 
+        'Symfony\\Polyfill\\Mbstring\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
         ),
-        'Symfony\\Polyfill\\Intl\\Normalizer\\' => 
+        'Symfony\\Polyfill\\Intl\\Normalizer\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer',
         ),
-        'Symfony\\Polyfill\\Intl\\Idn\\' => 
+        'Symfony\\Polyfill\\Intl\\Idn\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-idn',
         ),
-        'Symfony\\Polyfill\\Intl\\Grapheme\\' => 
+        'Symfony\\Polyfill\\Intl\\Grapheme\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme',
         ),
-        'Symfony\\Polyfill\\Ctype\\' => 
+        'Symfony\\Polyfill\\Ctype\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
-        'Symfony\\Contracts\\Translation\\' => 
+        'Symfony\\Contracts\\Translation\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/translation-contracts',
         ),
-        'Symfony\\Contracts\\Service\\' => 
+        'Symfony\\Contracts\\Service\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/service-contracts',
         ),
-        'Symfony\\Contracts\\HttpClient\\' => 
+        'Symfony\\Contracts\\HttpClient\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/http-client-contracts',
         ),
-        'Symfony\\Contracts\\EventDispatcher\\' => 
+        'Symfony\\Contracts\\EventDispatcher\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/event-dispatcher-contracts',
         ),
-        'Symfony\\Component\\Yaml\\' => 
+        'Symfony\\Component\\Yaml\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
         ),
-        'Symfony\\Component\\VarDumper\\' => 
+        'Symfony\\Component\\VarDumper\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/var-dumper',
         ),
-        'Symfony\\Component\\Uid\\' => 
+        'Symfony\\Component\\Uid\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/uid',
         ),
-        'Symfony\\Component\\Translation\\' => 
+        'Symfony\\Component\\Translation\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/translation',
         ),
-        'Symfony\\Component\\String\\' => 
+        'Symfony\\Component\\String\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/string',
         ),
-        'Symfony\\Component\\Routing\\' => 
+        'Symfony\\Component\\Routing\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/routing',
         ),
-        'Symfony\\Component\\Process\\' => 
+        'Symfony\\Component\\Process\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/process',
         ),
-        'Symfony\\Component\\OptionsResolver\\' => 
+        'Symfony\\Component\\OptionsResolver\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/options-resolver',
         ),
-        'Symfony\\Component\\Mime\\' => 
+        'Symfony\\Component\\Mime\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/mime',
         ),
-        'Symfony\\Component\\Mailer\\' => 
+        'Symfony\\Component\\Mailer\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/mailer',
         ),
-        'Symfony\\Component\\HttpKernel\\' => 
+        'Symfony\\Component\\HttpKernel\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/http-kernel',
         ),
-        'Symfony\\Component\\HttpFoundation\\' => 
+        'Symfony\\Component\\HttpFoundation\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/http-foundation',
         ),
-        'Symfony\\Component\\HttpClient\\' => 
+        'Symfony\\Component\\HttpClient\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/http-client',
         ),
-        'Symfony\\Component\\Finder\\' => 
+        'Symfony\\Component\\Finder\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/finder',
         ),
-        'Symfony\\Component\\EventDispatcher\\' => 
+        'Symfony\\Component\\EventDispatcher\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
         ),
-        'Symfony\\Component\\ErrorHandler\\' => 
+        'Symfony\\Component\\ErrorHandler\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/error-handler',
         ),
-        'Symfony\\Component\\CssSelector\\' => 
+        'Symfony\\Component\\CssSelector\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/css-selector',
         ),
-        'Symfony\\Component\\Console\\' => 
+        'Symfony\\Component\\Console\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/console',
         ),
-        'Symfony\\Component\\Clock\\' => 
+        'Symfony\\Component\\Clock\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/clock',
         ),
-        'Svg\\' => 
+        'Svg\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-svg-lib/src/Svg',
         ),
-        'Stripe\\' => 
+        'Stripe\\' =>
         array (
             0 => __DIR__ . '/..' . '/stripe/stripe-php/lib',
         ),
-        'Spatie\\TemporaryDirectory\\' => 
+        'SpomkyLabs\\Pki\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/pki-framework/src',
+        ),
+        'Spatie\\TemporaryDirectory\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/temporary-directory/src',
         ),
-        'Spatie\\Permission\\' => 
+        'Spatie\\Permission\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/laravel-permission/src',
         ),
-        'Spatie\\MediaLibrary\\' => 
+        'Spatie\\MediaLibrary\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/laravel-medialibrary/src',
         ),
-        'Spatie\\LaravelPackageTools\\' => 
+        'Spatie\\LaravelPackageTools\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/laravel-package-tools/src',
         ),
-        'Spatie\\Image\\' => 
+        'Spatie\\Image\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/image/src',
         ),
-        'Spatie\\ImageOptimizer\\' => 
+        'Spatie\\ImageOptimizer\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/image-optimizer/src',
         ),
-        'Sentry\\' => 
+        'Sentry\\' =>
         array (
             0 => __DIR__ . '/..' . '/sentry/sentry/src',
         ),
-        'Sabberworm\\CSS\\' => 
+        'Sabberworm\\CSS\\' =>
         array (
             0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/src',
         ),
-        'Razorpay\\Tests\\' => 
+        'Razorpay\\Tests\\' =>
         array (
             0 => __DIR__ . '/..' . '/razorpay/razorpay/tests',
         ),
-        'Razorpay\\Api\\' => 
+        'Razorpay\\Api\\' =>
         array (
             0 => __DIR__ . '/..' . '/razorpay/razorpay/src',
         ),
-        'Ramsey\\Uuid\\' => 
+        'Ramsey\\Uuid\\' =>
         array (
             0 => __DIR__ . '/..' . '/ramsey/uuid/src',
         ),
-        'Ramsey\\Collection\\' => 
+        'Ramsey\\Collection\\' =>
         array (
             0 => __DIR__ . '/..' . '/ramsey/collection/src',
         ),
-        'RachidLaasri\\LaravelInstaller\\' => 
+        'RachidLaasri\\LaravelInstaller\\' =>
         array (
             0 => __DIR__ . '/..' . '/rachidlaasri/laravel-installer/src',
         ),
-        'Psy\\' => 
+        'Psy\\' =>
         array (
             0 => __DIR__ . '/..' . '/psy/psysh/src',
         ),
-        'Psr\\SimpleCache\\' => 
+        'Psr\\SimpleCache\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
         ),
-        'Psr\\Log\\' => 
+        'Psr\\Log\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/log/src',
         ),
-        'Psr\\Http\\Message\\' => 
+        'Psr\\Http\\Message\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-factory/src',
             1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
-        'Psr\\Http\\Client\\' => 
+        'Psr\\Http\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
         ),
-        'Psr\\EventDispatcher\\' => 
+        'Psr\\EventDispatcher\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/event-dispatcher/src',
         ),
-        'Psr\\Container\\' => 
+        'Psr\\Container\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
-        'Psr\\Clock\\' => 
+        'Psr\\Clock\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/clock/src',
         ),
-        'Psr\\Cache\\' => 
+        'Psr\\Cache\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/cache/src',
         ),
-        'PhpParser\\' => 
+        'PhpParser\\' =>
         array (
             0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
         ),
-        'PhpOption\\' => 
+        'PhpOption\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
         ),
-        'Pest\\Plugin\\' => 
+        'Pest\\Plugin\\' =>
         array (
             0 => __DIR__ . '/..' . '/pestphp/pest-plugin/src',
         ),
-        'Pest\\Mutate\\' => 
+        'Pest\\Mutate\\' =>
         array (
             0 => __DIR__ . '/..' . '/pestphp/pest-plugin-mutate/src',
         ),
-        'Pest\\Laravel\\' => 
+        'Pest\\Laravel\\' =>
         array (
             0 => __DIR__ . '/..' . '/pestphp/pest-plugin-laravel/src',
         ),
-        'Pest\\Arch\\' => 
+        'Pest\\Arch\\' =>
         array (
             0 => __DIR__ . '/..' . '/pestphp/pest-plugin-arch/src',
         ),
-        'Pest\\' => 
+        'Pest\\' =>
         array (
             0 => __DIR__ . '/..' . '/pestphp/pest/src',
         ),
-        'Paytabscom\\Laravel_paytabs\\' => 
+        'Paytabscom\\Laravel_paytabs\\' =>
         array (
             0 => __DIR__ . '/..' . '/paytabscom/laravel_paytabs/src',
         ),
-        'ParagonIE\\ConstantTime\\' => 
+        'ParagonIE\\ConstantTime\\' =>
         array (
             0 => __DIR__ . '/..' . '/paragonie/constant_time_encoding/src',
         ),
-        'ParaTest\\' => 
+        'ParaTest\\' =>
         array (
             0 => __DIR__ . '/..' . '/brianium/paratest/src',
         ),
-        'PHPUnit\\Architecture\\' => 
+        'PHPUnit\\Architecture\\' =>
         array (
             0 => __DIR__ . '/..' . '/ta-tikoma/phpunit-architecture-test/src',
         ),
-        'PHPStan\\PhpDocParser\\' => 
+        'PHPStan\\PhpDocParser\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpstan/phpdoc-parser/src',
         ),
-        'OpenAI\\' => 
+        'OpenAI\\' =>
         array (
             0 => __DIR__ . '/..' . '/openai-php/client/src',
         ),
-        'Nyholm\\Psr7\\' => 
+        'Nyholm\\Psr7\\' =>
         array (
             0 => __DIR__ . '/..' . '/nyholm/psr7/src',
         ),
-        'NunoMaduro\\Collision\\' => 
+        'NunoMaduro\\Collision\\' =>
         array (
             0 => __DIR__ . '/..' . '/nunomaduro/collision/src',
         ),
-        'Monolog\\' => 
+        'Monolog\\' =>
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
-        'Mollie\\Api\\' => 
+        'Mollie\\Api\\' =>
         array (
             0 => __DIR__ . '/..' . '/mollie/mollie-api-php/src',
         ),
-        'Mockery\\' => 
+        'Mockery\\' =>
         array (
             0 => __DIR__ . '/..' . '/mockery/mockery/library/Mockery',
         ),
-        'MercadoPago\\' => 
+        'Minishlink\\WebPush\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/minishlink/web-push/src',
+        ),
+        'MercadoPago\\' =>
         array (
             0 => __DIR__ . '/..' . '/mercadopago/dx-php/src/MercadoPago',
             1 => __DIR__ . '/..' . '/mercadopago/dx-php/tests',
@@ -642,278 +654,286 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
             3 => __DIR__ . '/..' . '/mercadopago/dx-php/src/MercadoPago/Entities',
             4 => __DIR__ . '/..' . '/mercadopago/dx-php/src/MercadoPago/Entities/Shared',
         ),
-        'Masterminds\\' => 
+        'Masterminds\\' =>
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
         ),
-        'League\\Uri\\' => 
+        'League\\Uri\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/uri',
             1 => __DIR__ . '/..' . '/league/uri-interfaces',
         ),
-        'League\\OAuth1\\Client\\' => 
+        'League\\OAuth1\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/oauth1-client/src',
         ),
-        'League\\MimeTypeDetection\\' => 
+        'League\\MimeTypeDetection\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/mime-type-detection/src',
         ),
-        'League\\Flysystem\\Local\\' => 
+        'League\\Flysystem\\Local\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/flysystem-local',
         ),
-        'League\\Flysystem\\AwsS3V3\\' => 
+        'League\\Flysystem\\AwsS3V3\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/flysystem-aws-s3-v3',
         ),
-        'League\\Flysystem\\' => 
+        'League\\Flysystem\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/flysystem/src',
         ),
-        'League\\Config\\' => 
+        'League\\Config\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/config/src',
         ),
-        'League\\CommonMark\\' => 
+        'League\\CommonMark\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/commonmark/src',
         ),
-        'Laravel\\Tinker\\' => 
+        'Laravel\\Tinker\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/tinker/src',
         ),
-        'Laravel\\Socialite\\' => 
+        'Laravel\\Socialite\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/socialite/src',
         ),
-        'Laravel\\SerializableClosure\\' => 
+        'Laravel\\SerializableClosure\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/serializable-closure/src',
         ),
-        'Laravel\\Sail\\' => 
+        'Laravel\\Sail\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/sail/src',
         ),
-        'Laravel\\Prompts\\' => 
+        'Laravel\\Prompts\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/prompts/src',
         ),
-        'Laravel\\Pail\\' => 
+        'Laravel\\Pail\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/pail/src',
         ),
-        'LaraBug\\' => 
+        'LaraBug\\' =>
         array (
             0 => __DIR__ . '/..' . '/larabug/larabug/src',
         ),
-        'Lab404\\Impersonate\\' => 
+        'Lab404\\Impersonate\\' =>
         array (
             0 => __DIR__ . '/..' . '/lab404/laravel-impersonate/src',
         ),
-        'JmesPath\\' => 
+        'Jose\\Component\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/web-token/jwt-library',
+        ),
+        'JmesPath\\' =>
         array (
             0 => __DIR__ . '/..' . '/mtdowling/jmespath.php/src',
         ),
-        'Jean85\\' => 
+        'Jean85\\' =>
         array (
             0 => __DIR__ . '/..' . '/jean85/pretty-package-versions/src',
         ),
-        'Iyzipay\\' => 
+        'Iyzipay\\' =>
         array (
             0 => __DIR__ . '/..' . '/iyzico/iyzipay-php/src/Iyzipay',
         ),
-        'Inertia\\' => 
+        'Inertia\\' =>
         array (
             0 => __DIR__ . '/..' . '/inertiajs/inertia-laravel/src',
         ),
-        'Illuminate\\Support\\' => 
+        'Illuminate\\Support\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Macroable',
             1 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Collections',
             2 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Conditionable',
         ),
-        'Illuminate\\' => 
+        'Illuminate\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate',
         ),
-        'Http\\Promise\\' => 
+        'Http\\Promise\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-http/promise/src',
         ),
-        'Http\\Message\\MultipartStream\\' => 
+        'Http\\Message\\MultipartStream\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-http/multipart-stream-builder/src',
         ),
-        'Http\\Message\\' => 
+        'Http\\Message\\' =>
         array (
-            0 => __DIR__ . '/..' . '/php-http/message/src',
-            1 => __DIR__ . '/..' . '/php-http/message-factory/src',
+            0 => __DIR__ . '/..' . '/php-http/message-factory/src',
+            1 => __DIR__ . '/..' . '/php-http/message/src',
         ),
-        'Http\\Factory\\Guzzle\\' => 
+        'Http\\Factory\\Guzzle\\' =>
         array (
             0 => __DIR__ . '/..' . '/http-interop/http-factory-guzzle/src',
         ),
-        'Http\\Discovery\\' => 
+        'Http\\Discovery\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-http/discovery/src',
         ),
-        'Http\\Client\\Common\\' => 
+        'Http\\Client\\Common\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-http/client-common/src',
         ),
-        'Http\\Client\\' => 
+        'Http\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-http/httplug/src',
         ),
-        'GuzzleHttp\\UriTemplate\\' => 
+        'GuzzleHttp\\UriTemplate\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/uri-template/src',
         ),
-        'GuzzleHttp\\Psr7\\' => 
+        'GuzzleHttp\\Psr7\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
         ),
-        'GuzzleHttp\\Promise\\' => 
+        'GuzzleHttp\\Promise\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
         ),
-        'GuzzleHttp\\' => 
+        'GuzzleHttp\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
-        'GrahamCampbell\\ResultType\\' => 
+        'GrahamCampbell\\ResultType\\' =>
         array (
             0 => __DIR__ . '/..' . '/graham-campbell/result-type/src',
         ),
-        'Fruitcake\\Cors\\' => 
+        'Fruitcake\\Cors\\' =>
         array (
             0 => __DIR__ . '/..' . '/fruitcake/php-cors/src',
         ),
-        'FontLib\\' => 
+        'FontLib\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/php-font-lib/src/FontLib',
         ),
-        'Firebase\\JWT\\' => 
+        'Firebase\\JWT\\' =>
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
         ),
-        'Fidry\\CpuCoreCounter\\' => 
+        'Fidry\\CpuCoreCounter\\' =>
         array (
             0 => __DIR__ . '/..' . '/fidry/cpu-core-counter/src',
         ),
-        'FedaPay\\' => 
+        'FedaPay\\' =>
         array (
             0 => __DIR__ . '/..' . '/fedapay/fedapay-php/lib',
         ),
-        'Faker\\' => 
+        'Faker\\' =>
         array (
             0 => __DIR__ . '/..' . '/fakerphp/faker/src/Faker',
         ),
-        'Egulias\\EmailValidator\\' => 
+        'Egulias\\EmailValidator\\' =>
         array (
             0 => __DIR__ . '/..' . '/egulias/email-validator/src',
         ),
-        'Ds\\' => 
+        'Ds\\' =>
         array (
             0 => __DIR__ . '/..' . '/php-ds/php-ds/src',
         ),
-        'Dotenv\\' => 
+        'Dotenv\\' =>
         array (
             0 => __DIR__ . '/..' . '/vlucas/phpdotenv/src',
         ),
-        'Dompdf\\' => 
+        'Dompdf\\' =>
         array (
             0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
         ),
-        'Doctrine\\Persistence\\' => 
+        'Doctrine\\Persistence\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/persistence/src/Persistence',
         ),
-        'Doctrine\\Inflector\\' => 
+        'Doctrine\\Inflector\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/inflector/lib/Doctrine/Inflector',
         ),
-        'Doctrine\\Deprecations\\' => 
+        'Doctrine\\Deprecations\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/deprecations/src',
         ),
-        'Doctrine\\Common\\Lexer\\' => 
+        'Doctrine\\Common\\Lexer\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/lexer/src',
         ),
-        'Doctrine\\Common\\Annotations\\' => 
+        'Doctrine\\Common\\Annotations\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/annotations/lib/Doctrine/Common/Annotations',
         ),
-        'Doctrine\\Common\\' => 
+        'Doctrine\\Common\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/common/src',
             1 => __DIR__ . '/..' . '/doctrine/event-manager/src',
         ),
-        'Dflydev\\DotAccessData\\' => 
+        'Dflydev\\DotAccessData\\' =>
         array (
             0 => __DIR__ . '/..' . '/dflydev/dot-access-data/src',
         ),
-        'DeepCopy\\' => 
+        'DeepCopy\\' =>
         array (
             0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
         ),
-        'Database\\Seeders\\' => 
+        'Database\\Seeders\\' =>
         array (
             0 => __DIR__ . '/../..' . '/database/seeders',
             1 => __DIR__ . '/..' . '/laravel/pint/database/seeders',
         ),
-        'Database\\Factories\\' => 
+        'Database\\Factories\\' =>
         array (
             0 => __DIR__ . '/../..' . '/database/factories',
             1 => __DIR__ . '/..' . '/laravel/pint/database/factories',
         ),
-        'Cron\\' => 
+        'Cron\\' =>
         array (
             0 => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron',
         ),
-        'Composer\\Semver\\' => 
+        'Composer\\Semver\\' =>
         array (
             0 => __DIR__ . '/..' . '/composer/semver/src',
         ),
-        'Composer\\CaBundle\\' => 
+        'Composer\\CaBundle\\' =>
         array (
             0 => __DIR__ . '/..' . '/composer/ca-bundle/src',
         ),
-        'CoinGate\\' => 
+        'CoinGate\\' =>
         array (
             0 => __DIR__ . '/..' . '/coingate/coingate-php/lib',
         ),
-        'Clue\\StreamFilter\\' => 
+        'Clue\\StreamFilter\\' =>
         array (
             0 => __DIR__ . '/..' . '/clue/stream-filter/src',
         ),
-        'Cashfree\\' => 
+        'Cashfree\\' =>
         array (
             0 => __DIR__ . '/..' . '/cashfree/cashfree-pg/lib',
         ),
-        'Carbon\\Doctrine\\' => 
+        'Carbon\\Doctrine\\' =>
         array (
             0 => __DIR__ . '/..' . '/carbonphp/carbon-doctrine-types/src/Carbon/Doctrine',
         ),
-        'Carbon\\' => 
+        'Carbon\\' =>
         array (
             0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
         ),
-        'Brick\\Math\\' => 
+        'Brick\\Math\\' =>
         array (
             0 => __DIR__ . '/..' . '/brick/math/src',
         ),
-        'Barryvdh\\DomPDF\\' => 
+        'Base64Url\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/base64url/src',
+        ),
+        'Barryvdh\\DomPDF\\' =>
         array (
             0 => __DIR__ . '/..' . '/barryvdh/laravel-dompdf/src',
         ),
-        'Aws\\' => 
+        'Aws\\' =>
         array (
             0 => __DIR__ . '/..' . '/aws/aws-sdk-php/src',
         ),
-        'App\\' => 
+        'App\\' =>
         array (
             0 => __DIR__ . '/../..' . '/app',
             1 => __DIR__ . '/..' . '/laravel/pint/app',
@@ -945,6 +965,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'AWS\\CRT\\OptionValue' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Options.php',
         'AWS\\CRT\\Options' => __DIR__ . '/..' . '/aws/aws-crt-php/src/AWS/CRT/Options.php',
         'App\\Console\\Commands\\AssignDefaultPlanToUsers' => __DIR__ . '/../..' . '/app/Console/Commands/AssignDefaultPlanToUsers.php',
+        'App\\Console\\Commands\\CheckAbandonedCarts' => __DIR__ . '/../..' . '/app/Console/Commands/CheckAbandonedCarts.php',
         'App\\Console\\Commands\\GenerateAppleClientSecret' => __DIR__ . '/../..' . '/app/Console/Commands/GenerateAppleClientSecret.php',
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
         'App\\Events\\CustomerCreated' => __DIR__ . '/../..' . '/app/Events/CustomerCreated.php',
@@ -955,6 +976,9 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Events\\UserCreated' => __DIR__ . '/../..' . '/app/Events/UserCreated.php',
         'App\\Http\\Controllers\\AIChatController' => __DIR__ . '/../..' . '/app/Http/Controllers/AIChatController.php',
         'App\\Http\\Controllers\\AamarpayPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/AamarpayPaymentController.php',
+        'App\\Http\\Controllers\\AbandonedCartController' => __DIR__ . '/../..' . '/app/Http/Controllers/AbandonedCartController.php',
+        'App\\Http\\Controllers\\AccountingWebhookController' => __DIR__ . '/../..' . '/app/Http/Controllers/AccountingWebhookController.php',
+        'App\\Http\\Controllers\\AdvancedCouponController' => __DIR__ . '/../..' . '/app/Http/Controllers/AdvancedCouponController.php',
         'App\\Http\\Controllers\\AnalyticsController' => __DIR__ . '/../..' . '/app/Http/Controllers/AnalyticsController.php',
         'App\\Http\\Controllers\\Api\\CartController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/CartController.php',
         'App\\Http\\Controllers\\Api\\CouponController' => __DIR__ . '/../..' . '/app/Http/Controllers/Api/CouponController.php',
@@ -982,6 +1006,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Http\\Controllers\\ChatGptController' => __DIR__ . '/../..' . '/app/Http/Controllers/ChatGptController.php',
         'App\\Http\\Controllers\\CinetPayPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/CinetPayPaymentController.php',
         'App\\Http\\Controllers\\CityController' => __DIR__ . '/../..' . '/app/Http/Controllers/CityController.php',
+        'App\\Http\\Controllers\\CodPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/CodPaymentController.php',
         'App\\Http\\Controllers\\CoinGatePaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/CoinGatePaymentController.php',
         'App\\Http\\Controllers\\CompanyController' => __DIR__ . '/../..' . '/app/Http/Controllers/CompanyController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
@@ -991,6 +1016,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Http\\Controllers\\CurrencyController' => __DIR__ . '/../..' . '/app/Http/Controllers/CurrencyController.php',
         'App\\Http\\Controllers\\CustomerController' => __DIR__ . '/../..' . '/app/Http/Controllers/CustomerController.php',
         'App\\Http\\Controllers\\DashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/DashboardController.php',
+        'App\\Http\\Controllers\\DigitalDownloadController' => __DIR__ . '/../..' . '/app/Http/Controllers/DigitalDownloadController.php',
         'App\\Http\\Controllers\\EasebuzzPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/EasebuzzPaymentController.php',
         'App\\Http\\Controllers\\EmailTemplateController' => __DIR__ . '/../..' . '/app/Http/Controllers/EmailTemplateController.php',
         'App\\Http\\Controllers\\ExpressCheckoutController' => __DIR__ . '/../..' . '/app/Http/Controllers/ExpressCheckoutController.php',
@@ -1005,11 +1031,13 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Http\\Controllers\\LandingPage\\CustomPageController' => __DIR__ . '/../..' . '/app/Http/Controllers/LandingPage/CustomPageController.php',
         'App\\Http\\Controllers\\LandingPage\\NewsletterController' => __DIR__ . '/../..' . '/app/Http/Controllers/LandingPage/NewsletterController.php',
         'App\\Http\\Controllers\\LanguageController' => __DIR__ . '/../..' . '/app/Http/Controllers/LanguageController.php',
+        'App\\Http\\Controllers\\LoyaltyController' => __DIR__ . '/../..' . '/app/Http/Controllers/LoyaltyController.php',
         'App\\Http\\Controllers\\MediaController' => __DIR__ . '/../..' . '/app/Http/Controllers/MediaController.php',
         'App\\Http\\Controllers\\MercadoPagoController' => __DIR__ . '/../..' . '/app/Http/Controllers/MercadoPagoController.php',
         'App\\Http\\Controllers\\MidtransPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/MidtransPaymentController.php',
         'App\\Http\\Controllers\\MolliePaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/MolliePaymentController.php',
         'App\\Http\\Controllers\\NepalstePaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/NepalstePaymentController.php',
+        'App\\Http\\Controllers\\NotificationController' => __DIR__ . '/../..' . '/app/Http/Controllers/NotificationController.php',
         'App\\Http\\Controllers\\NotificationTemplateController' => __DIR__ . '/../..' . '/app/Http/Controllers/NotificationTemplateController.php',
         'App\\Http\\Controllers\\OrderController' => __DIR__ . '/../..' . '/app/Http/Controllers/OrderController.php',
         'App\\Http\\Controllers\\OzowPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/OzowPaymentController.php',
@@ -1026,9 +1054,12 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Http\\Controllers\\PlanOrderController' => __DIR__ . '/../..' . '/app/Http/Controllers/PlanOrderController.php',
         'App\\Http\\Controllers\\PlanRequestController' => __DIR__ . '/../..' . '/app/Http/Controllers/PlanRequestController.php',
         'App\\Http\\Controllers\\ProductController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductController.php',
+        'App\\Http\\Controllers\\ProductReviewController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductReviewController.php',
+        'App\\Http\\Controllers\\PushSubscriptionController' => __DIR__ . '/../..' . '/app/Http/Controllers/PushSubscriptionController.php',
         'App\\Http\\Controllers\\RazorpayController' => __DIR__ . '/../..' . '/app/Http/Controllers/RazorpayController.php',
         'App\\Http\\Controllers\\ReferralController' => __DIR__ . '/../..' . '/app/Http/Controllers/ReferralController.php',
         'App\\Http\\Controllers\\RoleController' => __DIR__ . '/../..' . '/app/Http/Controllers/RoleController.php',
+        'App\\Http\\Controllers\\Settings\\AccountingSettingController' => __DIR__ . '/../..' . '/app/Http/Controllers/Settings/AccountingSettingController.php',
         'App\\Http\\Controllers\\Settings\\CurrencySettingController' => __DIR__ . '/../..' . '/app/Http/Controllers/Settings/CurrencySettingController.php',
         'App\\Http\\Controllers\\Settings\\EmailSettingController' => __DIR__ . '/../..' . '/app/Http/Controllers/Settings/EmailSettingController.php',
         'App\\Http\\Controllers\\Settings\\PasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Settings/PasswordController.php',
@@ -1042,13 +1073,16 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Http\\Controllers\\SitemapController' => __DIR__ . '/../..' . '/app/Http/Controllers/SitemapController.php',
         'App\\Http\\Controllers\\SkrillPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/SkrillPaymentController.php',
         'App\\Http\\Controllers\\StateController' => __DIR__ . '/../..' . '/app/Http/Controllers/StateController.php',
+        'App\\Http\\Controllers\\StoreAppearanceController' => __DIR__ . '/../..' . '/app/Http/Controllers/StoreAppearanceController.php',
         'App\\Http\\Controllers\\StoreController' => __DIR__ . '/../..' . '/app/Http/Controllers/StoreController.php',
         'App\\Http\\Controllers\\StoreCouponController' => __DIR__ . '/../..' . '/app/Http/Controllers/StoreCouponController.php',
+        'App\\Http\\Controllers\\StoreDomainController' => __DIR__ . '/../..' . '/app/Http/Controllers/StoreDomainController.php',
         'App\\Http\\Controllers\\StoreFrontController' => __DIR__ . '/../..' . '/app/Http/Controllers/StoreFrontController.php',
         'App\\Http\\Controllers\\StoreSettingsController' => __DIR__ . '/../..' . '/app/Http/Controllers/StoreSettingsController.php',
         'App\\Http\\Controllers\\StoreSwitcherController' => __DIR__ . '/../..' . '/app/Http/Controllers/StoreSwitcherController.php',
         'App\\Http\\Controllers\\Store\\AuthController' => __DIR__ . '/../..' . '/app/Http/Controllers/Store/AuthController.php',
         'App\\Http\\Controllers\\Store\\BenefitController' => __DIR__ . '/../..' . '/app/Http/Controllers/Store/BenefitController.php',
+        'App\\Http\\Controllers\\Store\\CartTrackingController' => __DIR__ . '/../..' . '/app/Http/Controllers/Store/CartTrackingController.php',
         'App\\Http\\Controllers\\Store\\CashfreeController' => __DIR__ . '/../..' . '/app/Http/Controllers/Store/CashfreeController.php',
         'App\\Http\\Controllers\\Store\\CoinGateController' => __DIR__ . '/../..' . '/app/Http/Controllers/Store/CoinGateController.php',
         'App\\Http\\Controllers\\Store\\FlutterwaveController' => __DIR__ . '/../..' . '/app/Http/Controllers/Store/FlutterwaveController.php',
@@ -1099,6 +1133,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Http\\Requests\\RoleRequest' => __DIR__ . '/../..' . '/app/Http/Requests/RoleRequest.php',
         'App\\Http\\Requests\\Settings\\ProfileUpdateRequest' => __DIR__ . '/../..' . '/app/Http/Requests/Settings/ProfileUpdateRequest.php',
         'App\\Http\\Requests\\UserRequest' => __DIR__ . '/../..' . '/app/Http/Requests/UserRequest.php',
+        'App\\Jobs\\SyncOrderToAccounting' => __DIR__ . '/../..' . '/app/Jobs/SyncOrderToAccounting.php',
         'App\\Libraries\\Coingate\\Coingate' => __DIR__ . '/../..' . '/app/Libraries/Coingate/Coingate.php',
         'App\\Listeners\\HandleWebhooks' => __DIR__ . '/../..' . '/app/Listeners/HandleWebhooks.php',
         'App\\Listeners\\SendOrderCreatedEmail' => __DIR__ . '/../..' . '/app/Listeners/SendOrderCreatedEmail.php',
@@ -1107,8 +1142,12 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Listeners\\SendStoreCreatedEmail' => __DIR__ . '/../..' . '/app/Listeners/SendStoreCreatedEmail.php',
         'App\\Listeners\\SendUniversalNotification' => __DIR__ . '/../..' . '/app/Listeners/SendUniversalNotification.php',
         'App\\Listeners\\SendUserCreatedEmail' => __DIR__ . '/../..' . '/app/Listeners/SendUserCreatedEmail.php',
+        'App\\Mail\\AbandonedCartReminderMail' => __DIR__ . '/../..' . '/app/Mail/AbandonedCartReminderMail.php',
         'App\\Mail\\CustomerPasswordResetMail' => __DIR__ . '/../..' . '/app/Mail/CustomerPasswordResetMail.php',
         'App\\Mail\\TestMail' => __DIR__ . '/../..' . '/app/Mail/TestMail.php',
+        'App\\Models\\AbandonedCart' => __DIR__ . '/../..' . '/app/Models/AbandonedCart.php',
+        'App\\Models\\AccountingIntegration' => __DIR__ . '/../..' . '/app/Models/AccountingIntegration.php',
+        'App\\Models\\AdvancedCoupon' => __DIR__ . '/../..' . '/app/Models/AdvancedCoupon.php',
         'App\\Models\\BaseAuthenticatable' => __DIR__ . '/../..' . '/app/Models/BaseAuthenticatable.php',
         'App\\Models\\BaseModel' => __DIR__ . '/../..' . '/app/Models/BaseModel.php',
         'App\\Models\\BaseSpatiePermission' => __DIR__ . '/../..' . '/app/Models/BaseSpatiePermission.php',
@@ -1116,21 +1155,30 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Models\\CartItem' => __DIR__ . '/../..' . '/app/Models/CartItem.php',
         'App\\Models\\Category' => __DIR__ . '/../..' . '/app/Models/Category.php',
         'App\\Models\\City' => __DIR__ . '/../..' . '/app/Models/City.php',
+        'App\\Models\\CodPayment' => __DIR__ . '/../..' . '/app/Models/CodPayment.php',
+        'App\\Models\\CodPaymentHistory' => __DIR__ . '/../..' . '/app/Models/CodPaymentHistory.php',
         'App\\Models\\Contact' => __DIR__ . '/../..' . '/app/Models/Contact.php',
         'App\\Models\\Country' => __DIR__ . '/../..' . '/app/Models/Country.php',
         'App\\Models\\Coupon' => __DIR__ . '/../..' . '/app/Models/Coupon.php',
+        'App\\Models\\CouponRegion' => __DIR__ . '/../..' . '/app/Models/CouponRegion.php',
+        'App\\Models\\CouponUsage' => __DIR__ . '/../..' . '/app/Models/CouponUsage.php',
         'App\\Models\\Currency' => __DIR__ . '/../..' . '/app/Models/Currency.php',
         'App\\Models\\Customer' => __DIR__ . '/../..' . '/app/Models/Customer.php',
         'App\\Models\\CustomerAddress' => __DIR__ . '/../..' . '/app/Models/CustomerAddress.php',
+        'App\\Models\\CustomerNotification' => __DIR__ . '/../..' . '/app/Models/CustomerNotification.php',
+        'App\\Models\\DigitalDownload' => __DIR__ . '/../..' . '/app/Models/DigitalDownload.php',
         'App\\Models\\EmailTemplate' => __DIR__ . '/../..' . '/app/Models/EmailTemplate.php',
         'App\\Models\\EmailTemplateLang' => __DIR__ . '/../..' . '/app/Models/EmailTemplateLang.php',
         'App\\Models\\ExpressCheckout' => __DIR__ . '/../..' . '/app/Models/ExpressCheckout.php',
         'App\\Models\\LandingPage' => __DIR__ . '/../..' . '/app/Models/LandingPage.php',
         'App\\Models\\LandingPageCustomPage' => __DIR__ . '/../..' . '/app/Models/LandingPageCustomPage.php',
         'App\\Models\\LandingPageSetting' => __DIR__ . '/../..' . '/app/Models/LandingPageSetting.php',
+        'App\\Models\\LoyaltySetting' => __DIR__ . '/../..' . '/app/Models/LoyaltySetting.php',
+        'App\\Models\\LoyaltyTransaction' => __DIR__ . '/../..' . '/app/Models/LoyaltyTransaction.php',
         'App\\Models\\MediaItem' => __DIR__ . '/../..' . '/app/Models/MediaItem.php',
         'App\\Models\\Newsletter' => __DIR__ . '/../..' . '/app/Models/Newsletter.php',
         'App\\Models\\Notification' => __DIR__ . '/../..' . '/app/Models/Notification.php',
+        'App\\Models\\NotificationPreference' => __DIR__ . '/../..' . '/app/Models/NotificationPreference.php',
         'App\\Models\\NotificationTemplateLang' => __DIR__ . '/../..' . '/app/Models/NotificationTemplateLang.php',
         'App\\Models\\Order' => __DIR__ . '/../..' . '/app/Models/Order.php',
         'App\\Models\\OrderItem' => __DIR__ . '/../..' . '/app/Models/OrderItem.php',
@@ -1141,6 +1189,8 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Models\\PlanOrder' => __DIR__ . '/../..' . '/app/Models/PlanOrder.php',
         'App\\Models\\PlanRequest' => __DIR__ . '/../..' . '/app/Models/PlanRequest.php',
         'App\\Models\\Product' => __DIR__ . '/../..' . '/app/Models/Product.php',
+        'App\\Models\\ProductReview' => __DIR__ . '/../..' . '/app/Models/ProductReview.php',
+        'App\\Models\\PushSubscription' => __DIR__ . '/../..' . '/app/Models/PushSubscription.php',
         'App\\Models\\Referral' => __DIR__ . '/../..' . '/app/Models/Referral.php',
         'App\\Models\\ReferralSetting' => __DIR__ . '/../..' . '/app/Models/ReferralSetting.php',
         'App\\Models\\Role' => __DIR__ . '/../..' . '/app/Models/Role.php',
@@ -1149,7 +1199,9 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Models\\State' => __DIR__ . '/../..' . '/app/Models/State.php',
         'App\\Models\\Store' => __DIR__ . '/../..' . '/app/Models/Store.php',
         'App\\Models\\StoreConfiguration' => __DIR__ . '/../..' . '/app/Models/StoreConfiguration.php',
+        'App\\Models\\StoreConfigurationRevision' => __DIR__ . '/../..' . '/app/Models/StoreConfigurationRevision.php',
         'App\\Models\\StoreCoupon' => __DIR__ . '/../..' . '/app/Models/StoreCoupon.php',
+        'App\\Models\\StoreDomain' => __DIR__ . '/../..' . '/app/Models/StoreDomain.php',
         'App\\Models\\StoreSetting' => __DIR__ . '/../..' . '/app/Models/StoreSetting.php',
         'App\\Models\\Tax' => __DIR__ . '/../..' . '/app/Models/Tax.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
@@ -1164,9 +1216,14 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\EventServiceProvider' => __DIR__ . '/../..' . '/app/Providers/EventServiceProvider.php',
         'App\\Providers\\StorageServiceProvider' => __DIR__ . '/../..' . '/app/Providers/StorageServiceProvider.php',
+        'App\\Services\\AbandonedCartService' => __DIR__ . '/../..' . '/app/Services/AbandonedCartService.php',
+        'App\\Services\\AccountingService' => __DIR__ . '/../..' . '/app/Services/AccountingService.php',
+        'App\\Services\\AdvancedCouponService' => __DIR__ . '/../..' . '/app/Services/AdvancedCouponService.php',
         'App\\Services\\CartCalculationService' => __DIR__ . '/../..' . '/app/Services/CartCalculationService.php',
+        'App\\Services\\CodPaymentService' => __DIR__ . '/../..' . '/app/Services/CodPaymentService.php',
         'App\\Services\\DynamicStorageService' => __DIR__ . '/../..' . '/app/Services/DynamicStorageService.php',
         'App\\Services\\EmailTemplateService' => __DIR__ . '/../..' . '/app/Services/EmailTemplateService.php',
+        'App\\Services\\LoyaltyService' => __DIR__ . '/../..' . '/app/Services/LoyaltyService.php',
         'App\\Services\\MailConfigService' => __DIR__ . '/../..' . '/app/Services/MailConfigService.php',
         'App\\Services\\NotificationService' => __DIR__ . '/../..' . '/app/Services/NotificationService.php',
         'App\\Services\\OrderService' => __DIR__ . '/../..' . '/app/Services/OrderService.php',
@@ -2310,6 +2367,7 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'Barryvdh\\DomPDF\\Facade\\Pdf' => __DIR__ . '/..' . '/barryvdh/laravel-dompdf/src/Facade/Pdf.php',
         'Barryvdh\\DomPDF\\PDF' => __DIR__ . '/..' . '/barryvdh/laravel-dompdf/src/PDF.php',
         'Barryvdh\\DomPDF\\ServiceProvider' => __DIR__ . '/..' . '/barryvdh/laravel-dompdf/src/ServiceProvider.php',
+        'Base64Url\\Base64Url' => __DIR__ . '/..' . '/spomky-labs/base64url/src/Base64Url.php',
         'Brick\\Math\\BigDecimal' => __DIR__ . '/..' . '/brick/math/src/BigDecimal.php',
         'Brick\\Math\\BigInteger' => __DIR__ . '/..' . '/brick/math/src/BigInteger.php',
         'Brick\\Math\\BigNumber' => __DIR__ . '/..' . '/brick/math/src/BigNumber.php',
@@ -5890,6 +5948,208 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'JmesPath\\TreeCompiler' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/TreeCompiler.php',
         'JmesPath\\TreeInterpreter' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/TreeInterpreter.php',
         'JmesPath\\Utils' => __DIR__ . '/..' . '/mtdowling/jmespath.php/src/Utils.php',
+        'Jose\\Component\\Checker\\AlgorithmChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/AlgorithmChecker.php',
+        'Jose\\Component\\Checker\\AudienceChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/AudienceChecker.php',
+        'Jose\\Component\\Checker\\CallableChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/CallableChecker.php',
+        'Jose\\Component\\Checker\\ClaimChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/ClaimChecker.php',
+        'Jose\\Component\\Checker\\ClaimCheckerManager' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/ClaimCheckerManager.php',
+        'Jose\\Component\\Checker\\ClaimCheckerManagerFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/ClaimCheckerManagerFactory.php',
+        'Jose\\Component\\Checker\\ClaimExceptionInterface' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/ClaimExceptionInterface.php',
+        'Jose\\Component\\Checker\\ExpirationTimeChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/ExpirationTimeChecker.php',
+        'Jose\\Component\\Checker\\HeaderChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/HeaderChecker.php',
+        'Jose\\Component\\Checker\\HeaderCheckerManager' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/HeaderCheckerManager.php',
+        'Jose\\Component\\Checker\\HeaderCheckerManagerFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/HeaderCheckerManagerFactory.php',
+        'Jose\\Component\\Checker\\InvalidClaimException' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/InvalidClaimException.php',
+        'Jose\\Component\\Checker\\InvalidHeaderException' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/InvalidHeaderException.php',
+        'Jose\\Component\\Checker\\IsEqualChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/IsEqualChecker.php',
+        'Jose\\Component\\Checker\\IssuedAtChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/IssuedAtChecker.php',
+        'Jose\\Component\\Checker\\IssuerChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/IssuerChecker.php',
+        'Jose\\Component\\Checker\\MissingMandatoryClaimException' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/MissingMandatoryClaimException.php',
+        'Jose\\Component\\Checker\\MissingMandatoryHeaderParameterException' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/MissingMandatoryHeaderParameterException.php',
+        'Jose\\Component\\Checker\\NotBeforeChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/NotBeforeChecker.php',
+        'Jose\\Component\\Checker\\TokenTypeSupport' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/TokenTypeSupport.php',
+        'Jose\\Component\\Checker\\UnencodedPayloadChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Checker/UnencodedPayloadChecker.php',
+        'Jose\\Component\\Console\\AddKeyIntoKeysetCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/AddKeyIntoKeysetCommand.php',
+        'Jose\\Component\\Console\\EcKeyGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/EcKeyGeneratorCommand.php',
+        'Jose\\Component\\Console\\EcKeysetGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/EcKeysetGeneratorCommand.php',
+        'Jose\\Component\\Console\\GeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/GeneratorCommand.php',
+        'Jose\\Component\\Console\\GetThumbprintCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/GetThumbprintCommand.php',
+        'Jose\\Component\\Console\\JKULoaderCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/JKULoaderCommand.php',
+        'Jose\\Component\\Console\\KeyAnalyzerCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/KeyAnalyzerCommand.php',
+        'Jose\\Component\\Console\\KeyFileLoaderCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/KeyFileLoaderCommand.php',
+        'Jose\\Component\\Console\\KeysetAnalyzerCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/KeysetAnalyzerCommand.php',
+        'Jose\\Component\\Console\\MergeKeysetCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/MergeKeysetCommand.php',
+        'Jose\\Component\\Console\\NoneKeyGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/NoneKeyGeneratorCommand.php',
+        'Jose\\Component\\Console\\ObjectOutputCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/ObjectOutputCommand.php',
+        'Jose\\Component\\Console\\OctKeyGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/OctKeyGeneratorCommand.php',
+        'Jose\\Component\\Console\\OctKeysetGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/OctKeysetGeneratorCommand.php',
+        'Jose\\Component\\Console\\OkpKeyGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/OkpKeyGeneratorCommand.php',
+        'Jose\\Component\\Console\\OkpKeysetGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/OkpKeysetGeneratorCommand.php',
+        'Jose\\Component\\Console\\OptimizeRsaKeyCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/OptimizeRsaKeyCommand.php',
+        'Jose\\Component\\Console\\P12CertificateLoaderCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/P12CertificateLoaderCommand.php',
+        'Jose\\Component\\Console\\PemConverterCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/PemConverterCommand.php',
+        'Jose\\Component\\Console\\PublicKeyCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/PublicKeyCommand.php',
+        'Jose\\Component\\Console\\PublicKeysetCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/PublicKeysetCommand.php',
+        'Jose\\Component\\Console\\RotateKeysetCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/RotateKeysetCommand.php',
+        'Jose\\Component\\Console\\RsaKeyGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/RsaKeyGeneratorCommand.php',
+        'Jose\\Component\\Console\\RsaKeysetGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/RsaKeysetGeneratorCommand.php',
+        'Jose\\Component\\Console\\SecretKeyGeneratorCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/SecretKeyGeneratorCommand.php',
+        'Jose\\Component\\Console\\X509CertificateLoaderCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/X509CertificateLoaderCommand.php',
+        'Jose\\Component\\Console\\X5ULoaderCommand' => __DIR__ . '/..' . '/web-token/jwt-library/Console/X5ULoaderCommand.php',
+        'Jose\\Component\\Core\\Algorithm' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Algorithm.php',
+        'Jose\\Component\\Core\\AlgorithmManager' => __DIR__ . '/..' . '/web-token/jwt-library/Core/AlgorithmManager.php',
+        'Jose\\Component\\Core\\AlgorithmManagerFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Core/AlgorithmManagerFactory.php',
+        'Jose\\Component\\Core\\JWK' => __DIR__ . '/..' . '/web-token/jwt-library/Core/JWK.php',
+        'Jose\\Component\\Core\\JWKSet' => __DIR__ . '/..' . '/web-token/jwt-library/Core/JWKSet.php',
+        'Jose\\Component\\Core\\JWT' => __DIR__ . '/..' . '/web-token/jwt-library/Core/JWT.php',
+        'Jose\\Component\\Core\\Util\\Base64UrlSafe' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Base64UrlSafe.php',
+        'Jose\\Component\\Core\\Util\\BigInteger' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/BigInteger.php',
+        'Jose\\Component\\Core\\Util\\ECKey' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/ECKey.php',
+        'Jose\\Component\\Core\\Util\\ECSignature' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/ECSignature.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\Curve' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/Curve.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\EcDH' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/EcDH.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\Math' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/Math.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\ModularArithmetic' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/ModularArithmetic.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\NistCurve' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/NistCurve.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\Point' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/Point.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\PrivateKey' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/PrivateKey.php',
+        'Jose\\Component\\Core\\Util\\Ecc\\PublicKey' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Ecc/PublicKey.php',
+        'Jose\\Component\\Core\\Util\\Hash' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/Hash.php',
+        'Jose\\Component\\Core\\Util\\JsonConverter' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/JsonConverter.php',
+        'Jose\\Component\\Core\\Util\\KeyChecker' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/KeyChecker.php',
+        'Jose\\Component\\Core\\Util\\RSAKey' => __DIR__ . '/..' . '/web-token/jwt-library/Core/Util/RSAKey.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryptionAlgorithm' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryptionAlgorithm.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\A128CBCHS256' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/A128CBCHS256.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\A128GCM' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/A128GCM.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\A192CBCHS384' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/A192CBCHS384.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\A192GCM' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/A192GCM.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\A256CBCHS512' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/A256CBCHS512.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\A256GCM' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/A256GCM.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\AESCBCHS' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/AESCBCHS.php',
+        'Jose\\Component\\Encryption\\Algorithm\\ContentEncryption\\AESGCM' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/ContentEncryption/AESGCM.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryptionAlgorithm' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryptionAlgorithm.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\A128GCMKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/A128GCMKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\A128KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/A128KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\A192GCMKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/A192GCMKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\A192KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/A192KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\A256GCMKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/A256GCMKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\A256KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/A256KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\AESGCMKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/AESGCMKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\AESKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/AESKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\AbstractECDH' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/AbstractECDH.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\AbstractECDHAESKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/AbstractECDHAESKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\Dir' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/Dir.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\DirectEncryption' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/DirectEncryption.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHES' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHES.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHESA128KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHESA128KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHESA192KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHESA192KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHESA256KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHESA256KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHESAESKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHESAESKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHSS' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHSS.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHSSA128KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHSSA128KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHSSA192KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHSSA192KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHSSA256KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHSSA256KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\ECDHSSAESKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/ECDHSSAESKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\KeyAgreement' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/KeyAgreement.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\KeyAgreementWithKeyWrapping' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/KeyAgreementWithKeyWrapping.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\KeyEncryption' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/KeyEncryption.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\KeyWrapping' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/KeyWrapping.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\PBES2AESKW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/PBES2AESKW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\PBES2HS256A128KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/PBES2HS256A128KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\PBES2HS384A192KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/PBES2HS384A192KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\PBES2HS512A256KW' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/PBES2HS512A256KW.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\RSA' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/RSA.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\RSA15' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/RSA15.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\RSAOAEP' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/RSAOAEP.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\RSAOAEP256' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/RSAOAEP256.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\Util\\ConcatKDF' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/Util/ConcatKDF.php',
+        'Jose\\Component\\Encryption\\Algorithm\\KeyEncryption\\Util\\RSACrypt' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Algorithm/KeyEncryption/Util/RSACrypt.php',
+        'Jose\\Component\\Encryption\\JWE' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWE.php',
+        'Jose\\Component\\Encryption\\JWEBuilder' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWEBuilder.php',
+        'Jose\\Component\\Encryption\\JWEBuilderFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWEBuilderFactory.php',
+        'Jose\\Component\\Encryption\\JWEDecrypter' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWEDecrypter.php',
+        'Jose\\Component\\Encryption\\JWEDecrypterFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWEDecrypterFactory.php',
+        'Jose\\Component\\Encryption\\JWELoader' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWELoader.php',
+        'Jose\\Component\\Encryption\\JWELoaderFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWELoaderFactory.php',
+        'Jose\\Component\\Encryption\\JWETokenSupport' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/JWETokenSupport.php',
+        'Jose\\Component\\Encryption\\Recipient' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Recipient.php',
+        'Jose\\Component\\Encryption\\Serializer\\CompactSerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Serializer/CompactSerializer.php',
+        'Jose\\Component\\Encryption\\Serializer\\JSONFlattenedSerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Serializer/JSONFlattenedSerializer.php',
+        'Jose\\Component\\Encryption\\Serializer\\JSONGeneralSerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Serializer/JSONGeneralSerializer.php',
+        'Jose\\Component\\Encryption\\Serializer\\JWESerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Serializer/JWESerializer.php',
+        'Jose\\Component\\Encryption\\Serializer\\JWESerializerManager' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Serializer/JWESerializerManager.php',
+        'Jose\\Component\\Encryption\\Serializer\\JWESerializerManagerFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Encryption/Serializer/JWESerializerManagerFactory.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\AlgorithmAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/AlgorithmAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\ES256KeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/ES256KeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\ES384KeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/ES384KeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\ES512KeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/ES512KeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\ESKeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/ESKeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\HS256KeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/HS256KeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\HS384KeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/HS384KeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\HS512KeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/HS512KeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\HSKeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/HSKeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\KeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/KeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\KeyAnalyzerManager' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/KeyAnalyzerManager.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\KeyIdentifierAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/KeyIdentifierAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\KeysetAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/KeysetAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\KeysetAnalyzerManager' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/KeysetAnalyzerManager.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\Message' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/Message.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\MessageBag' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/MessageBag.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\MixedKeyTypes' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/MixedKeyTypes.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\MixedPublicAndPrivateKeys' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/MixedPublicAndPrivateKeys.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\NoneAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/NoneAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\OctAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/OctAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\RsaAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/RsaAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\UsageAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/UsageAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\Analyzer\\ZxcvbnKeyAnalyzer' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/Analyzer/ZxcvbnKeyAnalyzer.php',
+        'Jose\\Component\\KeyManagement\\JKUFactory' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/JKUFactory.php',
+        'Jose\\Component\\KeyManagement\\JWKFactory' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/JWKFactory.php',
+        'Jose\\Component\\KeyManagement\\KeyConverter\\ECKey' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/KeyConverter/ECKey.php',
+        'Jose\\Component\\KeyManagement\\KeyConverter\\KeyConverter' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/KeyConverter/KeyConverter.php',
+        'Jose\\Component\\KeyManagement\\KeyConverter\\RSAKey' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/KeyConverter/RSAKey.php',
+        'Jose\\Component\\KeyManagement\\UrlKeySetFactory' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/UrlKeySetFactory.php',
+        'Jose\\Component\\KeyManagement\\X5UFactory' => __DIR__ . '/..' . '/web-token/jwt-library/KeyManagement/X5UFactory.php',
+        'Jose\\Component\\NestedToken\\NestedTokenBuilder' => __DIR__ . '/..' . '/web-token/jwt-library/NestedToken/NestedTokenBuilder.php',
+        'Jose\\Component\\NestedToken\\NestedTokenBuilderFactory' => __DIR__ . '/..' . '/web-token/jwt-library/NestedToken/NestedTokenBuilderFactory.php',
+        'Jose\\Component\\NestedToken\\NestedTokenLoader' => __DIR__ . '/..' . '/web-token/jwt-library/NestedToken/NestedTokenLoader.php',
+        'Jose\\Component\\NestedToken\\NestedTokenLoaderFactory' => __DIR__ . '/..' . '/web-token/jwt-library/NestedToken/NestedTokenLoaderFactory.php',
+        'Jose\\Component\\Signature\\Algorithm\\ECDSA' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/ECDSA.php',
+        'Jose\\Component\\Signature\\Algorithm\\ES256' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/ES256.php',
+        'Jose\\Component\\Signature\\Algorithm\\ES384' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/ES384.php',
+        'Jose\\Component\\Signature\\Algorithm\\ES512' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/ES512.php',
+        'Jose\\Component\\Signature\\Algorithm\\EdDSA' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/EdDSA.php',
+        'Jose\\Component\\Signature\\Algorithm\\HMAC' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/HMAC.php',
+        'Jose\\Component\\Signature\\Algorithm\\HS256' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/HS256.php',
+        'Jose\\Component\\Signature\\Algorithm\\HS384' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/HS384.php',
+        'Jose\\Component\\Signature\\Algorithm\\HS512' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/HS512.php',
+        'Jose\\Component\\Signature\\Algorithm\\MacAlgorithm' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/MacAlgorithm.php',
+        'Jose\\Component\\Signature\\Algorithm\\None' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/None.php',
+        'Jose\\Component\\Signature\\Algorithm\\PS256' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/PS256.php',
+        'Jose\\Component\\Signature\\Algorithm\\PS384' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/PS384.php',
+        'Jose\\Component\\Signature\\Algorithm\\PS512' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/PS512.php',
+        'Jose\\Component\\Signature\\Algorithm\\RS256' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/RS256.php',
+        'Jose\\Component\\Signature\\Algorithm\\RS384' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/RS384.php',
+        'Jose\\Component\\Signature\\Algorithm\\RS512' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/RS512.php',
+        'Jose\\Component\\Signature\\Algorithm\\RSAPKCS1' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/RSAPKCS1.php',
+        'Jose\\Component\\Signature\\Algorithm\\RSAPSS' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/RSAPSS.php',
+        'Jose\\Component\\Signature\\Algorithm\\SignatureAlgorithm' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/SignatureAlgorithm.php',
+        'Jose\\Component\\Signature\\Algorithm\\Util\\RSA' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Algorithm/Util/RSA.php',
+        'Jose\\Component\\Signature\\JWS' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWS.php',
+        'Jose\\Component\\Signature\\JWSBuilder' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWSBuilder.php',
+        'Jose\\Component\\Signature\\JWSBuilderFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWSBuilderFactory.php',
+        'Jose\\Component\\Signature\\JWSLoader' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWSLoader.php',
+        'Jose\\Component\\Signature\\JWSLoaderFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWSLoaderFactory.php',
+        'Jose\\Component\\Signature\\JWSTokenSupport' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWSTokenSupport.php',
+        'Jose\\Component\\Signature\\JWSVerifier' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWSVerifier.php',
+        'Jose\\Component\\Signature\\JWSVerifierFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/JWSVerifierFactory.php',
+        'Jose\\Component\\Signature\\Serializer\\CompactSerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Serializer/CompactSerializer.php',
+        'Jose\\Component\\Signature\\Serializer\\JSONFlattenedSerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Serializer/JSONFlattenedSerializer.php',
+        'Jose\\Component\\Signature\\Serializer\\JSONGeneralSerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Serializer/JSONGeneralSerializer.php',
+        'Jose\\Component\\Signature\\Serializer\\JWSSerializer' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Serializer/JWSSerializer.php',
+        'Jose\\Component\\Signature\\Serializer\\JWSSerializerManager' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Serializer/JWSSerializerManager.php',
+        'Jose\\Component\\Signature\\Serializer\\JWSSerializerManagerFactory' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Serializer/JWSSerializerManagerFactory.php',
+        'Jose\\Component\\Signature\\Serializer\\Serializer' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Serializer/Serializer.php',
+        'Jose\\Component\\Signature\\Signature' => __DIR__ . '/..' . '/web-token/jwt-library/Signature/Signature.php',
         'Lab404\\Impersonate\\Controllers\\ImpersonateController' => __DIR__ . '/..' . '/lab404/laravel-impersonate/src/Controllers/ImpersonateController.php',
         'Lab404\\Impersonate\\Events\\LeaveImpersonation' => __DIR__ . '/..' . '/lab404/laravel-impersonate/src/Events/LeaveImpersonation.php',
         'Lab404\\Impersonate\\Events\\TakeImpersonation' => __DIR__ . '/..' . '/lab404/laravel-impersonate/src/Events/TakeImpersonation.php',
@@ -6553,6 +6813,15 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'MercadoPago\\Track' => __DIR__ . '/..' . '/mercadopago/dx-php/src/MercadoPago/Entities/Shared/Track.php',
         'MercadoPago\\TrackValues' => __DIR__ . '/..' . '/mercadopago/dx-php/src/MercadoPago/Entities/Shared/TrackValues.php',
         'MercadoPago\\Version' => __DIR__ . '/..' . '/mercadopago/dx-php/src/MercadoPago/Version.php',
+        'Minishlink\\WebPush\\ContentEncoding' => __DIR__ . '/..' . '/minishlink/web-push/src/ContentEncoding.php',
+        'Minishlink\\WebPush\\Encryption' => __DIR__ . '/..' . '/minishlink/web-push/src/Encryption.php',
+        'Minishlink\\WebPush\\MessageSentReport' => __DIR__ . '/..' . '/minishlink/web-push/src/MessageSentReport.php',
+        'Minishlink\\WebPush\\Notification' => __DIR__ . '/..' . '/minishlink/web-push/src/Notification.php',
+        'Minishlink\\WebPush\\Subscription' => __DIR__ . '/..' . '/minishlink/web-push/src/Subscription.php',
+        'Minishlink\\WebPush\\SubscriptionInterface' => __DIR__ . '/..' . '/minishlink/web-push/src/SubscriptionInterface.php',
+        'Minishlink\\WebPush\\Utils' => __DIR__ . '/..' . '/minishlink/web-push/src/Utils.php',
+        'Minishlink\\WebPush\\VAPID' => __DIR__ . '/..' . '/minishlink/web-push/src/VAPID.php',
+        'Minishlink\\WebPush\\WebPush' => __DIR__ . '/..' . '/minishlink/web-push/src/WebPush.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegration' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegration.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegrationAssertPostConditions' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegrationAssertPostConditions.php',
         'Mockery\\Adapter\\Phpunit\\MockeryTestCase' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryTestCase.php',
@@ -10672,6 +10941,296 @@ class ComposerStaticInit10980ba892d1b5126de441eecaebeba0
         'Spatie\\TemporaryDirectory\\Exceptions\\InvalidDirectoryName' => __DIR__ . '/..' . '/spatie/temporary-directory/src/Exceptions/InvalidDirectoryName.php',
         'Spatie\\TemporaryDirectory\\Exceptions\\PathAlreadyExists' => __DIR__ . '/..' . '/spatie/temporary-directory/src/Exceptions/PathAlreadyExists.php',
         'Spatie\\TemporaryDirectory\\TemporaryDirectory' => __DIR__ . '/..' . '/spatie/temporary-directory/src/TemporaryDirectory.php',
+        'SpomkyLabs\\Pki\\ASN1\\Component\\Identifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Component/Identifier.php',
+        'SpomkyLabs\\Pki\\ASN1\\Component\\Length' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Component/Length.php',
+        'SpomkyLabs\\Pki\\ASN1\\DERData' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/DERData.php',
+        'SpomkyLabs\\Pki\\ASN1\\Element' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Element.php',
+        'SpomkyLabs\\Pki\\ASN1\\Exception\\DecodeException' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Exception/DecodeException.php',
+        'SpomkyLabs\\Pki\\ASN1\\Feature\\ElementBase' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Feature/ElementBase.php',
+        'SpomkyLabs\\Pki\\ASN1\\Feature\\Encodable' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Feature/Encodable.php',
+        'SpomkyLabs\\Pki\\ASN1\\Feature\\Stringable' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Feature/Stringable.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\BaseString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/BaseString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\BaseTime' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/BaseTime.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Constructed\\ConstructedString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Constructed/ConstructedString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Constructed\\Sequence' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Constructed/Sequence.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Constructed\\Set' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Constructed/Set.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\PrimitiveString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/PrimitiveString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\PrimitiveType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/PrimitiveType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\BMPString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/BMPString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\BitString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/BitString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\Boolean' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/Boolean.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\CharacterString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/CharacterString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\EOC' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/EOC.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\Enumerated' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/Enumerated.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\GeneralString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/GeneralString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\GeneralizedTime' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/GeneralizedTime.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\GraphicString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/GraphicString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\IA5String' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/IA5String.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\Integer' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/Integer.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\NullType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/NullType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\Number' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/Number.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\NumericString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/NumericString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\ObjectDescriptor' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/ObjectDescriptor.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\ObjectIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/ObjectIdentifier.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\OctetString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/OctetString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\PrintableString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/PrintableString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\Real' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/Real.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\RelativeOID' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/RelativeOID.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\T61String' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/T61String.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\UTCTime' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/UTCTime.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\UTF8String' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/UTF8String.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\UniversalString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/UniversalString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\VideotexString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/VideotexString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Primitive\\VisibleString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Primitive/VisibleString.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\StringType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/StringType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Structure' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Structure.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\TaggedType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/TaggedType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\ApplicationType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/ApplicationType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\ContextSpecificType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/ContextSpecificType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\DERTaggedType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/DERTaggedType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\ExplicitTagging' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/ExplicitTagging.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\ExplicitlyTaggedType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/ExplicitlyTaggedType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\ImplicitTagging' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/ImplicitTagging.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\ImplicitlyTaggedType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/ImplicitlyTaggedType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\PrivateType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/PrivateType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\Tagged\\TaggedTypeWrap' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/Tagged/TaggedTypeWrap.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\TimeType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/TimeType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\UniversalClass' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/UniversalClass.php',
+        'SpomkyLabs\\Pki\\ASN1\\Type\\UnspecifiedType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Type/UnspecifiedType.php',
+        'SpomkyLabs\\Pki\\ASN1\\Util\\BigInt' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Util/BigInt.php',
+        'SpomkyLabs\\Pki\\ASN1\\Util\\Flags' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/ASN1/Util/Flags.php',
+        'SpomkyLabs\\Pki\\CryptoBridge\\Crypto' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoBridge/Crypto.php',
+        'SpomkyLabs\\Pki\\CryptoBridge\\Crypto\\OpenSSLCrypto' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoBridge/Crypto/OpenSSLCrypto.php',
+        'SpomkyLabs\\Pki\\CryptoEncoding\\PEM' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoEncoding/PEM.php',
+        'SpomkyLabs\\Pki\\CryptoEncoding\\PEMBundle' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoEncoding/PEMBundle.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\AlgorithmIdentifierFactory' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/AlgorithmIdentifierFactory.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\AlgorithmIdentifierProvider' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/AlgorithmIdentifierProvider.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\ECPublicKeyAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/ECPublicKeyAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\Ed25519AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/Ed25519AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\Ed448AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/Ed448AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\RFC8410EdAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/RFC8410EdAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\RFC8410XAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/RFC8410XAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\RSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/RSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\RSAPSSSSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/RSAPSSSSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\X25519AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/X25519AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Asymmetric\\X448AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Asymmetric/X448AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\AES128CBCAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/AES128CBCAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\AES192CBCAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/AES192CBCAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\AES256CBCAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/AES256CBCAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\AESCBCAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/AESCBCAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\BlockCipherAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/BlockCipherAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\CipherAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/CipherAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\DESCBCAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/DESCBCAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\DESEDE3CBCAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/DESEDE3CBCAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Cipher\\RC2CBCAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Cipher/RC2CBCAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Feature\\AlgorithmIdentifierType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Feature/AlgorithmIdentifierType.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Feature\\AsymmetricCryptoAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Feature/AsymmetricCryptoAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Feature\\EncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Feature/EncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Feature\\HashAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Feature/HashAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Feature\\PRFAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Feature/PRFAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Feature\\SignatureAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Feature/SignatureAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\GenericAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/GenericAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\HMACWithSHA1AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/HMACWithSHA1AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\HMACWithSHA224AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/HMACWithSHA224AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\HMACWithSHA256AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/HMACWithSHA256AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\HMACWithSHA384AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/HMACWithSHA384AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\HMACWithSHA512AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/HMACWithSHA512AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\MD5AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/MD5AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\RFC4231HMACAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/RFC4231HMACAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\SHA1AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/SHA1AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\SHA224AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/SHA224AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\SHA256AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/SHA256AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\SHA2AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/SHA2AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\SHA384AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/SHA384AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Hash\\SHA512AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Hash/SHA512AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\ECDSAWithSHA1AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/ECDSAWithSHA1AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\ECDSAWithSHA224AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/ECDSAWithSHA224AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\ECDSAWithSHA256AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/ECDSAWithSHA256AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\ECDSAWithSHA384AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/ECDSAWithSHA384AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\ECDSAWithSHA512AlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/ECDSAWithSHA512AlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\ECSignatureAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/ECSignatureAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\MD2WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/MD2WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\MD4WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/MD4WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\MD5WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/MD5WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\RFC3279RSASignatureAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/RFC3279RSASignatureAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\RFC4055RSASignatureAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/RFC4055RSASignatureAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\RSASignatureAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/RSASignatureAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\SHA1WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/SHA1WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\SHA224WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/SHA224WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\SHA256WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/SHA256WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\SHA384WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/SHA384WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\Signature\\SHA512WithRSAEncryptionAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/Signature/SHA512WithRSAEncryptionAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\AlgorithmIdentifier\\SpecificAlgorithmIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/AlgorithmIdentifier/SpecificAlgorithmIdentifier.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\Attribute\\OneAsymmetricKeyAttributes' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/Attribute/OneAsymmetricKeyAttributes.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\EC\\ECConversion' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/EC/ECConversion.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\EC\\ECPrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/EC/ECPrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\EC\\ECPublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/EC/ECPublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\OneAsymmetricKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/OneAsymmetricKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\PrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/PrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\PrivateKeyInfo' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/PrivateKeyInfo.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\PublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/PublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\PublicKeyInfo' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/PublicKeyInfo.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve25519\\Curve25519PrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve25519/Curve25519PrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve25519\\Curve25519PublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve25519/Curve25519PublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve25519\\Ed25519PrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve25519/Ed25519PrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve25519\\Ed25519PublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve25519/Ed25519PublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve25519\\X25519PrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve25519/X25519PrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve25519\\X25519PublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve25519/X25519PublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve448\\Ed448PrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve448/Ed448PrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve448\\Ed448PublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve448/Ed448PublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve448\\X448PrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve448/X448PrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\Curve448\\X448PublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/Curve448/X448PublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\RFC8410PrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/RFC8410PrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RFC8410\\RFC8410PublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RFC8410/RFC8410PublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RSA\\RSAPrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RSA/RSAPrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RSA\\RSAPublicKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RSA/RSAPublicKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Asymmetric\\RSA\\RSASSAPSSPrivateKey' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Asymmetric/RSA/RSASSAPSSPrivateKey.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Signature\\ECSignature' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Signature/ECSignature.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Signature\\Ed25519Signature' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Signature/Ed25519Signature.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Signature\\Ed448Signature' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Signature/Ed448Signature.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Signature\\GenericSignature' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Signature/GenericSignature.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Signature\\RSASignature' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Signature/RSASignature.php',
+        'SpomkyLabs\\Pki\\CryptoTypes\\Signature\\Signature' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/CryptoTypes/Signature/Signature.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\Attribute' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/Attribute.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeType' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeType.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeTypeAndValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeTypeAndValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\AttributeValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/AttributeValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\CommonNameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/CommonNameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\CountryNameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/CountryNameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\DescriptionValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/DescriptionValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\Feature\\DirectoryString' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/Feature/DirectoryString.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\Feature\\PrintableStringValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/Feature/PrintableStringValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\GivenNameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/GivenNameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\LocalityNameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/LocalityNameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\NameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/NameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\OrganizationNameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/OrganizationNameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\OrganizationalUnitNameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/OrganizationalUnitNameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\PseudonymValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/PseudonymValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\SerialNumberValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/SerialNumberValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\StateOrProvinceNameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/StateOrProvinceNameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\SurnameValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/SurnameValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\TitleValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/TitleValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\AttributeValue\\UnknownAttributeValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/AttributeValue/UnknownAttributeValue.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\Collection\\AttributeCollection' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/Collection/AttributeCollection.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\Collection\\SequenceOfAttributes' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/Collection/SequenceOfAttributes.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\Collection\\SetOfAttributes' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/Collection/SetOfAttributes.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\Name' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/Name.php',
+        'SpomkyLabs\\Pki\\X501\\ASN1\\RDN' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/ASN1/RDN.php',
+        'SpomkyLabs\\Pki\\X501\\DN\\DNParser' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/DN/DNParser.php',
+        'SpomkyLabs\\Pki\\X501\\MatchingRule\\BinaryMatch' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/MatchingRule/BinaryMatch.php',
+        'SpomkyLabs\\Pki\\X501\\MatchingRule\\CaseExactMatch' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/MatchingRule/CaseExactMatch.php',
+        'SpomkyLabs\\Pki\\X501\\MatchingRule\\CaseIgnoreMatch' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/MatchingRule/CaseIgnoreMatch.php',
+        'SpomkyLabs\\Pki\\X501\\MatchingRule\\MatchingRule' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/MatchingRule/MatchingRule.php',
+        'SpomkyLabs\\Pki\\X501\\MatchingRule\\StringPrepMatchingRule' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/MatchingRule/StringPrepMatchingRule.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\CheckBidiStep' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/CheckBidiStep.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\InsignificantNonSubstringSpaceStep' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/InsignificantNonSubstringSpaceStep.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\MapStep' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/MapStep.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\NormalizeStep' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/NormalizeStep.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\PrepareStep' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/PrepareStep.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\ProhibitStep' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/ProhibitStep.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\StringPreparer' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/StringPreparer.php',
+        'SpomkyLabs\\Pki\\X501\\StringPrep\\TranscodeStep' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X501/StringPrep/TranscodeStep.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\AttCertIssuer' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/AttCertIssuer.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\AttCertValidityPeriod' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/AttCertValidityPeriod.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\AttributeCertificate' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/AttributeCertificate.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\AttributeCertificateInfo' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/AttributeCertificateInfo.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\AccessIdentityAttributeValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/AccessIdentityAttributeValue.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\AuthenticationInfoAttributeValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/AuthenticationInfoAttributeValue.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\ChargingIdentityAttributeValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/ChargingIdentityAttributeValue.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\GroupAttributeValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/GroupAttributeValue.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\IetfAttrSyntax' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/IetfAttrSyntax.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\IetfAttrValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/IetfAttrValue.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\RoleAttributeValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/RoleAttributeValue.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attribute\\SvceAuthInfo' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attribute/SvceAuthInfo.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Attributes' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Attributes.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Holder' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Holder.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\IssuerSerial' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/IssuerSerial.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\ObjectDigestInfo' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/ObjectDigestInfo.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\V2Form' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/V2Form.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Validation\\ACValidationConfig' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Validation/ACValidationConfig.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Validation\\ACValidator' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Validation/ACValidator.php',
+        'SpomkyLabs\\Pki\\X509\\AttributeCertificate\\Validation\\Exception\\ACValidationException' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/AttributeCertificate/Validation/Exception/ACValidationException.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Certificate' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Certificate.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\CertificateBundle' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/CertificateBundle.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\CertificateChain' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/CertificateChain.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\AAControlsExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/AAControlsExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\AccessDescription\\AccessDescription' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/AccessDescription/AccessDescription.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\AccessDescription\\AuthorityAccessDescription' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/AccessDescription/AuthorityAccessDescription.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\AccessDescription\\SubjectAccessDescription' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/AccessDescription/SubjectAccessDescription.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\AuthorityInformationAccessExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/AuthorityInformationAccessExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\AuthorityKeyIdentifierExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/AuthorityKeyIdentifierExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\BasicConstraintsExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/BasicConstraintsExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CRLDistributionPointsExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CRLDistributionPointsExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CertificatePoliciesExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CertificatePoliciesExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CertificatePolicy\\CPSQualifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CertificatePolicy/CPSQualifier.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CertificatePolicy\\DisplayText' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CertificatePolicy/DisplayText.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CertificatePolicy\\NoticeReference' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CertificatePolicy/NoticeReference.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CertificatePolicy\\PolicyInformation' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CertificatePolicy/PolicyInformation.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CertificatePolicy\\PolicyQualifierInfo' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CertificatePolicy/PolicyQualifierInfo.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\CertificatePolicy\\UserNoticeQualifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/CertificatePolicy/UserNoticeQualifier.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\DistributionPoint\\DistributionPoint' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/DistributionPoint/DistributionPoint.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\DistributionPoint\\DistributionPointName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/DistributionPoint/DistributionPointName.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\DistributionPoint\\FullName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/DistributionPoint/FullName.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\DistributionPoint\\ReasonFlags' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/DistributionPoint/ReasonFlags.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\DistributionPoint\\RelativeName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/DistributionPoint/RelativeName.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\ExtendedKeyUsageExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/ExtendedKeyUsageExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\Extension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/Extension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\FreshestCRLExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/FreshestCRLExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\InhibitAnyPolicyExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/InhibitAnyPolicyExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\IssuerAlternativeNameExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/IssuerAlternativeNameExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\KeyUsageExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/KeyUsageExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\NameConstraintsExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/NameConstraintsExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\NameConstraints\\GeneralSubtree' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/NameConstraints/GeneralSubtree.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\NameConstraints\\GeneralSubtrees' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/NameConstraints/GeneralSubtrees.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\NoRevocationAvailableExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/NoRevocationAvailableExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\PolicyConstraintsExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/PolicyConstraintsExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\PolicyMappingsExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/PolicyMappingsExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\PolicyMappings\\PolicyMapping' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/PolicyMappings/PolicyMapping.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\SubjectAlternativeNameExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/SubjectAlternativeNameExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\SubjectDirectoryAttributesExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/SubjectDirectoryAttributesExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\SubjectInformationAccessExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/SubjectInformationAccessExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\SubjectKeyIdentifierExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/SubjectKeyIdentifierExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\TargetInformationExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/TargetInformationExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\Target\\Target' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/Target/Target.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\Target\\TargetGroup' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/Target/TargetGroup.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\Target\\TargetName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/Target/TargetName.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\Target\\Targets' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/Target/Targets.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extension\\UnknownExtension' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extension/UnknownExtension.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Extensions' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Extensions.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\TBSCertificate' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/TBSCertificate.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Time' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Time.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\UniqueIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/UniqueIdentifier.php',
+        'SpomkyLabs\\Pki\\X509\\Certificate\\Validity' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Certificate/Validity.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\CertificationPath' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/CertificationPath.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\Exception\\PathBuildingException' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/Exception/PathBuildingException.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\Exception\\PathValidationException' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/Exception/PathValidationException.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\PathBuilding\\CertificationPathBuilder' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/PathBuilding/CertificationPathBuilder.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\PathValidation\\PathValidationConfig' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/PathValidation/PathValidationConfig.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\PathValidation\\PathValidationResult' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/PathValidation/PathValidationResult.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\PathValidation\\PathValidator' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/PathValidation/PathValidator.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\PathValidation\\ValidatorState' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/PathValidation/ValidatorState.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\Policy\\PolicyNode' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/Policy/PolicyNode.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationPath\\Policy\\PolicyTree' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationPath/Policy/PolicyTree.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationRequest\\Attribute\\ExtensionRequestValue' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationRequest/Attribute/ExtensionRequestValue.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationRequest\\Attributes' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationRequest/Attributes.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationRequest\\CertificationRequest' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationRequest/CertificationRequest.php',
+        'SpomkyLabs\\Pki\\X509\\CertificationRequest\\CertificationRequestInfo' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/CertificationRequest/CertificationRequestInfo.php',
+        'SpomkyLabs\\Pki\\X509\\Exception\\X509ValidationException' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Exception/X509ValidationException.php',
+        'SpomkyLabs\\Pki\\X509\\Feature\\DateTimeHelper' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/Feature/DateTimeHelper.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\DNSName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/DNSName.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\DirectoryName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/DirectoryName.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\EDIPartyName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/EDIPartyName.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\GeneralName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/GeneralName.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\GeneralNames' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/GeneralNames.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\IPAddress' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/IPAddress.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\IPv4Address' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/IPv4Address.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\IPv6Address' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/IPv6Address.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\OtherName' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/OtherName.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\RFC822Name' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/RFC822Name.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\RegisteredID' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/RegisteredID.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\UniformResourceIdentifier' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/UniformResourceIdentifier.php',
+        'SpomkyLabs\\Pki\\X509\\GeneralName\\X400Address' => __DIR__ . '/..' . '/spomky-labs/pki-framework/src/X509/GeneralName/X400Address.php',
         'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
         'Stripe\\Account' => __DIR__ . '/..' . '/stripe/stripe-php/lib/Account.php',
         'Stripe\\AccountLink' => __DIR__ . '/..' . '/stripe/stripe-php/lib/AccountLink.php',

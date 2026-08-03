@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { X, Plus, Minus } from 'lucide-react';
+import { X, Plus, Minus, Heart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface Product {
   id: string;
@@ -76,12 +79,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <h2 className="text-lg font-bold text-white truncate flex-1 ml-4">
               {product.name}
             </h2>
-            <button 
-              onClick={onClose}
-              className="p-2 bg-white/20 hover:bg-white/30 transition-colors rounded-full"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
+            <div className="flex items-center gap-2">
+              <WishlistButton productId={product.id} iconOnly />
+              <button 
+                onClick={onClose}
+                className="p-2 bg-white/20 hover:bg-white/30 transition-colors rounded-full"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row flex-1 overflow-auto">
@@ -279,6 +285,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     )}
                   </div>
                 </div>
+
+                <div className="pt-4 border-t-2 border-purple-100">
+                  <ProductReviews productId={product.id} />
+                </div>
               </div>
 
               {/* Action Bar */}
@@ -356,6 +366,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     }
                   </button>
                 </div>
+
+                <WhatsAppOrderButton
+                  product={{ name: product.name, price: product.price }}
+                  variants={Object.keys(selectedVariants).length > 0 ? selectedVariants : null}
+                  className="w-full py-3 md:py-4 px-4 md:px-6 font-bold text-sm md:text-lg rounded-2xl bg-[#25D366] hover:bg-[#1eb85a] text-white flex items-center justify-center gap-2 md:w-full"
+                />
               </div>
             </div>
           </div>

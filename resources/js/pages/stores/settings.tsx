@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
   Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-  BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, ArrowRight, CheckCircle2, Building2, MapPin, PenLine, Wrench,
+  BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, ArrowRight, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import MediaPicker from '@/components/MediaPicker';
 import { SearchableSelect } from '@/components/searchable-select';
 import { AccordionSection } from '@/components/accordion-section';
 import { apiPut, apiPost } from '@/utils/api';
+import DomainsTab from './components/domains-tab';
 
 interface Props {
   store: any;
@@ -159,6 +160,12 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
     });
     if (!isValidEmail(formData.email)) {
       errors['email'] = t('Enter a valid email address');
+    }
+    if (formData.exchangeRate !== undefined && formData.exchangeRate !== '' && formData.exchangeRate !== null) {
+      const rate = Number(formData.exchangeRate);
+      if (isNaN(rate) || rate < 0) {
+        errors['exchangeRate'] = t('Enter a valid exchange rate (0 or greater)');
+      }
     }
     return errors;
   }, [formData, socialLinks]);
@@ -313,7 +320,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 border-b border-border bg-transparent p-0">
+        <TabsList className="grid w-full grid-cols-4 border-b border-border bg-transparent p-0">
           <TabsTrigger value="general" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <PenLine className="h-4 w-4 me-2" />
             {t('General')}
@@ -325,6 +332,10 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
           <TabsTrigger value="advanced" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Wrench className="h-4 w-4 me-2" />
             {t('Advanced')}
+          </TabsTrigger>
+          <TabsTrigger value="domains" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <Globe className="h-4 w-4 me-2" />
+            {t('Domains')}
           </TabsTrigger>
         </TabsList>
 
@@ -433,6 +444,76 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                   placeholder={t('Select language...')}
                   searchPlaceholder={t('Search languages...')}
                   allowFreeText={false}
+                />
+              </div>
+            </div>
+          </AccordionSection>
+
+          <AccordionSection
+            title={t('Secondary Currency & Tax')}
+            icon={<Coins className="h-4 w-4" />}
+            subtitle={t('Show a second currency alongside your default currency and include tax info on invoices.')}
+            onReset={() => handleResetSection('currency_tax')}
+            resetDisabled={resettingSection === 'currency_tax'}
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label className="flex items-center gap-1.5 mb-2">
+                  <Coins className="h-3.5 w-3.5" />
+                  {t('Secondary Currency')}
+                  <HelpTip text={t('When set, prices are shown in both your default currency and this one (e.g. ILS + USD for international customers).')} />
+                </Label>
+                <SearchableSelect
+                  value={formData.secondaryCurrency || ''}
+                  onChange={(value) => updateSetting('secondaryCurrency', value || null)}
+                  options={currencyOptions}
+                  placeholder={t('None — single currency')}
+                  searchPlaceholder={t('Search currencies...')}
+                  allowFreeText={false}
+                />
+              </div>
+              <div>
+                <Label className="flex items-center gap-1.5 mb-2">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  {t('Exchange Rate')}
+                  <HelpTip text={t('How much 1 unit of your default currency equals in the secondary currency. E.g. 1 USD = 3.7 ILS.')} />
+                </Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={formData.exchangeRate ?? ''}
+                  onChange={(e) => updateSetting('exchangeRate', e.target.value === '' ? null : e.target.value)}
+                  placeholder={t('e.g. 3.70')}
+                />
+                {validationErrors.exchangeRate && (
+                  <p className="mt-1 text-xs text-red-500">{validationErrors.exchangeRate}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 mt-4">
+              <div>
+                <Label className="flex items-center gap-1.5 mb-2">
+                  <FileText className="h-3.5 w-3.5" />
+                  {t('VAT Number')}
+                  <HelpTip text={t('Shown on invoices. Used to identify your business for tax purposes.')} />
+                </Label>
+                <Input
+                  value={formData.vat_number || ''}
+                  onChange={(e) => updateSetting('vat_number', e.target.value)}
+                  placeholder={t('e.g. 123456789')}
+                />
+              </div>
+              <div>
+                <Label className="flex items-center gap-1.5 mb-2">
+                  <FileText className="h-3.5 w-3.5" />
+                  {t('Tax Registration Number')}
+                  <HelpTip text={t('Also shown on invoices if your jurisdiction requires it.')} />
+                </Label>
+                <Input
+                  value={formData.tax_registration_number || ''}
+                  onChange={(e) => updateSetting('tax_registration_number', e.target.value)}
+                  placeholder={t('e.g. 510000000')}
                 />
               </div>
             </div>
@@ -904,6 +985,10 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="domains" className="space-y-4 mt-0">
+          <DomainsTab storeId={Number(store?.id)} />
         </TabsContent>
       </Tabs>
 

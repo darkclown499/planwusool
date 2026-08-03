@@ -83,7 +83,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Manage registered companies and their store subscriptions')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-blue-600 group-hover:gap-1 transition-all">
-                    {t('Manage Companies')} <ArrowRight className="h-3 w-3 ml-1" />
+                    {t('Manage Companies')} <ArrowRight className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>
@@ -108,7 +108,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Configure subscription plans, pricing, and features')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-green-600 group-hover:gap-1 transition-all">
-                    {t('Manage Plans')} <ArrowRight className="h-3 w-3 ml-1" />
+                    {t('Manage Plans')} <ArrowRight className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>
@@ -123,7 +123,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                       <Users className="h-5 w-5" />
                     </div>
                     <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-100">
-                      <TrendingUp className="h-2 w-2 mr-1" />
+                      <TrendingUp className="h-2 w-2 me-1" />
                       {t('Active')}
                     </Badge>
                   </div>
@@ -134,7 +134,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Manage referral programs and commission tracking')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-purple-600 group-hover:gap-1 transition-all">
-                    {t('Manage Referrals')} <ArrowRight className="h-3 w-3 ml-1" />
+                    {t('Manage Referrals')} <ArrowRight className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>
@@ -149,7 +149,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                       <Settings className="h-5 w-5" />
                     </div>
                     <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-100">
-                      <Zap className="h-2 w-2 mr-1" />
+                      <Zap className="h-2 w-2 me-1" />
                       {t('Live')}
                     </Badge>
                   </div>
@@ -160,7 +160,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Configure platform settings and system preferences')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-orange-600 group-hover:gap-1 transition-all">
-                    {t('System Settings')} <ArrowRight className="h-3 w-3 ml-1" />
+                    {t('System Settings')} <ArrowRight className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>
@@ -236,7 +236,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Manage your product inventory and listings')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-blue-600 group-hover:gap-1 transition-all">
-                    {t('Manage Products')} <ArrowRight className="h-3 w-3 ml-1" />
+                    {t('Manage Products')} <ArrowRight className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>
@@ -263,7 +263,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Process and track customer orders')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-green-600 group-hover:gap-1 transition-all">
-                    {t('View Orders')} <ArrowRight className="h-3 w-3 ml-1" />
+                    {t('View Orders')} <ArrowRight className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Manage customer relationships and data')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-purple-600 group-hover:gap-1 transition-all">
-                    {t('View Customers')} <ArrowRight className="h-3 w-3 ml-1" />
+                    {t('View Customers')} <ArrowRight className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>
@@ -307,7 +307,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                       <TrendingUp className="h-5 w-5" />
                     </div>
                     <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-100">
-                      <BarChart3 className="h-2 w-2 mr-1" />
+                      <BarChart3 className="h-2 w-2 me-1" />
                       {t('Live')}
                     </Badge>
                   </div>
@@ -318,7 +318,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
                     {t('Track performance and insights')}
                   </p>
                   <div className="flex items-center text-xs font-semibold text-orange-600 group-hover:gap-1 transition-all">
-                    {t('View Analytics')} <BarChart3 className="h-3 w-3 ml-1" />
+                    {t('View Analytics')} <BarChart3 className="h-3 w-3 ms-1" />
                   </div>
                 </div>
               </div>

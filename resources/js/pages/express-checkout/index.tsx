@@ -124,7 +124,7 @@ export default function ExpressCheckout() {
                 <Zap className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+                <div className="text-2xl font-bold ltr-num">{formatCurrency(stats.totalRevenue)}</div>
                 <p className="text-xs text-muted-foreground">{t('From express checkouts')}</p>
               </CardContent>
             </Card>
@@ -149,7 +149,7 @@ export default function ExpressCheckout() {
                         onClick={() => handleActionClick('create', 'create-express-checkout')} 
                         className="mt-4"
                       >
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="h-4 w-4 me-2" />
                         {t('Create Checkout')}
                       </Button>
                     )}

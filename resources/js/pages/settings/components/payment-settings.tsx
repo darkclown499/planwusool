@@ -440,7 +440,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
       description={t("Configure payment gateway for subscription plans")}
       action={
         <Button type="submit" form="payment-settings-form" size="sm" disabled={processing}>
-          <Save className="h-4 w-4 ml-2" />
+          <Save className="h-4 w-4 ms-2" />
           {processing ? t("Saving...") : t("Save Changes")}
         </Button>
       }
@@ -450,8 +450,8 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
           {/* Payment Methods */}
           <Card dir="rtl">
             <CardHeader dir="rtl">
-              <CardTitle className="text-right w-full">{t("Payment Methods")}</CardTitle>
-              <CardDescription className="text-right w-full">
+              <CardTitle className="text-start w-full">{t("Payment Methods")}</CardTitle>
+              <CardDescription className="text-start w-full">
                 {t("Configure available payment methods for subscription plans")}
               </CardDescription>
             </CardHeader>
@@ -467,7 +467,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                     placeholder={t("Search payment methods...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pr-10 pl-10 text-right"
+                    className="pr-10 pl-10 text-start"
                     autoComplete="new-password"
                   />
                   {searchTerm && (
@@ -475,7 +475,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                      className="absolute start-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
                       onClick={() => setSearchTerm('')}
                     >
                       <X className="h-3 w-3" />
@@ -483,7 +483,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                   )}
                 </div>
                 <Select value={statusFilter} onValueChange={(value: 'all' | 'enabled' | 'disabled') => setStatusFilter(value)} dir="rtl">
-                  <SelectTrigger className="w-[140px] text-right">
+                  <SelectTrigger className="w-[140px] text-start">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -505,7 +505,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="mr-1 h-3 w-3 p-0 hover:bg-transparent"
+                        className="me-1 h-3 w-3 p-0 hover:bg-transparent"
                         onClick={() => setSearchTerm('')}
                       >
                         <X className="h-2 w-2" />
@@ -519,7 +519,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="mr-1 h-3 w-3 p-0 hover:bg-transparent"
+                        className="me-1 h-3 w-3 p-0 hover:bg-transparent"
                         onClick={() => setStatusFilter('all')}
                       >
                         <X className="h-2 w-2" />
@@ -1844,18 +1844,18 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
               {/* Shared Messaging Templates - For company users and sub-users */}
               {(auth?.user?.type === 'company' || (auth?.user?.type !== 'superadmin' && auth?.user?.created_by)) && (
                 <Card dir="rtl">
-                  <CardHeader dir="rtl" className="flex flex-col items-end w-full text-right">
-                    <div dir="rtl" className="w-full text-right">
+                  <CardHeader dir="rtl" className="flex flex-col items-end w-full text-start">
+                    <div dir="rtl" className="w-full text-start">
                       <CardTitle>{"قوالب الرسائل"}</CardTitle>
                       <CardDescription>
                         {"قوالب رسائل مشتركة لإشعارات الواتساب والتليجرام"}
                       </CardDescription>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 text-right" dir="rtl">
+                  <CardContent className="space-y-4 text-start" dir="rtl">
                     {/* Message Template */}
                     <div className="space-y-2">
-                      <Label htmlFor="messaging_message_template" className="block text-right">{t("Message Template")}</Label>
+                      <Label htmlFor="messaging_message_template" className="block text-start">{t("Message Template")}</Label>
                       <div className="flex flex-wrap gap-1">
                         {EMOTICONS.map(emoji => (
                           <button
@@ -1872,14 +1872,14 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         id="messaging_message_template"
                         ref={messageRef}
                         dir="rtl"
-                        className="text-right"
+                        className="text-start"
                         value={(data.messaging_message_template || '').replace(/\\n/g, '\n')}
                         onChange={(e) => setData('messaging_message_template', e.target.value.replace(/\n/g, '\\n'))}
                         placeholder={t("طلب جديد رقم {order_no} من متجر {store_name}\nالعميل: {customer_name}\nالمجموع الكلي: {final_total}\n\nالمنتجات:\n{item_variable}")}
                         rows={6}
                       />
-                      <div className="text-xs text-muted-foreground text-right">
-                        <p className="font-medium mb-1 text-right">{"متغيرات الطلب:"} ({orderVariables?.length || 0})</p>
+                      <div className="text-xs text-muted-foreground text-start">
+                        <p className="font-medium mb-1 text-start">{"متغيرات الطلب:"} ({orderVariables?.length || 0})</p>
                         <div className="flex flex-wrap gap-1">
                           {orderVariables?.length > 0 ? (
                             orderVariables.map((variable) => (
@@ -1896,30 +1896,30 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                             <span className="text-muted-foreground">{"لا توجد متغيرات متاحة"}</span>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2 text-right">
+                        <p className="text-xs text-muted-foreground mt-2 text-start">
                           {"ملاحظة: يدعم التليجرام تنسيق HTML، بينما يستخدم الواتساب نصاً عادياً"}
                         </p>
                       </div>
                       {errors.messaging_message_template && (
-                        <p className="text-sm text-destructive text-right">{errors.messaging_message_template}</p>
+                        <p className="text-sm text-destructive text-start">{errors.messaging_message_template}</p>
                       )}
                     </div>
 
                     {/* Item Variable Format */}
                     <div className="space-y-2">
-                      <Label htmlFor="messaging_item_template" className="block text-right">{t("Item Variable Format")}</Label>
+                      <Label htmlFor="messaging_item_template" className="block text-start">{t("Item Variable Format")}</Label>
                       <Textarea
                         id="messaging_item_template"
                         ref={itemRef}
                         dir="rtl"
-                        className="text-right"
+                        className="text-start"
                         value={(data.messaging_item_template || '').replace(/\\n/g, '\n')}
                         onChange={(e) => setData('messaging_item_template', e.target.value.replace(/\n/g, '\\n'))}
                         placeholder={t("• {اسم_المنتج} ({اسم_المتغير}) × {كمية} = {مجموع_السلعة}")}
                         rows={3}
                       />
-                      <div className="text-xs text-muted-foreground text-right">
-                        <p className="font-medium mb-1 text-right">{"متغيرات المنتج:"} ({itemVariables?.length || 0})</p>
+                      <div className="text-xs text-muted-foreground text-start">
+                        <p className="font-medium mb-1 text-start">{"متغيرات المنتج:"} ({itemVariables?.length || 0})</p>
                         <div className="flex flex-wrap gap-1">
                           {itemVariables?.length > 0 ? (
                             itemVariables.map((variable) => (
@@ -1938,14 +1938,14 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         </div>
                       </div>
                       {errors.messaging_item_template && (
-                        <p className="text-sm text-destructive text-right">{errors.messaging_item_template}</p>
+                        <p className="text-sm text-destructive text-start">{errors.messaging_item_template}</p>
                       )}
                     </div>
 
                     {/* Action buttons */}
                     <div className="flex flex-wrap gap-2 justify-start">
                       <Button type="button" variant="outline" size="sm" onClick={restoreDefaults}>
-                        <Undo2 className="h-4 w-4 ml-1" />
+                        <Undo2 className="h-4 w-4 ms-1" />
                         {"استعادة القالب الافتراضي"}
                       </Button>
                       <Button
@@ -1954,7 +1954,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         size="sm"
                         onClick={() => copyToClipboard('قالب الرسالة', (data.messaging_message_template || '').replace(/\\n/g, '\n'))}
                       >
-                        <Copy className="h-4 w-4 ml-1" />
+                        <Copy className="h-4 w-4 ms-1" />
                         {"نسخ قالب الرسالة"}
                       </Button>
                       <Button
@@ -1963,17 +1963,17 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         size="sm"
                         onClick={() => copyToClipboard('قالب المنتج', (data.messaging_item_template || '').replace(/\\n/g, '\n'))}
                       >
-                        <Copy className="h-4 w-4 ml-1" />
+                        <Copy className="h-4 w-4 ms-1" />
                         {"نسخ قالب المنتج"}
                       </Button>
                     </div>
 
                     {/* Live Preview */}
                     <div className="space-y-2">
-                      <p className="font-medium text-right">{"معاينة مباشرة:"}</p>
+                      <p className="font-medium text-start">{"معاينة مباشرة:"}</p>
                       <div
                         dir="rtl"
-                        className="text-right p-3 bg-gray-50 border rounded-md text-sm whitespace-pre-line min-h-[60px]"
+                        className="text-start p-3 bg-gray-50 border rounded-md text-sm whitespace-pre-line min-h-[60px]"
                       >
                         {previewText || "..."}
                       </div>

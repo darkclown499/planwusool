@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Download, Building2, ShoppingCart, Users, DollarSign, Package, TrendingUp, QrCode, Copy, Check, CreditCard, FileText, Tag, Activity, ArrowRight, Sparkles, Store, Clock, Zap, ChevronRight, Settings, Palette } from 'lucide-react';
+import { RefreshCw, BarChart3, Download, Building2, ShoppingCart, Users, DollarSign, Package, TrendingUp, QrCode, Copy, Check, CreditCard, FileText, Tag, Activity, ArrowRight, Sparkles, Store, Clock, Zap, ChevronRight, Settings, Palette, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,11 +35,22 @@ interface Props {
  activeCoupons?: number;
  totalCoupons?: number;
  };
- recentOrders: any[];
- topProducts?: any[];
- topPlans?: any[];
- };
- currentStore?: any;
+  recentOrders: any[];
+  topProducts?: any[];
+  topPlans?: any[];
+  alerts?: {
+   id: number;
+   type: string;
+   title: string;
+   body: string;
+   icon?: string | null;
+   color?: string | null;
+   action_url?: string | null;
+   is_read: boolean;
+   created_at?: string | null;
+  }[];
+  };
+  currentStore?: any;
  storeUrl?: string;
  isSuperAdmin: boolean;
 }
@@ -205,9 +216,42 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  year: { ar: 'سنة', en: 'year' },
  years: { ar: 'سنوات', en: 'years' },
  };
- const mapped = unitMap[unit] || { ar: unit, en: unit };
- return `${t('since')} ${num} ${mapped.ar}`;
- };
+  const mapped = unitMap[unit] || { ar: unit, en: unit };
+  return `${t('since')} ${num} ${mapped.ar}`;
+  };
+
+  const alertBorderClasses: Record<string, string> = {
+  green: 'border-green-200',
+  red: 'border-red-200',
+  amber: 'border-amber-200',
+  blue: 'border-blue-200',
+  purple: 'border-purple-200',
+  yellow: 'border-yellow-200',
+  gray: 'border-gray-200',
+  };
+  const alertIconClasses: Record<string, string> = {
+  green: 'text-green-600',
+  red: 'text-red-600',
+  amber: 'text-amber-600',
+  blue: 'text-blue-600',
+  purple: 'text-purple-600',
+  yellow: 'text-yellow-600',
+  gray: 'text-gray-600',
+  };
+  const alertIconMap: Record<string, any> = {
+  ShoppingCart,
+  Package,
+  XCircle,
+  AlertTriangle,
+  Boxes,
+  Star,
+  Timer,
+  FileText,
+  CheckCircle,
+  DollarSign,
+  Bell,
+  };
+  const getAlertIcon = (icon: string | null | undefined) => alertIconMap[icon || ''] || Activity;
 
  if (isSuperAdmin) {
  return (
@@ -222,7 +266,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </CardHeader>
  <CardContent>
  <div className="flex items-center justify-between mb-2">
- <div className="text-2xl font-bold">{card.value}</div>
+  <div className="text-2xl font-bold ltr-num">{card.value}</div>
  <div className={`p-3 rounded-full flex items-center justify-center ${card.color}`}>
  <card.icon className="h-5 w-5" />
  </div>
@@ -243,7 +287,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  {t('System Activity')}
  </CardTitle>
  <Badge variant="outline" className="text-xs">
- <Clock className="h-3 w-3 mr-1" />
+ <Clock className="h-3 w-3 me-1" />
  {t('Live')}
  </Badge>
  </CardHeader>
@@ -311,8 +355,8 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <p className="text-sm text-gray-500">{plan.subscribers || plan.orders || 0} {t('active subscriptions')}</p>
  </div>
  </div>
- <div className="text-right">
- <p className="font-bold text-lg text-gray-900">{formatCurrency(plan.revenue || 0)}</p>
+ <div className="text-end">
+  <p className="font-bold text-lg text-gray-900 ltr-num">{formatCurrency(plan.revenue || 0)}</p>
  <p className="text-xs text-gray-500">{t('monthly revenue')}</p>
  </div>
  </div>
@@ -347,7 +391,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <div className="p-2.5 rounded-lg bg-blue-100 text-blue-600 group-hover:scale-110 transition-transform">
  <Building2 className="h-5 w-5" />
  </div>
- <div className="text-right flex-1">
+ <div className="text-start flex-1">
  <p className="font-semibold text-sm">{t('Companies')}</p>
  <p className="text-xs text-muted-foreground">{t('Manage companies')}</p>
  </div>
@@ -361,7 +405,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <div className="p-2.5 rounded-lg bg-green-100 text-green-600 group-hover:scale-110 transition-transform">
  <CreditCard className="h-5 w-5" />
  </div>
- <div className="text-right flex-1">
+ <div className="text-start flex-1">
  <p className="font-semibold text-sm">{t('Subscription Plans')}</p>
  <p className="text-xs text-muted-foreground">{t('Manage plans')}</p>
  </div>
@@ -375,7 +419,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <div className="p-2.5 rounded-lg bg-purple-100 text-purple-600 group-hover:scale-110 transition-transform">
  <Users className="h-5 w-5" />
  </div>
- <div className="text-right flex-1">
+ <div className="text-start flex-1">
  <p className="font-semibold text-sm">{t('Referral Program')}</p>
  <p className="text-xs text-muted-foreground">{t('Manage referrals')}</p>
  </div>
@@ -389,7 +433,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <div className="p-2.5 rounded-lg bg-orange-100 text-orange-600 group-hover:scale-110 transition-transform">
  <Settings className="h-5 w-5" />
  </div>
- <div className="text-right flex-1">
+ <div className="text-start flex-1">
  <p className="font-semibold text-sm">{t('System Settings')}</p>
  <p className="text-xs text-muted-foreground">{t('Configure platform')}</p>
  </div>
@@ -494,7 +538,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </CardHeader>
  <CardContent>
  <div className="flex items-center justify-between mb-2">
- <div className="text-2xl font-bold">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
+  <div className="text-2xl font-bold ltr-num">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
  <DollarSign className="h-4 w-4 text-muted-foreground" />
  </div>
  <div className="flex items-center gap-1">
@@ -520,8 +564,8 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   {t('Add New Product')}
   </Button>
   )}
-  {userHasPermission('manage-coupon-system') && (
-  <Button size="sm" variant="outline" onClick={() => router.visit(route('coupon-system.index'))} className="h-8 gap-1.5">
+{userHasPermission('manage-coupon-system') && (
+  <Button size="sm" variant="outline" onClick={() => router.visit(route('advanced-coupons.create'))} className="h-8 gap-1.5">
   <Tag className="h-3.5 w-3.5" />
   {t('Add Coupon')}
   </Button>
@@ -566,6 +610,24 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </CardHeader>
  <CardContent>
  <div className="flex flex-wrap gap-3">
+ {dashboardData.alerts?.map((alert) => {
+  const AlertIcon = getAlertIcon(alert.icon);
+  return (
+  <button
+  key={alert.id}
+  onClick={() => alert.action_url && router.visit(alert.action_url)}
+  className={`flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-start transition-shadow hover:shadow-sm ${alertBorderClasses[alert.color || 'amber']}`}
+  >
+  <AlertIcon className={`h-4 w-4 flex-shrink-0 ${alertIconClasses[alert.color || 'amber']}`} />
+  <span className="min-w-0">
+  <span className="block text-sm font-medium">{alert.title}</span>
+  {alert.body && (
+  <span className="block max-w-56 truncate text-xs text-muted-foreground">{alert.body}</span>
+  )}
+  </span>
+  </button>
+  );
+  })}
  {(dashboardData.metrics.pendingOrders || 0) > 0 && (
  <div className="flex items-center gap-2 rounded-lg bg-white border border-amber-200 px-3 py-2">
  <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
@@ -578,7 +640,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <span className="text-sm font-medium">{dashboardData.metrics.pendingRequests} {t('pending plan requests')}</span>
  </div>
  )}
- {(dashboardData.metrics.pendingOrders || 0) === 0 && (dashboardData.metrics.pendingRequests || 0) === 0 && (
+ {(!dashboardData.alerts || dashboardData.alerts.length === 0) && (dashboardData.metrics.pendingOrders || 0) === 0 && (dashboardData.metrics.pendingRequests || 0) === 0 && (
  <div className="flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-3 py-2">
  <div className="h-2 w-2 rounded-full bg-emerald-500" />
  <span className="text-sm font-medium text-emerald-700">{t('All orders are up to date — no pending actions')}</span>
@@ -630,8 +692,8 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </Link>
  <p className="text-xs text-muted-foreground">{order.customer}</p>
  </div>
- <div className="text-right">
- <p className="text-sm font-medium">{formatCurrency(order.amount)}</p>
+ <div className="text-end">
+  <p className="text-sm font-medium ltr-num">{formatCurrency(order.amount)}</p>
  <p className="text-xs text-muted-foreground">{order.status}</p>
  </div>
  </div>
@@ -665,12 +727,12 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </Link>
  <p className="text-xs text-muted-foreground">{product.sold} {t('sold')}</p>
  </div>
- <div className="text-right">
+ <div className="text-end">
  <div className="flex flex-col items-end">
- <p className="text-sm font-medium">{formatCurrency(product.sale_price || product.price)}</p>
- {product.sale_price && (
- <p className="text-xs line-through text-muted-foreground">{formatCurrency(product.price)}</p>
- )}
+  <p className="text-sm font-medium ltr-num">{formatCurrency(product.sale_price || product.price)}</p>
+  {product.sale_price && (
+  <p className="text-xs line-through text-muted-foreground ltr-num">{formatCurrency(product.price)}</p>
+  )}
  </div>
  </div>
  </div>

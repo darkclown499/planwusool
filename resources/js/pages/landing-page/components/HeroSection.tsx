@@ -76,7 +76,7 @@ export default function HeroSection({ settings, sectionData, brandColor = '#22c5
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
 
           {/* ═══════════ LEFT: Content ═══════════ */}
-          <div className="text-center lg:text-right">
+          <div className="text-center lg:text-start">
             {/* Trust badge */}
             <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-white/70 backdrop-blur-sm">
               <span className="relative flex h-2 w-2">

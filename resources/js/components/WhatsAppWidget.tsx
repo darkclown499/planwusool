@@ -118,7 +118,7 @@ export default function WhatsAppWidget({
                 onClick={handleSendMessage}
                 className="bg-green-500 hover:bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors"
               >
-                <svg className="w-4 h-4 ml-0.5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 ms-0.5 mb-1" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2.003 5.884L18.685 12.283c.377.145.377.72 0 .865L2.003 19.547c-.415.159-.85-.158-.85-.6V15.86c0-.273.16-.526.41-.639L9.61 12.5 1.564 9.778c-.25-.113-.41-.366-.41-.639V4.484c0-.442.435-.759.85-.6z" />
                 </svg>
               </button>

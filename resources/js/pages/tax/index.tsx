@@ -118,7 +118,7 @@ export default function Tax() {
               <Calculator className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.collected)}</div>
+              <div className="text-2xl font-bold ltr-num">{formatCurrency(stats.collected)}</div>
               <p className="text-xs text-muted-foreground">{t('This month')}</p>
             </CardContent>
           </Card>
@@ -141,7 +141,7 @@ export default function Tax() {
                       className="mt-4" 
                       onClick={() => handleActionClick('create', 'create-tax')}
                     >
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="h-4 w-4 me-2" />
                       {t('Create your first tax rule')}
                     </Button>
                   )}

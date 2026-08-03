@@ -2,6 +2,8 @@ import React from 'react';
 import { Plus, Star, Tag, Truck } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -56,13 +58,6 @@ const ProductCard: React.FC<{
           onClick={() => onProductClick(product)}
         />
         
-        {/* Sale Badge */}
-        {isOnSale && (
-          <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-            -{discountPercentage}% خصم
-          </div>
-        )}
-        
         {/* Variant Badge */}
         {product.variants && product.variants.length > 0 && (
           <div className="absolute top-3 left-3 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
@@ -78,8 +73,15 @@ const ProductCard: React.FC<{
             </span>
           </div>
         )}
-        
 
+        <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+          {isOnSale && (
+            <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+              -{discountPercentage}% خصم
+            </span>
+          )}
+          <WishlistButton productId={product.id} iconOnly />
+        </div>
       </div>
 
       {/* Product Info */}
@@ -103,6 +105,13 @@ const ProductCard: React.FC<{
            product.variants && product.variants.length > 0 ? 'اختر الخيارات' : 'أضف إلى السلة'
           }
         </button>
+
+        <div className="px-5">
+          <WhatsAppOrderButton
+            product={{ name: product.name, price: product.price }}
+            className="w-full font-medium py-2.5 transition-colors text-sm cursor-pointer mb-3 bg-[#25D366] hover:bg-[#1eb85a] text-white flex items-center justify-center gap-2"
+          />
+        </div>
         
         <div className="px-5 pb-5">
           <h3 

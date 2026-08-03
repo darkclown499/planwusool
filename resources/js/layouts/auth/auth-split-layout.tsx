@@ -16,7 +16,7 @@ export default function AuthSplitLayout({ children, title, description }: PropsW
             <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex">
                 <div className="absolute inset-0 bg-zinc-900" />
                 <Link href={route('home')} className="relative z-20 flex items-center text-lg font-medium">
-                    <AppLogoIcon className="mr-2 size-8 fill-current text-white" />
+                    <AppLogoIcon className="me-2 size-8 fill-current text-white" />
                     {name}
                 </Link>
                 {quote && (
@@ -33,7 +33,7 @@ export default function AuthSplitLayout({ children, title, description }: PropsW
                     <Link href={route('home')} className="relative z-20 flex items-center justify-center lg:hidden">
                         <AppLogoIcon className="h-10 fill-current text-black sm:h-12" />
                     </Link>
-                    <div className="flex flex-col items-start gap-2 text-left sm:items-center sm:text-center">
+                    <div className="flex flex-col items-start gap-2 text-start sm:items-center sm:text-center">
                         <h1 className="text-xl font-medium">{title}</h1>
                         <p className="text-muted-foreground text-sm text-balance">{description}</p>
                     </div>

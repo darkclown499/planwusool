@@ -2,6 +2,8 @@ import React from 'react';
 import { Plus, Star, Tag, Truck } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -56,6 +58,10 @@ const ProductCard: React.FC<{
           onClick={() => onProductClick(product)}
         />
         
+        <div className="absolute bottom-3 right-3">
+          <WishlistButton productId={product.id} iconOnly />
+        </div>
+        
         {/* Sale Badge */}
         {isOnSale && (
           <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
@@ -103,6 +109,10 @@ const ProductCard: React.FC<{
            product.variants && product.variants.length > 0 ? 'اختر الخيارات' : 'أضف إلى السلة'
           }
         </button>
+        <WhatsAppOrderButton
+          product={{ name: product.name, price: product.price }}
+          className="w-full font-medium py-2.5 transition-colors text-sm flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1eb85a] text-white"
+        />
         
         <div className="px-5 pb-5">
           <h3 

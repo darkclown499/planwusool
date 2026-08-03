@@ -72,7 +72,7 @@ export default function EmailNotificationSettings() {
       description={t('Configure email notification preferences for your store')}
       action={
         <Button type="submit" form="email-notification-form" size="sm">
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-4 w-4 me-2" />
           {t('Save Changes')}
         </Button>
       }

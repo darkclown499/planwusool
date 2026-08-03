@@ -80,6 +80,10 @@ class StoreSettingsController extends Controller
             'settings.meta_pixel_id' => 'nullable|string|max:100',
             'settings.default_currency' => 'nullable|string|exists:currencies,code',
             'settings.defaultCurrency' => 'nullable|string|exists:currencies,code',
+            'settings.secondaryCurrency' => 'nullable|string|exists:currencies,code',
+            'settings.exchangeRate' => 'nullable|numeric|min:0',
+            'settings.vat_number' => 'nullable|string|max:100',
+            'settings.tax_registration_number' => 'nullable|string|max:100',
             'settings.timezone' => 'nullable|string|max:100',
             'settings.defaultTimezone' => 'nullable|string|max:100',
             'settings.language' => 'nullable|string|max:10',
@@ -206,6 +210,10 @@ class StoreSettingsController extends Controller
             'defaultCurrency' => $settingsToSave['defaultCurrency'] ?? ($settingsToSave['default_currency'] ?? null),
             'defaultTimezone' => $settingsToSave['defaultTimezone'] ?? ($settingsToSave['timezone'] ?? null),
             'defaultLanguage' => $settingsToSave['language'] ?? null,
+            'secondaryCurrency' => $settingsToSave['secondaryCurrency'] ?? null,
+            'exchangeRate' => $settingsToSave['exchangeRate'] ?? null,
+            'vat_number' => $settingsToSave['vat_number'] ?? null,
+            'tax_registration_number' => $settingsToSave['tax_registration_number'] ?? null,
         ];
 
         foreach ($regionalKeys as $key => $value) {

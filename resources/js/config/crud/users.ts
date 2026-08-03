@@ -46,7 +46,7 @@ export const usersConfig: CrudConfig = {
           if (!value || !value.length) return '<span class="text-muted-foreground">No roles assigned</span>';
 
           return value.map((role: any) => {
-            return `<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 mr-1">${role.label || role.name}</span>`;
+            return `<span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 me-1">${role.label || role.name}</span>`;
           }).join(' ');
         }
       },

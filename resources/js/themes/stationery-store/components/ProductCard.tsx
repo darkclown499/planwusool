@@ -2,6 +2,8 @@ import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -72,34 +74,42 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onA
           </div>
         </div>
         
-        <button
-          onClick={() => {
-            const hasVariants = product.variants && Array.isArray(product.variants) && product.variants.length > 0;
-            if (hasVariants) {
-              onProductClick(product);
-              return;
-            }
-            onAddToCart(product);
-          }}
-          className="flex-shrink-0 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"
-        >
-          {product.variants && Array.isArray(product.variants) && product.variants.length > 0 ? (
-            <>
-              <span className="hidden md:inline">اختر الخيارات</span>
-              <svg className="w-5 h-5 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </>
-          ) : (
-            <>
-              <span className="hidden md:inline">أضف إلى السلة</span>
-              <svg className="w-5 h-5 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
-              </svg>
-            </>
-          )}
-        </button>
+        <div className="flex-shrink-0 flex flex-col items-center gap-2">
+          <WishlistButton productId={product.id} iconOnly />
+          <button
+            onClick={() => {
+              const hasVariants = product.variants && Array.isArray(product.variants) && product.variants.length > 0;
+              if (hasVariants) {
+                onProductClick(product);
+                return;
+              }
+              onAddToCart(product);
+            }}
+            className="flex-shrink-0 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"
+          >
+            {product.variants && Array.isArray(product.variants) && product.variants.length > 0 ? (
+              <>
+                <span className="hidden md:inline">اختر الخيارات</span>
+                <svg className="w-5 h-5 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </>
+            ) : (
+              <>
+                <span className="hidden md:inline">أضف إلى السلة</span>
+                <svg className="w-5 h-5 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z" />
+                </svg>
+              </>
+            )}
+          </button>
+          <WhatsAppOrderButton
+            product={{ name: product.name, price: product.price }}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#25D366] hover:bg-[#1eb85a] text-white"
+            iconOnly
+          />
+        </div>
       </div>
 
       {/* Desktop Layout */}
@@ -113,6 +123,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onA
             className="w-full h-full object-scale-down group-hover:scale-105 transition-transform duration-300 cursor-pointer"
           />
           <div className="absolute top-3 right-3 flex flex-col space-y-2">
+            <WishlistButton productId={product.id} iconOnly />
             {product.variants && Array.isArray(product.variants) && product.variants.length > 0 && (
               <span className="bg-sky-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                 بالخيارات
@@ -164,6 +175,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onA
           >
             {product.variants && Array.isArray(product.variants) && product.variants.length > 0 ? 'اختر الخيارات' : 'أضف إلى السلة'}
           </button>
+          <WhatsAppOrderButton
+            product={{ name: product.name, price: product.price }}
+            className="w-full bg-[#25D366] hover:bg-[#1eb85a] text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+          />
           </div>
         </div>
       </div>

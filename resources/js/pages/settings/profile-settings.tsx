@@ -22,12 +22,12 @@ const sidebarNavItems: NavItem[] = [
  {
  title: 'Profile',
  href: '#profile',
- icon: <User className="h-4 w-4 mr-2" />,
+ icon: <User className="h-4 w-4 me-2" />,
  },
  {
  title: 'Password',
  href: '#password',
- icon: <Lock className="h-4 w-4 mr-2" />,
+ icon: <Lock className="h-4 w-4 me-2" />,
  }
 ];
 
@@ -204,7 +204,7 @@ export default function ProfileSettings({ mustVerifyEmail, status }: { mustVerif
  </Avatar>
  <div className="flex flex-col space-y-2">
  <Label htmlFor="avatar" className="cursor-pointer inline-flex items-center px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md font-medium text-sm transition-colors">
- <Camera className="h-4 w-4 mr-2" />
+ <Camera className="h-4 w-4 me-2" />
  {t("Change Avatar")}
  </Label>
  <Input

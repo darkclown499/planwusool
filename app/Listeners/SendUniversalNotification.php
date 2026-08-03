@@ -23,14 +23,21 @@ class SendUniversalNotification
             'order_date' => $order->created_at->format('d/m/Y H:i'),
         ];
 
-        NotificationService::send(
-            $store->user_id,
-            $store->id,
-            'sms',
-            $order->customer_phone,
-            'Order Created',
-            $variables
-        );
+        try {
+            NotificationService::send(
+                $store->user_id,
+                $store->id,
+                'sms',
+                $order->customer_phone,
+                'Order Created',
+                $variables
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Universal notification failed for order created', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function handleOrderStatusChanged($event)
@@ -49,14 +56,21 @@ class SendUniversalNotification
             'order_date' => $order->created_at->format('d/m/Y H:i'),
         ];
 
-        NotificationService::send(
-            $store->user_id,
-            $store->id,
-            'sms',
-            $order->customer_phone,
-            'Order Status Updated',
-            $variables
-        );
+        try {
+            NotificationService::send(
+                $store->user_id,
+                $store->id,
+                'sms',
+                $order->customer_phone,
+                'Order Status Updated',
+                $variables
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Universal notification failed for order status update', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function handleCustomerCreated($event)
@@ -73,13 +87,20 @@ class SendUniversalNotification
             'customer_email' => $customer->email,
         ];
 
-        NotificationService::send(
-            $store->user_id,
-            $store->id,
-            'sms',
-            $customer->phone,
-            'New Customer',
-            $variables
-        );
+        try {
+            NotificationService::send(
+                $store->user_id,
+                $store->id,
+                'sms',
+                $customer->phone,
+                'New Customer',
+                $variables
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Universal notification failed for customer created', [
+                'customer_id' => $customer->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

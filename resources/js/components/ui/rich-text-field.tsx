@@ -45,7 +45,7 @@ const RichTextField = forwardRef<RichTextFieldRef, RichTextFieldProps>(({
       {label && (
         <Label htmlFor={name} className="text-sm font-medium">
           {label}
-          {required && <span className="text-destructive ml-1">*</span>}
+          {required && <span className="text-destructive ms-1">*</span>}
         </Label>
       )}
       

@@ -54,7 +54,7 @@ export function ThemePreview({ logoLight: propLogoLight, logoDark: propLogoDark,
         </div>
       </div>
       
-      <div className={`flex ${position === 'right' ? 'flex-row-reverse' : 'flex-row'} h-64`}>
+      <div dir={position === 'right' ? 'rtl' : 'ltr'} className="flex h-64">
         {/* Sidebar */}
         <div 
           className={`
@@ -91,7 +91,7 @@ export function ThemePreview({ logoLight: propLogoLight, logoDark: propLogoDark,
             
             {/* Nested menu */}
             {collapsible !== 'icon' && (
-              <div className="ml-4 pl-2 border-l border-sidebar-border mt-2 space-y-1">
+              <div className="ms-4 ps-2 border-s border-sidebar-border mt-2 space-y-1">
                 <SidebarMenuSkeleton showIcon={true} />
                 <SidebarMenuSkeleton showIcon={true} />
               </div>

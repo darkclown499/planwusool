@@ -36,6 +36,8 @@ return [
         'product_reviews',
         'abandoned_carts',
         'digital_downloads',
+        'cod_payments',
+        'notifications',
         'plans',
         'plan_requests',
         'plan_orders',

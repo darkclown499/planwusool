@@ -59,6 +59,16 @@ return [
         'redirect' => env('APP_URL') . '/auth/callback/github',
     ],
 
+'vapid' => [
+        // Web Push VAPID keys — generate with:
+        //   php artisan webpush:generate-keys  (or via minishlink/web-push)
+        //   public_key:  base64url-encoded public key
+        //   private_key: base64url-encoded private key
+        'subject' => env('VAPID_SUBJECT', env('APP_URL')),
+        'public_key' => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+    ],
+
     'plankton' => [
         // Plankton is a custom OAuth2 provider; configure these in .env
         'authorize_url' => env('PLANKTON_AUTHORIZE_URL'),

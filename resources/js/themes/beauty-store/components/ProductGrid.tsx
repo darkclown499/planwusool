@@ -2,6 +2,8 @@ import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 
 interface Product {
   id: string;
@@ -94,11 +96,12 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
             )}
 
             {/* Quick Actions */}
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute top-3 right-3 flex flex-col space-y-2">
+              <WishlistButton productId={product.id} iconOnly />
               {/* Quick View */}
               <button 
                 onClick={() => onProductClick(product)}
-                className="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:text-fuchsia-500 transition-colors"
+                className="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:text-fuchsia-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -177,6 +180,14 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                   بقي {product.stockQuantity} فقط
                 </span>
               )}
+            </div>
+
+            {/* WhatsApp Order */}
+            <div className="mt-3">
+              <WhatsAppOrderButton
+                product={{ name: product.name, price: product.price }}
+                className="w-full bg-[#25D366] hover:bg-[#1eb85a] text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors duration-300 shadow-lg"
+              />
             </div>
           </div>
         </div>

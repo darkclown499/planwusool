@@ -119,7 +119,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
 
     const renderSubMenu = (children: NavItem[], level: number = 1) => {
         return (
-            <ul className={`flex flex-col gap-px ${isRTL ? 'mr-7' : 'ml-7'} mt-0.5 mb-1`}>
+            <ul className={`flex flex-col gap-px ${isRTL ? 'me-7' : 'ms-7'} mt-0.5 mb-1`}>
                 {children.map(child => (
                     <li key={child.title}>
                         {child.children ? (

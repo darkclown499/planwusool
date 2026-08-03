@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShoppingBag, Menu, X, User, LogOut, Package } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, User, LogOut, Package, Heart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
 
 interface HeaderProps {
@@ -14,6 +14,8 @@ interface HeaderProps {
   onProfileClick: () => void;
   onOrdersClick: () => void;
   onLogoutClick: () => void;
+  onWishlistClick?: () => void;
+  wishlistCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -27,7 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   userName,
   onProfileClick,
   onOrdersClick,
-  onLogoutClick
+  onLogoutClick,
+  onWishlistClick,
+  wishlistCount = 0
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -138,6 +142,23 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <User className="w-4 h-4" />
                 <span>تسجيل الدخول</span>
+              </button>
+            )}
+
+            {/* Wishlist */}
+            {onWishlistClick && (
+              <button
+                onClick={onWishlistClick}
+                className="relative p-2 text-yellow-700 hover:bg-yellow-100 rounded-lg"
+                aria-label="المفضلة"
+                title="المفضلة"
+              >
+                <Heart className="w-5 h-5 md:w-6 md:h-6" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-yellow-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
               </button>
             )}
 

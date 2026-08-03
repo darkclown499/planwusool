@@ -111,29 +111,29 @@ export default function PlanRequestsPage() {
             <div className="flex items-center gap-2">
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={t('Search plan requests...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9"
+                    className="w-full ps-9"
                   />
                 </div>
                 <Button type="submit" size="sm">
-                  <Search className="h-4 w-4 mr-1.5" />
+                  <Search className="h-4 w-4 me-1.5" />
                   {t('Search')}
                 </Button>
               </form>
               
               {planRequestsConfig.filters && planRequestsConfig.filters.length > 0 && (
-                <div className="ml-2">
+                <div className="ms-2">
                   <Button 
                     variant={hasActiveFilters() ? "default" : "outline"}
                     size="sm" 
                     className="h-8 px-2 py-1"
                     onClick={() => setShowFilters(!showFilters)}
                   >
-                    <Filter className="h-3.5 w-3.5 mr-1.5" />
+                    <Filter className="h-3.5 w-3.5 me-1.5" />
                     {showFilters ? t('Hide Filters') : t('Filters')}
                   </Button>
                 </div>

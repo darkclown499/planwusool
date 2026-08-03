@@ -62,13 +62,13 @@ export default function CurrencySettings() {
             description={t("Configure how currency values are displayed throughout the application")}
             action={
                 <Button type="submit" form="currency-settings-form" size="sm">
-                    <Save className="h-4 w-4 ml-2" />
+                    <Save className="h-4 w-4 ms-2" />
                     {t("Save Changes")}
                 </Button>
             }
         >
             <form id="currency-settings-form" onSubmit={handleSubmit} dir="rtl">
-                <div className="space-y-3 text-right">
+                <div className="space-y-3 text-start">
                     <Label htmlFor="defaultCurrency" className="font-medium">{t("Default Currency")}</Label>
                     <Select value={defaultCurrency} onValueChange={setDefaultCurrency} dir="rtl">
                         <SelectTrigger>

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { Check } from 'lucide-react';
-import { getStoreThemes } from '@/data/storeThemes';
+import { getStoreThemes, storeThemeCategories } from '@/data/storeThemes';
 import MediaPicker from '@/components/MediaPicker';
 import InputError from '@/components/input-error';
 
@@ -288,10 +288,17 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  </p>
  </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
- {getStoreThemes().filter(theme =>
- availableThemes === null || availableThemes.includes(theme.id)
- ).map((theme) => (
+  <div className="space-y-6">
+  {storeThemeCategories.map((category) => {
+  const categoryThemes = getStoreThemes().filter(theme =>
+  theme.category === category && (availableThemes === null || availableThemes.includes(theme.id))
+  );
+  if (categoryThemes.length === 0) return null;
+  return (
+  <div key={category}>
+  <h3 className="mb-3 font-semibold text-sm text-muted-foreground border-b pb-2">{category}</h3>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {categoryThemes.map((theme) => (
   <div
   key={theme.id}
   className={`flex cursor-pointer flex-col rounded-lg border-2 p-1 transition-all duration-200 ${formData.theme === theme.id ? 'border-primary ring-2 ring-primary/30' : 'border-gray-200 hover:border-gray-300'
@@ -327,8 +334,12 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
   </p>
   </div>
   </div>
- ))}
- </div>
+  ))}
+  </div>
+  </div>
+  );
+  })}
+  </div>
  </CardContent>
  </Card>
  </TabsContent>

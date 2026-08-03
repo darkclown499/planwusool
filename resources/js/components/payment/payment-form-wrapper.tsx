@@ -185,7 +185,7 @@ export function PaymentFormWrapper({
     return (
       <Card>
         <CardContent className="flex items-center justify-center p-6">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <Loader2 className="h-6 w-6 animate-spin me-2" />
           {t('Loading payment methods...')}
         </CardContent>
       </Card>
@@ -231,7 +231,7 @@ export function PaymentFormWrapper({
                   value={method.id}
                   checked={selectedMethod === method.id}
                   onChange={(e) => setSelectedMethod(e.target.value)}
-                  className="mr-3"
+                  className="me-3"
                 />
                 <span className="font-medium">{method.name}</span>
               </label>

@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Store;
 use App\Models\User;
 use App\Models\CartItem;
+use App\Models\WishlistItem;
 use App\Models\Shipping;
 use App\Models\Order;
 use App\Models\StoreSetting;
@@ -144,6 +145,29 @@ class ThemeController extends Controller
     }
 
     /**
+     * Resolve the secondary currency (code/symbol/name + manual exchange rate) for dual-currency display.
+     */
+    protected function resolveSecondaryCurrency(array $storeSettings): ?array
+    {
+        $secondaryCurrencyCode = $storeSettings['secondaryCurrency'] ?? null;
+        if (!$secondaryCurrencyCode) {
+            return null;
+        }
+
+        $secondaryCurrencyModel = \App\Models\Currency::where('code', $secondaryCurrencyCode)->first();
+        if (!$secondaryCurrencyModel) {
+            return null;
+        }
+
+        return [
+            'code' => $secondaryCurrencyModel->code,
+            'symbol' => $secondaryCurrencyModel->symbol,
+            'name' => $secondaryCurrencyModel->name,
+            'exchangeRate' => (float) ($storeSettings['exchangeRate'] ?? 0),
+        ];
+    }
+
+    /**
      * Get store configuration with settings and currencies
      */
     protected function getStoreConfig($store)
@@ -172,6 +196,12 @@ class ThemeController extends Controller
                 'description' => $configuration['store_description'] ? $configuration['store_description'] : ($store['description'] ?? ''),
                 'welcomeMessage' => $configuration['welcome_message'] ?? null,
                 'copyrightText' => $configuration['copyright_text'] ?? null,
+                'locale' => $storeSettings['language'] ?? 'ar',
+                'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
+                'vat' => [
+                    'vat_number' => $storeSettings['vat_number'] ?? null,
+                    'tax_registration_number' => $storeSettings['tax_registration_number'] ?? null,
+                ],
                 'socialMedia' => [
                     'facebook' => $configuration['facebook_url'] ?? null,
                     'instagram' => $configuration['instagram_url'] ?? null,
@@ -286,6 +316,9 @@ class ThemeController extends Controller
             'storeSettings' => $storeData['storeSettings'],
             'currencies' => $currencies,
             'countries' => $countries,
+            'secondaryCurrency' => $storeData['config']['secondaryCurrency'],
+            'vat' => $storeData['config']['vat'],
+            'locale' => $storeData['config']['locale'],
             'storeCurrency' => [
                 'code' => $storeData['storeSettings']['currency_code'] ?? 'USD',
                 'symbol' => $storeData['storeSettings']['currency_symbol'] ?? '$',
@@ -294,13 +327,50 @@ class ThemeController extends Controller
                 'decimals' => (int) ($storeData['storeSettings']['currency_decimals'] ?? 2),
                 'decimal_separator' => $storeData['storeSettings']['decimal_separator'] ?? '.',
                 'thousands_separator' => $storeData['storeSettings']['thousands_separator'] ?? ',',
+                'secondary' => $storeData['config']['secondaryCurrency'],
+                'locale' => $storeData['config']['locale'],
+                'vat' => $storeData['config']['vat'],
             ],
             'showResetModal' => $request ? $request->get('showResetModal', false) : false,
             'resetToken' => $request ? $request->get('resetToken') : null,
-            'action' => request()->get('action'),
+            'action' => $this->resolveAction(),
+            'wishlistCount' => $this->getWishlistCount($store['id']),
             'payment_status' => session()->pull('payment_status') ?? (request() ? request()->get('payment_status') : null),
             'order_number' => session()->pull('order_number') ?? (request() ? request()->get('order_number') : null),
         ], $this->getCommonData()));
+    }
+
+    /**
+     * Resolve the account deep-link action from the query string or the URL path.
+     * Supports: ?action=my-orders as well as /my-orders, /my-profile, /wishlist, /my-downloads.
+     */
+    protected function resolveAction(): ?string
+    {
+        $action = request()->get('action');
+        if ($action) {
+            return $action;
+        }
+
+        $segment = explode('/', trim(request()->path(), '/'))[0] ?? '';
+        $allowed = ['my-orders', 'my-profile', 'wishlist', 'my-downloads'];
+
+        return in_array($segment, $allowed, true) ? $segment : null;
+    }
+
+    /**
+     * Get the wishlist count for the current customer (or session).
+     */
+    protected function getWishlistCount($storeId): int
+    {
+        $query = WishlistItem::where('store_id', $storeId);
+
+        if (Auth::guard('customer')->check()) {
+            $query->where('customer_id', Auth::guard('customer')->id());
+        } else {
+            $query->where('session_id', session()->getId())->whereNull('customer_id');
+        }
+
+        return $query->count();
     }
 
     /**
@@ -369,6 +439,12 @@ class ThemeController extends Controller
             'logo' => $configuration['logo'] ?? '',
             'currency' => $storeSettings['currency_symbol'] ?? '$',
             'phoneNumber' => $storeSettings['phone'] ?? '',
+            'locale' => $storeSettings['language'] ?? 'ar',
+            'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
+            'vat' => [
+                'vat_number' => $storeSettings['vat_number'] ?? null,
+                'tax_registration_number' => $storeSettings['tax_registration_number'] ?? null,
+            ],
         ];
 
         return Inertia::render('store/order-invoice', array_merge([
@@ -376,6 +452,10 @@ class ThemeController extends Controller
             'order' => $order,
             'config' => $config,
             'store' => $store,
+            'storeSettings' => $storeSettings,
+            'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
+            'vat' => $config['vat'],
+            'locale' => $config['locale'],
             'payment_status' => 'success',
             'cartCount' => 0,
             'wishlistCount' => 0,
@@ -505,6 +585,9 @@ class ThemeController extends Controller
             'config' => $storeData['config'],
             'storeSettings' => $storeSettings,
             'currencies' => $currencies,
+            'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
+            'vat' => $storeData['vat'],
+            'locale' => $storeData['locale'],
         ];
         
         $pdf = Pdf::loadView('pdf.invoice', $data);

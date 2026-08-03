@@ -107,7 +107,7 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
       description={t("Configure cookie consent and privacy settings for your application")}
       action={
         <Button type="submit" form="cookie-settings-form" size="sm">
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-4 w-4 me-2" />
           {t("Save Changes")}
         </Button>
       }
@@ -233,7 +233,7 @@ export default function CookieSettings({ settings = {} }: CookieSettingsProps) {
               </p>
             </div>
             <Button type="button" variant="outline" size="sm" onClick={downloadCookieData}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4 me-2" />
               Download CSV
             </Button>
           </div>

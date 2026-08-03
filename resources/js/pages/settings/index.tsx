@@ -259,13 +259,13 @@ export default function Settings() {
                   <Button
                     key={item.href}
                     variant="ghost"
-                    className={cn('flex flex-row-reverse items-center justify-end gap-3 w-full text-right', {
+                    className={cn('flex items-center gap-3 w-full text-start', {
                       'bg-muted font-medium': activeSection === item.href.replace('#', ''),
                     })}
                     onClick={() => handleNavClick(item.href)}
                   >
                     {item.icon}
-                    <span className="grow text-right">{item.title}</span>
+                    <span className="grow text-start">{item.title}</span>
                   </Button>
                 ))}
               </div>

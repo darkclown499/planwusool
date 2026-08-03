@@ -68,7 +68,7 @@ export default function RecaptchaSettings({ settings = {} }: RecaptchaSettingsPr
  description={t("Configure Google ReCaptcha settings for form protection")}
  action={
  <Button type="submit" form="recaptcha-settings-form" size="sm">
- <Save className="h-4 w-4 mr-2" />
+ <Save className="h-4 w-4 me-2" />
  {t("Save Changes")}
  </Button>
  }

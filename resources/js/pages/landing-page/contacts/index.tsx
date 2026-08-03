@@ -91,7 +91,7 @@ export default function ContactsIndex() {
   const pageActions = [
     {
       label: 'Export',
-      icon: <Download className="h-4 w-4 mr-2" />,
+      icon: <Download className="h-4 w-4 me-2" />,
       variant: 'outline' as const,
       onClick: () => handleExport()
     }
@@ -157,16 +157,16 @@ export default function ContactsIndex() {
             <div className="flex items-center gap-2">
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={t("Search contacts...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9"
+                    className="w-full ps-9"
                   />
                 </div>
                 <Button type="submit" size="sm">
-                  <Search className="h-4 w-4 mr-1.5" />
+                  <Search className="h-4 w-4 me-1.5" />
                   {t("Search")}
                 </Button>
               </form>
@@ -210,13 +210,13 @@ export default function ContactsIndex() {
                 {columns.map((column) => (
                   <th 
                     key={column.key} 
-                    className="px-4 py-3 text-left font-medium text-gray-500 cursor-pointer hover:bg-gray-100"
+                    className="px-4 py-3 text-start font-medium text-gray-500 cursor-pointer hover:bg-gray-100"
                     onClick={() => column.sortable && handleSort(column.key)}
                   >
                     <div className="flex items-center">
                       {column.label}
                       {column.sortable && (
-                        <span className="ml-1">
+                        <span className="ms-1">
                           {pageFilters.sort_field === column.key ? (
                             pageFilters.sort_direction === 'asc' ? '↑' : '↓'
                           ) : ''}
@@ -225,7 +225,7 @@ export default function ContactsIndex() {
                     </div>
                   </th>
                 ))}
-                <th className="px-4 py-3 text-right font-medium text-gray-500">
+                <th className="px-4 py-3 text-end font-medium text-gray-500">
                   {t("Actions")}
                 </th>
               </tr>
@@ -238,7 +238,7 @@ export default function ContactsIndex() {
                       {column.render ? column.render(contact[column.key], contact, contacts?.data?.indexOf(contact)) : contact[column.key]}
                     </td>
                   ))}
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <div className="flex justify-end gap-1">
                       <Button 
                         variant="ghost" 

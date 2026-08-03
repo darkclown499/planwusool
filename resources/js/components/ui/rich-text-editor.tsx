@@ -68,7 +68,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(({
     editorProps: {
       attributes: {
         dir: 'rtl',
-        class: 'prose prose-sm max-w-none p-4 min-h-[200px] focus-within:outline-none text-right',
+        class: 'prose prose-sm max-w-none p-4 min-h-[200px] focus-within:outline-none text-start',
         style: 'text-align: right;',
       },
     },

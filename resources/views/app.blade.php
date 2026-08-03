@@ -24,7 +24,7 @@
     $isLandingRoute = request()->routeIs('home') || request()->routeIs('custom-page.show');
     $isSitemap = request()->routeIs('sitemap');
 @endphp
-<html lang="ar" dir="rtl">
+<html lang="{{ $locale }}" dir="{{ $dir }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">

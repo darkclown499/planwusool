@@ -63,7 +63,7 @@ export function SearchableSelect({
           disabled={disabled}
           className={cn('w-full justify-between font-normal', className)}
         >
-          <span className="truncate text-right">{selected ? selected.label : (placeholder || t('Select...'))}</span>
+          <span className="truncate text-start">{selected ? selected.label : (placeholder || t('Select...'))}</span>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -90,7 +90,7 @@ export function SearchableSelect({
                   }}
                   className="flex items-center justify-between"
                 >
-                  <span className="text-right">
+                  <span className="text-start">
                     {option.label}
                     {option.hint && <span className="ms-2 text-xs text-muted-foreground">{option.hint}</span>}
                   </span>
@@ -108,7 +108,7 @@ export function SearchableSelect({
                   className="flex items-center gap-2 text-muted-foreground"
                 >
                   <CornerDownLeft className="h-4 w-4 shrink-0" />
-                  <span className="text-right">
+                  <span className="text-start">
                     {t('Use')} &quot;{search.trim()}&quot;
                   </span>
                 </CommandItem>

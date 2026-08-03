@@ -51,10 +51,33 @@ class DomainResolver
         }
         $store = null;
         
-        // Check for custom domain first
-        $store = Store::where('custom_domain', $host)
-                    ->where('enable_custom_domain', true)
-                    ->first();
+        // Build candidate hosts so a bare "www." prefix does not break resolution
+        $candidateHosts = [$host];
+        if (str_starts_with($host, 'www.')) {
+            $candidateHosts[] = substr($host, 4);
+        } else {
+            $candidateHosts[] = 'www.' . $host;
+        }
+        
+        // Check verified custom domains from the store_domains table first
+        foreach ($candidateHosts as $candidateHost) {
+            $store = Store::findByDomain($candidateHost);
+            if ($store) {
+                break;
+            }
+        }
+        
+        // Check for custom domain (legacy stores.custom_domain column)
+        if (!$store) {
+            foreach ($candidateHosts as $candidateHost) {
+                $store = Store::where('custom_domain', $candidateHost)
+                            ->where('enable_custom_domain', true)
+                            ->first();
+                if ($store) {
+                    break;
+                }
+            }
+        }
         
         // Check store status via configuration
         if ($store) {

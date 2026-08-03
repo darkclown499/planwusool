@@ -8,6 +8,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useProduct } from '../../contexts/ProductContext';
 import { useOrder } from '../../contexts/OrderContext';
 import { useUI } from '../../contexts/UIContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 import PWAProvider from '@/components/pwa/PWAProvider';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import WhatsAppWidget from '@/components/WhatsAppWidget';
@@ -57,6 +58,7 @@ const FlowersStoreContent: React.FC = () => {
     setShowLoginModal, 
     setShowProfileModal, 
     setShowOrdersModal,
+    setShowWishlistModal,
     logout 
   } = useAuth();
   
@@ -114,6 +116,8 @@ const FlowersStoreContent: React.FC = () => {
     handleCartClick,
     handleCloseCart
   } = useUI();
+  
+  const { count: wishlistCount } = useWishlist();
 
   // Handle payment status from props and URL
   useEffect(() => {
@@ -182,6 +186,8 @@ const FlowersStoreContent: React.FC = () => {
         userName={`${userProfile?.first_name} ${userProfile?.last_name}`}
         onProfileClick={() => setShowProfileModal(true)}
         onOrdersClick={() => setShowOrdersModal(true)}
+        onWishlistClick={() => setShowWishlistModal(true)}
+        wishlistCount={wishlistCount}
         onLogoutClick={() => logout(store?.slug)}
       />
       

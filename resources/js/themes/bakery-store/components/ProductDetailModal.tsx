@@ -5,6 +5,9 @@ import { toast } from '@/components/custom-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { log } from 'console';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface Product {
   id: string;
@@ -61,12 +64,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
           {/* Header */}
           <div className="relative bg-stone-700 p-3 sm:p-4 flex-shrink-0">
-            <button
-              onClick={onClose}
-              className="absolute top-2 left-2 p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="absolute top-2 left-2 flex items-center gap-1">
+              <WishlistButton productId={product.id} iconOnly />
+              <button
+                onClick={onClose}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             <div className="flex items-center justify-center text-white pl-10">
               <ShoppingBag className="w-5 h-5 ml-2 flex-shrink-0" />
@@ -197,6 +203,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </div>
                 )}
               </div>
+
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <ProductReviews productId={product.id} />
+              </div>
             </div>
             {/* </div> */}
           </div>
@@ -269,6 +279,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </span>
               </button>
             </div>
+
+            <WhatsAppOrderButton
+              product={{ name: product.name, price: product.price }}
+              className="w-full py-3 px-6 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1eb85a] text-white"
+            />
           </div>
         </div>
       </div>

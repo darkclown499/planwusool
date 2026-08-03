@@ -469,7 +469,7 @@ export function PaymentProcessor({
                 {t(billingCycle)} {t('subscription')}
               </p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <div className="text-lg font-bold">{plan.formatted_price || plan.price}</div>
               <div className="text-sm text-muted-foreground">
                 /{t(plan.duration.toLowerCase())}
@@ -502,7 +502,7 @@ export function PaymentProcessor({
                     <div className="text-primary">{method.icon}</div>
                     <span className="font-medium">{method.name}</span>
                     {selectedPaymentMethod === method.id && (
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge variant="secondary" className="ms-auto">
                         {t('Selected')}
                       </Badge>
                     )}

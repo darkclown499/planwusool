@@ -11,6 +11,8 @@ use App\Models\AdvancedCoupon;
 use App\Services\LoyaltyService;
 use App\Services\AbandonedCartService;
 use App\Services\AdvancedCouponService;
+use App\Services\CodPaymentService;
+use App\Services\MerchantNotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -86,6 +88,11 @@ class OrderService
                     
                     // Reduce product stock
                     $product->decrement('stock', $cartItem['quantity']);
+
+                    // Notify the merchant when stock runs low
+                    if ($product->stock <= 5) {
+                        MerchantNotificationService::lowStock($product);
+                    }
                 }
                 
                 // Calculate tax for this item
@@ -1103,6 +1110,19 @@ class OrderService
                     }
                 } catch (\Exception $e) {
                     Log::warning('Failed to record advanced coupon usage', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                }
+            }
+
+            // Create COD payment tracking record if the order is cash-on-delivery
+            if ($order->payment_method === 'cod') {
+                try {
+                    // Avoid creating duplicates if already exists
+                    $existing = \App\Models\CodPayment::where('order_id', $order->id)->first();
+                    if (!$existing) {
+                        app(CodPaymentService::class)->createForOrder($order);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to create COD payment record', ['order_id' => $order->id, 'error' => $e->getMessage()]);
                 }
             }
         } catch (\Exception $e) {

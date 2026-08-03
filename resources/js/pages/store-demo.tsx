@@ -131,10 +131,10 @@ export default function StoreDemo() {
                 <div className="flex flex-wrap items-center gap-3">
                   <Button className="rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-white hover:bg-slate-700">
                     {config.buttonText}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ms-2 h-4 w-4" />
                   </Button>
                   <Button variant="outline" className="rounded-full border-slate-200/80 bg-white/70 px-6 py-3 text-sm font-medium text-slate-700 backdrop-blur-xl hover:bg-slate-50">
-                    <Play className="mr-2 h-4 w-4" />
+                    <Play className="me-2 h-4 w-4" />
                     Watch demo
                   </Button>
                 </div>
@@ -293,7 +293,7 @@ export default function StoreDemo() {
               </div>
               <div className="grid gap-5 lg:grid-cols-3">
                 {config.services?.map((service: any, index: number) => (
-                  <div key={index} className={`${glassCardClass} flex flex-col text-left`}>
+                  <div key={index} className={`${glassCardClass} flex flex-col text-start`}>
                     <h3 className="text-xl font-semibold text-slate-900">{service.title}</h3>
                     <p className="mt-2 text-sm leading-7 text-slate-600">{service.description}</p>
                     <div className="mt-6 flex items-baseline gap-2">

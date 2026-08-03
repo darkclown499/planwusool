@@ -423,7 +423,7 @@ export default function StorageSettings({ settings = {} }: StorageSettingsProps)
       description={t("Configure file storage settings for your application")}
       action={
         <Button type="submit" form="storage-settings-form" size="sm">
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-4 w-4 me-2" />
           {t("Save Changes")}
         </Button>
       }

@@ -41,9 +41,15 @@ interface AuthContextType {
   showLoginModal: boolean;
   showProfileModal: boolean;
   showOrdersModal: boolean;
+  showWishlistModal: boolean;
+  showDownloadsModal: boolean;
+  showLoyaltyModal: boolean;
   setShowLoginModal: (show: boolean) => void;
   setShowProfileModal: (show: boolean) => void;
   setShowOrdersModal: (show: boolean) => void;
+  setShowWishlistModal: (show: boolean) => void;
+  setShowDownloadsModal: (show: boolean) => void;
+  setShowLoyaltyModal: (show: boolean) => void;
   updateUserProfile: (profile: UserProfile) => void;
   logout: (storeSlug?: string) => void;
 }
@@ -66,6 +72,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showOrdersModal, setShowOrdersModal] = useState(false);
+  const [showWishlistModal, setShowWishlistModal] = useState(false);
+  const [showDownloadsModal, setShowDownloadsModal] = useState(false);
+  const [showLoyaltyModal, setShowLoyaltyModal] = useState(false);
 
   const billingAddress = customerAddress?.find(addr => addr.type === 'billing' && addr.is_default) || 
                         customerAddress?.find(addr => addr.type === 'billing');
@@ -130,9 +139,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     showLoginModal,
     showProfileModal,
     showOrdersModal,
+    showWishlistModal,
+    showDownloadsModal,
+    showLoyaltyModal,
     setShowLoginModal,
     setShowProfileModal,
     setShowOrdersModal,
+    setShowWishlistModal,
+    setShowDownloadsModal,
+    setShowLoyaltyModal,
     updateUserProfile,
     logout
   };

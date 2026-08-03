@@ -68,7 +68,7 @@ export function UpgradeModal({
           </Button>
           <Button onClick={handleUpgrade} className="flex-1">
             {t('Upgrade Now')}
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <ArrowRight className="h-4 w-4 ms-2" />
           </Button>
         </div>
       </DialogContent>

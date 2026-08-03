@@ -121,16 +121,16 @@ export default function EmailTemplatesIndex({ templates, filters: pageFilters = 
                         <div className="flex items-center gap-2">
                             <form onSubmit={handleSearch} className="flex gap-2">
                                 <div className="relative w-64">
-                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder={t("Search templates...")}
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-9"
+                                        className="w-full ps-9"
                                     />
                                 </div>
                                 <Button type="submit" size="sm">
-                                    <Search className="h-4 w-4 mr-1.5" />
+                                    <Search className="h-4 w-4 me-1.5" />
                                     {t("Search")}
                                 </Button>
                             </form>
@@ -170,13 +170,13 @@ export default function EmailTemplatesIndex({ templates, filters: pageFilters = 
                 {columns.map((column) => (
                   <th 
                     key={column.key} 
-                    className="px-4 py-3 text-left font-medium text-gray-500 cursor-pointer hover:bg-gray-100"
+                    className="px-4 py-3 text-start font-medium text-gray-500 cursor-pointer hover:bg-gray-100"
                     onClick={() => column.sortable && handleSort(column.key)}
                   >
                     <div className="flex items-center">
                       {column.label}
                       {column.sortable && (
-                        <span className="ml-1">
+                        <span className="ms-1">
                           {pageFilters.sort_field === column.key ? (
                             pageFilters.sort_direction === 'asc' ? '↑' : '↓'
                           ) : ''}
@@ -185,7 +185,7 @@ export default function EmailTemplatesIndex({ templates, filters: pageFilters = 
                     </div>
                   </th>
                 ))}
-                <th className="px-4 py-3 text-right font-medium text-gray-500">
+                <th className="px-4 py-3 text-end font-medium text-gray-500">
                   {t("Actions")}
                 </th>
               </tr>
@@ -194,7 +194,7 @@ export default function EmailTemplatesIndex({ templates, filters: pageFilters = 
                             {templates?.data?.map((template: EmailTemplate) => (
                                 <tr key={template.id} className="border-b hover:bg-gray-50">
                                     <td className="px-4 py-3 font-medium">{template.name}</td>
-                                    <td className="px-4 py-3 text-right">
+                                    <td className="px-4 py-3 text-end">
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button 

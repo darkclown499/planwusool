@@ -20,6 +20,12 @@ interface StoreConfig {
   meta_description?: string;
   google_analytics_id?: string;
   meta_pixel_id?: string;
+  whatsapp_widget_enabled?: boolean;
+  whatsapp_widget_phone?: string;
+  whatsapp_widget_message?: string;
+  whatsapp_widget_position?: string;
+  whatsapp_widget_show_on_mobile?: boolean;
+  whatsapp_widget_show_on_desktop?: boolean;
   socialMedia?: {
     facebook?: string;
     instagram?: string;

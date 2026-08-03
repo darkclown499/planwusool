@@ -274,6 +274,18 @@ class PermissionSeeder extends Seeder
             ['name' => 'export-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Export Advanced Coupons', 'description' => 'Can export advanced coupons'],
             ['name' => 'toggle-status-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Toggle Status Advanced Coupons', 'description' => 'Can toggle advanced coupon status'],
 
+            // Advanced COD (Cash on Delivery) management
+            ['name' => 'manage-cod-payments', 'module' => 'cod_payments', 'label' => 'Manage COD Payments', 'description' => 'Can manage COD payments'],
+            ['name' => 'view-cod-payments', 'module' => 'cod_payments', 'label' => 'View COD Payments', 'description' => 'View COD payments'],
+            ['name' => 'collect-cod-payments', 'module' => 'cod_payments', 'label' => 'Collect COD Payments', 'description' => 'Can record COD payment collections'],
+            ['name' => 'export-cod-payments', 'module' => 'cod_payments', 'label' => 'Export COD Payments', 'description' => 'Can export COD payments data'],
+
+            // Smart Notifications management
+            ['name' => 'manage-notifications', 'module' => 'notifications', 'label' => 'Manage Notifications', 'description' => 'Can manage notifications system'],
+            ['name' => 'view-notifications', 'module' => 'notifications', 'label' => 'View Notifications', 'description' => 'Can view notification history'],
+            ['name' => 'send-notifications', 'module' => 'notifications', 'label' => 'Send Notifications', 'description' => 'Can send manual notifications to customers'],
+            ['name' => 'delete-notifications', 'module' => 'notifications', 'label' => 'Delete Notifications', 'description' => 'Can delete notifications'],
+
         ];
 
         foreach ($permissions as $permission) {

@@ -9,6 +9,7 @@ import { BrandProvider } from './contexts/BrandContext';
 import { ModalStackProvider } from './contexts/ModalStackContext';
 import { initializeTheme } from './hooks/use-appearance';
 import { CustomToast } from './components/custom-toast';
+import { AppDirectionProvider } from './components/app-direction-provider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeGlobalSettings } from './utils/globalSettings';
 import './i18n';
@@ -73,12 +74,14 @@ createInertiaApp({
                 <ErrorBoundary>
                     <ModalStackProvider>
                         <LayoutProvider>
-                            <SidebarProvider>
-                                <BrandProvider globalSettings={currentGlobalSettings} user={user}>
-                                    <App {...appProps} />
-                                    <CustomToast />
-                                </BrandProvider>
-                            </SidebarProvider>
+                            <AppDirectionProvider>
+                                <SidebarProvider>
+                                    <BrandProvider globalSettings={currentGlobalSettings} user={user}>
+                                        <App {...appProps} />
+                                        <CustomToast />
+                                    </BrandProvider>
+                                </SidebarProvider>
+                            </AppDirectionProvider>
                         </LayoutProvider>
                     </ModalStackProvider>
                 </ErrorBoundary>

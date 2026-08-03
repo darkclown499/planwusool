@@ -162,7 +162,7 @@ export default function AccountingIntegration() {
               </div>
               {isConnected && (
                 <Button type="button" variant="outline" size="sm" onClick={handleDisconnect}>
-                  <Unlink className="h-3.5 w-3.5 mr-1.5" />
+                  <Unlink className="h-3.5 w-3.5 me-1.5" />
                   {t('Disconnect')}
                 </Button>
               )}
@@ -285,9 +285,9 @@ export default function AccountingIntegration() {
           <div className="flex flex-wrap items-center gap-3">
             <Button type="submit" disabled={saving}>
               {saving ? (
-                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
               ) : (
-                <Plug className="h-4 w-4 mr-1.5" />
+                <Plug className="h-4 w-4 me-1.5" />
               )}
               {isConnected ? t('تحديث الإعدادات') : t('حفظ الاتصال')}
             </Button>
@@ -296,18 +296,18 @@ export default function AccountingIntegration() {
               <>
                 <Button type="button" variant="outline" onClick={handleTestConnection} disabled={testing}>
                   {testing ? (
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
                   ) : (
-                    <Zap className="h-4 w-4 mr-1.5" />
+                    <Zap className="h-4 w-4 me-1.5" />
                   )}
                   {t('Test Connection')}
                 </Button>
 
                 <Button type="button" variant="outline" onClick={handleSyncNow} disabled={syncing}>
                   {syncing ? (
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
                   ) : (
-                    <RefreshCw className="h-4 w-4 mr-1.5" />
+                    <RefreshCw className="h-4 w-4 me-1.5" />
                   )}
                   {t('Sync Now')}
                 </Button>

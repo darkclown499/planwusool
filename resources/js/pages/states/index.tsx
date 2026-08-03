@@ -138,7 +138,7 @@ export default function States() {
   const pageActions = [
     {
       label: t('Add State'),
-      icon: <Plus className="h-4 w-4 mr-2" />,
+      icon: <Plus className="h-4 w-4 me-2" />,
       variant: 'default' as const,
       onClick: handleAddNew
     }
@@ -184,28 +184,28 @@ export default function States() {
             <div className="flex items-center gap-2">
               <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative w-64">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder={t("Search states...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9"
+                    className="w-full ps-9"
                   />
                 </div>
                 <Button type="submit" size="sm">
-                  <Search className="h-4 w-4 mr-1.5" />
+                  <Search className="h-4 w-4 me-1.5" />
                   {t("Search")}
                 </Button>
               </form>
 
-              <div className="ml-2">
+              <div className="ms-2">
                 <Button
                   variant={hasActiveFilters() ? "default" : "outline"}
                   size="sm"
                   className="h-8 px-2 py-1"
                   onClick={() => setShowFilters(!showFilters)}
                 >
-                  <Filter className="h-3.5 w-3.5 mr-1.5" />
+                  <Filter className="h-3.5 w-3.5 me-1.5" />
                   {showFilters ? t('Hide Filters') : t('Filters')}
                 </Button>
               </div>
@@ -272,12 +272,12 @@ export default function States() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-gray-50">
-                <th className="px-4 py-3 text-left font-medium text-gray-500">{t('Name')}</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">{t('Code')}</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">{t('Country')}</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">{t('Cities')}</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-500">{t('Status')}</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-500">{t('Actions')}</th>
+                <th className="px-4 py-3 text-start font-medium text-gray-500">{t('Name')}</th>
+                <th className="px-4 py-3 text-start font-medium text-gray-500">{t('Code')}</th>
+                <th className="px-4 py-3 text-start font-medium text-gray-500">{t('Country')}</th>
+                <th className="px-4 py-3 text-start font-medium text-gray-500">{t('Cities')}</th>
+                <th className="px-4 py-3 text-start font-medium text-gray-500">{t('Status')}</th>
+                <th className="px-4 py-3 text-end font-medium text-gray-500">{t('Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -292,7 +292,7 @@ export default function States() {
                       {state.status ? t('Active') : t('Inactive')}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <div className="flex justify-end gap-1">
                       <Tooltip>
                         <TooltipTrigger asChild>

@@ -10,7 +10,7 @@ export default function ContactSection({ data, setData, errors, handleInputChang
     <div className="space-y-6">
       <div className="space-y-4">
         <div className="flex items-center">
-          <Layout className="h-5 w-5 mr-2 text-muted-foreground" />
+          <Layout className="h-5 w-5 me-2 text-muted-foreground" />
           <h3 className="text-base font-medium">Contact Layout</h3>
         </div>
         <Separator className="my-2" />
@@ -55,7 +55,7 @@ export default function ContactSection({ data, setData, errors, handleInputChang
 
       <div className="space-y-4">
         <div className="flex items-center">
-          <Phone className="h-5 w-5 mr-2 text-muted-foreground" />
+          <Phone className="h-5 w-5 me-2 text-muted-foreground" />
           <h3 className="text-base font-medium">Contact Information</h3>
         </div>
         <Separator className="my-2" />
@@ -108,7 +108,7 @@ export default function ContactSection({ data, setData, errors, handleInputChang
       
       <div className="space-y-4">
         <div className="flex items-center">
-          <MapPin className="h-5 w-5 mr-2 text-muted-foreground" />
+          <MapPin className="h-5 w-5 me-2 text-muted-foreground" />
           <h3 className="text-base font-medium">Map Settings</h3>
         </div>
         <Separator className="my-2" />

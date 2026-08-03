@@ -287,7 +287,7 @@ export default function FeaturesSection({ data, setData, errors, handleInputChan
  updateSectionData('features', { features_list: newFeatures });
  }}
  >
- <Plus className="h-4 w-4 mr-2" />
+ <Plus className="h-4 w-4 me-2" />
  {t('Add Feature Box')}
  </Button>
  </div>

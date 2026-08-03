@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { useMasalahTheme } from '../MasalahThemeProvider';
+import { useStorefrontLocale } from '../../../contexts/StorefrontLocaleContext';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface Product {
   id: string;
@@ -40,6 +43,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
   deliveryAreas
 }) => {
   const theme = useMasalahTheme();
+  const { t } = useStorefrontLocale();
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState<string>('');
 
@@ -78,7 +82,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
     const phone = storePhone?.replace(/\D/g, '');
     if (!phone) return '';
     const message = encodeURIComponent(
-      `مرحباً! أرغب بطلب: ${product.name} (${selectedVariant || 'الوزن الافتراضي'}) - الكمية: ${quantity}`
+       `${t('مرحباً! أرغب بطلب:')} ${product.name} (${selectedVariant || t('الوزن الافتراضي')}) - ${t('الكمية:')} ${quantity}`
     );
     return `https://wa.me/${phone}?text=${message}`;
   };
@@ -92,12 +96,15 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h3 className="font-bold text-gray-900">تفاصيل المنتج</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 cursor-pointer" aria-label="إغلاق">
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+           <h3 className="font-bold text-gray-900">{t('تفاصيل المنتج')}</h3>
+           <div className="flex items-center gap-1">
+             <WishlistButton productId={product.id} iconOnly />
+             <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 cursor-pointer" aria-label={t('إغلاق')}>
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-0 md:gap-6">
@@ -106,7 +113,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
               <img src={getImageUrl(currentImage)} alt={product.name} className="w-full h-full object-cover" />
               {discountPercentage > 0 && (
                 <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                  خصم {discountPercentage}%
+                   {t('خصم')} {discountPercentage}%
                 </span>
               )}
             </div>
@@ -173,7 +180,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
             ))}
 
             <div className="flex items-center gap-3 mb-5">
-              <p className="text-sm font-semibold text-gray-800">الكمية</p>
+              <p className="text-sm font-semibold text-gray-800">{t('الكمية')}</p>
               <div className="flex items-center gap-1 border border-gray-200 rounded-lg">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -190,7 +197,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
                 </button>
               </div>
               <span className="text-xs text-gray-400">
-                المتوفر: {product.stockQuantity}
+                 {t('المتوفر:')} {product.stockQuantity}
               </span>
             </div>
 
@@ -200,7 +207,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
                 className="w-full text-sm font-bold py-3 rounded-xl text-white transition-colors cursor-pointer"
                 style={{ background: theme.colors.primary }}
               >
-                أضف إلى السلة
+                 {t('أضف إلى السلة')}
               </button>
               {onBuyNow && (
                 <button
@@ -208,7 +215,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
                   className="w-full text-sm font-bold py-3 rounded-xl transition-colors cursor-pointer"
                   style={{ background: theme.colors.primarySoft, color: theme.colors.primaryDark }}
                 >
-                  شراء مباشر
+                  {t('شراء مباشر')}
                 </button>
               )}
               {buildWhatsAppLink() && (
@@ -219,7 +226,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
                   className="w-full text-sm font-bold py-3 rounded-xl text-center transition-colors cursor-pointer"
                   style={{ background: '#25d366', color: '#ffffff' }}
                 >
-                  اطلب عبر واتساب
+                   {t('اطلب عبر واتساب')}
                 </a>
               )}
             </div>
@@ -228,13 +235,13 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
               className="rounded-xl p-3 mb-3 text-sm"
               style={{ background: theme.colors.primarySoft, color: theme.colors.primaryDark }}
             >
-              <span className="font-bold">الدفع عند الاستلام متاح</span>
-              <span className="block text-xs mt-0.5">ادفع نقداً أو بالشبكة عند وصول طلبك.</span>
+               <span className="font-bold">{t('الدفع عند الاستلام متاح')}</span>
+               <span className="block text-xs mt-0.5">{t('ادفع نقداً أو بالشبكة عند وصول طلبك.')}</span>
             </div>
 
             {deliveryAreas && deliveryAreas.length > 0 && (
               <div>
-                <p className="text-sm font-semibold text-gray-800 mb-2">{theme.copy.deliveryTitle}</p>
+                <p className="text-sm font-semibold text-gray-800 mb-2">{t(theme.copy.deliveryTitle)}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {deliveryAreas.map((area) => (
                     <span key={area} className="text-[11px] bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
@@ -245,6 +252,10 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
               </div>
             )}
           </div>
+        </div>
+
+        <div className="p-4 md:p-6 border-t border-gray-100">
+          <ProductReviews productId={product.id} />
         </div>
       </div>
     </div>

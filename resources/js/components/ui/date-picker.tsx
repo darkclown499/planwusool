@@ -53,12 +53,12 @@ export function DatePicker({
 
   return (
     <div className="relative">
-      <CalendarIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <CalendarIcon className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         type="date"
         value={date}
         onChange={handleDateChange}
-        className="pl-9 w-[240px]"
+        className="ps-9 w-[240px]"
         disabled={disabled}
       />
     </div>

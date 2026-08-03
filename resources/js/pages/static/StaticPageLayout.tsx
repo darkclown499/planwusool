@@ -103,7 +103,7 @@ export default function StaticPageLayout({ title, children, brandColor = '#10b77
                           }`}
                         >
                           <ReactCountryFlag countryCode={lang.countryCode} svg style={{ width: '1.2em', height: '1.2em' }} />
-                          <span className="flex-1 text-left">{lang.name}</span>
+                          <span className="flex-1 text-start">{lang.name}</span>
                           {currentLocale === lang.code && <Check className="h-4 w-4 text-emerald-400" />}
                         </button>
                       ))}

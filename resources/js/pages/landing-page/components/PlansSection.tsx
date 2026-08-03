@@ -264,7 +264,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900">{getPlanName(plan)}</h3>
                   </div>
-                  <p className="mt-3 text-[14px] leading-relaxed text-gray-500 text-right">{getPlanDescription(plan)}</p>
+                  <p className="mt-3 text-[14px] leading-relaxed text-gray-500 text-start">{getPlanDescription(plan)}</p>
                 </div>
 
                 <div className="mt-6">
@@ -306,7 +306,7 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
                   {/* Features List */}
                   <ul className="space-y-3">
                     {getPlanFeatures(plan).map((feature: string, index: number) => (
-                      <li key={index} className="flex items-start gap-2.5 text-[13px] text-gray-600 text-right" dir="rtl">
+                      <li key={index} className="flex items-start gap-2.5 text-[13px] text-gray-600 text-start" dir="rtl">
                         <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                         <span className="leading-relaxed">{feature}</span>
                       </li>

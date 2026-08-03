@@ -156,7 +156,7 @@ export default function StoreManagement({ stores = [], storeStats = {} }) {
                 <p className="text-muted-foreground mb-4">{t('Create your first store to get started')}</p>
                 {hasPermission('create-stores') && (
                   <Button onClick={() => handleActionClick('create', 'create-stores')}>
-                    <Plus className="h-4 w-4 mr-2" /> {t('Create Store')}
+                    <Plus className="h-4 w-4 me-2" /> {t('Create Store')}
                   </Button>
                 )}
               </div>

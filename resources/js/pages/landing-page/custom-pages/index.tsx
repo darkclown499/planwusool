@@ -287,7 +287,7 @@ export default function CustomPagesIndex() {
  actions={[
  {
  label: 'Add Page',
- icon: <Plus className="w-4 h-4 mr-2" />,
+ icon: <Plus className="w-4 h-4 me-2" />,
  variant: 'default',
  onClick: () => setIsCreateOpen(true)
  }
@@ -307,7 +307,7 @@ export default function CustomPagesIndex() {
  />
  </div>
  <Button type="submit" variant="outline">
- <Search className="w-4 h-4 mr-2" />
+ <Search className="w-4 h-4 me-2" />
  Search
  </Button>
  </form>

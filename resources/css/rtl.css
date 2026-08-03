@@ -1,4 +1,41 @@
-/* RTL Support for Sidebar */
+/* ===== Global RTL Utilities ===== */
+
+/* Keep numbers/currency/codes readable LTR inside RTL paragraphs */
+.ltr-num {
+  direction: ltr;
+  unicode-bidi: plaintext;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Flip directional icons (arrows / chevrons) in RTL.
+   Icons already carrying the manual .rtl-flip class are excluded to avoid double-flipping. */
+html[dir="rtl"] svg.lucide-chevron-right:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-chevron-left:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-chevrons-right:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-chevrons-left:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-chevron-first:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-chevron-last:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-arrow-right:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-arrow-left:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-arrow-up-right:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-arrow-up-left:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-arrow-right-left:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-move-right:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-move-left:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-caret-right:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-caret-left:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-skip-forward:not(.rtl-flip),
+html[dir="rtl"] svg.lucide-skip-back:not(.rtl-flip) {
+  transform: scaleX(-1);
+}
+
+/* Manual flip class - usable anywhere, active only in RTL */
+html[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* ===== Sidebar RTL Support ===== */
 html[dir="rtl"] [data-slot="sidebar-wrapper"] {
   direction: rtl;
 }
@@ -29,7 +66,7 @@ html[dir="rtl"] [data-side="right"] {
   border-left: none !important;
 }
 
-/* Fix sidebar collapse for RTL */
+/* Fix sidebar collapse for RTL (physical props kept so the transition-[left,right] animation fires) */
 html[dir="rtl"] [data-collapsible="offcanvas"][data-side="left"] {
   right: calc(var(--sidebar-width) * -1) !important;
   left: auto !important;
@@ -47,7 +84,7 @@ html[dir="rtl"] [data-sidebar="rail"] {
 
 /* Fix sidebar menu items for RTL */
 html[dir="rtl"] [data-sidebar="menu-button"] {
-  text-align: right;
+  text-align: start;
 }
 
 html[dir="rtl"] [data-sidebar="menu-action"] {
@@ -82,6 +119,24 @@ html[dir="rtl"] .group-has-data-[sidebar=menu-action]/menu-item:pr-8 {
   padding-left: 2rem !important;
 }
 
+/* Fix sidebar hover nudge direction for RTL */
+html[dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover:not([data-active="true"]),
+html[dir="rtl"] [data-sidebar="sidebar"] [data-sidebar="menu-sub-button"]:hover:not([data-active="true"]) {
+  translate: -0.25rem 0;
+}
+
+/* Convert physical border utilities to their mirrored side for RTL */
+html[dir="rtl"] .md\:border-l,
+html[dir="rtl"] .border-l {
+  border-left-width: 0;
+  border-right-width: 1px;
+}
+
+html[dir="rtl"] .border-r {
+  border-right-width: 0;
+  border-left-width: 1px;
+}
+
 /* ===== Storefront Theme RTL Support ===== */
 
 /* Arabic font for storefront themes */
@@ -91,29 +146,8 @@ html[dir="rtl"] .group-has-data-[sidebar=menu-action]/menu-item:pr-8 {
   text-align: right;
 }
 
-/* Flip arrows and chevrons for RTL storefronts */
-[data-storefront="true"] .rtl-flip {
-  transform: scaleX(-1);
-}
-
 /* Modal drawers should slide from the left in RTL */
 [data-storefront="true"] .cart-drawer {
   right: 0;
   left: auto;
-}
-
-/* Fix absolute positioned left/right elements */
-html[dir="rtl"] .md\:border-l {
-  border-left-width: 0;
-  border-right-width: 1px;
-}
-
-html[dir="rtl"] .border-l {
-  border-left-width: 0;
-  border-right-width: 1px;
-}
-
-html[dir="rtl"] .border-r {
-  border-right-width: 0;
-  border-left-width: 1px;
 }

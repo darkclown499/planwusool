@@ -55,7 +55,7 @@ export default function StoreDisabled({ store, reason }: StoreDisabledProps) {
                                     href={route('home')}
                                     className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 >
-                                    <Home className="w-4 h-4 mr-2" />
+                                    <Home className="w-4 h-4 me-2" />
                                     Back to Homepage
                                 </Link>
                                 
@@ -63,7 +63,7 @@ export default function StoreDisabled({ store, reason }: StoreDisabledProps) {
                                     onClick={() => window.history.back()}
                                     className="w-full inline-flex items-center justify-center px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all duration-200"
                                 >
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    <ArrowLeft className="w-4 h-4 me-2" />
                                     Go Back
                                 </button>
                             </div>

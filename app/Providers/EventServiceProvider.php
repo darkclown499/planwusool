@@ -14,6 +14,7 @@ use App\Listeners\SendStoreCreatedEmail;
 use App\Listeners\SendOrderStatusChangedEmail;
 use App\Listeners\SendUniversalNotification;
 use App\Listeners\HandleWebhooks;
+use App\Listeners\CreateMerchantNotifications;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -32,6 +33,7 @@ class EventServiceProvider extends ServiceProvider
             SendOrderCreatedMessaging::class,
             SendUniversalNotification::class . '@handleOrderCreated',
             HandleWebhooks::class . '@handleOrderCreated',
+            CreateMerchantNotifications::class . '@onOrderCreated',
         ],
         StoreCreated::class => [
             SendStoreCreatedEmail::class,
@@ -40,6 +42,7 @@ class EventServiceProvider extends ServiceProvider
             SendOrderStatusChangedEmail::class,
             SendUniversalNotification::class . '@handleOrderStatusChanged',
             HandleWebhooks::class . '@handleOrderStatusChanged',
+            CreateMerchantNotifications::class . '@onOrderStatusChanged',
         ],
         CustomerCreated::class => [
             SendUniversalNotification::class . '@handleCustomerCreated',

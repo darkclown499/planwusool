@@ -45,7 +45,7 @@ export default function StripeSettings() {
       description={t("Configure Stripe payment gateway integration for online payments")}
       action={
         <Button type="submit" form="stripe-settings-form" size="sm">
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-4 w-4 me-2" />
           {t("Save Changes")}
         </Button>
       }
@@ -76,7 +76,7 @@ export default function StripeSettings() {
                   href="https://dashboard.stripe.com/apikeys" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="ml-1 underline"
+                  className="ms-1 underline"
                 >
                   {t("Get your API keys")}
                 </a>

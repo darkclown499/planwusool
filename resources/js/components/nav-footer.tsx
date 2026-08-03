@@ -26,7 +26,7 @@ export function NavFooter({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className={`flex items-center gap-2 ${
-                                        position === 'right' ? 'justify-end text-right' : 'justify-start text-left'
+                                        position === 'right' ? 'justify-end text-start' : 'justify-start text-start'
                                     }`}
                                 >
                                     {position === 'right' ? (

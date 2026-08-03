@@ -4,6 +4,9 @@ import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
 import { ShoppingBag, Heart, Eye, Star } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface Product {
   id: string;
@@ -68,11 +71,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
               <h2 className="text-2xl font-serif font-bold text-yellow-900">تفاصيل المنتج</h2>
             </div>
-            <button onClick={onClose} className="p-2 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1">
+              <WishlistButton productId={product.id} iconOnly />
+              <button onClick={onClose} className="p-2 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col md:flex-row flex-1 max-h-[calc(85vh-80px)] md:max-h-[calc(70vh-80px)] overflow-y-auto md:overflow-hidden">
@@ -213,6 +219,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <ShoppingBag className="w-5 h-5" />
                       {product.availability === 'out_of_stock' ? 'غير متوفر' : 'أضف إلى السلة'}
                     </button>
+                    <WhatsAppOrderButton
+                      product={{ name: product.name, price: product.price }}
+                      variants={Object.keys(selectedVariants).length > 0 ? selectedVariants : null}
+                      className="w-full py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1eb85a] text-white mt-3"
+                    />
                   </div>
                 )}
 
@@ -283,6 +294,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             : 'أضف إلى السلة'
                         }
                       </button>
+                      <WhatsAppOrderButton
+                        product={{ name: product.name, price: product.price }}
+                        variants={Object.keys(selectedVariants).length > 0 ? selectedVariants : null}
+                        className="w-full py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1eb85a] text-white mt-3"
+                      />
                     </div>
                   </div>
                 )}
@@ -320,6 +336,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </div>
                   </div>
                 )}
+                <div className="mt-6 pt-6 border-t border-yellow-100">
+                  <ProductReviews productId={product.id} />
+                </div>
               </div>
             </div>
           </div>

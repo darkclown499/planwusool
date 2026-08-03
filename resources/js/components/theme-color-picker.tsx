@@ -84,7 +84,7 @@ export default function ThemeColorPicker() {
                     <div className="text-sm">{t("Custom color")}:</div>
                     <div className="flex items-center rounded border px-2 py-1">
                         <div 
-                            className="mr-2 h-4 w-4 rounded-full" 
+                            className="me-2 h-4 w-4 rounded-full" 
                             style={{ backgroundColor: customColor }}
                         />
                         <span className="text-xs">{customColor}</span>

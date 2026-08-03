@@ -4,6 +4,7 @@ import { toast } from '@/components/custom-toast';
 import { ThemeProvider } from '../../contexts/ThemeProvider';
 import { useStore } from '../../contexts/StoreContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
 import { useProduct } from '../../contexts/ProductContext';
 import { useOrder } from '../../contexts/OrderContext';
@@ -55,8 +56,10 @@ const PerfumesStoreContent: React.FC = () => {
     setShowLoginModal, 
     setShowProfileModal, 
     setShowOrdersModal,
+    setShowWishlistModal,
     logout 
   } = useAuth();
+  const { wishlistCount } = useWishlist();
   
   const { 
     cartItems, 
@@ -180,6 +183,8 @@ const PerfumesStoreContent: React.FC = () => {
         onProfileClick={() => setShowProfileModal(true)}
         onOrdersClick={() => setShowOrdersModal(true)}
         onLogoutClick={() => logout(store?.slug)}
+        onWishlistClick={() => setShowWishlistModal(true)}
+        wishlistCount={wishlistCount}
       />
       
       <HeroSection 

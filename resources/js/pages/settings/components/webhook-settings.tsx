@@ -160,7 +160,7 @@ export default function WebhookSettings({
       description={t("Manage webhooks for external integrations")}
       action={
         <Button onClick={handleCreate} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-4 w-4 me-2" />
           {t("Add Webhook")}
         </Button>
       }
@@ -173,7 +173,7 @@ export default function WebhookSettings({
               <TableHead className="py-2.5 font-semibold">{t("Method")}</TableHead>
               <TableHead className="py-2.5 font-semibold">{t("URL")}</TableHead>
               <TableHead className="py-2.5 font-semibold">{t("Status")}</TableHead>
-              <TableHead className="w-24 py-2.5 font-semibold text-right">{t("Actions")}</TableHead>
+              <TableHead className="w-24 py-2.5 font-semibold text-end">{t("Actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -194,7 +194,7 @@ export default function WebhookSettings({
                 <TableRow key={webhook.id} className="hover:bg-gray-50 border-b">
                   <TableCell className="py-2.5">
                     <div className="flex items-center">
-                      <Link2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <Link2 className="h-4 w-4 me-2 text-muted-foreground" />
                       <span className="text-sm font-medium">{webhook.module}</span>
                     </div>
                   </TableCell>
@@ -225,7 +225,7 @@ export default function WebhookSettings({
                       {webhook.is_active ? t('Active') : t('Inactive')}
                     </button>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-end">
                     <div className="flex items-center justify-end space-x-2">
                       <TooltipProvider>
                         <Tooltip>
@@ -348,11 +348,11 @@ export default function WebhookSettings({
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X className="h-4 w-4 me-2" />
                   {t("Cancel")}
                 </Button>
                 <Button type="submit">
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 me-2" />
                   {editingWebhook ? t("Update") : t("Create")}
                 </Button>
               </div>

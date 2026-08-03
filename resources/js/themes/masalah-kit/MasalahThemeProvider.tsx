@@ -1,4 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
+import { useStorefrontLocale } from '../../contexts/StorefrontLocaleContext';
 import { MasalahThemeConfig } from './MasalahThemeConfig';
 
 export const DEFAULT_MASALAH_CONFIG: MasalahThemeConfig = {
@@ -49,6 +50,8 @@ interface MasalahThemeProviderProps {
 }
 
 export const MasalahThemeProvider: React.FC<MasalahThemeProviderProps> = ({ config, children }) => {
+  const { t } = useStorefrontLocale();
+
   return (
     <MasalahThemeContext.Provider value={config}>
       {children}

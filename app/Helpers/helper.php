@@ -1289,9 +1289,55 @@ if (! function_exists('formatCurrency')) {
         // Add currency symbol with proper positioning and spacing
         $space = ($currencySymbolSpace === true || $currencySymbolSpace === '1') ? ' ' : '';
         
-        return $currencySymbolPosition === 'after' 
+        $primary = $currencySymbolPosition === 'after' 
             ? $finalNumber . $space . $symbol
             : $symbol . $space . $finalNumber;
+        
+        // Dual currency: append the secondary currency value when configured
+        $secondary = getSecondaryCurrencyInfo($storeSettings, $currencies);
+        if ($secondary !== null) {
+            $secondaryAmount = $numAmount * $secondary['exchangeRate'];
+            $secondaryNumber = number_format($secondaryAmount, $decimalPlaces, '.', '');
+            $secondaryParts = explode('.', $secondaryNumber);
+            if ($thousandsSeparator && $thousandsSeparator !== 'none') {
+                $secondaryParts[0] = preg_replace('/\B(?=(\d{3})+(?!\d))/', $thousandsSeparator, $secondaryParts[0]);
+            }
+            $secondaryFinalNumber = implode($decimalSeparator, $secondaryParts);
+            $secondaryStr = $currencySymbolPosition === 'after' 
+                ? $secondaryFinalNumber . $space . $secondary['symbol']
+                : $secondary['symbol'] . $space . $secondaryFinalNumber;
+            return $primary . ' ≈ ' . $secondaryStr;
+        }
+        
+        return $primary;
+    }
+
+    /**
+     * Resolve the configured secondary currency (code/symbol + manual exchange rate).
+     */
+    function getSecondaryCurrencyInfo(array $storeSettings = [], array $currencies = [])
+    {
+        $code = $storeSettings['secondaryCurrency'] ?? null;
+        $exchangeRate = isset($storeSettings['exchangeRate']) ? (float) $storeSettings['exchangeRate'] : 0;
+        if (!$code || $exchangeRate <= 0) {
+            return null;
+        }
+
+        $symbol = null;
+        foreach ($currencies as $curr) {
+            if (($curr['code'] ?? null) === $code) {
+                $symbol = $curr['symbol'] ?? null;
+                break;
+            }
+        }
+        if (!$symbol) {
+            $symbol = $code;
+        }
+
+        return [
+            'symbol' => $symbol,
+            'exchangeRate' => $exchangeRate,
+        ];
     }
 }
 

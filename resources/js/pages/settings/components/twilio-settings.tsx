@@ -40,7 +40,7 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
       description={t('Configure Twilio SMS settings for your store')}
       action={
         <Button type="submit" form="twilio-form" size="sm" disabled={processing}>
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-4 w-4 me-2" />
           {processing ? t('Saving...') : t('Save Changes')}
         </Button>
       }

@@ -69,16 +69,16 @@ export default function NotificationTemplatesIndex({ notifications }: Props) {
                         <div className="flex items-center gap-2">
                             <form onSubmit={handleSearch} className="flex gap-2">
                                 <div className="relative w-64">
-                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder={t("Search templates...")}
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-9"
+                                        className="w-full ps-9"
                                     />
                                 </div>
                                 <Button type="submit" size="sm">
-                                    <Search className="h-4 w-4 mr-1.5" />
+                                    <Search className="h-4 w-4 me-1.5" />
                                     {t("Search")}
                                 </Button>
                             </form>
@@ -114,9 +114,9 @@ export default function NotificationTemplatesIndex({ notifications }: Props) {
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="border-b bg-gray-50">
-                                <th className="px-4 py-3 text-left font-medium text-gray-500">{t('Template Name')}</th>
-                                <th className="px-4 py-3 text-left font-medium text-gray-500">{t('Status')}</th>
-                                <th className="px-4 py-3 text-right font-medium text-gray-500">{t('Actions')}</th>
+                                <th className="px-4 py-3 text-start font-medium text-gray-500">{t('Template Name')}</th>
+                                <th className="px-4 py-3 text-start font-medium text-gray-500">{t('Status')}</th>
+                                <th className="px-4 py-3 text-end font-medium text-gray-500">{t('Actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -128,7 +128,7 @@ export default function NotificationTemplatesIndex({ notifications }: Props) {
                                             {notification.status === 'on' ? t('Active') : t('Inactive')}
                                         </Badge>
                                     </td>
-                                    <td className="px-4 py-3 text-right">
+                                    <td className="px-4 py-3 text-end">
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <Button 

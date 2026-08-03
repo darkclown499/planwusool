@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Check for abandoned carts and send reminders every 6 hours
+        $schedule->command('app:check-abandoned-carts --hours=24')
+            ->everySixHours()
+            ->withoutOverlapping()
+            ->sendOutputTo(storage_path('logs/abandoned-carts.log'));
     }
 
     /**

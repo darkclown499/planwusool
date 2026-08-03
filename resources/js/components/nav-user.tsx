@@ -23,13 +23,13 @@ export function NavUser({ position }: { position: 'left' | 'right' }) {
                         >
                             {position === 'right' ? (
                                 <>
-                                    <UserInfo user={auth.user} className="text-right" position={position} />
+                                    <UserInfo user={auth.user} className="text-start" position={position} />
                                     <ChevronsUpDown className="size-4" />
                                 </>
                             ) : (
                                 <>
                                     <ChevronsUpDown className="size-4" />
-                                    <UserInfo user={auth.user} className="text-left" position={position} />
+                                    <UserInfo user={auth.user} className="text-start" position={position} />
                                 </>
                             )}
                         </SidebarMenuButton>
