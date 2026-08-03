@@ -59,6 +59,11 @@ use App\Http\Controllers\AamarpayPaymentController;
 use App\Http\Controllers\MidtransPaymentController;
 use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\AbandonedCartController;
+use App\Http\Controllers\DigitalDownloadController;
+use App\Http\Controllers\Store\CartTrackingController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -177,10 +182,35 @@ Route::put('api/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'u
 Route::delete('api/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'remove'])->name('api.cart.remove');
 Route::post('api/cart/sync', [\App\Http\Controllers\Api\CartController::class, 'sync'])->name('api.cart.sync');
 
+// Abandoned cart tracking API (storefront)
+Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
+
+// Product reviews API (storefront)
+Route::prefix('api/reviews')->name('api.reviews.')->group(function () {
+    Route::get('product/{productId}', [ProductReviewController::class, 'productReviews'])->name('product');
+    Route::post('/', [ProductReviewController::class, 'store'])->name('store');
+});
+
+// Loyalty points API (storefront)
+Route::prefix('api/loyalty')->name('api.loyalty.')->group(function () {
+    Route::get('balance', [LoyaltyController::class, 'getBalance'])->name('balance');
+    Route::get('history', [LoyaltyController::class, 'history'])->name('history');
+});
+
+// Digital downloads API (storefront)
+Route::prefix('api/digital-downloads')->name('api.digital-downloads.')->group(function () {
+    Route::get('/', [DigitalDownloadController::class, 'customerDownloads'])->name('index');
+    Route::get('order/{orderNumber}', [DigitalDownloadController::class, 'orderDownloads'])->name('order');
+    Route::get('download/{token}', [DigitalDownloadController::class, 'download'])->name('download');
+});
+
 // Coupon API routes
 Route::prefix('api/coupon')->name('api.coupon.')->group(function () {
     Route::post('/validate', [\App\Http\Controllers\Api\CouponController::class, 'validate'])->name('validate');
 });
+
+// Advanced Coupon validation API (storefront checkout)
+Route::post('api/advanced-coupon/validate', [\App\Http\Controllers\AdvancedCouponController::class, 'validateCoupon'])->name('api.advanced-coupon.validate');
 
 // Shipping API routes
 Route::get('api/shipping-methods', [\App\Http\Controllers\Api\ShippingController::class, 'getMethods'])->name('api.shipping.methods');
@@ -485,6 +515,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
         Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');
+        
+        // Store custom domains routes
+        Route::get('stores/{id}/domains', [\App\Http\Controllers\StoreDomainController::class, 'index'])->middleware('permission:settings-stores')->name('stores.domains');
+        Route::post('stores/{id}/domains', [\App\Http\Controllers\StoreDomainController::class, 'store'])->middleware('permission:settings-stores')->name('stores.domains.store');
+        Route::post('stores/{id}/domains/{domain}/verify', [\App\Http\Controllers\StoreDomainController::class, 'verify'])->middleware('permission:settings-stores')->name('stores.domains.verify');
+        Route::post('stores/{id}/domains/{domain}/check-ssl', [\App\Http\Controllers\StoreDomainController::class, 'checkSsl'])->middleware('permission:settings-stores')->name('stores.domains.check-ssl');
+        Route::post('stores/{id}/domains/{domain}/make-primary', [\App\Http\Controllers\StoreDomainController::class, 'makePrimary'])->middleware('permission:settings-stores')->name('stores.domains.primary');
+        Route::delete('stores/{id}/domains/{domain}', [\App\Http\Controllers\StoreDomainController::class, 'destroy'])->middleware('permission:settings-stores')->name('stores.domains.destroy');
         Route::get('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'show'])->middleware('permission:settings-stores')->name('stores.appearance');
         Route::put('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'update'])->middleware('permission:settings-stores')->name('stores.appearance.update');
         Route::put('stores/{id}/appearance/autosave', [\App\Http\Controllers\StoreAppearanceController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.appearance.autosave');
@@ -582,6 +620,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
 
         
+
+        // Loyalty Points routes
+        Route::middleware('permission:manage-loyalty')->group(function () {
+            Route::get('loyalty/settings', [LoyaltyController::class, 'settings'])->middleware('permission:manage-loyalty-settings')->name('loyalty.settings');
+            Route::post('loyalty/settings', [LoyaltyController::class, 'updateSettings'])->middleware('permission:manage-loyalty-settings')->name('loyalty.settings.update');
+            Route::get('loyalty/transactions', [LoyaltyController::class, 'transactions'])->middleware('permission:view-loyalty-transactions')->name('loyalty.transactions');
+        });
+
+        // Product Reviews routes
+        Route::middleware('permission:manage-product-reviews')->group(function () {
+            Route::get('product-reviews', [ProductReviewController::class, 'index'])->name('product-reviews.index');
+            Route::get('product-reviews/export', [ProductReviewController::class, 'export'])->middleware('permission:export-product-reviews')->name('product-reviews.export');
+            Route::post('product-reviews/{review}/approve', [ProductReviewController::class, 'approve'])->middleware('permission:approve-product-reviews')->name('product-reviews.approve');
+            Route::post('product-reviews/{review}/reply', [ProductReviewController::class, 'reply'])->middleware('permission:reply-product-reviews')->name('product-reviews.reply');
+            Route::delete('product-reviews/{review}', [ProductReviewController::class, 'destroy'])->middleware('permission:delete-product-reviews')->name('product-reviews.destroy');
+        });
+
+        // Abandoned Cart Recovery routes
+        Route::middleware('permission:manage-abandoned-carts')->group(function () {
+            Route::get('abandoned-carts', [AbandonedCartController::class, 'index'])->name('abandoned-carts.index');
+            Route::get('abandoned-carts/export', [AbandonedCartController::class, 'export'])->middleware('permission:export-abandoned-carts')->name('abandoned-carts.export');
+            Route::post('abandoned-carts/{abandonedCart}/send-reminder', [AbandonedCartController::class, 'sendReminder'])->middleware('permission:send-abandoned-cart-reminders')->name('abandoned-carts.send-reminder');
+            Route::post('abandoned-carts/{abandonedCart}/mark-recovered', [AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
+            Route::delete('abandoned-carts/{abandonedCart}', [AbandonedCartController::class, 'destroy'])->middleware('permission:delete-abandoned-carts')->name('abandoned-carts.destroy');
+        });
+
+        // Advanced Coupons routes (dedicated advanced-coupon permissions)
+        Route::middleware('permission:manage-advanced-coupons')->group(function () {
+            Route::get('advanced-coupons', [\App\Http\Controllers\AdvancedCouponController::class, 'index'])->name('advanced-coupons.index');
+            Route::get('advanced-coupons/export', [\App\Http\Controllers\AdvancedCouponController::class, 'export'])->middleware('permission:export-advanced-coupons')->name('advanced-coupons.export');
+            Route::get('advanced-coupons/create', [\App\Http\Controllers\AdvancedCouponController::class, 'create'])->middleware('permission:create-advanced-coupons')->name('advanced-coupons.create');
+            Route::post('advanced-coupons', [\App\Http\Controllers\AdvancedCouponController::class, 'store'])->middleware('permission:create-advanced-coupons')->name('advanced-coupons.store');
+            Route::get('advanced-coupons/{advancedCoupon}/edit', [\App\Http\Controllers\AdvancedCouponController::class, 'edit'])->middleware('permission:edit-advanced-coupons')->name('advanced-coupons.edit');
+            Route::put('advanced-coupons/{advancedCoupon}', [\App\Http\Controllers\AdvancedCouponController::class, 'update'])->middleware('permission:edit-advanced-coupons')->name('advanced-coupons.update');
+            Route::post('advanced-coupons/{advancedCoupon}/toggle-status', [\App\Http\Controllers\AdvancedCouponController::class, 'toggleStatus'])->middleware('permission:toggle-status-advanced-coupons')->name('advanced-coupons.toggle-status');
+            Route::delete('advanced-coupons/{advancedCoupon}', [\App\Http\Controllers\AdvancedCouponController::class, 'destroy'])->middleware('permission:delete-advanced-coupons')->name('advanced-coupons.destroy');
+        });
 
         // Express Checkout routes with permissions
         Route::get('express-checkout', [\App\Http\Controllers\ExpressCheckoutController::class, 'index'])->middleware('permission:manage-express-checkout')->name('express-checkout.index');
@@ -824,7 +899,9 @@ Route::post('payments/easebuzz/callback', [EasebuzzPaymentController::class, 'ca
 
 // Catch-all route for custom domains/subdomains
 // This ensures that any request not matched above still enters the 'web' middleware group,
-// where DomainResolver can handle it.
+// where DomainResolver resolves the host against verified store custom domains
+// (store_domains table) / legacy custom domain columns and renders the matching store
+// through ThemeController. Anything unresolved falls through to a 404 here.
 Route::any('{any}', function () {
     abort(404);
 })->where('any', '.*');

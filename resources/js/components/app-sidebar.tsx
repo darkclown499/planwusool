@@ -7,7 +7,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search } from 'lucide-react';
+import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -241,8 +241,29 @@ export function AppSidebar() {
         if (hasPermission('manage-coupon-system')) {
             marketingChildren.push({ title: t('Coupons'), href: route('coupon-system.index') });
         }
+        if (hasPermission('manage-advanced-coupons')) {
+            marketingChildren.push({ 
+                title: t('Advanced Coupons'),
+                icon: Sparkles,
+                href: route('advanced-coupons.index')
+            });
+        }
         if (hasPermission('manage-express-checkout')) {
             marketingChildren.push({ title: t('Express Checkout'), href: route('express-checkout.index') });
+        }
+        if (hasPermission('manage-loyalty')) {
+            marketingChildren.push({ 
+                title: t('Loyalty Points'),
+                icon: Star,
+                href: route('loyalty.settings')
+            });
+        }
+        if (hasPermission('manage-abandoned-carts')) {
+            marketingChildren.push({ 
+                title: t('Abandoned Carts'),
+                icon: ShoppingCart,
+                href: route('abandoned-carts.index')
+            });
         }
         if (hasPermission('manage-pos')) {
             marketingChildren.push({ title: t('POS System'), href: route('pos.index') });
@@ -253,6 +274,31 @@ export function AppSidebar() {
                 icon: Megaphone,
                 groupLabel: t('Sales'),
                 children: marketingChildren,
+            });
+        }
+
+        // ── المراجعات والمنتجات الرقمية ──
+        const contentChildren: NavItem[] = [];
+        if (hasPermission('manage-product-reviews')) {
+            contentChildren.push({ 
+                title: t('Product Reviews'),
+                icon: Star,
+                href: route('product-reviews.index')
+            });
+        }
+        if (hasPermission('manage-digital-downloads')) {
+            contentChildren.push({ 
+                title: t('Digital Downloads'),
+                icon: Download,
+                href: route('api.digital-downloads.index')
+            });
+        }
+        if (contentChildren.length > 0) {
+            items.push({
+                title: t('Content & Reviews'),
+                icon: MessageSquare,
+                groupLabel: t('Store'),
+                children: contentChildren,
             });
         }
 
@@ -415,10 +461,10 @@ export function AppSidebar() {
                                             onClick={() => handleBusinessSwitch(business.id)}
                                             className={business.id === auth.user?.current_store ? 'bg-accent' : ''}
                                         >
-                                            <Building2 className="h-4 w-4 mr-2" />
+                                            <Building2 className="h-4 w-4 me-2" />
                                             <span className="truncate">{business.name}</span>
                                             {business.id === auth.user?.current_store && (
-                                                <span className="ml-auto text-xs text-muted-foreground">Current</span>
+                                                <span className="ms-auto text-xs text-muted-foreground">Current</span>
                                             )}
                                         </DropdownMenuItem>
                                     ))

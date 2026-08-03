@@ -143,6 +143,15 @@ class RoleSeeder extends Seeder
             'delete-coupon-system',
             'export-coupon-system',
             'toggle-status-coupon-system',
+
+            // Advanced Coupons permissions
+            'manage-advanced-coupons',
+            'view-advanced-coupons',
+            'create-advanced-coupons',
+            'edit-advanced-coupons',
+            'delete-advanced-coupons',
+            'export-advanced-coupons',
+            'toggle-status-advanced-coupons',
             
             // Shipping permissions
             'manage-shipping',

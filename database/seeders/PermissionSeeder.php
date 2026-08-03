@@ -237,6 +237,42 @@ class PermissionSeeder extends Seeder
             ['name' => 'edit-express-checkout', 'module' => 'express_checkout', 'label' => 'Edit Express Checkout', 'description' => 'Can edit express checkout'],
             ['name' => 'delete-express-checkout', 'module' => 'express_checkout', 'label' => 'Delete Express Checkout', 'description' => 'Can delete express checkout'],
             ['name' => 'settings-express-checkout', 'module' => 'express_checkout', 'label' => 'Express Checkout Settings', 'description' => 'Can manage express checkout settings'],
+            
+            // Loyalty Points management
+            ['name' => 'manage-loyalty', 'module' => 'loyalty', 'label' => 'Manage Loyalty', 'description' => 'Can manage loyalty points'],
+            ['name' => 'view-loyalty', 'module' => 'loyalty', 'label' => 'View Loyalty', 'description' => 'View loyalty points'],
+            ['name' => 'edit-loyalty', 'module' => 'loyalty', 'label' => 'Edit Loyalty', 'description' => 'Can edit loyalty points'],
+            ['name' => 'view-loyalty-transactions', 'module' => 'loyalty', 'label' => 'View Loyalty Transactions', 'description' => 'Can view loyalty transactions'],
+            ['name' => 'manage-loyalty-settings', 'module' => 'loyalty', 'label' => 'Manage Loyalty Settings', 'description' => 'Can manage loyalty settings'],
+            
+            // Product Reviews management
+            ['name' => 'manage-product-reviews', 'module' => 'product_reviews', 'label' => 'Manage Product Reviews', 'description' => 'Can manage product reviews'],
+            ['name' => 'view-product-reviews', 'module' => 'product_reviews', 'label' => 'View Product Reviews', 'description' => 'View product reviews'],
+            ['name' => 'approve-product-reviews', 'module' => 'product_reviews', 'label' => 'Approve Product Reviews', 'description' => 'Can approve product reviews'],
+            ['name' => 'reply-product-reviews', 'module' => 'product_reviews', 'label' => 'Reply Product Reviews', 'description' => 'Can reply to product reviews'],
+            ['name' => 'delete-product-reviews', 'module' => 'product_reviews', 'label' => 'Delete Product Reviews', 'description' => 'Can delete product reviews'],
+            ['name' => 'export-product-reviews', 'module' => 'product_reviews', 'label' => 'Export Product Reviews', 'description' => 'Can export product reviews'],
+            
+            // Abandoned Carts management
+            ['name' => 'manage-abandoned-carts', 'module' => 'abandoned_carts', 'label' => 'Manage Abandoned Carts', 'description' => 'Can manage abandoned carts'],
+            ['name' => 'view-abandoned-carts', 'module' => 'abandoned_carts', 'label' => 'View Abandoned Carts', 'description' => 'View abandoned carts'],
+            ['name' => 'send-abandoned-cart-reminders', 'module' => 'abandoned_carts', 'label' => 'Send Abandoned Cart Reminders', 'description' => 'Can send abandoned cart reminders'],
+            ['name' => 'delete-abandoned-carts', 'module' => 'abandoned_carts', 'label' => 'Delete Abandoned Carts', 'description' => 'Can delete abandoned carts'],
+            ['name' => 'export-abandoned-carts', 'module' => 'abandoned_carts', 'label' => 'Export Abandoned Carts', 'description' => 'Can export abandoned carts'],
+            
+            // Digital Downloads management
+            ['name' => 'manage-digital-downloads', 'module' => 'digital_downloads', 'label' => 'Manage Digital Downloads', 'description' => 'Can manage digital downloads'],
+            ['name' => 'view-digital-downloads', 'module' => 'digital_downloads', 'label' => 'View Digital Downloads', 'description' => 'View digital downloads'],
+            ['name' => 'download-digital-products', 'module' => 'digital_downloads', 'label' => 'Download Digital Products', 'description' => 'Can download digital products'],
+
+            // Advanced Coupons management
+            ['name' => 'manage-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Manage Advanced Coupons', 'description' => 'Can manage advanced coupons'],
+            ['name' => 'view-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'View Advanced Coupons', 'description' => 'View advanced coupons'],
+            ['name' => 'create-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Create Advanced Coupons', 'description' => 'Can create advanced coupons'],
+            ['name' => 'edit-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Edit Advanced Coupons', 'description' => 'Can edit advanced coupons'],
+            ['name' => 'delete-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Delete Advanced Coupons', 'description' => 'Can delete advanced coupons'],
+            ['name' => 'export-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Export Advanced Coupons', 'description' => 'Can export advanced coupons'],
+            ['name' => 'toggle-status-advanced-coupons', 'module' => 'advanced_coupons', 'label' => 'Toggle Status Advanced Coupons', 'description' => 'Can toggle advanced coupon status'],
 
         ];
 

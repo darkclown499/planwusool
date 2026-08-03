@@ -7,6 +7,10 @@ use App\Models\OrderItem;
 use App\Models\CartItem;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\AdvancedCoupon;
+use App\Services\LoyaltyService;
+use App\Services\AbandonedCartService;
+use App\Services\AdvancedCouponService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -126,6 +130,9 @@ class OrderService
             } catch (\Exception $e) {
                 Log::warning('Failed to dispatch accounting sync', ['order_id' => $order->id, 'error' => $e->getMessage()]);
             }
+
+            // Handle post-order extras (abandoned cart recovery + loyalty points)
+            $this->handlePostOrderExtras($order);
 
             return $order;
         });
@@ -1052,6 +1059,55 @@ class OrderService
         }
         
         $query->delete();
+    }
+
+    /**
+     * Mark abandoned cart as recovered, award loyalty points, and record advanced coupon usage.
+     */
+    private function handlePostOrderExtras(Order $order): void
+    {
+        try {
+            // Mark abandoned cart as recovered (based on session)
+            try {
+                $abandonedCartService = app(AbandonedCartService::class);
+                $abandonedCartService->markRecovered(session()->getId(), $order->id);
+            } catch (\Exception $e) {
+                Log::warning('Failed to mark abandoned cart as recovered', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+
+            // Award loyalty points for the order
+            try {
+                $loyaltyService = app(LoyaltyService::class);
+                $loyaltyService->earnPointsForOrder($order);
+            } catch (\Exception $e) {
+                Log::warning('Failed to award loyalty points', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+
+            // Record advanced coupon usage if applicable
+            if ($order->coupon_code) {
+                try {
+                    $advancedCoupon = \App\Models\AdvancedCoupon::where('store_id', $order->store_id)
+                        ->where('code', $order->coupon_code)
+                        ->first();
+
+                    if ($advancedCoupon && $order->discount_amount > 0) {
+                        app(AdvancedCouponService::class)->recordCouponUsage(
+                            $advancedCoupon,
+                            $order,
+                            $order->discount_amount,
+                            [
+                                'customer_id' => $order->customer_id,
+                                'customer_identifier' => $order->customer_email,
+                            ]
+                        );
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to record advanced coupon usage', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Post-order extras failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+        }
     }
 
     private function processCashfreePayment(Order $order): array
