@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Store;
 use App\Models\StoreConfiguration;
 use App\Models\StoreConfigurationRevision;
 use Illuminate\Http\Request;
@@ -18,11 +17,8 @@ class StoreAppearanceController extends Controller
         }
 
         $user = Auth::user();
-        $storeQuery = $user->type === 'company'
-            ? Store::where('user_id', $user->id)
-            : Store::where('user_id', $user->created_by);
 
-        return $storeQuery->findOrFail($storeId);
+        return resolveStoreQuery($user)->findOrFail($storeId);
     }
 
     public function show($storeId)

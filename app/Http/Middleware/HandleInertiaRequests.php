@@ -69,7 +69,7 @@ class HandleInertiaRequests extends Middleware
             // Get system settings (will use superadmin for unauthenticated users)
             $settings = settings();
             // Get currency symbol
-            $currencyCode = $settings['defaultCurrency'] ?? 'USD';
+            $currencyCode = $settings['defaultCurrency'] ?? 'ILS';
             $currency = Currency::where('code', $currencyCode)->first();
             $currencySettings = [];
             if ($currency) {
@@ -120,6 +120,9 @@ class HandleInertiaRequests extends Middleware
                         if ($creator) {
                             $stores = $creator->stores;
                         }
+                    } elseif ($user->isSuperAdmin()) {
+                        // Superadmins can access every store
+                        $stores = \App\Models\Store::all();
                     }
                 }
                 
@@ -169,6 +172,9 @@ class HandleInertiaRequests extends Middleware
                 } elseif ($user->type === 'user' && $user->created_by) {
                     $creator = \App\Models\User::find($user->created_by);
                     $stores = $creator ? $creator->stores : [];
+                } elseif ($user->isSuperAdmin()) {
+                    // Superadmins can access every store
+                    $stores = \App\Models\Store::all();
                 }
                 
                 // In demo mode, ensure current_store reflects the cookie value
@@ -210,10 +216,10 @@ class HandleInertiaRequests extends Middleware
         
         // Default currency settings
         $defaultCurrency = [
-            'code' => 'USD',
-            'symbol' => '$',
-            'name' => 'US Dollar',
-            'position' => 'before',
+            'code' => 'ILS',
+            'symbol' => '₪',
+            'name' => 'Israeli Shekel',
+            'position' => 'after',
             'decimals' => 2,
             'decimal_separator' => '.',
             'thousands_separator' => ','
@@ -257,7 +263,7 @@ class HandleInertiaRequests extends Middleware
             $storeSettings = Setting::getUserSettings($user->id, $currentStoreId);
             
             // Get currency code from store settings or fall back to global settings
-            $currencyCode = $storeSettings['defaultCurrency'] ?? settings($user->id)['defaultCurrency'] ?? 'USD';
+            $currencyCode = $storeSettings['defaultCurrency'] ?? settings($user->id)['defaultCurrency'] ?? 'ILS';
             
             // Get currency details from currencies table
             $currency = Currency::where('code', $currencyCode)->first();
@@ -267,7 +273,7 @@ class HandleInertiaRequests extends Middleware
                     'code' => $currency->code,
                     'symbol' => $currency->symbol,
                     'name' => $currency->name,
-                    'position' => $storeSettings['currencySymbolPosition'] ?? 'before',
+                    'position' => $storeSettings['currencySymbolPosition'] ?? 'after',
                     'decimals' => (int)($storeSettings['decimalFormat'] ?? 2),
                     'decimal_separator' => $storeSettings['decimalSeparator'] ?? '.',
                     'thousands_separator' => $storeSettings['thousandsSeparator'] ?? ','

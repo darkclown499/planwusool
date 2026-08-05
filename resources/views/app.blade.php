@@ -2,7 +2,8 @@
 @php
     $appUrl = getSchemeAwareUrl();
     $locale = app()->getLocale();
-    $dir = in_array(explode('_', $locale)[0], ['ar', 'he', 'fa', 'ur']) ? 'rtl' : 'ltr';
+    // Arabic-first design: the whole interface is rendered right-to-left.
+    $dir = 'rtl';
     $ogLocale = match(explode('_', $locale)[0]) {
         'ar' => 'ar_AR',
         'he' => 'he_IL',
@@ -27,7 +28,7 @@
 <html lang="{{ $locale }}" dir="{{ $dir }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -37,6 +38,45 @@
                 background-color: oklch(1 0 0);
             }
         </style>
+
+        <script>
+            // Arabic-first design: the document must ALWAYS be right-to-left.
+            // This inline guard runs before any bundled JS so no cached module,
+            // browser extension, saved setting or component can flip it to LTR.
+            (function () {
+                var root = document.documentElement;
+                var forceRtl = function () {
+                    if (root.getAttribute('dir') !== 'rtl') {
+                        root.setAttribute('dir', 'rtl');
+                    }
+                    try {
+                        localStorage.setItem('layoutDirection', 'rtl');
+                        localStorage.setItem('layoutPosition', 'right');
+                        var brand = localStorage.getItem('brandSettings');
+                        if (brand) {
+                            try {
+                                var parsed = JSON.parse(brand);
+                                if (parsed && parsed.layoutDirection !== 'rtl') {
+                                    parsed.layoutDirection = 'rtl';
+                                    localStorage.setItem('brandSettings', JSON.stringify(parsed));
+                                }
+                            } catch (e) {}
+                        }
+                    } catch (e) {}
+                };
+                forceRtl();
+                if (window.MutationObserver) {
+                    var mo = new MutationObserver(function (mutations) {
+                        var changed = false;
+                        for (var i = 0; i < mutations.length; i++) {
+                            if (mutations[i].attributeName === 'dir') { changed = true; break; }
+                        }
+                        if (changed) forceRtl();
+                    });
+                    mo.observe(root, { attributes: true, attributeFilter: ['dir'] });
+                }
+            })();
+        </script>
 
         @if($isLandingRoute)
             @php

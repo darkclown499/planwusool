@@ -216,7 +216,7 @@ class MerchantNotificationService
     /**
      * Get notifications for a user (optionally filtered by store).
      */
-    public static function getForUser(int $userId, ?int $storeId = null, int $limit = 20): Collection
+    public static function getForUser(int $userId, ?int $storeId = null, int $limit = 20, bool $unreadOnly = false): Collection
     {
         $query = MerchantNotification::where('user_id', $userId)
             ->orderBy('created_at', 'desc');
@@ -226,6 +226,10 @@ class MerchantNotificationService
                 $q->where('store_id', $storeId)
                   ->orWhereNull('store_id');
             });
+        }
+
+        if ($unreadOnly) {
+            $query->unread();
         }
 
         return $query->limit($limit)->get();

@@ -18,13 +18,8 @@ class StoreController extends Controller
     {
         $user = Auth::user();
         
-        // If user is company type, show all stores for the company
-        if ($user->type === 'company') {
-            $stores = Store::where('user_id', $user->id)->get();
-        } else {
-            // For company users, show all stores belonging to their company
-            $stores = Store::where('user_id', $user->created_by)->get();
-        }
+        // Superadmin sees all stores; company users see their own stores
+        $stores = resolveStoreQuery($user)->get();
         
         // Add store configuration status like StoreGo
         $stores = $stores->map(function ($store) {
@@ -154,6 +149,14 @@ class StoreController extends Controller
             'seo_description' => 'nullable|string|max:160',
             'seo_keywords' => 'nullable|string|max:255',
             'seo_image' => 'nullable|string',
+            // PWA settings
+            'pwa_name' => 'nullable|string|max:255',
+            'pwa_short_name' => 'nullable|string|max:12',
+            'pwa_description' => 'nullable|string',
+            'pwa_theme_color' => 'nullable|string|max:9',
+            'pwa_background_color' => 'nullable|string|max:9',
+            'pwa_display' => 'nullable|in:standalone,fullscreen,minimal-ui,browser',
+            'pwa_orientation' => 'nullable|in:portrait,landscape,any',
         ], [], [
             'name' => __('Store Name'),
             'custom_domain' => __('Custom Domain'),
@@ -162,6 +165,11 @@ class StoreController extends Controller
             'seo_description' => __('Meta Description'),
             'seo_keywords' => __('Meta Keywords'),
             'seo_image' => __('Meta Image'),
+            'pwa_short_name' => __('Short Name'),
+            'pwa_theme_color' => __('Theme Color'),
+            'pwa_background_color' => __('Background Color'),
+            'pwa_display' => __('Display Mode'),
+            'pwa_orientation' => __('Orientation'),
         ]);
         
         // Validate plan permissions for domain features
@@ -171,6 +179,9 @@ class StoreController extends Controller
         }
         if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on') {
             return redirect()->back()->with('error', 'Custom subdomain feature is not available in your current plan.');
+        }
+        if ($request->enable_pwa && $plan->pwa_business !== 'on') {
+            return redirect()->back()->with('error', __('PWA feature is not available in your current plan.'));
         }
         
         // Ensure only one domain type is enabled
@@ -239,10 +250,7 @@ class StoreController extends Controller
         }
         
         $user = Auth::user();
-        $storeQuery = $user->type === 'company' ? 
-            Store::where('user_id', $user->id) : 
-            Store::where('user_id', $user->created_by);
-        $store = $storeQuery->findOrFail($id);
+        $store = resolveStoreQuery($user)->findOrFail($id);
         
         // Get dynamic statistics
         $stats = [
@@ -271,10 +279,7 @@ class StoreController extends Controller
         }
         
         $user = Auth::user();
-        $storeQuery = $user->type === 'company' ? 
-            Store::where('user_id', $user->id) : 
-            Store::where('user_id', $user->created_by);
-        $store = $storeQuery->findOrFail($id);
+        $store = resolveStoreQuery($user)->findOrFail($id);
         $user = Auth::user();
         
         // Get available themes based on user's plan
@@ -307,7 +312,7 @@ class StoreController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $store = Store::where('user_id', Auth::id())->findOrFail($id);
+        $store = resolveStoreQuery(Auth::user())->findOrFail($id);
         $user = Auth::user();
         
         // Validate theme against user's plan
@@ -329,6 +334,14 @@ class StoreController extends Controller
             'seo_description' => 'nullable|string|max:160',
             'seo_keywords' => 'nullable|string|max:255',
             'seo_image' => 'nullable|string',
+            // PWA settings
+            'pwa_name' => 'nullable|string|max:255',
+            'pwa_short_name' => 'nullable|string|max:12',
+            'pwa_description' => 'nullable|string',
+            'pwa_theme_color' => 'nullable|string|max:9',
+            'pwa_background_color' => 'nullable|string|max:9',
+            'pwa_display' => 'nullable|in:standalone,fullscreen,minimal-ui,browser',
+            'pwa_orientation' => 'nullable|in:portrait,landscape,any',
         ], [], [
             'name' => __('Store Name'),
             'custom_domain' => __('Custom Domain'),
@@ -337,6 +350,11 @@ class StoreController extends Controller
             'seo_description' => __('Meta Description'),
             'seo_keywords' => __('Meta Keywords'),
             'seo_image' => __('Meta Image'),
+            'pwa_short_name' => __('Short Name'),
+            'pwa_theme_color' => __('Theme Color'),
+            'pwa_background_color' => __('Background Color'),
+            'pwa_display' => __('Display Mode'),
+            'pwa_orientation' => __('Orientation'),
         ]);
         
         // Validate plan permissions for domain features
@@ -346,6 +364,9 @@ class StoreController extends Controller
         }
         if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on') {
             return redirect()->back()->with('error', 'Custom subdomain feature is not available in your current plan.');
+        }
+        if ($request->enable_pwa && $plan->pwa_business !== 'on') {
+            return redirect()->back()->with('error', __('PWA feature is not available in your current plan.'));
         }
         
         // Ensure only one domain type is enabled
@@ -399,13 +420,10 @@ class StoreController extends Controller
         }
         
         $user = Auth::user();
-        $storeQuery = $user->type === 'company' ? 
-            Store::where('user_id', $user->id) : 
-            Store::where('user_id', $user->created_by);
-        $store = $storeQuery->findOrFail($id);
+        $store = resolveStoreQuery($user)->findOrFail($id);
         
         // Check if this is the last store for the company
-        $companyId = $user->type === 'company' ? $user->id : $user->created_by;
+        $companyId = $store->user_id;
         $totalStores = Store::where('user_id', $companyId)->count();
         
         if ($totalStores <= 1) {
@@ -436,13 +454,8 @@ class StoreController extends Controller
     {
         $user = Auth::user();
         
-        // If user is company type, show all stores for the company
-        if ($user->type === 'company') {
-            $stores = Store::where('user_id', $user->id)->get();
-        } else {
-            // For company users, show all stores belonging to their company
-            $stores = Store::where('user_id', $user->created_by)->get();
-        }
+        // Superadmin sees all stores; company users see their own stores
+        $stores = resolveStoreQuery($user)->get();
         
         $csvData = [];
         $csvData[] = ['Store Name', 'Slug', 'Domain', 'Email', 'Theme', 'Status', 'Created Date'];
@@ -526,10 +539,7 @@ class StoreController extends Controller
     public function toggleStatus($id)
     {
         $user = Auth::user();
-        $storeQuery = $user->type === 'company' ? 
-            Store::where('user_id', $user->id) : 
-            Store::where('user_id', $user->created_by);
-        $store = $storeQuery->findOrFail($id);
+        $store = resolveStoreQuery($user)->findOrFail($id);
         
         // Get current status
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);

@@ -66,7 +66,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'payments/tap/callback',
             'payments/benefit/success',
             'payments/benefit/callback',
-            'payments/paytabs/callback'
+            'payments/paytabs/callback',
+            'api/coupon/validate',
+            'api/cart',
+            'api/cart/*',
             ],
         );
 

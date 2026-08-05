@@ -70,12 +70,13 @@ class ThemeController extends Controller
         
         // Get PWA data
         $pwaData = null;
-        if ($store->enable_pwa && $store->user && $store->user->plan && $store->user->plan->pwa_business === 'on') {
+        $plan = $store->user ? $store->user->getCurrentPlan() : null;
+        if ($store->enable_pwa && $plan && $plan->pwa_business === 'on') {
             $cacheVersion = time(); // Cache busting
             $pwaData = [
                 'enabled' => true,
                 'name' => $store->pwa_name ?: $store->name,
-                'short_name' => $store->pwa_short_name ?: substr($store->name, 0, 12),
+                'short_name' => $store->pwa_short_name ?: mb_substr($store->name, 0, 12),
                 'description' => $store->pwa_description ?: $store->description,
                 'theme_color' => $store->pwa_theme_color ?: '#3B82F6',
                 'background_color' => $store->pwa_background_color ?: '#ffffff',

@@ -130,7 +130,7 @@ class AnalyticsController extends Controller
             ->map(function($customer) use ($storeId) {
                 $user = Auth::user();
                 return [
-                    'name' => $customer->first_name . ' ' . $customer->last_name,
+                    'name' => cleanUtf8($customer->first_name . ' ' . $customer->last_name),
                     'orders' => $customer->order_count ?: 0,
                     'spent' => formatStoreCurrency($customer->total_spent ?: 0, $user->id, $storeId)
                 ];

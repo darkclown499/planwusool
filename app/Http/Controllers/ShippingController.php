@@ -50,7 +50,15 @@ class ShippingController extends Controller
      */
     public function create()
     {
-        return Inertia::render('shipping/create');
+        $countries = \App\Models\Country::active()->orderBy('name')->get(['id', 'name', 'code']);
+        $states = \App\Models\State::active()->orderBy('name')->get(['id', 'name', 'country_id']);
+        $cities = \App\Models\City::active()->orderBy('name')->get(['id', 'name', 'state_id']);
+
+        return Inertia::render('shipping/create', [
+            'countries' => $countries,
+            'states' => $states,
+            'cities' => $cities
+        ]);
     }
 
     /**
@@ -69,10 +77,16 @@ class ShippingController extends Controller
             'is_active' => 'boolean',
             'zone_type' => 'nullable|string|in:domestic,international,local,regional',
             'countries' => 'nullable|string',
+            'country_id' => 'nullable|integer|exists:countries,id',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'all_regions' => 'boolean',
             'postal_codes' => 'nullable|string',
             'max_distance' => 'nullable|numeric|min:0',
             'max_weight' => 'nullable|numeric|min:0',
             'max_dimensions' => 'nullable|string',
+            'delivery_method' => 'nullable|string|in:personal,company',
+            'delivery_company' => 'required_if:delivery_method,company|nullable|string|max:255',
+            'currency' => 'nullable|string|max:10',
             'require_signature' => 'boolean',
             'insurance_required' => 'boolean',
             'tracking_available' => 'boolean',
@@ -93,6 +107,11 @@ class ShippingController extends Controller
         // If free shipping, set cost to 0
         if ($data['type'] === 'free_shipping') {
             $data['cost'] = 0;
+        }
+        
+        // If the method covers all regions of the selected country, no specific city is needed
+        if (!empty($data['all_regions'])) {
+            $data['city_id'] = null;
         }
 
         Shipping::create($data);
@@ -199,10 +218,16 @@ class ShippingController extends Controller
             'is_active' => 'boolean',
             'zone_type' => 'nullable|string|in:domestic,international,local,regional',
             'countries' => 'nullable|string',
+            'country_id' => 'nullable|integer|exists:countries,id',
+            'city_id' => 'nullable|integer|exists:cities,id',
+            'all_regions' => 'boolean',
             'postal_codes' => 'nullable|string',
             'max_distance' => 'nullable|numeric|min:0',
             'max_weight' => 'nullable|numeric|min:0',
             'max_dimensions' => 'nullable|string',
+            'delivery_method' => 'nullable|string|in:personal,company',
+            'delivery_company' => 'required_if:delivery_method,company|nullable|string|max:255',
+            'currency' => 'nullable|string|max:10',
             'require_signature' => 'boolean',
             'insurance_required' => 'boolean',
             'tracking_available' => 'boolean',
@@ -225,6 +250,11 @@ class ShippingController extends Controller
         // If free shipping, set cost to 0
         if ($data['type'] === 'free_shipping') {
             $data['cost'] = 0;
+        }
+        
+        // If the method covers all regions of the selected country, no specific city is needed
+        if (!empty($data['all_regions'])) {
+            $data['city_id'] = null;
         }
 
         $shipping->update($data);

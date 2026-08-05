@@ -49,7 +49,7 @@ class AbandonedCartController extends Controller
         $perPage = $request->get('per_page', 15);
         $carts = $query->latest('last_activity_at')->paginate($perPage);
 
-        $stats = $this->abandonedCartService->getStats($currentStoreId);
+        $stats = $currentStoreId ? $this->abandonedCartService->getStats($currentStoreId) : [];
 
         return Inertia::render('abandoned-carts/index', [
             'carts' => $carts,

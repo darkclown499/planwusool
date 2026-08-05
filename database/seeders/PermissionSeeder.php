@@ -200,6 +200,7 @@ class PermissionSeeder extends Seeder
             
             // Order management
             ['name' => 'manage-orders', 'module' => 'orders', 'label' => 'Manage Orders', 'description' => 'Can manage orders'],
+            ['name' => 'create-orders', 'module' => 'orders', 'label' => 'Create Orders', 'description' => 'Can create orders'],
             ['name' => 'view-orders', 'module' => 'orders', 'label' => 'View Orders', 'description' => 'View orders'],
             ['name' => 'edit-orders', 'module' => 'orders', 'label' => 'Edit Orders', 'description' => 'Can edit orders'],
             ['name' => 'delete-orders', 'module' => 'orders', 'label' => 'Delete Orders', 'description' => 'Can delete orders'],

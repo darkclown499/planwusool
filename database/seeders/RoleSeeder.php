@@ -122,6 +122,7 @@ class RoleSeeder extends Seeder
             
             // Order permissions
             'manage-orders',
+            'create-orders',
             'view-orders',
             'edit-orders',
             'delete-orders',

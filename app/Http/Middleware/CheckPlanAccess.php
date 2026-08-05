@@ -165,7 +165,8 @@ class CheckPlanAccess
             'chatgpt' => 'enable_chatgpt',
             'mobile_app' => 'enable_mobile_app',
             'branding' => 'enable_branding',
-            'accounting_integration' => 'enable_accounting_integration'
+            'accounting_integration' => 'enable_accounting_integration',
+            'theme_editor' => 'enable_theme_editor'
         ];
         
         if (!isset($featureMap[$feature])) {

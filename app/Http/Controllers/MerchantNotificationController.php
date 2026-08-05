@@ -69,7 +69,8 @@ class MerchantNotificationController extends Controller
         $notifications = $this->notificationService->getForUser(
             $user->id,
             $storeId,
-            (int) $request->get('limit', 20)
+            (int) $request->get('limit', 20),
+            (bool) $request->get('unread_only', false)
         );
 
         $unreadCount = $this->notificationService->unreadCount($user->id, $storeId);

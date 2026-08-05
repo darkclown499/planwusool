@@ -10,13 +10,30 @@ use Illuminate\Http\Response;
 class PWAController extends Controller
 {
     /**
+     * Check whether the store's effective plan allows the PWA feature.
+     *
+     * Uses the store owner's current plan (with default-plan fallback) so that
+     * sub-users and plan-less stores resolve consistently with the rest of the app.
+     */
+    private function pwaAllowedForStore($store)
+    {
+        if (!$store->user) {
+            return false;
+        }
+
+        $plan = $store->user->getCurrentPlan();
+
+        return $plan && $plan->pwa_business === 'on';
+    }
+
+    /**
      * Generate PWA manifest for store
      */
     public function manifest($storeSlug)
     {
         $store = Store::where('slug', $storeSlug)->firstOrFail();
-        
-        if (!$store->enable_pwa || !($store->user->plan && $store->user->plan->pwa_business === 'on')) {
+
+        if (!$store->enable_pwa || !$this->pwaAllowedForStore($store)) {
             return response()->json(['error' => 'PWA not available for this store'], 404);
         }
 
@@ -24,7 +41,7 @@ class PWAController extends Controller
         
         $manifest = [
             'name' => $store->pwa_name ?: $store->name,
-            'short_name' => $store->pwa_short_name ?: substr($store->name, 0, 12),
+            'short_name' => $store->pwa_short_name ?: mb_substr($store->name, 0, 12),
             'description' => $store->pwa_description ?: $store->description,
             'start_url' => $storeUrl,
             'scope' => $storeUrl,
@@ -48,7 +65,7 @@ class PWAController extends Controller
     {
         $store = Store::where('slug', $storeSlug)->firstOrFail();
         
-        if (!$store->enable_pwa || !($store->user->plan && $store->user->plan->pwa_business === 'on')) {
+        if (!$store->enable_pwa || !$this->pwaAllowedForStore($store)) {
             return response('// PWA not available', 404, ['Content-Type' => 'application/javascript']);
         }
 

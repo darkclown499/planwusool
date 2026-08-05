@@ -432,6 +432,30 @@ button[disabled],
   }
 }
 
+/* ========== Storefront mobile optimizations ========== */
+[data-storefront="true"] {
+    overflow-x: clip;
+}
+
+/* Dynamic viewport height for storefront modals (mobile browser chrome) */
+@supports (height: 100dvh) {
+    [data-storefront="true"] .h-\[90vh\] { height: 90dvh; }
+    [data-storefront="true"] .h-\[95vh\] { height: 95dvh; }
+    [data-storefront="true"] .h-\[85vh\] { height: 85dvh; }
+    [data-storefront="true"] .h-\[80vh\] { height: 80dvh; }
+    [data-storefront="true"] .h-\[70vh\] { height: 70dvh; }
+    [data-storefront="true"] .h-\[92vh\] { height: 92dvh; }
+    [data-storefront="true"] .h-\[100vh\] { height: 100dvh; }
+    [data-storefront="true"] .h-screen { height: 100dvh; }
+}
+
+/* Bottom spacers clear the home indicator in standalone PWA mode */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    [data-storefront="true"] .pb-24 {
+        padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    }
+}
+
 /* Colored & Gradient Sidebar Overrides */
 [data-sidebar-style="colored"],
 [data-sidebar-style="gradient"] {

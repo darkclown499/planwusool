@@ -1,0 +1,606 @@
+{
+  "generated": "2026-08-04T07:52:50.123Z",
+  "base": "http://127.0.0.1:8000",
+  "users": {
+    "superadmin": {
+      "loginOk": true,
+      "results": [
+        {
+          "path": "/stores/1/settings",
+          "label": "RTL check /stores/1/settings",
+          "status": 200,
+          "ms": 2070,
+          "issues": [
+            "dir=rtl OK"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/appearance",
+          "label": "RTL check /stores/1/appearance",
+          "status": 200,
+          "ms": 2097,
+          "issues": [
+            "dir=rtl OK"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/advanced-coupons",
+          "label": "translation check Advanced Coupons",
+          "status": 200,
+          "ms": 2085,
+          "issues": [
+            "Arabic text found: الكوبونات المتقدمة"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/cod-payments",
+          "label": "translation check COD Payments",
+          "status": 200,
+          "ms": 2031,
+          "issues": [
+            "Arabic text found: الدفع عند الاستلام"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/settings",
+          "label": "translation check Store Settings",
+          "status": 200,
+          "ms": 2031,
+          "issues": [
+            "Arabic text found: إعدادات المتجر"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/dashboard",
+          "label": "sidebar /dashboard",
+          "status": 200,
+          "ms": 2191,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/merchant-notifications",
+          "label": "sidebar /merchant-notifications",
+          "status": 200,
+          "ms": 2102,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/companies",
+          "label": "sidebar /companies",
+          "status": 200,
+          "ms": 2043,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores",
+          "label": "sidebar /stores",
+          "status": 200,
+          "ms": 2114,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/appearance",
+          "label": "sidebar /stores/1/appearance",
+          "status": 200,
+          "ms": 2124,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/2/appearance",
+          "label": "sidebar /stores/2/appearance",
+          "status": 200,
+          "ms": 2096,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/3/appearance",
+          "label": "sidebar /stores/3/appearance",
+          "status": 200,
+          "ms": 2041,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/plans",
+          "label": "sidebar /plans",
+          "status": 200,
+          "ms": 2396,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/plan-requests",
+          "label": "sidebar /plan-requests",
+          "status": 200,
+          "ms": 2191,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/plan-orders",
+          "label": "sidebar /plan-orders",
+          "status": 200,
+          "ms": 2165,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/coupons",
+          "label": "sidebar /coupons",
+          "status": 200,
+          "ms": 2220,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/referral",
+          "label": "sidebar /referral",
+          "status": 200,
+          "ms": 2065,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/media-library",
+          "label": "sidebar /media-library",
+          "status": 200,
+          "ms": 2026,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/landing-page",
+          "label": "sidebar /landing-page",
+          "status": 200,
+          "ms": 2045,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/landing-custom-pages",
+          "label": "sidebar /landing-custom-pages",
+          "status": 200,
+          "ms": 2078,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/landing-subscribers",
+          "label": "sidebar /landing-subscribers",
+          "status": 200,
+          "ms": 2060,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/landing-contacts",
+          "label": "sidebar /landing-contacts",
+          "status": 200,
+          "ms": 2010,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/countries",
+          "label": "sidebar /countries",
+          "status": 200,
+          "ms": 2070,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/states",
+          "label": "sidebar /states",
+          "status": 200,
+          "ms": 2037,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/cities",
+          "label": "sidebar /cities",
+          "status": 200,
+          "ms": 2045,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/currencies",
+          "label": "sidebar /currencies",
+          "status": 200,
+          "ms": 2170,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/email-templates",
+          "label": "sidebar /email-templates",
+          "status": 200,
+          "ms": 2082,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/notification-templates",
+          "label": "sidebar /notification-templates",
+          "status": 200,
+          "ms": 2037,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/settings",
+          "label": "sidebar /settings",
+          "status": 200,
+          "ms": 2171,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/settings",
+          "label": "interaction settings tabs",
+          "status": 200,
+          "ms": 4304,
+          "issues": [],
+          "ok": true
+        },
+        {
+          "path": "/stores/1/appearance",
+          "label": "interaction appearance editor",
+          "status": 200,
+          "ms": 3128,
+          "issues": [],
+          "ok": true
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedCount": 0
+    },
+    "company": {
+      "loginOk": true,
+      "results": [
+        {
+          "path": "/stores/1/settings",
+          "label": "RTL check /stores/1/settings",
+          "status": 200,
+          "ms": 2086,
+          "issues": [
+            "dir=rtl OK"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/appearance",
+          "label": "RTL check /stores/1/appearance",
+          "status": 200,
+          "ms": 2048,
+          "issues": [
+            "dir=rtl OK"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/advanced-coupons",
+          "label": "translation check Advanced Coupons",
+          "status": 200,
+          "ms": 2076,
+          "issues": [
+            "Arabic text found: الكوبونات المتقدمة"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/cod-payments",
+          "label": "translation check COD Payments",
+          "status": 200,
+          "ms": 2058,
+          "issues": [
+            "Arabic text found: الدفع عند الاستلام"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/settings",
+          "label": "translation check Store Settings",
+          "status": 200,
+          "ms": 2054,
+          "issues": [
+            "Arabic text found: إعدادات المتجر"
+          ],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/dashboard",
+          "label": "sidebar /dashboard",
+          "status": 200,
+          "ms": 2058,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/merchant-notifications",
+          "label": "sidebar /merchant-notifications",
+          "status": 200,
+          "ms": 2048,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/products",
+          "label": "sidebar /products",
+          "status": 200,
+          "ms": 2041,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/categories",
+          "label": "sidebar /categories",
+          "status": 200,
+          "ms": 2027,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/tax",
+          "label": "sidebar /tax",
+          "status": 200,
+          "ms": 2064,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores",
+          "label": "sidebar /stores",
+          "status": 200,
+          "ms": 2034,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/orders",
+          "label": "sidebar /orders",
+          "status": 200,
+          "ms": 2063,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/customers",
+          "label": "sidebar /customers",
+          "status": 200,
+          "ms": 2029,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/shipping",
+          "label": "sidebar /shipping",
+          "status": 200,
+          "ms": 2008,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/settings",
+          "label": "sidebar /stores/1/settings",
+          "status": 200,
+          "ms": 2101,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/appearance",
+          "label": "sidebar /stores/1/appearance",
+          "status": 200,
+          "ms": 2078,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/coupon-system",
+          "label": "sidebar /coupon-system",
+          "status": 200,
+          "ms": 2264,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/advanced-coupons",
+          "label": "sidebar /advanced-coupons",
+          "status": 200,
+          "ms": 2089,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/express-checkout",
+          "label": "sidebar /express-checkout",
+          "status": 200,
+          "ms": 2184,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/cod-payments",
+          "label": "sidebar /cod-payments",
+          "status": 200,
+          "ms": 2113,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/analytics",
+          "label": "sidebar /analytics",
+          "status": 200,
+          "ms": 2088,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/users",
+          "label": "sidebar /users",
+          "status": 200,
+          "ms": 2181,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/roles",
+          "label": "sidebar /roles",
+          "status": 200,
+          "ms": 2189,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/media-library",
+          "label": "sidebar /media-library",
+          "status": 200,
+          "ms": 2098,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/notifications",
+          "label": "sidebar /notifications",
+          "status": 200,
+          "ms": 2115,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/plans",
+          "label": "sidebar /plans",
+          "status": 200,
+          "ms": 2390,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/referral",
+          "label": "sidebar /referral",
+          "status": 200,
+          "ms": 2030,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/settings",
+          "label": "sidebar /settings",
+          "status": 200,
+          "ms": 2068,
+          "issues": [],
+          "denied": false,
+          "ok": true
+        },
+        {
+          "path": "/stores/1/settings",
+          "label": "interaction settings tabs",
+          "status": 200,
+          "ms": 4250,
+          "issues": [],
+          "ok": true
+        },
+        {
+          "path": "/stores/1/appearance",
+          "label": "interaction appearance editor",
+          "status": 200,
+          "ms": 3125,
+          "issues": [],
+          "ok": true
+        },
+        {
+          "path": "/products",
+          "label": "interaction products -> create",
+          "status": 200,
+          "ms": 3165,
+          "issues": [],
+          "ok": true
+        },
+        {
+          "path": "/dashboard",
+          "label": "interaction guide tour",
+          "status": 200,
+          "ms": 3343,
+          "issues": [
+            "tour card visible (الخطوة 1)",
+            "tour navigated to /products"
+          ],
+          "ok": true
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedCount": 0
+    }
+  }
+}

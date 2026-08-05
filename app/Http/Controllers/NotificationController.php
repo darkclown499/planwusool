@@ -31,13 +31,22 @@ class NotificationController extends Controller
         $currentStoreId = $user->current_store;
 
         $filters = $request->only(['type', 'channel', 'status', 'search', 'per_page']);
-        $notifications = $this->notificationService->getAdminNotifications($currentStoreId, $filters, $request->get('per_page', 15));
+
+        if ($currentStoreId) {
+            $notifications = $this->notificationService->getAdminNotifications($currentStoreId, $filters, $request->get('per_page', 15));
+            $stats = $this->notificationService->getStats($currentStoreId);
+            $typeStats = $this->notificationService->getTypeStats($currentStoreId);
+        } else {
+            $notifications = CustomerNotification::whereRaw('1 = 0')->paginate($request->get('per_page', 15));
+            $stats = [];
+            $typeStats = [];
+        }
 
         return Inertia::render('notifications/index', [
             'notifications' => $notifications,
             'filters' => $filters,
-            'stats' => $this->notificationService->getStats($currentStoreId),
-            'typeStats' => $this->notificationService->getTypeStats($currentStoreId),
+            'stats' => $stats,
+            'typeStats' => $typeStats,
             'types' => array_keys(CustomerNotification::TYPES),
             'channels' => CustomerNotification::CHANNELS,
         ]);
@@ -55,6 +64,8 @@ class NotificationController extends Controller
             ->select('id', 'first_name', 'last_name', 'email', 'phone')
             ->orderBy('first_name')
             ->get();
+
+        $customers = sanitizeModelUtf8($customers);
 
         return Inertia::render('notifications/create', [
             'customers' => $customers,

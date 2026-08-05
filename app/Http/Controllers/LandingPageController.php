@@ -72,7 +72,7 @@ class LandingPageController extends Controller
                     'users' => $plan->max_users_per_store ?? 0,
                     'products_per_store' => $plan->max_products_per_store ?? 0,
                     'storage' => $plan->storage_limit . ' GB',
-                    'templates' => is_array($plan->themes) ? count($plan->themes) : 7,
+                    'templates' => is_array($plan->themes) ? count($plan->themes) : 29,
                     'bio_links' => 'Unlimited',
                     'bio_links_templates' => '14',
                 ],

@@ -171,8 +171,8 @@ class OrderController extends Controller
             ->map(function ($customer) {
                 return [
                     'id' => $customer->id,
-                    'name' => $customer->first_name . ' ' . $customer->last_name,
-                    'email' => $customer->email,
+                    'name' => cleanUtf8($customer->first_name . ' ' . $customer->last_name),
+                    'email' => cleanUtf8($customer->email),
                 ];
             });
             
@@ -222,8 +222,8 @@ class OrderController extends Controller
             ->map(function ($customer) {
                 return [
                     'id' => $customer->id,
-                    'name' => $customer->first_name . ' ' . $customer->last_name,
-                    'email' => $customer->email,
+                    'name' => cleanUtf8($customer->first_name . ' ' . $customer->last_name),
+                    'email' => cleanUtf8($customer->email),
                 ];
             });
             

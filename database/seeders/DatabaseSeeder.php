@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
                 CouponSeeder::class,
                 StoreCouponSeeder::class,
                 LocationSeeder::class,
+                WorldCountriesSeeder::class,
                 ExpressCheckoutSeeder::class,
                 PlanOrderSeeder::class,
                 PlanRequestSeeder::class,
@@ -62,6 +63,7 @@ class DatabaseSeeder extends Seeder
                 
                 ShippingSeeder::class,
                 LocationSeeder::class,
+                WorldCountriesSeeder::class,
                 CurrencySeeder::class,
                 
                 ReferralSettingSeeder::class,

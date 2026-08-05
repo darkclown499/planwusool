@@ -1,5 +1,13 @@
 /* ===== Global RTL Utilities ===== */
 
+/* Arabic-first design: the root document is always right-to-left.
+   Forced with !important so no dynamic dir attribute / browser language
+   detection can ever flip the interface back to LTR. */
+html,
+body {
+  direction: rtl !important;
+}
+
 /* Keep numbers/currency/codes readable LTR inside RTL paragraphs */
 .ltr-num {
   direction: ltr;
@@ -44,43 +52,11 @@ html[dir="rtl"] [data-slot="sidebar"] {
   direction: rtl;
 }
 
-/* Fix sidebar positioning for RTL */
-html[dir="rtl"] [data-side="left"] {
-  right: 0;
-  left: auto !important;
-}
-
-html[dir="rtl"] [data-side="right"] {
-  left: 0;
-  right: auto !important;
-}
-
-/* Fix sidebar border for RTL */
-html[dir="rtl"] [data-side="left"] {
-  border-left: 1px solid var(--sidebar-border);
-  border-right: none !important;
-}
-
-html[dir="rtl"] [data-side="right"] {
-  border-right: 1px solid var(--sidebar-border);
-  border-left: none !important;
-}
-
-/* Fix sidebar collapse for RTL (physical props kept so the transition-[left,right] animation fires) */
-html[dir="rtl"] [data-collapsible="offcanvas"][data-side="left"] {
-  right: calc(var(--sidebar-width) * -1) !important;
-  left: auto !important;
-}
-
-html[dir="rtl"] [data-collapsible="offcanvas"][data-side="right"] {
-  left: calc(var(--sidebar-width) * -1) !important;
-  right: auto !important;
-}
-
-/* Fix sidebar rail for RTL */
-html[dir="rtl"] [data-sidebar="rail"] {
-  transform: translateX(50%) !important;
-}
+/* RTL layout: the sidebar sits on the RIGHT edge thanks to side="right".
+   The shadcn base classes (right-0 / padding-right on the inset) are already
+   physical properties, so NO position overrides are needed here. The previous
+   overrides flipped the sidebar to the LEFT in RTL while the content kept its
+   right padding, which made the whole dashboard render as a broken LTR layout. */
 
 /* Fix sidebar menu items for RTL */
 html[dir="rtl"] [data-sidebar="menu-button"] {

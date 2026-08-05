@@ -26,7 +26,7 @@ class LoyaltyController extends Controller
         $user = Auth::user();
         $currentStoreId = $user->current_store;
 
-        $settings = LoyaltySetting::forStore($currentStoreId);
+        $settings = $currentStoreId ? LoyaltySetting::forStore($currentStoreId) : new LoyaltySetting();
 
         return Inertia::render('loyalty/settings', [
             'settings' => $settings,

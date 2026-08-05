@@ -26,7 +26,7 @@ class StoreConfiguration extends Model
         
         // Default values (original + plan management)
         $defaults = [
-            'default_currency' => 'usd',
+            'default_currency' => 'ils',
             'timezone' => 'utc',
             'language' => 'ar',
             'meta_title' => '',

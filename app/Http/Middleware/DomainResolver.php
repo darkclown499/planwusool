@@ -192,6 +192,9 @@ class DomainResolver
         } elseif ($segments[0] === 'service-worker') {
             // PWA Service Worker
             return app(\App\Http\Controllers\PWAController::class)->serviceWorker($store->slug);
+        } elseif ($segments[0] === 'pwa-icon' && isset($segments[1])) {
+            // PWA Icon (custom-domain stores: avoid hitting the main-app catch-all)
+            return app(\App\Http\Controllers\PWAController::class)->icon($store->slug, $segments[1]);
         } elseif ($segments[0] === 'login') {
             // Login page
             if ($request->isMethod('get')) {

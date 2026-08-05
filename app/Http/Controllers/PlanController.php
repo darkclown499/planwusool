@@ -463,7 +463,7 @@ class PlanController extends Controller
         if (is_array($themes)) {
             return count($themes);
         }
-        return 7; // Default theme count
+        return 29; // Default theme count (all available themes)
     }
     
     /**

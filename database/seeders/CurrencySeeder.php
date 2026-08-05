@@ -87,7 +87,8 @@ class CurrencySeeder extends Seeder
     private function getMainCurrencies(): array
     {
         return [
-            ['name' => 'US Dollar', 'code' => 'USD', 'symbol' => '$', 'description' => 'United States Dollar', 'is_default' => true],
+            ['name' => 'Israeli Shekel', 'code' => 'ILS', 'symbol' => '₪', 'description' => 'Israeli Shekel', 'is_default' => true],
+            ['name' => 'US Dollar', 'code' => 'USD', 'symbol' => '$', 'description' => 'United States Dollar', 'is_default' => false],
             ['name' => 'Euro', 'code' => 'EUR', 'symbol' => '€', 'description' => 'Euro', 'is_default' => false],
             ['name' => 'British Pound', 'code' => 'GBP', 'symbol' => '£', 'description' => 'British Pound Sterling', 'is_default' => false],
             ['name' => 'Japanese Yen', 'code' => 'JPY', 'symbol' => '¥', 'description' => 'Japanese Yen', 'is_default' => false],

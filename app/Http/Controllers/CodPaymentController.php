@@ -54,7 +54,7 @@ class CodPaymentController extends Controller
         $perPage = $request->get('per_page', 15);
         $payments = $query->latest()->paginate($perPage);
 
-        $stats = $this->codPaymentService->getStats($currentStoreId);
+        $stats = $currentStoreId ? $this->codPaymentService->getStats($currentStoreId) : [];
 
         return Inertia::render('cod-payments/index', [
             'payments' => $payments,

@@ -44,8 +44,8 @@ if (! function_exists('settings')) {
                 if (!in_array(auth()->user()->type, ['superadmin', 'company'])) {
                     $user_id = auth()->user()->created_by;
                     // For company users, get current store if not specified
-                    $company = User::find($user_id);
-                    if (is_null($store_id) && $company->type === 'company') {
+                    $company = $user_id ? User::find($user_id) : null;
+                    if (is_null($store_id) && $company && $company->type === 'company') {
                         $store_id = getCurrentStoreId($company);
                     }
                 } else {
@@ -62,7 +62,7 @@ if (! function_exists('settings')) {
         }
 
         if (!$user_id) {
-            return collect();
+            return [];
         }
 
         return Setting::where('user_id', $user_id)
@@ -1070,7 +1070,7 @@ if (! function_exists('defaultSettings')) {
             'customColor' => '#10b77f',
             'sidebarVariant' => 'inset',
             'sidebarStyle' => 'plain',
-            'layoutDirection' => 'left',
+            'layoutDirection' => 'right',
             
             // Storage Settings
             'storage_type' => 'local',
@@ -1156,7 +1156,10 @@ if (! function_exists('copySettingsFromSuperAdmin')) {
             'defaultTimezone',
             'logoLight', 'favicon', 'titleText', 'footerText',
             'themeColor', 'customColor', 'sidebarVariant', 'sidebarStyle',
-            'layoutDirection'
+            'layoutDirection',
+            'defaultCurrency', 'decimalFormat', 'decimalSeparator',
+            'thousandsSeparator', 'floatNumber', 'currencySymbolSpace',
+            'currencySymbolPosition'
         ];
         
         $superAdminSettings = Setting::where('user_id', $superAdmin->id)
@@ -1206,13 +1209,13 @@ if (! function_exists('formatStoreCurrency')) {
             $storeSettings = $storeId ? Setting::getUserSettings($userId, $storeId) : [];
             
             // Get currency code from store settings or fall back to global settings
-            $currencyCode = $storeSettings['defaultCurrency'] ?? settings($userId)['defaultCurrency'] ?? 'USD';
+            $currencyCode = $storeSettings['defaultCurrency'] ?? settings($userId)['defaultCurrency'] ?? 'ILS';
             
             // Get currency details
             $currency = \App\Models\Currency::where('code', $currencyCode)->first();
             
             // Currency formatting settings
-            $symbol = $currency ? $currency->symbol : '$';
+            $symbol = $currency ? $currency->symbol : '₪';
             $position = $storeSettings['currencySymbolPosition'] ?? 'before';
             $decimals = (int)($storeSettings['decimalFormat'] ?? 2);
             $decimalSeparator = $storeSettings['decimalSeparator'] ?? '.';
@@ -1228,7 +1231,7 @@ if (! function_exists('formatStoreCurrency')) {
                 
         } catch (\Exception $e) {
             // Fallback to simple formatting
-            return '$' . number_format($numAmount, 2);
+            return '₪' . number_format($numAmount, 2);
         }
     }
 }
@@ -1244,17 +1247,17 @@ if (! function_exists('formatCurrency')) {
      */
     function formatCurrency($amount, $storeSettings = [], $currencies = [])
     {
-        $defaultCurrency = $storeSettings['defaultCurrency'] ?? 'USD';
+        $defaultCurrency = $storeSettings['defaultCurrency'] ?? 'ILS';
         $decimalFormat = $storeSettings['decimalFormat'] ?? '2';
         $decimalSeparator = $storeSettings['decimalSeparator'] ?? '.';
         $thousandsSeparator = $storeSettings['thousandsSeparator'] ?? ',';
-        $currencySymbolPosition = $storeSettings['currencySymbolPosition'] ?? 'before';
+        $currencySymbolPosition = $storeSettings['currencySymbolPosition'] ?? 'after';
         $currencySymbolSpace = $storeSettings['currencySymbolSpace'] ?? false;
         $floatNumber = $storeSettings['floatNumber'] ?? true;
         
         // Convert amount to number
         $numAmount = is_string($amount) ? (float)$amount : $amount;
-        if (is_nan($numAmount)) return '$0.00';
+        if (is_nan($numAmount)) return '₪0.00';
         
         // Get currency symbol
         $currency = null;
@@ -1264,7 +1267,7 @@ if (! function_exists('formatCurrency')) {
                 break;
             }
         }
-        $symbol = $currency['symbol'] ?? '$';
+        $symbol = $currency['symbol'] ?? '₪';
         
         // Handle float number setting
         $finalAmount = ($floatNumber === false || $floatNumber === '0') 
@@ -1388,6 +1391,56 @@ if (! function_exists('getCurrentStoreId')) {
     }
 }
 
+if (! function_exists('cleanUtf8')) {
+    /**
+     * Sanitize a value so it only contains valid UTF-8 characters.
+     * Prevents JSON encoding from failing on malformed text
+     * (e.g. "Malformed UTF-8 characters, possibly incorrectly encoded").
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    function cleanUtf8($value)
+    {
+        if (!is_string($value) || $value === '' || mb_check_encoding($value, 'UTF-8')) {
+            return $value;
+        }
+        // Drop invalid byte sequences, keeping valid UTF-8 characters intact.
+        $cleaned = @iconv('UTF-8', 'UTF-8//IGNORE', $value);
+        return $cleaned === false ? '' : $cleaned;
+    }
+}
+
+if (! function_exists('sanitizeModelUtf8')) {
+    /**
+     * Recursively sanitize all string attributes (and loaded relations) of a model
+     * so its JSON serialization never fails on malformed UTF-8.
+     *
+     * @param mixed $model
+     * @return mixed
+     */
+    function sanitizeModelUtf8($model)
+    {
+        if ($model instanceof \Illuminate\Database\Eloquent\Model) {
+            foreach ($model->getAttributes() as $key => $value) {
+                if (is_string($value)) {
+                    $model->{$key} = cleanUtf8($value);
+                }
+            }
+            foreach ($model->getRelations() as $relation => $related) {
+                if ($related instanceof \Illuminate\Database\Eloquent\Model) {
+                    $model->setRelation($relation, sanitizeModelUtf8($related));
+                } elseif ($related instanceof \Illuminate\Support\Collection) {
+                    $model->setRelation($relation, $related->map(fn ($item) => sanitizeModelUtf8($item)));
+                }
+            }
+        } elseif ($model instanceof \Illuminate\Support\Collection || $model instanceof \Illuminate\Database\Eloquent\Collection) {
+            $model->transform(fn ($item) => sanitizeModelUtf8($item));
+        }
+        return $model;
+    }
+}
+
 if (! function_exists('isSuperAdmin')) {
     /**
      * Check if the current user is a super admin
@@ -1406,6 +1459,34 @@ if (! function_exists('isSuperAdmin')) {
         }
         
         return $user->isSuperAdmin();
+    }
+}
+
+if (! function_exists('resolveStoreQuery')) {
+    /**
+     * Build a store query scoped to the given user.
+     *
+     * Superadmins and admins can access any store, company users access their
+     * own stores, and sub-users access their creator's stores.
+     *
+     * @param \App\Models\User|null $user
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    function resolveStoreQuery($user = null)
+    {
+        if (!$user) {
+            $user = auth()->user();
+        }
+
+        if ($user && ($user->isSuperAdmin() || $user->isAdmin())) {
+            return \App\Models\Store::query();
+        }
+
+        if ($user && $user->type === 'company') {
+            return \App\Models\Store::where('user_id', $user->id);
+        }
+
+        return \App\Models\Store::where('user_id', $user ? $user->created_by : 0);
     }
 }
 

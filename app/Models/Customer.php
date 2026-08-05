@@ -91,7 +91,7 @@ class Customer extends Authenticatable
 
     public function getInitialsAttribute()
     {
-        return strtoupper(substr($this->first_name, 0, 1) . substr($this->last_name, 0, 1));
+        return strtoupper(mb_substr($this->first_name, 0, 1) . mb_substr($this->last_name, 0, 1));
     }
 
     protected static function boot()

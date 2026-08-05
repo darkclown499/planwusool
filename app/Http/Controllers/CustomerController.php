@@ -20,7 +20,8 @@ class CustomerController extends Controller
         
         $customers = Customer::where('store_id', $currentStoreId)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(fn ($customer) => sanitizeModelUtf8($customer));
             
         // Get statistics
         $totalCustomers = Customer::where('store_id', $currentStoreId)->count();
@@ -175,6 +176,9 @@ class CustomerController extends Controller
             ->with(['addresses'])
             ->findOrFail($id);
         
+        // Sanitize text fields before sending to the frontend to avoid JSON encoding failures.
+        $customer = sanitizeModelUtf8($customer);
+        
         // Calculate dynamic customer statistics from actual orders
         $orders = \App\Models\Order::where('customer_id', $customer->id)
                                   ->where('store_id', $currentStoreId)
@@ -198,8 +202,8 @@ class CustomerController extends Controller
         
         return Inertia::render('customers/show', [
             'customer' => $customer,
-            'billingAddress' => $billingAddress,
-            'shippingAddress' => $shippingAddress,
+            'billingAddress' => $billingAddress ? sanitizeModelUtf8($billingAddress) : null,
+            'shippingAddress' => $shippingAddress ? sanitizeModelUtf8($shippingAddress) : null,
             'recentOrders' => $orders->take(5)->map(function($order) {
                 return [
                     'id' => $order->id,
@@ -224,13 +228,16 @@ class CustomerController extends Controller
             ->with(['addresses'])
             ->findOrFail($id);
         
+        // Sanitize text fields before sending to the frontend to avoid JSON encoding failures.
+        $customer = sanitizeModelUtf8($customer);
+        
         $billingAddress = $customer->addresses->where('type', 'billing')->first();
         $shippingAddress = $customer->addresses->where('type', 'shipping')->first();
         
         return Inertia::render('customers/edit', [
             'customer' => $customer,
-            'billingAddress' => $billingAddress,
-            'shippingAddress' => $shippingAddress,
+            'billingAddress' => $billingAddress ? sanitizeModelUtf8($billingAddress) : null,
+            'shippingAddress' => $shippingAddress ? sanitizeModelUtf8($shippingAddress) : null,
             'sameAsBilling' => $billingAddress && $shippingAddress && 
                 $billingAddress->address === $shippingAddress->address &&
                 $billingAddress->city === $shippingAddress->city &&
