@@ -953,6 +953,12 @@ require __DIR__ . '/auth.php';
 Route::match(['GET', 'POST'], 'payments/easebuzz/success', [EasebuzzPaymentController::class, 'success'])->name('easebuzz.success');
 Route::post('payments/easebuzz/callback', [EasebuzzPaymentController::class, 'callback'])->name('easebuzz.callback');
 
+// Protected update route (super admin only) - runs pending migrations after deployment
+Route::middleware(['auth', 'App\Http\Middleware\SuperAdminMiddleware'])->group(function () {
+    Route::get('update', [\App\Http\Controllers\UpdateController::class, 'show'])->name('update.show');
+    Route::post('update', [\App\Http\Controllers\UpdateController::class, 'run'])->name('update.run');
+});
+
 // Catch-all route for custom domains/subdomains
 // This ensures that any request not matched above still enters the 'web' middleware group,
 // where DomainResolver resolves the host against verified store custom domains
