@@ -154,8 +154,11 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::post('/yookassa/callback', [\App\Http\Controllers\Store\YooKassaController::class, 'callback'])->name('store.yookassa.callback');
 
     // Catch-all: any unmatched GET on a store subdomain renders the store homepage
-    // (mirrors the previous "unknown route -> home" behaviour for custom domains)
-    Route::get('{any}', [ThemeController::class, 'home'])->where('any', '.*');
+    // (mirrors the previous "unknown route -> home" behaviour for custom domains).
+    // IMPORTANT: api/* paths must NOT be swallowed here — the storefront calls
+    // GET /api/cart, /api/wishlist, /api/orders, /api/shipping-methods, etc. and
+    // those routes are registered below outside the subdomain group.
+    Route::get('{any}', [ThemeController::class, 'home'])->where('any', '^(?!api(?:/|$)).*');
 });
 
 // Legacy redirects: keep old /store/{slug} links working after the move to subdomains
@@ -560,11 +563,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/domains/{domain}/check-ssl', [\App\Http\Controllers\StoreDomainController::class, 'checkSsl'])->middleware('permission:settings-stores')->name('stores.domains.check-ssl');
         Route::post('stores/{id}/domains/{domain}/make-primary', [\App\Http\Controllers\StoreDomainController::class, 'makePrimary'])->middleware('permission:settings-stores')->name('stores.domains.primary');
         Route::delete('stores/{id}/domains/{domain}', [\App\Http\Controllers\StoreDomainController::class, 'destroy'])->middleware('permission:settings-stores')->name('stores.domains.destroy');
-        Route::get('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'show'])->middleware('permission:settings-stores')->name('stores.appearance');
-        Route::put('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'update'])->middleware('permission:settings-stores')->name('stores.appearance.update');
-        Route::put('stores/{id}/appearance/autosave', [\App\Http\Controllers\StoreAppearanceController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.appearance.autosave');
-        Route::post('stores/{id}/appearance/reset', [\App\Http\Controllers\StoreAppearanceController::class, 'reset'])->middleware('permission:settings-stores')->name('stores.appearance.reset');
-        Route::post('stores/{id}/appearance/revisions/{revisionId}/revert', [\App\Http\Controllers\StoreAppearanceController::class, 'revert'])->middleware('permission:settings-stores')->name('stores.appearance.revisions.revert');
+        Route::get('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'show'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance');
+        Route::put('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'update'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.update');
+        Route::put('stores/{id}/appearance/autosave', [\App\Http\Controllers\StoreAppearanceController::class, 'autosave'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.autosave');
+        Route::post('stores/{id}/appearance/reset', [\App\Http\Controllers\StoreAppearanceController::class, 'reset'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.reset');
+        Route::post('stores/{id}/appearance/revisions/{revisionId}/revert', [\App\Http\Controllers\StoreAppearanceController::class, 'revert'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.revisions.revert');
         
         // Product Management routes with permissions
         Route::get('products', [\App\Http\Controllers\ProductController::class, 'index'])->middleware('permission:manage-products')->name('products.index');
@@ -795,10 +798,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Users routes with granular permissions
     Route::middleware('permission:manage-users')->group(function () {
         Route::get('users', [UserController::class, 'index'])->middleware('permission:manage-users')->name('users.index');
-        Route::get('users/create', [UserController::class, 'create'])->middleware('permission:create-users')->name('users.create');
         Route::post('users', [UserController::class, 'store'])->middleware('permission:create-users')->name('users.store');
-        Route::get('users/{user}', [UserController::class, 'show'])->middleware('permission:view-users')->name('users.show');
-        Route::get('users/{user}/edit', [UserController::class, 'edit'])->middleware('permission:edit-users')->name('users.edit');
         Route::put('users/{user}', [UserController::class, 'update'])->middleware('permission:edit-users')->name('users.update');
         Route::patch('users/{user}', [UserController::class, 'update'])->middleware('permission:edit-users');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('permission:delete-users')->name('users.destroy');
