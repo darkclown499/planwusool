@@ -42,7 +42,7 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
  const [showPassword, setShowPassword] = useState(false);
  const { themeColor, customColor } = useBrand();
- const { settings = {} } = usePage().props as any;
+ const { settings = {}, authProviders = [] } = usePage().props as any;
  const recaptchaEnabled = settings.recaptchaEnabled === 'true' || settings.recaptchaEnabled === true || settings.recaptchaEnabled === 1 || settings.recaptchaEnabled === '1';
  const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
 
@@ -252,6 +252,7 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  )}
 
  {/* Divider */}
+ {authProviders.length > 0 && (
  <div className="relative my-6">
  <div className="absolute inset-0 flex items-center">
  <div className="w-full border-t border-gray-200"></div>
@@ -260,9 +261,10 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  <span className="px-3 bg-white text-gray-400">{t("or continue with")}</span>
  </div>
  </div>
+ )}
 
  {/* Social Login Buttons */}
- <SocialButtons primaryColor={primaryColor} />
+ <SocialButtons primaryColor={primaryColor} availableProviders={authProviders} />
  {isDemo && (
  <div className="mb-5">
  <div className="grid grid-cols-2 gap-3">

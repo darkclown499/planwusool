@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -28,6 +28,7 @@ export default function AuthLayout({
     const [mounted, setMounted] = useState(false);
     const [imageError, setImageError] = useState(false);
     const { logoLight, logoDark, themeColor, customColor, titleText } = useBrand();
+    const { flash = {} } = usePage().props as any;
     const appName = titleText;
 
     const currentLogo = logoLight;
@@ -152,6 +153,12 @@ export default function AuthLayout({
                                     : 'text-red-700 bg-red-50 border border-red-200'
                                     } rounded-xl p-3`}>
                                     {status}
+                                </div>
+                            )}
+
+                            {flash.error && (
+                                <div className="mb-6 text-center text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">
+                                    {flash.error}
                                 </div>
                             )}
 

@@ -18,7 +18,18 @@ class SocialAuthController extends Controller
     {
         $provider = strtolower($provider);
         if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
-            return Socialite::driver($provider)->stateless()->redirect();
+            if (empty(config("services.$provider.client_id")) || empty(config("services.$provider.client_secret"))) {
+                return redirect()->route('login')->with('error', __('Social login via :provider is not configured.', ['provider' => $provider]));
+            }
+
+            $driver = Socialite::driver($provider)->stateless();
+
+            // Always show the Google account chooser/consent screen
+            if ($provider === 'google') {
+                $driver->with(['prompt' => 'select_account']);
+            }
+
+            return $driver->redirect();
         }
 
         if ($provider === 'plankton') {

@@ -593,6 +593,7 @@
     "PWA": "PWA",
     "Select Business": "Select Business",
     "Social": "Social",
+    "Social login via :provider is not configured.": "Social login via :provider is not configured.",
     "Super Admin": "Super Admin",
     "Text Color": "Text Color",
     "Total Appointments": "Total Appointments",

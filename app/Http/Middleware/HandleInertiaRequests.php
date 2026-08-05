@@ -99,6 +99,11 @@ class HandleInertiaRequests extends Middleware
             'base_url'  => $request->getSchemeAndHttpHost(),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'csrf_token' => csrf_token(),
+            // Only expose which social providers are configured (names only — never secrets)
+            'authProviders' => collect(['google', 'facebook', 'apple', 'github', 'plankton'])
+                ->filter(fn ($provider) => !empty(config("services.{$provider}.client_id")))
+                ->values()
+                ->all(),
             // Customer auth (for store frontend)
             'isLoggedIn' => fn() => Auth::guard('customer')->check(),
             'customer' => fn() => Auth::guard('customer')->check() ? Auth::guard('customer')->user() : null,

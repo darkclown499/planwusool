@@ -2858,6 +2858,7 @@
     "Slug": "السناجب",
     "Small announcement text shown above the title": "نص الإعلان الصغير الذي يظهر فوق العنوان",
     "Social": "الاجتماعي",
+    "Social login via :provider is not configured.": "تسجيل الدخول عبر :provider غير مُعد. يرجى التواصل مع مدير النظام.",
     "Social Influencer": "المؤثر الاجتماعي",
     "Social Link": "الرابط الاجتماعي",
     "Social Links": "الروابط الاجتماعية",

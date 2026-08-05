@@ -1,7 +1,6 @@
-import { useTranslation } from 'react-i18next';
-
 interface Props {
   primaryColor?: string;
+  availableProviders?: string[];
 }
 
 const providers = [
@@ -62,12 +61,14 @@ const providers = [
   },
 ];
 
-export default function SocialButtons({ primaryColor = '#10b77f' }: Props) {
-  const { t } = useTranslation();
+export default function SocialButtons({ primaryColor = '#10b77f', availableProviders }: Props) {
+  const enabled = providers.filter((p) => (availableProviders ?? []).includes(p.id));
+
+  if (enabled.length === 0) return null;
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {providers.map((p) => (
+      {enabled.map((p) => (
         <a
           key={p.id}
           href={`/auth/redirect/${p.id}`}
