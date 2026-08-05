@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type LayoutPosition = 'left' | 'right';
 
@@ -10,17 +10,25 @@ type LayoutContextType = {
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 const syncDirectionToDOM = () => {
-    // Arabic-first: always right-to-left. Saved values must never flip it.
+    // Arabic-first: always right-to-left. Only touch the DOM/localStorage when
+    // the value actually differs so observers never feed back into themselves.
     try {
-        document.documentElement.dir = 'rtl';
-        document.documentElement.setAttribute('dir', 'rtl');
-        localStorage.setItem('layoutDirection', 'rtl');
-        localStorage.setItem('layoutPosition', 'right');
-    } catch (e) {
+        if (document.documentElement.getAttribute('dir') !== 'rtl') {
+            document.documentElement.setAttribute('dir', 'rtl');
+        }
+        if (localStorage.getItem('layoutDirection') !== 'rtl') {
+            localStorage.setItem('layoutDirection', 'rtl');
+        }
+        if (localStorage.getItem('layoutPosition') !== 'right') {
+            localStorage.setItem('layoutPosition', 'right');
+        }
+    } catch {
         // Never let storage/dir issues take down the whole app.
         try {
             document.documentElement.setAttribute('dir', 'rtl');
-        } catch (e2) {}
+        } catch {
+            // Swallow — direction can't be enforced.
+        }
     }
 };
 
@@ -28,14 +36,14 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
     const [position, setPosition] = useState<LayoutPosition>('right');
 
     // Keep the interface right-to-left. The observer re-asserts RTL whenever
-    // anything else changes the <html dir> attribute.
+    // anything else changes the <html dir> attribute, without writing the same
+    // value back (which would retrigger the observer and loop forever).
     useEffect(() => {
         const handleDirectionChange = () => {
-            setPosition('right');
-            // Re-assert the actual direction on the document. Previously this
-            // only updated React state, so any code that set dir="ltr" was
-            // never reverted and the page stayed LTR until a full reload.
-            syncDirectionToDOM();
+            setPosition((prev) => (prev === 'right' ? prev : 'right'));
+            if (document.documentElement.getAttribute('dir') !== 'rtl') {
+                syncDirectionToDOM();
+            }
         };
 
         handleDirectionChange();
@@ -56,13 +64,15 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         return () => observer.disconnect();
     }, []);
 
-    const updatePosition = useCallback((_val: LayoutPosition) => {
+    const updatePosition = useCallback(() => {
         // Direction is locked to RTL (Arabic-first); the value is ignored.
-        setPosition('right');
+        setPosition((prev) => (prev === 'right' ? prev : 'right'));
         syncDirectionToDOM();
     }, []);
 
-    return <LayoutContext.Provider value={{ position, updatePosition }}>{children}</LayoutContext.Provider>;
+    const value = useMemo(() => ({ position, updatePosition }), [position, updatePosition]);
+
+    return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;
 };
 
 export const useLayout = () => {

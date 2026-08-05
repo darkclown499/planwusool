@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { router } from '@inertiajs/react';
 import { getTourSteps, type TourStep } from './tour-definitions';
@@ -26,18 +26,24 @@ export function TourProvider({ children, user }: { children: ReactNode; user?: T
     const [active, setActive] = useState(false);
     const [index, setIndex] = useState(0);
     const [steps, setSteps] = useState<TourStep[]>([]);
+    const [navigating, setNavigating] = useState<string | null>(null);
     const autoStartedRef = useRef(false);
+    const navRetriesRef = useRef<Record<string, number>>({});
+
+    const userType = user?.type;
+    const currentStore = user?.current_store;
 
     const start = useCallback(
         (stepsArg?: TourStep[]) => {
-            const tourSteps = stepsArg || getTourSteps(user?.current_store);
+            const tourSteps = stepsArg || getTourSteps(currentStore);
             if (tourSteps.length === 0) return;
+            navRetriesRef.current = {};
             setSteps(tourSteps);
             setIndex(0);
             setActive(true);
             localStorage.setItem(SEEN_KEY, '1');
         },
-        [user?.current_store],
+        [currentStore],
     );
 
     const stop = useCallback(() => {
@@ -46,45 +52,65 @@ export function TourProvider({ children, user }: { children: ReactNode; user?: T
     }, []);
 
     const next = useCallback(() => {
-        setIndex((i) => {
-            if (i + 1 >= steps.length) {
-                setActive(false);
-                localStorage.setItem(SEEN_KEY, '1');
-                return i;
-            }
-            return i + 1;
-        });
-    }, [steps.length]);
+        if (index + 1 >= steps.length) {
+            setActive(false);
+            localStorage.setItem(SEEN_KEY, '1');
+            return;
+        }
+        setIndex(index + 1);
+    }, [index, steps.length]);
 
     const back = useCallback(() => setIndex((i) => Math.max(0, i - 1)), []);
 
     useEffect(() => {
         if (autoStartedRef.current) return;
-        if (user?.type !== 'company') return;
+        if (userType !== 'company') return;
         if (typeof window === 'undefined') return;
         if (localStorage.getItem(SEEN_KEY)) return;
         autoStartedRef.current = true;
         const timer = setTimeout(() => start(), 3000);
         return () => clearTimeout(timer);
-    }, [user, start]);
+    }, [userType, start]);
 
     useEffect(() => {
         if (!active) return;
         const step = steps[index];
         if (!step) return;
+
         const targetPath = new URL(step.path, window.location.origin).pathname;
-        if (window.location.pathname !== targetPath) {
-            router.visit(step.path, {
-                preserveScroll: true,
-                onError: () => {
-                    // Keep the tour alive so the user can still navigate it.
-                },
-            });
+        if (window.location.pathname === targetPath) {
+            navRetriesRef.current[targetPath] = 0;
+            if (navigating !== null) setNavigating(null);
+            return;
         }
-    }, [active, index, steps]);
+        if (navigating !== null) return;
+
+        const retries = navRetriesRef.current[targetPath] || 0;
+        if (retries >= 2) {
+            setActive(false);
+            localStorage.setItem(SEEN_KEY, '1');
+            return;
+        }
+        navRetriesRef.current[targetPath] = retries + 1;
+
+        setNavigating(step.path);
+        router.visit(step.path, {
+            onFinish: () => setNavigating(null),
+            onError: () => {
+                setNavigating(null);
+                setActive(false);
+                localStorage.setItem(SEEN_KEY, '1');
+            },
+        });
+    }, [active, index, steps, navigating]);
+
+    const value = useMemo(
+        () => ({ active, index, steps, start, stop, next, back }),
+        [active, index, steps, start, stop, next, back],
+    );
 
     return (
-        <TourContext.Provider value={{ active, index, steps, start, stop, next, back }}>
+        <TourContext.Provider value={value}>
             {children}
         </TourContext.Provider>
     );

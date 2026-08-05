@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { getSidebarSettings, SidebarSettings } from '@/components/sidebar-style-settings';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { SidebarSettings } from '@/components/sidebar-style-settings';
 
 type SidebarContextType = {
   variant: SidebarSettings['variant'];
@@ -33,7 +33,7 @@ const getExtendedSidebarSettings = (): ExtendedSidebarSettings => {
   try {
     const savedSettings = localStorage.getItem('sidebarSettings');
     return savedSettings ? JSON.parse(savedSettings) : DEFAULT_EXTENDED_SETTINGS;
-  } catch (error) {
+  } catch {
     return DEFAULT_EXTENDED_SETTINGS;
   }
 };
@@ -42,42 +42,50 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<ExtendedSidebarSettings>(getExtendedSidebarSettings());
 
   // Update variant
-  const updateVariant = (variant: SidebarSettings['variant']) => {
-    setSettings(prev => {
-      const newSettings = { ...prev, variant };
-      localStorage.setItem('sidebarSettings', JSON.stringify(newSettings));
-      return newSettings;
-    });
-  };
+  const updateVariant = useCallback((variant: SidebarSettings['variant']) => {
+    setSettings(prev => ({ ...prev, variant }));
+  }, []);
 
   // Update collapsible
-  const updateCollapsible = (collapsible: SidebarSettings['collapsible']) => {
-    setSettings(prev => {
-      const newSettings = { ...prev, collapsible };
-      localStorage.setItem('sidebarSettings', JSON.stringify(newSettings));
-      return newSettings;
-    });
-  };
+  const updateCollapsible = useCallback((collapsible: SidebarSettings['collapsible']) => {
+    setSettings(prev => ({ ...prev, collapsible }));
+  }, []);
 
   // Update style
-  const updateStyle = (style: string) => {
-    setSettings(prev => {
-      const newSettings = { ...prev, style };
-      localStorage.setItem('sidebarSettings', JSON.stringify(newSettings));
-      return newSettings;
-    });
-  };
+  const updateStyle = useCallback((style: string) => {
+    setSettings(prev => ({ ...prev, style }));
+  }, []);
+
+  // Persist settings after state settles. Skips the write when the serialized
+  // value is unchanged so a storage round-trip from another tab never loops.
+  useEffect(() => {
+    try {
+      const serialized = JSON.stringify(settings);
+      if (localStorage.getItem('sidebarSettings') === serialized) return;
+      localStorage.setItem('sidebarSettings', serialized);
+    } catch (error) {
+      console.error('Failed to save sidebar settings', error);
+    }
+  }, [settings]);
 
   useEffect(() => {
     // Listen for storage events to update settings when changed from another tab
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'sidebarSettings') {
-        try {
-          const newSettings = JSON.parse(event.newValue || '');
-          setSettings(newSettings);
-        } catch (error) {
-          console.error('Failed to parse sidebar settings', error);
-        }
+      if (event.key !== 'sidebarSettings' || !event.newValue) return;
+      try {
+        const newSettings = JSON.parse(event.newValue) as ExtendedSidebarSettings;
+        setSettings(prev => {
+          if (
+            prev.variant === newSettings.variant &&
+            prev.collapsible === newSettings.collapsible &&
+            prev.style === newSettings.style
+          ) {
+            return prev;
+          }
+          return newSettings;
+        });
+      } catch (error) {
+        console.error('Failed to parse sidebar settings', error);
       }
     };
 
@@ -85,15 +93,20 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  return (
-    <SidebarContext.Provider value={{ 
-      variant: settings.variant, 
+  const value = useMemo(
+    () => ({
+      variant: settings.variant,
       collapsible: settings.collapsible,
       style: settings.style,
       updateVariant,
       updateCollapsible,
       updateStyle
-    }}>
+    }),
+    [settings.variant, settings.collapsible, settings.style, updateVariant, updateCollapsible, updateStyle]
+  );
+
+  return (
+    <SidebarContext.Provider value={value}>
       {children}
     </SidebarContext.Provider>
   );

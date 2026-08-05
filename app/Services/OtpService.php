@@ -25,7 +25,7 @@ class OtpService
 
     public function send(string $email, string $code, string $type = 'register'): void
     {
-        Mail::raw($this->buildBody($code, $type), function ($message) use ($email, $type) {
+        Mail::raw($this->buildBody($code, $type), function ($message) use ($email, $code, $type) {
             $subject = $type === 'register'
                 ? 'Wusool - رمز التحقق لتسجيل حساب جديد'
                 : 'Wusool - رمز التحقق';

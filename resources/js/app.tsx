@@ -67,7 +67,21 @@ createInertiaApp({
 
             return (
                 <ErrorBoundary>
-                    <App {...appProps} />
+                    <BrandProvider globalSettings={currentGlobalSettings} user={user}>
+                        <LayoutProvider>
+                            <SidebarProvider>
+                                <ModalStackProvider>
+                                    <AppDirectionProvider>
+                                        <TourProvider user={user}>
+                                            <App {...appProps} />
+                                            <CustomToast />
+                                            <TourOverlay />
+                                        </TourProvider>
+                                    </AppDirectionProvider>
+                                </ModalStackProvider>
+                            </SidebarProvider>
+                        </LayoutProvider>
+                    </BrandProvider>
                 </ErrorBoundary>
             );
         };
