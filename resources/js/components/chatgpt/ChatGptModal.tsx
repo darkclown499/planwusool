@@ -203,7 +203,7 @@ export function ChatGptModal({
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent container={modalContainerRef.current} style={{ zIndex: zIndex + 10 }}>
+                      <SelectContent style={{ zIndex: zIndex + 10 }}>
                         {languageData.map((lang) => (
                           <SelectItem key={lang.code} value={lang.code} className="cursor-pointer">
                             <ReactCountryFlag
@@ -223,7 +223,7 @@ export function ChatGptModal({
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent container={modalContainerRef.current} style={{ zIndex: zIndex + 10 }}>
+                      <SelectContent style={{ zIndex: zIndex + 10 }}>
                         <SelectItem value="low" className="cursor-pointer">{t("Low")} (0.3)</SelectItem>
                         <SelectItem value="medium" className="cursor-pointer">{t("Medium")} (0.7)</SelectItem>
                         <SelectItem value="high" className="cursor-pointer">{t("High")} (0.9)</SelectItem>

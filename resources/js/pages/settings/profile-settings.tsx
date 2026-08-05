@@ -1,7 +1,6 @@
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
 import { useEffect, useRef, useState } from 'react';
 import { Save, User, Lock } from 'lucide-react';
 
@@ -18,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Camera } from 'lucide-react';
 
 
-const sidebarNavItems: NavItem[] = [
+const sidebarNavItems: { title: string; href: string; icon: React.ReactNode }[] = [
  {
  title: 'Profile',
  href: '#profile',

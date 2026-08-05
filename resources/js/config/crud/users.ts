@@ -7,6 +7,7 @@ export const usersConfig: CrudConfig = {
   entity: {
     name: 'users',
     endpoint: route('users.index'),
+    breadcrumbs: [],
     permissions: {
       view: 'view-users',
       create: 'create-users',
@@ -110,7 +111,7 @@ export const usersConfig: CrudConfig = {
       {
         name: 'roles',
         label: t('Roles'),
-        type: 'multiselect',
+        type: 'multi-select',
         options: [] // Will be populated dynamically
       }
     ]

@@ -135,7 +135,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       
                       {/* Variants */}
                       {(() => {
-                        const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                        const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                         return variants && Object.keys(variants).length > 0 && (
                           <div className="text-xs text-stone-600 mb-2">
                             {Object.entries(variants).map(([key, value], index) => (

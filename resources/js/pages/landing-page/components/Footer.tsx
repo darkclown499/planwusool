@@ -37,10 +37,10 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
   const isRtl = ['ar', 'he'].includes(currentLocale);
 
   useEffect(() => {
-    const nextDirection = isRtl ? 'rtl' : 'ltr';
-    document.documentElement.dir = nextDirection;
-    document.documentElement.lang = currentLocale;
-  }, [currentLocale, isRtl]);
+    // Arabic-first: direction is always RTL, never derived from language.
+    document.documentElement.dir = 'rtl';
+    document.documentElement.lang = 'ar';
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -112,11 +112,9 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
   const handleLanguageChange = async (nextLocale: string) => {
     await i18n.changeLanguage(nextLocale);
     localStorage.setItem('i18nextLng', nextLocale);
-    const lang = languageData.find(l => l.code === nextLocale);
-    if (lang) {
-      document.documentElement.dir = lang.rtl ? 'rtl' : 'ltr';
-      document.documentElement.lang = nextLocale;
-    }
+    // Direction stays RTL regardless of the chosen language.
+    document.documentElement.dir = 'rtl';
+    document.documentElement.lang = nextLocale;
     setLangOpen(false);
   };
 

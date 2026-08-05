@@ -22,6 +22,7 @@ import { useFavicon } from '@/hooks/use-favicon';
 import { useTranslation } from 'react-i18next';
 import languageData from '@/../../resources/lang/language.json';
 import AIChatWidget from '@/components/AIChatWidget';
+import { type SharedData } from '@/types';
 
 interface Plan {
   id: number;
@@ -69,6 +70,11 @@ interface LandingSettings {
       logo_dark?: string;
       favicon?: string;
     };
+    colors?: {
+      primary?: string;
+      secondary?: string;
+      accent?: string;
+    };
     seo?: {
       meta_title?: string;
       meta_description?: string;
@@ -97,7 +103,7 @@ interface FeaturedStore {
   logo?: string;
 }
 
-interface PageProps {
+interface PageProps extends SharedData {
   plans: Plan[];
   testimonials: Testimonial[];
   faqs: Faq[];
@@ -130,13 +136,12 @@ export default function LandingPage() {
   const page = usePage<any>();
   const { auth, superadminSettings } = page.props;
 
-  // Set RTL direction on mount and when language changes
+  // Arabic-first design: the whole interface is always right-to-left.
+  // Never derive direction from the language, otherwise the page flips to LTR.
   React.useEffect(() => {
-    const currentLang = (i18n.language || 'en').split('-')[0];
-    const rtlLangs = ['ar', 'he', 'fa', 'ur'];
-    document.documentElement.dir = rtlLangs.includes(currentLang) ? 'rtl' : 'ltr';
-    document.documentElement.lang = currentLang;
-  }, [i18n.language]);
+    document.documentElement.dir = 'rtl';
+    document.documentElement.lang = 'ar';
+  }, []);
 
   // Use Superadmin Settings from the 'settings' table for SEO as requested
   const pageTitle = superadminSettings?.metaTitle || superadminSettings?.titleText || 'Wusool - Build Your Online Store';

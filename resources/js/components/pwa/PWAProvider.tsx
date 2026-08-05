@@ -98,8 +98,8 @@ export default function PWAProvider({ children, store }: PWAProviderProps) {
     <>
       {store?.pwa?.enabled && (
         <>
-          <PWAMetaTags store={store} />
-          <PWAServiceWorker store={store} />
+          <PWAMetaTags store={store as any} />
+          <PWAServiceWorker store={store as any} />
           <PWAInstallPopup
             isVisible={showInstallPopup}
             onInstall={handleInstall}

@@ -172,7 +172,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
               {order.items.map((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 const itemTotalWithTax = itemTotal + (item.tax_amount || 0);
-                const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                 
                 return (
                   <div key={index} className="bg-black border border-slate-700 p-3 sm:p-4 print:bg-gray-50 print:border-gray-200">
@@ -197,10 +197,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                             <div className="text-slate-400 font-bold print:text-gray-600">السعر</div>
                             <div className="text-white font-bold print:text-gray-900">{formatCurrency(item.price, storeSettings, currencies)}</div>
                           </div>
-                          {item.tax_amount > 0 && (
+                          {(item.tax_amount ?? 0) > 0 && (
                             <div className="bg-slate-800 p-2 text-center border border-slate-600">
                               <div className="text-slate-400 font-bold print:text-gray-600">الضريبة</div>
-                              <div className="text-white font-bold print:text-gray-900">{formatCurrency(item.tax_amount, storeSettings, currencies)}</div>
+                              <div className="text-white font-bold print:text-gray-900">{formatCurrency(item.tax_amount ?? 0, storeSettings, currencies)}</div>
                             </div>
                           )}
                           <div className="bg-red-600 p-2 text-center print:bg-gray-800">
@@ -227,10 +227,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   <span className="text-slate-400 font-bold print:text-gray-600 print:font-medium print:text-sm">المجموع الفرعي</span>
                   <span className="text-white font-bold print:text-gray-900 print:font-medium print:text-sm">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
                 </div>
-                {order.discount > 0 && (
+                {(order.discount ?? 0) > 0 && (
                   <div className="flex justify-between py-1 border-b border-slate-700 text-green-400">
                     <span className="font-bold">خصم الكوبون {order.coupon && `(${order.coupon})`}</span>
-                    <span className="font-bold">-{formatCurrency(order.discount, storeSettings, currencies)}</span>
+                    <span className="font-bold">-{formatCurrency(order.discount ?? 0, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="flex justify-between py-1 border-b border-slate-700">

@@ -14,7 +14,7 @@ interface Product {
   stockQuantity: number;
   categoryId: string;
   availability: 'in_stock' | 'out_of_stock';
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
 }
 
@@ -30,7 +30,7 @@ function getWeightLabel(product: Product): string {
   const variant = (product.variants || []).find((v) =>
     weightLabels.some((label) => v.name.toLowerCase().includes(label.toLowerCase()))
   );
-  if (variant && variant.options.length > 0) return variant.options[0];
+  if (variant && (variant.options?.length ?? 0) > 0) return variant.options?.[0] || '';
 
   const field = (product.customFields || []).find((f) =>
     weightLabels.some((label) => f.name.toLowerCase().includes(label.toLowerCase()))
@@ -47,7 +47,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
   const currencies = (window as any).page?.props?.currencies || [];
 
   const discountPercentage = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)
     : 0;
 
   const hasVariants = product.variants && Array.isArray(product.variants) && product.variants.length > 0;

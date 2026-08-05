@@ -49,6 +49,11 @@ interface OrderShowProps {
     };
     shippingMethod: string;
     trackingNumber?: string;
+    timeline?: Array<{
+      status: string;
+      date?: string;
+      completed?: boolean;
+    }>;
   };
 }
 
@@ -130,7 +135,7 @@ export default function ShowOrder({ order }: OrderShowProps) {
                       src={getImageUrl(order.bankTransferReceipt)}
                       alt="Payment Receipt"
                       className="w-full h-auto rounded-lg border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => window.open(getImageUrl(order.bankTransferReceipt), '_blank')}
+                      onClick={() => window.open(getImageUrl(order.bankTransferReceipt ?? ''), '_blank')}
                       style={{ maxHeight: '200px', objectFit: 'cover' }}
                     />
                     <p className="text-xs text-muted-foreground text-center mt-1">{t('Click to view')}</p>
@@ -282,7 +287,7 @@ export default function ShowOrder({ order }: OrderShowProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {order.timeline?.map((timeline, index) => (
+              {order.timeline?.map((timeline: any, index: any) => (
                 <div key={index} className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${timeline.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
                   <div className="flex-1">

@@ -17,9 +17,10 @@ export interface PageAction {
 
 export interface PageTemplateProps {
   title: string;
-  description: string;
+  description?: string;
   url: string;
   actions?: PageAction[];
+  action?: ReactNode;
   children: ReactNode;
   noPadding?: boolean;
   breadcrumbs?: BreadcrumbItem[];
@@ -32,6 +33,7 @@ export function PageTemplate({
   description, 
   url, 
   actions, 
+  action,
   children, 
   noPadding = false,
   breadcrumbs,
@@ -85,6 +87,7 @@ export function PageTemplate({
                 ))}
               </div>
             )}
+            {action}
           </div>
         </div>
         

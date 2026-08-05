@@ -40,7 +40,7 @@ export default function ChatGptDemo() {
   ];
 
   return (
-    <PageWrapper title="ChatGPT Integration Demo" breadcrumbs={breadcrumbs}>
+    <PageWrapper title="ChatGPT Integration Demo" url="/examples/chatgpt-demo" breadcrumbs={breadcrumbs}>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Modal Stacking Demo */}
         <Card>

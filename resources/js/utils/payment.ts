@@ -221,7 +221,7 @@ export function validatePaymentMethodCredentials(method: PaymentMethod, config: 
 }
 
 export function getPaymentMethodIcon(method: PaymentMethod): string {
-  const icons = {
+  const icons: Record<string, string> = {
     [PAYMENT_METHODS.STRIPE]: 'credit-card',
     [PAYMENT_METHODS.PAYPAL]: 'credit-card',
     [PAYMENT_METHODS.RAZORPAY]: 'indian-rupee',

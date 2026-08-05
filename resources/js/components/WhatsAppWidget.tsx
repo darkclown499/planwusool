@@ -4,7 +4,7 @@ import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 interface WhatsAppWidgetProps {
   phone: string;
   message: string;
-  position: 'left' | 'right';
+  position: 'left' | 'right' | string;
   showOnMobile: boolean;
   showOnDesktop: boolean;
   enabled: boolean;
@@ -62,7 +62,7 @@ export default function WhatsAppWidget({
 
   return (
     <div 
-      className={`fixed bottom-6 z-50 ${
+      className={`fixed bottom-[calc(env(safe-area-inset-bottom)+1.5rem)] z-40 ${
         position === 'left' ? 'left-6' : 'right-6'
       }`}
     >

@@ -164,15 +164,15 @@ export default function CodPayments() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium">{t('Order')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Customer')}</th>
-                        <th className="text-right py-3 px-4 font-medium">{t('Total')}</th>
-                        <th className="text-right py-3 px-4 font-medium">{t('Collected')}</th>
-                        <th className="text-right py-3 px-4 font-medium">{t('Remaining')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Status')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Delivery')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Date')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Actions')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Order')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Customer')}</th>
+                        <th className="text-end py-3 px-4 font-medium">{t('Total')}</th>
+                        <th className="text-end py-3 px-4 font-medium">{t('Collected')}</th>
+                        <th className="text-end py-3 px-4 font-medium">{t('Remaining')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Status')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Delivery')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Date')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -189,13 +189,13 @@ export default function CodPayments() {
                                 <div className="text-xs text-muted-foreground">{payment.customer_phone}</div>
                               )}
                             </td>
-                            <td className="py-3 px-4 text-right font-semibold">
+                            <td className="py-3 px-4 text-end font-semibold">
                               {formatCurrency(payment.total_amount)}
                             </td>
-                            <td className="py-3 px-4 text-right text-green-600 font-medium">
+                            <td className="py-3 px-4 text-end text-green-600 font-medium">
                               {formatCurrency(payment.amount_collected)}
                             </td>
-                            <td className="py-3 px-4 text-right text-amber-600 font-medium">
+                            <td className="py-3 px-4 text-end text-amber-600 font-medium">
                               {formatCurrency(payment.amount_remaining)}
                             </td>
                             <td className="py-3 px-4">

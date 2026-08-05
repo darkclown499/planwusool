@@ -279,19 +279,19 @@ export default function CodPaymentShow() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 px-3 font-medium">{t('Product')}</th>
-                      <th className="text-right py-2 px-3 font-medium">{t('Price')}</th>
-                      <th className="text-right py-2 px-3 font-medium">{t('Qty')}</th>
-                      <th className="text-right py-2 px-3 font-medium">{t('Total')}</th>
+                      <th className="text-start py-2 px-3 font-medium">{t('Product')}</th>
+                      <th className="text-end py-2 px-3 font-medium">{t('Price')}</th>
+                      <th className="text-end py-2 px-3 font-medium">{t('Qty')}</th>
+                      <th className="text-end py-2 px-3 font-medium">{t('Total')}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {payment.items.map((item, idx) => (
+                    {payment.items.map((item: any, idx: any) => (
                       <tr key={idx} className="border-b">
                         <td className="py-2 px-3">{item.name}</td>
-                        <td className="py-2 px-3 text-right">{formatCurrency(item.price)}</td>
-                        <td className="py-2 px-3 text-right">{item.quantity}</td>
-                        <td className="py-2 px-3 text-right font-medium">{formatCurrency(item.total)}</td>
+                        <td className="py-2 px-3 text-end">{formatCurrency(item.price)}</td>
+                        <td className="py-2 px-3 text-end">{item.quantity}</td>
+                        <td className="py-2 px-3 text-end font-medium">{formatCurrency(item.total)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -309,7 +309,7 @@ export default function CodPaymentShow() {
           <CardContent>
             {payment.history && payment.history.length > 0 ? (
               <div className="space-y-3">
-                {payment.history.map((entry) => (
+                {payment.history.map((entry: any) => (
                   <div key={entry.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">

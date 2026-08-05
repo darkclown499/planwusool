@@ -72,7 +72,7 @@ export function KhaltiPaymentForm({
 
   const initializeKhaltiCheckout = (paymentData: any) => {
     // Load Khalti SDK if not already loaded
-    if (!window.KhaltiCheckout) {
+    if (!(window as any).KhaltiCheckout) {
       const script = document.createElement('script');
       script.src = 'https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.17.0.0.0/khalti-checkout.iffe.js';
       script.onload = () => {
@@ -112,7 +112,7 @@ export function KhaltiPaymentForm({
       }
     };
 
-    const checkout = new window.KhaltiCheckout(config);
+    const checkout = new (window as any).KhaltiCheckout(config);
     checkout.show({ amount: paymentData.amount });
   };
 

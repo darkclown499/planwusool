@@ -10,6 +10,8 @@ import { ModalStackProvider } from './contexts/ModalStackContext';
 import { initializeTheme } from './hooks/use-appearance';
 import { CustomToast } from './components/custom-toast';
 import { AppDirectionProvider } from './components/app-direction-provider';
+import { TourProvider } from './components/tour/tour-context';
+import { TourOverlay } from './components/tour/tour-overlay';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeGlobalSettings } from './utils/globalSettings';
 import './i18n';
@@ -17,18 +19,11 @@ import './utils/axios-config';
 import { setupFlashMessages } from './utils/flash-messages';
 
 const initializeDirection = () => {
-    const savedDirection = localStorage.getItem('layoutDirection');
-    if (savedDirection) {
-        document.documentElement.dir = savedDirection;
-        document.documentElement.setAttribute('dir', savedDirection);
-    } else {
-        const currentLang = localStorage.getItem('i18nextLng') || 'en';
-        const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
-        const direction = rtlLanguages.includes(currentLang) ? 'rtl' : 'ltr';
-        document.documentElement.dir = direction;
-        document.documentElement.setAttribute('dir', direction);
-        localStorage.setItem('layoutDirection', direction);
-    }
+    // Arabic-first design: the interface is always rendered right-to-left.
+    // Never read browser language / saved layout to avoid flipping to LTR.
+    document.documentElement.dir = 'rtl';
+    document.documentElement.setAttribute('dir', 'rtl');
+    localStorage.setItem('layoutDirection', 'rtl');
 };
 
 createInertiaApp({
@@ -55,7 +50,7 @@ createInertiaApp({
             // Ignore
         }
 
-        const globalSettings = props.initialPage.props.globalSettings || {};
+        const globalSettings = (props.initialPage.props.globalSettings as Record<string, any>) || {};
         if (Object.keys(globalSettings).length > 0) {
             initializeGlobalSettings(globalSettings);
             if (globalSettings.titleText) {
@@ -72,18 +67,7 @@ createInertiaApp({
 
             return (
                 <ErrorBoundary>
-                    <ModalStackProvider>
-                        <LayoutProvider>
-                            <AppDirectionProvider>
-                                <SidebarProvider>
-                                    <BrandProvider globalSettings={currentGlobalSettings} user={user}>
-                                        <App {...appProps} />
-                                        <CustomToast />
-                                    </BrandProvider>
-                                </SidebarProvider>
-                            </AppDirectionProvider>
-                        </LayoutProvider>
-                    </ModalStackProvider>
+                    <App {...appProps} />
                 </ErrorBoundary>
             );
         };
@@ -94,7 +78,7 @@ createInertiaApp({
             try {
                 (window as any).page = event.detail.page;
 
-                const updatedGlobalSettings = event.detail.page.props.globalSettings || {};
+                const updatedGlobalSettings = (event.detail.page.props.globalSettings as Record<string, any>) || {};
                 if (Object.keys(updatedGlobalSettings).length > 0) {
                     initializeGlobalSettings(updatedGlobalSettings);
 
@@ -123,11 +107,8 @@ createInertiaApp({
                     document.documentElement.style.setProperty('--chart-1', color);
                 }
 
-                const savedDirection = localStorage.getItem('layoutDirection');
-                if (savedDirection === 'rtl' || savedDirection === 'ltr') {
-                    document.documentElement.dir = savedDirection;
-                    document.documentElement.setAttribute('dir', savedDirection);
-                }
+                document.documentElement.dir = 'rtl';
+                document.documentElement.setAttribute('dir', 'rtl');
             } catch (e) {
                 console.error('Navigation error:', e);
             }

@@ -2,12 +2,13 @@ import { PageTemplate } from '@/components/page-template';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pagination } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 import { useTranslation } from 'react-i18next';
 import { usePage, Link, router } from '@inertiajs/react';
 import { ArrowLeft, Users, Calendar, DollarSign } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { formatCurrency } from '@/utils/currency-helper';
+import { type SharedData } from '@/types';
 
 interface ReferredUser {
  id: number;
@@ -19,21 +20,26 @@ interface ReferredUser {
  name: string;
  price: number;
  yearly_price?: number;
+ [key: string]: any;
  };
  plan_orders?: Array<{
  id: number;
  billing_cycle: string;
  final_price: number;
+ [key: string]: any;
  }>;
  referrals?: Array<{
  id: number;
  amount: number;
  commission_percentage: number;
  created_at: string;
+ formatted_amount?: string;
+ [key: string]: any;
  }>;
+ [key: string]: any;
 }
 
-interface ReferredUsersProps {
+interface ReferredUsersProps extends SharedData {
  referredUsers: {
  data: ReferredUser[];
  current_page: number;
@@ -47,14 +53,9 @@ interface ReferredUsersProps {
  userType: string;
 }
 
-interface PageProps {
- props: ReferredUsersProps;
-}
-
 export default function ReferredUsers() {
  const { t } = useTranslation();
- const { props } = usePage<PageProps>();
- const { referredUsers, userType } = props;
+ const { referredUsers, userType } = usePage<ReferredUsersProps>().props;
 
  const formatDate = (dateString: string) => {
  return formatDistanceToNow(new Date(dateString), { addSuffix: true });
@@ -144,7 +145,7 @@ export default function ReferredUsers() {
  <div className="flex items-center justify-between">
  <div>
  <p className="text-sm font-medium text-muted-foreground">{t('Users with Plans')}</p>
- <h3 className="mt-2 text-2xl font-bold">{referredUsers.data.filter(user => user.plan).length}</h3>
+ <h3 className="mt-2 text-2xl font-bold">{referredUsers.data.filter((user: any) => user.plan).length}</h3>
  </div>
  <div className="rounded-full bg-blue-100 p-3">
  <Users className="h-5 w-5 text-blue-600" />
@@ -158,7 +159,7 @@ export default function ReferredUsers() {
  <div className="flex items-center justify-between">
  <div>
  <p className="text-sm font-medium text-muted-foreground">{t('Total Commission Earned')}</p>
- <h3 className="mt-2 text-2xl font-bold">{formatCurrency(referredUsers.data.reduce((total, user) => total + getTotalCommission(user), 0) || 0)}</h3>
+ <h3 className="mt-2 text-2xl font-bold">{formatCurrency(referredUsers.data.reduce((total: any, user: any) => total + getTotalCommission(user), 0) || 0)}</h3>
  </div>
  <div className="rounded-full bg-yellow-100 p-3">
  <DollarSign className="h-5 w-5 text-yellow-600" />
@@ -186,7 +187,7 @@ export default function ReferredUsers() {
  </div>
  ) : (
  <div className="space-y-4">
- {referredUsers.data.map((user) => (
+ {referredUsers.data.map((user: any) => (
  <div key={user.id} className="border rounded-lg p-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center space-x-4">
@@ -248,7 +249,7 @@ export default function ReferredUsers() {
  <div className="mt-3 pt-3 border-t">
  <h5 className="text-sm font-medium mb-2">{t('Commission History')}</h5>
  <div className="space-y-1">
- {user.referrals.map((referral) => (
+ {user.referrals.map((referral: any) => (
  <div key={referral.id} className="flex justify-between text-sm">
  <span className="text-muted-foreground">
  {referral.commission_percentage}% commission
@@ -269,21 +270,31 @@ export default function ReferredUsers() {
  </Card>
 
  {referredUsers.last_page > 1 && (
- <Pagination
- from={referredUsers.from}
- to={referredUsers.to}
- total={referredUsers.total}
- links={referredUsers.links}
- currentPage={referredUsers.current_page}
- lastPage={referredUsers.last_page}
- entityName={t('users')}
- onPageChange={(url) => {
- router.visit(url, {
- preserveState: true,
- preserveScroll: true,
- });
- }}
- />
+ <Pagination>
+  <PaginationContent>
+  {referredUsers.links.map((link: any, index: number) => {
+   if (!link.url) {
+    return (
+     <PaginationItem key={index}>
+      <span
+       className="px-3 py-1.5 text-sm text-muted-foreground"
+       dangerouslySetInnerHTML={{ __html: link.label }}
+      />
+     </PaginationItem>
+    );
+   }
+   return (
+    <PaginationItem key={index}>
+     <PaginationLink
+      isActive={link.active}
+      href={link.url}
+      dangerouslySetInnerHTML={{ __html: link.label }}
+     />
+    </PaginationItem>
+   );
+  })}
+  </PaginationContent>
+ </Pagination>
  )}
  </div>
  </PageTemplate>

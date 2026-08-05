@@ -70,7 +70,7 @@ export default function ManageLanguagePage() {
   };
 
   // Save language data to backend
-  const handleSave = (e) => {
+  const handleSave = (e: any) => {
     // Prevent default form submission behavior
     if (e) e.preventDefault();
     
@@ -119,7 +119,7 @@ export default function ManageLanguagePage() {
         <div className="md:w-64 flex-shrink-0">
           <div className="sticky top-20">
             <ScrollArea className="h-[calc(100vh-5rem)]">
-              <div className="pr-4 space-y-1">
+              <div className="pe-4 space-y-1">
                 {languages.map((lang) => (
                   <Button
                     key={lang.code}

@@ -185,6 +185,7 @@ const PerfumesStoreContent: React.FC = () => {
         onLogoutClick={() => logout(store?.slug)}
         onWishlistClick={() => setShowWishlistModal(true)}
         wishlistCount={wishlistCount}
+        storeId={store?.id}
       />
       
       <HeroSection 

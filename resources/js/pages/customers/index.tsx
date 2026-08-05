@@ -25,7 +25,7 @@ export default function Customers() {
     }
   };
 
-  const handleDelete = (customer) => {
+  const handleDelete = (customer: any) => {
     setSelectedCustomer(customer);
     setIsDeleteDialogOpen(true);
   };
@@ -142,7 +142,7 @@ export default function Customers() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {customers.map((customer) => (
+                    {customers.map((customer: any) => (
                       <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-4">
                           <Avatar className="h-12 w-12">

@@ -65,7 +65,7 @@ export function PageCrudWrapper({
   useEffect(() => {
     const initialFilters: Record<string, any> = {};
     filters.forEach(filter => {
-      const filterKey = filter.name || filter.key;
+      const filterKey = filter.key;
       initialFilters[filterKey] = pageFilters[filterKey] || '';
     });
     setFilterValues(initialFilters);
@@ -199,7 +199,7 @@ export function PageCrudWrapper({
     if (entity.name === 'roles') {
       // Extract permission names from the permissions array if they're objects
       if (processedFormData.permissions && Array.isArray(processedFormData.permissions)) {
-        const permissionNames = processedFormData.permissions.map(p => {
+        const permissionNames = processedFormData.permissions.map((p: any) => {
           if (typeof p === 'object' && p !== null && p.name) {
             return p.name;
           }
@@ -224,8 +224,8 @@ export function PageCrudWrapper({
     }
     // Fix permissions format for other entities
     else if (processedFormData.permissions && Array.isArray(processedFormData.permissions)) {
-      const permissionsObj = {};
-      processedFormData.permissions.forEach((id, index) => {
+      const permissionsObj: Record<string, string> = {};
+      processedFormData.permissions.forEach((id: any, index: any) => {
         permissionsObj[index] = String(id);
       });
       processedFormData.permissions = permissionsObj;
@@ -497,7 +497,7 @@ export function PageCrudWrapper({
             <div className="w-full mt-3 p-4 bg-gray-50 border rounded-md">
               <div className="flex flex-wrap gap-4 items-end">
                 {filters.map((filter) => {
-                  const filterKey = filter.name || filter.key;
+                  const filterKey = filter.key;
                   return (
                     <div key={filterKey} className="space-y-2">
                       <Label>{filter.label}</Label>

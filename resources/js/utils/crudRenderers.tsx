@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils';
 // Simple renderers without importing components
 export const columnRenderers = {
   // Status badge renderer
-  status: (colorMap = {}, defaultColor = 'bg-gray-100 text-gray-800') => {
-    return (value) => {
+  status: (colorMap: Record<string, string> = {}, defaultColor = 'bg-gray-100 text-gray-800') => {
+    return (value: any) => {
       if (!value) return <span>-</span>;
       const color = colorMap[value] || defaultColor;
       return (
@@ -19,7 +19,7 @@ export const columnRenderers = {
   
   // Image renderer
   image: (className = 'h-16 w-20 rounded-md object-cover shadow-sm', fallbackSrc = 'https://placehold.co/200x150?text=Image+Not+Found') => {
-    return (_, row, key) => {
+    return (_: any, row: any, key: any) => {
       if (!row[key]) return <div className="text-center text-gray-400">No image</div>;
       
       const imageSrc = typeof row[key] === 'string' && row[key].startsWith('http') 
@@ -43,7 +43,7 @@ export const columnRenderers = {
   
   // Price renderer
   price: (currency = 'USD', locale = 'en-US') => {
-    return (value) => {
+    return (value: any) => {
       if (value === null || value === undefined) return <span>-</span>;
       
       const numValue = typeof value === 'string' ? parseFloat(value) : value;
@@ -57,8 +57,8 @@ export const columnRenderers = {
   },
   
   // Date renderer
-  date: (format = { dateStyle: 'medium' }, locale = 'en-US') => {
-    return (value) => {
+  date: (format: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }, locale = 'en-US') => {
+    return (value: any) => {
       if (!value) return <span>-</span>;
       
       try {
@@ -72,12 +72,12 @@ export const columnRenderers = {
   
   // Boolean renderer
   boolean: () => {
-    return (value) => <span>{value ? 'Yes' : 'No'}</span>;
+    return (value: any) => <span>{value ? 'Yes' : 'No'}</span>;
   },
   
   // Relation renderer
-  relation: (field) => {
-    return (_, row, key) => {
+  relation: (field: any) => {
+    return (_: any, row: any, key: any) => {
       const relation = row[key];
       return relation ? <span>{relation[field]}</span> : <span>-</span>;
     };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PageTemplate } from '@/components/page-template';
+import { PageTemplate, type PageAction } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -162,7 +162,7 @@ export default function NewsletterSubscribers() {
     { title: t('Subscribers') }
   ];
 
-  const pageActions = [
+  const pageActions: PageAction[] = [
     {
       label: 'Export',
       icon: <Download className="h-4 w-4 me-2" />,

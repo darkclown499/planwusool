@@ -1,5 +1,6 @@
 import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
+import { NotificationBell } from '../../../components/storefront/NotificationBell';
 
 interface HeaderProps {
   storeName: string;
@@ -15,9 +16,10 @@ interface HeaderProps {
   onLogoutClick: () => void;
   onWishlistClick?: () => void;
   wishlistCount?: number;
+  storeId?: string | number;
 }
 
-export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartCount, onCartClick, onLoginClick, isLoggedIn, userName, onProfileClick, onOrdersClick, onLogoutClick, onWishlistClick, wishlistCount = 0 }) => {
+export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartCount, onCartClick, onLoginClick, isLoggedIn, userName, onProfileClick, onOrdersClick, onLogoutClick, onWishlistClick, wishlistCount = 0, storeId }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [showMobileSearch, setShowMobileSearch] = React.useState(false);
   const [showDropdown, setShowDropdown] = React.useState(false);
@@ -141,6 +143,14 @@ export const Header: React.FC<HeaderProps> = ({ storeName, logo, onSearch, cartC
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </button>
+          )}
+          
+          {storeId && (
+            <NotificationBell
+              storeId={storeId}
+              isLoggedIn={isLoggedIn}
+              onRequireLogin={onLoginClick}
+            />
           )}
           
           {onWishlistClick && (

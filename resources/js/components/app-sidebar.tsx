@@ -50,6 +50,18 @@ export function AppSidebar() {
             groupLabel: t('Main'),
         },
         {
+            title: t('Store Management'),
+            icon: Store,
+            groupLabel: t('Stores'),
+            children: [
+                { title: t('Stores'), href: route('stores.index') },
+                ...((auth?.stores as any[]) || []).map((store) => ({
+                    title: `${t('Customize Store')}: ${store.name}`,
+                    href: route('stores.appearance', store.id),
+                })),
+            ],
+        },
+        {
             title: t('Subscription Plans'),
             icon: CreditCard,
             groupLabel: t('Administration'),
@@ -171,6 +183,7 @@ export function AppSidebar() {
                 'mobile_app': 'enable_mobile_app',
                 'branding': 'enable_branding',
                 'accounting_integration': 'enable_accounting_integration',
+                'theme_editor': 'enable_theme_editor',
             };
             const planFeature = featureMap[feature];
             return planFeature ? plan[planFeature] === 'on' : true;
@@ -240,8 +253,13 @@ export function AppSidebar() {
         if (hasPermission('settings-stores') && currentStoreId) {
             const storeSettingsChildren: NavItem[] = [
                 { title: t('Store Settings'), href: route('stores.settings', currentStoreId) },
-                { title: t('Appearance'), href: route('stores.appearance', currentStoreId) },
             ];
+            if (hasFeatureAccess('theme_editor')) {
+                storeSettingsChildren.push({
+                    title: t('Store Customization'),
+                    href: route('stores.appearance', currentStoreId),
+                });
+            }
             items.push({
                 title: t('Store Settings'),
                 icon: Store,

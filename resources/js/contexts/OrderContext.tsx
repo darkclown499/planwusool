@@ -17,7 +17,7 @@ interface OrderItem {
 }
 
 interface OrderContextType {
-  userOrders: Order[];
+  userOrders: any[];
   loadingOrders: boolean;
   selectedOrderId: string | null;
   showOrderDetailsModal: boolean;

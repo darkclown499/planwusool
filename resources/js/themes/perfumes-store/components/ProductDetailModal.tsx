@@ -20,7 +20,7 @@ interface Product {
   category?: string;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
 }
 
@@ -219,7 +219,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           <div>
                             <div className="text-amber-400 text-xs font-bold uppercase">التوفير</div>
                             <div className="text-green-400 font-bold text-sm">
-                              {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                              {Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)}%
                             </div>
                           </div>
                         )}
@@ -249,7 +249,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                               <SelectValue placeholder={`اختر ${variant?.name || 'الخيار'}`} />
                             </SelectTrigger>
                             <SelectContent>
-                              {(variant?.values || variant?.options) && Array.isArray(variant?.values || variant?.options) && (variant?.values || variant?.options).map((option, optIndex) => (
+                              {(variant?.values || variant?.options) && Array.isArray(variant?.values || variant?.options) && (variant?.values || variant?.options || []).map((option: any, optIndex: any) => (
                                 <SelectItem key={optIndex} value={option}>{option}</SelectItem>
                               ))}
                             </SelectContent>
@@ -267,7 +267,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       const hasVariants = product.variants && Array.isArray(product.variants) && product.variants.length > 0;
                       
                       if (hasVariants) {
-                        const requiredVariants = product.variants.length;
+                        const requiredVariants = product.variants?.length ?? 0;
                         const selectedVariantsCount = Object.keys(selectedVariants).length;
                         
                         if (selectedVariantsCount < requiredVariants) {
@@ -284,11 +284,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     }}
                     disabled={product.availability === 'out_of_stock' || 
                       (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && 
-                       Object.keys(selectedVariants).length < product.variants.length)}
+                       Object.keys(selectedVariants).length < (product.variants?.length ?? 0))}
                     className={`w-full py-2 md:py-3 font-bold text-sm md:text-base transition-all flex items-center justify-center gap-2 ${
                       product.availability === 'out_of_stock' || 
                       (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && 
-                       Object.keys(selectedVariants).length < product.variants.length)
+                       Object.keys(selectedVariants).length < (product.variants?.length ?? 0))
                         ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                         : 'bg-amber-600 hover:bg-amber-700 text-white'
                     }`}
@@ -299,7 +299,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     {product.availability === 'out_of_stock' 
                       ? 'غير متوفر' 
                       : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && 
-                         Object.keys(selectedVariants).length < product.variants.length)
+                         Object.keys(selectedVariants).length < (product.variants?.length ?? 0))
                         ? 'اختر الخيارات'
                         : 'أضف إلى السلة'
                     }

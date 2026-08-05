@@ -35,6 +35,7 @@ export const couponsConfig: CrudConfig = {
   entity: {
     name: 'coupons',
     endpoint: route('coupons.index'),
+    breadcrumbs: [],
     permissions: {
       view: 'view-coupons',
       create: 'create-coupons',

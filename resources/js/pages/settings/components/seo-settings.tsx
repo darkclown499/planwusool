@@ -87,7 +87,7 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  return { status: 'long', color: 'text-red-500', icon: AlertCircle };
  };
 
- const keywordCount = seoSettings.metaKeywords.split(',').filter(k => k.trim().length > 0).length;
+ const keywordCount = seoSettings.metaKeywords.split(',').filter((k: any) => k.trim().length > 0).length;
 
  // Handle SEO settings form submission
  const submitSeoSettings = (e: React.FormEvent) => {
@@ -284,7 +284,7 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  <h5 className="text-xs font-semibold text-blue-900 flex items-center mb-1.5 uppercase tracking-wider">
  <Info className="h-3.5 w-3.5 me-1.5" /> {t("SEO Tips")}
  </h5>
- <ul className="text-[11px] text-blue-800 space-y-1.5 list-none pl-0">
+ <ul className="text-[11px] text-blue-800 space-y-1.5 list-none ps-0">
  <li className="flex items-start gap-2">
  <div className="mt-1 h-1 w-1 rounded-full bg-blue-400 flex-shrink-0" />
  <span><span className="font-bold">{t("Title:")}</span> {t("50-60 characters optimal")}</span>

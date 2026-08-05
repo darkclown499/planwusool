@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/react';
+import { type SharedData } from '@/types';
 
 interface StoreCurrency {
   code: string;
@@ -16,7 +17,7 @@ interface StoreCurrency {
   } | null;
 }
 
-interface PageProps {
+interface PageProps extends SharedData {
   storeCurrency: StoreCurrency;
 }
 
@@ -27,10 +28,10 @@ export function useStoreCurrency(): StoreCurrency {
   const { props } = usePage<PageProps>();
   
   return props.storeCurrency || {
-    code: 'USD',
-    symbol: '$',
-    name: 'US Dollar',
-    position: 'before',
+    code: 'ILS',
+    symbol: '₪',
+    name: 'Israeli Shekel',
+    position: 'after',
     decimals: 2,
     decimal_separator: '.',
     thousands_separator: ','

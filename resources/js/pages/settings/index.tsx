@@ -1,7 +1,6 @@
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
 import { useEffect, useRef, useState } from 'react';
 import { DollarSign, Mail, Bell, Link2, CreditCard, HardDrive, Shield, Bot, Cookie, Search, Webhook, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,7 +30,7 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState('currency-settings');
   
   // Define all possible sidebar navigation items
-  const allSidebarNavItems: (NavItem & { permission?: string })[] = [
+  const allSidebarNavItems: { title: string; href: string; icon?: React.ReactNode; permission?: string }[] = [
     {
       title: t('Currency Settings'),
       href: '#currency-settings',

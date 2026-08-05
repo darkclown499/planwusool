@@ -208,12 +208,12 @@ export default function PlanRequestsPage() {
             ...col,
             label: t(col.label)
           }))}
-          {...(auth?.user?.type === 'superadmin' || auth?.user?.type === 'super admin' ? {
-            actions: planRequestsConfig.table.actions?.map(action => ({
-              ...action,
-              label: t(action.label)
-            })) || []
-          } : {})}
+          actions={(auth?.user?.type === 'superadmin' || auth?.user?.type === 'super admin')
+            ? (planRequestsConfig.table.actions?.map(action => ({
+                ...action,
+                label: t(action.label)
+              })) || [])
+            : []}
           data={planRequests?.data || []}
           from={planRequests?.from || 1}
           onAction={handleAction}

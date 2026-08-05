@@ -64,7 +64,10 @@ export default function MediaPicker({
       const response = await fetch(route('api.media.batch'), {
         method: 'POST',
         body: formData,
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
       });
       const result = await response.json();
       if (response.ok && result.data && result.data.length > 0) {

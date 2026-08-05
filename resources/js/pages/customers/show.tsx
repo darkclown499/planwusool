@@ -21,7 +21,7 @@ export default function ShowCustomer() {
     }
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     if (!dateString) return t('Not specified');
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 

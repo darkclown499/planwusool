@@ -7,5 +7,5 @@ export const t = (key: string, options?: any): string => {
   if (!i18next.isInitialized) {
     return typeof key === 'string' ? key : String(key);
   }
-  return i18next.t(key, options);
+  return i18next.t(key, options) as string;
 };

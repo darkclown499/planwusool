@@ -108,7 +108,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         {item.name}
                       </h3>
                       {(() => {
-                        const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                        const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                         return variants && Object.keys(variants).length > 0 && (
                           <div className="text-xs text-gray-500 mb-1">
                             {Object.entries(variants).map(([key, value], index) => (
@@ -152,7 +152,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           <input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) => onQuantityChange(index, e.target.value)}
+                            onChange={(e) => onQuantityChange(index, Number(e.target.value))}
                             className="w-8 text-sm font-semibold text-gray-900 text-center bg-transparent border-0 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             min="1"
                           />

@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import { useFavicon } from '@/hooks/use-favicon';
 import { getImageUrl } from '@/utils/image-helper';
+import { type SharedData } from '@/types';
 
 interface CustomPage {
   id: number;
@@ -21,7 +22,7 @@ interface CustomPageData {
   slug: string;
 }
 
-interface PageProps {
+interface PageProps extends SharedData {
   page: CustomPage;
   customPages: CustomPageData[];
   settings: {
@@ -34,6 +35,11 @@ interface PageProps {
         key: string;
         [key: string]: any;
       }>;
+      theme?: {
+        primary_color?: string;
+        secondary_color?: string;
+        accent_color?: string;
+      };
     };
     [key: string]: any;
   };
@@ -116,9 +122,9 @@ export default function CustomPage() {
           '--primary-color': primaryColor,
           '--secondary-color': secondaryColor,
           '--accent-color': accentColor,
-          '--primary-color-rgb': primaryColor.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16)).join(', ') || '59, 130, 246',
-          '--secondary-color-rgb': secondaryColor.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16)).join(', ') || '139, 92, 246',
-          '--accent-color-rgb': accentColor.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16)).join(', ') || '16, 185, 129'
+          '--primary-color-rgb': primaryColor.replace('#', '').match(/.{2}/g)?.map((x: any) => parseInt(x, 16)).join(', ') || '59, 130, 246',
+          '--secondary-color-rgb': secondaryColor.replace('#', '').match(/.{2}/g)?.map((x: any) => parseInt(x, 16)).join(', ') || '139, 92, 246',
+          '--accent-color-rgb': accentColor.replace('#', '').match(/.{2}/g)?.map((x: any) => parseInt(x, 16)).join(', ') || '16, 185, 129'
         } as React.CSSProperties}
       >
         <Header
@@ -144,8 +150,8 @@ export default function CustomPage() {
         </main>
 
         <Footer
-          settings={settings}
-          sectionData={settings?.config_sections?.sections?.find(s => s.key === 'footer') || {}}
+          settings={settings as any}
+          sectionData={(settings?.config_sections?.sections?.find(s => s.key === 'footer') || {}) as any}
           brandColor={primaryColor}
           superadminLogoLight={superadminLogoLight}
         />

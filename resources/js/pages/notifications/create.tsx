@@ -233,7 +233,7 @@ export default function CreateNotification() {
             <div className="flex items-center gap-2">
               {selectedCustomers.length > 0 && (
                 <>
-                  <Badge variant="default" className="mr-1">
+                  <Badge variant="default" className="me-1">
                     {selectedCustomers.length} {t('selected')}
                   </Badge>
                   <Button variant="ghost" size="sm" onClick={clearSelection}>

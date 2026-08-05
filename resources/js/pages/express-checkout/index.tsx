@@ -44,11 +44,11 @@ export default function ExpressCheckout() {
     }
   };
 
-  const handleDelete = (checkout) => {
+  const handleDelete = (checkout: any) => {
     handleActionClick('delete', 'delete-express-checkout', checkout);
   };
 
-  const handleSettings = (checkout) => {
+  const handleSettings = (checkout: any) => {
     handleActionClick('settings', 'settings-express-checkout', checkout);
   };
 
@@ -156,7 +156,7 @@ export default function ExpressCheckout() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {checkouts.map((checkout) => (
+                    {checkouts.map((checkout: any) => (
                       <div key={checkout.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-4">
                           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">

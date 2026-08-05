@@ -8,7 +8,7 @@ import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { formatLocalDate } from '@/utils/date-helper';
 
-export default function ViewStore({ store, stats }) {
+export default function ViewStore({ store, stats }: any) {
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
 

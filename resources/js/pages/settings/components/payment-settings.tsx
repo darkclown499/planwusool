@@ -20,6 +20,7 @@ import { PaymentInputField } from '@/components/payment/payment-input-field';
 import { PaymentModeSelector } from '@/components/payment/payment-mode-selector';
 
 interface PaymentSettings {
+  [key: string]: any;
   currency: string;
   currency_symbol: string;
   is_manually_enabled: boolean;
@@ -169,7 +170,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
 
   const toPlaceholder = (v: string) => v.startsWith('{') ? v : `{${v}}`;
 
-  const insertAtCursor = (ref: React.RefObject<HTMLTextAreaElement>, text: string, setter: (val: string) => void) => {
+  const insertAtCursor = (ref: React.RefObject<HTMLTextAreaElement | null>, text: string, setter: (val: string) => void) => {
     const ta = ref.current;
     if (!ta) return;
     const start = ta.selectionStart;

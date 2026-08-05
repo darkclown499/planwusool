@@ -21,6 +21,7 @@ interface CartItem extends Product {
 }
 
 interface CheckoutProps {
+
   cartItems: CartItem[];
   currency: string;
   onClose: () => void;
@@ -41,7 +42,11 @@ interface CheckoutProps {
   onRemoveFromCart: (index: number) => void;
   onUpdateQuantity: (index: number, change: number) => void;
   onQuantityChange: (index: number, value: string) => void;
-  store?: { id: string; slug: string };
+  store?: { id: string | number; slug: string };
+  showOrderSuccess?: boolean;
+  setShowOrderSuccess?: (show: boolean) => void;
+  orderNumber?: string;
+  setOrderNumber?: (orderNumber: string) => void;
 }
 
 const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn' | 'store'>> = ({ 
@@ -241,12 +246,12 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         <Select
                           value={(() => {
                             const countries = (window as any).page?.props?.countries || [];
-                            const selectedCountry = countries.find(c => c.name === customerInfo.country);
+                            const selectedCountry = countries.find((c: any) => c.name === customerInfo.country);
                             return selectedCountry?.id?.toString() || '';
                           })()} 
                           onValueChange={(countryId) => {
                             const countries = (window as any).page?.props?.countries || [];
-                            const selectedCountry = countries.find(c => c.id.toString() === countryId);
+                            const selectedCountry = countries.find((c: any) => c.id.toString() === countryId);
                             if (selectedCountry) {
                               handleInputChange('country', selectedCountry.name);
                               handleInputChange('state', '');
@@ -261,7 +266,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             <SelectValue placeholder="اختر الدولة" />
                           </SelectTrigger>
                           <SelectContent>
-                            {((window as any).page?.props?.countries || []).map(country => (
+                            {((window as any).page?.props?.countries || []).map((country: any) => (
                               <SelectItem key={country.id} value={country.id.toString()}>
                                 {country.name}
                               </SelectItem>
@@ -328,7 +333,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         <div className="flex-1 min-w-0">
                           <h4 className="font-serif font-bold text-stone-900 mb-1 sm:mb-2 text-sm sm:text-base truncate">{item.name}</h4>
                           {(() => {
-                            const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                            const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                             return variants && Object.keys(variants).length > 0 && (
                               <div className="text-xs sm:text-sm text-stone-600 mb-2">
                                 {Object.entries(variants).map(([key, value], index) => (

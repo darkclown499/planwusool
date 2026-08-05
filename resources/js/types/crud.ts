@@ -9,7 +9,7 @@ export interface EntityConfig {
     edit: string;
     delete: string;
   };
-  breadcrumbs: {
+  breadcrumbs?: {
     title: string;
     href?: string;
   }[];
@@ -36,7 +36,7 @@ export interface TableAction {
   permission?: string;
   className?: string;
   requiredPermission?: string;
-  condition?: (row: any) => boolean;
+  condition?: (row: any, permissions?: string[]) => boolean;
 }
 
 export interface TableConfig {
@@ -91,6 +91,11 @@ export interface FormField {
   };
   fileValidation?: FileValidation;
   description?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  minLength?: number;
+  maxLength?: number;
   defaultValue?: any;
   colSpan?: number; // Number of columns this field should span (1-12)
   width?: string; // CSS width value (e.g., '50%', '200px')
@@ -107,6 +112,9 @@ export interface FormConfig {
 }
 
 export interface CrudHooks {
+  beforeCreate?: (data: any) => any;
+  beforeUpdate?: (data: any) => any;
+  beforeDelete?: (id: any) => any;
   afterCreate?: (data: any, response: any) => void;
   afterUpdate?: (data: any, response: any) => void;
   afterDelete?: (id: any) => void;
@@ -118,6 +126,11 @@ export interface CrudConfig {
   filters: FilterField[];
   form: FormConfig;
   hooks?: CrudHooks;
+  search?: {
+    enabled?: boolean;
+    placeholder?: string;
+    fields?: string[];
+  };
   modalSize?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full';
   description?: string; // Description for accessibility in dialogs
 }

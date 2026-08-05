@@ -167,10 +167,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 <h3 className="font-bold text-white text-sm sm:text-base">منتجات الطلب ({order.items.length})</h3>
               </div>
               <div className="space-y-3">
-                {order.items.map((item, index) => {
+                {order.items.map((item: any, index: any) => {
                   const itemTotal = item.price * item.quantity;
                   const itemTotalWithTax = itemTotal + (item.tax_amount || 0);
-                  const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                  const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                   
                   return (
                     <div key={index} className="bg-black border border-slate-700 p-3">

@@ -161,7 +161,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           {formatCurrency(product.originalPrice, storeSettings, currencies)}
                         </span>
                         <span className="bg-rose-500 text-white text-xs md:text-sm font-bold px-2 md:px-3 py-1 rounded-full">
-                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% خصم
+                          -{Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)}% خصم
                         </span>
                       </div>
                     )}
@@ -242,7 +242,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     const hasVariants = product.variants && Array.isArray(product.variants) && product.variants.length > 0;
                     
                     if (hasVariants) {
-                      const requiredVariants = product.variants.length;
+                      const requiredVariants = product.variants?.length ?? 0;
                       const selectedVariantsCount = Object.keys(selectedVariants).length;
                       
                       if (selectedVariantsCount < requiredVariants) {
@@ -257,9 +257,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     onAddToCart(productToAdd);
                     onClose();
                   }}
-                  disabled={product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)}
+                  disabled={product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < (product.variants?.length ?? 0))}
                   className={`w-full py-2 md:py-3 rounded-lg font-medium text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 ${
-                    product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)
+                    product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < (product.variants?.length ?? 0))
                       ? 'bg-gray-300 cursor-not-allowed text-gray-500'
                       : 'bg-rose-600 hover:bg-rose-700 text-white'
                   }`}
@@ -269,7 +269,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </svg>
                   {product.availability === 'out_of_stock' 
                     ? 'غير متوفر' 
-                    : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)
+                    : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < (product.variants?.length ?? 0))
                       ? 'اختر الخيارات'
                       : 'أضف إلى السلة'
                   }

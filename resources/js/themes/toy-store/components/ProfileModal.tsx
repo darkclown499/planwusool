@@ -16,7 +16,7 @@ const CountryDropdown: React.FC<{
     <Select
       value={value || undefined}
       onValueChange={(countryId) => {
-        const selectedCountry = countries.find(c => c.id.toString() === countryId);
+        const selectedCountry = countries.find((c: any) => c.id.toString() === countryId);
         onChange(selectedCountry?.name || '', selectedCountry?.id);
       }}
     >
@@ -24,7 +24,7 @@ const CountryDropdown: React.FC<{
         <SelectValue placeholder="اختر الدولة" />
       </SelectTrigger>
       <SelectContent>
-        {countries.map(country => (
+        {countries.map((country: any) => (
           <SelectItem key={country.id} value={country.id.toString()}>
             {country.name}
           </SelectItem>
@@ -269,7 +269,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
   }, [userProfile, setProfile]);
 
   const handleInputChange = (field: string, value: string) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
+    setProfile((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
@@ -289,7 +289,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
   };
 
   const handlePasswordChange = (field: string, value: string) => {
-    setPasswords(prev => ({ ...prev, [field]: value }));
+    setPasswords((prev: any) => ({ ...prev, [field]: value }));
   };
 
   return (

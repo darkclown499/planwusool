@@ -123,7 +123,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                     </tr>
                   </thead>
                   <tbody>
-                    {order.items.map((item, index) => {
+                    {order.items.map((item: any, index: any) => {
                       const itemTotal = item.price * item.quantity;
                       const itemTotalWithTax = itemTotal + item.tax_amount;
                       return (
@@ -131,7 +131,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                           <td className="py-3 px-2">
                             <h4 className="font-medium text-gray-900 text-sm leading-tight">{item.name}</h4>
                             {(() => {
-                              const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                              const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                               return variants && Object.keys(variants).length > 0 && (
                                 <div className="text-xs text-gray-500 mt-1">
                                   {Object.entries(variants).map(([key, value], index) => (

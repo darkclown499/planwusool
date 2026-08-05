@@ -14,19 +14,19 @@ const CountryDropdown: React.FC<{
   className?: string;
 }> = ({ value, onChange, className }) => {
   const countries = (window as any).page?.props?.countries || [];
-  const selectedCountryId = countries.find(c => c.name === value)?.id || '';
+  const selectedCountryId = countries.find((c: any) => c.name === value)?.id || '';
 
   return (
     <select
       value={selectedCountryId}
       onChange={(e) => {
-        const selectedCountry = countries.find(c => c.id.toString() === e.target.value);
+        const selectedCountry = countries.find((c: any) => c.id.toString() === e.target.value);
         onChange(selectedCountry?.name || '', selectedCountry?.id);
       }}
       className={className}
     >
       <option value="">Select Country</option>
-      {countries.map(country => (
+      {countries.map((country: any) => (
         <option key={country.id} value={country.id}>
           {country.name}
         </option>
@@ -262,6 +262,7 @@ interface CheckoutContextType {
   whatsappError: string;
   setStep: (step: number) => void;
   setCouponCode: (code: string) => void;
+  setCouponError: (error: string) => void;
   setSelectedShipping: (id: string) => void;
   setSelectedPayment: (method: string) => void;
   handleInputChange: (field: string, value: string) => void;
@@ -296,7 +297,7 @@ interface CheckoutProviderProps {
     postalCode: string;
   };
   isLoggedIn?: boolean;
-  store?: { id: string; slug: string };
+  store?: { id: string | number; slug: string };
   onOrderComplete?: () => void;
 }
 
@@ -370,7 +371,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     if (isLoggedIn && userProfile) {
       // Set country
       const countries = (window as any).page?.props?.countries || [];
-      const selectedCountry = countries.find(c => c.id.toString() === userProfile.country?.toString());
+      const selectedCountry = countries.find((c: any) => c.id.toString() === userProfile.country?.toString());
       if (selectedCountry) {
         setCountryId(selectedCountry.id);
         setCustomerInfo(prev => ({ ...prev, country: selectedCountry.name }));
@@ -385,7 +386,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         .then(res => res.json())
         .then(data => {
           const statesData = Array.isArray(data) ? data : (data.states || []);
-          const selectedState = statesData.find(s => s.id.toString() === userProfile.state?.toString());
+          const selectedState = statesData.find((s: any) => s.id.toString() === userProfile.state?.toString());
           if (selectedState) {
             setStateId(selectedState.id);
             setCustomerInfo(prev => ({ ...prev, state: selectedState.name }));
@@ -402,7 +403,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         .then(res => res.json())
         .then(data => {
           const citiesData = Array.isArray(data) ? data : (data.cities || []);
-          const selectedCity = citiesData.find(c => c.id.toString() === userProfile.city?.toString());
+          const selectedCity = citiesData.find((c: any) => c.id.toString() === userProfile.city?.toString());
           if (selectedCity) {
             setCityId(selectedCity.id);
             setCustomerInfo(prev => ({ ...prev, city: selectedCity.name }));
@@ -836,6 +837,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     whatsappError,
     setStep,
     setCouponCode,
+    setCouponError,
     setSelectedShipping,
     setSelectedPayment,
     handleInputChange,

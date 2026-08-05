@@ -4,6 +4,8 @@ declare global {
         appSettings: {
             get: (key: string, defaultValue?: any) => any;
             baseUrl: string;
+            imageUrl?: string;
+            logo?: string;
             dateFormat: string;
             timeFormat: string;
             timezone: string;
@@ -32,15 +34,15 @@ export function initializeGlobalSettings(settings: Record<string, any>) {
     // Set up currency settings
     const currencySettings = {
         decimalFormat: settings.decimalFormat || '2',
-        defaultCurrency: settings.defaultCurrency || 'USD',
+        defaultCurrency: settings.defaultCurrency || 'ILS',
         decimalSeparator: settings.decimalSeparator || '.',
         thousandsSeparator: settings.thousandsSeparator || ',',
         floatNumber: settings.floatNumber === '0' ? false : true,
         currencySymbolSpace: settings.currencySymbolSpace === '1',
-        currencySymbolPosition: settings.currencySymbolPosition || 'before',
-        currencySymbol: settings.currencySymbol || '$',
-        currencyCode: settings.currencyCode || 'USD',
-        currencyName: settings.currencyNname || 'US Dollar'
+        currencySymbolPosition: settings.currencySymbolPosition || 'after',
+        currencySymbol: settings.currencySymbol || '₪',
+        currencyCode: settings.currencyCode || 'ILS',
+        currencyName: settings.currencyNname || 'Israeli Shekel'
     };
 
     window.appSettings = {

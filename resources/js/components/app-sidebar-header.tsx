@@ -7,12 +7,15 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { usePage, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { StoreSwitcher } from '@/components/store-switcher';
-import { Search, RefreshCw } from 'lucide-react';
+import { MerchantNotificationBell } from '@/components/merchant-notification-bell';
+import { useTour } from '@/components/tour/tour-context';
+import { Search, RefreshCw, HelpCircle } from 'lucide-react';
 import { useState, useCallback } from 'react';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     const { t } = useTranslation();
     const { position } = useLayout();
+    const { start } = useTour();
     const [searchQuery, setSearchQuery] = useState('');
 
     const handleSearch = useCallback((e: React.FormEvent) => {
@@ -55,12 +58,21 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     >
                         <RefreshCw className="h-3.5 w-3.5" />
                     </button>
+
+                    {/* Guide Tour Button */}
+                    <button
+                        onClick={() => start()}
+                        className="inline-flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                        title={t('Guide Tour')}
+                    >
+                        <HelpCircle className="h-3.5 w-3.5" />
+                    </button>
                     
                     {/* Store Switcher - Show for company users and sub-users with stores data */}
                     {((usePage().props as any).auth?.user?.type === 'company' || ((usePage().props as any).stores && (usePage().props as any).stores.length > 0)) && (
                         <StoreSwitcher 
                             items={(usePage().props as any).stores || []} 
-                            currentStore={((usePage().props as any).stores || []).find(store => String(store.id) === String((usePage().props as any).auth?.user?.current_store)) || ((usePage().props as any).stores?.length > 0 ? (usePage().props as any).stores[0] : null)} 
+                            currentStore={((usePage().props as any).stores || []).find((store: any) => String(store.id) === String((usePage().props as any).auth?.user?.current_store)) || ((usePage().props as any).stores?.length > 0 ? (usePage().props as any).stores[0] : null)} 
                         />
                     )}
                     
@@ -73,6 +85,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                         </button>
                     )}
                     <LanguageSwitcher />
+                    <MerchantNotificationBell />
                     <ProfileMenu />
                     {position === 'right' && <SidebarTrigger className="-me-1" />}
                 </div>

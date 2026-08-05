@@ -81,7 +81,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               )}
               {product.originalPrice && (
                 <div className="w-fit bg-rose-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                  -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                  -{Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)}%
                 </div>
               )}
             </div>

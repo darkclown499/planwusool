@@ -183,7 +183,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 </div>
                 
                 <div className="divide-y divide-gray-100">
-                  {order.items.map((item, index) => {
+                  {order.items.map((item: any, index: any) => {
                     const itemTotal = item.price * item.quantity;
                     const itemTotalWithTax = itemTotal + item.tax_amount;
                     return (
@@ -192,7 +192,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900 mb-1">{item.name}</h4>
                             {(() => {
-                              const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                              const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                               return variants && Object.keys(variants).length > 0 && (
                                 <div className="text-xs text-gray-500 mb-2">
                                   {Object.entries(variants).map(([key, value], index) => (

@@ -119,7 +119,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
   }, [stateId]);
 
   const handleInputChange = (field: string, value: string) => {
-    setProfile(prev => ({ ...prev, [field]: value }));
+    setProfile((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
@@ -139,7 +139,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
   };
 
   const handlePasswordChange = (field: string, value: string) => {
-    setPasswords(prev => ({ ...prev, [field]: value }));
+    setPasswords((prev: any) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -310,7 +310,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                       value={profile.country || undefined}
                       onValueChange={(countryId) => {
                         const countries = (window as any).page?.props?.countries || [];
-                        const selectedCountry = countries.find(c => c.id.toString() === countryId);
+                        const selectedCountry = countries.find((c: any) => c.id.toString() === countryId);
                         if (selectedCountry) {
                           handleInputChange('country', selectedCountry.id.toString());
                           handleInputChange('state', '');
@@ -324,7 +324,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({ onClose, userProfile
                         <SelectValue placeholder="اختر الدولة" />
                       </SelectTrigger>
                       <SelectContent>
-                        {((window as any).page?.props?.countries || []).map(country => (
+                        {((window as any).page?.props?.countries || []).map((country: any) => (
                           <SelectItem key={country.id} value={country.id.toString()}>
                             {country.name}
                           </SelectItem>

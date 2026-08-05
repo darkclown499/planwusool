@@ -3,7 +3,7 @@ import { useForm, usePage, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
-import { Pagination } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,7 +40,8 @@ interface PageProps {
 
 export default function CustomPagesIndex() {
  const { t } = useTranslation();
- const { pages, flash, filters: pageFilters = {} } = usePage<any>().props;
+ const { pages, flash, filters: pageFilters = {}, auth } = usePage<any>().props;
+ const permissions = auth?.permissions || [];
  const [isCreateOpen, setIsCreateOpen] = useState(false);
  const [editingPage, setEditingPage] = useState<CustomPage | null>(null);
  const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -50,13 +51,13 @@ export default function CustomPagesIndex() {
  const [pageToDelete, setPageToDelete] = useState<CustomPage | null>(null);
 
  const { data, setData, post, put, processing, errors, reset, errors: rejectErrors } = useForm({
- title: '',
- slug: '',
- content: '',
- meta_title: '',
- meta_description: '',
- is_active: true,
- sort_order: 0
+  title: '',
+  slug: '',
+  content: '',
+  meta_title: '',
+  meta_description: '',
+  is_active: true as boolean,
+  sort_order: 0
  });
 
  const handleSubmit = (e: React.FormEvent) => {
@@ -316,27 +317,45 @@ export default function CustomPagesIndex() {
  {/* Table section */}
  <div className="bg-white rounded-lg shadow overflow-hidden">
  <CrudTable
- columns={columns}
- actions={actions}
- data={pages?.data || pages || []}
- from={pages?.from || 1}
- onAction={handleAction}
- sortField={pageFilters.sort_field}
- sortDirection={pageFilters.sort_direction}
- onSort={handleSort}
- />
+  columns={columns}
+  actions={actions}
+  data={pages?.data || pages || []}
+  from={pages?.from || 1}
+  onAction={handleAction}
+  sortField={pageFilters.sort_field}
+  sortDirection={pageFilters.sort_direction}
+  onSort={handleSort}
+  permissions={permissions}
+  entityPermissions={{
+   view: 'manage-landing-page',
+   create: 'manage-landing-page',
+   edit: 'manage-landing-page',
+   delete: 'manage-landing-page'
+  }}
+  />
 
  {/* Pagination section */}
  {pages?.links && (
- <Pagination
- from={pages?.from || 0}
- to={pages?.to || 0}
- total={pages?.total || 0}
- links={pages?.links}
- entityName="pages"
- onPageChange={(url) => router.get(url)}
- />
- )}
+  <Pagination className="p-4">
+   <PaginationContent>
+   {pages.links.map((link: any, index: number) => (
+    link.url ? (
+     <PaginationItem key={index}>
+      <PaginationLink
+       isActive={link.active}
+       href={link.url}
+       dangerouslySetInnerHTML={{ __html: link.label }}
+      />
+     </PaginationItem>
+    ) : (
+     <PaginationItem key={index}>
+      <span className="px-3 py-1.5 text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: link.label }} />
+     </PaginationItem>
+    )
+   ))}
+   </PaginationContent>
+  </Pagination>
+  )}
  </div>
 
  {/* Edit Dialog */}

@@ -20,7 +20,7 @@ interface Product {
   category?: string;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
 }
 
@@ -58,7 +58,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const isOnSale = product.originalPrice && product.originalPrice > product.price;
   const discountPercentage = isOnSale 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)
     : 0;
 
   const handleQuantityChange = (change: number) => {
@@ -199,7 +199,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                               <SelectValue placeholder={`اختر ${variant.name}`} />
                             </SelectTrigger>
                             <SelectContent>
-                              {(variant.options || variant.values) && (variant.options || variant.values).map((option, optionIndex) => (
+                              {(variant.options || variant.values || []).length > 0 && (variant.options || variant.values || []).map((option, optionIndex) => (
                                 <SelectItem key={optionIndex} value={option}>
                                   {option}
                                 </SelectItem>
@@ -341,7 +341,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       const hasVariants = product.variants && product.variants.length > 0;
                       
                       if (hasVariants) {
-                        const requiredVariants = product.variants.length;
+                        const requiredVariants = product.variants?.length ?? 0;
                         const selectedVariantsCount = Object.keys(selectedVariants).length;
                         
                         if (selectedVariantsCount < requiredVariants) {

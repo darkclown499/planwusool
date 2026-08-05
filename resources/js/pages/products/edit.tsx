@@ -214,8 +214,14 @@ export default function EditProduct() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <MediaPicker label={t('Cover Image *')} value={formData.cover_image} onChange={(v) => handleSelectChange('cover_image', v)} placeholder={t('Select cover image...')} />
-                  <MediaPicker label={t('Product Images')} value={formData.images} onChange={(v) => handleSelectChange('images', v)} multiple={true} placeholder={t('Select product images...')} />
+                  <div>
+                    <MediaPicker label={t('Cover Image')} value={formData.cover_image} onChange={(v) => handleSelectChange('cover_image', v)} placeholder={t('Select cover image...')} required dragDrop />
+                    <p className="text-xs text-muted-foreground mt-1">{t('Recommended: 800x800 pixels (square)')}</p>
+                  </div>
+                  <div>
+                    <MediaPicker label={t('Product Images')} value={formData.images} onChange={(v) => handleSelectChange('images', v)} multiple={true} placeholder={t('Select product images...')} dragDrop />
+                    <p className="text-xs text-muted-foreground mt-1">{t('Optional. Recommended: 800x800 pixels (square)')}</p>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-start">

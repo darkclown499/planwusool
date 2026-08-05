@@ -53,7 +53,7 @@ export function RolePermissionCheckboxGroup({
     }
     
     try {
-      const nameMap = {};
+      const nameMap: Record<string, string> = {};
       
       Object.values(filteredPermissions).forEach(group => {
         group.forEach(permission => {
@@ -73,7 +73,7 @@ export function RolePermissionCheckboxGroup({
         }).filter(Boolean);
       } else if (typeof selectedPermissions === 'object' && selectedPermissions !== null) {
         if ('permissions' in selectedPermissions && Array.isArray(selectedPermissions.permissions)) {
-          processedPermissions = selectedPermissions.permissions.map(p => {
+          processedPermissions = selectedPermissions.permissions.map((p: any) => {
             if (typeof p === 'object' && p !== null) {
               if ('id' in p) return p.id.toString();
               if ('name' in p) return nameMap[p.name] || p.name;
@@ -122,7 +122,7 @@ export function RolePermissionCheckboxGroup({
   };
   
   const updateParent = (newSelected: string[]) => {
-    const idToNameMap = {};
+    const idToNameMap: Record<string, string> = {};
     
     Object.values(filteredPermissions).forEach(group => {
       group.forEach(permission => {

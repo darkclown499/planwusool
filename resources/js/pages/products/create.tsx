@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Save, Plus, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Upload, X, Image as ImageIcon, RefreshCw, FileText, EyeOff } from 'lucide-react';
+import { Save, Plus, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, FileText, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,130 +14,11 @@ import MediaPicker from '@/components/MediaPicker';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import InputError from '@/components/input-error';
 import UpgradeModal from '@/components/UpgradeModal';
-import { getImageUrl } from '@/utils/image-helper';
 
 const TAB_ORDER = ['general', 'pricing', 'inventory', 'content', 'variants', 'advanced'];
 
-interface DropZoneProps {
-  value: string;
-  onChange: (v: string) => void;
-  multiple?: boolean;
-  label: string;
-  required?: boolean;
-}
-
-function DropZone({ value, onChange, multiple = false, label, required }: DropZoneProps) {
-  const { t } = useTranslation();
-  const [isDragging, setIsDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const modalRef = useRef<any>(null);
-  const images = value ? value.split(',').filter(Boolean) : [];
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback(() => setIsDragging(false), []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    // Files dropped - we just show a hint to use the media picker since direct upload needs a backend endpoint
-    // For now, focus on the visual UX
-  }, []);
-
-  const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
-    onChange(newImages.join(','));
-  };
-
-  return (
-    <div className="space-y-2">
-      <Label required={required}>{label}</Label>
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
-        className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-200 ${
-          isDragging
-            ? 'border-emerald-400 bg-emerald-50'
-            : images.length > 0
-            ? 'border-gray-200 bg-gray-50 hover:border-emerald-300'
-            : 'border-gray-300 bg-white hover:border-emerald-300 hover:bg-emerald-50/30'
-        }`}
-      >
-        {images.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 px-4">
-            <div className="mb-3 rounded-full bg-gray-100 p-3">
-              <Upload className="h-6 w-6 text-gray-400" />
-            </div>
-            <p className="text-sm font-medium text-gray-600">{t('Drag & drop or click to browse')}</p>
-            <p className="mt-1 text-xs text-gray-400">{t('Open media library')}</p>
-          </div>
-        ) : (
-          <div className="p-3">
-            {multiple ? (
-              <div className="grid grid-cols-4 gap-2">
-                {images.map((url, i) => (
-                  <div key={i} className="group relative">
-                    <img
-                      src={getImageUrl(url)}
-                      alt=""
-                      className="h-20 w-full rounded-lg object-cover border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); removeImage(i); }}
-                      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
-                  className="flex h-20 items-center justify-center rounded-lg border-2 border-dashed border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/30 transition-colors"
-                >
-                  <Plus className="h-5 w-5 text-gray-400" />
-                </button>
-              </div>
-            ) : (
-              <div className="relative">
-                <img
-                  src={getImageUrl(images[0])}
-                  alt=""
-                  className="h-32 w-full rounded-lg object-cover border border-gray-200"
-                />
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeImage(0); }}
-                  className="absolute top-2 left-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      <input
-        ref={inputRef}
-        type="file"
-        className="hidden"
-        accept="image/*"
-        multiple={multiple}
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-        onChange={(e) => {
-          // Use media library instead - trigger the MediaPicker approach
-        }}
-      />
-    </div>
-  );
+function ImageFieldHint({ hint }: { hint: string }) {
+  return <p className="text-xs text-muted-foreground mt-1">{hint}</p>;
 }
 
 export default function CreateProduct() {
@@ -361,18 +242,28 @@ export default function CreateProduct() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DropZone
-                    label={t('Cover Image')}
-                    value={formData.cover_image}
-                    onChange={(v) => handleSelectChange('cover_image', v)}
-                    required
-                  />
-                  <DropZone
-                    label={t('Product Images')}
-                    value={formData.images}
-                    onChange={(v) => handleSelectChange('images', v)}
-                    multiple
-                  />
+                  <div>
+                    <MediaPicker
+                      label={t('Cover Image')}
+                      value={formData.cover_image}
+                      onChange={(v) => handleSelectChange('cover_image', v)}
+                      placeholder={t('Select cover image...')}
+                      required
+                      dragDrop
+                    />
+                    <ImageFieldHint hint={t('Recommended: 800x800 pixels (square)')} />
+                  </div>
+                  <div>
+                    <MediaPicker
+                      label={t('Product Images')}
+                      value={formData.images}
+                      onChange={(v) => handleSelectChange('images', v)}
+                      placeholder={t('Select product images...')}
+                      multiple
+                      dragDrop
+                    />
+                    <ImageFieldHint hint={t('Optional. Recommended: 800x800 pixels (square)')} />
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 rounded-lg border p-3">

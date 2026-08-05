@@ -28,7 +28,7 @@ export default function ShowShipping() {
     }] : [])
   ];
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: any) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -38,8 +38,8 @@ export default function ShowShipping() {
     });
   };
 
-  const getTypeLabel = (type) => {
-    return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const getTypeLabel = (type: any) => {
+    return type.split('_').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
   return (

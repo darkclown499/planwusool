@@ -22,7 +22,7 @@ interface Product {
   category?: string;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; values: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
 }
 
@@ -133,7 +133,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <>
                         <span className="text-lg text-amber-500 line-through">{formatCurrency(product.originalPrice, storeSettings, currencies)}</span>
                         <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                          -{Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)}%
                         </span>
                       </>
                     )}
@@ -175,7 +175,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                               <SelectValue placeholder={`اختر ${variant?.name || 'الخيار'}`} />
                             </SelectTrigger>
                             <SelectContent>
-                              {((variant?.options && Array.isArray(variant.options)) ? variant.options : (variant?.values && Array.isArray(variant.values)) ? variant.values : []).map((option, optIndex) => (
+                              {((variant?.options && Array.isArray(variant.options)) ? variant.options : (variant?.values && Array.isArray(variant.values)) ? variant.values : []).map((option: any, optIndex: any) => (
                                 <SelectItem key={optIndex} value={option}>{option}</SelectItem>
                               ))}
                             </SelectContent>
@@ -249,7 +249,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <button
                 onClick={() => {
                   const hasVariants = product.variants && Array.isArray(product.variants) && product.variants.length > 0;
-                  if (hasVariants && Object.keys(selectedVariants).length < product.variants.length) {
+                  if (hasVariants && Object.keys(selectedVariants).length < (product.variants?.length ?? 0)) {
                     toast.error('يرجى اختيار جميع الخيارات قبل الإضافة إلى السلة');
                     return;
                   }
@@ -259,7 +259,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 }}
                 disabled={product.availability === 'out_of_stock' ||
                   (product.variants && Array.isArray(product.variants) && product.variants.length > 0 &&
-                    Object.keys(selectedVariants).length < product.variants.length)}
+                    Object.keys(selectedVariants).length < (product.variants?.length ?? 0))}
                 className={`flex-1 py-3 px-6 rounded-lg font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${product.availability === 'in_stock' &&
                     (!product.variants || product.variants.length === 0 ||
                       Object.keys(selectedVariants).length === product.variants.length)
@@ -272,7 +272,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {product.availability === 'out_of_stock'
                     ? 'غير متوفر'
                     : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 &&
-                      Object.keys(selectedVariants).length < product.variants.length)
+                      Object.keys(selectedVariants).length < (product.variants?.length ?? 0))
                       ? 'اختر الخيارات'
                       : `أضف ${quantity} • ${formatCurrency(product.price * quantity, storeSettings, currencies)}`
                   }

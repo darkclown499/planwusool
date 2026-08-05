@@ -23,13 +23,13 @@ export function NavUser({ position }: { position: 'left' | 'right' }) {
                         >
                             {position === 'right' ? (
                                 <>
-                                    <UserInfo user={auth.user} className="text-start" position={position} />
+                                    <UserInfo user={auth.user!} className="text-start" position={position} />
                                     <ChevronsUpDown className="size-4" />
                                 </>
                             ) : (
                                 <>
                                     <ChevronsUpDown className="size-4" />
-                                    <UserInfo user={auth.user} className="text-start" position={position} />
+                                    <UserInfo user={auth.user!} className="text-start" position={position} />
                                 </>
                             )}
                         </SidebarMenuButton>
@@ -39,7 +39,7 @@ export function NavUser({ position }: { position: 'left' | 'right' }) {
                         align="end"
                         side={isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'}
                     >
-                        <UserMenuContent user={auth.user} />
+                        <UserMenuContent user={auth.user!} />
                     </DropdownMenuContent>
                 </DropdownMenu>
             </SidebarMenuItem>

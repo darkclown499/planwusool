@@ -18,7 +18,7 @@ export function UserInfo({
     return (
         <div dir={position === 'right' ? 'rtl' : position === 'left' ? 'ltr' : undefined} className="flex w-full items-center gap-2">
             <Avatar className="h-8 w-8 overflow-hidden rounded-full">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={user.avatar ?? undefined} alt={user.name} />
                 <AvatarFallback className="rounded-lg bg-neutral-200 text-black">
                     {getInitials(user.name)}
                 </AvatarFallback>

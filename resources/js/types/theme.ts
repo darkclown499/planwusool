@@ -1,3 +1,5 @@
+import type React from 'react';
+
 export interface Product {
   id: string;
   name: string;
@@ -11,15 +13,20 @@ export interface Product {
   category?: string;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; options?: string[]; values?: string[] }>;
   customFields?: { name: string; value: string }[];
   taxName?: string;
   taxPercentage?: number;
 }
 
+export interface CartItem extends Product {
+  quantity: number;
+}
+
 export interface Category {
   id: string;
   name: string;
+  description?: string;
 }
 
 export interface StoreConfig {
@@ -95,6 +102,4 @@ export interface BaseThemeProps {
   action?: string | null;
 }
 
-export interface ThemeComponent {
-  (props: BaseThemeProps): JSX.Element;
-}
+export type ThemeComponent = React.FC<BaseThemeProps>;

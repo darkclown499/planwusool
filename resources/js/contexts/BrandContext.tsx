@@ -79,13 +79,16 @@ interface BrandContextType extends BrandSettings {
 
 const BrandContext = createContext<BrandContextType | undefined>(undefined);
 
+const getIsPublicRoute = () => {
+  if (typeof window === 'undefined') return false;
+  return window.location.pathname.includes('/public/') ||
+         window.location.pathname === '/' ||
+         window.location.pathname.includes('/auth/');
+};
+
 export function BrandProvider({ children, globalSettings, user }: { children: ReactNode; globalSettings?: any; user?: any }) {
   const getEffectiveSettings = () => {
-    const isPublicRoute = window.location.pathname.includes('/public/') || 
-                         window.location.pathname === '/' || 
-                         window.location.pathname.includes('/auth/');
-    
-    if (isPublicRoute) {
+    if (getIsPublicRoute()) {
       return globalSettings;
     }
     
@@ -106,10 +109,18 @@ export function BrandProvider({ children, globalSettings, user }: { children: Re
     return getBrandSettings(effectiveSettings);
   });
 
+  // Direction is always RTL (Arabic-first design). Brand settings and saved
+  // values must never override it, otherwise pages flip to LTR.
+  const applyDirectionIfPublic = (_direction?: string) => {
+    if (getIsPublicRoute()) {
+      applyDirectionToDOM('rtl');
+    }
+  };
+
   useEffect(() => {
     const effectiveSettings = getEffectiveSettings();
     applyThemeColor(effectiveSettings?.themeColor, effectiveSettings?.customColor);
-    applyDirectionToDOM(effectiveSettings?.layoutDirection);
+    applyDirectionIfPublic(effectiveSettings?.layoutDirection);
   }, []);
 
   useEffect(() => {
@@ -117,7 +128,7 @@ export function BrandProvider({ children, globalSettings, user }: { children: Re
     const updatedSettings = getBrandSettings(effectiveSettings);
     setBrandSettings(updatedSettings);
     applyThemeColor(effectiveSettings?.themeColor, effectiveSettings?.customColor);
-    applyDirectionToDOM(effectiveSettings?.layoutDirection);
+    applyDirectionIfPublic(effectiveSettings?.layoutDirection);
   }, [globalSettings, user]);
 
   const updateBrandSettings = (newSettings: Partial<BrandSettings>) => {

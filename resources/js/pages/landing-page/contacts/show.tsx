@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { type SharedData } from '@/types';
 import { useForm, usePage, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,7 @@ interface Contact {
   created_at: string;
 }
 
-interface PageProps {
+interface PageProps extends SharedData {
   contact: Contact;
 }
 

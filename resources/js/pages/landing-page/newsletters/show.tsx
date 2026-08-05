@@ -1,4 +1,5 @@
 import React from 'react';
+import { type SharedData } from '@/types';
 import { usePage, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,7 @@ interface Newsletter {
   created_at: string;
 }
 
-interface PageProps {
+interface PageProps extends SharedData {
   newsletter: Newsletter;
 }
 

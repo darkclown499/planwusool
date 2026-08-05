@@ -7,7 +7,7 @@ interface PaymentData {
   planId: number;
   billingCycle: string;
   couponCode?: string;
-  paymentMethod: string;
+  paymentMethod?: string;
   [key: string]: any;
 }
 

@@ -17,7 +17,7 @@ interface Product {
   stockQuantity: number;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
 }
 
@@ -52,7 +52,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
 
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
   const discountPercentage = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)
     : 0;
 
   useEffect(() => {
@@ -158,7 +158,7 @@ export const ProductDetail: React.FC<ProductDetailProps> = ({
               <div key={variant.name} className="mb-4">
                 <p className="text-sm font-semibold text-gray-800 mb-2">{variant.name}</p>
                 <div className="flex flex-wrap gap-2">
-                  {variant.options.map((option) => {
+                  {variant.options?.map((option) => {
                     const active = selectedVariant === option;
                     return (
                       <button

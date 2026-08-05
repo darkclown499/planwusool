@@ -28,7 +28,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {welcomeMessage || `مرحباً بك في ${storeName}`}
         </h1>
         {description && (
-          <p className="break-all text-sm md:text-lg opacity-90 mb-2">{description}</p>
+          <p className="break-words text-sm md:text-lg opacity-90 mb-2">{description}</p>
         )}
         {(address || city) && (
           <p className="text-sm md:text-xl opacity-90">

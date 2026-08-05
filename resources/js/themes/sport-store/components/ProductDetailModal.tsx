@@ -141,7 +141,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <>
                         <span className="text-lg text-gray-500 line-through">{formatCurrency(product.originalPrice, storeSettings, currencies)}</span>
                         <span className="bg-red-100 text-red-700 text-sm text-center font-medium px-2 py-1 rounded-full">
-                          -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% خصم
+                          -{Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)}% خصم
                         </span>
                       </>
                     )}
@@ -192,7 +192,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     
                     if (hasVariants) {
                       // Check if all variants are selected
-                      const requiredVariants = product.variants.length;
+                      const requiredVariants = product.variants?.length ?? 0;
                       const selectedVariantsCount = Object.keys(selectedVariants).length;
                       
                       if (selectedVariantsCount < requiredVariants) {
@@ -207,16 +207,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     onAddToCart(productToAdd);
                     onClose();
                   }}
-                  disabled={product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)}
+                  disabled={product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < (product.variants?.length ?? 0))}
                   className={`w-full py-3 md:py-2.5 px-6 mb-3 md:px-4 rounded-xl md:rounded-lg font-semibold md:text-sm transition-colors cursor-pointer mb-0 md:mb-3 sticky bottom-4 ${
-                    product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)
+                    product.availability === 'out_of_stock' || (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < (product.variants?.length ?? 0))
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-orange-600 hover:bg-orange-700 text-white'
                   }`}
                 >
                   {product.availability === 'out_of_stock' 
                     ? 'غير متوفر' 
-                    : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < product.variants.length)
+                    : (product.variants && Array.isArray(product.variants) && product.variants.length > 0 && Object.keys(selectedVariants).length < (product.variants?.length ?? 0))
                       ? 'اختر الخيارات'
                       : 'أضف إلى السلة'
                   }

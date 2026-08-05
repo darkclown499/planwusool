@@ -62,7 +62,7 @@ export default function Analytics({ analytics }: Props) {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('Total Revenue')}</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -75,7 +75,7 @@ export default function Analytics({ analytics }: Props) {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('Total Orders')}</CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -88,7 +88,7 @@ export default function Analytics({ analytics }: Props) {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('Total Customers')}</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -101,7 +101,7 @@ export default function Analytics({ analytics }: Props) {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('Conversion Rate')}</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -115,7 +115,7 @@ export default function Analytics({ analytics }: Props) {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Revenue Overview</CardTitle>
+              <CardTitle>{t('Revenue Overview')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -124,7 +124,7 @@ export default function Analytics({ analytics }: Props) {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`${formatCurrency(value)}`, 'Revenue']} />
+                    <Tooltip formatter={(value) => [`${formatCurrency(value as string | number)}`, 'Revenue']} />
                     <Bar dataKey="revenue" fill="#3b82f6" />
                   </RechartsBarChart>
                 </ResponsiveContainer>
@@ -134,7 +134,7 @@ export default function Analytics({ analytics }: Props) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Sales Trend</CardTitle>
+              <CardTitle>{t('Sales Trend')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
@@ -156,7 +156,7 @@ export default function Analytics({ analytics }: Props) {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Top Selling Products</CardTitle>
+              <CardTitle>{t('Top Selling Products')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -177,7 +177,7 @@ export default function Analytics({ analytics }: Props) {
 
           <Card>
             <CardHeader>
-              <CardTitle>Top Customers</CardTitle>
+              <CardTitle>{t('Top Customers')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -200,7 +200,7 @@ export default function Analytics({ analytics }: Props) {
         {/* Recent Activity */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>{t('Recent Activity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

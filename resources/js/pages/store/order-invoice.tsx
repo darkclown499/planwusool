@@ -20,17 +20,32 @@ interface OrderInvoiceProps {
     subtotal: number;
     tax: number;
     shipping: number;
+    discount?: number;
+    coupon?: string;
     currency: string;
+    payment_method?: string;
     customer: {
       name: string;
       email: string;
       phone: string;
+    };
+    shipping_address: {
+      name: string;
+      address: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
     };
     items: Array<{
       name: string;
       quantity: number;
       price: number;
       image: string;
+      tax_amount?: number;
+      tax_name?: string;
+      tax_percentage?: string;
+      variants?: any;
     }>;
   };
   config?: any;

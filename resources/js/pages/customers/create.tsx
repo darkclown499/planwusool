@@ -307,7 +307,7 @@ export default function CreateCustomer() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="shipping_address">Street Address</Label>
+                  <Label htmlFor="shipping_address">{t('Street Address')}</Label>
                   <Input 
                     id="shipping_address" 
                     value={formData.shipping_address.address}
@@ -326,7 +326,7 @@ export default function CreateCustomer() {
                   disabled={formData.same_as_billing}
                 />
                 <div>
-                  <Label htmlFor="shipping_postal">Postal Code</Label>
+                  <Label htmlFor="shipping_postal">{t('Postal Code')}</Label>
                   <Input 
                     id="shipping_postal" 
                     value={formData.shipping_address.postal_code}

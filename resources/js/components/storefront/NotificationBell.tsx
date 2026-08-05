@@ -255,7 +255,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
       {/* القائمة المنسدلة */}
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+        <div className="absolute start-0 mt-2 w-80 max-w-[calc(100vw-2.5rem)] md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50">
           {/* رأس القائمة */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
             <h3 className="text-sm font-bold text-gray-900">الإشعارات</h3>

@@ -36,6 +36,7 @@ interface CrudTableProps {
   permissions: string[];
   entityPermissions?: {
     view: string;
+    create: string;
     edit: string;
     delete: string;
   };
@@ -139,7 +140,7 @@ export function CrudTable({
                     variant="ghost" 
                     size="icon" 
                     className={cn("h-8 w-8", action.className)} 
-                    onClick={() => onAction(action.action, row)}
+                    onClick={() => onAction(action.action ?? '', row)}
                   >
                     <IconComponent size={16} />
                   </Button>

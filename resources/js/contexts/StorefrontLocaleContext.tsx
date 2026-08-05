@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 
 export type StorefrontLocale = 'ar' | 'he' | 'en';
 
@@ -528,7 +528,6 @@ const TRANSLATIONS: Record<StorefrontLocale, Record<string, string>> = {
     'رمز القسيمة': 'קוד קופון',
     'تطبيق': 'החל',
     'تحميل': 'הורדה',
-    'تم إتمام طلبك بنجاح!': 'ההזמנה הושלמה בהצלחה!',
     'شكراً لشرائك معنا!': 'תודה שקניתם אצלנו!',
     'مرحباً': 'שלום',
     'أهلاً وسهلاً': 'ברוכים הבאים',
@@ -988,7 +987,6 @@ const TRANSLATIONS: Record<StorefrontLocale, Record<string, string>> = {
     'رمز القسيمة': 'Coupon Code',
     'تطبيق': 'Apply',
     'تحميل': 'Download',
-    'تم إتمام طلبك بنجاح!': 'Your order has been completed successfully!',
     'شكراً لشرائك معنا!': 'Thank you for shopping with us!',
     'مرحباً': 'Hello',
     'أهلاً وسهلاً': 'Welcome',
@@ -1362,8 +1360,39 @@ interface StorefrontLocaleProviderProps {
   defaultLocale?: string;
 }
 
+function translateDom(root: HTMLElement, targetDict: Record<string, string>) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) => {
+      const parent = node.parentElement;
+      if (!parent) return NodeFilter.FILTER_REJECT;
+      const tag = parent.tagName;
+      if (['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'OPTION', 'SELECT'].includes(tag)) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
+      if (parent.hasAttribute('data-storefront-translated')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  const textNodes: Text[] = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode as Text);
+
+  for (const node of textNodes) {
+    const original = node.nodeValue ?? '';
+    if (!original.trim()) continue;
+    const translation = targetDict[original.trim()];
+    if (!translation || translation === original.trim()) continue;
+    const span = document.createElement('span');
+    span.setAttribute('data-storefront-translated', '1');
+    span.textContent = original.replace(original.trim(), translation);
+    node.parentNode?.replaceChild(span, node);
+  }
+}
+
 export const StorefrontLocaleProvider: React.FC<StorefrontLocaleProviderProps> = ({ children, defaultLocale }) => {
   const [locale, setLocaleState] = useState<StorefrontLocale>(() => getInitialLocale(defaultLocale));
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const setLocale = (next: StorefrontLocale) => {
     setLocaleState(next);
@@ -1375,9 +1404,23 @@ export const StorefrontLocaleProvider: React.FC<StorefrontLocaleProviderProps> =
   };
 
   useEffect(() => {
-    const isRTL = RTL_LOCALES.includes(locale);
-    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    // Arabic-first design: storefronts are always rendered right-to-left
+    // regardless of the selected store locale.
+    document.documentElement.dir = 'rtl';
     document.documentElement.lang = locale;
+  }, [locale]);
+
+  useEffect(() => {
+    if (locale === 'ar') return;
+    const root = contentRef.current;
+    if (!root) return;
+
+    const targetDict = TRANSLATIONS[locale];
+    translateDom(root, targetDict);
+
+    const observer = new MutationObserver(() => translateDom(root, targetDict));
+    observer.observe(root, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
   }, [locale]);
 
   const value = useMemo<StorefrontLocaleContextValue>(() => {
@@ -1386,10 +1429,14 @@ export const StorefrontLocaleProvider: React.FC<StorefrontLocaleProviderProps> =
       locale,
       setLocale,
       isRTL: RTL_LOCALES.includes(locale),
-      dir: RTL_LOCALES.includes(locale) ? 'rtl' : 'ltr',
+      dir: 'rtl',
       t: (key: string) => dict[key] || key,
     };
   }, [locale]);
 
-  return <StorefrontLocaleContext.Provider value={value}>{children}</StorefrontLocaleContext.Provider>;
+  return (
+    <StorefrontLocaleContext.Provider value={value}>
+      <div ref={contentRef}>{children}</div>
+    </StorefrontLocaleContext.Provider>
+  );
 };

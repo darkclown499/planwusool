@@ -113,10 +113,11 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  }, []);
 
  return (
- <AuthLayout
- description={t("Enter your credentials to access your account")}
- status={status}
- >
+  <AuthLayout
+  title={t("Login")}
+  description={t("Enter your credentials to access your account")}
+  status={status}
+  >
  <form noValidate onSubmit={submit}>
  <div className="space-y-4">
  {/* Email */}

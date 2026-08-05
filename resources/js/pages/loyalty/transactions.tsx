@@ -26,6 +26,7 @@ export default function LoyaltyTransactions() {
   return (
     <PageTemplate
       title={t('Loyalty Transactions')}
+      url="/loyalty/transactions"
       description={t('View all loyalty points transactions')}
       breadcrumbs={[
         { title: t('Dashboard'), href: route('dashboard') },
@@ -82,12 +83,12 @@ export default function LoyaltyTransactions() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium">{t('Date')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Customer')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Type')}</th>
-                        <th className="text-right py-3 px-4 font-medium">{t('Points')}</th>
-                        <th className="text-right py-3 px-4 font-medium">{t('Balance')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Description')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Date')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Customer')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Type')}</th>
+                        <th className="text-end py-3 px-4 font-medium">{t('Points')}</th>
+                        <th className="text-end py-3 px-4 font-medium">{t('Balance')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Description')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -104,10 +105,10 @@ export default function LoyaltyTransactions() {
                             <td className="py-3 px-4">
                               <Badge variant={badge.variant}>{badge.label}</Badge>
                             </td>
-                            <td className={`py-3 px-4 text-right font-semibold ${txn.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            <td className={`py-3 px-4 text-end font-semibold ${txn.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
                               {txn.points > 0 ? '+' : ''}{txn.points.toLocaleString()}
                             </td>
-                            <td className="py-3 px-4 text-right">{txn.balance_after.toLocaleString()}</td>
+                            <td className="py-3 px-4 text-end">{txn.balance_after.toLocaleString()}</td>
                             <td className="py-3 px-4 text-muted-foreground">{txn.description || '-'}</td>
                           </tr>
                         );

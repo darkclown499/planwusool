@@ -55,7 +55,8 @@ export default function ScreenshotsSection({ brandColor = '#3b82f6', settings, s
                       loading="lazy"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling.style.display = 'flex';
+                        const sibling = e.currentTarget.nextElementSibling as HTMLElement | null;
+                        if (sibling) { sibling.style.display = 'flex'; }
                       }}
                     />
                   ) : null}

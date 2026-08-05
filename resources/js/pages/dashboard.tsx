@@ -66,12 +66,14 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 
  const { themeColor, customColor } = useBrand();
  
- const userHasPermission = (permission: string) => {
- return isSuperAdmin || hasPermission(permission);
- };
+  const userHasPermission = (permission: string) => {
+  return isSuperAdmin || hasPermission(permission);
+  };
+
+  const themeEditorEnabled = isSuperAdmin || ((usePage().props as any).auth?.user?.plan?.enable_theme_editor ?? 'off') === 'on';
  
  const handleCardClick = (routeName: string, requiredPermission: string, id?: any) => {
- if (!checkPermission(requiredPermission)) {
+ if (!checkPermission(requiredPermission, (usePage().props as any).auth)) {
  return;
  }
  
@@ -337,9 +339,9 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </CardTitle>
  </CardHeader>
  <CardContent>
- {dashboardData.topPlans?.length > 0 ? (
+ {(dashboardData.topPlans?.length ?? 0) > 0 ? (
  <div className="space-y-3">
- {dashboardData.topPlans.map((plan, index) => (
+ {dashboardData.topPlans?.map((plan, index) => (
  <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-gray-50/50 hover:bg-gray-100/50 transition-colors">
  <div className="flex items-center gap-3">
  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
@@ -582,10 +584,10 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   {t('Store Settings')}
   </Button>
   )}
-  {currentStore && userHasPermission('settings-stores') && (
+  {currentStore && userHasPermission('settings-stores') && themeEditorEnabled && (
   <Button size="sm" variant="outline" onClick={() => router.visit(route('stores.appearance', currentStore.id))} className="h-8 gap-1.5">
   <Palette className="h-3.5 w-3.5" />
-  {t('Appearance')}
+  {t('Edit Template')}
   </Button>
   )}
   {userHasPermission('manage-stores') && (

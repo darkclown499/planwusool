@@ -81,18 +81,21 @@ const HelpTip = ({ text }: { text: string }) => (
   </Tooltip>
 );
 
-const SectionResetButton = ({ onReset }: { onReset: () => void }) => (
-  <Button
-    type="button"
-    variant="ghost"
-    size="sm"
-    onClick={onReset}
-    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-  >
-    <History className="h-3.5 w-3.5 me-1" />
-    Reset
-  </Button>
-);
+const SectionResetButton = ({ onReset }: { onReset: () => void }) => {
+  const { t } = useTranslation();
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      onClick={onReset}
+      className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+    >
+      <History className="h-3.5 w-3.5 me-1" />
+      {t('Reset')}
+    </Button>
+  );
+};
 
 const PlatformIcon = ({ platform, className }: { platform: string; className?: string }) => {
   switch (platform) {
@@ -173,14 +176,14 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
   const hasErrors = Object.keys(validationErrors).length > 0;
 
   const updateSetting = (key: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev: any) => ({ ...prev, [key]: value }));
     setDirty(true);
     setAutoSaveState('idle');
   };
 
   const setSocial = (links: any[]) => {
     setSocialLinks(links);
-    setFormData((prev) => ({ ...prev, social_links: links }));
+    setFormData((prev: any) => ({ ...prev, social_links: links }));
     setDirty(true);
     setAutoSaveState('idle');
   };
@@ -256,8 +259,8 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
   const cityOptions = useMemo(() => {
     const options: { value: string; label: string; hint: string }[] = [];
     (locationData || []).forEach((country) => {
-      (country.states || []).forEach((state) => {
-        (state.cities || []).forEach((city) => {
+      (country.states || []).forEach((state: any) => {
+        (state.cities || []).forEach((city: any) => {
           options.push({ value: `city-${city.id}`, label: city.name, hint: `${state.name} — ${country.name}` });
         });
       });
@@ -284,7 +287,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
     }
   };
 
-  const currencyValue = (formData.defaultCurrency || (formData.default_currency ? String(formData.default_currency).toUpperCase() : '')) || 'USD';
+  const currencyValue = (formData.defaultCurrency || (formData.default_currency ? String(formData.default_currency).toUpperCase() : '')) || 'ILS';
   const timezoneValue = formData.defaultTimezone || formData.timezone || 'UTC';
   const languageValue = formData.language || formData.defaultLanguage || 'ar';
   const maintenanceOn = formData.maintenance_mode === true || formData.maintenance_mode === 'true';
@@ -378,7 +381,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                     placeholder={t('We are currently performing maintenance. Please check back soon!')}
                     rows={3}
                   />
-                  <p className="text-xs text-muted-foreground">{t('This message will be shown to your visitors during maintenance.')}</p>
+                  <p className="text-xs text-muted-foreground text-start">{t('This message will be shown to your visitors during maintenance.')}</p>
                 </div>
               )}
             </div>
@@ -653,7 +656,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>{t('Social Media Links')}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">{t('Add or remove platforms as you need.')}</p>
+                  <p className="text-sm text-muted-foreground mt-1 text-start">{t('Add or remove platforms as you need.')}</p>
                 </div>
                 <SectionResetButton onReset={() => handleResetSection('social')} />
               </div>
@@ -682,7 +685,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                           <SelectItem key={p.value} value={p.value}>
                             <span className="flex items-center gap-2">
                               <PlatformIcon platform={p.value} className="h-4 w-4" />
-                              {p.label}
+                              {p.value === 'custom' ? t('Other / Custom') : p.label}
                             </span>
                           </SelectItem>
                         ))}
@@ -770,7 +773,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                     {t('SEO Settings')}
                     <HelpTip text={t('These meta tags help search engines understand and rank your store.')} />
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1 text-start">
                     {t('Improve your store visibility in search engines with these settings.')}
                   </p>
                 </div>
@@ -826,7 +829,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                     <BarChart3 className="h-4 w-4" />
                     {t('Tracking & Analytics')}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1 text-start">
                     {t('Add tracking IDs to measure your store traffic and conversions.')}
                   </p>
                 </div>
@@ -872,7 +875,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
               <CardTitle className="flex items-center gap-2">
                 {t('WhatsApp Widget')}
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground text-start">
                 {t('Add a floating WhatsApp button to your store for customer support. This is separate from order notifications.')}
               </p>
             </CardHeader>
@@ -909,7 +912,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                       id="whatsapp_widget_message"
                       value={formData.whatsapp_widget_message || ''}
                       onChange={(e) => updateSetting('whatsapp_widget_message', e.target.value)}
-                      placeholder="Hello! I need help with..."
+                      placeholder={t('Hello! I need help with...')}
                       rows={3}
                     />
                     <p className="text-xs text-muted-foreground">
@@ -967,8 +970,8 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                   <History className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-sm font-medium mb-1">{t('Custom CSS & JavaScript')}</h4>
-                  <p className="text-sm text-muted-foreground">
+                  <h4 className="text-sm font-medium mb-1 text-start">{t('Custom CSS & JavaScript')}</h4>
+                  <p className="text-sm text-muted-foreground text-start">
                     {t('Custom code with revision history has moved to its own page.')}
                   </p>
                 </div>

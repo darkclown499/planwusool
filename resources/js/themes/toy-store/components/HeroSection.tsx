@@ -68,7 +68,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       
 
       
-      <style jsx>{`
+      <style>{`
         @keyframes fadeInUp {
           from {
             opacity: 0;

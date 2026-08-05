@@ -10,7 +10,7 @@ import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 
-export default function FeaturesSection({ data, setData, errors, handleInputChange, getSectionData, updateSectionData, updateSectionVisibility, t = (key) => key }) {
+export default function FeaturesSection({ data, setData, errors, handleInputChange, getSectionData, updateSectionData, updateSectionVisibility, t = (key: any) => key }: any) {
  const { themeColor, customColor } = useBrand();
  const brandColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
  
@@ -196,7 +196,7 @@ export default function FeaturesSection({ data, setData, errors, handleInputChan
  </div>
  
  <div className="space-y-4">
- {(getSectionData('features').features_list || []).map((feature, index) => (
+ {(getSectionData('features').features_list || []).map((feature: any, index: any) => (
  <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-5">
  <div className="flex items-center justify-between mb-4">
  <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -209,7 +209,7 @@ export default function FeaturesSection({ data, setData, errors, handleInputChan
  size="sm"
  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
  onClick={() => {
- const newFeatures = (getSectionData('features').features_list || []).filter((_, i) => i !== index);
+ const newFeatures = (getSectionData('features').features_list || []).filter((_: any, i: any) => i !== index);
  updateSectionData('features', { features_list: newFeatures });
  }}
  >

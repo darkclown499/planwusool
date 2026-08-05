@@ -13,9 +13,10 @@ interface Product {
   originalPrice?: number;
   image: string;
   categoryId: string;
+  sku: string;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; values: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
 }
 
 interface ProductGridProps {

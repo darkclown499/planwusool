@@ -37,10 +37,10 @@ export function formatStoreCurrency(
   
   // Default fallback
   const currency = storeCurrency || {
-    code: 'USD',
-    symbol: '$',
-    name: 'US Dollar',
-    position: 'before',
+    code: 'ILS',
+    symbol: '₪',
+    name: 'Israeli Shekel',
+    position: 'after',
     decimals: 2,
     decimal_separator: '.',
     thousands_separator: ','
@@ -129,22 +129,22 @@ export function formatCurrency(
   currencies: Currency[] = []
 ): string {
   const {
-    defaultCurrency = 'USD',
+    defaultCurrency = 'ILS',
     decimalFormat = '2',
     decimalSeparator = '.',
     thousandsSeparator = ',',
-    currencySymbolPosition = 'before',
+    currencySymbolPosition = 'after',
     currencySymbolSpace = false,
     floatNumber = true
   } = storeSettings;
 
   // Convert amount to number
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  if (isNaN(numAmount)) return '$0.00';
+  if (isNaN(numAmount)) return '₪0.00';
 
   // Get currency symbol
   const currency = currencies.find(c => c.code === defaultCurrency);
-  const symbol = currency?.symbol || '$';
+  const symbol = currency?.symbol || '₪';
 
   // Handle float number setting
   const finalAmount = (floatNumber === false || floatNumber === '0') 

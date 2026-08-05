@@ -18,10 +18,7 @@ import tr from '../lang/tr.json';
 import zh from '../lang/zh.json';
 
 function getInitialLanguage() {
-    try {
-        var saved = localStorage.getItem('i18nextLng');
-        if (saved) return saved;
-    } catch (e) { /* ignore */ }
+    // Arabic-first: always start in Arabic.
     return 'ar';
 }
 

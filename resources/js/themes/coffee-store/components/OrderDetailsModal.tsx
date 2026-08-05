@@ -182,10 +182,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 </div>
                 
                 <div className="divide-y divide-stone-100">
-                  {order.items.map((item, index) => {
+                  {order.items.map((item: any, index: any) => {
                     const itemTotal = item.price * item.quantity;
                     const itemTotalWithTax = itemTotal + item.tax_amount;
-                    const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                    const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                     
                     return (
                       <div key={index} className="p-5 hover:bg-stone-50 transition-colors">

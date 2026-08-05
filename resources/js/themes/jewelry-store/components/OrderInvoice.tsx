@@ -167,7 +167,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                         <td className="py-3 md:py-4 px-2 md:px-4">
                           <h4 className="font-medium text-yellow-900 text-xs md:text-sm leading-tight">{item.name}</h4>
                           {(() => {
-                            const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                            const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                             return variants && Object.keys(variants).length > 0 && (
                               <div className="text-xs text-yellow-600 mt-1 font-medium">
                                 {Object.entries(variants).map(([key, value], index) => (
@@ -204,10 +204,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                 <span className="text-yellow-700">المجموع الفرعي</span>
                 <span className="text-yellow-900">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
               </div>
-              {order.discount > 0 && (
+              {(order.discount ?? 0) > 0 && (
                 <div className="flex justify-between text-yellow-600 text-sm md:text-base">
                   <span>خصم الكوبون {order.coupon && `(${order.coupon})`}</span>
-                  <span>-{formatCurrency(order.discount, storeSettings, currencies)}</span>
+                  <span>-{formatCurrency(order.discount ?? 0, storeSettings, currencies)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm md:text-base">

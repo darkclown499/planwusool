@@ -13,7 +13,7 @@ interface Product {
   category?: string;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
   taxName?: string;
   taxPercentage?: number;
@@ -22,24 +22,25 @@ interface Product {
 interface Category {
   id: string;
   name: string;
+  description?: string;
 }
 
 interface ProductContextType {
-  products: Product[];
-  categories: Category[];
-  filteredProducts: Product[];
+  products: any[];
+  categories: any[];
+  filteredProducts: any[];
   activeCategory: string;
   searchQuery: string;
-  selectedProduct: Product | null;
+  selectedProduct: any;
   selectedImageIndex: number;
   showProductDetail: boolean;
   setActiveCategory: (categoryId: string) => void;
   handleSearch: (query: string) => void;
-  handleProductClick: (product: Product) => void;
+  handleProductClick: (product: any) => void;
   handleCloseProductDetail: () => void;
   handleImageSelect: (index: number) => void;
   handleCategoryClick: (categoryId: string) => void;
-  groupProductsByCategory: () => { [key: string]: Product[] };
+  groupProductsByCategory: () => { [key: string]: any[] };
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);

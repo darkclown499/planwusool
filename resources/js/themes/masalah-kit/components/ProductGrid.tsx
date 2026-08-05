@@ -12,7 +12,7 @@ interface Product {
   stockQuantity: number;
   categoryId: string;
   availability: 'in_stock' | 'out_of_stock';
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
 }
 

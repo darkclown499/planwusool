@@ -13,7 +13,7 @@ interface Product {
   image: string;
   discount?: number;
   sku: string;
-  variants?: { name: string; values: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
 }
 
 interface ProductCardProps {
@@ -25,7 +25,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onAddToCart, onProductClick }) => {
   const discountPercentage = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)
     : product.discount;
 
   // Get store settings from page props

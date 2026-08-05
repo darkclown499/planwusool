@@ -108,7 +108,7 @@ export default function EditAdvancedCoupon({ coupon, availableProducts, availabl
     setFormData(prev => ({
       ...prev,
       category_ids: prev.category_ids.includes(categoryId)
-        ? prev.category_ids.filter(id => id !== categoryId)
+        ? prev.category_ids.filter((id: any) => id !== categoryId)
         : [...prev.category_ids, categoryId],
     }));
   };

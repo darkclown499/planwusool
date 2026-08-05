@@ -28,7 +28,7 @@ const glassCardClass =
 
 export default function StoreDemo() {
   const [layout] = useState(storeLayout);
-  const [direction, setDirection] = useState<'ltr' | 'rtl'>('ltr');
+  const [direction, setDirection] = useState<'ltr' | 'rtl'>('rtl');
   const [locale, setLocale] = useState('en');
 
   useEffect(() => {
@@ -36,9 +36,10 @@ export default function StoreDemo() {
       return;
     }
 
-    const savedLocale = window.localStorage.getItem('i18nextLng') || window.localStorage.getItem('language') || 'en';
+    const savedLocale = window.localStorage.getItem('i18nextLng') || window.localStorage.getItem('language') || 'ar';
     const nextLocale = savedLocale.toLowerCase();
-    const nextDirection = ['ar', 'he'].includes(nextLocale) ? 'rtl' : 'ltr';
+    // Arabic-first: direction is always RTL.
+    const nextDirection = 'rtl';
 
     setLocale(nextLocale);
     setDirection(nextDirection);
@@ -52,7 +53,8 @@ export default function StoreDemo() {
     }
 
     const nextLocale = value.toLowerCase();
-    const nextDirection = ['ar', 'he'].includes(nextLocale) ? 'rtl' : 'ltr';
+    // Arabic-first: direction is always RTL.
+    const nextDirection = 'rtl';
 
     window.localStorage.setItem('i18nextLng', nextLocale);
     window.localStorage.setItem('language', nextLocale);

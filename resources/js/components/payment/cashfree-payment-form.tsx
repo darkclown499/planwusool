@@ -92,7 +92,7 @@ export function CashfreePaymentForm({
           mode: cashfreeMode
         });
       } catch (error) {
-        toast.error('Failed to initialize Cashfree: ' + error.message);
+        toast.error('Failed to initialize Cashfree: ' + (error instanceof Error ? error.message : String(error)));
         return;
       }
       

@@ -184,6 +184,7 @@ const CoffeeStoreContent: React.FC = () => {
         onProfileClick={() => setShowProfileModal(true)}
         onOrdersClick={() => setShowOrdersModal(true)}
         onLogoutClick={() => logout(store?.slug)}
+        storeId={store?.id}
         onWishlistClick={() => setShowWishlistModal(true)}
         wishlistCount={wishlistCount}
       />

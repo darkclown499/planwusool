@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMasalahTheme } from '../MasalahThemeProvider';
 import { useStorefrontLocale } from '../../../contexts/StorefrontLocaleContext';
+import { NotificationBell } from '../../../components/storefront/NotificationBell';
 
 interface HeaderProps {
   storeName: string;
@@ -17,6 +18,7 @@ interface HeaderProps {
   onMenuClick: () => void;
   onWishlistClick?: () => void;
   wishlistCount?: number;
+  storeId?: string | number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,7 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   onLogoutClick,
   onMenuClick,
   onWishlistClick,
-  wishlistCount = 0
+  wishlistCount = 0,
+  storeId
 }) => {
   const theme = useMasalahTheme();
   const { t } = useStorefrontLocale();
@@ -95,6 +98,14 @@ export const Header: React.FC<HeaderProps> = ({
         </form>
 
         <div className="flex items-center gap-1 shrink-0">
+          {storeId && (
+            <NotificationBell
+              storeId={storeId}
+              isLoggedIn={isLoggedIn}
+              onRequireLogin={onLoginClick}
+            />
+          )}
+
           {onWishlistClick && (
             <button
               onClick={onWishlistClick}

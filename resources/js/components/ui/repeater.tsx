@@ -63,7 +63,7 @@ export function Repeater({
 
   const createEmptyItem = () => {
     const emptyItem: any = {};
-    fields.forEach(field => {
+    fields.forEach((field: any) => {
       emptyItem[field.name] = field.defaultValue || (field.type === 'switch' ? false : '');
     });
     return emptyItem;

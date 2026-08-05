@@ -88,7 +88,7 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
         </div>
 
         <div className="space-y-2 sm:space-y-3">
-          {displayFaqs.map((faq) => (
+          {displayFaqs.map((faq: any) => (
             <div
               key={faq.id}
               className="bg-gray-50 border border-gray-200 rounded-lg"
@@ -100,7 +100,7 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
                 aria-controls={`faq-answer-${faq.id}`}
                 aria-describedby={`faq-question-${faq.id}`}
               >
-                <h3 className="text-lg font-semibold text-gray-900 pr-4" id={`faq-question-${faq.id}`}>
+                <h3 className="text-lg font-semibold text-gray-900 pe-4" id={`faq-question-${faq.id}`}>
                   {t(faq.question, { defaultValue: faq.question })}
                 </h3>
                 {openFaq === faq.id ? (

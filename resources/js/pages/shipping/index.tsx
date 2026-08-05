@@ -31,7 +31,7 @@ export default function Shipping() {
         router.visit(route('shipping.edit', shippingId));
         break;
       case 'delete':
-        setSelectedShipping(shippings.find(s => s.id === shippingId));
+        setSelectedShipping(shippings.find((s: any) => s.id === shippingId));
         setIsDeleteDialogOpen(true);
         break;
       case 'create':
@@ -43,7 +43,7 @@ export default function Shipping() {
     }
   };
 
-  const handleDelete = (shipping) => {
+  const handleDelete = (shipping: any) => {
     setSelectedShipping(shipping);
     setIsDeleteDialogOpen(true);
   };
@@ -163,7 +163,7 @@ export default function Shipping() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {shippings.map((shipping) => (
+                    {shippings.map((shipping: any) => (
                       <div key={shipping.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-4">
                           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">

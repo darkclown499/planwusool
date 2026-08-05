@@ -186,6 +186,7 @@ const JewelryStoreContent: React.FC = () => {
         onWishlistClick={() => setShowWishlistModal(true)}
         wishlistCount={wishlistCount}
         onLogoutClick={() => logout(store?.slug)}
+        storeId={store?.id}
       />
       
       <HeroSection 

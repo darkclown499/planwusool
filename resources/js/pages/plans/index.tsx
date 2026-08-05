@@ -480,7 +480,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
     if (plan.is_trial_available && !userTrialUsed) {
       return (
         <div className="space-y-2">
-          {hasPermission('trial-plans', auth) && (
+          {hasPermission('trial-plans') && (
             <Button
               onClick={() => handleStartTrial(plan.id)}
               disabled={processing}
@@ -491,7 +491,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
               {t(`Start ${plan.trial_days} Day Trial`)}
             </Button>
           )}
-          {hasPermission('subscribe-plans', auth) && (
+          {hasPermission('subscribe-plans') && (
             <Button
               onClick={() => handleSubscribe(plan.id)}
               disabled={processing}
@@ -506,7 +506,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
 
     return (
       <div className="space-y-2">
-        {hasPermission('request-plans', auth) && (
+        {hasPermission('request-plans') && (
           <Button
             onClick={() => handlePlanRequest(plan.id)}
             disabled={processing}
@@ -517,7 +517,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
             {t('Request Plan')}
           </Button>
         )}
-        {hasPermission('subscribe-plans', auth) && (
+        {hasPermission('subscribe-plans') && (
           <Button
             onClick={() => handleSubscribe(plan.id)}
             disabled={processing}
@@ -647,7 +647,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
               <Clock className="h-4 w-4 text-emerald-600" />
               <span className="text-sm font-medium text-emerald-700">{t('All plans are yearly subscriptions')}</span>
             </div>
-            {isAdmin && hasPermission('create-plans', auth) && (
+            {isAdmin && hasPermission('create-plans') && (
               <Button className="w-full sm:w-auto" onClick={() => router.get(route('plans.create'))}>
                 <Plus className="h-4 w-4 me-2" />
                 {t("Add Plan")}
@@ -921,7 +921,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {hasPermission('edit-plans', auth) && (
+                        {hasPermission('edit-plans') && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -933,7 +933,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                           </Button>
                         )}
 
-                        {!plan.is_default && hasPermission('delete-plans', auth) && (
+                        {!plan.is_default && hasPermission('delete-plans') && (
                           <Button
                             variant="outline"
                             size="sm"

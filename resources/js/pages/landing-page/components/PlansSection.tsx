@@ -178,10 +178,10 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
   const isRtl = ['ar', 'he'].includes(currentLocale);
 
   useEffect(() => {
-    const nextDirection = isRtl ? 'rtl' : 'ltr';
-    document.documentElement.dir = nextDirection;
-    document.documentElement.lang = currentLocale;
-  }, [currentLocale, isRtl]);
+    // Arabic-first: direction is always RTL, never derived from language.
+    document.documentElement.dir = 'rtl';
+    document.documentElement.lang = 'ar';
+  }, []);
 
   const displayPlans = defaultPlans;
 

@@ -28,9 +28,10 @@ export default function StaticPageLayout({ title, children, brandColor = '#10b77
   }, []);
 
   useEffect(() => {
-    document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
-    document.documentElement.lang = currentLocale;
-  }, [currentLocale, isRtl]);
+    // Arabic-first: direction is always RTL, never derived from language.
+    document.documentElement.dir = 'rtl';
+    document.documentElement.lang = 'ar';
+  }, []);
 
   const handleLanguageChange = (code: string) => {
     i18n.changeLanguage(code);
@@ -40,7 +41,7 @@ export default function StaticPageLayout({ title, children, brandColor = '#10b77
   return (
     <div
       className="min-h-screen bg-gray-950"
-      dir={isRtl ? 'rtl' : 'ltr'}
+      dir="rtl"
       style={{ fontFamily: isRtl ? 'Tajawal, "IBM Plex Sans Arabic", Inter, sans-serif' : 'Inter, "Segoe UI", sans-serif' }}
     >
       {/* Header — matches landing page */}

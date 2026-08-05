@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { usersConfig } from '@/config/crud/users';
 import { PageTemplate } from '@/components/page-template';
+import { type PageAction } from '@/types';
 import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -118,7 +119,7 @@ export default function Users() {
   };
 
   const handleAction = (action: string, item: any) => {
-    const permissionMap = {
+    const permissionMap: Record<string, string> = {
       'view': 'view-users',
       'edit': 'edit-users',
       'delete': 'delete-users',
@@ -241,7 +242,7 @@ export default function Users() {
   };
 
   // Define page actions
-  const pageActions = [];
+  const pageActions: PageAction[] = [];
 
   // Add the "Add New User" button if user has permission and within limits
   if (hasPermission(permissions, 'create-users')) {

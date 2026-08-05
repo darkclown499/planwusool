@@ -25,6 +25,8 @@ interface AboutUsProps {
     image_title?: string;
     image_subtitle?: string;
     image_icon?: string;
+    image?: string;
+    background_color?: string;
   };
 }
 

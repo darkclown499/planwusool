@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
+import { NotificationBell } from '../../../components/storefront/NotificationBell';
 
 interface HeaderProps {
   storeName: string;
@@ -14,6 +15,7 @@ interface HeaderProps {
   onProfileClick: () => void;
   onOrdersClick: () => void;
   onLogoutClick: () => void;
+  storeId?: string | number;
   onWishlistClick?: () => void;
   wishlistCount?: number;
 }
@@ -30,6 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   onProfileClick,
   onOrdersClick,
   onLogoutClick,
+  storeId,
   onWishlistClick,
   wishlistCount = 0
 }) => {
@@ -98,6 +101,13 @@ export const Header: React.FC<HeaderProps> = ({
                     </span>
                   )}
                 </button>
+              )}
+              {storeId && (
+                <NotificationBell
+                  storeId={storeId}
+                  isLoggedIn={isLoggedIn}
+                  onRequireLogin={onLoginClick}
+                />
               )}
               {/* Cart */}
               <button
@@ -194,6 +204,13 @@ export const Header: React.FC<HeaderProps> = ({
                     </span>
                   )}
                 </button>
+              )}
+              {storeId && (
+                <NotificationBell
+                  storeId={storeId}
+                  isLoggedIn={isLoggedIn}
+                  onRequireLogin={onLoginClick}
+                />
               )}
               {/* Mobile Cart */}
               <button

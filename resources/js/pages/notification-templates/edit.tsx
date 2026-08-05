@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useForm } from '@inertiajs/react';
+import { useForm, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { Save, ArrowLeft } from 'lucide-react';
 import { Link } from '@inertiajs/react';
@@ -56,7 +56,7 @@ export default function NotificationTemplatesEdit({ template, languages }: Props
       ...data,
       templates: Object.values(data.templates)
     };
-    put(route('notification-templates.update', template.id), formData);
+    router.put(route('notification-templates.update', template.id), formData);
   };
 
   const updateTemplate = (lang: string, field: string, value: string) => {

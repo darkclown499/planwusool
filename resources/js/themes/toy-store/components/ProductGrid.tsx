@@ -14,7 +14,7 @@ interface Product {
   sku: string;
   stockQuantity: number;
   availability: 'in_stock' | 'out_of_stock';
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
 }
 
 interface ProductGridProps {
@@ -48,7 +48,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
         const hasVariants = product.variants && product.variants.length > 0;
         const isOnSale = product.originalPrice && product.originalPrice > product.price;
         const discountPercentage = isOnSale 
-          ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+          ? Math.round((((product.originalPrice ?? 0) - product.price) / (product.originalPrice ?? 0)) * 100)
           : 0;
 
         return (

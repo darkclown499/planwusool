@@ -133,12 +133,12 @@ export default function ProductReviews() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium">{t('Product')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Customer')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Rating')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Comment')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Status')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Actions')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Product')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Customer')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Rating')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Comment')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Status')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Actions')}</th>
                       </tr>
                     </thead>
                     <tbody>

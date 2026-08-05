@@ -57,7 +57,7 @@ export function PlanSubscriptionModal({
           <DialogTitle>{t('Subscribe to {{planName}}', { planName: plan.name })}</DialogTitle>
         </DialogHeader>
 
-        <div className="overflow-y-auto flex-1 pr-2">
+        <div className="overflow-y-auto flex-1 pe-2">
           <PaymentProcessor
             plan={plan}
             billingCycle={billingCycle}

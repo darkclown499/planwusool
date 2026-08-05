@@ -127,13 +127,13 @@ export default function AbandonedCarts() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-3 px-4 font-medium">{t('Customer')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Contact')}</th>
-                        <th className="text-right py-3 px-4 font-medium">{t('Cart Total')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Items')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Status')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Last Activity')}</th>
-                        <th className="text-left py-3 px-4 font-medium">{t('Actions')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Customer')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Contact')}</th>
+                        <th className="text-end py-3 px-4 font-medium">{t('Cart Total')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Items')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Status')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Last Activity')}</th>
+                        <th className="text-start py-3 px-4 font-medium">{t('Actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -152,7 +152,7 @@ export default function AbandonedCarts() {
                               {cart.customer_phone && <div>{cart.customer_phone}</div>}
                               {!cart.customer_email && !cart.customer_phone && <span className="text-xs">-</span>}
                             </td>
-                            <td className="py-3 px-4 text-right font-semibold">{formatCurrency(cart.cart_total)}</td>
+                            <td className="py-3 px-4 text-end font-semibold">{formatCurrency(cart.cart_total)}</td>
                             <td className="py-3 px-4">{items.length} {t('items')}</td>
                             <td className="py-3 px-4">
                               <Badge variant={badge.variant}>{badge.label}</Badge>

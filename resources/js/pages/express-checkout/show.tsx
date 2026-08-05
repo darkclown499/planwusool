@@ -117,7 +117,7 @@ export default function ShowExpressCheckout() {
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <CreditCard className="h-5 w-5" />
-                <CardTitle>Payment Methods</CardTitle>
+                <CardTitle>{t('Payment Methods')}</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -175,7 +175,7 @@ export default function ShowExpressCheckout() {
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <Settings className="h-5 w-5" />
-                <CardTitle>Checkout Settings</CardTitle>
+                <CardTitle>{t('Checkout Settings')}</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -220,7 +220,7 @@ export default function ShowExpressCheckout() {
           <CardContent>
             <div className="space-y-3">
               {recentTransactions && recentTransactions.length > 0 ? (
-                recentTransactions.map((transaction, index) => (
+                recentTransactions.map((transaction: any, index: any) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Zap className="h-4 w-4 text-primary" />

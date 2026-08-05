@@ -37,6 +37,7 @@ interface EditOrderProps {
       name: string;
       quantity: number;
       price: number;
+      variants?: any;
     }>;
     summary: {
       subtotal: number;
@@ -95,7 +96,7 @@ export default function EditOrder({ order, customers, products, shippingMethods 
   ];
 
   const addOrderItem = () => {
-    setOrderItems([...orderItems, { id: Date.now(), productId: 0, name: '', quantity: 1, price: 0 }]);
+    setOrderItems([...orderItems, { id: Date.now(), productId: 0, name: '', quantity: 1, price: 0, variants: {} }]);
   };
 
   const removeOrderItem = (index: number) => {
@@ -224,9 +225,9 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                           </SelectContent>
                         </Select>
                         {/* Show variant selection if product has variants */}
-                        {item.productId > 0 && products.find(p => p.id === item.productId)?.variants?.length > 0 && (
+                        {item.productId > 0 && (products.find(p => p.id === item.productId)?.variants?.length ?? 0) > 0 && (
                           <div className="mt-2 space-y-2">
-                            {products.find(p => p.id === item.productId)?.variants.map((variant, vIndex) => (
+                            {products.find(p => p.id === item.productId)?.variants?.map((variant, vIndex) => (
                               <div key={vIndex}>
                                 <Label className="text-xs">{variant.name}</Label>
                                 <Select onValueChange={(value) => {

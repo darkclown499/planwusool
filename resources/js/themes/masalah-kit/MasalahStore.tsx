@@ -234,6 +234,7 @@ export const MasalahStore: React.FC = () => {
         onMenuClick={() => setShowMobileSidebar(true)}
         onWishlistClick={() => setShowWishlistModal(true)}
         wishlistCount={wishlistCount}
+        storeId={store?.id}
       />
 
       <div className="max-w-7xl mx-auto px-4 py-4 flex gap-6 items-start">

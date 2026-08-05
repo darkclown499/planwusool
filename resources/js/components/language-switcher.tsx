@@ -62,11 +62,12 @@ export const LanguageSwitcher: React.FC = () => {
                             onClick={() => {
                                 i18n.changeLanguage(language.code);
 
-                                // Set RTL/LTR direction
-                                const direction = language.rtl ? 'rtl' : 'ltr';
-                                document.documentElement.dir = direction;
-                                document.documentElement.setAttribute('dir', direction);
-                                localStorage.setItem('layoutDirection', direction);
+                                // Arabic-first design: the direction stays RTL no
+                                // matter which language is selected (only the text
+                                // translations change, the layout stays RTL).
+                                document.documentElement.dir = 'rtl';
+                                document.documentElement.setAttribute('dir', 'rtl');
+                                localStorage.setItem('layoutDirection', 'rtl');
 
                                 if (isAuthenticated) {
                                     router.post(route('user.language.update'), {

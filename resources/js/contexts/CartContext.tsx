@@ -16,7 +16,7 @@ interface Product {
   taxName?: string;
   taxPercentage?: number;
   description?: string;
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
 }
 
@@ -25,13 +25,13 @@ interface CartItem extends Product {
 }
 
 interface CartContextType {
-  cartItems: CartItem[];
+  cartItems: any[];
   cartLoading: boolean;
   cartError: string | null;
-  addToCart: (product: Product) => Promise<void>;
+  addToCart: (product: any) => Promise<void>;
   removeFromCart: (index: number) => Promise<void>;
   updateQuantity: (index: number, change: number) => Promise<void>;
-  setQuantity: (index: number, quantity: number) => Promise<void>;
+  setQuantity: (index: number, quantity: any) => Promise<void>;
   loadCart: () => Promise<void>;
   syncGuestCart: () => Promise<void>;
   clearCart: () => void;

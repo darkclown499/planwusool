@@ -279,7 +279,7 @@ export default function AdminNotifications() {
                           {notification.customer && (
                             <span>
                               {t('To')}: {notification.customer.first_name} {notification.customer.last_name}
-                              <span className="ml-1 opacity-60">({notification.customer.email})</span>
+                              <span className="ms-1 opacity-60">({notification.customer.email})</span>
                             </span>
                           )}
                           <span>{formatDate(notification.created_at)}</span>

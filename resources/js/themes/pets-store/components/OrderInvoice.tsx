@@ -202,7 +202,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   <div key={index} className="bg-orange-50 rounded-2xl p-4 border border-orange-100">
                     <h4 className="font-medium text-gray-900 mb-2">{item.name}</h4>
                     {(() => {
-                      const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                      const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                       return variants && Object.keys(variants).length > 0 && (
                         <div className="text-xs text-gray-500 mb-2">
                           {Object.entries(variants).map(([key, value], index) => (
@@ -223,11 +223,11 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                         <span className="text-gray-500">سعر القطعة:</span>
                         <p className="font-medium">{formatCurrency(item.price, storeSettings, currencies)}</p>
                       </div>
-                      {item.tax_amount > 0 && (
+                      {(item.tax_amount ?? 0) > 0 && (
                         <>
                           <div>
                             <span className="text-gray-500">الضريبة:</span>
-                            <p className="font-medium">{formatCurrency(item.tax_amount, storeSettings, currencies)}</p>
+                            <p className="font-medium">{formatCurrency(item.tax_amount ?? 0, storeSettings, currencies)}</p>
                           </div>
                           <div>
                             <span className="text-gray-500">نسبة الضريبة:</span>
@@ -266,7 +266,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                         <td className="py-4 px-2">
                           <h4 className="font-medium text-gray-900">{item.name}</h4>
                           {(() => {
-                            const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                            const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                             return variants && Object.keys(variants).length > 0 && (
                               <div className="text-xs text-gray-500 mt-1">
                                 {Object.entries(variants).map(([key, value], index) => (
@@ -311,10 +311,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   <span className="text-gray-600">المجموع الفرعي</span>
                   <span className="text-gray-900 font-medium">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
                 </div>
-                {order.discount > 0 && (
+                {(order.discount ?? 0) > 0 && (
                   <div className="flex justify-between text-orange-600 text-sm sm:text-base">
                     <span>خصم الكوبون {order.coupon && `(${order.coupon})`}</span>
-                    <span className="font-medium">-{formatCurrency(order.discount, storeSettings, currencies)}</span>
+                    <span className="font-medium">-{formatCurrency(order.discount ?? 0, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm sm:text-base">

@@ -198,7 +198,7 @@ export default function CreateExpressCheckout() {
           <TabsContent value="payment" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Payment Methods</CardTitle>
+                <CardTitle>{t('Payment Methods')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
@@ -267,7 +267,7 @@ export default function CreateExpressCheckout() {
           <TabsContent value="settings" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Checkout Settings</CardTitle>
+                <CardTitle>{t('Checkout Settings')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">

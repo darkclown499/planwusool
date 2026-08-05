@@ -12,7 +12,7 @@ const DEFAULT_THEME: ThemeSettings = {
     customColor: '#10b77f',
 };
 
-export const THEME_COLORS = {
+export const THEME_COLORS: Record<string, string> = {
     blue: '#3b82f6',
     green: '#10b77f',
     purple: '#8b5cf6',
@@ -81,10 +81,10 @@ export function useAppearance() {
 
     const updateCustomColor = useCallback((hexColor: string, setAsActive = false) => {
         setThemeSettings(prev => {
-            const newSettings = {
+            const newSettings: ThemeSettings = {
                 ...prev,
                 customColor: hexColor,
-                ...(setAsActive && { themeColor: 'custom' })
+                ...(setAsActive ? { themeColor: 'custom' as const } : {})
             };
             localStorage.setItem('themeSettings', JSON.stringify(newSettings));
             applyTheme(newSettings);

@@ -47,7 +47,11 @@ interface AppHeaderProps {
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth, stores = [] } = page.props;
+    const user = auth.user;
     const getInitials = useInitials();
+    if (!user) {
+        return null;
+    }
     return (
         <>
             <div className="border-sidebar-border/80 border-b">
@@ -69,7 +73,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map((item) => (
-                                                <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
+                                                <Link key={item.title} href={item.href ?? '#'} className="flex items-center space-x-2 font-medium">
                                                     {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                     <span>{item.title}</span>
                                                 </Link>
@@ -101,11 +105,14 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </Link>
 
                     {/* Store Switcher - Show for company users and sub-users with stores data */}
-                    {(auth.user.type === 'company' || (stores && stores.length > 0)) && (
+                    {(user.type === 'company' || (stores && stores.length > 0)) && (
                         <div className="ms-4 flex items-center">
                             <StoreSwitcher 
-                                items={stores} 
-                                currentStore={stores.find(store => String(store.id) === String(auth.user.current_store)) || (stores.length > 0 ? stores[0] : null)} 
+                                items={stores.map(s => ({ id: String(s.id), name: s.name }))} 
+                                currentStore={(() => {
+                                    const found = stores.find(store => String(store.id) === String(user.current_store)) || (stores.length > 0 ? stores[0] : null);
+                                    return found ? { id: String(found.id), name: found.name } : undefined;
+                                })()} 
                             />
                         </div>
                     )}
@@ -117,7 +124,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 {mainNavItems.map((item, index) => (
                                     <NavigationMenuItem key={index} className="relative flex h-full items-center">
                                         <Link
-                                            href={item.href}
+                                            href={item.href ?? '#'}
                                             className={cn(
                                                 navigationMenuTriggerStyle(),
                                                 page.url === item.href && activeItemStyles,
@@ -169,15 +176,15 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
+                                        <AvatarImage src={user.avatar ?? undefined} alt={user.name} />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black">
-                                            {getInitials(auth.user.name)}
+                                            {getInitials(user.name)}
                                         </AvatarFallback>
                                     </Avatar>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56" align="end">
-                                <UserMenuContent user={auth.user} />
+                                <UserMenuContent user={user} />
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -186,7 +193,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             {breadcrumbs.length > 1 && (
                 <div className="border-sidebar-border/70 flex w-full border-b">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
-                        <Breadcrumbs breadcrumbs={breadcrumbs} />
+                        <Breadcrumbs items={breadcrumbs.map(b => ({ label: b.title, href: b.href }))} />
                     </div>
                 </div>
             )}

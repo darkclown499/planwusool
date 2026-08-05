@@ -224,7 +224,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
       
       // Set country ID and load states
       const countries = (window as any).page?.props?.countries || [];
-      const selectedCountry = countries.find(c => c.id.toString() === userProfile.country.toString());
+      const selectedCountry = countries.find((c: any) => c.id.toString() === userProfile.country.toString());
       if (selectedCountry) {
         setCountryId(selectedCountry.id);
         
@@ -234,7 +234,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
             .then(res => res.json())
             .then(data => {
               const statesData = Array.isArray(data) ? data : (data.states || []);
-              const selectedState = statesData.find(s => s.id.toString() === userProfile.state.toString());
+              const selectedState = statesData.find((s: any) => s.id.toString() === userProfile.state.toString());
               if (selectedState) {
                 setStateId(selectedState.id);
                 
@@ -343,7 +343,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <input
                         type="text"
                         value={profile.firstName || ''}
-                        onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
+                        onChange={(e) => setProfile((prev: any) => ({ ...prev, firstName: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                         placeholder="أدخل اسمك الأول"
                         required
@@ -354,7 +354,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <input
                         type="text"
                         value={profile.lastName || ''}
-                        onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
+                        onChange={(e) => setProfile((prev: any) => ({ ...prev, lastName: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                         placeholder="أدخل اسم عائلتك"
                         required
@@ -375,7 +375,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <input
                         type="email"
                         value={profile.email || ''}
-                        onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                        onChange={(e) => setProfile((prev: any) => ({ ...prev, email: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                         placeholder="أدخل بريدك الإلكتروني"
                         required
@@ -386,7 +386,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <input
                         type="tel"
                         value={profile.phone || ''}
-                        onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
+                        onChange={(e) => setProfile((prev: any) => ({ ...prev, phone: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                         placeholder="أدخل رقم هاتفك"
                         required
@@ -406,7 +406,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <label className="block text-sm font-medium text-amber-700 mb-2">العنوان</label>
                       <textarea
                         value={profile.address || ''}
-                        onChange={(e) => setProfile(prev => ({ ...prev, address: e.target.value }))}
+                        onChange={(e) => setProfile((prev: any) => ({ ...prev, address: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors resize-none"
                         placeholder="أدخل عنوانك"
                         rows={3}
@@ -417,14 +417,14 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <Select
                         value={(() => {
                           const countries = (window as any).page?.props?.countries || [];
-                          const selectedCountry = countries.find(c => c.id.toString() === profile.country?.toString());
+                          const selectedCountry = countries.find((c: any) => c.id.toString() === profile.country?.toString());
                           return selectedCountry?.id?.toString() || '';
                         })()} 
                         onValueChange={(countryId) => {
                           const countries = (window as any).page?.props?.countries || [];
-                          const selectedCountry = countries.find(c => c.id.toString() === countryId);
+                          const selectedCountry = countries.find((c: any) => c.id.toString() === countryId);
                           if (selectedCountry) {
-                            setProfile(prev => ({ ...prev, country: selectedCountry.id, state: '', city: '' }));
+                            setProfile((prev: any) => ({ ...prev, country: selectedCountry.id, state: '', city: '' }));
                             setCountryId(selectedCountry.id);
                             setStateId(undefined);
                           }
@@ -434,7 +434,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                           <SelectValue placeholder="اختر الدولة" />
                         </SelectTrigger>
                         <SelectContent>
-                          {((window as any).page?.props?.countries || []).map(country => (
+                          {((window as any).page?.props?.countries || []).map((country: any) => (
                             <SelectItem key={country.id} value={country.id.toString()}>
                               {country.name}
                             </SelectItem>
@@ -449,7 +449,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                           countryId={countryId}
                           value={profile.state?.toString() || ''}
                           onChange={(value, id) => {
-                            setProfile(prev => ({ ...prev, state: id, city: '' }));
+                            setProfile((prev: any) => ({ ...prev, state: id, city: '' }));
                             setStateId(id);
                           }}
                           disabled={!countryId}
@@ -461,7 +461,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                           stateId={stateId}
                           value={profile.city?.toString() || ''}
                           onChange={(value, id) => {
-                            setProfile(prev => ({ ...prev, city: id }));
+                            setProfile((prev: any) => ({ ...prev, city: id }));
                           }}
                           disabled={!stateId}
                         />
@@ -471,7 +471,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                         <input
                           type="text"
                           value={profile.postalCode || ''}
-                          onChange={(e) => setProfile(prev => ({ ...prev, postalCode: e.target.value }))}
+                          onChange={(e) => setProfile((prev: any) => ({ ...prev, postalCode: e.target.value }))}
                           className="w-full px-4 py-1.5 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                           placeholder="أدخل الرمز البريدي"
                         />
@@ -508,7 +508,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <input
                         type="password"
                         value={passwords.currentPassword}
-                        onChange={(e) => setPasswords(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        onChange={(e) => setPasswords((prev: any) => ({ ...prev, currentPassword: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                         placeholder="أدخل كلمة المرور الحالية"
                         required
@@ -519,7 +519,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <input
                         type="password"
                         value={passwords.newPassword}
-                        onChange={(e) => setPasswords(prev => ({ ...prev, newPassword: e.target.value }))}
+                        onChange={(e) => setPasswords((prev: any) => ({ ...prev, newPassword: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                         placeholder="أدخل كلمة مرور جديدة (8 أحرف على الأقل)"
                         required
@@ -531,7 +531,7 @@ const ProfileModalContent: React.FC<ProfileModalProps> = ({
                       <input
                         type="password"
                         value={passwords.confirmPassword}
-                        onChange={(e) => setPasswords(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        onChange={(e) => setPasswords((prev: any) => ({ ...prev, confirmPassword: e.target.value }))}
                         className="w-full px-4 py-3 bg-white border-2 border-amber-300 rounded-xl focus:outline-none focus:border-amber-600 transition-colors"
                         placeholder="أكد كلمة المرور الجديدة"
                         required

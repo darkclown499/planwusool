@@ -18,7 +18,7 @@ interface Product {
   categoryId: string;
   availability: 'in_stock' | 'out_of_stock';
   description?: string;
-  variants?: { name: string; options: string[] }[];
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
   customFields?: { name: string; value: string }[];
   taxName?: string;
   taxPercentage?: number;

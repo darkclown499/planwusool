@@ -9,36 +9,33 @@ type LayoutContextType = {
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
-const positionToDir = (pos: LayoutPosition): string => pos === 'right' ? 'rtl' : 'ltr';
-const dirToPosition = (dir: string): LayoutPosition => dir === 'rtl' ? 'right' : 'left';
-
-const syncDirectionToDOM = (pos: LayoutPosition) => {
-    const dir = positionToDir(pos);
-    document.documentElement.dir = dir;
-    document.documentElement.setAttribute('dir', dir);
-    localStorage.setItem('layoutDirection', dir);
-    localStorage.setItem('layoutPosition', pos);
+const syncDirectionToDOM = () => {
+    // Arabic-first: always right-to-left. Saved values must never flip it.
+    try {
+        document.documentElement.dir = 'rtl';
+        document.documentElement.setAttribute('dir', 'rtl');
+        localStorage.setItem('layoutDirection', 'rtl');
+        localStorage.setItem('layoutPosition', 'right');
+    } catch (e) {
+        // Never let storage/dir issues take down the whole app.
+        try {
+            document.documentElement.setAttribute('dir', 'rtl');
+        } catch (e2) {}
+    }
 };
 
 export const LayoutProvider = ({ children }: { children: ReactNode }) => {
-    const [position, setPosition] = useState<LayoutPosition>(() => {
-        const savedPos = localStorage.getItem('layoutPosition') as LayoutPosition;
-        if (savedPos === 'left' || savedPos === 'right') return savedPos;
-        const savedDir = localStorage.getItem('layoutDirection');
-        if (savedDir === 'rtl' || savedDir === 'ltr') return dirToPosition(savedDir);
-        return 'left';
-    });
+    const [position, setPosition] = useState<LayoutPosition>('right');
 
-    // Sync sidebar position with RTL/LTR direction via MutationObserver
+    // Keep the interface right-to-left. The observer re-asserts RTL whenever
+    // anything else changes the <html dir> attribute.
     useEffect(() => {
         const handleDirectionChange = () => {
-            const direction = document.documentElement.dir;
-            if (direction === 'rtl' || direction === 'ltr') {
-                const newPosition = dirToPosition(direction);
-                setPosition(newPosition);
-                localStorage.setItem('layoutPosition', newPosition);
-                localStorage.setItem('layoutDirection', direction);
-            }
+            setPosition('right');
+            // Re-assert the actual direction on the document. Previously this
+            // only updated React state, so any code that set dir="ltr" was
+            // never reverted and the page stayed LTR until a full reload.
+            syncDirectionToDOM();
         };
 
         handleDirectionChange();
@@ -59,9 +56,10 @@ export const LayoutProvider = ({ children }: { children: ReactNode }) => {
         return () => observer.disconnect();
     }, []);
 
-    const updatePosition = useCallback((val: LayoutPosition) => {
-        setPosition(val);
-        syncDirectionToDOM(val);
+    const updatePosition = useCallback((_val: LayoutPosition) => {
+        // Direction is locked to RTL (Arabic-first); the value is ignored.
+        setPosition('right');
+        syncDirectionToDOM();
     }, []);
 
     return <LayoutContext.Provider value={{ position, updatePosition }}>{children}</LayoutContext.Provider>;

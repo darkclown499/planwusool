@@ -8,7 +8,8 @@ interface Product {
   originalPrice?: number;
   image: string;
   discount?: number;
-  categoryId: string;
+  sku: string;
+  variants?: Array<{ name: string; values?: string[]; options?: string[] }>;
 }
 
 interface ProductListProps {

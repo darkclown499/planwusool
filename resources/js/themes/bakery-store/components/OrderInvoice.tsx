@@ -171,7 +171,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
               {order.items.map((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 const itemTotalWithTax = itemTotal + (item.tax_amount || 0);
-                const variants = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
                 
                 return (
                   <div key={index} className="bg-stone-50 rounded-xl p-4 border border-stone-200">
@@ -190,8 +190,8 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                         <div className="flex items-center gap-4 text-sm text-stone-600">
                           <span className="bg-stone-700 text-white px-2 py-1 rounded font-medium">الكمية: {item.quantity}</span>
                           <span>{formatCurrency(item.price, storeSettings, currencies)}</span>
-                          {item.tax_amount > 0 && (
-                            <span>الضريبة: {formatCurrency(item.tax_amount, storeSettings, currencies)}</span>
+                          {(item.tax_amount ?? 0) > 0 && (
+                            <span>الضريبة: {formatCurrency(item.tax_amount ?? 0, storeSettings, currencies)}</span>
                           )}
                         </div>
                       </div>
@@ -214,10 +214,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   <span className="text-stone-600">المجموع الفرعي</span>
                   <span className="font-semibold">{formatCurrency(order.subtotal, storeSettings, currencies)}</span>
                 </div>
-                {order.discount > 0 && (
+                {(order.discount ?? 0) > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>خصم الكوبون {order.coupon && `(${order.coupon})`}</span>
-                    <span className="font-semibold">-{formatCurrency(order.discount, storeSettings, currencies)}</span>
+                    <span className="font-semibold">-{formatCurrency(order.discount ?? 0, storeSettings, currencies)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">

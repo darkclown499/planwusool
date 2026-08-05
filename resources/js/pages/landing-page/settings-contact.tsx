@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Phone, Layout, MapPin } from 'lucide-react';
 
-export default function ContactSection({ data, setData, errors, handleInputChange }) {
+export default function ContactSection({ data, setData, errors, handleInputChange }: any) {
   return (
     <div className="space-y-6">
       <div className="space-y-4">

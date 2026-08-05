@@ -1,6 +1,6 @@
 // pages/companies/index.tsx
 import { useState } from 'react';
-import { PageTemplate } from '@/components/page-template';
+import { PageTemplate, type PageAction } from '@/components/page-template';
 import { usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -313,7 +313,7 @@ export default function Companies() {
   };
 
   // Define page actions
-  const pageActions = [
+  const pageActions: PageAction[] = [
     {
       label: t('Add Company'),
       icon: <Plus className="h-4 w-4 me-2" />,

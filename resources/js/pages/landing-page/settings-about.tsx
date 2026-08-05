@@ -10,7 +10,7 @@ import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 
-export default function AboutSection({ data, setData, errors, handleInputChange, getSectionData, updateSectionData, updateSectionVisibility, t = (key) => key }) {
+export default function AboutSection({ data, setData, errors, handleInputChange, getSectionData, updateSectionData, updateSectionVisibility, t = (key: any) => key }: any) {
   const { themeColor, customColor } = useBrand();
   const brandColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
   
@@ -221,7 +221,7 @@ export default function AboutSection({ data, setData, errors, handleInputChange,
         </div>
         
         <div className="space-y-4">
-          {(getSectionData('about').stats || []).map((stat, index) => (
+          {(getSectionData('about').stats || []).map((stat: any, index: any) => (
             <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -234,7 +234,7 @@ export default function AboutSection({ data, setData, errors, handleInputChange,
                   size="sm"
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                   onClick={() => {
-                    const newStats = (getSectionData('about').stats || []).filter((_, i) => i !== index);
+                    const newStats = (getSectionData('about').stats || []).filter((_: any, i: any) => i !== index);
                     updateSectionData('about', { stats: newStats });
                   }}
                 >
@@ -322,7 +322,7 @@ export default function AboutSection({ data, setData, errors, handleInputChange,
         </div>
         
         <div className="space-y-4">
-          {(getSectionData('about').values || []).map((value, index) => (
+          {(getSectionData('about').values || []).map((value: any, index: any) => (
             <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -335,7 +335,7 @@ export default function AboutSection({ data, setData, errors, handleInputChange,
                   size="sm"
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                   onClick={() => {
-                    const newValues = (getSectionData('about').values || []).filter((_, i) => i !== index);
+                    const newValues = (getSectionData('about').values || []).filter((_: any, i: any) => i !== index);
                     updateSectionData('about', { values: newValues });
                   }}
                 >
