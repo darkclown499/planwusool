@@ -516,6 +516,26 @@ button[disabled],
     overflow-x: clip;
 }
 
+/* ========== Mobile app shell (<768px): every store feels like a native app ========== */
+@media (max-width: 767px) {
+    /* The app-shell header replaces the theme's own header on phones */
+    [data-storefront="true"] header {
+        display: none !important;
+    }
+
+    /* Keep content clear of the fixed bottom tab bar */
+    [data-storefront="true"] {
+        padding-bottom: calc(4.75rem + env(safe-area-inset-bottom));
+    }
+}
+
+/* Lift the WhatsApp bubble above the app-shell bottom tab bar on phones */
+@media (max-width: 767px) {
+    [data-whatsapp-widget="true"] {
+        bottom: calc(env(safe-area-inset-bottom) + 5.5rem) !important;
+    }
+}
+
 /* Dynamic viewport height for storefront modals (mobile browser chrome) */
 @supports (height: 100dvh) {
     [data-storefront="true"] .h-\[90vh\] { height: 90dvh; }

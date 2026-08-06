@@ -62,6 +62,7 @@ export default function WhatsAppWidget({
 
   return (
     <div 
+      data-whatsapp-widget="true"
       className={`fixed bottom-[calc(env(safe-area-inset-bottom)+1.5rem)] z-40 ${
         position === 'left' ? 'left-6' : 'right-6'
       }`}

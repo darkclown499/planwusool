@@ -9,6 +9,7 @@ import { WishlistProvider } from './WishlistContext';
 import { StorefrontLocaleProvider } from './StorefrontLocaleContext';
 import { AccountArea } from '@/components/storefront/AccountArea';
 import { LanguageSwitcher } from '@/components/storefront/LanguageSwitcher';
+import { MobileAppShell } from '@/components/storefront/MobileAppShell';
 
 interface Product {
   id: string;
@@ -155,6 +156,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
                     orderNumber={orderNumber}
                     action={action}
                   >
+                    <MobileAppShell />
                     {children}
                     <AccountArea />
                     <LanguageSwitcher />
