@@ -123,6 +123,15 @@ class SocialAuthController extends Controller
             $emailMissing = true;
         }
 
+        // Some providers (Apple in particular) only return the real name on the
+        // very first authorization, so fall back to something meaningful instead
+        // of the generic "User" placeholder.
+        if (empty($name) || $name === 'User') {
+            $local = strtok($email, '@') ?: '';
+            $derived = ucwords(trim(preg_replace('/[^A-Za-z0-9]+/', ' ', $local)));
+            $name = $derived !== '' ? $derived : ucfirst($provider);
+        }
+
         $user = User::where('email', $email)->first();
         if (!$user) {
             $user = User::create([
@@ -133,6 +142,18 @@ class SocialAuthController extends Controller
                 'type' => 'company',
                 'status' => 'active',
             ]);
+        } elseif ($user->type === 'company' && ($user->name === 'User' || empty($user->name)) && $name !== 'User') {
+            $user->update(['name' => $name]);
+        }
+
+        // Social sign-in bypasses the normal registration flow (which assigns the
+        // "company" role via defaultRoleAndSetting). Grant the role when missing so
+        // permission-gated pages (e.g. plans) don't return 403 for these users.
+        if ($user->type === 'company' && ! $user->hasRole('company')) {
+            $companyRole = \Spatie\Permission\Models\Role::where('name', 'company')->first();
+            if ($companyRole) {
+                $user->assignRole($companyRole);
+            }
         }
 
         Auth::login($user, true);
