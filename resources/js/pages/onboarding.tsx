@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import ReactCountryFlag from 'react-country-flag';
 import {
     Banknote,
+    Battery,
     Check,
     CheckCircle2,
     ChevronLeft,
@@ -15,14 +16,20 @@ import {
     Globe,
     Languages,
     Loader2,
+    Lock,
+    MessageCircle,
+    Monitor,
     Palette,
     PartyPopper,
     Share2,
     ShieldCheck,
     ShoppingBag,
+    Signal,
+    Smartphone,
     Sparkles,
     Store,
     User,
+    Wifi,
     type LucideIcon,
 } from 'lucide-react';
 import axios from 'axios';
@@ -66,7 +73,24 @@ interface OnboardingProps {
         currency: string;
         theme: string;
     };
+    demoData: {
+        name: string;
+        url: string;
+        categories: { name: string; image: string | null }[];
+        products: { name: string; price: number; sale_price: number; image: string | null }[];
+    };
 }
+
+const THEME_ACCENT: Record<string, string> = {
+    gadgets: '#4F46E5', fashion: '#EC4899', 'home-decor': '#F59E0B', bakery: '#D97706',
+    supermarket: '#16A34A', 'car-accessories': '#1F2937', toy: '#F97316', perfumes: '#7C3AED',
+    jewelry: '#D97706', beauty: '#D946EF', pharmacy: '#059669', books: '#B45309',
+    sport: '#F97316', pets: '#EA580C', flowers: '#EC4899', coffee: '#92400E',
+    stationery: '#0EA5E9', spices: '#A16207', clothing: '#F43F5E', electronics: '#3B82F6',
+    cosmetics: '#E879F9', food: '#F97316', fragrances: '#8B5CF6', 'home-tools': '#EA580C',
+    'coffee-dates': '#78350F', 'jewelry-gold': '#B45309', kids: '#22C55E', sports: '#16A34A',
+    'stationery-books': '#1E3A8A',
+};
 
 const STEP_META: { key: string; icon: LucideIcon }[] = [
     { key: 'welcome', icon: Sparkles },
@@ -101,6 +125,7 @@ export default function Onboarding({
     referralCode,
     referralUrl,
     defaults,
+    demoData,
 }: OnboardingProps) {
     const { t, i18n } = useTranslation();
     const { themeColor, customColor, logoDark, logoLight, titleText } = useBrand();
@@ -117,6 +142,7 @@ export default function Onboarding({
     });
 
     const [step, setStep] = useState(0);
+    const [deviceView, setDeviceView] = useState<'phone' | 'desktop'>('phone');
     const [copied, setCopied] = useState(false);
     const [checking, setChecking] = useState(false);
     const [availability, setAvailability] = useState<{ available: boolean; message: string } | null>(null);
@@ -124,6 +150,8 @@ export default function Onboarding({
     const themes = getStoreThemes();
     const stepKey = STEP_META[step].key;
     const progress = ((step + 1) / STEP_META.length) * 100;
+    const accent = THEME_ACCENT[data.theme] || primaryColor;
+    const storeName = data.store_name.trim() || demoData?.name || '';
 
     const previewUrl = useMemo(
         () => (stepKey === 'theme' ? `${demoStoreUrl}?theme=${encodeURIComponent(data.theme)}` : demoStoreUrl),
@@ -279,42 +307,202 @@ export default function Onboarding({
                         <ShieldCheck className="h-9 w-9" />
                     </div>
 
-                    <div className="relative z-10 flex w-full flex-col items-center justify-center px-10 py-12">
-                        <div className="mb-6 flex items-center gap-2.5">
+                    <div className="relative z-10 flex w-full flex-col items-center justify-center overflow-y-auto px-10 py-8 scrollbar-custom">
+                        <div className="mb-4 flex items-center gap-2.5">
                             {logoLight ? (
-                                <img src={logoLight} alt={titleText} className="h-10 w-auto animate-pop" />
+                                <img src={logoLight} alt={titleText} className="h-9 w-auto animate-pop" />
                             ) : (
                                 <span className="animate-pop text-2xl font-bold text-white">{titleText}</span>
                             )}
                         </div>
 
-                        <h1 className="animate-fade-slide mb-3 text-center text-3xl font-bold leading-tight text-white xl:text-4xl">
+                        <h1 className="animate-fade-slide mb-2 text-center text-3xl font-bold leading-tight text-white xl:text-4xl">
                             {t('Welcome to Wusool')}
                         </h1>
-                        <p className="mb-10 max-w-sm text-center text-sm text-white/80">
+                        <p className="mb-6 max-w-sm text-center text-sm text-white/80">
                             {t("Let's get your store up and running in a few simple steps.")}
                         </p>
 
-                        {/* Phone mockup — live store preview */}
-                        <div className="relative">
-                            <div className="absolute -inset-6 rounded-[3rem] bg-white/20 blur-3xl" />
-                            <div className="relative w-52 overflow-hidden rounded-[2.2rem] border-[6px] border-gray-900 bg-gray-900 shadow-2xl xl:w-56">
-                                <div className="absolute inset-x-0 top-0 z-10 flex h-6 justify-center bg-gray-900">
-                                    <div className="mt-1.5 h-3.5 w-20 rounded-full bg-black" />
-                                </div>
-                                <div className="aspect-[9/19] w-full">
-                                    <iframe
-                                        src={previewUrl}
-                                        title={t('Live store preview')}
-                                        loading="lazy"
-                                        className="h-full w-full border-0 bg-white"
-                                    />
-                                </div>
+                        {/* Device preview — toggle between phone and desktop */}
+                        <div key={deviceView} className="flex flex-col items-center animate-fade-slide">
+                            <div className="mb-4 inline-flex items-center gap-1 rounded-full bg-white/15 p-1 backdrop-blur">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeviceView('phone')}
+                                    className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 ${
+                                        deviceView === 'phone' ? 'bg-white text-gray-900 shadow' : 'text-white/80 hover:text-white'
+                                    }`}
+                                >
+                                    <Smartphone className="h-3.5 w-3.5" />
+                                    {t('Phone')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setDeviceView('desktop')}
+                                    className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 ${
+                                        deviceView === 'desktop' ? 'bg-white text-gray-900 shadow' : 'text-white/80 hover:text-white'
+                                    }`}
+                                >
+                                    <Monitor className="h-3.5 w-3.5" />
+                                    {t('Desktop')}
+                                </button>
                             </div>
+
+                            <div className="relative">
+                                <div className="absolute -inset-6 rounded-[3rem] bg-white/20 blur-3xl" />
+
+                                {deviceView === 'phone' ? (
+                                    <div className="relative w-56 xl:w-60">
+                                        {/* Side buttons */}
+                                        <div className="absolute -start-[3px] top-24 h-10 w-[3px] rounded-l bg-gray-900/80" />
+                                        <div className="absolute -start-[3px] top-40 h-6 w-[3px] rounded-l bg-gray-900/80" />
+                                        <div className="absolute -end-[3px] top-32 h-14 w-[3px] rounded-r bg-gray-900/80" />
+                                        {/* Frame */}
+                                        <div className="relative overflow-hidden rounded-[2.6rem] border-[7px] border-gray-900 bg-gray-900 shadow-2xl">
+                                            {/* Dynamic island */}
+                                            <div className="absolute left-1/2 top-2 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
+                                            {/* Screen */}
+                                            <div className="flex aspect-[9/19.3] w-full flex-col overflow-hidden bg-gray-50">
+                                                {/* Status bar */}
+                                                <div className="flex items-center justify-between px-5 pb-1 pt-2.5 text-[9px] font-semibold text-gray-900">
+                                                    <span className="tracking-wide" dir="ltr">9:41</span>
+                                                    <span className="flex items-center gap-1" dir="ltr">
+                                                        <Signal className="h-2.5 w-2.5" />
+                                                        <Wifi className="h-2.5 w-2.5" />
+                                                        <Battery className="h-3 w-3" />
+                                                    </span>
+                                                </div>
+                                                {/* Store header */}
+                                                <div className="flex items-center justify-between gap-2 px-4 py-2" style={{ backgroundColor: accent }}>
+                                                    <div className="flex min-w-0 items-center gap-1.5">
+                                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">
+                                                            <Store className="h-3.5 w-3.5 text-white" />
+                                                        </span>
+                                                        <span className="truncate text-[10px] font-bold text-white">{storeName}</span>
+                                                    </div>
+                                                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#25D366] px-2 py-0.5 text-[8px] font-bold text-white">
+                                                        <MessageCircle className="h-2.5 w-2.5" />
+                                                        {t('WhatsApp')}
+                                                    </span>
+                                                </div>
+                                                {/* Hero */}
+                                                <div
+                                                    className="mx-3 mt-2 rounded-xl px-3 py-2.5 text-white"
+                                                    style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)` }}
+                                                >
+                                                    <p className="text-[10px] font-bold leading-tight">{t('Order via WhatsApp')}</p>
+                                                    <p className="mt-0.5 text-[7px] leading-snug opacity-90">
+                                                        {t('Fast delivery · Cash on delivery · Secure')}
+                                                    </p>
+                                                    <span className="mt-1.5 inline-block rounded-full bg-white/20 px-2 py-0.5 text-[7px] font-semibold">
+                                                        {t('Shop now')}
+                                                    </span>
+                                                </div>
+                                                {/* Categories */}
+                                                <div className="mt-2 flex gap-1.5 overflow-hidden px-3">
+                                                    {demoData?.categories?.slice(0, 4).map((cat, i) => (
+                                                        <div key={i} className="flex flex-col items-center gap-0.5">
+                                                            <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-gray-100 bg-white shadow-sm">
+                                                                {cat.image ? (
+                                                                    <img src={cat.image} alt={cat.name} className="h-full w-full object-cover" />
+                                                                ) : (
+                                                                    <Store className="h-3.5 w-3.5 text-gray-400" />
+                                                                )}
+                                                            </span>
+                                                            <span className="w-10 truncate text-center text-[6px] text-gray-500">{cat.name}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {/* Products */}
+                                                <div className="mt-1.5 flex-1 overflow-hidden px-3 pb-3">
+                                                    <div className="grid grid-cols-3 gap-1.5">
+                                                        {demoData?.products?.slice(0, 6).map((product, i) => (
+                                                            <div key={i} className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
+                                                                <div className="flex h-12 w-full items-center justify-center overflow-hidden bg-gray-100">
+                                                                    {product.image ? (
+                                                                        <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                                                                    ) : (
+                                                                        <Store className="h-4 w-4 text-gray-300" />
+                                                                    )}
+                                                                </div>
+                                                                <div className="px-1 py-1">
+                                                                    <p className="truncate text-[6px] text-gray-600">{product.name}</p>
+                                                                    <div className="mt-0.5 flex items-center justify-between">
+                                                                        <span className="text-[7px] font-bold" style={{ color: accent }}>
+                                                                            {currencies.find((c) => c.code === data.currency)?.symbol}
+                                                                            {product.price}
+                                                                        </span>
+                                                                        <span className="text-[#25D366]">
+                                                                            <MessageCircle className="h-2.5 w-2.5" />
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* Home indicator */}
+                                            <div className="absolute bottom-1.5 left-1/2 h-1 w-20 -translate-x-1/2 rounded-full bg-gray-900/70" />
+                                        </div>
+                                        {/* Floating WhatsApp bubble */}
+                                        <button
+                                            type="button"
+                                            className="absolute bottom-9 end-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl animate-pulse"
+                                            onClick={() => window.open(demoData?.url, '_blank', 'noopener,noreferrer')}
+                                            title={t('Open real store')}
+                                        >
+                                            <MessageCircle className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+                                        {/* Browser chrome */}
+                                        <div className="flex items-center gap-2.5 border-b border-gray-200 bg-gray-100 px-3 py-2">
+                                            <span className="flex shrink-0 gap-1.5">
+                                                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                                                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                                                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+                                            </span>
+                                            <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md bg-white px-2.5 py-1 text-[10px] text-gray-600">
+                                                <Lock className="h-2.5 w-2.5 shrink-0 text-emerald-600" />
+                                                <span className="truncate" dir="ltr">{previewUrl}</span>
+                                            </div>
+                                        </div>
+                                        {/* Tab */}
+                                        <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 px-3 pt-1.5">
+                                            <span className="flex items-center gap-1.5 rounded-t border border-b-0 border-gray-200 bg-white px-3 py-1.5 text-[10px] font-medium text-gray-700">
+                                                <Store className="h-3 w-3" style={{ color: accent }} />
+                                                {storeName}
+                                            </span>
+                                        </div>
+                                        {/* Page */}
+                                        <div className="h-80 overflow-y-auto scrollbar-custom">
+                                            <iframe
+                                                src={previewUrl}
+                                                title={t('Live store preview')}
+                                                loading="lazy"
+                                                className="w-full border-0 bg-white"
+                                                style={{ height: 560 }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <a
+                                href={demoData?.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-white/80 transition-colors hover:text-white"
+                            >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                {t('Open real store')}
+                            </a>
                         </div>
 
                         {/* Feature chips */}
-                        <div className="mt-10 flex flex-wrap items-center justify-center gap-2.5">
+                        <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
                             {featureChips.map((chip, i) => (
                                 <span
                                     key={i}
