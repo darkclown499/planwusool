@@ -6,8 +6,10 @@ use App\Models\User;
 use App\Models\Plan;
 use App\Observers\UserObserver;
 use App\Observers\PlanObserver;
+use App\Social\AppleProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Socialite\Facades\Socialite;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -47,5 +49,17 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
             // Silently fail during migrations or when database is not ready
         }
+
+        // Register the Apple Sign In driver (not bundled with laravel/socialite).
+        Socialite::extend('apple', function ($app) {
+            $config = $app['config']['services.apple'];
+
+            return (new AppleProvider(
+                $app['request'],
+                $config['client_id'],
+                $config['client_secret'],
+                $config['redirect']
+            ))->configure($config['team_id'], $config['key_id'], $config['private_key']);
+        });
     }
 }
