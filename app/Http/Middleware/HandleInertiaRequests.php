@@ -101,7 +101,13 @@ class HandleInertiaRequests extends Middleware
             'csrf_token' => csrf_token(),
             // Only expose which social providers are configured (names only — never secrets)
             'authProviders' => collect(['google', 'facebook', 'apple', 'github', 'plankton'])
-                ->filter(fn ($provider) => !empty(config("services.{$provider}.client_id")))
+                ->filter(function ($provider) {
+                    if ($provider === 'apple') {
+                        return !empty(config('services.apple.client_id')) && !empty(config('services.apple.private_key'));
+                    }
+
+                    return !empty(config("services.{$provider}.client_id"));
+                })
                 ->values()
                 ->all(),
             // Customer auth (for store frontend)

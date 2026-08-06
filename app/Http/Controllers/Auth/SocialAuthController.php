@@ -18,7 +18,13 @@ class SocialAuthController extends Controller
     {
         $provider = strtolower($provider);
         if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
-            if (empty(config("services.$provider.client_id")) || empty(config("services.$provider.client_secret"))) {
+            // Apple has no static client_secret — the driver generates an ES256
+            // JWT from the .p8 private key, so guard it with client_id + private_key.
+            $configured = $provider === 'apple'
+                ? !empty(config('services.apple.client_id')) && !empty(config('services.apple.private_key'))
+                : !empty(config("services.$provider.client_id")) && !empty(config("services.$provider.client_secret"));
+
+            if (! $configured) {
                 return redirect()->route('login')->with('error', __('Social login via :provider is not configured.', ['provider' => $provider]));
             }
 
