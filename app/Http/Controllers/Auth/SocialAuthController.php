@@ -59,7 +59,12 @@ class SocialAuthController extends Controller
         $provider = strtolower($provider);
 
         if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
-            $socialUser = Socialite::driver($provider)->stateless()->user();
+            try {
+                $socialUser = Socialite::driver($provider)->stateless()->user();
+            } catch (\Throwable $e) {
+                // User cancelled, state mismatch, expired/invalid code, etc.
+                return redirect()->route('login')->with('status', __('Social login failed. Please try again.'));
+            }
             // Try multiple places for email (providers differ)
             $email = $socialUser->getEmail()
                 ?? ($socialUser->user['email'] ?? null)

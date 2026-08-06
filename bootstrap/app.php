@@ -56,6 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
         except: [
             'install/*',
             'update/*',
+            'auth/callback/*',
             'cashfree/create-session', 
             'cashfree/webhook',
             'ozow/create-payment',
