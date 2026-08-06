@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import ReactCountryFlag from 'react-country-flag';
 import {
     Banknote,
-    Battery,
     Check,
     CheckCircle2,
     ChevronLeft,
@@ -24,12 +23,10 @@ import {
     Share2,
     ShieldCheck,
     ShoppingBag,
-    Signal,
     Smartphone,
     Sparkles,
     Store,
     User,
-    Wifi,
     type LucideIcon,
 } from 'lucide-react';
 import axios from 'axios';
@@ -151,7 +148,6 @@ export default function Onboarding({
     const stepKey = STEP_META[step].key;
     const progress = ((step + 1) / STEP_META.length) * 100;
     const accent = THEME_ACCENT[data.theme] || primaryColor;
-    const storeName = data.store_name.trim() || demoData?.name || '';
 
     const previewUrl = useMemo(
         () => (stepKey === 'theme' ? `${demoStoreUrl}?theme=${encodeURIComponent(data.theme)}` : demoStoreUrl),
@@ -352,111 +348,40 @@ export default function Onboarding({
                                 <div className="absolute -inset-6 rounded-[3rem] bg-white/20 blur-3xl" />
 
                                 {deviceView === 'phone' ? (
-                                    <div className="relative w-56 xl:w-60">
+                                    <div className="relative">
                                         {/* Side buttons */}
                                         <div className="absolute -start-[3px] top-24 h-10 w-[3px] rounded-l bg-gray-900/80" />
                                         <div className="absolute -start-[3px] top-40 h-6 w-[3px] rounded-l bg-gray-900/80" />
                                         <div className="absolute -end-[3px] top-32 h-14 w-[3px] rounded-r bg-gray-900/80" />
                                         {/* Frame */}
-                                        <div className="relative overflow-hidden rounded-[2.6rem] border-[7px] border-gray-900 bg-gray-900 shadow-2xl">
+                                        <div className="relative overflow-hidden rounded-[2.8rem] border-[8px] border-gray-900 bg-gray-900 shadow-2xl">
                                             {/* Dynamic island */}
-                                            <div className="absolute left-1/2 top-2 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
-                                            {/* Screen */}
-                                            <div className="flex aspect-[9/19.3] w-full flex-col overflow-hidden bg-gray-50">
-                                                {/* Status bar */}
-                                                <div className="flex items-center justify-between px-5 pb-1 pt-2.5 text-[9px] font-semibold text-gray-900">
-                                                    <span className="tracking-wide" dir="ltr">9:41</span>
-                                                    <span className="flex items-center gap-1" dir="ltr">
-                                                        <Signal className="h-2.5 w-2.5" />
-                                                        <Wifi className="h-2.5 w-2.5" />
-                                                        <Battery className="h-3 w-3" />
-                                                    </span>
-                                                </div>
-                                                {/* Store header */}
-                                                <div className="flex items-center justify-between gap-2 px-4 py-2" style={{ backgroundColor: accent }}>
-                                                    <div className="flex min-w-0 items-center gap-1.5">
-                                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">
-                                                            <Store className="h-3.5 w-3.5 text-white" />
-                                                        </span>
-                                                        <span className="truncate text-[10px] font-bold text-white">{storeName}</span>
-                                                    </div>
-                                                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#25D366] px-2 py-0.5 text-[8px] font-bold text-white">
-                                                        <MessageCircle className="h-2.5 w-2.5" />
-                                                        {t('WhatsApp')}
-                                                    </span>
-                                                </div>
-                                                {/* Hero */}
-                                                <div
-                                                    className="mx-3 mt-2 rounded-xl px-3 py-2.5 text-white"
-                                                    style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)` }}
-                                                >
-                                                    <p className="text-[10px] font-bold leading-tight">{t('Order via WhatsApp')}</p>
-                                                    <p className="mt-0.5 text-[7px] leading-snug opacity-90">
-                                                        {t('Fast delivery · Cash on delivery · Secure')}
-                                                    </p>
-                                                    <span className="mt-1.5 inline-block rounded-full bg-white/20 px-2 py-0.5 text-[7px] font-semibold">
-                                                        {t('Shop now')}
-                                                    </span>
-                                                </div>
-                                                {/* Categories */}
-                                                <div className="mt-2 flex gap-1.5 overflow-hidden px-3">
-                                                    {demoData?.categories?.slice(0, 4).map((cat, i) => (
-                                                        <div key={i} className="flex flex-col items-center gap-0.5">
-                                                            <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-gray-100 bg-white shadow-sm">
-                                                                {cat.image ? (
-                                                                    <img src={cat.image} alt={cat.name} className="h-full w-full object-cover" />
-                                                                ) : (
-                                                                    <Store className="h-3.5 w-3.5 text-gray-400" />
-                                                                )}
-                                                            </span>
-                                                            <span className="w-10 truncate text-center text-[6px] text-gray-500">{cat.name}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                {/* Products */}
-                                                <div className="mt-1.5 flex-1 overflow-hidden px-3 pb-3">
-                                                    <div className="grid grid-cols-3 gap-1.5">
-                                                        {demoData?.products?.slice(0, 6).map((product, i) => (
-                                                            <div key={i} className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
-                                                                <div className="flex h-12 w-full items-center justify-center overflow-hidden bg-gray-100">
-                                                                    {product.image ? (
-                                                                        <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-                                                                    ) : (
-                                                                        <Store className="h-4 w-4 text-gray-300" />
-                                                                    )}
-                                                                </div>
-                                                                <div className="px-1 py-1">
-                                                                    <p className="truncate text-[6px] text-gray-600">{product.name}</p>
-                                                                    <div className="mt-0.5 flex items-center justify-between">
-                                                                        <span className="text-[7px] font-bold" style={{ color: accent }}>
-                                                                            {currencies.find((c) => c.code === data.currency)?.symbol}
-                                                                            {product.price}
-                                                                        </span>
-                                                                        <span className="text-[#25D366]">
-                                                                            <MessageCircle className="h-2.5 w-2.5" />
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                            <div className="absolute left-1/2 top-2.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
+                                            {/* Real mobile store render (375px viewport) scaled to the phone screen */}
+                                            <div className="pointer-events-none bg-white [zoom:0.62] xl:[zoom:0.66]">
+                                                <iframe
+                                                    src={previewUrl}
+                                                    title={t('Live store preview')}
+                                                    loading="lazy"
+                                                    className="block h-[812px] w-[375px] border-0 bg-white"
+                                                />
                                             </div>
                                             {/* Home indicator */}
-                                            <div className="absolute bottom-1.5 left-1/2 h-1 w-20 -translate-x-1/2 rounded-full bg-gray-900/70" />
+                                            <div className="absolute bottom-2 left-1/2 h-1 w-20 -translate-x-1/2 rounded-full bg-gray-900/70" />
                                         </div>
                                         {/* Floating WhatsApp bubble */}
-                                        <button
-                                            type="button"
+                                        <a
+                                            href={demoData?.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                             className="absolute bottom-9 end-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl animate-pulse"
-                                            onClick={() => window.open(demoData?.url, '_blank', 'noopener,noreferrer')}
                                             title={t('Open real store')}
                                         >
                                             <MessageCircle className="h-5 w-5" />
-                                        </button>
+                                        </a>
                                     </div>
                                 ) : (
-                                    <div className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+                                    <div className="relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl">
                                         {/* Browser chrome */}
                                         <div className="flex items-center gap-2.5 border-b border-gray-200 bg-gray-100 px-3 py-2">
                                             <span className="flex shrink-0 gap-1.5">
@@ -473,17 +398,16 @@ export default function Onboarding({
                                         <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 px-3 pt-1.5">
                                             <span className="flex items-center gap-1.5 rounded-t border border-b-0 border-gray-200 bg-white px-3 py-1.5 text-[10px] font-medium text-gray-700">
                                                 <Store className="h-3 w-3" style={{ color: accent }} />
-                                                {storeName}
+                                                {demoData?.name || ''}
                                             </span>
                                         </div>
-                                        {/* Page */}
-                                        <div className="h-80 overflow-y-auto scrollbar-custom">
+                                        {/* Real desktop store render (1200px viewport) scaled to the browser window */}
+                                        <div className="pointer-events-none overflow-hidden [zoom:0.32] lg:[zoom:0.38] xl:[zoom:0.45] 2xl:[zoom:0.5]">
                                             <iframe
                                                 src={previewUrl}
                                                 title={t('Live store preview')}
                                                 loading="lazy"
-                                                className="w-full border-0 bg-white"
-                                                style={{ height: 560 }}
+                                                className="block h-[800px] w-[1200px] border-0 bg-white"
                                             />
                                         </div>
                                     </div>

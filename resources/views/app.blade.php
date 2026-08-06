@@ -235,6 +235,15 @@
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @inertiaHead
+        <script>
+            // Mark the page when embedded inside a preview iframe (e.g. onboarding
+            // device previews) so CSS can remove scrollbars and chrome.
+            try {
+                if (window.self !== window.top) {
+                    document.documentElement.classList.add('in-iframe');
+                }
+            } catch (e) {}
+        </script>
     </head>
     <body class="font-sans antialiased bg-gray-100">
         @inertia

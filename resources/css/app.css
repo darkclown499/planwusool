@@ -340,6 +340,20 @@ a[style*="background-color"]:hover {
     border: 2px solid #f9fafb;
   }
 
+/* Hide native scrollbars when the page is embedded in a device preview
+   (onboarding phone/desktop previews) so it feels like an app screen. */
+html.in-iframe,
+html.in-iframe body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html.in-iframe::-webkit-scrollbar,
+html.in-iframe body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 /* Theme Preview Hover Effect */
 .theme-preview-container {
   position: relative;
