@@ -25,6 +25,7 @@ yarn-error.log
 /storage/framework
 /vcardv5-refer
 /storage/app/public/media
+/storage/app/public/demo
 server.log
 vite.log
 .env

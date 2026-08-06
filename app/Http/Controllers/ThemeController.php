@@ -235,6 +235,16 @@ class ThemeController extends Controller
     public function home($storeSlug, ?Request $request = null)
     {
         $store = $this->getStore($storeSlug, $request);
+
+        // Read-only theme preview for the demo store only: demo.APP_DOMAIN?theme=food
+        $currentRequest = $request ?? request();
+        if (($store['slug'] ?? null) === \App\Services\DemoStoreService::SLUG && $currentRequest && $currentRequest->has('theme')) {
+            $requestedTheme = $currentRequest->query('theme');
+            if ($requestedTheme && in_array($requestedTheme, $this->getValidThemePages(), true)) {
+                $store['theme'] = $requestedTheme;
+            }
+        }
+
         // Get store configuration with settings and currencies
         $storeData = $this->getStoreConfig($store);
         
@@ -339,6 +349,22 @@ class ThemeController extends Controller
             'payment_status' => session()->pull('payment_status') ?? (request() ? request()->get('payment_status') : null),
             'order_number' => session()->pull('order_number') ?? (request() ? request()->get('order_number') : null),
         ], $this->getCommonData()));
+    }
+
+    /**
+     * List of theme page names that can be previewed via ?theme=
+     */
+    protected function getValidThemePages(): array
+    {
+        $excluded = ['StoreDisabled', 'StoreMaintenance', 'StoreNotFound', 'OrderInvoice', 'order-invoice', 'default'];
+
+        $pages = glob(resource_path('js/pages/store/*.tsx'));
+
+        return array_values(array_filter(array_map(function ($file) {
+            return pathinfo($file, PATHINFO_FILENAME);
+        }, $pages ?: []), function ($name) use ($excluded) {
+            return !in_array($name, $excluded, true);
+        }));
     }
 
     /**

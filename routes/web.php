@@ -6,7 +6,7 @@ use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PlanOrderController;
 use App\Http\Controllers\PlanRequestController;
 use App\Http\Controllers\RoleController;
-
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompanyController;
@@ -436,6 +436,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('plans/trial', [PlanController::class, 'startTrial'])->name('plans.trial');
 });
 
+// Onboarding wizard - new company users must complete it before using the app
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('onboarding', [OnboardingController::class, 'index'])->name('onboarding');
+    Route::post('onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+    Route::get('onboarding/check-subdomain', [OnboardingController::class, 'checkSubdomain'])->name('onboarding.check-subdomain');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // Plans routes - accessible without plan check
     Route::get('plans', [PlanController::class, 'index'])->middleware('permission:manage-plans')->name('plans.index');
@@ -532,8 +539,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('plan-requests', [PlanRequestController::class, 'index'])->name('plan-requests.index');
     Route::get('plan-orders', [PlanOrderController::class, 'index'])->name('plan-orders.index');
     
-    // All other routes require plan access check
-    Route::middleware('plan.access')->group(function () {
+    // All other routes require plan access check (and completed onboarding)
+    Route::middleware(['plan.access', 'onboarded'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('dashboard/redirect', [DashboardController::class, 'redirectToFirstAvailablePage'])->name('dashboard.redirect');
         Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');

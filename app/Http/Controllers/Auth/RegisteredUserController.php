@@ -132,23 +132,13 @@ class RegisteredUserController extends Controller
 
                 // User is created & logged in — just skip the email requirement
                 // and show a friendly admin-facing error
-                $planId = $request->plan_id;
-                if ($planId) {
-                    return redirect()
-                        ->route('plans.index', ['selected' => $planId])
-                        ->with('error', __('Your account was created, but the verification email could not be sent. Please contact the administrator to configure SMTP email settings.'));
-                }
-                return to_route('dashboard')
+                return to_route('onboarding')
                     ->with('error', __('Your account was created, but the verification email could not be sent. Please contact the administrator to configure SMTP email settings.'));
             }
         }
 
-        // Redirect to plans page with selected plan
-        $planId = $request->plan_id;
-        if ($planId) {
-            return redirect()->route('plans.index', ['selected' => $planId]);
-        }
-        return to_route('dashboard');
+        // New company users must complete the onboarding wizard first.
+        return to_route('onboarding');
     }
     
     /**

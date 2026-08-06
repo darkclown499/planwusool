@@ -165,6 +165,10 @@ class SocialAuthController extends Controller
             $request->session()->flash('social_email_missing_message', 'Your provider did not return an email address. Please update your email in your profile.');
         }
 
+        if ($user->type === 'company' && $user->onboarded_at === null) {
+            return redirect()->route('onboarding');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 }

@@ -50,6 +50,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'plan.access' => \App\Http\Middleware\CheckPlanAccess::class,
             'feature.access' => \App\Http\Middleware\CheckFeatureAccess::class,
             'store.status' => \App\Http\Middleware\CheckStoreStatus::class,
+            'onboarded' => \App\Http\Middleware\EnsureOnboarding::class,
         ]);
 
         $middleware->validateCsrfTokens(

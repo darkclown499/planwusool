@@ -52,7 +52,8 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'trial_expire_date',
         'active_module',
         'commission_amount',
-        'terms_accepted_at'
+        'terms_accepted_at',
+        'onboarded_at',
     ];
 
     /**
@@ -84,6 +85,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             'google2fa_enable' => 'integer',
             'storage_limit' => 'float',
             'terms_accepted_at' => 'datetime',
+            'onboarded_at' => 'datetime',
         ];
     }
 
