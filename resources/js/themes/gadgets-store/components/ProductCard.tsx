@@ -35,14 +35,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onA
   return (
     <>
       {/* Mobile Layout */}
-      <div className="md:hidden flex items-center gap-3 p-4 bg-white border-b border-gray-100">
+      <div className="md:hidden flex items-center gap-4 p-4 bg-white border-b border-gray-100">
         <div className="flex-shrink-0">
           <img 
             src={getImageUrl(product.image)} 
             alt={product.name}
             onClick={() => onProductClick(product)}
             loading="lazy"
-            className="w-16 h-16 object-cover rounded-lg cursor-pointer"
+            className="w-[68px] h-[68px] object-cover rounded-lg cursor-pointer"
           />
         </div>
         
@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onA
             {product.name}
           </h3>
           
-          <p className="text-xs text-gray-500 mb-1">الرمز: {product.sku}</p>
+          <p className="text-xs text-gray-500 mb-1.5">الرمز: {product.sku}</p>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <span className="text-lg font-semibold text-gray-900">
               {formatCurrency(product.price, storeSettings, currencies)}
@@ -74,7 +74,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onA
           </div>
         </div>
         
-        <div className="flex-shrink-0 flex flex-col items-center gap-2">
+        <div className="flex-shrink-0 flex flex-col items-center gap-3">
           <WishlistButton productId={product.id} iconOnly />
           <button
             onClick={() => {
@@ -106,7 +106,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, currency, onA
           </button>
           <WhatsAppOrderButton
             product={{ name: product.name, price: product.price }}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-[#25D366] hover:bg-[#1eb85a] text-white"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-[#25D366] hover:bg-[#1eb85a] text-white"
             iconOnly
           />
         </div>
