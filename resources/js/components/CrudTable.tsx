@@ -101,7 +101,7 @@ export function CrudTable({
             return null;
           }
 
-          const IconComponent = (LucidIcons as any)[action.icon] as React.ElementType;
+          const IconComponent = (LucidIcons as any)[action.icon] as React.ComponentType<any>;
 
           // Handle link actions
           if (action.href) {

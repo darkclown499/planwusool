@@ -14,7 +14,7 @@ type TabId = 'home' | 'categories' | 'cart' | 'orders' | 'account';
 interface TabButtonProps {
   id: TabId;
   label: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<any>;
   active: boolean;
   accent: string;
   badge?: number;
