@@ -27,14 +27,14 @@ export default function HeroSection({
 }: HeroSectionProps) {
   const title = sectionData.title || 'أنشئ متجرك خلال دقائق';
   const subtitle = sectionData.subtitle || 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع';
-  const announcement = sectionData.announcement_text || 'موثوق من أكثر من ١٠,٠٠٠ متجر حول العالم';
+  const announcement = sectionData.announcement_text || 'انضم الآن واستفد من التجربة المجانية';
   const primaryButtonText = sectionData.primary_button_text || 'ابدأ تجربة مجانية';
   const secondaryButtonText = sectionData.secondary_button_text || 'الدخول';
 
   const stats = sectionData.stats && sectionData.stats.length > 0 ? sectionData.stats : [
-    { value: '+١٠,٠٠٠', label: 'متجر' },
-    { value: '+٥٠٠,٠٠٠', label: 'منتج' },
-    { value: '٩٩.٩٪', label: 'وقت تشغيل' },
+    { value: 'جاهز في دقائق', label: 'أنشئ متجرك دون تعقيد' },
+    { value: 'أدوات تسويق مدمجة', label: 'حملات وعروض بلمسة واحدة' },
+    { value: 'تحديثات مستمرة', label: 'المنصة تتطور مع متجرك' },
   ];
 
   const logo = superadminLogoLight || settings.config_sections?.theme?.logo_light || window.appSettings?.logo || '';
@@ -237,8 +237,8 @@ export default function HeroSection({
                 key={index}
                 className="rounded-xl border border-white/10 bg-white/5 px-2 py-4 md:border-0 md:bg-transparent md:px-0 md:py-0"
               >
-                <div className="text-xl font-extrabold text-white sm:text-2xl md:text-3xl">{stat.value}</div>
-                <div className="mt-1 text-[11px] font-medium text-white/45 sm:text-[12px] md:text-[13px]">{stat.label}</div>
+                <div className="text-base font-extrabold text-white sm:text-lg lg:text-xl">{stat.value}</div>
+                <div className="mt-1 text-[11px] font-medium text-white/45 sm:text-[12px] lg:text-[13px]">{stat.label}</div>
               </div>
             ))}
           </div>
