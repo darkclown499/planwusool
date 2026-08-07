@@ -67,7 +67,7 @@ return [
             'cta_title' => 'ابدأ معنا لتكتشف العديد من القوالب الأخرى',
             'cta_description' => 'اختر التصميم المفضل لديك وابدأ في بناء متجرك الإلكتروني اليوم.',
             'primary_button_text' => 'ابدأ مجاناً',
-            'secondary_button_text' => 'عرض جميع الميزات',
+            'secondary_button_text' => 'عرض جميع القوالب',
         ],
         [
             'key' => 'about',

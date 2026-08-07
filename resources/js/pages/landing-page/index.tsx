@@ -241,6 +241,7 @@ export default function LandingPage() {
         settings={settings}
         sectionData={getSectionData('themes')}
         brandColor={primaryColor}
+        demoStoreUrl={demoStoreUrl}
       />
     ),
     why_choose_us: () => isSectionVisible('why_choose_us') && (

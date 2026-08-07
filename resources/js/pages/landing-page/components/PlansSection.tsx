@@ -268,16 +268,16 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
                 </div>
 
                 <div className="mt-6">
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-baseline gap-2 flex-wrap">
                     {'original_price' in plan && (plan as any).original_price > 0 && getPrice(plan) < (plan as any).original_price && (
-                      <span className="text-lg text-gray-400 line-through">
+                      <span className="text-lg text-gray-400 line-through whitespace-nowrap">
                         {formatCurrency((plan as any).original_price)}
                       </span>
                     )}
-                    <span className="text-4xl font-semibold tracking-tight text-gray-900">
+                    <span className="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 whitespace-nowrap">
                       {getPrice(plan) === 0 ? formatCurrency(0) : formatCurrency(getPrice(plan))}
                     </span>
-                    <span className="text-[14px] text-gray-500">/{t('yr')}</span>
+                    <span className="text-[14px] text-gray-500 whitespace-nowrap">/{t('yr')}</span>
                   </div>
                   {getPrice(plan) === 0 && (
                     <p className="mt-1 text-xs text-gray-400">{t('Free forever')}</p>

@@ -176,15 +176,26 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
 
             <div className="mt-6 space-y-3 text-[13px] text-gray-400">
               <div className="flex items-center gap-2.5">
-                <Mail className="h-4 w-4 text-gray-500" />
-                <span>{settings.contact_email || 'info@wusool.ps'}</span>
+                <Mail className="h-4 w-4 text-gray-500 shrink-0" />
+                <a
+                  href={`mailto:${settings.contact_email || 'info@wusool.ps'}`}
+                  className="hover:text-white transition-colors"
+                >
+                  {settings.contact_email || 'info@wusool.ps'}
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
-                <Phone className="h-4 w-4 text-gray-500" />
-                <span dir="ltr">{settings.contact_phone || '+970 59 123 4567'}</span>
+                <Phone className="h-4 w-4 text-gray-500 shrink-0" />
+                <a
+                  href={`tel:${(settings.contact_phone || '+970 59 123 4567').replace(/[^+\d]/g, '')}`}
+                  className="hover:text-white transition-colors"
+                  dir="ltr"
+                >
+                  {settings.contact_phone || '+970 59 123 4567'}
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
-                <MapPin className="h-4 w-4 text-gray-500" />
+                <MapPin className="h-4 w-4 text-gray-500 shrink-0" />
                 <span>{settings.contact_address || 'وكالة بلانكتون، قلقيلية، فلسطين'}</span>
               </div>
             </div>

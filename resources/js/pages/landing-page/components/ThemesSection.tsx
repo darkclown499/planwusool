@@ -7,9 +7,10 @@ interface ThemesSectionProps {
   settings: any;
   sectionData: any;
   brandColor: string;
+  demoStoreUrl?: string;
 }
 
-export default function ThemesSection({ settings, sectionData, brandColor }: ThemesSectionProps) {
+export default function ThemesSection({ settings, sectionData, brandColor, demoStoreUrl = '' }: ThemesSectionProps) {
   const { t } = useTranslation();
   const title = t(sectionData.title || 'Choose Your Perfect Store Theme');
   const subtitle = t(sectionData.subtitle || 'Select from our collection of professionally designed themes, each crafted for specific business categories to maximize your success.');
@@ -99,7 +100,9 @@ export default function ThemesSection({ settings, sectionData, brandColor }: The
                 {t(sectionData.primary_button_text || 'ابدأ متجرك الآن')}
               </a>
               <a
-                href="#features"
+                href={demoStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-8 py-3 border-2 rounded-lg font-medium transition-colors hover:text-white"
                 style={{ 
                   borderColor: brandColor,
@@ -114,7 +117,7 @@ export default function ThemesSection({ settings, sectionData, brandColor }: The
                   e.currentTarget.style.color = brandColor;
                 }}
               >
-                {t(sectionData.secondary_button_text || 'Explore All Themes')}
+                {t(sectionData.secondary_button_text || 'عرض جميع القوالب')}
               </a>
             </div>
           </div>

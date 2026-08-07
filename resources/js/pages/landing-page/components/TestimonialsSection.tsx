@@ -92,7 +92,7 @@ export default function TestimonialsSection({
               <img
                 src={logo.src}
                 alt={logo.name}
-                className="max-h-24 max-w-full object-contain transition-all duration-300"
+                className="max-h-12 max-w-28 object-contain transition-all duration-300"
                 loading="lazy"
               />
             </div>

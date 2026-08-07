@@ -155,19 +155,19 @@ export default function FeaturesSection({
             return (
               <div
                 key={index}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1 hover:border-gray-200 hover:shadow-xl hover:shadow-gray-200/50 cursor-default min-h-[220px]"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 sm:p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-200/50 cursor-default min-h-[220px]"
               >
                 {/* Decorative gradient blob */}
                 <div
-                  className={`absolute -top-12 -left-12 h-40 w-40 rounded-full bg-gradient-to-br ${feature.gradient} opacity-[0.07] blur-2xl transition-opacity duration-500 group-hover:opacity-[0.14]`}
+                  className={`absolute -top-12 -left-12 h-40 w-40 rounded-full bg-gradient-to-br ${feature.gradient} opacity-[0.12] blur-2xl transition-opacity duration-500 group-hover:opacity-[0.2]`}
                 />
 
                 <div>
                   {/* Icon */}
                   <div
-                    className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-lg transition-transform duration-300 group-hover:scale-110`}
+                    className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50 shadow-lg transition-transform duration-300 group-hover:scale-110`}
                     style={{
-                      boxShadow: `0 8px 24px -4px ${feature.color}33`,
+                      boxShadow: `0 8px 24px -4px ${feature.color}44`,
                     }}
                   >
                     <Icon className="h-6 w-6 text-white" strokeWidth={1.8} />
