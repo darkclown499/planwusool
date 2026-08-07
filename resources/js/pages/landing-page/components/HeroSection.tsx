@@ -36,7 +36,7 @@ export default function HeroSection({
     { value: 'تحديثات مستمرة', label: 'المنصة تتطور مع متجرك' },
   ];
 
-  const logo = superadminLogoLight || settings.config_sections?.theme?.logo_light || window.appSettings?.logo || '/images/logos/hero-logo.png';
+  const logo = '/images/logos/hero-logo.png';
   const displayLogo = logo ? (
     logo.startsWith('http') ? logo :
     logo.startsWith('/') ? `${window.appSettings?.baseUrl || window.location.origin}${logo}` : logo
