@@ -27,7 +27,6 @@ export default function HeroSection({
 }: HeroSectionProps) {
   const title = sectionData.title || 'أنشئ متجرك خلال دقائق';
   const subtitle = sectionData.subtitle || 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع';
-  const announcement = sectionData.announcement_text || 'انضم الآن واستفد من التجربة المجانية';
   const primaryButtonText = sectionData.primary_button_text || 'ابدأ تجربة مجانية';
   const secondaryButtonText = sectionData.secondary_button_text || 'الدخول';
 
@@ -117,21 +116,6 @@ export default function HeroSection({
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-          {/* ── Trust badge (order 1) ── */}
-          <div className="order-1 mb-5 inline-flex h-8 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 backdrop-blur-sm">
-            <span className="relative flex h-1.5 w-1.5">
-              <span
-                className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
-                style={{ backgroundColor: brandColor }}
-              />
-              <span
-                className="relative inline-flex h-1.5 w-1.5 rounded-full"
-                style={{ backgroundColor: brandColor }}
-              />
-            </span>
-            <span className="text-[12px] font-medium text-white/75">{announcement}</span>
-          </div>
-
           {/* ── Logo (order 2) ── */}
           {displayLogo && (
             <img
