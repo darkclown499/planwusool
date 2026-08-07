@@ -77,17 +77,17 @@ export default function HeroSection({
 
         {/* Soft green glow behind the phone (tracks the device position) */}
         <div
-          className="absolute left-1/2 top-[46%] h-[420px] w-[680px] -translate-x-1/2 rounded-full opacity-30 blur-[100px] lg:top-[62%] lg:h-[480px] lg:w-[760px]"
+          className="absolute left-1/2 top-[46%] h-[420px] w-[680px] -translate-x-1/2 rounded-full opacity-30 blur-[100px] lg:top-[62%] lg:h-[520px] lg:w-[820px]"
           style={{ background: `radial-gradient(ellipse, ${brandColor}, transparent 70%)` }}
         />
 
         {/* Side vertical glows to fill the empty dark margins on desktop screens */}
         <div
-          className="absolute top-1/2 -left-40 hidden h-[460px] w-[460px] -translate-y-1/2 rounded-full opacity-25 blur-[130px] xl:block"
+          className="absolute top-1/2 -left-40 hidden h-[560px] w-[560px] -translate-y-1/2 rounded-full opacity-40 blur-[120px] lg:block"
           style={{ background: `radial-gradient(circle, ${brandColor}, transparent 70%)` }}
         />
         <div
-          className="absolute top-1/2 -right-40 hidden h-[460px] w-[460px] -translate-y-1/2 rounded-full opacity-25 blur-[130px] xl:block"
+          className="absolute top-1/2 -right-40 hidden h-[560px] w-[560px] -translate-y-1/2 rounded-full opacity-40 blur-[120px] lg:block"
           style={{ background: `radial-gradient(circle, ${brandColor}, transparent 70%)` }}
         />
 
@@ -161,7 +161,7 @@ export default function HeroSection({
               <StoreDevicePreview storeUrl={demoStoreUrl} brandColor={brandColor} />
 
               {/* ── Floating accent card: incoming WhatsApp order (desktop only) ── */}
-              <div className="card-float-1 pointer-events-none absolute right-[4%] top-[6%] z-20 hidden lg:block">
+              <div className="card-float-1 pointer-events-none absolute right-0 top-[8%] z-20 translate-x-20 hidden lg:block">
                 <div className="w-60 rounded-2xl border border-white/10 bg-gray-900/85 p-3.5 shadow-2xl backdrop-blur-md">
                   <div className="flex items-center gap-2.5">
                     <span
@@ -186,8 +186,8 @@ export default function HeroSection({
               </div>
 
               {/* ── Floating accent card: today sales (desktop only) ── */}
-              <div className="card-float-2 pointer-events-none absolute left-[4%] bottom-[8%] z-20 hidden lg:block">
-                <div className="w-56 rounded-2xl border border-white/10 bg-gray-900/85 p-3.5 shadow-2xl backdrop-blur-md">
+              <div className="card-float-2 pointer-events-none absolute left-0 bottom-[8%] z-20 -translate-x-20 hidden lg:block">
+                <div className="w-60 rounded-2xl border border-white/10 bg-gray-900/85 p-3.5 shadow-2xl backdrop-blur-md">
                   <div className="flex items-center gap-3">
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"

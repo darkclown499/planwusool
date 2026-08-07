@@ -142,7 +142,7 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
               {/* Clipped screen window (rounded corners) — re-mounted on theme change for a smooth fade */}
               <div
                 key={themeId}
-                className="absolute inset-0 overflow-hidden rounded-[28px] bg-white sm:rounded-[30px] lg:rounded-[40px]"
+                className="absolute inset-0 overflow-hidden rounded-[30px] bg-white sm:rounded-[34px] lg:rounded-[47px]"
                 style={{ animation: 'previewFade 0.35s ease-out' }}
               >
                 <iframe
