@@ -5,11 +5,14 @@ namespace Spatie\MediaLibrary\MediaCollections\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Filesystem\Factory;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\Conversions\Conversion;
 use Spatie\MediaLibrary\Conversions\ConversionCollection;
 use Spatie\MediaLibrary\Conversions\FileManipulator;
+use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Exceptions\DiskDoesNotExist;
 use Spatie\MediaLibrary\MediaCollections\MediaRepository;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -27,7 +30,7 @@ class CleanCommand extends Command
     {--delete-orphaned : Delete orphaned media items},
     {--skip-conversions : Do not remove deprecated conversions}';
 
-    protected $description = 'Clean deprecated conversions and files without related model.';
+    protected $description = 'Clean deprecated conversions and files without related model';
 
     protected MediaRepository $mediaRepository;
 
@@ -143,14 +146,15 @@ class CleanCommand extends Command
         $conversionFilePaths = ConversionCollection::createForMedia($media)->getConversionsFiles($media->collection_name);
 
         $conversionPath = PathGeneratorFactory::create($media)->getPathForConversions($media);
-        $currentFilePaths = $this->fileSystem->disk($media->disk)->files($conversionPath);
+        $conversionsDisk = $this->conversionsDiskName($media);
+        $currentFilePaths = $this->fileSystem->disk($conversionsDisk)->files($conversionPath);
 
         collect($currentFilePaths)
             ->reject(fn (string $currentFilePath) => $conversionFilePaths->contains(basename($currentFilePath)))
             ->reject(fn (string $currentFilePath) => $media->file_name === basename($currentFilePath))
-            ->each(function (string $currentFilePath) use ($media) {
+            ->each(function (string $currentFilePath) use ($media, $conversionsDisk) {
                 if (! $this->isDryRun) {
-                    $this->fileSystem->disk($media->disk)->delete($currentFilePath);
+                    $this->fileSystem->disk($conversionsDisk)->delete($currentFilePath);
 
                     $this->markConversionAsRemoved($media, $currentFilePath);
                 }
@@ -163,8 +167,11 @@ class CleanCommand extends Command
     {
         $conversionNamesWithResponsiveImages = ConversionCollection::createForMedia($media)
             ->filter(fn (Conversion $conversion) => $conversion->shouldGenerateResponsiveImages())
-            ->map(fn (Conversion $conversion) => $conversion->getName())
-            ->push('media_library_original');
+            ->map(fn (Conversion $conversion) => $conversion->getName());
+
+        if ($this->shouldGenerateResponsiveImagesForOriginal($media)) {
+            $conversionNamesWithResponsiveImages->push('media_library_original');
+        }
 
         /** @var array<int, string> $responsiveImagesGeneratedFor */
         $responsiveImagesGeneratedFor = array_keys($media->responsive_images);
@@ -179,12 +186,34 @@ class CleanCommand extends Command
             });
     }
 
+    protected function shouldGenerateResponsiveImagesForOriginal(Media $media): bool
+    {
+        $modelName = Arr::get(Relation::morphMap(), $media->model_type, $media->model_type);
+
+        if (! class_exists($modelName)) {
+            return true;
+        }
+
+        /** @var HasMedia $model */
+        $model = new $modelName;
+
+        $collection = $model->getMediaCollection($media->collection_name);
+
+        if (! $collection) {
+            return false;
+        }
+
+        return $collection->generateResponsiveImages;
+    }
+
     protected function deleteOrphanedDirectories(): void
     {
-        $diskName = $this->argument('disk') ?: config('media-library.disk_name');
+        $diskNames = $this->diskNamesToSweep();
 
-        if (is_null(config("filesystems.disks.{$diskName}"))) {
-            throw DiskDoesNotExist::create($diskName);
+        foreach ($diskNames as $diskName) {
+            if (is_null(config("filesystems.disks.{$diskName}"))) {
+                throw DiskDoesNotExist::create($diskName);
+            }
         }
 
         $prefix = config('media-library.prefix', '');
@@ -193,45 +222,86 @@ class CleanCommand extends Command
             $prefix = trim($prefix, '/').'/';
         }
 
-        $mediaIds = $this->mediaRepository->allIds();
+        $mediaIdSet = $this->mediaRepository->allIds()->flip();
 
-        /** @var array<int, string> */
-        $directories = $this->fileSystem->disk($diskName)->directories($prefix);
+        foreach ($diskNames as $diskName) {
+            /** @var array<int, string> $directories */
+            $directories = $this->fileSystem->disk($diskName)->directories($prefix);
 
-        collect($directories)
-            ->map(fn (string $directory) => str_replace($prefix, '', $directory))
-            ->filter(fn (string $directory) => is_numeric($directory))
-            ->reject(fn (string $directory) => $mediaIds->contains((int) $directory))
-            ->each(function (string $directory) use ($diskName, $prefix) {
-                $directory = $prefix.$directory;
+            collect($directories)
+                ->map(fn (string $directory) => str_replace($prefix, '', $directory))
+                ->filter(fn (string $directory) => is_numeric($directory))
+                ->reject(fn (string $directory) => $mediaIdSet->has((int) $directory))
+                ->each(function (string $directory) use ($diskName, $prefix) {
+                    $directory = $prefix.$directory;
 
-                if (! $this->isDryRun) {
-                    $this->fileSystem->disk($diskName)->deleteDirectory($directory);
-                }
+                    if (! $this->isDryRun) {
+                        $this->fileSystem->disk($diskName)->deleteDirectory($directory);
+                    }
 
-                if ($this->rateLimit) {
-                    usleep((1 / $this->rateLimit) * 1_000_000);
-                }
+                    if ($this->rateLimit) {
+                        usleep((1 / $this->rateLimit) * 1_000_000);
+                    }
 
-                $this->info("Orphaned media directory `{$directory}` ".($this->isDryRun ? 'found' : 'has been removed'));
-            });
+                    $this->info("Orphaned media directory `{$directory}` on disk `{$diskName}` ".($this->isDryRun ? 'found' : 'has been removed'));
+                });
+        }
+    }
+
+    /** @return array<int, string> */
+    protected function diskNamesToSweep(): array
+    {
+        $disk = $this->argument('disk');
+
+        if (is_string($disk) && $disk !== '') {
+            return [$disk];
+        }
+
+        return $this->mediaRepository->allDiskNames()
+            ->push(config('media-library.disk_name'))
+            ->push(config('media-library.conversions_disk_name'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     protected function markConversionAsRemoved(Media $media, string $conversionPath): void
     {
         $conversionFile = pathinfo($conversionPath, PATHINFO_FILENAME);
 
-        $generatedConversionName = null;
-
         $media->getGeneratedConversions()
             ->dot()
             ->filter(
                 fn (bool $isGenerated, string $generatedConversionName) => Str::contains($conversionFile, $generatedConversionName)
+            )
+            ->reject(
+                fn (bool $isGenerated, string $generatedConversionName) => $this->conversionFileExists($media, $generatedConversionName)
             )
             ->each(
                 fn (bool $isGenerated, string $conversionName) => $media->markAsConversionNotGenerated($conversionName)
             );
 
         $media->save();
+    }
+
+    protected function conversionFileExists(Media $media, string $conversionName): bool
+    {
+        $conversion = ConversionCollection::createForMedia($media)
+            ->getConversions($media->collection_name)
+            ->first(fn (Conversion $conversion) => $conversion->getName() === $conversionName);
+
+        if (! $conversion) {
+            return false;
+        }
+
+        $path = PathGeneratorFactory::create($media)->getPathForConversions($media).$conversion->getConversionFile($media);
+
+        return $this->fileSystem->disk($this->conversionsDiskName($media))->exists($path);
+    }
+
+    protected function conversionsDiskName(Media $media): string
+    {
+        return $media->conversions_disk ?: $media->disk;
     }
 }

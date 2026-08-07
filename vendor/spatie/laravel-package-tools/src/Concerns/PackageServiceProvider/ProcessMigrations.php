@@ -3,6 +3,7 @@
 namespace Spatie\LaravelPackageTools\Concerns\PackageServiceProvider;
 
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 
@@ -20,7 +21,6 @@ trait ProcessMigrations
 
         foreach ($this->package->migrationFileNames as $migrationFileName) {
             $vendorMigration = $this->package->basePath("/../database/migrations/{$migrationFileName}.php");
-            $appMigration = $this->generateMigrationName($migrationFileName, $now->addSecond());
 
             // Support for the .stub file extension
             if (! file_exists($vendorMigration)) {
@@ -28,6 +28,8 @@ trait ProcessMigrations
             }
 
             if ($this->app->runningInConsole()) {
+                $appMigration = $this->generateMigrationName($migrationFileName, $now->addSecond());
+
                 $this->publishes(
                     [$vendorMigration => $appMigration],
                     "{$this->package->shortName()}-migrations"
@@ -74,10 +76,12 @@ trait ProcessMigrations
         }
     }
 
-    protected function generateMigrationName(string $migrationFileName, Carbon $now): string
+    protected function generateMigrationName(string $migrationFileName, Carbon|CarbonImmutable $now): string
     {
         $migrationsPath = 'migrations/' . dirname($migrationFileName) . '/';
         $migrationFileName = basename($migrationFileName);
+
+        $migrationFileName = self::stripTimestampPrefix($migrationFileName);
 
         $len = strlen($migrationFileName) + 4;
 
@@ -92,7 +96,6 @@ trait ProcessMigrations
             }
         }
 
-        $migrationFileName = self::stripTimestampPrefix($migrationFileName);
         $timestamp = $now->format('Y_m_d_His');
         $formattedFileName = Str::of($migrationFileName)->snake()->finish('.php');
 

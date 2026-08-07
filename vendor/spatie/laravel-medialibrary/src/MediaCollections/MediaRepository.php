@@ -51,6 +51,15 @@ class MediaRepository
         return $this->query()->pluck($this->model->getKeyName());
     }
 
+    public function allDiskNames(): Collection
+    {
+        return $this->query()->distinct()->pluck('disk')
+            ->merge($this->query()->distinct()->pluck('conversions_disk'))
+            ->filter()
+            ->unique()
+            ->values();
+    }
+
     public function getByModelType(string $modelType): LazyCollection
     {
         return $this->query()->where('model_type', $modelType)->cursor();
@@ -106,7 +115,7 @@ class MediaRepository
     {
         return $this->query()->where(fn (Builder $query) => $query->whereDoesntHave(
             'model',
-            fn (Builder $q) => $q->hasMacro('withTrashed') ? $q->withTrashed() : $q,
+            fn (Builder $q) => $q->hasMacro('withTrashed') ? $q->withTrashed() : $q, // @phpstan-ignore method.notFound
         ));
     }
 

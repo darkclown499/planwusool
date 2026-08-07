@@ -183,7 +183,7 @@ export default function LandingPageSettings() {
 
  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
  const { name, value } = e.target;
- setData(name as keyof Settings, value);
+ setData(name, value);
  };
 
  const saveSettings = () => {

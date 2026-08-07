@@ -258,7 +258,7 @@ final class Color
 
     public const EMERALD_400 = '#34d399';
 
-    public const EMERALD_500 = '#10b77f';
+    public const EMERALD_500 = '#10b981';
 
     public const EMERALD_600 = '#059669';
 
