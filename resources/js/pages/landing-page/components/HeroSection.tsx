@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { ShoppingCart, TrendingUp, Package, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import StoreDevicePreview from '@/components/storefront/StoreDevicePreview';
 
 interface HeroSectionProps {
   brandColor?: string;
+  demoStoreUrl?: string;
   settings: any;
   sectionData: {
     title?: string;
@@ -15,7 +17,7 @@ interface HeroSectionProps {
   };
 }
 
-export default function HeroSection({ settings, sectionData, brandColor = '#22c55e' }: HeroSectionProps) {
+export default function HeroSection({ settings, sectionData, brandColor = '#22c55e', demoStoreUrl = '' }: HeroSectionProps) {
   const title = sectionData.title || 'وصول';
   const subtitle = sectionData.subtitle || 'منصة متقدمة لبناء و إدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع';
   const announcement = sectionData.announcement_text || 'موثوق من أكثر من ١٠,٠٠٠ متجر حول العالم';
@@ -159,161 +161,9 @@ export default function HeroSection({ settings, sectionData, brandColor = '#22c5
             )}
           </div>
 
-          {/* ═══════════ RIGHT: 3D Dashboard Mockup ═══════════ */}
-          <div className="relative flex items-center justify-center lg:justify-start" style={{ perspective: '1200px' }}>
-            {/* Main dashboard frame */}
-            <div
-              className="relative w-full max-w-[520px] rounded-2xl border border-white/10 bg-gray-900/80 p-4 backdrop-blur-xl"
-              style={{
-                transform: 'rotateY(-8deg) rotateX(4deg)',
-                transformStyle: 'preserve-3d',
-                boxShadow: `0 25px 60px ${brandColor}15, 0 0 80px ${brandColor}08`,
-                animation: 'dashboardFloat 8s ease-in-out infinite',
-              }}
-            >
-              {/* Dashboard header bar */}
-              <div className="mb-4 flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-4 py-3">
-                <div className="flex items-center gap-2.5">
-                  <img src="/images/logos/dashboard-logo.png" alt="Wusool" className="h-5 w-auto" />
-                  <span className="text-sm font-semibold text-white/80">لوحة التحكم</span>
-                </div>
-                <div className="flex gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `${brandColor}aa` }} />
-                </div>
-              </div>
-
-              {/* Dashboard content area */}
-              <div className="space-y-3">
-                {/* Revenue stat card */}
-                <div
-                  className="rounded-xl border border-white/5 p-4"
-                  style={{
-                    background: `linear-gradient(135deg, ${brandColor}12, ${brandColor}05)`,
-                    animation: 'cardPulse 4s ease-in-out infinite',
-                  }}
-                >
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-medium text-white/40">إيرادات المبيعات</span>
-                    <TrendingUp size={16} className="text-emerald-400" />
-                  </div>
-                  <div className="text-2xl font-bold text-white" style={{ direction: 'rtl' }}>٢٤٥,٨٠٠ ₪</div>
-                  <div className="mt-2 flex items-center gap-1 text-[11px] text-emerald-400">
-                    <span>+٢٤٪</span>
-                    <span className="text-white/30">من الشهر الماضي</span>
-                  </div>
-                </div>
-
-                {/* Two-column mini cards */}
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Products card */}
-                  <div
-                    className="rounded-xl border border-white/5 bg-white/[0.03] p-4"
-                    style={{ animation: 'cardPulse 5s ease-in-out 0.5s infinite' }}
-                  >
-                    <div className="mb-2 flex items-center gap-2">
-                      <Package size={14} style={{ color: brandColor }} />
-                      <span className="text-[11px] font-medium text-white/40">المنتجات</span>
-                    </div>
-                    <div className="text-xl font-bold text-white">١,٢٤٨</div>
-                  </div>
-
-                  {/* Orders card */}
-                  <div
-                    className="rounded-xl border border-white/5 bg-white/[0.03] p-4"
-                    style={{ animation: 'cardPulse 5s ease-in-out 1s infinite' }}
-                  >
-                    <div className="mb-2 flex items-center gap-2">
-                      <ShoppingCart size={14} style={{ color: brandColor }} />
-                      <span className="text-[11px] font-medium text-white/40">الطلبات</span>
-                    </div>
-                    <div className="text-xl font-bold text-white">٨,٤٣٢</div>
-                  </div>
-                </div>
-
-                {/* Mini bar chart */}
-                <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-white/40">المبيعات هذا الأسبوع</span>
-                  </div>
-                  <div className="flex items-end gap-2" style={{ direction: 'rtl' }}>
-                    {['٤٠', '٧٠', '٥٥', '٨٥', '٦٥', '٩٠', '٧٥'].map((height, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 rounded-md transition-all"
-                        style={{
-                          height: `${parseInt(height) * 0.4}px`,
-                          background: `linear-gradient(180deg, ${brandColor}, ${brandColor}44)`,
-                          animation: `barGrow 1.5s ease-out ${i * 0.1}s both`,
-                          opacity: 0.6 + i * 0.05,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-2 flex gap-2" style={{ direction: 'rtl' }}>
-                    {['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map((day) => (
-                      <span key={day} className="flex-1 text-center text-[8px] text-white/25">{day}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Floating stat cards ── */}
-            <div
-              className="absolute -left-4 top-8 hidden rounded-xl border border-white/10 bg-gray-900/90 px-3 py-2.5 shadow-xl backdrop-blur-xl sm:block"
-              style={{
-                animation: 'floatingCard1 6s ease-in-out infinite',
-                transform: 'translateZ(40px)',
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: `${brandColor}20` }}>
-                  <TrendingUp size={14} style={{ color: brandColor }} />
-                </div>
-                <div>
-                  <div className="text-[10px] text-white/40">المبيعات</div>
-                  <div className="text-sm font-bold text-white">+٣٢٪</div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="absolute -right-4 bottom-20 hidden rounded-xl border border-white/10 bg-gray-900/90 px-3 py-2.5 shadow-xl backdrop-blur-xl sm:block"
-              style={{
-                animation: 'floatingCard2 7s ease-in-out infinite',
-                transform: 'translateZ(40px)',
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: `${brandColor}20` }}>
-                  <ShoppingCart size={14} style={{ color: brandColor }} />
-                </div>
-                <div>
-                  <div className="text-[10px] text-white/40">الطلبات الجديدة</div>
-                  <div className="text-sm font-bold text-white">+٢٤٨</div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="absolute bottom-4 left-8 hidden rounded-xl border border-white/10 bg-gray-900/90 px-3 py-2.5 shadow-xl backdrop-blur-xl lg:block"
-              style={{
-                animation: 'floatingCard3 5.5s ease-in-out infinite',
-                transform: 'translateZ(40px)',
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: `${brandColor}20` }}>
-                  <Package size={14} style={{ color: brandColor }} />
-                </div>
-                <div>
-                  <div className="text-[10px] text-white/40">المنتجات النشطة</div>
-                  <div className="text-sm font-bold text-white">١,٢٤٨</div>
-                </div>
-              </div>
-            </div>
+          {/* ═══════════ RIGHT: Real store preview ═══════════ */}
+          <div className="relative flex items-center justify-center lg:justify-start">
+            <StoreDevicePreview storeUrl={demoStoreUrl} brandColor={brandColor} />
           </div>
         </div>
       </div>

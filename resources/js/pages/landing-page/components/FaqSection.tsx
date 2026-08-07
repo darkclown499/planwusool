@@ -12,28 +12,43 @@ interface Faq {
 const DEFAULT_FAQS = [
   {
     id: 1,
-    question: 'How does Store SaaS work?',
-    answer: 'Store SaaS allows you to create digital business cards that can be shared via QR codes, NFC technology, or direct links. Simply create your card, customize it with your information, and start sharing!'
+    question: 'كيف أبدأ متجري على منصة وصول؟',
+    answer: 'سجّل مجانًا، اختر القالب الذي يناسب نشاطك، أضف منتجاتك وبيانات متجرك، ثم انشر متجرك برابط خاص بك وابدأ استقبال الطلبات عبر واتساب مباشرة — كل ذلك في دقائق وبدون خبرة تقنية.'
   },
   {
     id: 2,
-    question: 'Is my data secure?',
-    answer: 'Yes, we use enterprise-grade security measures to protect your data. All information is encrypted and stored securely. You have full control over your privacy settings.'
+    question: 'هل يمكنني تخصيص تصميم متجري؟',
+    answer: 'نعم، توفر المنصة قوالب جاهزة ومتنوعة لجميع الأنشطة التجارية مع إمكانية تغيير الألوان والشعار والصور والأقسام بسهولة من لوحة التحكم.'
   },
   {
     id: 3,
-    question: 'Can I customize my digital business card?',
-    answer: 'Absolutely! You can customize colors, fonts, layout, add your logo, social media links, and much more. Our platform offers extensive customization options.'
+    question: 'كيف أستقبل الطلبات عبر واتساب؟',
+    answer: 'عند اختيار العميل لمنتجه وإتمام الطلب، تصل تفاصيل الطلب (المنتجات، الكمية، العنوان) إلى رقم واتساب الخاص بك مباشرة، ويمكنك متابعة جميع الطلبات من لوحة التحكم.'
   },
   {
     id: 4,
-    question: 'Do I need technical skills to use Store SaaS?',
-    answer: 'Not at all! Store SaaS is designed to be user-friendly. You can create and customize your digital business card in minutes without any technical knowledge.'
+    question: 'هل أحتاج خبرة تقنية لإدارة متجري؟',
+    answer: 'لا، واجهة المنصة سهلة وباللغة العربية بالكامل، ويمكنك إنشاء متجرك وتشغيله وتعديله في دقائق دون أي معرفة برمجية.'
   },
   {
     id: 5,
-    question: 'Can I track who views my card?',
-    answer: 'Yes, our analytics feature allows you to track views, clicks, and engagement metrics so you can understand how your network interacts with your card.'
+    question: 'كيف أستقبل المدفوعات من عملائي؟',
+    answer: 'تدعم المنصة طرق دفع متعددة تشمل الدفع عند الاستلام والتحويل البنكي وبوابات الدفع الإلكترونية، وفقًا للباقة التي تختارها.'
+  },
+  {
+    id: 6,
+    question: 'هل يمكنني استخدام نطاق خاص لمتجري؟',
+    answer: 'نعم، توفر المنصة رابطًا فرعيًا مجانيًا لمتجرك، كما تتيح لك ربط نطاق خاص بك حسب الباقة المختارة.'
+  },
+  {
+    id: 7,
+    question: 'هل يمكنني تغيير قالب متجري لاحقًا؟',
+    answer: 'نعم، يمكنك تبديل القالب في أي وقت من إعدادات المتجر دون أن تفقد منتجاتك أو بياناتك أو طلباتك.'
+  },
+  {
+    id: 8,
+    question: 'ماذا يحدث لمنتجاتي عند تغيير القالب؟',
+    answer: 'جميع منتجاتك وأقسامك وبياناتك محفوظة بشكل دائم، ويؤثر تغيير القالب على التصميم فقط.'
   }
 ];
 
@@ -80,10 +95,10 @@ export default function FaqSection({ faqs, settings, sectionData, brandColor = '
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 sm:mb-12 lg:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            {t(sectionData?.title || 'Frequently Asked Questions')}
+            {t(sectionData?.title || 'الأسئلة الشائعة')}
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-medium">
-            {t(sectionData?.subtitle || "Got questions? We've got answers. If you can't find what you're looking for, feel free to contact our support team.")}
+            {t(sectionData?.subtitle || 'إجابات على أكثر الأسئلة التي تهم أصحاب المتاجر. إن لم تجد ما تبحث عنه، تواصل مع فريق الدعم مباشرة.')}
           </p>
         </div>
 

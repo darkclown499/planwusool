@@ -110,6 +110,7 @@ interface PageProps extends SharedData {
   customPages: CustomPage[];
   settings: LandingSettings;
   featuredStores: FeaturedStore[];
+  demoStoreUrl?: string;
   superadminLogoDark?: string;
   superadminLogoLight?: string;
   flash?: {
@@ -119,7 +120,7 @@ interface PageProps extends SharedData {
 }
 
 export default function LandingPage() {
-  const { plans, testimonials, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight } = usePage<PageProps>().props;
+  const { plans, testimonials, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight, demoStoreUrl = '' } = usePage<PageProps>().props;
   const { i18n } = useTranslation();
 
   // This is the public landing page, not the admin settings page
@@ -185,7 +186,7 @@ export default function LandingPage() {
     return settings.config_sections?.sections?.find(section => section.key === key) || {};
   };
 
-  const compactDefaultSections = ['header', 'hero', 'features', 'testimonials', 'plans', 'footer'];
+  const compactDefaultSections = ['header', 'hero', 'features', 'themes', 'testimonials', 'plans', 'faq', 'footer'];
 
   // Respect admin visibility settings when provided; otherwise keep the homepage lean by default.
   const isSectionVisible = (key: string) => {
@@ -218,6 +219,7 @@ export default function LandingPage() {
         settings={settings}
         sectionData={getSectionData('hero')}
         brandColor={primaryColor}
+        demoStoreUrl={demoStoreUrl}
       />
     ),
     features: () => isSectionVisible('features') && (

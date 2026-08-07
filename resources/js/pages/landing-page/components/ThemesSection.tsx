@@ -85,10 +85,10 @@ export default function ThemesSection({ settings, sectionData, brandColor }: The
         <div className="text-center">
           <div className="bg-white rounded-xl p-8 shadow-lg max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold mb-4" style={{ color: brandColor }}>
-              {t(sectionData.cta_title || 'Ready to Build Your Store Empire?')}
+              {t(sectionData.cta_title || 'ابدأ معنا لتكتشف العديد من القوالب الأخرى')}
             </h3>
             <p className="text-gray-600 mb-6">
-              {t(sectionData.cta_description || 'Pick your favorite theme and start building your first store in minutes. Switch themes anytime as your business grows and evolves.')}
+              {t(sectionData.cta_description || 'اختر قالبك المفضل وابدأ بناء متجرك الأول في دقائق، مع إمكانية تغيير القالب في أي وقت مع نمو نشاطك.')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
@@ -96,7 +96,7 @@ export default function ThemesSection({ settings, sectionData, brandColor }: The
                 className="px-8 py-3 text-white rounded-lg font-medium transition-colors hover:opacity-90"
                 style={{ backgroundColor: brandColor }}
               >
-                {t(sectionData.primary_button_text || 'Start Building Now')}
+                {t(sectionData.primary_button_text || 'ابدأ متجرك الآن')}
               </a>
               <a
                 href="#features"

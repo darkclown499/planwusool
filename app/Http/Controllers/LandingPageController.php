@@ -10,6 +10,7 @@ use App\Models\Newsletter;
 use App\Models\LandingPageSetting;
 use App\Models\LandingPageCustomPage;
 use App\Models\Store;
+use App\Services\DemoStoreService;
 
 class LandingPageController extends Controller
 {
@@ -120,6 +121,7 @@ class LandingPageController extends Controller
             'customPages' => LandingPageCustomPage::active()->ordered()->get() ?? [],
             'settings' => $landingSettings,
             'featuredStores' => $featuredStores,
+            'demoStoreUrl' => app(DemoStoreService::class)->demoStoreUrl(),
             'superadminLogoDark' => \App\Models\Setting::getSetting('logoDark', getSuperadminId(), null),
             'superadminLogoLight' => \App\Models\Setting::getSetting('logoLight', getSuperadminId(), null)
         ]);
