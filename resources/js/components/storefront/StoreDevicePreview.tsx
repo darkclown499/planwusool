@@ -246,11 +246,21 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
                 </div>
               </div>
 
-              {/* Floor reflection (desktop only — avoids overlapping content on mobile) */}
-              <div
-                className="pointer-events-none absolute -bottom-8 left-1/2 hidden h-8 w-[92%] -translate-x-1/2 rounded-[100%] blur-xl lg:block"
-                style={{ background: `${brandColor}45` }}
-              />
+              {/* Glass platform under the phone (desktop only — avoids crowding on mobile) */}
+              <div className="pointer-events-none absolute -bottom-12 left-1/2 hidden w-[112%] -translate-x-1/2 flex-col items-center lg:flex">
+                <div
+                  className="h-1.5 w-[54%] rounded-[100%] blur-md"
+                  style={{ background: `${brandColor}66` }}
+                />
+                <div
+                  className="glass-platform -mt-1 w-full max-w-[340px] rounded-[50%] border border-white/15"
+                  style={{
+                    height: '40px',
+                    background: 'linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18)',
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -273,8 +283,15 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
           0%, 100% { transform: translate(0, 0); }
           50% { transform: translate(8px, -3px); }
         }
+        @keyframes platformPulse {
+          0%, 100% { opacity: 0.9; transform: scaleX(1); }
+          50% { opacity: 0.6; transform: scaleX(0.97); }
+        }
         .hint-bob {
           animation: hintBob 4s ease-in-out 1s infinite;
+        }
+        .glass-platform {
+          animation: platformPulse 6s ease-in-out infinite;
         }
         .phone-enter {
           animation: phoneEnter 0.6s ease-out both;
@@ -292,6 +309,9 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
             animation: none;
           }
           .hint-bob {
+            animation: none;
+          }
+          .glass-platform {
             animation: none;
           }
         }
