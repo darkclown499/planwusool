@@ -38,7 +38,7 @@ class LandingPageSeeder extends Seeder
                     'key' => 'hero',
                     'title' => 'وصول',
                     'subtitle' => 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع',
-                    'announcement_text' => 'موثوق من أكثر من ١٠,٠٠٠ متجر حول العالم',
+                    'announcement_text' => 'انضم الآن واستفد من التجربة المجانية',
                     'primary_button_text' => 'ابدأ تجربة مجانية',
                     'secondary_button_text' => 'الدخول',
                     'background_color' => '#0a0a0a',
@@ -46,9 +46,9 @@ class LandingPageSeeder extends Seeder
                     'layout' => 'image-right',
                     'image_position' => 'right',
                     'stats' => [
-                        ['value' => '١٠ آلاف+', 'label' => 'متجر'],
-                        ['value' => '+٥٠', 'label' => 'دولة'],
-                        ['value' => '٩٩.٩٪', 'label' => 'وقت تشغيل']
+                        ['value' => 'جاهز في دقائق', 'label' => 'أنشئ متجرك دون تعقيد'],
+                        ['value' => 'أدوات تسويق مدمجة', 'label' => 'حملات وعروض بلمسة واحدة'],
+                        ['value' => 'تحديثات مستمرة', 'label' => 'المنصة تتطور مع متجرك'],
                     ],
                 ],
                 [
