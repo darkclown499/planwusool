@@ -178,8 +178,8 @@ export default function HeroSection({
               <StoreDevicePreview storeUrl={demoStoreUrl} brandColor={brandColor} />
 
               {/* ── Floating accent card: incoming WhatsApp order (desktop only) ── */}
-              <div className="card-float-1 pointer-events-none absolute right-0 top-[8%] z-20 translate-x-20 hidden lg:block">
-                <div className="glass-card w-60 rounded-2xl p-3.5">
+              <div className="card-float-1 pointer-events-none absolute right-[4%] top-[14%] z-20 hidden lg:block">
+                <div className="glass-card w-56 rounded-2xl p-3.5">
                   <div className="flex items-center gap-2.5">
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
@@ -203,8 +203,8 @@ export default function HeroSection({
               </div>
 
               {/* ── Floating accent card: today sales (desktop only) ── */}
-              <div className="card-float-2 pointer-events-none absolute left-0 bottom-[8%] z-20 -translate-x-20 hidden lg:block">
-                <div className="glass-card w-60 rounded-2xl p-3.5">
+              <div className="card-float-2 pointer-events-none absolute left-[4%] bottom-[14%] z-20 hidden lg:block">
+                <div className="glass-card w-56 rounded-2xl p-3.5">
                   <div className="flex items-center gap-3">
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
@@ -225,8 +225,8 @@ export default function HeroSection({
               </div>
 
               {/* ── Floating accent card: incoming WhatsApp message (desktop only) ── */}
-              <div className="card-float-3 pointer-events-none absolute left-[6%] top-[2%] z-20 hidden lg:block">
-                <div className="glass-card flex items-center gap-2.5 rounded-2xl px-3.5 py-3">
+              <div className="card-float-3 pointer-events-none absolute right-[8%] bottom-[16%] z-20 hidden lg:block">
+                <div className="glass-card flex max-w-[240px] items-center gap-2.5 rounded-2xl px-3.5 py-3">
                   <span
                     className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
                     style={{

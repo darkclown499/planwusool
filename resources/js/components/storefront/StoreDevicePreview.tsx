@@ -110,10 +110,12 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
   const mouseRef = useRef<ParallaxMouse>({ x: 0, y: 0 });
   const onMoveRef = useRef<(e: MouseEvent) => void>(() => {});
 
-  // Continuous mouse-tracking parallax: the whole device leans smoothly toward the cursor.
+  // Continuous mouse-tracking parallax: a fixed isometric base pose
+  // (rotateX/rotateY/rotateZ) with a subtle cursor-driven offset on top.
   useEffect(() => {
+    const BASE = { rx: 16, ry: -26, rz: 5 };
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const smooth = { x: 2.5, y: -5 };
+    const smooth = { x: BASE.rx, y: BASE.ry };
     let raf = 0;
 
     const onMove = (e: MouseEvent) => {
@@ -124,11 +126,11 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
 
     const loop = () => {
       if (!reduced) {
-        smooth.x += (2.5 + mouseRef.current.y * -7 - smooth.x) * 0.08;
-        smooth.y += (-5 + mouseRef.current.x * 8 - smooth.y) * 0.08;
+        smooth.x += (BASE.rx + mouseRef.current.y * -6 - smooth.x) * 0.08;
+        smooth.y += (BASE.ry + mouseRef.current.x * 8 - smooth.y) * 0.08;
       }
       if (tiltRef.current) {
-        tiltRef.current.style.transform = `rotateX(${smooth.x.toFixed(2)}deg) rotateY(${smooth.y.toFixed(2)}deg)`;
+        tiltRef.current.style.transform = `rotateX(${smooth.x.toFixed(2)}deg) rotateY(${smooth.y.toFixed(2)}deg) rotateZ(${BASE.rz}deg)`;
       }
       raf = requestAnimationFrame(loop);
     };
@@ -203,7 +205,7 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
         </div>
 
         {/* 3D perspective context for the continuous parallax tilt */}
-        <div className="[perspective:1500px]">
+        <div className="[perspective:1000px]">
           {/* Device wrapper — tilts toward the cursor */}
           <div ref={tiltRef} className="[transform-style:preserve-3d] will-change-transform">
             {/* Gentle float on desktop only */}
@@ -219,7 +221,7 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
               />
 
               {/* Screen: 3D device body (WebGL) + real store render (live iframe) */}
-              <div className="relative aspect-[428/926] w-[min(90vw,360px)] sm:w-[360px] lg:w-[400px]">
+              <div className="relative z-[1] aspect-[428/926] w-[min(90vw,360px)] sm:w-[360px] lg:w-[400px]">
                 <div className="absolute inset-0">
                   {/* WebGL scene (lazy) — fallback to the SVG frame while loading */}
                   <Suspense fallback={<PhoneFrame />}>
@@ -246,18 +248,32 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
                 </div>
               </div>
 
-              {/* Glass platform under the phone (desktop only — avoids crowding on mobile) */}
-              <div className="pointer-events-none absolute -bottom-12 left-1/2 hidden w-[112%] -translate-x-1/2 flex-col items-center lg:flex">
+              {/* Perspective contact shadow cast by the tilted device (desktop only) */}
+              <div className="pointer-events-none absolute -bottom-10 left-1/2 z-0 hidden w-[64%] -translate-x-1/2 lg:block">
+                <div
+                  className="h-8 rounded-[100%]"
+                  style={{
+                    background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.55), transparent 70%)',
+                    filter: 'blur(10px)',
+                    transform: 'translateX(6px) rotateX(0deg)',
+                  }}
+                />
+              </div>
+
+              {/* Glass floor platform — lies flat under the tilted phone (desktop only) */}
+              <div className="pointer-events-none absolute -bottom-12 left-1/2 z-0 hidden w-[118%] -translate-x-1/2 flex-col items-center [transform-style:preserve-3d] lg:flex">
                 <div
                   className="h-1.5 w-[54%] rounded-[100%] blur-md"
                   style={{ background: `${brandColor}66` }}
                 />
                 <div
-                  className="glass-platform -mt-1 w-full max-w-[340px] rounded-[50%] border border-white/15"
+                  className="glass-platform -mt-1 w-full max-w-[360px] rounded-[50%] border border-white/15"
                   style={{
-                    height: '40px',
-                    background: 'linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))',
+                    height: '44px',
+                    background: 'linear-gradient(160deg, rgba(255,255,255,0.13), rgba(255,255,255,0.03))',
                     boxShadow: '0 20px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18)',
+                    transform: 'rotateX(75deg)',
+                    transformOrigin: '50% 100%',
                   }}
                 />
               </div>
@@ -283,18 +299,14 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
           0%, 100% { transform: translate(0, 0); }
           50% { transform: translate(8px, -3px); }
         }
-        @keyframes platformPulse {
-          0%, 100% { opacity: 0.9; transform: scaleX(1); }
-          50% { opacity: 0.6; transform: scaleX(0.97); }
-        }
         .hint-bob {
           animation: hintBob 4s ease-in-out 1s infinite;
         }
-        .glass-platform {
-          animation: platformPulse 6s ease-in-out infinite;
-        }
         .phone-enter {
           animation: phoneEnter 0.6s ease-out both;
+        }
+        .phone-float {
+          transform-style: preserve-3d;
         }
         @media (min-width: 1024px) {
           .phone-float {
@@ -309,9 +321,6 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
             animation: none;
           }
           .hint-bob {
-            animation: none;
-          }
-          .glass-platform {
             animation: none;
           }
         }
