@@ -607,14 +607,3 @@ button[disabled],
     }
   }
 }
-
-/* ── Glassmorphism card — shared token for all floating/landing surfaces ── */
-.glass-card {
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06));
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  backdrop-filter: blur(24px) saturate(160%);
-  box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}

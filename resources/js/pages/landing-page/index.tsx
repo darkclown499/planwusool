@@ -219,7 +219,6 @@ export default function LandingPage() {
         settings={settings}
         sectionData={getSectionData('hero')}
         brandColor={primaryColor}
-        demoStoreUrl={demoStoreUrl}
         superadminLogoLight={superadminLogoLight}
       />
     ),
