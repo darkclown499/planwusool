@@ -146,7 +146,7 @@ export default function HeroSection({
 
               {/* ── Floating accent card: incoming WhatsApp order (desktop only) ── */}
               <div className="card-float-1 pointer-events-none absolute right-0 top-[8%] z-20 translate-x-20 hidden lg:block">
-                <div className="w-60 rounded-2xl border border-white/10 bg-gray-900/85 p-3.5 shadow-2xl backdrop-blur-md">
+                <div className="glass-card w-60 rounded-2xl p-3.5">
                   <div className="flex items-center gap-2.5">
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
@@ -171,7 +171,7 @@ export default function HeroSection({
 
               {/* ── Floating accent card: today sales (desktop only) ── */}
               <div className="card-float-2 pointer-events-none absolute left-0 bottom-[8%] z-20 -translate-x-20 hidden lg:block">
-                <div className="w-60 rounded-2xl border border-white/10 bg-gray-900/85 p-3.5 shadow-2xl backdrop-blur-md">
+                <div className="glass-card w-60 rounded-2xl p-3.5">
                   <div className="flex items-center gap-3">
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"

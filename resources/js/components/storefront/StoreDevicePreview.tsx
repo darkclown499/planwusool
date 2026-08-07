@@ -167,7 +167,7 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
             className={`rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-colors sm:px-4 sm:py-2 sm:text-[13px] ${
               themeId === id
                 ? 'border-transparent text-white'
-                : 'border-white/20 bg-white/5 text-white/70 hover:border-white/40 hover:text-white'
+                : 'border-white/15 bg-white/10 text-white/75 backdrop-blur-xl hover:border-white/30 hover:bg-white/15 hover:text-white'
             }`}
             style={themeId === id ? { backgroundColor: brandColor, boxShadow: `0 0 16px ${brandColor}55` } : undefined}
           >
@@ -180,7 +180,7 @@ export default function StoreDevicePreview({ storeUrl, brandColor = '#10b77f', c
       <div className="phone-enter relative">
         {/* Interactivity hint as a floating pill beside the phone (desktop only) */}
         <div className="pointer-events-none absolute left-0 top-[10%] z-20 hidden -translate-x-20 lg:block">
-          <div className="hint-bob flex items-center gap-2.5 rounded-2xl border border-white/10 bg-gray-950/85 py-3 pl-3 pr-3 shadow-2xl backdrop-blur-md">
+          <div className="hint-bob glass-card flex items-center gap-2.5 rounded-2xl py-3 pl-3 pr-3">
             <svg
               className="h-4 w-4"
               viewBox="0 0 24 24"
