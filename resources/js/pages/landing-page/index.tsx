@@ -220,6 +220,7 @@ export default function LandingPage() {
         sectionData={getSectionData('hero')}
         brandColor={primaryColor}
         demoStoreUrl={demoStoreUrl}
+        superadminLogoLight={superadminLogoLight}
       />
     ),
     features: () => isSectionVisible('features') && (
@@ -353,7 +354,7 @@ export default function LandingPage() {
         {metaImage && <meta name="twitter:image" content={metaImage} />}
       </Head>
       <div
-        className="min-h-screen bg-white"
+        className="min-h-screen overflow-x-hidden bg-white"
         data-landing-page="true"
         style={{
           scrollBehavior: 'smooth',
