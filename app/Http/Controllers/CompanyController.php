@@ -324,22 +324,24 @@ class CompanyController extends Controller
         
         $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly'
         ]);
-        
+
         $plan = Plan::find($validated['plan_id']);
         if (!$plan) {
             return back()->with('error', __('Plan not found'));
         }
-        
+
+        // Force yearly billing cycle
+        $billingCycle = 'yearly';
+
         // Update company plan
         $company->plan_id = $plan->id;
-        
+
         // Save billing cycle
-        $company->plan_duration = $validated['billing_cycle'];
-        
+        $company->plan_duration = $billingCycle;
+
         // Set plan expiry date based on billing cycle
-        if ($validated['billing_cycle'] === 'yearly') {
+        if ($billingCycle === 'yearly') {
             $company->plan_expire_date = now()->addYear();
         } else {
             $company->plan_expire_date = now()->addMonth();

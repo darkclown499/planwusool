@@ -895,7 +895,7 @@ if (! function_exists('validatePaymentMethodConfig')) {
 }
 
 if (! function_exists('calculatePlanPricing')) {
-    function calculatePlanPricing($plan, $couponCode = null, $billingCycle = 'monthly', $userId = null)
+    function calculatePlanPricing($plan, $couponCode = null, $billingCycle = 'yearly', $userId = null)
     {
         $originalPrice = $plan->getPriceForCycle($billingCycle);
         $discountAmount = 0;
@@ -967,7 +967,7 @@ if (! function_exists('createPlanOrder')) {
     {
         $plan = Plan::findOrFail($data['plan_id']);
         $userId = $data['user_id'] ?? null;
-        $pricing = calculatePlanPricing($plan, $data['coupon_code'] ?? null, $data['billing_cycle'] ?? 'monthly', $userId);
+        $pricing = calculatePlanPricing($plan, $data['coupon_code'] ?? null, $data['billing_cycle'] ?? 'yearly', $userId);
         
         $planOrder = PlanOrder::create([
             'user_id' => $data['user_id'],
@@ -1027,7 +1027,7 @@ if (! function_exists('validatePaymentRequest')) {
     {
         $baseRules = [
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly',
+            'billing_cycle' => 'required|in:yearly',
             'coupon_code' => 'nullable|string',
         ];
         

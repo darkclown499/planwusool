@@ -295,11 +295,11 @@ export default function Companies() {
       });
   };
 
-  const handleUpgradePlanConfirm = (planId: number, billingCycle: 'monthly' | 'yearly') => {
+  const handleUpgradePlanConfirm = (planId: number) => {
     // Use Inertia router to handle the request
     router.put(route('companies.upgrade-plan', currentCompany.id), {
       plan_id: planId,
-      billing_cycle: billingCycle
+      billing_cycle: 'yearly'
     }, {
       onSuccess: () => {
         setIsUpgradePlanModalOpen(false);

@@ -22,7 +22,6 @@ import {
   Database,
   Layout,
   Rocket,
-  Users,
   Headphones,
   Wallet,
   Star,
@@ -87,8 +86,8 @@ type IconType = React.ComponentType<{ className?: string; strokeWidth?: number; 
 
 const PLAN_META: Record<string, { name: string; description: string; icon: IconType; originalPrice: number }> = {
   Starter: { name: 'باقة البداية', description: 'الخيار المثالي لاختبار النظام وإطلاق متجرك الأول بسهولة.', icon: Package, originalPrice: 0 },
-  Growth: { name: 'باقة النمو', description: 'الباقة الأكثر مبيعاً، مصممة لتوسيع نشاطك التجاري وزيادة مبيعاتك.', icon: Zap, originalPrice: 170 },
-  Professional: { name: 'باقة الاحتراف', description: 'الحل الشامل للمؤسسات، مع قابلية التخصيص الكامل حسب احتياج عملك.', icon: Crown, originalPrice: 270 },
+  Growth: { name: 'باقة النمو', description: 'الباقة الأكثر مبيعاً، مصممة لتوسيع نشاطك التجاري وزيادة مبيعاتك.', icon: Zap, originalPrice: 360 },
+  Professional: { name: 'باقة الاحتراف', description: 'الحل الشامل للمؤسسات، مع قابلية التخصيص الكامل حسب احتياج عملك.', icon: Crown, originalPrice: 570 },
 };
 
 const fallbackPlans: Plan[] = [
@@ -122,8 +121,8 @@ const fallbackPlans: Plan[] = [
   {
     id: 2,
     name: 'Growth',
-    price: 120,
-    yearly_price: 120,
+    price: 240,
+    yearly_price: 240,
     duration: 'yearly',
     domain_type: 'subdomain',
     support_hours: 12,
@@ -138,7 +137,7 @@ const fallbackPlans: Plan[] = [
     enable_custsubdomain: 'on',
     enable_branding: 'off',
     pwa_business: 'on',
-    enable_chatgpt: 'off',
+    enable_chatgpt: 'on',
     enable_shipping_method: 'on',
     enable_mobile_app: 'off',
     enable_theme_editor: 'off',
@@ -149,8 +148,8 @@ const fallbackPlans: Plan[] = [
   {
     id: 3,
     name: 'Professional',
-    price: 200,
-    yearly_price: 200,
+    price: 360,
+    yearly_price: 360,
     duration: 'yearly',
     domain_type: 'custom',
     support_hours: 24,
@@ -219,31 +218,22 @@ const COMPARE_GROUPS: CompareGroup[] = [
       { label: 'الموظفون والصلاحيات', get: (p) => ({ kind: 'text', text: String(p.max_users_per_store || 0) }) },
       { label: 'مساحة التخزين', get: (p) => ({ kind: 'text', text: `${p.storage_limit || 0} GB` }) },
       { label: 'أتمتة طلبات واتساب', tooltip: 'كل طلب يصل مباشرة إلى واتسابك كرسالة معبأة بكل التفاصيل: المنتجات والسعر والعنوان.', get: () => yes() },
-      { label: 'بيع منتجات رقمية', tooltip: 'بيع ملفات قابلة للتحميل الفوري بعد إتمام الدفع.', get: () => yes() },
-      { label: 'رمز QR لمتجرك', tooltip: 'رمز QR يفتح متجرك مباشرة، مثالي للطباعة على الفواتير والإعلانات.', get: () => yes() },
-      { label: 'استيراد وتصدير المنتجات', get: () => yes() },
+      { label: 'رمز QR واستيراد/تصدير', tooltip: 'رمز QR يفتح متجرك مباشرة، مع استيراد وتصدير المنتجات بسهولة.', get: () => yes() },
     ],
   },
   {
-    title: 'الدفع والطلبات',
+    title: 'الدفع',
     icon: Wallet,
     rows: [
       { label: 'بوابات دفع عالمية', tooltip: 'Stripe, PayPal, Razorpay, Paystack, Flutterwave, Mollie, Midtrans وغيرها من 20+ بوابة.', get: () => yes() },
-      { label: 'الدفع عند الاستلام (COD)', get: () => yes() },
-      { label: 'خروج سريع (Buy Now)', tooltip: 'زر شراء مباشر ينهي الطلب بضغطة واحدة بدون سلة تسوق.', get: () => yes() },
-      { label: 'دعم عملات متعددة', get: () => yes() },
     ],
   },
   {
     title: 'التسويق والنمو',
     icon: Rocket,
     rows: [
-      { label: 'كوبونات متقدمة', tooltip: 'خصم بنسبة أو مبلغ، شحن مجاني، اشترِ واحصل، مع حدود حسب المنطقة والعميل.', get: () => yes() },
       { label: 'استعادة السلات المتروكة', tooltip: 'تذكيرات تلقائية عبر البريد والواتساب للعملاء الذين لم يكملوا الشراء.', get: () => yes() },
       { label: 'نظام الإحالة', tooltip: 'مكافأة عملائك عند دعوة أصدقائهم للشراء من متجرك.', get: () => yes() },
-      { label: 'برنامج الولاء', tooltip: 'نقاط ومكافآت تشجع على الشراء المتكرر وبناء قاعدة عملاء وفيّين.', get: () => yes() },
-      { label: 'مراجعات المنتجات', get: () => yes() },
-      { label: 'حملات واتساب جماعية', tooltip: 'إرسال عروض وإشعارات لعملائك عبر واتساب بضغطة واحدة.', get: () => yes() },
     ],
   },
   {
@@ -251,27 +241,13 @@ const COMPARE_GROUPS: CompareGroup[] = [
     icon: Bot,
     rows: [
       { label: 'توليد المحتوى بالـ AI', tooltip: 'كتابة أوصاف المنتجات وترجمتها واقتراح أسعار تنافسية تلقائياً.', get: (p) => yesNo(p.enable_chatgpt) },
-      { label: 'مساعد محادثة ذكي', tooltip: 'مساعد ذكي يساعدك على الإجابة والتحليل مباشرة من لوحة التحكم.', get: () => yes() },
     ],
   },
   {
-    title: 'الشحن والمحاسبة',
+    title: 'الشحن',
     icon: Truck,
     rows: [
       { label: 'طرق الشحن', tooltip: 'تحديد مناطق الشحن وتكاليفها وطريقة التسليم لكل منطقة.', get: (p) => yesNo(p.enable_shipping_method) },
-      { label: 'فواتير PDF', tooltip: 'إصدار فواتير قابلة للطباعة والتصدير لكل طلب.', get: () => yes() },
-      { label: 'إدارة الضرائب', get: () => yes() },
-      { label: 'تكامل محاسبي', tooltip: 'الربط ببرامج المحاسبة الخارجية (QuickBooks / Xero) لتبسيط حساباتك.', get: () => yes() },
-    ],
-  },
-  {
-    title: 'العملاء والإشعارات',
-    icon: Users,
-    rows: [
-      { label: 'إدارة العملاء (CRM)', get: () => yes() },
-      { label: 'إشعارات SMS', get: () => yes() },
-      { label: 'إشعارات البريد الإلكتروني', get: () => yes() },
-      { label: 'إشعارات ويب Push', get: () => yes() },
     ],
   },
   {
