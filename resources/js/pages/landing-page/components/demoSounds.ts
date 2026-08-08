@@ -45,6 +45,20 @@ class DemoAudio {
     this.tone(520, 0.07, 'square', 0.035);
   }
 
+  key() {
+    this.tone(300 + Math.random() * 80, 0.045, 'square', 0.03, 0, 260);
+  }
+
+  bios() {
+    this.tone(95, 0.05, 'square', 0.025);
+    this.tone(65, 0.04, 'square', 0.018, 0.03);
+  }
+
+  login() {
+    this.tone(620, 0.16, 'sine', 0.04, 0, 960);
+    this.tone(960, 0.32, 'sine', 0.03, 0.15, 1320);
+  }
+
   type() {
     this.tone(680 + Math.random() * 160, 0.035, 'triangle', 0.02);
   }

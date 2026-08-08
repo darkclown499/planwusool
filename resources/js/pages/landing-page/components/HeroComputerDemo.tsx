@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
+  Battery,
   Camera,
   Check,
   CheckCheck,
@@ -22,12 +23,13 @@ import {
   Star,
   Volume2,
   VolumeX,
+  Wifi,
   X
 } from 'lucide-react';
 import { demoStores, type DemoProduct, type DemoStore } from './demoStores';
 import { demoAudio } from './demoSounds';
 
-type Stage = 'idle' | 'boot' | 'desktop' | 'browser' | 'loading' | 'demo';
+type Stage = 'idle' | 'bios' | 'spin' | 'login' | 'desktop' | 'browser' | 'loading' | 'demo';
 
 interface HeroComputerDemoProps {
   brandColor?: string;
@@ -49,7 +51,20 @@ interface CursorState {
   dur: number;
 }
 
-const BOOT_STEPS = ['تحضير النظام...', 'تهيئة المتجر...', 'جلب أدواتك...', 'كل شيء جاهز 🎉'];
+const BIOS_LINES = [
+  'Wusool BIOS v2.71 — Copyright (C) 2026',
+  'CPU: Wusool Core i9-13900K @ 5.80GHz',
+  'Memory Testing: 16384MB OK',
+  'IDE Channel 0 Master: WUSOOLSSD 512GB',
+  'Looking for boot device... OK',
+  'Starting Wusool OS...',
+];
+
+const ACCOUNTS = [
+  { name: 'أحمد', color: '#38bdf8' },
+  { name: 'سارة', color: '#fb7185' },
+  { name: 'خالد', color: '#a3e635' },
+];
 
 export default function HeroComputerDemo({
   brandColor = '#10b77f',
@@ -58,7 +73,9 @@ export default function HeroComputerDemo({
 }: HeroComputerDemoProps) {
   const [stage, setStage] = useState<Stage>('idle');
   const [storeIndex, setStoreIndex] = useState(0);
-  const [bootProgress, setBootProgress] = useState(0);
+  const [biosLine, setBiosLine] = useState(0);
+  const [loginPhase, setLoginPhase] = useState<'pick' | 'typing'>('pick');
+  const [passDots, setPassDots] = useState(0);
   const [typed, setTyped] = useState('');
   const [storeReady, setStoreReady] = useState(false);
   const [cursor, setCursor] = useState<CursorState>({ x: 0, y: 0, dur: 600 });
@@ -78,6 +95,9 @@ export default function HeroComputerDemo({
 
   const runIdRef = useRef(0);
   const screenRef = useRef<HTMLDivElement>(null);
+  const avatarRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const passFieldRef = useRef<HTMLDivElement>(null);
+  const passGoRef = useRef<HTMLButtonElement>(null);
   const browserIconRef = useRef<HTMLButtonElement>(null);
   const addressRef = useRef<HTMLDivElement>(null);
   const waBtnRef = useRef<HTMLButtonElement>(null);
@@ -131,7 +151,9 @@ export default function HeroComputerDemo({
     setStoreReady(false);
     setClicking(false);
     setCursorVisible(false);
-    setBootProgress(0);
+    setBiosLine(0);
+    setLoginPhase('pick');
+    setPassDots(0);
     setCart([]);
     setCartOpen(false);
     setChatOpen(false);
@@ -148,18 +170,18 @@ export default function HeroComputerDemo({
     demoAudio.ensure();
     demoAudio.setMuted(stateMutedRef.current);
 
-    setStage('boot');
+    setStage('bios');
     void (async () => {
-      const t0 = performance.now();
-      const duration = 2600;
-      while (performance.now() - t0 < duration) {
+      for (let i = 0; i < BIOS_LINES.length; i++) {
+        await new Promise((r) => setTimeout(r, 240));
         if (runIdRef.current !== id) return;
-        setBootProgress(Math.min(1, (performance.now() - t0) / duration));
-        await new Promise((r) => setTimeout(r, 45));
+        setBiosLine(i + 1);
+        demoAudio.bios();
       }
+      await new Promise((r) => setTimeout(r, 620));
       if (runIdRef.current !== id) return;
-      setBootProgress(1);
-      setStage('desktop');
+      setStage('spin');
+      demoAudio.boot();
     })();
   }, [resetAll]);
 
@@ -169,11 +191,73 @@ export default function HeroComputerDemo({
     demoAudio.setMuted(muted);
   }, [muted]);
 
+  /* ── Stage: spin → login screen ── */
+  useEffect(() => {
+    if (stage !== 'spin') return;
+    const id = runIdRef.current;
+    const t = window.setTimeout(() => {
+      if (runIdRef.current !== id) return;
+      setStage('login');
+      demoAudio.pop();
+    }, 2600);
+    return () => window.clearTimeout(t);
+  }, [stage]);
+
+  /* ── Stage: login → pick account, type password, unlock ── */
+  useEffect(() => {
+    if (stage !== 'login') return;
+    const id = runIdRef.current;
+    const timers: number[] = [];
+    const at = (ms: number, fn: () => void) => {
+      timers.push(
+        window.setTimeout(() => {
+          if (runIdRef.current === id) fn();
+        }, ms)
+      );
+    };
+
+    at(600, () => {
+      cursorToScreen();
+      setCursorVisible(true);
+      flyTo(avatarRefs.current[0], 1500);
+    });
+    at(2400, () => {
+      doClick();
+      demoAudio.click();
+      setLoginPhase('typing');
+    });
+    at(3300, () => flyTo(passFieldRef.current, 1000));
+    at(4200, () => {
+      doClick();
+      setPassDots(1);
+      demoAudio.key();
+    });
+    at(4580, () => {
+      setPassDots(2);
+      demoAudio.key();
+    });
+    at(4960, () => {
+      setPassDots(3);
+      demoAudio.key();
+    });
+    at(5340, () => {
+      setPassDots(4);
+      demoAudio.key();
+    });
+    at(6250, () => flyTo(passGoRef.current, 1000));
+    at(7450, () => {
+      doClick();
+      demoAudio.login();
+      setStage('desktop');
+    });
+
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [stage, flyTo, doClick, cursorToScreen]);
+
   /* ── Stage: desktop → mouse moves to the browser icon ── */
   useEffect(() => {
     if (stage !== 'desktop') return;
     const id = runIdRef.current;
-    demoAudio.boot();
     const t1 = window.setTimeout(() => {
       if (runIdRef.current !== id) return;
       cursorToScreen();
@@ -315,19 +399,25 @@ export default function HeroComputerDemo({
       setChatReplied(false);
     });
 
-    // 6) idle living motion while the user takes over
-    let flip = 0;
-    let idleTimer = window.setTimeout(function loopIdle() {
-      if (runIdRef.current !== id) return;
-      flip = flip === 0 ? 1 : 0;
-      flyTo(flip === 0 ? cardRefs.current[1] : cardRefs.current[3], 3200);
-      idleTimer = window.setTimeout(loopIdle, 4600);
-    }, 13800);
-    timers.push(idleTimer);
+    // 6) after the WhatsApp chat closes, the mouse walks the store like a human…
+    const chatLen =
+      `مرحباً ${store.name} 👋\nأريد طلب: ${products.slice(0, 3).map((p) => `1× ${p.name}`).join('، ')}\nالإجمالي: ${products.slice(0, 3).reduce((s, p) => s + p.price, 0)}₪`.length;
+    const chatClose = 12900 + chatLen * 45 + 3200;
+    at(chatClose + 500, () => flyTo(cardRefs.current[6], 2600));
+    at(chatClose + 3300, () => flyTo(cardRefs.current[9], 2700));
+    at(chatClose + 6200, () => flyTo(bubbleRef.current, 3200));
+    at(chatClose + 8600, () => {
+      doClick();
+      demoAudio.pop();
+      setToast('تم فتح واتساب — أرسل رسالتك الآن');
+    });
+    at(chatClose + 10100, () => flyTo(cardRefs.current[3], 2400));
+    at(chatClose + 12300, () => cursorToScreen());
 
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, storeReady, storeIndex, store, flyTo, doClick]);
 
   /* keep the latest cart reachable inside the cinematic timeline */
@@ -421,10 +511,6 @@ export default function HeroComputerDemo({
   const showBrowser = stage === 'browser' || stage === 'loading' || stage === 'demo';
   const addressFilled = stage === 'loading' || stage === 'demo';
 
-  const bootStep = bootProgress > 0.9 ? 3 : bootProgress > 0.6 ? 2 : bootProgress > 0.3 ? 1 : 0;
-  const completedSteps = BOOT_STEPS.slice(0, bootStep);
-  const currentStep = BOOT_STEPS[Math.min(bootStep, 3)];
-
   const chatFull =
     chatOpen
       ? `مرحباً ${store.name} 👋\nأريد طلب: ${order.map((i) => `1× ${i.product.name}`).join('، ')}\nالإجمالي: ${orderTotal}₪`
@@ -469,57 +555,140 @@ export default function HeroComputerDemo({
             </div>
           )}
 
-          {/* ── boot: modern cinematic ── */}
-          {stage === 'boot' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-[#06090b]">
-              <div className="boot-flash absolute inset-0" />
-              <div className="scanlines absolute inset-0 pointer-events-none" />
-              <div className="relative flex items-center justify-center">
-                {/* orbit ring */}
-                <div className="boot-orbit absolute h-40 w-40 rounded-full" style={{ borderColor: `${brandColor}66` }} />
-                <div className="boot-orbit-dot absolute" style={{ background: brandColor, boxShadow: `0 0 14px ${brandColor}` }} />
-                {appLogo ? (
-                  <img src={appLogo} alt={appName} className="boot-logo h-16 w-auto max-w-[70%] object-contain" />
-                ) : (
-                  <span
-                    className="boot-logo select-none text-5xl font-black"
-                    style={{ color: brandColor, textShadow: `0 0 40px ${brandColor}88` }}
-                  >
-                    {appName}
-                  </span>
-                )}
-              </div>
-
-              {/* boot step lines */}
-              <div className="flex h-10 w-56 flex-col items-center justify-center gap-1">
-                {completedSteps.map((step, i) => (
-                  <div key={i} className="flex items-center gap-1.5 text-[10px] text-white/60">
-                    <Check size={10} className="text-emerald-400" />
-                    <span className="line-through decoration-emerald-400/40">{step.replace('...', '')}</span>
+          {/* ── bios: real boot text ── */}
+          {stage === 'bios' && (
+            <div
+              dir="ltr"
+              className="absolute inset-0 bg-black px-5 pt-3"
+              style={{ fontFamily: "'Consolas', 'Courier New', monospace" }}
+            >
+              <div className="scanlines pointer-events-none absolute inset-0" />
+              <div className="flex h-full flex-col justify-center gap-[3px]">
+                {BIOS_LINES.slice(0, biosLine).map((line, i) => (
+                  <div key={i} className="bios-line flex items-center gap-1.5 text-[7.5px] leading-relaxed text-emerald-300/90 sm:text-[8.5px]">
+                    <span className="text-emerald-500/70">▸</span>
+                    <span>{line}</span>
                   </div>
                 ))}
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/85">
-                  <span className="boot-dots flex items-center gap-0.5">
-                    <span className="boot-dot" style={{ background: brandColor }} />
-                    <span className="boot-dot" style={{ background: brandColor, animationDelay: '0.15s' }} />
-                    <span className="boot-dot" style={{ background: brandColor, animationDelay: '0.3s' }} />
+                {biosLine > 0 && biosLine < BIOS_LINES.length && (
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <span className="caret bios-blink inline-block bg-emerald-300" style={{ width: 6, height: 8, background: '#6ee7b7' }} />
+                  </div>
+                )}
+              </div>
+              <div className="absolute bottom-2 left-5 text-[6.5px] tracking-wider text-white/35">
+                PRESS DEL TO ENTER SETUP &nbsp;·&nbsp; WUSOOL 2026
+              </div>
+            </div>
+          )}
+
+          {/* ── spin: windows-style loader ── */}
+          {stage === 'spin' && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center gap-5"
+              style={{ background: 'linear-gradient(180deg, #0f274a 0%, #0a1228 100%)' }}
+            >
+              <div className="scanlines pointer-events-none absolute inset-0" />
+              <div className="win-loader relative h-24 w-24">
+                {[0, 72, 144, 216, 288].map((deg, i) => (
+                  <span
+                    key={deg}
+                    className="absolute left-1/2 top-1/2"
+                    style={{ transform: `rotate(${deg}deg) translateY(-38px)` }}
+                  >
+                    <span className="win-dot block" style={{ background: '#5eb3f6', animationDelay: `${i * 0.12}s` }} />
                   </span>
-                  {currentStep}
-                </div>
+                ))}
+              </div>
+              {appLogo ? (
+                <img src={appLogo} alt={appName} className="boot-logo h-12 w-auto max-w-[65%] object-contain" />
+              ) : (
+                <span className="boot-logo select-none text-3xl font-black text-white" style={{ textShadow: '0 0 30px rgba(94,179,246,0.6)' }}>
+                  {appName}
+                </span>
+              )}
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-[10px] font-bold text-white/85">جارٍ تحميل النظام...</p>
+                <p className="text-[8px] text-white/35" dir="ltr">Wusool OS · {new Date().getFullYear()}</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── login: windows lock screen with 3 accounts ── */}
+          {stage === 'login' && (
+            <div className="absolute inset-0 overflow-hidden" style={{ background: 'linear-gradient(150deg, #113d8f 0%, #0f6fd0 55%, #4aa3e8 100%)' }}>
+              <div className="wall-blob absolute -right-14 -top-16 h-56 w-56 rounded-full blur-3xl" style={{ background: '#7cc4ff', opacity: 0.35 }} />
+              <div className="wall-blob-2 absolute -left-16 bottom-24 h-52 w-52 rounded-full blur-3xl" style={{ background: '#062a63', opacity: 0.5 }} />
+
+              {/* big clock */}
+              <div className="absolute left-1/2 top-[7%] -translate-x-1/2 text-center text-white">
+                <p className="text-[30px] font-light leading-none tracking-wide sm:text-[34px]" dir="ltr">
+                  {`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`}
+                </p>
+                <p className="mt-1.5 text-[9px] font-semibold text-white/85">{clockDate}</p>
               </div>
 
-              <div className="w-52">
-                <div className="h-[5px] overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full transition-[width] duration-100 ease-linear"
-                    style={{ width: `${Math.round(bootProgress * 100)}%`, background: `linear-gradient(90deg, ${brandColor}, #fff)` }}
-                  />
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[10px]">
-                  <span className="text-white/40">التحميل...</span>
-                  <span className="text-white/70" dir="ltr">{Math.round(bootProgress * 100)}%</span>
-                </div>
+              {/* accounts */}
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-center gap-8 pb-7">
+                {ACCOUNTS.map((acc, i) => (
+                  <button
+                    key={acc.name}
+                    ref={(el) => {
+                      avatarRefs.current[i] = el;
+                    }}
+                    onClick={() => {
+                      demoAudio.open();
+                      setLoginPhase('typing');
+                    }}
+                    className={`login-acc flex flex-col items-center gap-1.5 transition ${
+                      loginPhase === 'pick' ? 'opacity-75 hover:opacity-100' : i === 0 ? 'opacity-100' : 'opacity-30'
+                    }`}
+                  >
+                    <span
+                      className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white/60 bg-white/40 p-[3px] shadow-xl backdrop-blur-sm sm:h-16 sm:w-16"
+                      style={{ boxShadow: i === 0 && loginPhase === 'typing' ? `0 0 0 6px rgba(255,255,255,0.25)` : undefined }}
+                    >
+                      <span
+                        className="flex h-full w-full items-center justify-center rounded-full text-[20px] font-black text-white"
+                        style={{ background: `linear-gradient(135deg, ${acc.color}, ${acc.color}99)` }}
+                      >
+                        {acc.name[0]}
+                      </span>
+                    </span>
+                    <span className="rounded-full bg-black/30 px-2 py-px text-[8px] font-bold text-white backdrop-blur">
+                      {acc.name}
+                    </span>
+                  </button>
+                ))}
               </div>
+
+              {/* password bar */}
+              {loginPhase === 'typing' && (
+                <div className="absolute inset-x-0 bottom-28 flex flex-col items-center gap-2">
+                  <div
+                    ref={passFieldRef}
+                    className="login-bar flex items-center gap-2.5 rounded-lg border border-white/40 bg-black/40 px-3.5 py-1.5 shadow-2xl backdrop-blur"
+                  >
+                    <span className="text-[9px] font-bold text-white/90">{ACCOUNTS[0].name}</span>
+                    <span className="flex items-end gap-1 text-[14px] leading-none tracking-widest text-white">
+                      {[0, 1, 2, 3].map((i) => (
+                        <span key={i} className="inline-block w-2 text-center">
+                          {i < passDots ? '●' : ''}
+                        </span>
+                      ))}
+                    </span>
+                    <button
+                      ref={passGoRef}
+                      aria-label="دخول"
+                      onClick={() => demoAudio.click()}
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25 text-white transition hover:bg-white/40"
+                    >
+                      <ArrowLeft size={12} />
+                    </button>
+                  </div>
+                  <p className="text-[7.5px] text-white/60">اضغط Enter للدخول — أو اختر حسابًا آخر</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -545,13 +714,13 @@ export default function HeroComputerDemo({
               {/* icons */}
               {stage === 'desktop' && (
                 <>
-                  <div className="absolute right-2 top-2 z-10 hidden flex-col gap-2.5 sm:flex">
-                    <DesktopIcon ref={browserIconRef} icon={<Globe size={18} />} label="المتصفح" brandColor={brandColor} active glow />
-                    <DesktopIcon icon={<MessageCircle size={18} />} label="واتساب" brandColor="#25D366" />
-                    <DesktopIcon icon={<FolderOpen size={18} />} label="الملفات" brandColor={brandColor} />
-                    <DesktopIcon icon={<Settings size={18} />} label="الإعدادات" brandColor={brandColor} />
-                    <DesktopIcon icon={<Camera size={18} />} label="الكاميرا" brandColor="#38bdf8" />
-                    <DesktopIcon icon={<ShoppingCart size={18} />} label="المتجر" brandColor={brandColor} />
+                  <div className="absolute right-1.5 top-1.5 z-10 grid grid-cols-2 gap-1 sm:grid">
+                    <DesktopIcon ref={browserIconRef} icon={<Globe size={14} />} label="المتصفح" brandColor={brandColor} active glow />
+                    <DesktopIcon icon={<MessageCircle size={14} />} label="واتساب" brandColor="#25D366" />
+                    <DesktopIcon icon={<FolderOpen size={14} />} label="الملفات" brandColor={brandColor} />
+                    <DesktopIcon icon={<Settings size={14} />} label="الإعدادات" brandColor={brandColor} />
+                    <DesktopIcon icon={<Camera size={14} />} label="الكاميرا" brandColor="#38bdf8" />
+                    <DesktopIcon icon={<ShoppingCart size={14} />} label="المتجر" brandColor={brandColor} />
                   </div>
                   {/* welcome toast */}
                   <div className="welcome-toast absolute left-1/2 top-4 z-20 -translate-x-1/2">
@@ -564,20 +733,37 @@ export default function HeroComputerDemo({
 
               {/* taskbar */}
               <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center justify-between border-t border-white/10 bg-white/[0.06] px-2 backdrop-blur">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/10 border border-white/10">
-                    <MessageCircle size={11} className="text-[#25D366]" />
+                <div className="flex items-center gap-1.5">
+                  <span className="flex h-5 items-center gap-1 rounded bg-[#2563eb]/90 px-1.5 text-[8px] font-bold text-white shadow">
+                    <span className="grid grid-cols-2 gap-px">
+                      <span className="h-1 w-1 bg-white" />
+                      <span className="h-1 w-1 bg-white" />
+                      <span className="h-1 w-1 bg-white" />
+                      <span className="h-1 w-1 bg-white" />
+                    </span>
+                    ابدأ
                   </span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/10 border border-white/10">
-                    <Globe size={11} className="text-white/80" />
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
+                    <MessageCircle size={10} className="text-[#25D366]" />
                   </span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/10 border border-white/10">
-                    <ShoppingCart size={11} className="text-white/80" />
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
+                    <Globe size={10} className="text-white/80" />
                   </span>
-                  <span className="ml-1 rounded-md bg-black/30 px-2 py-0.5 text-[8px] font-bold text-white/70">ابدأ</span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
+                    <ShoppingCart size={10} className="text-white/80" />
+                  </span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
+                    <FolderOpen size={10} className="text-white/80" />
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-[9px] text-white/70">
-                  <span>{clockDate}</span>
+                  <span className="hidden items-center gap-1 sm:flex">
+                    <Wifi size={10} />
+                    <Battery size={12} />
+                    <Volume2 size={10} />
+                  </span>
+                  <span className="rounded bg-white/10 px-1.5 py-px text-[8px] font-semibold text-white/80">عربي</span>
+                  <span className="hidden sm:inline">{clockDate}</span>
                   <span className="rounded-md bg-black/40 px-1.5 py-0.5 font-bold text-white/85" dir="ltr">
                     {clockTime}
                   </span>
@@ -763,41 +949,27 @@ export default function HeroComputerDemo({
             </>
           )}
 
-          {/* mouse cursor + trail */}
+          {/* mouse cursor */}
           {cursorVisible && (
-            <>
-              <div
-                className="pointer-events-none absolute left-0 top-0 z-40 h-3 w-3 rounded-full"
-                style={{
-                  transform: `translate3d(${cursor.x - 4}px, ${cursor.y - 4}px, 0)`,
-                  transitionDuration: `${Math.max(cursor.dur * 2.6, 800)}ms`,
-                  transitionProperty: 'transform',
-                  transitionTimingFunction: 'linear',
-                  background: brandColor,
-                  opacity: 0.25,
-                  filter: `blur(2px)`,
-                }}
-              />
-              <div
-                className="pointer-events-none absolute left-0 top-0 z-40"
-                style={{
-                  transform: `translate3d(${cursor.x}px, ${cursor.y}px, 0)`,
-                  transitionDuration: `${cursor.dur}ms`,
-                  transitionProperty: 'transform',
-                  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
-              >
-                <svg width="17" height="22" viewBox="0 0 17 22" className={`drop-shadow-md ${clicking ? 'cursor-press' : ''}`}>
-                  <path
-                    d="M1 1 L1 20.5 6.9 15.4 11.1 22 14.1 20.1 9.9 13.5 16.8 13.4 Z"
-                    fill="#ffffff"
-                    stroke="#0f172a"
-                    strokeWidth="1.3"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </>
+            <div
+              className="pointer-events-none absolute left-0 top-0 z-[80]"
+              style={{
+                transform: `translate3d(${cursor.x}px, ${cursor.y}px, 0)`,
+                transitionDuration: `${cursor.dur}ms`,
+                transitionProperty: 'transform',
+                transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            >
+              <svg width="17" height="22" viewBox="0 0 17 22" className={`drop-shadow-md ${clicking ? 'cursor-press' : ''}`}>
+                <path
+                  d="M1 1 L1 20.5 6.9 15.4 11.1 22 14.1 20.1 9.9 13.5 16.8 13.4 Z"
+                  fill="#ffffff"
+                  stroke="#0f172a"
+                  strokeWidth="1.3"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
           )}
 
           {/* toast */}
@@ -819,13 +991,10 @@ export default function HeroComputerDemo({
                 onClick={(e) => e.stopPropagation()}
                 dir="rtl"
               >
-                <div
-                  className="relative flex h-20 items-center justify-center text-4xl"
-                  style={{ background: `linear-gradient(135deg, ${detail.c1}, ${detail.c2})` }}
-                >
-                  <span className="drop-shadow">{detail.emoji}</span>
+                <div className="relative h-20">
+                  <ProductThumb product={detail} wrapClass="absolute inset-0 rounded-t-2xl sm:rounded-t-2xl" emojiClass="text-4xl" imgClass="rounded-t-2xl sm:rounded-t-2xl" />
                   {detail.badge && (
-                    <span className="absolute right-2 top-2 rounded bg-red-500 px-1.5 py-px text-[8px] font-bold text-white">
+                    <span className="absolute right-2 top-2 z-[1] rounded bg-red-500 px-1.5 py-px text-[8px] font-bold text-white">
                       {detail.badge}
                     </span>
                   )}
@@ -941,8 +1110,19 @@ export default function HeroComputerDemo({
         @keyframes bootLogoIn { from { opacity: 0; transform: scale(0.72); filter: blur(10px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
         .boot-logo { animation: bootLogoIn 0.95s ease forwards; }
 
-        @keyframes flashFade { from { opacity: 0.85; } to { opacity: 0; } }
-        .boot-flash { background: #fff; animation: flashFade 0.4s ease forwards; }
+        @keyframes biosIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+        .bios-line { animation: biosIn 0.16s ease forwards; }
+        @keyframes biosBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+        .bios-blink { animation: biosBlink 0.7s steps(1) infinite; }
+
+        @keyframes winSpin { to { transform: rotate(360deg); } }
+        .win-loader { animation: winSpin 1.4s linear infinite; }
+        @keyframes dotBlink { 0%, 100% { opacity: 1; } 65% { opacity: 0.2; } }
+        .win-dot { width: 9px; height: 9px; border-radius: 9999px; animation: dotBlink 1.4s linear infinite; }
+
+        @keyframes loginIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+        .login-acc { animation: loginIn 0.45s ease forwards; }
+        .login-bar { animation: loginIn 0.3s ease forwards; }
 
         @keyframes crtFlicker { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.65; } }
         .scanlines { background: repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 3px); animation: crtFlicker 0.11s infinite; }
@@ -975,17 +1155,6 @@ export default function HeroComputerDemo({
 
         @keyframes cursorPress { 0% { transform: scale(1); } 45% { transform: scale(0.72); } 100% { transform: scale(1); } }
         .cursor-press { animation: cursorPress 0.2s ease; }
-
-        @keyframes orbitSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .boot-orbit { border-style: dashed; border-width: 1.5px; animation: orbitSpin 7s linear infinite; }
-        .boot-orbit-dot {
-          position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; border-radius: 9999px;
-          background: ${brandColor}; box-shadow: 0 0 14px ${brandColor};
-          animation: orbitSpin 7s linear infinite;
-        }
-
-        @keyframes bootDotBounce { 0%, 100% { transform: translateY(0); opacity: 0.45; } 50% { transform: translateY(-3px); opacity: 1; } }
-        .boot-dot { width: 5px; height: 5px; border-radius: 9999px; display: inline-block; animation: bootDotBounce 0.9s ease-in-out infinite; }
 
         @keyframes iconFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         .desktop-icon { animation: iconFloat 4s ease-in-out infinite; }
@@ -1022,18 +1191,18 @@ const DesktopIcon = React.forwardRef<HTMLButtonElement, { icon: React.ReactNode;
     return (
       <button
         ref={ref}
-        className={`desktop-icon flex w-14 flex-col items-center gap-1 rounded-lg p-1.5 transition ${
+        className={`desktop-icon flex w-11 flex-col items-center gap-0.5 rounded-lg p-1 transition ${
           active ? 'bg-white/15 shadow-lg ring-1 ring-white/20' : 'hover:bg-white/10'
         }`}
         style={{ animationDelay: '0s' }}
       >
         <span
-          className={`flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 ${glow ? 'icon-glow text-white' : ''}`}
+          className={`flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 ${glow ? 'icon-glow text-white' : ''}`}
           style={{ background: `linear-gradient(135deg, ${brandColor}55, ${brandColor}22)`, color: glow ? '#fff' : undefined }}
         >
           {icon}
         </span>
-        <span className="text-[8px] font-semibold text-white/85">{label}</span>
+        <span className="text-[7px] font-semibold text-white/85">{label}</span>
       </button>
     );
   }
@@ -1067,6 +1236,40 @@ function StoreSkeleton({ brandColor }: { brandColor: string }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ── product image with graceful fallback ── */
+function ProductThumb({
+  product,
+  wrapClass,
+  emojiClass,
+  imgClass,
+}: {
+  product: DemoProduct;
+  wrapClass: string;
+  emojiClass: string;
+  imgClass?: string;
+}) {
+  const [err, setErr] = useState(false);
+  const showImg = !!product.image && !err;
+  return (
+    <div
+      className={`relative flex items-center justify-center overflow-hidden ${wrapClass}`}
+      style={{ background: `linear-gradient(135deg, ${product.c1}, ${product.c2})` }}
+    >
+      {showImg ? (
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          onError={() => setErr(true)}
+          className={`absolute inset-0 h-full w-full object-cover ${imgClass || ''}`}
+        />
+      ) : (
+        <span className={`relative select-none drop-shadow-sm ${emojiClass}`}>{product.emoji}</span>
+      )}
     </div>
   );
 }
@@ -1172,13 +1375,10 @@ function StoreView({ store, brandColor, cartCount, onOpenDetail, onWaClick, onCa
               onClick={() => onOpenDetail(product)}
               className="group cursor-pointer rounded-lg border border-gray-100 bg-white p-1 shadow-sm transition hover:-translate-y-px hover:border-gray-300 hover:shadow-md"
             >
-              <div
-                className="relative flex h-12 items-center justify-center overflow-hidden rounded-md text-2xl"
-                style={{ background: `linear-gradient(135deg, ${product.c1}, ${product.c2})` }}
-              >
-                <span className="transition-transform duration-300 group-hover:scale-110">{product.emoji}</span>
+              <div className="relative h-12">
+                <ProductThumb product={product} wrapClass="absolute inset-0 rounded-md" emojiClass="text-2xl" imgClass="rounded-md" />
                 {product.badge && (
-                  <span className="absolute right-0.5 top-0.5 rounded bg-red-500 px-1 py-px text-[6.5px] font-bold text-white">
+                  <span className="absolute right-0.5 top-0.5 z-[1] rounded bg-red-500 px-1 py-px text-[6.5px] font-bold text-white">
                     {product.badge}
                   </span>
                 )}
@@ -1260,11 +1460,8 @@ function CartDrawer({ items, total, orderBtnRef, onClose, onOrder }: CartDrawerP
         ) : (
           items.map((item) => (
             <div key={item.product.name} className="flex items-center gap-1.5 rounded-lg border border-gray-100 p-1.5">
-              <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-[16px]"
-                style={{ background: `linear-gradient(135deg, ${item.product.c1}, ${item.product.c2})` }}
-              >
-                {item.product.emoji}
+              <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md">
+                <ProductThumb product={item.product} wrapClass="absolute inset-0 rounded-md" emojiClass="text-[16px]" imgClass="rounded-md" />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[7.5px] font-bold text-gray-700">{item.product.name}</p>
