@@ -65,7 +65,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string; strokeW
 const DEFAULT_FEATURES = [
   {
     icon: 'store',
-    title: 'متجر واتساب ذكي',
+    title: 'متجر ذكي',
     description: 'متجرك الإلكتروني يرسل طلبات العملاء عبر واتساب برسالة معبأة آلياً بكل التفاصيل، متكامل مع كتالوج منتجاتك وبوابات دفع آمنة متعددة.',
   },
   {

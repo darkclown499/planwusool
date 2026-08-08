@@ -42,8 +42,8 @@ export const defaultLandingPageSections = {
  show_icons: true,
  features_list: [
  {
- title: 'متجر واتساب ذكي',
- description: 'متجر تفاعلي متكامل عبر واتساب يتيح للعملاء التصفح والشراء بسهولة تامة.',
+ title: 'متجر ذكي',
+ description: 'متجر تفاعلي متكامل يتيح للعملاء التصفح والشراء بسهولة تامة.',
  icon: 'store'
  },
  {
