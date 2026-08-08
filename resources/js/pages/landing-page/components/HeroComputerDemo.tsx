@@ -1456,7 +1456,7 @@ function ProductThumb({
   const showImg = !!product.image && !err;
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden ${wrapClass}`}
+      className={`flex items-center justify-center overflow-hidden ${wrapClass}`}
       style={{ background: `linear-gradient(135deg, ${product.c1}, ${product.c2})` }}
     >
       {showImg ? (
