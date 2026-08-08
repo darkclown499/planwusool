@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import {
   Store,
   Palette,
@@ -151,19 +151,77 @@ const FAN_CSS = `
     0%, 100% { transform: scale(1); opacity: 0.55; }
     50% { transform: scale(1.14); opacity: 0.22; }
   }
-  .radial-wrap:has(.node-card:hover) path[data-highlight] {
-    stroke-opacity: 0.75;
-    stroke-width: 2;
+  .radial-wrap:has(.node-card:hover) path[data-feat].feat-line {
+    stroke-width: 2.4;
+  }
+  .radial-wrap:has(.node-card:hover) path[data-feat].feat-flow {
+    stroke-opacity: 1;
+  }
+  .orbit {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    animation: orbitSpin var(--sp) linear infinite;
+  }
+  .orbit-rev {
+    animation-direction: reverse;
+  }
+  .orbit-dot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: var(--c, #3b82f6);
+    box-shadow: 0 0 12px 3px var(--c, #3b82f6);
+    transform: translate(-50%, -50%) rotate(var(--ph, 0deg)) translateY(calc(var(--r, 130px) * -1));
+    opacity: var(--op, 0.5);
+  }
+  .orbit-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    background: inherit;
+    filter: blur(5px);
+    opacity: 0.5;
+  }
+  @keyframes orbitSpin {
+    to { transform: rotate(360deg); }
+  }
+  .travel-dot {
+    opacity: 0;
   }
   @media (prefers-reduced-motion: reduce) {
-    .feat-line, .feat-flow, .node-card, .hub-halo {
-      transition: none;
-      animation: none;
-      opacity: 1;
+    .feat-line, .feat-flow {
+      transition: none !important;
+      animation: none !important;
       stroke-dashoffset: 0;
+    }
+    .node-card {
+      transition: none !important;
+      transform: translate(-50%, -50%) scale(1) !important;
+      opacity: 1 !important;
+    }
+    .hub-halo, .orbit, .orbit-dot {
+      animation: none !important;
+      opacity: 0 !important;
+    }
+    .travel-dot {
+      opacity: 0 !important;
     }
   }
 `;
+
+const orbits = [
+  { r: 124, c: '#34d399', sp: 15, ph: 0, op: 0.5 },
+  { r: 141, c: '#38bdf8', sp: 21, ph: 130, op: 0.45, rev: true },
+  { r: 158, c: '#a78bfa', sp: 26, ph: 250, op: 0.4 },
+  { r: 170, c: '#fbbf24', sp: 33, ph: 60, op: 0.35, rev: true },
+];
 
 export default function FeaturesSection({
   sectionData,
@@ -171,6 +229,42 @@ export default function FeaturesSection({
 }: FeaturesSectionProps) {
   const { ref, isVisible } = useScrollAnimation();
   const [hubBroken, setHubBroken] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [metrics, setMetrics] = useState<{ w: number; h: number } | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const dotRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  useLayoutEffect(() => {
+    const m = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(m.matches);
+    const el = wrapRef.current;
+    if (!el) return;
+    const update = () => setMetrics({ w: el.clientWidth, h: el.clientHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!metrics || !isVisible || reduceMotion) return;
+    const dots = dotRefs.current.filter(Boolean) as HTMLSpanElement[];
+    dots.forEach((el, i) => {
+      el.animate(
+        [
+          { offsetDistance: '0%', opacity: 1 },
+          { offsetDistance: '96%', opacity: 1 },
+          { offsetDistance: '100%', opacity: 0 },
+        ],
+        {
+          duration: 1150,
+          delay: 1550 + i * 140,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          fill: 'forwards',
+        }
+      );
+    });
+  }, [metrics, isVisible, reduceMotion]);
 
   const count = features.length;
   const startAngle = -Math.PI / 2;
@@ -192,6 +286,27 @@ export default function FeaturesSection({
       } ${50 + RY * 0.62 * sin}, ${50 + RX * cos} ${50 + RY * sin}`,
     };
   });
+
+  const cx = metrics ? metrics.w / 2 : 0;
+  const cy = metrics ? metrics.h / 2 : 0;
+  const pxNodes = metrics
+    ? features.map((f, i) => {
+        const angle = startAngle + step * i;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const nx = metrics.w / 2 + (RX / 100) * metrics.w * cos;
+        const ny = metrics.h / 2 + (RY / 100) * metrics.h * sin;
+        const px = (t: number) => metrics.w / 2 + (RX / 100) * metrics.w * t * cos;
+        const py = (t: number) => metrics.h / 2 + (RY / 100) * metrics.h * t * sin;
+        return {
+          index: i,
+          color: f.color,
+          x: nx,
+          y: ny,
+          path: `M ${cx} ${cy} C ${px(0.3)} ${py(0.3)}, ${px(0.62)} ${py(0.62)}, ${nx} ${ny}`,
+        };
+      })
+    : [];
 
   return (
     <section
@@ -226,48 +341,106 @@ export default function FeaturesSection({
         </div>
 
         {/* ═══ Radial fan — Desktop ═══ */}
-        <div className="radial-wrap relative mx-auto mt-6 hidden h-[880px] max-w-6xl lg:block">
+        <div
+          ref={wrapRef}
+          className="radial-wrap relative mx-auto mt-6 hidden h-[880px] max-w-6xl lg:block"
+        >
+          {/* ─── Orbital particles ─── */}
+          {orbits.map((o, i) => (
+            <div
+              key={i}
+              className={`orbit pointer-events-none ${o.rev ? 'orbit-rev' : ''}`}
+              style={
+                {
+                  '--sp': `${o.sp}s`,
+                  '--r': `${o.r}px`,
+                  '--c': o.c,
+                  '--ph': `${o.ph}deg`,
+                  '--op': o.op,
+                } as React.CSSProperties
+              }
+            >
+              <span className="orbit-dot" />
+            </div>
+          ))}
+
           {/* ─── Spokes ─── */}
-          <svg
-            className="absolute inset-0 z-0 h-full w-full"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            {nodes.map((node) => (
-              <g key={node.index}>
-                <path
-                  d={node.path}
-                  pathLength={1}
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                  stroke={node.color}
-                  strokeWidth={1.3}
-                  strokeOpacity={0.22}
-                  className={`feat-line ${isVisible ? 'on' : ''}`}
-                  data-highlight={node.index}
-                  style={{ transitionDelay: `${0.35 + node.index * 0.14}s` }}
-                />
-                <path
-                  d={node.path}
-                  pathLength={1}
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                  stroke={node.color}
-                  strokeWidth={1.8}
-                  strokeLinecap="round"
-                  className={`feat-flow ${isVisible ? 'on' : ''}`}
-                  data-highlight={node.index}
-                  style={
-                    {
-                      transitionDelay: `${0.35 + node.index * 0.14}s`,
-                      '--flow-delay': `${1.35 + node.index * 0.14}s`,
-                    } as React.CSSProperties
-                  }
-                />
-              </g>
+          {metrics && (
+            <svg
+              className="absolute inset-0 z-0 h-full w-full"
+              viewBox={`0 0 ${metrics.w} ${metrics.h}`}
+              aria-hidden="true"
+            >
+              <defs>
+                {pxNodes.map((node) => (
+                  <linearGradient
+                    key={node.index}
+                    id={`spoke-grad-${node.index}`}
+                    gradientUnits="userSpaceOnUse"
+                    x1={metrics.w / 2}
+                    y1={metrics.h / 2}
+                    x2={node.x}
+                    y2={node.y}
+                  >
+                    <stop offset="0" stopColor={node.color} stopOpacity="0" />
+                    <stop offset="0.55" stopColor={node.color} stopOpacity="0.18" />
+                    <stop offset="1" stopColor={node.color} stopOpacity="0.7" />
+                  </linearGradient>
+                ))}
+              </defs>
+              {pxNodes.map((node) => (
+                <g key={node.index}>
+                  <path
+                    d={node.path}
+                    pathLength={1}
+                    fill="none"
+                    vectorEffect="non-scaling-stroke"
+                    stroke={`url(#spoke-grad-${node.index})`}
+                    strokeWidth={1.3}
+                    className={`feat-line ${isVisible ? 'on' : ''}`}
+                    data-feat={node.index}
+                    style={{ transitionDelay: `${0.35 + node.index * 0.14}s` }}
+                  />
+                  <path
+                    d={node.path}
+                    pathLength={1}
+                    fill="none"
+                    vectorEffect="non-scaling-stroke"
+                    stroke={node.color}
+                    strokeWidth={1.8}
+                    strokeLinecap="round"
+                    className={`feat-flow ${isVisible ? 'on' : ''}`}
+                    data-feat={node.index}
+                    style={
+                      {
+                        transitionDelay: `${0.35 + node.index * 0.14}s`,
+                        '--flow-delay': `${1.35 + node.index * 0.14}s`,
+                      } as React.CSSProperties
+                    }
+                  />
+                </g>
+              ))}
+            </svg>
+          )}
+
+          {/* ─── Traveling light dots ─── */}
+          {metrics &&
+            !reduceMotion &&
+            pxNodes.map((node) => (
+              <span
+                key={node.index}
+                ref={(el) => {
+                  dotRefs.current[node.index] = el;
+                }}
+                className="travel-dot pointer-events-none absolute left-0 top-0 z-[15] h-2.5 w-2.5 rounded-full"
+                style={{
+                  background: node.color,
+                  boxShadow: `0 0 16px 3px ${node.color}aa, 0 0 5px 1px ${node.color}`,
+                  offsetPath: `path("${node.path}")`,
+                  offsetRotate: '0deg',
+                }}
+              />
             ))}
-          </svg>
 
           {/* ─── Hub logo ─── */}
           <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
