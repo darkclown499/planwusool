@@ -194,31 +194,29 @@ export default function HeroSection({
         </div>
       </div>
 
-      {/* ── Light transition zone with the feature cards (on top of the seam) ── */}
-      <div className="relative z-10 mt-14 bg-gradient-to-b from-gray-900/80 via-gray-100 to-gray-50 lg:mt-16">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
-            {stats.map((stat, index) => {
-              const Icon = FEATURE_ICONS[index] || Zap;
-              return (
+      {/* ── Feature cards under the computer (inside the dark zone) ── */}
+      <div className="relative z-10 mx-auto mt-12 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+          {stats.map((stat, index) => {
+            const Icon = FEATURE_ICONS[index] || Zap;
+            return (
+              <div
+                key={index}
+                className="group rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/10"
+              >
                 <div
-                  key={index}
-                  className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-200/60"
+                  className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
+                  style={{ background: `${brandColor}22`, color: brandColor }}
                 >
-                  <div
-                    className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
-                    style={{ background: `${brandColor}18`, color: brandColor }}
-                  >
-                    <Icon size={18} />
-                  </div>
-                  <div className="text-sm font-extrabold text-gray-900 sm:text-[15px]">{stat.value}</div>
-                  <div className="mt-1 text-[11px] font-medium leading-relaxed text-gray-500 sm:text-[12px]">
-                    {stat.label}
-                  </div>
+                  <Icon size={17} />
                 </div>
-              );
-            })}
-          </div>
+                <div className="text-sm font-extrabold text-white sm:text-[15px]">{stat.value}</div>
+                <div className="mt-1 text-[11px] font-medium leading-relaxed text-white/45 sm:text-[12px]">
+                  {stat.label}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
