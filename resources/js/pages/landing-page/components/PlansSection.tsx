@@ -262,6 +262,13 @@ const COMPARE_GROUPS: CompareGroup[] = [
       { label: 'قنوات الدعم', tooltip: 'البريد الإلكتروني، واتساب، أو دعم VIP مخصص.', get: (p) => ({ kind: 'text', text: supportText(p) }) },
     ],
   },
+  {
+    title: 'الفترة التجريبية',
+    icon: Clock,
+    rows: [
+      { label: 'فترة تجريبية مجانية', get: (p) => p.is_trial === 'on' && (p.trial_day ?? 0) > 0 ? ({ kind: 'text', text: `${p.trial_day} يوم` }) : ({ kind: 'no', text: '—' }) },
+    ],
+  },
 ];
 
 function getProminentFeatures(plan: Plan): Array<{ icon: IconType; text: string }> {
@@ -450,6 +457,15 @@ export default function PlansSection({
                   >
                     <Star className="h-3 w-3 fill-current" />
                     الأكثر طلباً
+                  </span>
+                )}
+                {plan.is_trial === 'on' && (plan.trial_day ?? 0) > 0 && (
+                  <span
+                    className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-md"
+                    style={{ backgroundColor: '#f59e0b', marginTop: isPopular ? '32px' : 0 }}
+                  >
+                    <Clock className="h-3 w-3 fill-current" />
+                    تجربة مجانية {plan.trial_day} يوم
                   </span>
                 )}
 

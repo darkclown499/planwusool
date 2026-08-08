@@ -95,6 +95,8 @@ class LandingPageController extends Controller
                 'enable_theme_editor' => $plan->enable_theme_editor,
                 'support_hours' => $plan->support_hours ?? 0,
                 'support_type' => $plan->support_type ?? 'email',
+                'is_trial' => $plan->is_trial,
+                'trial_day' => $plan->trial_day ?? 0,
                 'is_plan_enable' => $plan->is_plan_enable,
                 'is_popular' => false,
             ];

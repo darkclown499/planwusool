@@ -354,4 +354,30 @@ class CompanyController extends Controller
         
         return back()->with('success', __('Plan upgraded successfully'));
     }
+
+    /**
+     * Downgrade company to Starter (free) plan
+     */
+    public function downgradeToStarter(User $company)
+    {
+        if ($company->type !== 'company') {
+            return back()->with('error', __('Invalid company record'));
+        }
+
+        $starterPlan = Plan::where('name', 'Starter')->where('is_plan_enable', 'on')->first();
+        
+        if (!$starterPlan) {
+            return back()->with('error', __('Starter plan not found'));
+        }
+
+        $company->plan_id = $starterPlan->id;
+        $company->plan_duration = 'yearly';
+        $company->plan_expire_date = null;
+        $company->trial_expire_date = null;
+        $company->plan_is_active = 1;
+        $company->is_trial = false;
+        $company->save();
+
+        return back()->with('success', __('Company downgraded to Starter plan successfully'));
+    }
 }

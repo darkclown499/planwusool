@@ -17,6 +17,12 @@ class Kernel extends ConsoleKernel
             ->everySixHours()
             ->withoutOverlapping()
             ->sendOutputTo(storage_path('logs/abandoned-carts.log'));
+
+        // Check for expired trials and downgrade to Starter plan daily at 2 AM
+        $schedule->command('app:check-expired-trials')
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->sendOutputTo(storage_path('logs/expired-trials.log'));
     }
 
     /**
