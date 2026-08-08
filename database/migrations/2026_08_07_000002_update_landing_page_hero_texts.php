@@ -7,13 +7,13 @@ return new class extends Migration
 {
     /**
      * Update the hero section on existing landing page settings rows:
-     * title   -> "ابدأ متجرك مع وصول خلال دقائق"
+     * title   -> "ابدأ متجرك خلال دقائق"
      * stats   -> +١٠,٠٠٠ متجر / +٥٠٠,٠٠٠ منتج / ٩٩.٩٪ وقت تشغيل
      */
     public function up(): void
     {
         $this->updateHero(
-            'ابدأ متجرك مع وصول خلال دقائق',
+            'ابدأ متجرك خلال دقائق',
             [
                 ['value' => '+١٠,٠٠٠', 'label' => 'متجر'],
                 ['value' => '+٥٠٠,٠٠٠', 'label' => 'منتج'],

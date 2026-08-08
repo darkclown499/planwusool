@@ -10,7 +10,6 @@ import WhyChooseUs from './components/WhyChooseUs';
 import ThemesSection from './components/ThemesSection';
 import AboutUs from './components/AboutUs';
 import TeamSection from './components/TeamSection';
-import TestimonialsSection from './components/TestimonialsSection';
 import PlansSection from './components/PlansSection';
 import FaqSection from './components/FaqSection';
 import NewsletterSection from './components/NewsletterSection';
@@ -121,7 +120,7 @@ interface PageProps extends SharedData {
 }
 
 export default function LandingPage() {
-  const { plans, testimonials, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight, demoStoreUrl = '' } = usePage<PageProps>().props;
+  const { plans, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight, demoStoreUrl = '' } = usePage<PageProps>().props;
   const { i18n } = useTranslation();
 
   // This is the public landing page, not the admin settings page
@@ -187,7 +186,7 @@ export default function LandingPage() {
     return settings.config_sections?.sections?.find(section => section.key === key) || {};
   };
 
-  const compactDefaultSections = ['header', 'hero', 'trusted_by', 'features', 'themes', 'testimonials', 'plans', 'faq', 'footer'];
+  const compactDefaultSections = ['header', 'hero', 'trusted_by', 'features', 'themes', 'plans', 'faq', 'footer'];
 
   // Respect admin visibility settings when provided; otherwise keep the homepage lean by default.
   const isSectionVisible = (key: string) => {
@@ -271,14 +270,6 @@ export default function LandingPage() {
       <TeamSection
         settings={settings}
         sectionData={getSectionData('team')}
-        brandColor={primaryColor}
-      />
-    ),
-    testimonials: () => isSectionVisible('testimonials') && (
-      <TestimonialsSection
-        testimonials={testimonials}
-        settings={settings}
-        sectionData={getSectionData('testimonials')}
         brandColor={primaryColor}
       />
     ),

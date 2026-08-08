@@ -25,7 +25,7 @@ export default function HeroSection({
   brandColor = '#22c55e',
   superadminLogoLight = '',
 }: HeroSectionProps) {
-  const title = sectionData.title || 'ابدأ متجرك مع وصول خلال دقائق';
+  const title = sectionData.title || 'ابدأ متجرك خلال دقائق';
   const subtitle = sectionData.subtitle || 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع';
   const primaryButtonText = sectionData.primary_button_text || 'ابدأ تجربة مجانية';
   const secondaryButtonText = sectionData.secondary_button_text || 'الدخول';

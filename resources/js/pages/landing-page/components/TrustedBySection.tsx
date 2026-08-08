@@ -33,7 +33,8 @@ const MARQUEE_CSS = `
   .trusted-track {
     display: flex;
     width: max-content;
-    animation: trustedMarquee 40s linear infinite;
+    animation: trustedMarquee 32s linear infinite;
+    will-change: transform;
   }
   .trusted-track:hover {
     animation-play-state: paused;
@@ -41,11 +42,6 @@ const MARQUEE_CSS = `
   @keyframes trustedMarquee {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .trusted-track {
-      animation: none;
-    }
   }
 `;
 
@@ -76,7 +72,7 @@ export default function TrustedBySection({
   return (
     <section
       id="trusted-by"
-      className="relative overflow-hidden bg-white py-16 sm:py-20 lg:py-24"
+      className="relative overflow-hidden bg-white py-14 sm:py-16 lg:py-20"
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
@@ -109,7 +105,7 @@ export default function TrustedBySection({
       </div>
 
       <div
-        className={`mt-12 transition-all duration-700 delay-200 ${
+        className={`mt-10 transition-all duration-700 delay-200 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}
         style={{

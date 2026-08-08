@@ -9,7 +9,7 @@ export const defaultLandingPageSections = {
  },
  {
  key: 'hero',
- title: 'ابدأ متجرك مع وصول خلال دقائق',
+ title: 'ابدأ متجرك خلال دقائق',
  subtitle: 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع',
  announcement_text: 'موثوق من أكثر من ١٠,٠٠٠ متجر حول العالم',
  primary_button_text: 'ابدأ تجربة مجانية',
