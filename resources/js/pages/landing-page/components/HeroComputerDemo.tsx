@@ -159,11 +159,20 @@ export default function HeroComputerDemo({
   const revealCard = useCallback(
     (i: number, dur = 1300) => {
       const el = cardRefs.current[i];
+      const g = scrollRef.current;
       if (!el) return;
+      if (g && i === store.products.length - 1) {
+        g.scrollTo({ top: g.scrollHeight, behavior: 'smooth' });
+        window.setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 520);
+        window.setTimeout(() => flyTo(el, dur), 1380);
+        return;
+      }
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       window.setTimeout(() => flyTo(el, dur), 820);
     },
-    [flyTo]
+    [flyTo, store]
   );
 
   const scrollGridTop = useCallback(() => {
@@ -452,27 +461,27 @@ export default function HeroComputerDemo({
 
     // 3) add the LAST product — from the very end of the site
     at(7250, () => revealCard(11));
-    at(8300, () => {
+    at(8900, () => {
       doClick();
       openAsking(11);
     });
-    at(9000, () => flyTo(addBtnRef.current, 1000));
-    at(9850, () => {
+    at(9600, () => flyTo(addBtnRef.current, 1000));
+    at(10450, () => {
       doClick();
     });
-    at(9950, () => addGuided(11));
+    at(10550, () => addGuided(11));
 
     // 4) open the cart
-    at(10900, () => flyTo(cartBtnRef.current, 1200));
-    at(11800, () => {
+    at(11450, () => flyTo(cartBtnRef.current, 1200));
+    at(12350, () => {
       doClick();
       demoAudio.cartOpen();
       setCartOpen(true);
     });
 
     // 5) press "اطلب عبر واتساب"
-    at(12550, () => flyTo(orderBtnRef.current, 1100));
-    at(13500, () => {
+    at(13100, () => flyTo(orderBtnRef.current, 1100));
+    at(14050, () => {
       doClick();
       demoAudio.chatOpen();
       setOrder([...cartRef.current]);
@@ -486,7 +495,7 @@ export default function HeroComputerDemo({
     // 6) after the chat closes, the mouse walks the whole store, then hands it over
     const chatLen =
       `مرحباً ${store.name} 👋\nأريد طلب: ${guided.map((g) => `1× ${products[g].name}`).join('، ')}\nالإجمالي: ${guided.reduce((s, g) => s + products[g].price, 0)}₪`.length;
-    const chatClose = 13500 + chatLen * 45 + 3200;
+    const chatClose = 14050 + chatLen * 45 + 3200;
     at(chatClose + 400, () => scrollGridTop());
     at(chatClose + 1800, () => revealCard(6));
     at(chatClose + 3800, () => flyTo(bubbleRef.current, 3200));
@@ -496,7 +505,7 @@ export default function HeroComputerDemo({
       setToast('تم فتح واتساب — أرسل رسالتك الآن');
     });
     at(chatClose + 7600, () => revealCard(11));
-    at(chatClose + 9600, () => handOverControl('المتجر الآن بين يديك — استكشفه كاملًا'));
+    at(chatClose + 10400, () => handOverControl('المتجر الآن بين يديك — استكشفه كاملًا'));
 
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
@@ -611,7 +620,6 @@ export default function HeroComputerDemo({
           />
         <div
           ref={screenRef}
-          onPointerMove={userInteract}
           onPointerDown={userInteract}
           onWheel={userInteract}
           className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-black ring-1 ring-black/60"
@@ -741,75 +749,80 @@ export default function HeroComputerDemo({
                 </div>
               </div>
 
-              {/* accounts */}
-              <div className="absolute inset-x-0 bottom-14 flex items-end justify-center gap-9 pb-3">
-                {ACCOUNTS.map((acc, i) => (
-                  <button
-                    key={acc.name}
-                    ref={(el) => {
-                      avatarRefs.current[i] = el;
-                    }}
-                    onClick={() => {
-                      demoAudio.open();
-                      setLoginPhase('typing');
-                    }}
-                    className={`login-acc flex flex-col items-center gap-1.5 transition ${
-                      loginPhase === 'pick' ? 'opacity-75 hover:opacity-100 hover:-translate-y-1' : i === 0 ? 'opacity-100' : 'opacity-30'
-                    }`}
-                  >
-                    <span
-                      className={`flex h-16 w-16 items-center justify-center rounded-full border-2 bg-[#0b2440]/30 p-[3.5px] shadow-2xl backdrop-blur-sm sm:h-[72px] sm:w-[72px] ${
-                        i === 0 && loginPhase === 'typing' ? 'border-white/90' : 'border-white/50'
-                      }`}
-                      style={{ boxShadow: i === 0 && loginPhase === 'typing' ? `0 0 0 7px rgba(255,255,255,0.22), 0 14px 30px -8px rgba(0,0,0,0.6)` : '0 14px 30px -8px rgba(0,0,0,0.5)' }}
-                    >
-                      <span
-                        className="flex h-full w-full items-center justify-center rounded-full text-[24px] font-black text-white sm:text-[27px]"
-                        style={{ background: `linear-gradient(135deg, ${acc.color}, ${acc.color}88)`, boxShadow: `inset 0 -6px 14px rgba(0,0,0,0.25)` }}
-                      >
-                        {acc.name[0]}
-                      </span>
-                    </span>
-                    <span className="rounded-full bg-black/35 px-2.5 py-[3px] text-[8.5px] font-bold text-white shadow-lg backdrop-blur">
-                      {acc.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* password bar */}
-              {loginPhase === 'typing' && (
-                <div className="absolute inset-x-0 bottom-[120px] z-10 flex flex-col items-center gap-2">
+              {/* accounts + password (windows style, stacked neatly) */}
+              <div className="absolute inset-x-0 bottom-11 z-10 flex flex-col items-center gap-2.5 px-6 pb-2">
+                {loginPhase === 'typing' && (
                   <div
                     ref={passFieldRef}
-                    className="login-bar flex items-center gap-2.5 rounded-xl border border-white/30 bg-black/45 py-1.5 pl-1.5 pr-3.5 shadow-2xl backdrop-blur-xl"
+                    className="login-bar flex w-full max-w-[240px] items-center gap-2 rounded-2xl border border-white/30 bg-black/95 py-2 pl-1 pr-3.5 shadow-2xl backdrop-blur-xl"
                   >
                     <span
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-black text-white"
-                      style={{ background: `linear-gradient(135deg, ${ACCOUNTS[0].color}, ${ACCOUNTS[0].color}88)` }}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-black text-white"
+                      style={{ background: `linear-gradient(135deg, ${ACCOUNTS[0].color}, ${ACCOUNTS[0].color}88)`, boxShadow: 'inset 0 -3px 8px rgba(0,0,0,0.3)' }}
                     >
                       {ACCOUNTS[0].name[0]}
                     </span>
-                    <span className="text-[9px] font-bold text-white/90">{ACCOUNTS[0].name}</span>
-                    <span className="flex items-end gap-1 text-[15px] leading-none tracking-widest text-white">
-                      {[0, 1, 2, 3].map((i) => (
-                        <span key={i} className="inline-block w-2 text-center">
-                          {i < passDots ? '●' : ''}
-                        </span>
-                      ))}
-                    </span>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <span className="text-[7.5px] font-semibold text-white/60">أهلًا {ACCOUNTS[0].name} 👋</span>
+                      <span className="flex items-end gap-1 text-[15px] leading-none tracking-widest text-white">
+                        {[0, 1, 2, 3].map((i) => (
+                          <span key={i} className="inline-block w-2 text-center">
+                            {i < passDots ? '●' : ''}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
                     <button
                       ref={passGoRef}
                       aria-label="دخول"
                       onClick={() => demoAudio.click()}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/25 text-white transition hover:bg-white/40"
+                      className="ms-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/25 text-white transition hover:bg-white/40"
                     >
                       <ArrowLeft size={13} />
                     </button>
                   </div>
-                  <p className="text-[7.5px] text-white/60">اضغط Enter للدخول — أو اختر حسابًا آخر</p>
+                )}
+                <div className="flex items-end justify-center gap-8 sm:gap-9">
+                  {ACCOUNTS.map((acc, i) => (
+                    <button
+                      key={acc.name}
+                      ref={(el) => {
+                        avatarRefs.current[i] = el;
+                      }}
+                      onClick={() => {
+                        demoAudio.open();
+                        setLoginPhase('typing');
+                      }}
+                      className={`login-acc flex flex-col items-center gap-1.5 transition ${
+                        loginPhase === 'pick'
+                          ? 'opacity-80 hover:-translate-y-1 hover:opacity-100'
+                          : i === 0
+                          ? '-translate-y-1 opacity-100'
+                          : 'opacity-35'
+                      }`}
+                    >
+                      <span
+                        className={`flex h-16 w-16 items-center justify-center rounded-full border-2 bg-[#0b2440]/30 p-[3.5px] shadow-2xl backdrop-blur-sm sm:h-[72px] sm:w-[72px] ${
+                          i === 0 && loginPhase === 'typing' ? 'border-white/90' : 'border-white/50'
+                        }`}
+                        style={{
+                          boxShadow: i === 0 && loginPhase === 'typing' ? '0 0 0 7px rgba(255,255,255,0.22), 0 14px 30px -8px rgba(0,0,0,0.6)' : '0 14px 30px -8px rgba(0,0,0,0.5)',
+                        }}
+                      >
+                        <span
+                          className="flex h-full w-full items-center justify-center rounded-full text-[24px] font-black text-white sm:text-[27px]"
+                          style={{ background: `linear-gradient(135deg, ${acc.color}, ${acc.color}88)`, boxShadow: 'inset 0 -6px 14px rgba(0,0,0,0.25)' }}
+                        >
+                          {acc.name[0]}
+                        </span>
+                      </span>
+                      <span className="rounded-full bg-black/35 px-2.5 py-[3px] text-[8.5px] font-bold text-white shadow-lg backdrop-blur">
+                        {acc.name}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -1420,6 +1433,13 @@ function StoreSkeleton({ brandColor }: { brandColor: string }) {
   );
 }
 
+/* ── resolve asset paths against the app base URL (mirrors Header/Footer pattern) ── */
+const toAsset = (path?: string) => {
+  if (!path) return path;
+  if (/^https?:\/\//.test(path)) return path;
+  return `${window.appSettings?.baseUrl || window.location.origin}${path}`;
+};
+
 /* ── product image with graceful fallback ── */
 function ProductThumb({
   product,
@@ -1441,7 +1461,7 @@ function ProductThumb({
     >
       {showImg ? (
         <img
-          src={product.image}
+          src={toAsset(product.image)}
           alt={product.name}
           loading="lazy"
           onError={() => setErr(true)}
@@ -1588,6 +1608,57 @@ function StoreView({ store, brandColor, cartCount, onOpenDetail, onWaClick, onCa
               >
                 <MessageCircle size={7} /> اطلب واتساب
               </button>
+            </div>
+          ))}
+        </div>
+
+        {/* ── deals strip (extends the store so it really scrolls) ── */}
+        <div className="mt-2 rounded-xl border border-orange-200/70 bg-gradient-to-l from-orange-50 via-amber-50 to-red-50 p-1.5">
+          <div className="flex items-center justify-between px-1 pb-1.5">
+            <p className="text-[9px] font-extrabold text-orange-600">🔥 عروض اليوم — خصم حتى 25%</p>
+            <span className="rounded-full bg-orange-100 px-2 py-px text-[7px] font-bold text-orange-600">تسوق الآن</span>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {store.products.slice(5, 9).map((p) => (
+              <div
+                key={p.name}
+                onClick={() => onOpenDetail(p)}
+                className="group cursor-pointer rounded-lg border border-gray-100 bg-white p-1 text-center shadow-sm transition hover:-translate-y-px hover:shadow-md"
+              >
+                <div className="relative mx-auto h-10 w-full overflow-hidden rounded-md">
+                  <ProductThumb product={p} wrapClass="absolute inset-0 rounded-md" emojiClass="text-lg" imgClass="rounded-md" />
+                </div>
+                <p className="mt-0.5 truncate text-[6.5px] font-bold text-gray-700">{p.name}</p>
+                <p className="text-[7px] font-black text-red-500">
+                  {p.price}₪ {p.oldPrice && <span className="text-[6px] font-normal text-gray-400 line-through">{p.oldPrice}₪</span>}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── trust / contact strip ── */}
+        <div
+          className="mt-2 flex items-center justify-between rounded-xl p-2 text-white"
+          style={{ background: `linear-gradient(120deg, ${store.brand}, ${store.brandDeep})` }}
+        >
+          <div className="flex items-center gap-1.5">
+            <MessageCircle size={14} />
+            <div>
+              <p className="text-[8.5px] font-extrabold">فريقنا متاح 24/7</p>
+              <p className="text-[6.5px] text-white/80">ردّ سريع عبر الواتساب خلال دقائق</p>
+            </div>
+          </div>
+          <span onClick={onWaClick} className="cursor-pointer rounded-full bg-white/25 px-2.5 py-1 text-[7px] font-bold backdrop-blur transition hover:bg-white/40">
+            مراسلة الآن
+          </span>
+        </div>
+
+        {/* ── mini trust badges ── */}
+        <div className="mt-2 grid grid-cols-3 gap-1.5">
+          {['توصيل سريع 🚚', 'دفع آمن 💳', 'إرجاع 14 يوم ↩️'].map((t) => (
+            <div key={t} className="rounded-lg border border-gray-100 bg-gray-50 py-1.5 text-center text-[6.5px] font-bold text-gray-600">
+              {t}
             </div>
           ))}
         </div>
