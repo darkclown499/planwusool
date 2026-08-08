@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Store,
   Palette,
@@ -20,7 +20,7 @@ interface Feature {
 
 interface FeaturesSectionProps {
   brandColor?: string;
-  settings: any;
+  settings: object;
   sectionData: {
     title?: string;
     description?: string;
@@ -106,12 +106,92 @@ const features = [
   },
 ];
 
+const hubLogo = '/images/logos/features-hub.png';
+const toAsset = (path: string) =>
+  `${window.appSettings?.baseUrl || window.location.origin}${path}`;
+
+const HUB_URL = toAsset(hubLogo);
+
+const FAN_CSS = `
+  .feat-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .feat-line.on {
+    stroke-dashoffset: 0;
+  }
+  .feat-flow {
+    stroke-dasharray: 0.02 0.045;
+    stroke-dashoffset: 1;
+    opacity: 0;
+    transition: opacity 0.25s ease var(--flow-delay, 1.2s);
+  }
+  .feat-flow.on {
+    opacity: 0.85;
+    animation: featFlow 2.8s linear infinite var(--flow-delay, 1.2s);
+  }
+  @keyframes featFlow {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: -0.23; }
+  }
+  .node-card {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+  }
+  .node-card.on {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .hub-halo {
+    animation: hubPulse 5.5s ease-in-out infinite;
+  }
+  @keyframes hubPulse {
+    0%, 100% { transform: scale(1); opacity: 0.55; }
+    50% { transform: scale(1.14); opacity: 0.22; }
+  }
+  .radial-wrap:has(.node-card:hover) path[data-highlight] {
+    stroke-opacity: 0.75;
+    stroke-width: 2;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .feat-line, .feat-flow, .node-card, .hub-halo {
+      transition: none;
+      animation: none;
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+  }
+`;
+
 export default function FeaturesSection({
-  settings,
   sectionData,
   brandColor = '#3b82f6',
 }: FeaturesSectionProps) {
   const { ref, isVisible } = useScrollAnimation();
+  const [hubBroken, setHubBroken] = useState(false);
+
+  const count = features.length;
+  const startAngle = -Math.PI / 2;
+  const step = (Math.PI * 2) / count;
+  const RX = 38;
+  const RY = 39;
+
+  const nodes = features.map((feature, i) => {
+    const angle = startAngle + step * i;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return {
+      ...feature,
+      index: i,
+      left: 50 + RX * cos,
+      top: 50 + RY * sin,
+      path: `M 50 50 C ${50 + RX * 0.3 * cos} ${50 + RY * 0.3 * sin}, ${
+        50 + RX * 0.62 * cos
+      } ${50 + RY * 0.62 * sin}, ${50 + RX * cos} ${50 + RY * sin}`,
+    };
+  });
 
   return (
     <section
@@ -120,6 +200,7 @@ export default function FeaturesSection({
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
+      <style>{FAN_CSS}</style>
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -144,56 +225,195 @@ export default function FeaturesSection({
           </p>
         </div>
 
-        {/* ─── Grid ─── */}
-        <div
-          className={`mx-auto mt-14 grid max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 transition-all duration-700 delay-200 ${
-            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-          }`}
-        >
-          {features.map((feature, index) => {
-            const Icon = feature.icon;
+        {/* ═══ Radial fan — Desktop ═══ */}
+        <div className="radial-wrap relative mx-auto mt-6 hidden h-[880px] max-w-6xl lg:block">
+          {/* ─── Spokes ─── */}
+          <svg
+            className="absolute inset-0 z-0 h-full w-full"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            {nodes.map((node) => (
+              <g key={node.index}>
+                <path
+                  d={node.path}
+                  pathLength={1}
+                  fill="none"
+                  vectorEffect="non-scaling-stroke"
+                  stroke={node.color}
+                  strokeWidth={1.3}
+                  strokeOpacity={0.22}
+                  className={`feat-line ${isVisible ? 'on' : ''}`}
+                  data-highlight={node.index}
+                  style={{ transitionDelay: `${0.35 + node.index * 0.14}s` }}
+                />
+                <path
+                  d={node.path}
+                  pathLength={1}
+                  fill="none"
+                  vectorEffect="non-scaling-stroke"
+                  stroke={node.color}
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  className={`feat-flow ${isVisible ? 'on' : ''}`}
+                  data-highlight={node.index}
+                  style={
+                    {
+                      transitionDelay: `${0.35 + node.index * 0.14}s`,
+                      '--flow-delay': `${1.35 + node.index * 0.14}s`,
+                    } as React.CSSProperties
+                  }
+                />
+              </g>
+            ))}
+          </svg>
+
+          {/* ─── Hub logo ─── */}
+          <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+            <div
+              className="hub-halo absolute -inset-8 rounded-full"
+              style={{
+                background: `radial-gradient(circle, ${brandColor}66 0%, ${brandColor}22 45%, transparent 70%)`,
+                filter: 'blur(14px)',
+              }}
+            />
+            <div
+              className="relative flex h-[176px] w-[176px] items-center justify-center rounded-full"
+              style={{
+                background: 'radial-gradient(circle at 32% 26%, #1b2a4a, #070d1c)',
+                boxShadow: `0 0 0 10px ${brandColor}1f, 0 30px 70px -25px rgba(2, 6, 23, 0.6), 0 0 70px ${brandColor}4d`,
+              }}
+            >
+              <div className="pointer-events-none absolute inset-1.5 rounded-full border border-white/10" />
+              <div className="pointer-events-none absolute inset-0 rounded-full border border-white/5" />
+              {hubBroken ? (
+                <span className="bg-gradient-to-br from-white to-gray-300 bg-clip-text text-6xl font-black text-transparent">
+                  و
+                </span>
+              ) : (
+                <img
+                  src={HUB_URL}
+                  alt="وصول"
+                  className="h-20 w-auto max-w-[128px] object-contain"
+                  onError={() => setHubBroken(true)}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* ─── Feature cards ─── */}
+          {nodes.map((node) => {
+            const Icon = node.icon;
             return (
               <div
-                key={index}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 sm:p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-200/50 cursor-default min-h-[220px]"
+                key={node.index}
+                className={`node-card group absolute z-10 w-[232px] ${
+                  isVisible ? 'on' : ''
+                }`}
+                style={{
+                  left: `${node.left}%`,
+                  top: `${node.top}%`,
+                  transitionDelay: `${0.5 + node.index * 0.14}s`,
+                }}
               >
-                {/* Decorative gradient blob */}
-                <div
-                  className={`absolute -top-12 -left-12 h-40 w-40 rounded-full bg-gradient-to-br ${feature.gradient} opacity-[0.12] blur-2xl transition-opacity duration-500 group-hover:opacity-[0.2]`}
-                />
-
-                <div>
-                  {/* Icon */}
-                  <div
-                    className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50 shadow-lg transition-transform duration-300 group-hover:scale-110`}
-                    style={{
-                      boxShadow: `0 8px 24px -4px ${feature.color}44`,
-                    }}
-                  >
-                    <Icon className="h-6 w-6 text-white" strokeWidth={1.8} />
+                <div className="cursor-default rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-gray-300 group-hover:shadow-lg group-hover:shadow-gray-200/60">
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${node.gradient} ring-1 ring-white/50`}
+                      style={{ boxShadow: `0 6px 18px -4px ${node.color}55` }}
+                    >
+                      <Icon className="h-[18px] w-[18px] text-white" strokeWidth={2} />
+                    </div>
+                    <h3 className="text-[13px] font-extrabold leading-snug text-gray-900">
+                      {node.title}
+                    </h3>
                   </div>
-
-                  {/* Title */}
-                  <h3 className="text-lg font-bold text-gray-900 leading-snug">
-                    {feature.title}
-                  </h3>
+                  <p className="mt-2.5 text-[11px] leading-[1.65] text-gray-500">
+                    {node.description}
+                  </p>
                 </div>
-
-                {/* Description */}
-                <p className="mt-2 text-[14px] leading-relaxed text-gray-500">
-                  {feature.description}
-                </p>
-
-                {/* Bottom accent bar */}
-                <div
-                  className="absolute bottom-0 start-0 h-1 w-0 bg-gradient-to-r transition-all duration-500 group-hover:w-full"
-                  style={{
-                    backgroundImage: `linear-gradient(to right, ${feature.color}, transparent)`,
-                  }}
-                />
               </div>
             );
           })}
+        </div>
+
+        {/* ═══ Branching list — Mobile ═══ */}
+        <div className="lg:hidden">
+          {/* Mini hub */}
+          <div className="relative mx-auto mt-12 flex h-28 w-28 items-center justify-center rounded-full">
+            <div
+              className="hub-halo absolute -inset-5 rounded-full"
+              style={{
+                background: `radial-gradient(circle, ${brandColor}66 0%, transparent 70%)`,
+                filter: 'blur(12px)',
+              }}
+            />
+            <div
+              className="relative flex h-28 w-28 items-center justify-center rounded-full"
+              style={{
+                background: 'radial-gradient(circle at 32% 26%, #1b2a4a, #070d1c)',
+                boxShadow: `0 0 0 8px ${brandColor}1f, 0 20px 50px -20px rgba(2, 6, 23, 0.6), 0 0 50px ${brandColor}4d`,
+              }}
+            >
+              <div className="pointer-events-none absolute inset-1.5 rounded-full border border-white/10" />
+              {hubBroken ? (
+                <span className="bg-gradient-to-br from-white to-gray-300 bg-clip-text text-4xl font-black text-transparent">
+                  و
+                </span>
+              ) : (
+                <img
+                  src={HUB_URL}
+                  alt="وصول"
+                  className="h-9 w-auto max-w-[72px] object-contain"
+                  onError={() => setHubBroken(true)}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Connector rail + rows */}
+          <div className="relative mx-auto mt-10 max-w-md space-y-4 ps-8">
+            <span className="absolute bottom-2 start-[15px] top-2 w-px border-s-2 border-dashed border-gray-200" />
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={index}
+                  className={`relative transition-all duration-500 ${
+                    isVisible
+                      ? 'translate-y-0 opacity-100'
+                      : 'translate-y-6 opacity-0'
+                  }`}
+                  style={{ transitionDelay: `${0.1 + index * 0.07}s` }}
+                >
+                  <span
+                    className="absolute -start-7 top-5 h-2.5 w-2.5 rounded-full ring-2 ring-white"
+                    style={{
+                      background: feature.color,
+                      boxShadow: `0 0 10px ${feature.color}88`,
+                    }}
+                  />
+                  <div className="cursor-default rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50`}
+                        style={{ boxShadow: `0 6px 18px -4px ${feature.color}55` }}
+                      >
+                        <Icon className="h-[18px] w-[18px] text-white" strokeWidth={2} />
+                      </div>
+                      <h3 className="text-sm font-extrabold leading-snug text-gray-900">
+                        {feature.title}
+                      </h3>
+                    </div>
+                    <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
