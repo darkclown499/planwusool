@@ -3,6 +3,7 @@ import { usePage, Head } from '@inertiajs/react';
 import { getImageUrl } from '@/utils/image-helper';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
+import TrustedBySection from './components/TrustedBySection';
 import FeaturesSection from './components/FeaturesSection';
 import ScreenshotsSection from './components/ScreenshotsSection';
 import WhyChooseUs from './components/WhyChooseUs';
@@ -186,7 +187,7 @@ export default function LandingPage() {
     return settings.config_sections?.sections?.find(section => section.key === key) || {};
   };
 
-  const compactDefaultSections = ['header', 'hero', 'features', 'themes', 'testimonials', 'plans', 'faq', 'footer'];
+  const compactDefaultSections = ['header', 'hero', 'trusted_by', 'features', 'themes', 'testimonials', 'plans', 'faq', 'footer'];
 
   // Respect admin visibility settings when provided; otherwise keep the homepage lean by default.
   const isSectionVisible = (key: string) => {
@@ -226,6 +227,13 @@ export default function LandingPage() {
       <FeaturesSection
         settings={settings}
         sectionData={getSectionData('features')}
+        brandColor={primaryColor}
+      />
+    ),
+    trusted_by: () => isSectionVisible('trusted_by') && (
+      <TrustedBySection
+        settings={settings}
+        sectionData={getSectionData('trusted_by')}
         brandColor={primaryColor}
       />
     ),

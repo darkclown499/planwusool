@@ -36,7 +36,7 @@ class LandingPageSeeder extends Seeder
                 ],
                 [
                     'key' => 'hero',
-                    'title' => 'وصول',
+                    'title' => 'ابدأ متجرك مع وصول خلال دقائق',
                     'subtitle' => 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع',
                     'announcement_text' => 'انضم الآن واستفد من التجربة المجانية',
                     'primary_button_text' => 'ابدأ تجربة مجانية',
@@ -216,11 +216,12 @@ class LandingPageSeeder extends Seeder
                 'meta_keywords' => 'منصة متاجر متعددة، إدارة متاجر إلكترونية، حلول التجارة الإلكترونية، وصول'
             ],
             'section_order' => [
-                'header', 'hero', 'features', 'testimonials', 'plans', 'contact', 'footer'
+                'header', 'hero', 'trusted_by', 'features', 'testimonials', 'plans', 'contact', 'footer'
             ],
             'section_visibility' => [
                 'header' => true,
                 'hero' => true,
+                'trusted_by' => true,
                 'features' => true,
                 'screenshots' => false,
                 'why_choose_us' => false,

@@ -11,7 +11,7 @@ return [
         ],
         [
             'key' => 'hero',
-            'title' => 'أنشئ متجرك خلال دقائق',
+            'title' => 'ابدأ متجرك مع وصول خلال دقائق',
             'subtitle' => 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع',
             'announcement_text' => 'انضم الآن واستفد من التجربة المجانية',
             'primary_button_text' => 'ابدأ تجربة مجانية',
@@ -190,10 +190,11 @@ return [
         'meta_description' => 'أنشئ وأدر متاجر إلكترونية متعددة مع وصول. منصة تجارة إلكترونية قوية مع تصاميم جميلة وميزات متقدمة.',
         'meta_keywords' => 'منصة متاجر متعددة، إدارة متاجر إلكترونية، حلول التجارة الإلكترونية، وصول',
     ],
-    'section_order' => ['header', 'hero', 'features', 'themes', 'testimonials', 'plans', 'faq', 'contact', 'footer'],
+    'section_order' => ['header', 'hero', 'trusted_by', 'features', 'themes', 'testimonials', 'plans', 'faq', 'contact', 'footer'],
     'section_visibility' => [
         'header' => true,
         'hero' => true,
+        'trusted_by' => true,
         'features' => true,
         'screenshots' => false,
         'why_choose_us' => false,
