@@ -20,6 +20,7 @@ import {
   Send,
   Settings,
   ShoppingCart,
+  SkipForward,
   Star,
   Volume2,
   VolumeX,
@@ -92,9 +93,20 @@ export default function HeroComputerDemo({
   const [chatTyped, setChatTyped] = useState(0);
   const [chatReplied, setChatReplied] = useState(false);
   const [order, setOrder] = useState<CartItem[]>([]);
+  const [userControl, setUserControl] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
   const runIdRef = useRef(0);
   const screenRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef(stage);
+  const userControlRef = useRef(false);
+  useEffect(() => {
+    stageRef.current = stage;
+  }, [stage]);
+  useEffect(() => {
+    userControlRef.current = userControl;
+  }, [userControl]);
   const avatarRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const passFieldRef = useRef<HTMLDivElement>(null);
   const passGoRef = useRef<HTMLButtonElement>(null);
@@ -144,6 +156,61 @@ export default function HeroComputerDemo({
     setCursor({ x: r.width / 2 - 2, y: r.height - 78, dur: 500 });
   }, []);
 
+  const revealCard = useCallback(
+    (i: number, dur = 1300) => {
+      const el = cardRefs.current[i];
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.setTimeout(() => flyTo(el, dur), 820);
+    },
+    [flyTo]
+  );
+
+  const scrollGridTop = useCallback(() => {
+    const g = scrollRef.current;
+    if (g) g.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const handOverControl = useCallback((msg: string) => {
+    runIdRef.current += 1;
+    setCursorVisible(false);
+    setUserControl(true);
+    setToast(msg);
+  }, []);
+
+  const skipTour = useCallback(() => {
+    runIdRef.current += 1;
+    setDetail(null);
+    setCartOpen(false);
+    setChatOpen(false);
+    setStage('demo');
+    setStoreReady(true);
+    demoAudio.pop();
+    setCursorVisible(false);
+    setUserControl(true);
+    setToast('تم التخطي — المتجر الآن بين يديك');
+  }, []);
+
+  const cycleZoom = useCallback(() => {
+    setZoom((z) => (z >= 1.5 ? 1 : z === 1 ? 1.2 : 1.5));
+  }, []);
+
+  const userInteract = useCallback(() => {
+    if (userControlRef.current) return;
+    if (stageRef.current === 'idle') return;
+    runIdRef.current += 1;
+    setDetail(null);
+    setCartOpen(false);
+    setChatOpen(false);
+    setTyped('');
+    setStage('demo');
+    setStoreReady(true);
+    demoAudio.pop();
+    setCursorVisible(false);
+    setUserControl(true);
+    setToast('التحكم الآن بين يديك — استكشف المتجر كاملًا');
+  }, []);
+
   const resetAll = useCallback(() => {
     setDetail(null);
     setToast(null);
@@ -160,6 +227,7 @@ export default function HeroComputerDemo({
     setChatTyped(0);
     setChatReplied(false);
     setOrder([]);
+    setUserControl(false);
   }, []);
 
   const runCycle = useCallback((index: number) => {
@@ -331,6 +399,7 @@ export default function HeroComputerDemo({
     if (stage !== 'demo' || !storeReady) return;
     const id = runIdRef.current;
     const products = store.products;
+    const guided = [0, 4, 11];
     const timers: number[] = [];
     const at = (ms: number, fn: () => void) => {
       timers.push(
@@ -357,38 +426,53 @@ export default function HeroComputerDemo({
       });
     };
 
-    // 1) add product 0
-    at(900, () => flyTo(cardRefs.current[0], 1300));
-    at(1400, () => { doClick(); openAsking(0); });
-    at(2100, () => flyTo(addBtnRef.current, 1000));
-    at(2950, () => { doClick(); });
-    at(3050, () => addGuided(0));
+    // 1) add first product at the TOP of the store
+    at(700, () => flyTo(cardRefs.current[0], 1300));
+    at(1250, () => {
+      doClick();
+      openAsking(0);
+    });
+    at(1950, () => flyTo(addBtnRef.current, 1000));
+    at(2800, () => {
+      doClick();
+    });
+    at(2900, () => addGuided(0));
 
-    // 2) add product 1
-    at(3900, () => flyTo(cardRefs.current[1], 1300));
-    at(4400, () => { doClick(); openAsking(1); });
-    at(5100, () => flyTo(addBtnRef.current, 1000));
-    at(5950, () => { doClick(); });
-    at(6050, () => addGuided(1));
+    // 2) scroll to the middle of the grid and add product 4
+    at(3750, () => revealCard(4));
+    at(4750, () => {
+      doClick();
+      openAsking(4);
+    });
+    at(5450, () => flyTo(addBtnRef.current, 1000));
+    at(6300, () => {
+      doClick();
+    });
+    at(6400, () => addGuided(4));
 
-    // 3) add product 2
-    at(6900, () => flyTo(cardRefs.current[2], 1300));
-    at(7400, () => { doClick(); openAsking(2); });
-    at(8100, () => flyTo(addBtnRef.current, 1000));
-    at(8950, () => { doClick(); });
-    at(9050, () => addGuided(2));
+    // 3) add the LAST product — from the very end of the site
+    at(7250, () => revealCard(11));
+    at(8300, () => {
+      doClick();
+      openAsking(11);
+    });
+    at(9000, () => flyTo(addBtnRef.current, 1000));
+    at(9850, () => {
+      doClick();
+    });
+    at(9950, () => addGuided(11));
 
     // 4) open the cart
-    at(10200, () => flyTo(cartBtnRef.current, 1200));
-    at(11100, () => {
+    at(10900, () => flyTo(cartBtnRef.current, 1200));
+    at(11800, () => {
       doClick();
       demoAudio.cartOpen();
       setCartOpen(true);
     });
 
     // 5) press "اطلب عبر واتساب"
-    at(11900, () => flyTo(orderBtnRef.current, 1100));
-    at(12900, () => {
+    at(12550, () => flyTo(orderBtnRef.current, 1100));
+    at(13500, () => {
       doClick();
       demoAudio.chatOpen();
       setOrder([...cartRef.current]);
@@ -399,26 +483,25 @@ export default function HeroComputerDemo({
       setChatReplied(false);
     });
 
-    // 6) after the WhatsApp chat closes, the mouse walks the store like a human…
+    // 6) after the chat closes, the mouse walks the whole store, then hands it over
     const chatLen =
-      `مرحباً ${store.name} 👋\nأريد طلب: ${products.slice(0, 3).map((p) => `1× ${p.name}`).join('، ')}\nالإجمالي: ${products.slice(0, 3).reduce((s, p) => s + p.price, 0)}₪`.length;
-    const chatClose = 12900 + chatLen * 45 + 3200;
-    at(chatClose + 500, () => flyTo(cardRefs.current[6], 2600));
-    at(chatClose + 3300, () => flyTo(cardRefs.current[9], 2700));
-    at(chatClose + 6200, () => flyTo(bubbleRef.current, 3200));
-    at(chatClose + 8600, () => {
+      `مرحباً ${store.name} 👋\nأريد طلب: ${guided.map((g) => `1× ${products[g].name}`).join('، ')}\nالإجمالي: ${guided.reduce((s, g) => s + products[g].price, 0)}₪`.length;
+    const chatClose = 13500 + chatLen * 45 + 3200;
+    at(chatClose + 400, () => scrollGridTop());
+    at(chatClose + 1800, () => revealCard(6));
+    at(chatClose + 3800, () => flyTo(bubbleRef.current, 3200));
+    at(chatClose + 6200, () => {
       doClick();
       demoAudio.pop();
       setToast('تم فتح واتساب — أرسل رسالتك الآن');
     });
-    at(chatClose + 10100, () => flyTo(cardRefs.current[3], 2400));
-    at(chatClose + 12300, () => cursorToScreen());
+    at(chatClose + 7600, () => revealCard(11));
+    at(chatClose + 9600, () => handOverControl('المتجر الآن بين يديك — استكشفه كاملًا'));
 
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage, storeReady, storeIndex, store, flyTo, doClick]);
+  }, [stage, storeReady, storeIndex, store, flyTo, doClick, revealCard, scrollGridTop, handOverControl]);
 
   /* keep the latest cart reachable inside the cinematic timeline */
   const cartRef = useRef(cart);
@@ -518,23 +601,31 @@ export default function HeroComputerDemo({
 
   return (
     <div className="mx-auto w-full max-w-[620px]" dir="rtl">
-      {/* ── Monitor ── */}
-      <div className="relative rounded-[22px] border border-slate-600/60 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 p-2 shadow-[0_40px_90px_-24px_rgba(0,0,0,0.75)] sm:p-3">
+      {/* zoom wrapper */}
+      <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center', transition: 'transform 0.35s ease' }}>
+        {/* ── Monitor ── */}
+        <div className="relative rounded-[22px] border border-slate-600/60 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 p-2 shadow-[0_40px_90px_-24px_rgba(0,0,0,0.75)] sm:p-3">
+          <div
+            className="pointer-events-none absolute inset-0 m-6 rounded-2xl opacity-30 blur-3xl"
+            style={{ background: brandColor }}
+          />
         <div
-          className="pointer-events-none absolute inset-0 m-6 rounded-2xl opacity-30 blur-3xl"
-          style={{ background: brandColor }}
-        />
-        <div ref={screenRef} className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-black ring-1 ring-black/60">
+          ref={screenRef}
+          onPointerMove={userInteract}
+          onPointerDown={userInteract}
+          onWheel={userInteract}
+          className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-black ring-1 ring-black/60"
+        >
           {/* ── idle ── */}
           {stage === 'idle' && (
             <div
-              className="absolute inset-0 flex flex-col items-center justify-center gap-5"
-              style={{ background: `radial-gradient(circle at 50% 36%, ${brandColor}2e 0%, transparent 62%), #07090b` }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-6"
+              style={{ background: `radial-gradient(circle at 50% 44%, ${brandColor}2e 0%, transparent 62%), #07090b` }}
             >
               <button
                 aria-label="تشغيل العرض"
                 onClick={() => runCycle(0)}
-                className="play-btn group relative flex h-20 w-20 items-center justify-center rounded-full"
+                className="play-btn group relative flex h-24 w-24 items-center justify-center rounded-full"
               >
                 <span className="play-ring absolute inset-0 rounded-full" style={{ border: `2px solid ${brandColor}` }} />
                 <span
@@ -542,10 +633,10 @@ export default function HeroComputerDemo({
                   style={{ boxShadow: `0 0 60px 12px ${brandColor}55, inset 0 0 30px ${brandColor}33` }}
                 />
                 <span
-                  className="relative flex h-16 w-16 items-center justify-center rounded-full text-white transition-transform duration-300 group-hover:scale-110"
+                  className="relative flex h-20 w-20 items-center justify-center rounded-full text-white transition-transform duration-300 group-hover:scale-110"
                   style={{ background: `linear-gradient(135deg, ${brandColor}, ${brandColor}aa)`, boxShadow: `0 10px 34px ${brandColor}66` }}
                 >
-                  <Play size={26} fill="currentColor" className="mr-1" />
+                  <Play size={28} fill="currentColor" />
                 </span>
               </button>
               <div className="text-center">
@@ -616,20 +707,42 @@ export default function HeroComputerDemo({
 
           {/* ── login: windows lock screen with 3 accounts ── */}
           {stage === 'login' && (
-            <div className="absolute inset-0 overflow-hidden" style={{ background: 'linear-gradient(150deg, #113d8f 0%, #0f6fd0 55%, #4aa3e8 100%)' }}>
+            <div className="absolute inset-0 overflow-hidden" style={{ background: 'linear-gradient(150deg, #0e3d99 0%, #0f6fd0 55%, #4aa3e8 100%)' }}>
               <div className="wall-blob absolute -right-14 -top-16 h-56 w-56 rounded-full blur-3xl" style={{ background: '#7cc4ff', opacity: 0.35 }} />
               <div className="wall-blob-2 absolute -left-16 bottom-24 h-52 w-52 rounded-full blur-3xl" style={{ background: '#062a63', opacity: 0.5 }} />
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.05]"
+                style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1.5px)', backgroundSize: '24px 24px' }}
+              />
 
               {/* big clock */}
-              <div className="absolute left-1/2 top-[7%] -translate-x-1/2 text-center text-white">
-                <p className="text-[30px] font-light leading-none tracking-wide sm:text-[34px]" dir="ltr">
+              <div className="absolute left-1/2 top-[6%] -translate-x-1/2 text-center text-white">
+                <p
+                  className="text-[34px] font-extralight leading-none tracking-widest sm:text-[42px]"
+                  dir="ltr"
+                  style={{ fontFamily: "'Segoe UI', 'Tajawal', sans-serif", textShadow: '0 2px 26px rgba(0,0,0,0.45)' }}
+                >
                   {`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`}
                 </p>
-                <p className="mt-1.5 text-[9px] font-semibold text-white/85">{clockDate}</p>
+                <p className="mt-2 text-[9px] font-semibold tracking-wide text-white/85">{clockDate}</p>
+              </div>
+
+              {/* bottom status bar (windows lock style) */}
+              <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-between px-3 pb-3 text-white/85">
+                <span className="flex items-center gap-1 rounded-md bg-black/20 px-2 py-0.5 text-[7.5px] font-bold backdrop-blur-sm">
+                  <Globe size={8} /> عربي
+                </span>
+                <div className="flex items-center gap-1.5 text-[8px]">
+                  <Wifi size={10} />
+                  <Battery size={11} />
+                  <span className="rounded-md bg-black/20 px-1.5 py-0.5 font-bold" dir="ltr">
+                    {clockTime}
+                  </span>
+                </div>
               </div>
 
               {/* accounts */}
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-center gap-8 pb-7">
+              <div className="absolute inset-x-0 bottom-14 flex items-end justify-center gap-9 pb-3">
                 {ACCOUNTS.map((acc, i) => (
                   <button
                     key={acc.name}
@@ -641,21 +754,23 @@ export default function HeroComputerDemo({
                       setLoginPhase('typing');
                     }}
                     className={`login-acc flex flex-col items-center gap-1.5 transition ${
-                      loginPhase === 'pick' ? 'opacity-75 hover:opacity-100' : i === 0 ? 'opacity-100' : 'opacity-30'
+                      loginPhase === 'pick' ? 'opacity-75 hover:opacity-100 hover:-translate-y-1' : i === 0 ? 'opacity-100' : 'opacity-30'
                     }`}
                   >
                     <span
-                      className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white/60 bg-white/40 p-[3px] shadow-xl backdrop-blur-sm sm:h-16 sm:w-16"
-                      style={{ boxShadow: i === 0 && loginPhase === 'typing' ? `0 0 0 6px rgba(255,255,255,0.25)` : undefined }}
+                      className={`flex h-16 w-16 items-center justify-center rounded-full border-2 bg-[#0b2440]/30 p-[3.5px] shadow-2xl backdrop-blur-sm sm:h-[72px] sm:w-[72px] ${
+                        i === 0 && loginPhase === 'typing' ? 'border-white/90' : 'border-white/50'
+                      }`}
+                      style={{ boxShadow: i === 0 && loginPhase === 'typing' ? `0 0 0 7px rgba(255,255,255,0.22), 0 14px 30px -8px rgba(0,0,0,0.6)` : '0 14px 30px -8px rgba(0,0,0,0.5)' }}
                     >
                       <span
-                        className="flex h-full w-full items-center justify-center rounded-full text-[20px] font-black text-white"
-                        style={{ background: `linear-gradient(135deg, ${acc.color}, ${acc.color}99)` }}
+                        className="flex h-full w-full items-center justify-center rounded-full text-[24px] font-black text-white sm:text-[27px]"
+                        style={{ background: `linear-gradient(135deg, ${acc.color}, ${acc.color}88)`, boxShadow: `inset 0 -6px 14px rgba(0,0,0,0.25)` }}
                       >
                         {acc.name[0]}
                       </span>
                     </span>
-                    <span className="rounded-full bg-black/30 px-2 py-px text-[8px] font-bold text-white backdrop-blur">
+                    <span className="rounded-full bg-black/35 px-2.5 py-[3px] text-[8.5px] font-bold text-white shadow-lg backdrop-blur">
                       {acc.name}
                     </span>
                   </button>
@@ -664,13 +779,19 @@ export default function HeroComputerDemo({
 
               {/* password bar */}
               {loginPhase === 'typing' && (
-                <div className="absolute inset-x-0 bottom-28 flex flex-col items-center gap-2">
+                <div className="absolute inset-x-0 bottom-[120px] z-10 flex flex-col items-center gap-2">
                   <div
                     ref={passFieldRef}
-                    className="login-bar flex items-center gap-2.5 rounded-lg border border-white/40 bg-black/40 px-3.5 py-1.5 shadow-2xl backdrop-blur"
+                    className="login-bar flex items-center gap-2.5 rounded-xl border border-white/30 bg-black/45 py-1.5 pl-1.5 pr-3.5 shadow-2xl backdrop-blur-xl"
                   >
+                    <span
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-black text-white"
+                      style={{ background: `linear-gradient(135deg, ${ACCOUNTS[0].color}, ${ACCOUNTS[0].color}88)` }}
+                    >
+                      {ACCOUNTS[0].name[0]}
+                    </span>
                     <span className="text-[9px] font-bold text-white/90">{ACCOUNTS[0].name}</span>
-                    <span className="flex items-end gap-1 text-[14px] leading-none tracking-widest text-white">
+                    <span className="flex items-end gap-1 text-[15px] leading-none tracking-widest text-white">
                       {[0, 1, 2, 3].map((i) => (
                         <span key={i} className="inline-block w-2 text-center">
                           {i < passDots ? '●' : ''}
@@ -681,9 +802,9 @@ export default function HeroComputerDemo({
                       ref={passGoRef}
                       aria-label="دخول"
                       onClick={() => demoAudio.click()}
-                      className="flex h-6 w-6 items-center justify-center rounded-full bg-white/25 text-white transition hover:bg-white/40"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white/25 text-white transition hover:bg-white/40"
                     >
-                      <ArrowLeft size={12} />
+                      <ArrowLeft size={13} />
                     </button>
                   </div>
                   <p className="text-[7.5px] text-white/60">اضغط Enter للدخول — أو اختر حسابًا آخر</p>
@@ -698,10 +819,20 @@ export default function HeroComputerDemo({
               {/* wallpaper */}
               <div
                 className="absolute inset-0 overflow-hidden"
-                style={{ background: `linear-gradient(150deg, #0f172a 0%, #182338 45%, #0c121f 100%)` }}
+                style={{ background: `linear-gradient(160deg, #101a33 0%, #1b2a4d 38%, #0d1526 100%)` }}
               >
-                <div className="wall-blob absolute -right-16 -top-20 h-64 w-64 rounded-full blur-3xl" style={{ background: brandColor, opacity: 0.28 }} />
-                <div className="wall-blob-2 absolute -left-20 bottom-10 h-56 w-56 rounded-full blur-3xl" style={{ background: brandColor, opacity: 0.15 }} />
+                <div className="wall-blob absolute -right-16 -top-20 h-64 w-64 rounded-full blur-3xl" style={{ background: brandColor, opacity: 0.3 }} />
+                <div className="wall-blob-2 absolute -left-20 bottom-10 h-56 w-56 rounded-full blur-3xl" style={{ background: brandColor, opacity: 0.16 }} />
+                <div
+                  className="absolute left-1/2 top-[30%] h-[85%] w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+                  style={{ background: `radial-gradient(circle, ${brandColor}4d 0%, transparent 62%)`, opacity: 0.8 }}
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'conic-gradient(from 205deg at 66% 4%, transparent 0deg, rgba(255,255,255,0.05) 10deg, transparent 22deg, transparent 80deg, rgba(255,255,255,0.035) 96deg, transparent 112deg)',
+                  }}
+                />
                 <div
                   className="absolute inset-0 opacity-[0.05]"
                   style={{
@@ -709,6 +840,7 @@ export default function HeroComputerDemo({
                     backgroundSize: '34px 34px',
                   }}
                 />
+                <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%)' }} />
               </div>
 
               {/* icons */}
@@ -732,41 +864,49 @@ export default function HeroComputerDemo({
               )}
 
               {/* taskbar */}
-              <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center justify-between border-t border-white/10 bg-white/[0.06] px-2 backdrop-blur">
+              <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center justify-between gap-2 border-t border-white/10 bg-black/40 px-2.5 backdrop-blur-xl">
                 <div className="flex items-center gap-1.5">
-                  <span className="flex h-5 items-center gap-1 rounded bg-[#2563eb]/90 px-1.5 text-[8px] font-bold text-white shadow">
-                    <span className="grid grid-cols-2 gap-px">
-                      <span className="h-1 w-1 bg-white" />
-                      <span className="h-1 w-1 bg-white" />
-                      <span className="h-1 w-1 bg-white" />
-                      <span className="h-1 w-1 bg-white" />
+                  <button
+                    aria-label="ابدأ"
+                    className="flex h-7 w-9 items-center justify-center rounded-md transition hover:bg-white/10"
+                  >
+                    <span className="grid grid-cols-2 gap-[2.5px]">
+                      <span className="h-[5px] w-[5px] rounded-[1px] bg-white" />
+                      <span className="h-[5px] w-[5px] rounded-[1px] bg-white" />
+                      <span className="h-[5px] w-[5px] rounded-[1px] bg-white" />
+                      <span className="h-[5px] w-[5px] rounded-[1px] bg-white" />
                     </span>
-                    ابدأ
+                  </button>
+                  <span className="relative flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/10 transition hover:bg-white/20">
+                    <MessageCircle size={11} className="text-[#25D366]" />
                   </span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
-                    <MessageCircle size={10} className="text-[#25D366]" />
+                  <span className="relative flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/15 transition hover:bg-white/25" title="المتصفح - مفتوح">
+                    <Globe size={11} className="text-white" />
+                    <span className="absolute bottom-[1px] h-[3px] w-3.5 rounded-full" style={{ background: '#38bdf8' }} />
                   </span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
-                    <Globe size={10} className="text-white/80" />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/10 transition hover:bg-white/20">
+                    <ShoppingCart size={11} className="text-white/85" />
                   </span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
-                    <ShoppingCart size={10} className="text-white/80" />
-                  </span>
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md border border-white/10 bg-white/10">
-                    <FolderOpen size={10} className="text-white/80" />
+                  <span className="flex h-7 w-7 items-center justify-center rounded-md border border-white/10 bg-white/10 transition hover:bg-white/20">
+                    <FolderOpen size={11} className="text-white/85" />
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[9px] text-white/70">
-                  <span className="hidden items-center gap-1 sm:flex">
+                <div className="flex items-center gap-2.5 text-[9px] text-white/85">
+                  <span className="hidden items-center gap-1.5 sm:flex">
                     <Wifi size={10} />
                     <Battery size={12} />
                     <Volume2 size={10} />
+                    <span className="text-[7px] font-bold text-white/60">78%</span>
                   </span>
-                  <span className="rounded bg-white/10 px-1.5 py-px text-[8px] font-semibold text-white/80">عربي</span>
-                  <span className="hidden sm:inline">{clockDate}</span>
-                  <span className="rounded-md bg-black/40 px-1.5 py-0.5 font-bold text-white/85" dir="ltr">
-                    {clockTime}
+                  <span className="flex items-center gap-1 rounded bg-white/10 px-1.5 py-0.5 text-[7.5px] font-bold text-white/85 backdrop-blur">
+                    <Globe size={8} /> عربي
                   </span>
+                  <div className="flex flex-col items-end leading-tight">
+                    <span className="rounded bg-black/40 px-1.5 py-[1px] font-bold text-white/90" dir="ltr">
+                      {clockTime}
+                    </span>
+                    <span className="px-0.5 text-[6px] text-white/55">{clockDate}</span>
+                  </div>
                 </div>
               </div>
 
@@ -848,6 +988,7 @@ export default function HeroComputerDemo({
                           bubbleRef={bubbleRef}
                           cartBtnRef={cartBtnRef}
                           cardRefs={cardRefs}
+                          scrollRef={scrollRef}
                         />
                         {/* ── cart drawer ── */}
                         {cartOpen && (
@@ -1063,6 +1204,32 @@ export default function HeroComputerDemo({
       {/* stand */}
       <div className="mx-auto -mt-0.5 h-3.5 w-28 rounded-b-xl bg-gradient-to-b from-slate-600 to-slate-800" />
       <div className="mx-auto h-2 w-44 rounded-full bg-slate-700" />
+      </div>
+      {zoom > 1 && <div style={{ height: Math.round((zoom - 1) * 400) }} />}
+
+      {/* control chips while the demo is playing */}
+      {stage !== 'idle' && stage !== 'spin' && !userControl && (
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <button
+            onClick={skipTour}
+            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] font-bold text-white/85 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+          >
+            <SkipForward size={10} /> تخطي العرض
+          </button>
+          <button
+            onClick={() => runCycle(storeIndex)}
+            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] font-bold text-white/85 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+          >
+            <RotateCcw size={10} /> إعادة من البداية
+          </button>
+          <button
+            onClick={cycleZoom}
+            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[10px] font-bold text-white/85 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+          >
+            <Search size={10} /> تكبير {zoom}×
+          </button>
+        </div>
+      )}
 
       {/* cycle controls */}
       <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
@@ -1179,6 +1346,10 @@ export default function HeroComputerDemo({
 
         @keyframes typingDot { 0%, 100% { opacity: 0.35; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
         .chat-dot { width: 4px; height: 4px; border-radius: 9999px; background: #9ca3af; animation: typingDot 1s ease-in-out infinite; }
+
+        .thin-scroll::-webkit-scrollbar { width: 4px; }
+        .thin-scroll::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.4); border-radius: 4px; }
+        .thin-scroll { scrollbar-width: thin; scrollbar-color: rgba(100, 116, 139, 0.4) transparent; }
       `}</style>
     </div>
   );
@@ -1191,18 +1362,27 @@ const DesktopIcon = React.forwardRef<HTMLButtonElement, { icon: React.ReactNode;
     return (
       <button
         ref={ref}
-        className={`desktop-icon flex w-11 flex-col items-center gap-0.5 rounded-lg p-1 transition ${
-          active ? 'bg-white/15 shadow-lg ring-1 ring-white/20' : 'hover:bg-white/10'
+        className={`desktop-icon group relative flex w-[52px] flex-col items-center gap-1 rounded-lg p-1.5 transition ${
+          active ? 'bg-white/10 shadow-xl ring-1 ring-white/25' : 'hover:bg-white/10'
         }`}
         style={{ animationDelay: '0s' }}
       >
         <span
-          className={`flex h-7 w-7 items-center justify-center rounded-lg border border-white/15 ${glow ? 'icon-glow text-white' : ''}`}
-          style={{ background: `linear-gradient(135deg, ${brandColor}55, ${brandColor}22)`, color: glow ? '#fff' : undefined }}
+          className={`relative flex h-8 w-8 items-center justify-center rounded-[10px] border ${glow ? 'icon-glow text-white' : ''}`}
+          style={{
+            background: `linear-gradient(150deg, ${brandColor}f2 0%, ${brandColor}88 55%, ${brandColor}2e 100%)`,
+            borderColor: 'rgba(255,255,255,0.28)',
+            boxShadow: `0 8px 18px -8px ${brandColor}aa, inset 0 1px 0 rgba(255,255,255,0.35)`,
+            color: '#fff',
+          }}
         >
           {icon}
+          <span className="pointer-events-none absolute inset-x-[2px] top-[2px] h-[42%] rounded-[7px] bg-gradient-to-b from-white/40 to-transparent" />
         </span>
-        <span className="text-[7px] font-semibold text-white/85">{label}</span>
+        <span className="text-[7px] font-semibold text-white/90" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>
+          {label}
+        </span>
+        {active && <span className="absolute -bottom-[3px] h-[3px] w-9 rounded-full" style={{ background: brandColor }} />}
       </button>
     );
   }
@@ -1286,9 +1466,10 @@ interface StoreViewProps {
   bubbleRef: React.RefObject<HTMLDivElement | null>;
   cartBtnRef: React.RefObject<HTMLButtonElement | null>;
   cardRefs: React.RefObject<(HTMLElement | null)[]>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
 }
 
-function StoreView({ store, brandColor, cartCount, onOpenDetail, onWaClick, onCartClick, waBtnRef, bubbleRef, cartBtnRef, cardRefs }: StoreViewProps) {
+function StoreView({ store, brandColor, cartCount, onOpenDetail, onWaClick, onCartClick, waBtnRef, bubbleRef, cartBtnRef, cardRefs, scrollRef }: StoreViewProps) {
   return (
     <div className="flex h-full flex-col bg-white" dir="rtl" style={{ fontFamily: "'Tajawal', 'Segoe UI', sans-serif" }}>
       {/* header */}
@@ -1364,7 +1545,7 @@ function StoreView({ store, brandColor, cartCount, onOpenDetail, onWaClick, onCa
       </div>
 
       {/* products grid */}
-      <div className="flex-1 overflow-y-auto p-1.5 pb-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-1.5 pb-3 thin-scroll">
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
           {store.products.map((product, i) => (
             <div
