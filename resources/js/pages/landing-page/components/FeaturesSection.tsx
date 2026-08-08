@@ -9,6 +9,7 @@ import {
   Bot,
   Calculator,
   Truck,
+  MessageCircle,
 } from 'lucide-react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
 
@@ -116,13 +117,46 @@ const BENTO_CSS = `
     opacity: 1;
     transform: translateY(0);
   }
+  .typing-dot {
+    animation: typingBounce 1.3s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+    30% { transform: translateY(-3px); opacity: 1; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .bento-card {
       opacity: 1 !important;
       transform: none !important;
     }
+    .typing-dot {
+      animation: none !important;
+      opacity: 0.8;
+    }
   }
 `;
+
+const chatBubbles = [
+  { type: 'customer', text: 'السلام عليكم، عندكم مقاس L؟' },
+  {
+    type: 'bot',
+    product: true,
+    name: 'حذاء رياضي — مقاس L',
+    price: '120 ر.س',
+    note: 'متوفر الآن — رد آلي ✓',
+  },
+  {
+    type: 'bot',
+    text: 'طلبك جاهز للدفع، أكمله بضغطة واحدة',
+    action: 'ادفع الآن',
+  },
+];
 
 export default function FeaturesSection({
   sectionData,
@@ -176,71 +210,133 @@ export default function FeaturesSection({
                 style={{ transitionDelay: `${0.15 + index * 0.08}s` }}
               >
                 <div
-                  className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/60 sm:p-7 ${
+                  className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-7 ${
                     isHero
-                      ? `border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white shadow-sm`
-                      : 'border-gray-200 bg-white shadow-sm hover:border-gray-300'
+                      ? 'border-emerald-800/50 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 hover:shadow-emerald-900/30'
+                      : 'border-gray-200 bg-white shadow-sm hover:border-gray-300 hover:shadow-gray-200/60'
                   }`}
                 >
-                  {/* Decor — stays inside the tile, never over text */}
-                  {isHero && (
+                  {/* Decor */}
+                  {isHero ? (
+                    <div className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-gradient-to-br from-emerald-400 to-green-600 opacity-15 blur-2xl" />
+                  ) : (
                     <div
-                      className={`pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-gradient-to-br ${feature.gradient} opacity-[0.08] blur-2xl`}
+                      className={`pointer-events-none absolute -top-12 -left-12 h-40 w-40 rounded-full bg-gradient-to-br ${feature.gradient} opacity-[0.1] blur-2xl transition-opacity duration-500 group-hover:opacity-[0.18]`}
                     />
                   )}
 
-                  <div className="relative">
-                    <div className="flex items-start justify-between">
+                  {isHero ? (
+                    /* ═══ Hero tile — dark Store + chat preview ═══ */
+                    <div className="relative flex h-full flex-col items-center gap-8 md:flex-row md:items-center">
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div
+                          className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/40 shadow-lg transition-transform duration-300 group-hover:scale-110`}
+                          style={{ boxShadow: `0 12px 28px -8px ${feature.color}99` }}
+                        >
+                          <Icon className="h-6 w-6 text-white" strokeWidth={1.9} />
+                        </div>
+                        <h3 className="mt-5 text-xl font-extrabold leading-snug text-white">
+                          {feature.title}
+                        </h3>
+                        <p className="mt-3 max-w-md text-sm leading-relaxed text-emerald-100/85">
+                          {feature.description}
+                        </p>
+                        <div className="mt-6 flex flex-wrap gap-2">
+                          {['رد آلي 24/7', 'تكامل كتالوج واتساب', 'روابط دفع فورية'].map(
+                            (chip) => (
+                              <span
+                                key={chip}
+                                className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-emerald-50"
+                              >
+                                {chip}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Chat preview */}
+                      <div className="w-full max-w-[300px] shrink-0 rounded-2xl border border-white/15 bg-white/10 p-3.5 shadow-lg backdrop-blur-md md:w-[300px]">
+                        <div className="flex items-center gap-2 rounded-xl rounded-br-sm border-b border-white/10 pb-2.5">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-green-600 text-[11px] font-black text-white">
+                            و
+                          </span>
+                          <div className="flex-1">
+                            <p className="text-[11px] font-bold leading-tight text-white">
+                              متجر وصول
+                            </p>
+                            <p className="text-[9.5px] text-emerald-200">متصل الآن</p>
+                          </div>
+                          <MessageCircle className="h-3.5 w-3.5 text-white/50" />
+                        </div>
+
+                        <div className="mt-3 space-y-2">
+                          {chatBubbles.map((b, bi) =>
+                            b.type === 'customer' ? (
+                              <div
+                                key={bi}
+                                className="max-w-[85%] rounded-xl rounded-tr-sm bg-white/15 px-3 py-1.5 text-[10.5px] leading-relaxed text-white"
+                              >
+                                {b.text}
+                              </div>
+                            ) : b.product ? (
+                              <div
+                                key={bi}
+                                className="max-w-[92%] rounded-xl rounded-tl-sm bg-emerald-500 px-2.5 py-2 text-white shadow-lg shadow-emerald-900/40"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/20">
+                                    <Store className="h-4 w-4 text-white" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="truncate text-[10px] font-bold">{b.name}</p>
+                                    <p className="text-[10px] font-semibold text-white/95">
+                                      {b.price}
+                                    </p>
+                                  </div>
+                                </div>
+                                <p className="mt-1.5 text-[9.5px] text-white/80">{b.note}</p>
+                              </div>
+                            ) : (
+                              <div
+                                key={bi}
+                                className="max-w-[92%] rounded-xl rounded-tl-sm bg-emerald-500 px-3 py-2 text-white shadow-lg shadow-emerald-900/40"
+                              >
+                                <p className="text-[10px] leading-relaxed text-white/90">
+                                  {b.text}
+                                </p>
+                                <div className="mt-1.5 w-fit rounded-lg bg-white px-3 py-1 text-[10px] font-bold text-emerald-600">
+                                  {b.action} ←
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+
+                        <div className="mt-3 flex w-fit items-center gap-1 rounded-full bg-white/10 px-2.5 py-1.5">
+                          <span className="typing-dot h-1 w-1 rounded-full bg-emerald-200" />
+                          <span className="typing-dot h-1 w-1 rounded-full bg-emerald-200" />
+                          <span className="typing-dot h-1 w-1 rounded-full bg-emerald-200" />
+                          <span className="ms-1 text-[9px] text-white/70">يكتب…</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* ═══ Regular cards ═══ */
+                    <div className="relative">
                       <div
-                        className={`flex items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50 shadow-lg transition-transform duration-300 group-hover:scale-110 ${
-                          isHero ? 'h-12 w-12' : 'h-10 w-10'
-                        }`}
+                        className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50 shadow-lg transition-transform duration-300 group-hover:scale-110`}
                         style={{ boxShadow: `0 10px 26px -6px ${feature.color}66` }}
                       >
-                        <Icon
-                          className={`text-white ${isHero ? 'h-6 w-6' : 'h-5 w-5'}`}
-                          strokeWidth={1.9}
-                        />
+                        <Icon className="h-5 w-5 text-white" strokeWidth={1.9} />
                       </div>
-                      <span
-                        className="text-[11px] font-bold tracking-widest"
-                        style={{ color: `${feature.color}99` }}
-                        dir="ltr"
-                      >
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                    </div>
-
-                    <h3
-                      className={`mt-4 font-extrabold leading-snug text-gray-900 ${
-                        isHero ? 'text-lg sm:text-xl' : 'text-[15px]'
-                      }`}
-                    >
-                      {feature.title}
-                    </h3>
-                    <p
-                      className={`mt-2.5 leading-relaxed text-gray-500 ${
-                        isHero
-                          ? 'max-w-md text-sm'
-                          : 'text-[13px]'
-                      }`}
-                    >
-                      {feature.description}
-                    </p>
-                  </div>
-
-                  {isHero && (
-                    <div className="relative mt-6 flex flex-wrap items-center gap-2">
-                      {['رد آلي 24/7', 'تكامل كتالوج واتساب', 'روابط دفع فورية'].map(
-                        (chip) => (
-                          <span
-                            key={chip}
-                            className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700"
-                          >
-                            {chip}
-                          </span>
-                        )
-                      )}
+                      <h3 className="mt-4 text-[15px] font-extrabold leading-snug text-gray-900">
+                        {feature.title}
+                      </h3>
+                      <p className="mt-2.5 text-[13px] leading-relaxed text-gray-500">
+                        {feature.description}
+                      </p>
                     </div>
                   )}
                 </div>
