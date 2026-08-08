@@ -66,8 +66,8 @@ class LandingPageController extends Controller
             // USD pricing (yearly only)
             $usdPrices = [
                 'Starter' => 0,
-                'Growth' => 60,
-                'Professional' => 100,
+                'Growth' => 270,
+                'Professional' => 360,
             ];
 
             return [

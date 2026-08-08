@@ -45,8 +45,8 @@ $plans = [
             ],
             [
                 'name' => 'Growth',
-                'price' => 60,
-                'yearly_price' => 60,
+                'price' => 270,
+                'yearly_price' => 270,
                 'duration' => 'yearly',
                 'domain_type' => 'subdomain',
                 'support_hours' => 12,
@@ -75,8 +75,8 @@ $plans = [
             ],
             [
                 'name' => 'Professional',
-                'price' => 100,
-                'yearly_price' => 100,
+                'price' => 360,
+                'yearly_price' => 360,
                 'duration' => 'yearly',
                 'domain_type' => 'custom',
                 'support_hours' => 24,
