@@ -53,7 +53,7 @@ export const demoStores: DemoStore[] = [
       { emoji: '🧢', name: 'كاب بيسبول أسود', price: 49, oldPrice: 69, rating: 4.4, ratingCount: 158, c1: '#e2e8f0', c2: '#f1f5f9', image: unsplash('1521369909029-2afed882baee') },
       { emoji: '⌚', name: 'ساعة كلاسيكية بجلد', price: 249, oldPrice: 349, rating: 4.8, ratingCount: 64, badge: 'حصرية', c1: '#e9d5ff', c2: '#faf5ff', image: unsplash('1524592094714-0f0654e20314') },
       { emoji: '🧣', name: 'شال صوف محبك', price: 39, oldPrice: 59, rating: 4.6, ratingCount: 99, c1: '#fce7f3', c2: '#fdf4ff', image: unsplash('1591047139829-d91aecb6caea') },
-      { emoji: '🕶', name: 'نظارات شمسية رياضية', price: 89, oldPrice: 129, rating: 4.3, ratingCount: 143, c1: '#cbd5e1', c2: '#f8fafc', image: unsplash('1511499767150-a48a237f0083') },
+      { emoji: '🕶', name: 'نظارات شمسية رياضية', price: 89, oldPrice: 129, rating: 4.3, ratingCount: 143, c1: '#cbd5e1', c2: '#f8fafc', image: flickr('https://live.staticflickr.com/4076/4788683125_062c387d81_b.jpg') },
       { emoji: '💍', name: 'عقد فضي أنيق', price: 99, oldPrice: 149, rating: 4.7, ratingCount: 52, c1: '#e0e7ff', c2: '#f8fafc', image: unsplash('1599643478518-a784e5dc4c8f') }
     ]
   },
@@ -106,7 +106,7 @@ export const demoStores: DemoStore[] = [
       { emoji: '🥩', name: 'لحمة طازجة / كغ', price: 45, oldPrice: 60, rating: 4.8, ratingCount: 205, badge: 'عرض', c1: '#fecaca', c2: '#fdf2f8', image: unsplash('1529692236671-f1f6cf9683ba') },
       { emoji: '🍗', name: 'دجاج طازج كامل', price: 28, rating: 4.6, ratingCount: 344, badge: 'طازج', c1: '#fed7aa', c2: '#fff7ed', image: unsplash('1567620905732-2d1ec7ab7445') },
       { emoji: '☕', name: 'قهوة عربية فاخرة 250غ', price: 28, oldPrice: 45, rating: 4.9, ratingCount: 167, c1: '#d6d3d1', c2: '#fafaf9', image: unsplash('1495474472287-4d71bcdd2085') },
-      { emoji: '🍯', name: 'عسل جبلي طبيعي 500غ', price: 39, oldPrice: 59, rating: 4.9, ratingCount: 122, c1: '#fde68a', c2: '#fef9c3', image: unsplash('1587049352846-4a222e784d38') },
+      { emoji: '🍯', name: 'عسل جبلي طبيعي 500غ', price: 39, oldPrice: 59, rating: 4.9, ratingCount: 122, c1: '#fde68a', c2: '#fef9c3', image: flickr('https://live.staticflickr.com/8593/16037303758_902d4203e7_b.jpg') },
       { emoji: '🍫', name: 'شوكولاتة حليب بالمكسرات', price: 15, oldPrice: 22, rating: 4.7, ratingCount: 289, c1: '#d6d3d1', c2: '#faf5f0', image: flickr('https://live.staticflickr.com/4127/4998195848_7b99375c74_b.jpg') },
       { emoji: '🧃', name: 'عصير برتقال طبيعي 1ل', price: 13, rating: 4.5, ratingCount: 176, c1: '#fdba74', c2: '#ffedd5', image: unsplash('1600271886742-f049cd451bba') }
     ]
