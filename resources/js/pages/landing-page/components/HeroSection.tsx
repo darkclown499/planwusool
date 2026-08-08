@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Megaphone, RefreshCw, Zap } from 'lucide-react';
+import HeroComputerDemo from './HeroComputerDemo';
 
 interface HeroSectionProps {
   brandColor?: string;
-  settings: any;
+  settings: { company_name?: string };
   superadminLogoLight?: string;
   sectionData: {
     title?: string;
@@ -15,6 +16,8 @@ interface HeroSectionProps {
     stats?: Array<{ value: string; label: string }>;
   };
 }
+
+const FEATURE_ICONS = [Zap, Megaphone, RefreshCw];
 
 export default function HeroSection({
   settings,
@@ -139,62 +142,82 @@ export default function HeroSection({
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-          {/* ── Logo (order 2) ── */}
-          {displayLogo && (
-            <img
-              src={displayLogo}
-              alt={settings.company_name || 'Wusool'}
-              className="order-2 mb-5 h-[40px] w-auto object-contain sm:h-[42px] lg:h-[46px]"
-              style={{ filter: 'drop-shadow(0 6px 24px rgba(16,183,127,0.35))' }}
-            />
-          )}
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-10">
+          {/* ── Text column (start in RTL) ── */}
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-right">
+            {/* ── Logo ── */}
+            {displayLogo && (
+              <img
+                src={displayLogo}
+                alt={settings.company_name || 'Wusool'}
+                className="mb-5 h-[40px] w-auto object-contain sm:h-[42px] lg:h-[46px]"
+                style={{ filter: 'drop-shadow(0 6px 24px rgba(16,183,127,0.35))' }}
+              />
+            )}
 
-          {/* ── Title (order 3) ── */}
-          <h1
-            className="order-3 text-[40px] font-extrabold leading-[1.15] text-white sm:text-[44px] lg:text-[60px]"
-            style={{ letterSpacing: '-0.02em' }}
-          >
-            {title}
-          </h1>
-
-          {/* ── Subtitle (order 4) ── */}
-          <p className="order-4 mt-4 max-w-xl text-[15px] leading-relaxed text-white/55 sm:text-base lg:mt-5 lg:text-lg">
-            {subtitle}
-          </p>
-
-          {/* ── CTA buttons (order 5) ── */}
-          <div className="order-5 mt-7 flex w-full flex-col items-stretch gap-3 md:mt-9 md:w-auto md:flex-row md:items-center md:gap-4">
-            <Link
-              href={route('register')}
-              className="group inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-[16px] font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] md:w-auto"
-              style={{
-                backgroundColor: brandColor,
-                boxShadow: `0 12px 40px ${brandColor}55, 0 0 80px ${brandColor}30`,
-              }}
+            {/* ── Title ── */}
+            <h1
+              className="text-[40px] font-extrabold leading-[1.15] text-white sm:text-[44px] lg:text-[60px]"
+              style={{ letterSpacing: '-0.02em' }}
             >
-              {primaryButtonText}
-              <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-            </Link>
-            <Link
-              href={route('login')}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white md:w-auto"
-            >
-              {secondaryButtonText}
-            </Link>
+              {title}
+            </h1>
+
+            {/* ── Subtitle ── */}
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/55 sm:text-base lg:mt-5 lg:text-lg">
+              {subtitle}
+            </p>
+
+            {/* ── CTA buttons ── */}
+            <div className="mt-7 flex w-full flex-col items-stretch gap-3 md:mt-9 md:w-auto md:flex-row md:items-center md:gap-4">
+              <Link
+                href={route('register')}
+                className="group inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-[16px] font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] md:w-auto"
+                style={{
+                  backgroundColor: brandColor,
+                  boxShadow: `0 12px 40px ${brandColor}55, 0 0 80px ${brandColor}30`,
+                }}
+              >
+                {primaryButtonText}
+                <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+              </Link>
+              <Link
+                href={route('login')}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white md:w-auto"
+              >
+                {secondaryButtonText}
+              </Link>
+            </div>
           </div>
 
-          {/* ── Stats (order 6) ── */}
-          <div className="order-6 mt-8 grid w-full grid-cols-3 gap-2.5 md:mt-12 md:flex md:w-auto md:justify-center md:gap-14">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="rounded-xl border border-white/10 bg-white/5 px-2 py-4 md:border-0 md:bg-transparent md:px-0 md:py-0"
-              >
-                <div className="text-base font-extrabold text-white sm:text-lg lg:text-xl">{stat.value}</div>
-                <div className="mt-1 text-[11px] font-medium text-white/45 sm:text-[12px] lg:text-[13px]">{stat.label}</div>
-              </div>
-            ))}
+          {/* ── Computer demo column ── */}
+          <div>
+            <HeroComputerDemo brandColor={brandColor} appName={settings.company_name || 'وصول'} appLogo={superadminLogoLight} />
+
+            {/* ── Feature cards under the screen ── */}
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {stats.map((stat, index) => {
+                const Icon = FEATURE_ICONS[index] || Zap;
+                return (
+                  <div
+                    key={index}
+                    className="group rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5"
+                    style={{ boxShadow: `0 0 0 ${brandColor}00` }}
+                  >
+                    <div
+                      className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
+                      style={{ background: `${brandColor}22`, color: brandColor }}
+                    >
+                      <Icon size={17} />
+                    </div>
+                    <div className="text-sm font-extrabold text-white sm:text-[15px]">{stat.value}</div>
+                    <div className="mt-1 text-[11px] font-medium leading-relaxed text-white/45 sm:text-[12px]">
+                      {stat.label}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
