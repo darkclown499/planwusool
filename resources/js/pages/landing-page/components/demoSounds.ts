@@ -67,6 +67,29 @@ class DemoAudio {
     this.tone(220, 0.6, 'sawtooth', 0.012, 0, 90);
     this.tone(440, 0.4, 'sine', 0.03, 0.25);
   }
+
+  addCart() {
+    this.tone(520, 0.08, 'sine', 0.045, 0, 780);
+    this.tone(900, 0.1, 'sine', 0.03, 0.08, 1200);
+  }
+
+  cartOpen() {
+    this.tone(320, 0.14, 'triangle', 0.035, 0, 620);
+  }
+
+  chatOpen() {
+    this.tone(500, 0.12, 'sine', 0.035, 0, 760);
+    this.tone(380, 0.1, 'sine', 0.025, 0.1, 560);
+  }
+
+  chatSend() {
+    this.tone(420, 0.22, 'sine', 0.04, 0, 980);
+  }
+
+  chatReply() {
+    this.tone(620, 0.14, 'sine', 0.04, 0, 880);
+    this.tone(880, 0.18, 'sine', 0.03, 0.13, 1180);
+  }
 }
 
 export const demoAudio = new DemoAudio();
