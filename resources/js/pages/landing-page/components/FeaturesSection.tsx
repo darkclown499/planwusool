@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React from 'react';
 import {
   Store,
   Palette,
@@ -106,207 +106,31 @@ const features = [
   },
 ];
 
-const hubLogo = '/images/logos/features-hub.png';
-const toAsset = (path: string) =>
-  `${window.appSettings?.baseUrl || window.location.origin}${path}`;
-
-const HUB_URL = toAsset(hubLogo);
-
-const FAN_CSS = `
-  .feat-arrow {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    transition: stroke-dashoffset 0.7s cubic-bezier(0.3, 0.55, 0.2, 1);
-  }
-  .feat-arrow.on {
-    stroke-dashoffset: 0;
-  }
-  .node-card {
+const BENTO_CSS = `
+  .bento-card {
     opacity: 0;
-    transform: translateY(14px) scale(0.7);
-    transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.34, 1.45, 0.44, 1);
+    transform: translateY(18px);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
   }
-  .node-card.on {
+  .bento-card.on {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   @media (prefers-reduced-motion: reduce) {
-    .feat-arrow, .feat-arrow.on {
-      transition: none !important;
-      stroke-dashoffset: 0 !important;
-    }
-    .node-card, .node-card.on {
-      transition: none !important;
+    .bento-card {
       opacity: 1 !important;
       transform: none !important;
     }
   }
 `;
 
-interface ArtBox {
-  l: number;
-  r: number;
-  t: number;
-  b: number;
-}
-
-interface Metrics {
-  w: number;
-  h: number;
-  logo: {
-    cx: number;
-    cy: number;
-    hw: number;
-    hh: number;
-    art: ArtBox;
-  } | null;
-  cards: { cx: number; top: number }[] | null;
-}
-
-interface Arrow {
-  id: number;
-  delay: number;
-  color: string;
-  path: string;
-  sx: number;
-  sy: number;
-}
-
-function scanArtwork(img: HTMLImageElement): ArtBox | null {
-  try {
-    const c = document.createElement('canvas');
-    c.width = img.naturalWidth;
-    c.height = img.naturalHeight;
-    const ctx = c.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return null;
-    ctx.drawImage(img, 0, 0);
-    const data = ctx.getImageData(0, 0, c.width, c.height).data;
-    let minX = c.width;
-    let minY = c.height;
-    let maxX = -1;
-    let maxY = -1;
-    for (let y = 0; y < c.height; y++) {
-      for (let x = 0; x < c.width; x++) {
-        if (data[(y * c.width + x) * 4 + 3] > 25) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-    if (maxX < 0) return null;
-    return { l: minX, r: maxX + 1, t: minY, b: maxY + 1 };
-  } catch {
-    return null;
-  }
-}
-
 export default function FeaturesSection({
   sectionData,
 }: FeaturesSectionProps) {
   const { ref, isVisible } = useScrollAnimation();
-  const [hubBroken, setHubBroken] = useState(false);
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const logoRef = useRef<HTMLImageElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const artCache = useRef<ArtBox | null | undefined>(undefined);
-  const measureRef = useRef<() => void>(() => {});
 
-  useLayoutEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const measure = () => {
-      const wr = el.getBoundingClientRect();
-      let logo: Metrics['logo'] = null;
-      const im = logoRef.current;
-      if (im && im.clientWidth > 0 && im.clientHeight > 0) {
-        const lr = im.getBoundingClientRect();
-        const artN = artCache.current === undefined ? scanArtwork(im) : artCache.current;
-        if (artCache.current === undefined) artCache.current = artN;
-        const scale = lr.width / im.naturalWidth;
-        const art: ArtBox = artN
-          ? {
-              l: lr.left - wr.left + artN.l * scale,
-              r: lr.left - wr.left + artN.r * scale,
-              t: lr.top - wr.top + artN.t * scale,
-              b: lr.top - wr.top + artN.b * scale,
-            }
-          : {
-              l: lr.left - wr.left + 2,
-              r: lr.right - wr.left - 2,
-              t: lr.top - wr.top + 2,
-              b: lr.bottom - wr.top - 2,
-            };
-        logo = {
-          cx: lr.left - wr.left + lr.width / 2,
-          cy: lr.top - wr.top + lr.height / 2,
-          hw: lr.width / 2,
-          hh: lr.height / 2,
-          art,
-        };
-      }
-      const cards = cardRefs.current.map((c) => {
-        if (!c) return null;
-        const cr = c.getBoundingClientRect();
-        return { cx: cr.left - wr.left + cr.width / 2, top: cr.top - wr.top };
-      });
-      setMetrics((prev) => {
-        const next = {
-          w: el.clientWidth,
-          h: el.clientHeight,
-          logo,
-          cards: cards.every(Boolean) ? (cards as { cx: number; top: number }[]) : null,
-        };
-        const same =
-          prev &&
-          Math.abs(prev.w - next.w) < 1 &&
-          Math.abs(prev.h - next.h) < 1 &&
-          prev.logo === null === (next.logo === null) &&
-          prev.cards?.length === next.cards?.length &&
-          next.cards?.every(
-            (c, i) => Math.abs(c.cx - (prev.cards as { cx: number }[])[i].cx) < 1
-          );
-        return same ? prev : next;
-      });
-    };
-    measure();
-    measureRef.current = measure;
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const arrows: Arrow[] = metrics?.logo && metrics.cards
-    ? features.map((f, i) => {
-        const art = metrics.logo!.art;
-        const span = art.r - art.l;
-        const cards = metrics.cards!;
-        const col = i % 3;
-        const row = Math.floor(i / 3);
-        const delay = col * 3 + row;
-        const gmin = Math.min(...cards.map((c) => c.cx));
-        const gmax = Math.max(...cards.map((c) => c.cx));
-        const t = (cards[i].cx - gmin) / (gmax - gmin || 1);
-        const baseX = art.l + 22 + t * (span - 44);
-        const j = (row - 1) * 22;
-        const sx = baseX + j;
-        const sy = art.b + 4;
-        const ex = cards[i].cx + j;
-        const ey = cards[i].top + 6;
-        const mx = (sx + ex) / 2 + (col % 2 === 0 ? -8 : 8);
-        const my = (sy + ey) / 2 - 8;
-        return {
-          id: i,
-          delay,
-          color: f.color,
-          path: `M ${sx} ${sy} Q ${mx} ${my}, ${ex} ${ey}`,
-          sx,
-          sy,
-        };
-      })
-    : [];
+  const gridClass = (index: number) =>
+    index === 0 ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : '';
 
   return (
     <section
@@ -315,7 +139,7 @@ export default function FeaturesSection({
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
-      <style>{FAN_CSS}</style>
+      <style>{BENTO_CSS}</style>
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -340,182 +164,89 @@ export default function FeaturesSection({
           </p>
         </div>
 
-        {/* ═══ Fountain — Desktop ═══ */}
-        <div
-          ref={wrapRef}
-          className="radial-wrap relative mx-auto mt-10 hidden max-w-6xl lg:block"
-        >
-          {/* ─── Arrows ─── */}
-          {metrics && (
-            <svg
-              className="absolute inset-0 z-0 h-full w-full"
-              viewBox={`0 0 ${metrics.w} ${metrics.h}`}
-              aria-hidden="true"
-            >
-              <defs>
-                {arrows.map((a) => (
-                  <marker
-                    key={a.id}
-                    id={`arr-${a.id}`}
-                    viewBox="0 0 10 10"
-                    refX="8"
-                    refY="5"
-                    markerWidth="5"
-                    markerHeight="5"
-                    orient="auto"
-                  >
-                    <path d="M 0.8 0.8 L 9.2 5 L 0.8 9.2 z" fill={a.color} />
-                  </marker>
-                ))}
-              </defs>
-              {arrows.map((a) => (
-                <g key={a.id}>
-                  <circle
-                    cx={a.sx}
-                    cy={a.sy}
-                    r="4"
-                    fill={a.color}
-                    opacity="0.25"
-                    className={isVisible ? '' : 'opacity-0'}
-                  />
-                  <circle
-                    cx={a.sx}
-                    cy={a.sy}
-                    r="1.8"
-                    fill={a.color}
-                    className={isVisible ? '' : 'opacity-0'}
-                  />
-                  <path
-                    d={a.path}
-                    pathLength={1}
-                    fill="none"
-                    vectorEffect="non-scaling-stroke"
-                    stroke={a.color}
-                    strokeWidth={1.6}
-                    strokeOpacity={0.85}
-                    strokeLinecap="round"
-                    markerEnd={`url(#arr-${a.id})`}
-                    className={`feat-arrow ${isVisible ? 'on' : ''}`}
-                    style={{ transitionDelay: `${0.15 + a.delay * 0.13}s` }}
-                  />
-                </g>
-              ))}
-            </svg>
-          )}
-
-          {/* ─── Logo — plain, on top of arrow exits ─── */}
-          <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
-            {hubBroken ? (
-              <span className="text-3xl font-black text-gray-900">وصول</span>
-            ) : (
-              <img
-                ref={logoRef}
-                src={HUB_URL}
-                alt="وصول"
-                className="h-auto w-[420px] max-w-full object-contain"
-                onError={() => setHubBroken(true)}
-                onLoad={() => measureRef.current()}
-              />
-            )}
-          </div>
-
-          {/* ─── Feature cards — 3×3 grid, pop when arrow arrives ─── */}
-          <div className="mt-[196px] grid grid-cols-3 gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
+        {/* ─── Bento Grid ─── */}
+        <div className="mx-auto mt-14 grid max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            const isHero = index === 0;
+            return (
+              <div
+                key={index}
+                className={`bento-card ${isVisible ? 'on' : ''} ${gridClass(index)}`}
+                style={{ transitionDelay: `${0.15 + index * 0.08}s` }}
+              >
                 <div
-                  key={index}
-                  ref={(el) => {
-                    cardRefs.current[index] = el;
-                  }}
-                  className={`node-card group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-[box-shadow,transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-200/60 ${
-                    isVisible ? 'on' : ''
+                  className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-gray-200/60 sm:p-7 ${
+                    isHero
+                      ? `border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-white shadow-sm`
+                      : 'border-gray-200 bg-white shadow-sm hover:border-gray-300'
                   }`}
-                  style={{ transitionDelay: `${0.95 + (Math.floor(index / 3) + (index % 3) * 3) * 0.13}s` }}
                 >
-                  <div className="flex items-center gap-3">
+                  {/* Decor — stays inside the tile, never over text */}
+                  {isHero && (
                     <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50`}
-                      style={{ boxShadow: `0 6px 18px -4px ${feature.color}55` }}
-                    >
-                      <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                      className={`pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-gradient-to-br ${feature.gradient} opacity-[0.08] blur-2xl`}
+                    />
+                  )}
+
+                  <div className="relative">
+                    <div className="flex items-start justify-between">
+                      <div
+                        className={`flex items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50 shadow-lg transition-transform duration-300 group-hover:scale-110 ${
+                          isHero ? 'h-12 w-12' : 'h-10 w-10'
+                        }`}
+                        style={{ boxShadow: `0 10px 26px -6px ${feature.color}66` }}
+                      >
+                        <Icon
+                          className={`text-white ${isHero ? 'h-6 w-6' : 'h-5 w-5'}`}
+                          strokeWidth={1.9}
+                        />
+                      </div>
+                      <span
+                        className="text-[11px] font-bold tracking-widest"
+                        style={{ color: `${feature.color}99` }}
+                        dir="ltr"
+                      >
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
                     </div>
-                    <h3 className="text-[15px] font-extrabold leading-snug text-gray-900">
+
+                    <h3
+                      className={`mt-4 font-extrabold leading-snug text-gray-900 ${
+                        isHero ? 'text-lg sm:text-xl' : 'text-[15px]'
+                      }`}
+                    >
                       {feature.title}
                     </h3>
-                  </div>
-                  <p className="mt-3 text-[13px] leading-relaxed text-gray-500">
-                    {feature.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ═══ Branching list — Mobile ═══ */}
-        <div className="lg:hidden">
-          {/* Logo — plain, nothing behind it */}
-          <div
-            className={`relative mx-auto mt-12 flex justify-center transition-all duration-700 ${
-              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
-            }`}
-          >
-            {hubBroken ? (
-              <span className="text-2xl font-black text-gray-900">وصول</span>
-            ) : (
-              <img
-                src={HUB_URL}
-                alt="وصول"
-                className="h-auto w-[200px] object-contain"
-                onError={() => setHubBroken(true)}
-              />
-            )}
-          </div>
-
-          {/* Connector rail + rows */}
-          <div className="relative mx-auto mt-10 max-w-md space-y-4 ps-8">
-            <span className="absolute bottom-2 start-[15px] top-2 w-px border-s-2 border-dashed border-gray-200" />
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={index}
-                  className={`relative transition-all duration-500 ${
-                    isVisible
-                      ? 'translate-y-0 opacity-100'
-                      : 'translate-y-6 opacity-0'
-                  }`}
-                  style={{ transitionDelay: `${0.1 + index * 0.07}s` }}
-                >
-                  <span
-                    className="absolute -start-7 top-5 h-2.5 w-2.5 rounded-full ring-2 ring-white"
-                    style={{
-                      background: feature.color,
-                      boxShadow: `0 0 10px ${feature.color}88`,
-                    }}
-                  />
-                  <div className="cursor-default rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50`}
-                        style={{ boxShadow: `0 6px 18px -4px ${feature.color}55` }}
-                      >
-                        <Icon className="h-[18px] w-[18px] text-white" strokeWidth={2} />
-                      </div>
-                      <h3 className="text-sm font-extrabold leading-snug text-gray-900">
-                        {feature.title}
-                      </h3>
-                    </div>
-                    <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                    <p
+                      className={`mt-2.5 leading-relaxed text-gray-500 ${
+                        isHero
+                          ? 'max-w-md text-sm'
+                          : 'text-[13px]'
+                      }`}
+                    >
                       {feature.description}
                     </p>
                   </div>
+
+                  {isHero && (
+                    <div className="relative mt-6 flex flex-wrap items-center gap-2">
+                      {['رد آلي 24/7', 'تكامل كتالوج واتساب', 'روابط دفع فورية'].map(
+                        (chip) => (
+                          <span
+                            key={chip}
+                            className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700"
+                          >
+                            {chip}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
