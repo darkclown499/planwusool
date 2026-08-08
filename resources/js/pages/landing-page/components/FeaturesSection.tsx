@@ -165,6 +165,7 @@ interface Metrics {
 
 interface Arrow {
   id: number;
+  delay: number;
   color: string;
   path: string;
   sx: number;
@@ -281,16 +282,24 @@ export default function FeaturesSection({
     ? features.map((f, i) => {
         const art = metrics.logo!.art;
         const span = art.r - art.l;
-        const frac = i / (features.length - 1) - 0.5;
-        const sx = art.l + (0.5 + frac) * span;
+        const cards = metrics.cards!;
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        const delay = col * 3 + row;
+        const gmin = Math.min(...cards.map((c) => c.cx));
+        const gmax = Math.max(...cards.map((c) => c.cx));
+        const t = (cards[i].cx - gmin) / (gmax - gmin || 1);
+        const baseX = art.l + 22 + t * (span - 44);
+        const j = (row - 1) * 22;
+        const sx = baseX + j;
         const sy = art.b + 4;
-        const ex = metrics.cards![i].cx;
-        const ey = metrics.cards![i].top + 6;
-        const bend = (i % 2 === 0 ? 1 : -1) * Math.min(16, Math.abs(ex - sx) * 0.08);
-        const mx = (sx + ex) / 2 + bend;
+        const ex = cards[i].cx + j;
+        const ey = cards[i].top + 6;
+        const mx = (sx + ex) / 2 + (col % 2 === 0 ? -8 : 8);
         const my = (sy + ey) / 2 - 8;
         return {
           id: i,
+          delay,
           color: f.color,
           path: `M ${sx} ${sy} Q ${mx} ${my}, ${ex} ${ey}`,
           sx,
@@ -387,7 +396,7 @@ export default function FeaturesSection({
                     strokeLinecap="round"
                     markerEnd={`url(#arr-${a.id})`}
                     className={`feat-arrow ${isVisible ? 'on' : ''}`}
-                    style={{ transitionDelay: `${0.15 + a.id * 0.13}s` }}
+                    style={{ transitionDelay: `${0.15 + a.delay * 0.13}s` }}
                   />
                 </g>
               ))}
@@ -423,7 +432,7 @@ export default function FeaturesSection({
                   className={`node-card group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-[box-shadow,transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-200/60 ${
                     isVisible ? 'on' : ''
                   }`}
-                  style={{ transitionDelay: `${0.95 + index * 0.13}s` }}
+                  style={{ transitionDelay: `${0.95 + (Math.floor(index / 3) + (index % 3) * 3) * 0.13}s` }}
                 >
                   <div className="flex items-center gap-3">
                     <div
