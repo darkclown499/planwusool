@@ -1,8 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { Check, ArrowLeft, ArrowRight, Headphones, Package, Store, Truck, Globe, Smartphone, Crown, Clock, Shield, Zap, Star, Boxes, Building2, Warehouse } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+  Check,
+  X,
+  Info,
+  ArrowLeft,
+  Package,
+  Zap,
+  Crown,
+  Globe,
+  Smartphone,
+  Bot,
+  Palette,
+  Shield,
+  Truck,
+  MessageCircle,
+  CreditCard,
+  Clock,
+  Boxes,
+  Store,
+  Warehouse,
+  Database,
+  Layout,
+  Rocket,
+  Users,
+  Headphones,
+  Wallet,
+  Star,
+} from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
-import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '@/utils/currency-helper';
 
 const encryptPlanId = (planId: number): string => {
@@ -18,19 +44,38 @@ const encryptPlanId = (planId: number): string => {
 interface Plan {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   yearly_price?: number;
   duration: string;
-  features?: string[];
-  is_popular?: boolean;
+  domain_type?: string;
+  support_hours?: number;
+  support_type?: string;
+  max_stores?: number;
+  max_users_per_store?: number;
+  max_products_per_store?: number;
+  max_warehouses?: number;
+  storage_limit?: number;
+  themes?: string[];
+  enable_custdomain?: string;
+  enable_custsubdomain?: string;
+  enable_branding?: string;
+  pwa_business?: string;
+  enable_chatgpt?: string;
+  enable_shipping_method?: string;
+  enable_mobile_app?: string;
+  enable_theme_editor?: string;
+  is_trial?: string | null;
+  trial_day?: number;
   is_plan_enable: string;
+  is_default?: boolean;
+  is_recommended?: boolean;
 }
 
 interface PlansSectionProps {
   brandColor?: string;
   plans: Plan[];
-  settings?: any;
+  settings?: object;
   sectionData?: {
     title?: string;
     subtitle?: string;
@@ -38,293 +83,475 @@ interface PlansSectionProps {
   };
 }
 
-const defaultPlans = [
+type IconType = React.ComponentType<{ className?: string; strokeWidth?: number; style?: React.CSSProperties }>;
+
+const PLAN_META: Record<string, { name: string; description: string; icon: IconType; originalPrice: number }> = {
+  Starter: { name: 'باقة البداية', description: 'الخيار المثالي لاختبار النظام وإطلاق متجرك الأول بسهولة.', icon: Package, originalPrice: 0 },
+  Growth: { name: 'باقة النمو', description: 'الباقة الأكثر مبيعاً، مصممة لتوسيع نشاطك التجاري وزيادة مبيعاتك.', icon: Zap, originalPrice: 170 },
+  Professional: { name: 'باقة الاحتراف', description: 'الحل الشامل للمؤسسات، مع قابلية التخصيص الكامل حسب احتياج عملك.', icon: Crown, originalPrice: 270 },
+};
+
+const fallbackPlans: Plan[] = [
   {
     id: 1,
-    name: 'باقة البداية',
-    description: 'الخيار المثالي لاختبار النظام وإطلاق متجرك الأول بسهولة.',
+    name: 'Starter',
     price: 0,
     yearly_price: 0,
     duration: 'yearly',
-    limits: [
-      { icon: Boxes, value: '18', label: 'منتج' },
-      { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'متجر' },
-    ],
-    features: [
-      'نطاق فرعي مجاني (store.wusool.ps)',
-      'دعم فني متاح 8 ساعات يومياً',
-    ],
-    icon: Package,
-    badge: null,
-    is_popular: false,
+    domain_type: 'subdomain',
+    support_hours: 8,
+    support_type: 'email',
+    max_stores: 1,
+    max_users_per_store: 1,
+    max_products_per_store: 18,
+    max_warehouses: 1,
+    storage_limit: 1,
+    themes: [],
+    enable_custdomain: 'off',
+    enable_custsubdomain: 'on',
+    enable_branding: 'off',
+    pwa_business: 'off',
+    enable_chatgpt: 'off',
+    enable_shipping_method: 'off',
+    enable_mobile_app: 'off',
+    enable_theme_editor: 'off',
     is_plan_enable: 'on',
+    is_default: true,
+    is_recommended: false,
   },
   {
     id: 2,
-    name: 'باقة النمو',
-    description: 'الباقة الأكثر مبيعاً، مصممة لتوسيع نشاطك التجاري وزيادة مبيعاتك.',
+    name: 'Growth',
     price: 120,
-    original_price: 170,
     yearly_price: 120,
     duration: 'yearly',
-    limits: [
-      { icon: Boxes, value: '500', label: 'منتج' },
-      { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'متجر' },
-    ],
-    features: [
-      'نطاق فرعي مجاني (store.wusool.ps)',
-      'تفعيل طرق الشحن',
-      'دعم تطبيق الويب التقدمي (PWA)',
-      'دعم فني 12 ساعة يومياً (واتساب + بريد إلكتروني)',
-    ],
-    icon: Zap,
-    badge: 'الأكثر طلباً',
-    is_popular: true,
+    domain_type: 'subdomain',
+    support_hours: 12,
+    support_type: 'whatsapp,email',
+    max_stores: 1,
+    max_users_per_store: 1,
+    max_products_per_store: 500,
+    max_warehouses: 2,
+    storage_limit: 10,
+    themes: [],
+    enable_custdomain: 'off',
+    enable_custsubdomain: 'on',
+    enable_branding: 'off',
+    pwa_business: 'on',
+    enable_chatgpt: 'off',
+    enable_shipping_method: 'on',
+    enable_mobile_app: 'off',
+    enable_theme_editor: 'off',
     is_plan_enable: 'on',
+    is_default: false,
+    is_recommended: true,
   },
   {
     id: 3,
-    name: 'باقة الاحتراف',
-    description: 'الحل الشامل للمؤسسات، مع قابلية التخصيص الكامل حسب احتياج عملك.',
+    name: 'Professional',
     price: 200,
-    original_price: 270,
     yearly_price: 200,
     duration: 'yearly',
-    limits: [
-      { icon: Boxes, value: '1000+', label: 'منتج' },
-      { icon: Store, value: '2', label: 'متجر' },
-      { icon: Warehouse, value: '3', label: 'متاجر' },
-    ],
-    features: [
-      'إمكانية ربط نطاق مخصص (store.ps / store.com)',
-      'إنشاء تطبيق موبايل + رفعه على Google Play و App Store',
-      'كافة ميزات باقة النمو + إضافات مدفوعة حسب الطلب',
-      'أولوية دعم VIP على مدار الساعة 24/7 (واتساب + بريد إلكتروني)',
-    ],
-    icon: Crown,
-    badge: null,
-    is_popular: false,
+    domain_type: 'custom',
+    support_hours: 24,
+    support_type: 'whatsapp,email,vip',
+    max_stores: 2,
+    max_users_per_store: 5,
+    max_products_per_store: 10000,
+    max_warehouses: 3,
+    storage_limit: 50,
+    themes: [],
+    enable_custdomain: 'on',
+    enable_custsubdomain: 'on',
+    enable_branding: 'on',
+    pwa_business: 'on',
+    enable_chatgpt: 'on',
+    enable_shipping_method: 'on',
+    enable_mobile_app: 'on',
+    enable_theme_editor: 'on',
     is_plan_enable: 'on',
+    is_default: false,
+    is_recommended: false,
   },
 ];
 
-const defaultPlanIcons: Record<number, React.ComponentType<any>> = {
-  1: Package,
-  2: Zap,
-  3: Crown,
+const isOn = (v: unknown): boolean => v === 'on' || v === true || v === 1 || v === '1';
+
+const fmtNumber = (n: number): string => {
+  if (n >= 10000) return `${Math.round(n / 1000)}K+`;
+  return n.toLocaleString('en-US');
 };
 
-const planColorSchemes: Record<number, { bg: string; border: string; icon: string; hoverBorder: string }> = {
-  1: { bg: 'bg-slate-50', border: 'border-slate-200', icon: 'text-slate-600', hoverBorder: 'hover:border-slate-300' },
-  2: { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'text-emerald-600', hoverBorder: 'hover:border-emerald-300' },
-  3: { bg: 'bg-indigo-50', border: 'border-indigo-200', icon: 'text-indigo-600', hoverBorder: 'hover:border-indigo-300' },
+type CellValue = { kind: 'yes' | 'no' | 'text'; text: string };
+
+const yes = (): CellValue => ({ kind: 'yes', text: 'نعم' });
+const yesNo = (v: unknown): CellValue => (isOn(v) ? { kind: 'yes', text: 'نعم' } : { kind: 'no', text: '—' });
+
+const supportText = (p: Plan): string => {
+  const parts = (p.support_type || 'email').split(',');
+  const map: Record<string, string> = { email: 'بريد إلكتروني', whatsapp: 'واتساب', vip: 'دعم VIP' };
+  return parts.map((x) => map[x.trim()] || x.trim()).join(' + ');
 };
 
-const arabicOverrides: Record<number, { name: string; description: string; limits: Array<{ icon: React.ComponentType<any>; value: string; label: string }>; features: string[]; badge?: string; is_popular?: boolean }> = {
-  1: {
-    name: 'باقة البداية',
-    description: 'الخيار المثالي لاختبار النظام وإطلاق متجرك الأول بسهولة.',
-    limits: [
-      { icon: Boxes, value: '18', label: 'منتج' },
-      { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'متجر' },
-    ],
-    features: [
-      'نطاق فرعي مجاني (store.wusool.ps)',
-      'دعم فني متاح 8 ساعات يومياً',
-    ],
-  },
-  2: {
-    name: 'باقة النمو',
-    description: 'الباقة الأكثر مبيعاً، مصممة لتوسيع نشاطك التجاري وزيادة مبيعاتك.',
-    limits: [
-      { icon: Boxes, value: '500', label: 'منتج' },
-      { icon: Store, value: '1', label: 'متجر' },
-      { icon: Warehouse, value: '1', label: 'متجر' },
-    ],
-    features: [
-      'نطاق فرعي مجاني (store.wusool.ps)',
-      'تفعيل طرق الشحن',
-      'دعم تطبيق الويب التقدمي (PWA)',
-      'دعم فني 12 ساعة يومياً (واتساب + بريد إلكتروني)',
-    ],
-    badge: 'الأكثر طلباً',
-    is_popular: true,
-  },
-  3: {
-    name: 'باقة الاحتراف',
-    description: 'الحل الشامل للمؤسسات، مع قابلية التخصيص الكامل حسب احتياج عملك.',
-    limits: [
-      { icon: Boxes, value: '1000+', label: 'منتج' },
-      { icon: Store, value: '2', label: 'متجر' },
-      { icon: Warehouse, value: '3', label: 'متاجر' },
-    ],
-    features: [
-      'إمكانية ربط نطاق مخصص (store.ps / store.com)',
-      'إنشاء تطبيق موبايل + رفعه على Google Play و App Store',
-      'كافة ميزات باقة النمو + إضافات مدفوعة حسب الطلب',
-      'أولوية دعم VIP على مدار الساعة 24/7 (واتساب + بريد إلكتروني)',
-    ],
-  },
-};
+type CompareRow = { label: string; tooltip?: string; get: (p: Plan) => CellValue };
+type CompareGroup = { title: string; icon: IconType; rows: CompareRow[] };
 
-function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: PlansSectionProps) {
-  const { t, i18n } = useTranslation();
+const COMPARE_GROUPS: CompareGroup[] = [
+  {
+    title: 'المتجر والتصميم',
+    icon: Layout,
+    rows: [
+      { label: 'قوالب احترافية جاهزة', get: (p) => ({ kind: 'text', text: `${p.themes?.length || 29} قالباً` }) },
+      { label: 'محرر قوالب متقدم', tooltip: 'تعديل الألوان والخطوط والتنسيقات بالكامل بدون أي كود برمجي.', get: (p) => yesNo(p.enable_theme_editor) },
+      { label: 'ربط نطاق مخصص', tooltip: 'ربط دومين خاص بمتجرك مثل store.com بدلاً من النطاق الفرعي.', get: (p) => yesNo(p.enable_custdomain) },
+      { label: 'نطاق فرعي مجاني', get: (p) => yesNo(p.enable_custsubdomain) },
+      { label: 'تطبيق ويب PWA', tooltip: 'تطبيق ويب يمكن للعملاء تثبيته على أجهزتهم مثل التطبيقات العادية، بسرعة وأداء مميز.', get: (p) => yesNo(p.pwa_business) },
+      { label: 'تطبيق موبايل أصلي', tooltip: 'تطبيق أندرويد وآيفون لمتجرك وتقديمه على متجري Google Play و App Store.', get: (p) => yesNo(p.enable_mobile_app) },
+      { label: 'إزالة علامة المنصة', tooltip: 'إخفاء هوية المنصة وإظهار علامتك التجارية فقط (White Label).', get: (p) => yesNo(p.enable_branding) },
+    ],
+  },
+  {
+    title: 'المنتجات والمخزون',
+    icon: Boxes,
+    rows: [
+      { label: 'عدد المنتجات', get: (p) => ({ kind: 'text', text: fmtNumber(p.max_products_per_store || 0) }) },
+      { label: 'المخازن', get: (p) => ({ kind: 'text', text: String(p.max_warehouses || 0) }) },
+      { label: 'الموظفون والصلاحيات', get: (p) => ({ kind: 'text', text: String(p.max_users_per_store || 0) }) },
+      { label: 'مساحة التخزين', get: (p) => ({ kind: 'text', text: `${p.storage_limit || 0} GB` }) },
+      { label: 'أتمتة طلبات واتساب', tooltip: 'كل طلب يصل مباشرة إلى واتسابك كرسالة معبأة بكل التفاصيل: المنتجات والسعر والعنوان.', get: () => yes() },
+      { label: 'بيع منتجات رقمية', tooltip: 'بيع ملفات قابلة للتحميل الفوري بعد إتمام الدفع.', get: () => yes() },
+      { label: 'رمز QR لمتجرك', tooltip: 'رمز QR يفتح متجرك مباشرة، مثالي للطباعة على الفواتير والإعلانات.', get: () => yes() },
+      { label: 'استيراد وتصدير المنتجات', get: () => yes() },
+    ],
+  },
+  {
+    title: 'الدفع والطلبات',
+    icon: Wallet,
+    rows: [
+      { label: 'بوابات دفع عالمية', tooltip: 'Stripe, PayPal, Razorpay, Paystack, Flutterwave, Mollie, Midtrans وغيرها من 20+ بوابة.', get: () => yes() },
+      { label: 'الدفع عند الاستلام (COD)', get: () => yes() },
+      { label: 'خروج سريع (Buy Now)', tooltip: 'زر شراء مباشر ينهي الطلب بضغطة واحدة بدون سلة تسوق.', get: () => yes() },
+      { label: 'دعم عملات متعددة', get: () => yes() },
+    ],
+  },
+  {
+    title: 'التسويق والنمو',
+    icon: Rocket,
+    rows: [
+      { label: 'كوبونات متقدمة', tooltip: 'خصم بنسبة أو مبلغ، شحن مجاني، اشترِ واحصل، مع حدود حسب المنطقة والعميل.', get: () => yes() },
+      { label: 'استعادة السلات المتروكة', tooltip: 'تذكيرات تلقائية عبر البريد والواتساب للعملاء الذين لم يكملوا الشراء.', get: () => yes() },
+      { label: 'نظام الإحالة', tooltip: 'مكافأة عملائك عند دعوة أصدقائهم للشراء من متجرك.', get: () => yes() },
+      { label: 'برنامج الولاء', tooltip: 'نقاط ومكافآت تشجع على الشراء المتكرر وبناء قاعدة عملاء وفيّين.', get: () => yes() },
+      { label: 'مراجعات المنتجات', get: () => yes() },
+      { label: 'حملات واتساب جماعية', tooltip: 'إرسال عروض وإشعارات لعملائك عبر واتساب بضغطة واحدة.', get: () => yes() },
+    ],
+  },
+  {
+    title: 'الذكاء الاصطناعي',
+    icon: Bot,
+    rows: [
+      { label: 'توليد المحتوى بالـ AI', tooltip: 'كتابة أوصاف المنتجات وترجمتها واقتراح أسعار تنافسية تلقائياً.', get: (p) => yesNo(p.enable_chatgpt) },
+      { label: 'مساعد محادثة ذكي', tooltip: 'مساعد ذكي يساعدك على الإجابة والتحليل مباشرة من لوحة التحكم.', get: () => yes() },
+    ],
+  },
+  {
+    title: 'الشحن والمحاسبة',
+    icon: Truck,
+    rows: [
+      { label: 'طرق الشحن', tooltip: 'تحديد مناطق الشحن وتكاليفها وطريقة التسليم لكل منطقة.', get: (p) => yesNo(p.enable_shipping_method) },
+      { label: 'فواتير PDF', tooltip: 'إصدار فواتير قابلة للطباعة والتصدير لكل طلب.', get: () => yes() },
+      { label: 'إدارة الضرائب', get: () => yes() },
+      { label: 'تكامل محاسبي', tooltip: 'الربط ببرامج المحاسبة الخارجية (QuickBooks / Xero) لتبسيط حساباتك.', get: () => yes() },
+    ],
+  },
+  {
+    title: 'العملاء والإشعارات',
+    icon: Users,
+    rows: [
+      { label: 'إدارة العملاء (CRM)', get: () => yes() },
+      { label: 'إشعارات SMS', get: () => yes() },
+      { label: 'إشعارات البريد الإلكتروني', get: () => yes() },
+      { label: 'إشعارات ويب Push', get: () => yes() },
+    ],
+  },
+  {
+    title: 'الدعم الفني',
+    icon: Headphones,
+    rows: [
+      { label: 'ساعات الدعم اليومية', get: (p) => ({ kind: 'text', text: `${p.support_hours || 0} ساعة` }) },
+      { label: 'قنوات الدعم', tooltip: 'البريد الإلكتروني، واتساب، أو دعم VIP مخصص.', get: (p) => ({ kind: 'text', text: supportText(p) }) },
+    ],
+  },
+];
+
+function getProminentFeatures(plan: Plan): Array<{ icon: IconType; text: string }> {
+  const picks: Array<{ icon: IconType; text: string }> = [];
+  const push = (cond: boolean, icon: IconType, text: string) => {
+    if (cond) picks.push({ icon, text });
+  };
+
+  push(isOn(plan.enable_custdomain), Globe, 'ربط نطاق مخصص خاص بك');
+  push(isOn(plan.enable_mobile_app), Smartphone, 'تطبيق موبايل + نشر على المتاجر');
+  push(isOn(plan.enable_chatgpt), Bot, 'ذكاء اصطناعي لأوصاف وترجمة المنتجات');
+  push(isOn(plan.enable_theme_editor), Palette, 'محرر قوالب احترافي');
+  push(isOn(plan.enable_branding), Shield, 'إزالة علامة المنصة (White Label)');
+  push(isOn(plan.pwa_business), Smartphone, 'تطبيق ويب PWA قابل للتثبيت');
+  push(isOn(plan.enable_shipping_method), Truck, 'طرق شحن ومناطق توصيل');
+  push(isOn(plan.enable_custsubdomain), Globe, 'نطاق فرعي مجاني (store.wusool.ps)');
+
+  const core: Array<{ icon: IconType; text: string }> = [
+    { icon: MessageCircle, text: 'أتمتة طلبات واتساب بكل تفاصيلها' },
+    { icon: CreditCard, text: '20+ بوابة دفع + COD وتحويل بنكي' },
+    { icon: Palette, text: '29 قالباً جاهزاً متعدد الفئات' },
+  ];
+  for (const c of core) {
+    if (picks.length < 4) picks.push(c);
+  }
+  return picks.slice(0, 4);
+}
+
+function InfoTip({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      className="group/info relative inline-flex align-middle"
+      title={text}
+      aria-label={text}
+    >
+      <Info
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen((o) => !o)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        className="h-3.5 w-3.5 cursor-help text-gray-400 transition-colors hover:text-gray-600"
+      />
+      {open && (
+        <span className="pointer-events-none absolute bottom-full right-0 z-40 mb-1.5 w-60 rounded-xl bg-gray-900 px-3 py-2.5 text-[11px] leading-relaxed text-white shadow-xl">
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  let h = (hex || '').replace('#', '');
+  if (h.length === 3) {
+    h = h
+      .split('')
+      .map((c) => c + c)
+      .join('');
+  }
+  const num = parseInt(h, 16);
+  if (isNaN(num)) {
+    return `rgba(16, 183, 127, ${alpha})`;
+  }
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+export default function PlansSection({
+  plans,
+  sectionData,
+  brandColor = '#10b77f',
+}: PlansSectionProps) {
   const { ref, isVisible } = useScrollAnimation();
 
-  const currentLocale = (i18n.language || 'en').split('-')[0];
-  const isRtl = ['ar', 'he'].includes(currentLocale);
+  const displayPlans = useMemo(() => {
+    const source = plans && plans.length > 0 ? plans : fallbackPlans;
+    return [...source]
+      .filter((p) => p.is_plan_enable !== 'off')
+      .sort((a, b) => {
+        if (a.price === 0) return -1;
+        if (b.price === 0) return 1;
+        return a.price - b.price;
+      });
+  }, [plans]);
 
-  useEffect(() => {
-    // Arabic-first: direction is always RTL, never derived from language.
-    document.documentElement.dir = 'rtl';
-    document.documentElement.lang = 'ar';
-  }, []);
-
-  const displayPlans = defaultPlans;
-
-  const getPrice = React.useCallback(
-    (plan: Plan) => {
-      if (plan.yearly_price !== undefined && plan.yearly_price > 0) {
-        return plan.yearly_price;
-      }
-      return plan.price;
-    },
-    [],
-  );
-
-  const getPlanName = (plan: any) => {
-    const override = arabicOverrides[plan.id];
-    return override?.name || plan.name;
-  };
-
-  const getPlanDescription = (plan: any) => {
-    const override = arabicOverrides[plan.id];
-    return override?.description || plan.description;
-  };
-
-  const getPlanLimits = (plan: any) => {
-    const override = arabicOverrides[plan.id];
-    return override?.limits || plan.limits || [];
-  };
-
-  const getPlanFeatures = (plan: any) => {
-    const override = arabicOverrides[plan.id];
-    return override?.features || plan.features || [];
-  };
-
-  const getBadgeText = (plan: any) => {
-    const override = arabicOverrides[plan.id];
-    return override?.badge || plan.badge || null;
+  const getPrice = (plan: Plan): number => {
+    if (plan.yearly_price !== undefined && plan.yearly_price > 0) return plan.yearly_price;
+    return plan.price;
   };
 
   return (
-    <section id="pricing" className="bg-gray-50 py-16 sm:py-20 lg:py-28" ref={ref} style={{ fontFamily: isRtl ? 'Tajawal, "IBM Plex Sans Arabic", Inter, sans-serif' : 'Inter, "Segoe UI", sans-serif' }}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className={`mx-auto max-w-2xl text-center transition-all duration-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          <p className="text-[13px] font-semibold uppercase tracking-wider text-gray-400">{t(sectionData?.title || 'الخطط والأسعار')}</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-gray-900 sm:text-4xl">
-            {t(sectionData?.subtitle || 'خطط مرنة تناسب جميع المشاريع')}
-          </h2>
-          <p className="mt-4 text-[17px] leading-relaxed text-gray-500">
-            {t('ابدأ مجاناً وتوسع مع نمو أعمالك. لا رسوم خفية ولا مفاجآت.')}
-          </p>
+    <section
+      id="pricing"
+      className="relative overflow-hidden bg-gray-50 py-20 sm:py-24 lg:py-28"
+      style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
+      ref={ref}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50" />
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[800px] -translate-x-1/2 rounded-full blur-[130px]"
+        style={{ background: hexToRgba(brandColor, 0.08) }}
+      />
 
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* ─── Header ─── */}
+        <div
+          className={`mx-auto max-w-2xl text-center transition-all duration-700 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+          }`}
+        >
+          <span
+            className="mb-4 inline-block rounded-full px-4 py-1.5 text-[13px] font-bold"
+            style={{ backgroundColor: hexToRgba(brandColor, 0.12), color: brandColor }}
+          >
+            الخطط والأسعار
+          </span>
+          <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-[2.6rem]">
+            {sectionData?.title || 'اختر خطتك'}
+          </h2>
+          <p className="mt-4 text-lg leading-relaxed text-gray-500">
+            {sectionData?.subtitle || 'ابدأ بخطتنا المجانية وترقَّ مع نمو أعمالك.'}
+          </p>
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2">
             <Clock className="h-4 w-4 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-700">{t('جميع الخطط اشتراكات سنوية')}</span>
+            <span className="text-sm font-semibold text-emerald-700">جميع الخطط اشتراكات سنوية</span>
           </div>
         </div>
 
-        <div className={`mt-12 grid grid-cols-1 gap-6 transition-all duration-700 delay-300 md:grid-cols-3 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+        {/* ─── Plan cards ─── */}
+        <div
+          className={`mt-12 grid grid-cols-1 gap-6 transition-all duration-700 delay-300 md:grid-cols-3 lg:gap-8 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}
+        >
           {displayPlans.map((plan) => {
-            const isPopular = Boolean(plan.is_popular);
-            const PlanIcon = defaultPlanIcons[plan.id] || Package;
+            const meta = PLAN_META[plan.name] || {
+              name: plan.name,
+              description: plan.description || '',
+              icon: Package,
+              originalPrice: 0,
+            };
+            const isPopular = Boolean(plan.is_recommended);
+            const price = getPrice(plan);
+            const PlanIcon = meta.icon;
+            const limits = [
+              { icon: Boxes, value: fmtNumber(plan.max_products_per_store || 0), label: 'منتج' },
+              { icon: Store, value: String(plan.max_stores || 0), label: 'متجر' },
+              { icon: Warehouse, value: String(plan.max_warehouses || 0), label: 'مخزن' },
+              { icon: Database, value: `${plan.storage_limit || 0}GB`, label: 'تخزين' },
+            ];
+            const prominent = getProminentFeatures(plan);
+
             return (
-              <div key={plan.id} className={`relative flex flex-col h-full rounded-2xl border bg-white transition-all duration-300 hover:shadow-lg ${
-                isPopular
-                  ? 'border-primary shadow-xl ring-2 ring-primary/20 scale-[1.05] z-10 p-8'
-                  : 'border-gray-200 p-7 hover:border-gray-300'
-              }`}>
+              <div
+                key={plan.id}
+                className={`relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                  isPopular
+                    ? 'z-10 border-transparent p-8 shadow-2xl ring-2'
+                    : 'border-gray-200 p-7 hover:border-gray-300'
+                }`}
+                style={
+                  isPopular
+                    ? ({
+                        boxShadow: `0 24px 60px -18px ${hexToRgba(brandColor, 0.35)}`,
+                        '--tw-ring-color': brandColor,
+                      } as React.CSSProperties)
+                    : {}
+                }
+              >
                 {isPopular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-bold tracking-wider text-white" style={{ backgroundColor: brandColor }}>
-                      <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                      {getBadgeText(plan) || t('الأكثر طلباً')}
-                    </span>
-                  </div>
+                  <div
+                    className="absolute inset-x-0 top-0 h-1.5"
+                    style={{ background: `linear-gradient(90deg, transparent, ${brandColor}, transparent)` }}
+                  />
+                )}
+                {isPopular && (
+                  <span
+                    className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-md"
+                    style={{ backgroundColor: brandColor }}
+                  >
+                    <Star className="h-3 w-3 fill-current" />
+                    الأكثر طلباً
+                  </span>
                 )}
 
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: `${brandColor}0D` }}>
-                      <PlanIcon className="h-5 w-5" style={{ color: brandColor }} />
-                    </div>
-                    <h3 className="text-xl font-semibold text-gray-900">{getPlanName(plan)}</h3>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl ring-1 ring-white/60 shadow-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${brandColor}, ${hexToRgba(brandColor, 0.55)})`,
+                      boxShadow: `0 10px 26px -8px ${hexToRgba(brandColor, 0.5)}`,
+                    }}
+                  >
+                    <PlanIcon className="h-5 w-5 text-white" strokeWidth={1.9} />
                   </div>
-                  <p className="mt-3 text-[14px] leading-relaxed text-gray-500 text-start">{getPlanDescription(plan)}</p>
+                  <div>
+                    <h3 className="text-xl font-extrabold text-gray-900">{meta.name}</h3>
+                    <p className="text-[12px] font-medium text-gray-400">
+                      {plan.duration === 'yearly' ? 'اشتراك سنوي' : 'اشتراك شهري'}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="mt-6">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    {'original_price' in plan && (plan as any).original_price > 0 && getPrice(plan) < (plan as any).original_price && (
-                      <span className="text-lg text-gray-400 line-through whitespace-nowrap">
-                        {formatCurrency((plan as any).original_price)}
-                      </span>
-                    )}
-                    <span className="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 whitespace-nowrap">
-                      {getPrice(plan) === 0 ? formatCurrency(0) : formatCurrency(getPrice(plan))}
+                <p className="mt-4 text-[14px] leading-relaxed text-gray-500">{meta.description}</p>
+
+                <div className="mt-5 flex items-baseline gap-2">
+                  {meta.originalPrice > 0 && price < meta.originalPrice && (
+                    <span className="text-lg font-medium text-gray-400 line-through">
+                      {formatCurrency(meta.originalPrice)}
                     </span>
-                    <span className="text-[14px] text-gray-500 whitespace-nowrap">/{t('yr')}</span>
-                  </div>
-                  {getPrice(plan) === 0 && (
-                    <p className="mt-1 text-xs text-gray-400">{t('Free forever')}</p>
                   )}
+                  <span className="text-4xl font-extrabold tracking-tight text-gray-900">
+                    {price === 0 ? 'مجاناً' : formatCurrency(price)}
+                  </span>
+                  {price > 0 && <span className="text-[14px] text-gray-500">/ سنة</span>}
+                </div>
+                {price === 0 && <p className="mt-1 text-xs font-medium text-emerald-600">مجاني للأبد بدون بطاقة</p>}
+
+                <div className="mt-5 grid grid-cols-4 gap-2">
+                  {limits.map((limit, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col items-center rounded-xl border border-gray-100 bg-gray-50 px-1 py-3 text-center"
+                    >
+                      <limit.icon className="mb-1.5 h-4 w-4" style={{ color: brandColor }} />
+                      <span className="text-[15px] font-extrabold leading-none text-gray-900">{limit.value}</span>
+                      <span className="mt-1 text-[10px] font-medium text-gray-500">{limit.label}</span>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="mt-6 flex-1 border-t border-gray-100 pt-6 space-y-6">
-                  {/* Usage Limits Grid */}
-                  <div className="grid grid-cols-3 gap-3">
-                    {getPlanLimits(plan).map((limit: { icon: React.ComponentType<any>; value: string; label: string }, index: number) => {
-                      const LimitIcon = limit.icon;
-                      const colors = planColorSchemes[plan.id] || planColorSchemes[1];
-                      return (
-                        <div
-                          key={index}
-                          className={`flex flex-col items-center justify-center rounded-xl px-2 py-4 text-center shadow-sm transition-all duration-200 hover:shadow-md ${colors.bg} ${colors.border} border ${colors.hoverBorder}`}
-                        >
-                          <LimitIcon className={`mb-2 h-5 w-5 ${colors.icon}`} />
-                          <span className="text-lg font-bold text-gray-900 leading-none">{limit.value}</span>
-                          <span className="mt-1 text-[11px] font-medium text-gray-500 leading-none">{limit.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <ul className="mt-6 flex-1 space-y-3">
+                  {prominent.map((f, index) => (
+                    <li key={index} className="flex items-start gap-2.5">
+                      <span
+                        className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                        style={{ backgroundColor: hexToRgba(brandColor, 0.12) }}
+                      >
+                        <f.icon className="h-3 w-3" style={{ color: brandColor }} />
+                      </span>
+                      <span className="text-[13px] font-medium leading-relaxed text-gray-600">{f.text}</span>
+                    </li>
+                  ))}
+                </ul>
 
-                  {/* Features List */}
-                  <ul className="space-y-3">
-                    {getPlanFeatures(plan).map((feature: string, index: number) => (
-                      <li key={index} className="flex items-start gap-2.5 text-[13px] text-gray-600 text-start" dir="rtl">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                        <span className="leading-relaxed">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-auto pt-8">
+                <div className="mt-8">
                   <Link
                     href={route('register', { plan: encryptPlanId(plan.id) })}
-                    className={`flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-[15px] font-semibold transition-all ${
+                    className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-[15px] font-bold transition-all duration-300 hover:-translate-y-0.5"
+                    style={
                       isPopular
-                        ? 'text-white hover:opacity-90 shadow-lg'
-                        : 'border border-gray-200 bg-white text-gray-900 hover:bg-gray-50'
-                    }`}
-                    style={isPopular ? { backgroundColor: brandColor, boxShadow: `0 4px 14px ${brandColor}40` } : {}}
+                        ? {
+                            backgroundColor: brandColor,
+                            color: '#fff',
+                            boxShadow: `0 12px 28px -8px ${hexToRgba(brandColor, 0.55)}`,
+                          }
+                        : {
+                            border: `1px solid ${hexToRgba(brandColor, 0.4)}`,
+                            color: brandColor,
+                            backgroundColor: hexToRgba(brandColor, 0.06),
+                          }
+                    }
                   >
-                    {getPrice(plan) === 0 ? t('ابدأ مجاناً') : t('ابدأ الآن')}
+                    {price === 0 ? 'ابدأ مجاناً' : 'ابدأ الآن'}
                     <ArrowLeft className="h-4 w-4" />
                   </Link>
                 </div>
@@ -333,14 +560,99 @@ function PlansSection({ plans, settings, sectionData, brandColor = '#3b82f6' }: 
           })}
         </div>
 
+        {/* ─── Comparison table ─── */}
+        <div
+          className={`mt-20 transition-all duration-700 delay-300 ${
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}
+        >
+          <div className="mx-auto max-w-2xl text-center">
+            <span
+              className="mb-4 inline-block rounded-full px-4 py-1.5 text-[13px] font-bold"
+              style={{ backgroundColor: hexToRgba(brandColor, 0.12), color: brandColor }}
+            >
+              قارن الخطط
+            </span>
+            <h3 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
+              كل ما تحتاجه في مكان واحد
+            </h3>
+          </div>
+
+          <div className="mt-10 overflow-x-auto rounded-3xl border border-gray-200 bg-white shadow-sm">
+            <table className="w-full min-w-[760px] border-collapse text-right">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50/80">
+                  <th className="sticky right-0 z-10 w-[260px] bg-gray-50/80 px-6 py-4 text-[13px] font-extrabold text-gray-900">
+                    الميزة
+                  </th>
+                  {displayPlans.map((plan) => {
+                    const meta = PLAN_META[plan.name] || { name: plan.name };
+                    return (
+                      <th key={plan.id} className="px-4 py-4 text-center">
+                        <span className="inline-flex items-center gap-2 text-[14px] font-extrabold text-gray-900">
+                          <span
+                            className="inline-block h-2 w-2 rounded-full"
+                            style={{ backgroundColor: plan.is_recommended ? brandColor : '#d1d5db' }}
+                          />
+                          {meta.name}
+                        </span>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE_GROUPS.map((group) => (
+                  <React.Fragment key={group.title}>
+                    <tr className="border-b border-gray-100 bg-gray-50/50">
+                      <td
+                        colSpan={displayPlans.length + 1}
+                        className="px-6 py-2.5 text-[12px] font-extrabold text-gray-700"
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <group.icon className="h-4 w-4" style={{ color: brandColor }} />
+                          {group.title}
+                        </span>
+                      </td>
+                    </tr>
+                    {group.rows.map((row) => (
+                      <tr
+                        key={row.label}
+                        className="border-b border-gray-50 transition-colors hover:bg-gray-50/60"
+                      >
+                        <td className="sticky right-0 z-10 bg-white px-6 py-3 text-[13px] font-medium text-gray-700">
+                          <span className="inline-flex items-center gap-1.5">
+                            {row.label}
+                            {row.tooltip && <InfoTip text={row.tooltip} />}
+                          </span>
+                        </td>
+                        {displayPlans.map((plan) => {
+                          const cell = row.get(plan);
+                          return (
+                            <td key={plan.id} className="px-4 py-3 text-center">
+                              {cell.kind === 'yes' && <Check className="mx-auto h-5 w-5 text-emerald-500" strokeWidth={2.5} />}
+                              {cell.kind === 'no' && <X className="mx-auto h-4.5 w-4.5 text-gray-300" strokeWidth={2.5} />}
+                              {cell.kind === 'text' && (
+                                <span className="text-[13px] font-bold text-gray-800">{cell.text}</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {sectionData?.faq_text && (
           <div className="mt-10 text-center">
-            <p className="text-[14px] text-gray-500">{t(sectionData.faq_text, { defaultValue: sectionData.faq_text })}</p>
+            <p className="text-[14px] text-gray-500">{sectionData.faq_text}</p>
           </div>
         )}
       </div>
     </section>
   );
 }
-
-export default PlansSection;
