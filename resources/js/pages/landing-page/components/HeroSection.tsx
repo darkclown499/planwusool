@@ -46,7 +46,7 @@ export default function HeroSection({
     <section
       id="hero"
       dir="rtl"
-      className="relative z-10 bg-gray-950 pb-12 pt-[96px] sm:pt-[110px] md:pb-16 md:pt-[120px] lg:pb-0 lg:pt-[140px]"
+      className="relative z-10 bg-gray-950 pb-16 pt-[96px] sm:pb-20 sm:pt-[110px] md:pb-24 md:pt-[120px] lg:pt-[140px]"
       style={{ fontFamily: "'Tajawal', 'Segoe UI', sans-serif" }}
     >
       {/* ── Backdrop layer (clipped to the hero box) ── */}
@@ -190,30 +190,34 @@ export default function HeroSection({
           {/* ── Computer demo — directly under the CTA buttons ── */}
           <div className="mt-14 w-full">
             <HeroComputerDemo brandColor={brandColor} appName={settings.company_name || 'وصول'} appLogo={superadminLogoLight} />
+          </div>
+        </div>
+      </div>
 
-            {/* ── Feature cards under the screen ── */}
-            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {stats.map((stat, index) => {
-                const Icon = FEATURE_ICONS[index] || Zap;
-                return (
+      {/* ── Light transition zone with the feature cards (on top of the seam) ── */}
+      <div className="relative z-10 mt-14 bg-gradient-to-b from-gray-900/80 via-gray-100 to-gray-50 lg:mt-16">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
+            {stats.map((stat, index) => {
+              const Icon = FEATURE_ICONS[index] || Zap;
+              return (
+                <div
+                  key={index}
+                  className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-200/60"
+                >
                   <div
-                    key={index}
-                    className="group rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5"
+                    className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
+                    style={{ background: `${brandColor}18`, color: brandColor }}
                   >
-                    <div
-                      className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
-                      style={{ background: `${brandColor}22`, color: brandColor }}
-                    >
-                      <Icon size={17} />
-                    </div>
-                    <div className="text-sm font-extrabold text-white sm:text-[15px]">{stat.value}</div>
-                    <div className="mt-1 text-[11px] font-medium leading-relaxed text-white/45 sm:text-[12px]">
-                      {stat.label}
-                    </div>
+                    <Icon size={18} />
                   </div>
-                );
-              })}
-            </div>
+                  <div className="text-sm font-extrabold text-gray-900 sm:text-[15px]">{stat.value}</div>
+                  <div className="mt-1 text-[11px] font-medium leading-relaxed text-gray-500 sm:text-[12px]">
+                    {stat.label}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
