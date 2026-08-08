@@ -105,7 +105,8 @@ export default function TrustedBySection({
       </div>
 
       <div
-        className={`mt-10 transition-all duration-700 delay-200 ${
+        dir="ltr"
+        className={`mt-10 overflow-hidden transition-all duration-700 delay-200 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}
         style={{
@@ -115,17 +116,17 @@ export default function TrustedBySection({
             'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
         }}
       >
-        <div className="trusted-track" dir="ltr">
+        <div className="trusted-track">
           {[...TRUSTED_LOGOS, ...TRUSTED_LOGOS].map((logo, index) => (
             <div
               key={`${logo.name}-${index}`}
-              className="mx-2 flex h-20 w-44 shrink-0 items-center justify-center rounded-2xl border border-gray-100 bg-white px-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gray-200 hover:shadow-md"
+              className="mx-2 flex h-24 w-52 shrink-0 items-center justify-center rounded-2xl border border-gray-100 bg-white px-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gray-200 hover:shadow-md"
             >
               <img
                 src={logo.src}
                 alt={logo.name}
                 loading="lazy"
-                className="max-h-10 w-auto max-w-full object-contain opacity-70 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+                className="max-h-12 w-auto max-w-full object-contain opacity-70 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
               />
             </div>
           ))}
