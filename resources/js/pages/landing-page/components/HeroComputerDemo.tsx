@@ -116,13 +116,6 @@ export default function HeroComputerDemo({
     demoAudio.ensure();
     demoAudio.setMuted(stateMutedRef.current);
 
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) {
-      setStage('demo');
-      setStoreReady(true);
-      return;
-    }
-
     setStage('boot');
     void (async () => {
       const t0 = performance.now();
@@ -218,38 +211,14 @@ export default function HeroComputerDemo({
     return () => window.clearTimeout(t);
   }, [stage]);
 
-  /* ── Demo store: guided mouse journey + idle living motion ── */
+  /* ── Demo store: mouse is alive (hover only) — all clicks are the user's ── */
   useEffect(() => {
     if (stage !== 'demo' || !storeReady) return;
     const id = runIdRef.current;
     const t1 = window.setTimeout(() => {
       if (runIdRef.current !== id) return;
-      flyTo(waBtnRef.current, 1500);
-    }, 900);
-    const t2 = window.setTimeout(() => {
-      if (runIdRef.current !== id) return;
-      doClick();
-      setToast('تم فتح واتساب — أرسل رسالتك الآن');
-    }, 2500);
-    const t3 = window.setTimeout(() => {
-      if (runIdRef.current !== id) return;
-      flyTo(cardARef.current, 1300);
-    }, 4800);
-    const t4 = window.setTimeout(() => {
-      if (runIdRef.current !== id) return;
-      doClick();
-      demoAudio.open();
-      setDetail(store.products[0]);
-    }, 6300);
-    const t5 = window.setTimeout(() => {
-      if (runIdRef.current !== id) return;
-      setDetail(null);
-      demoAudio.click();
-    }, 8600);
-    const t6 = window.setTimeout(() => {
-      if (runIdRef.current !== id) return;
-      flyTo(bubbleRef.current, 1500);
-    }, 8900);
+      flyTo(waBtnRef.current, 1600);
+    }, 1000);
 
     let flip = 0;
     const idle = window.setInterval(() => {
@@ -258,19 +227,14 @@ export default function HeroComputerDemo({
         return;
       }
       flip = flip === 0 ? 1 : 0;
-      flyTo(flip === 0 ? cardBRef.current : cardARef.current, 2600);
-    }, 3800);
+      flyTo(flip === 0 ? cardBRef.current : cardARef.current, 3200);
+    }, 4200);
 
     return () => {
       window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.clearTimeout(t3);
-      window.clearTimeout(t4);
-      window.clearTimeout(t5);
-      window.clearTimeout(t6);
       window.clearInterval(idle);
     };
-  }, [stage, storeReady, storeIndex, store, flyTo, doClick]);
+  }, [stage, storeReady, storeIndex, flyTo]);
 
   /* ── toast auto-hide ── */
   useEffect(() => {
@@ -730,12 +694,6 @@ export default function HeroComputerDemo({
 
         @keyframes cursorPress { 0% { transform: scale(1); } 45% { transform: scale(0.72); } 100% { transform: scale(1); } }
         .cursor-press { animation: cursorPress 0.2s ease; }
-
-        @media (prefers-reduced-motion: reduce) {
-          .play-ring, .boot-logo, .boot-flash, .scanlines, .caret, .loading-bar,
-          .shimmer, .toast-pop, .app-open, .stage-enter, .detail-pop, .backdrop-fade,
-          .bubble-ping, .cursor-press { animation: none !important; }
-        }
       `}</style>
     </div>
   );
