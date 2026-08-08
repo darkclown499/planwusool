@@ -116,19 +116,19 @@ const FAN_CSS = `
   .feat-arrow {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    transition: stroke-dashoffset 0.8s cubic-bezier(0.3, 0.55, 0.2, 1);
+    transition: stroke-dashoffset 0.7s cubic-bezier(0.3, 0.55, 0.2, 1);
   }
   .feat-arrow.on {
     stroke-dashoffset: 0;
   }
   .node-card {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.55);
+    transform: translateY(14px) scale(0.7);
     transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.34, 1.45, 0.44, 1);
   }
   .node-card.on {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateY(0) scale(1);
   }
   @media (prefers-reduced-motion: reduce) {
     .feat-arrow, .feat-arrow.on {
@@ -138,25 +138,67 @@ const FAN_CSS = `
     .node-card, .node-card.on {
       transition: none !important;
       opacity: 1 !important;
-      transform: translate(-50%, -50%) scale(1) !important;
+      transform: none !important;
     }
   }
 `;
 
+interface ArtBox {
+  l: number;
+  r: number;
+  t: number;
+  b: number;
+}
+
 interface Metrics {
   w: number;
   h: number;
-  logo: { x: number; y: number; hw: number; hh: number } | null;
+  logo: {
+    cx: number;
+    cy: number;
+    hw: number;
+    hh: number;
+    art: ArtBox;
+  } | null;
+  cards: { cx: number; top: number }[] | null;
 }
-
-const NODE_DIST = 66;
 
 interface Arrow {
   id: number;
   color: string;
   path: string;
-  tipX: number;
-  tipY: number;
+  sx: number;
+  sy: number;
+}
+
+function scanArtwork(img: HTMLImageElement): ArtBox | null {
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(0, 0, c.width, c.height).data;
+    let minX = c.width;
+    let minY = c.height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < c.height; y++) {
+      for (let x = 0; x < c.width; x++) {
+        if (data[(y * c.width + x) * 4 + 3] > 25) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return null;
+    return { l: minX, r: maxX + 1, t: minY, b: maxY + 1 };
+  } catch {
+    return null;
+  }
 }
 
 export default function FeaturesSection({
@@ -167,6 +209,9 @@ export default function FeaturesSection({
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const artCache = useRef<ArtBox | null | undefined>(undefined);
+  const measureRef = useRef<() => void>(() => {});
 
   useLayoutEffect(() => {
     const el = wrapRef.current;
@@ -177,92 +222,79 @@ export default function FeaturesSection({
       const im = logoRef.current;
       if (im && im.clientWidth > 0 && im.clientHeight > 0) {
         const lr = im.getBoundingClientRect();
+        const artN = artCache.current === undefined ? scanArtwork(im) : artCache.current;
+        if (artCache.current === undefined) artCache.current = artN;
+        const scale = lr.width / im.naturalWidth;
+        const art: ArtBox = artN
+          ? {
+              l: lr.left - wr.left + artN.l * scale,
+              r: lr.left - wr.left + artN.r * scale,
+              t: lr.top - wr.top + artN.t * scale,
+              b: lr.top - wr.top + artN.b * scale,
+            }
+          : {
+              l: lr.left - wr.left + 2,
+              r: lr.right - wr.left - 2,
+              t: lr.top - wr.top + 2,
+              b: lr.bottom - wr.top - 2,
+            };
         logo = {
-          x: lr.left - wr.left + lr.width / 2,
-          y: lr.top - wr.top + lr.height / 2,
+          cx: lr.left - wr.left + lr.width / 2,
+          cy: lr.top - wr.top + lr.height / 2,
           hw: lr.width / 2,
           hh: lr.height / 2,
+          art,
         };
       }
+      const cards = cardRefs.current.map((c) => {
+        if (!c) return null;
+        const cr = c.getBoundingClientRect();
+        return { cx: cr.left - wr.left + cr.width / 2, top: cr.top - wr.top };
+      });
       setMetrics((prev) => {
-        const next = { w: el.clientWidth, h: el.clientHeight, logo };
-        if (
+        const next = {
+          w: el.clientWidth,
+          h: el.clientHeight,
+          logo,
+          cards: cards.every(Boolean) ? (cards as { cx: number; top: number }[]) : null,
+        };
+        const same =
           prev &&
           Math.abs(prev.w - next.w) < 1 &&
           Math.abs(prev.h - next.h) < 1 &&
-          ((prev.logo === null && next.logo === null) ||
-            (prev.logo &&
-              next.logo &&
-              Math.abs(prev.logo.hw - next.logo.hw) < 1 &&
-              Math.abs(prev.logo.hh - next.logo.hh) < 1))
-        ) {
-          return prev;
-        }
-        return next;
+          prev.logo === null === (next.logo === null) &&
+          prev.cards?.length === next.cards?.length &&
+          next.cards?.every(
+            (c, i) => Math.abs(c.cx - (prev.cards as { cx: number }[])[i].cx) < 1
+          );
+        return same ? prev : next;
       });
     };
     measure();
+    measureRef.current = measure;
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  const count = features.length;
-  const startAngle = -Math.PI / 2;
-  const step = (Math.PI * 2) / count;
-  const RX = 38;
-  const RY = 39;
-
-  const nodes = features.map((feature, i) => {
-    const angle = startAngle + step * i;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    return {
-      ...feature,
-      index: i,
-      left: 50 + RX * cos,
-      top: 50 + RY * sin,
-    };
-  });
-
-  const arrows: Arrow[] = metrics
+  const arrows: Arrow[] = metrics?.logo && metrics.cards
     ? features.map((f, i) => {
-        const angle = startAngle + step * i;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const cx = metrics.w / 2;
-        const cy = metrics.h / 2;
-        const nx = cx + (RX / 100) * metrics.w * cos;
-        const ny = cy + (RY / 100) * metrics.h * sin;
-        const len = Math.hypot(nx - cx, ny - cy);
-        const ux = (nx - cx) / len;
-        const uy = (ny - cy) / len;
-        const tipX = nx - ux * NODE_DIST;
-        const tipY = ny - uy * NODE_DIST;
-        let sx = cx;
-        let sy = cy;
-        if (metrics.logo) {
-          const box = metrics.logo;
-          const ax = Math.abs(ux);
-          const ay = Math.abs(uy);
-          const t =
-            ax < 1e-6
-              ? box.hh / ay
-              : ay < 1e-6
-                ? box.hw / ax
-                : Math.min(box.hw / ax, box.hh / ay);
-          sx = cx + ux * (t + 6);
-          sy = cy + uy * (t + 6);
-        }
-        const bend = (i % 2 === 0 ? 1 : -1) * len * 0.05;
-        const mx = (sx + tipX) / 2 + -uy * bend;
-        const my = (sy + tipY) / 2 + ux * bend;
+        const art = metrics.logo!.art;
+        const span = art.r - art.l;
+        const frac = i / (features.length - 1) - 0.5;
+        const sx = art.l + (0.5 + frac) * span;
+        const sy = art.b + 4;
+        const ex = metrics.cards![i].cx;
+        const ey = metrics.cards![i].top + 6;
+        const bend = (i % 2 === 0 ? 1 : -1) * Math.min(16, Math.abs(ex - sx) * 0.08);
+        const mx = (sx + ex) / 2 + bend;
+        const my = (sy + ey) / 2 - 8;
         return {
           id: i,
           color: f.color,
-          path: `M ${sx} ${sy} Q ${mx} ${my}, ${tipX} ${tipY}`,
-          tipX,
-          tipY,
+          path: `M ${sx} ${sy} Q ${mx} ${my}, ${ex} ${ey}`,
+          sx,
+          sy,
         };
       })
     : [];
@@ -299,10 +331,10 @@ export default function FeaturesSection({
           </p>
         </div>
 
-        {/* ═══ Arrows fan — Desktop ═══ */}
+        {/* ═══ Fountain — Desktop ═══ */}
         <div
           ref={wrapRef}
-          className="radial-wrap relative mx-auto mt-6 hidden h-[880px] max-w-6xl lg:block"
+          className="radial-wrap relative mx-auto mt-10 hidden max-w-6xl lg:block"
         >
           {/* ─── Arrows ─── */}
           {metrics && (
@@ -319,8 +351,8 @@ export default function FeaturesSection({
                     viewBox="0 0 10 10"
                     refX="8"
                     refY="5"
-                    markerWidth="5.2"
-                    markerHeight="5.2"
+                    markerWidth="5"
+                    markerHeight="5"
                     orient="auto"
                   >
                     <path d="M 0.8 0.8 L 9.2 5 L 0.8 9.2 z" fill={a.color} />
@@ -328,93 +360,89 @@ export default function FeaturesSection({
                 ))}
               </defs>
               {arrows.map((a) => (
-                <path
-                  key={a.id}
-                  d={a.path}
-                  pathLength={1}
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                  stroke={a.color}
-                  strokeWidth={1.5}
-                  markerEnd={`url(#arr-${a.id})`}
-                  className={`feat-arrow ${isVisible ? 'on' : ''}`}
-                  style={{ transitionDelay: `${0.2 + a.id * 0.15}s` }}
-                />
+                <g key={a.id}>
+                  <circle
+                    cx={a.sx}
+                    cy={a.sy}
+                    r="4"
+                    fill={a.color}
+                    opacity="0.25"
+                    className={isVisible ? '' : 'opacity-0'}
+                  />
+                  <circle
+                    cx={a.sx}
+                    cy={a.sy}
+                    r="1.8"
+                    fill={a.color}
+                    className={isVisible ? '' : 'opacity-0'}
+                  />
+                  <path
+                    d={a.path}
+                    pathLength={1}
+                    fill="none"
+                    vectorEffect="non-scaling-stroke"
+                    stroke={a.color}
+                    strokeWidth={1.6}
+                    strokeOpacity={0.85}
+                    strokeLinecap="round"
+                    markerEnd={`url(#arr-${a.id})`}
+                    className={`feat-arrow ${isVisible ? 'on' : ''}`}
+                    style={{ transitionDelay: `${0.15 + a.id * 0.13}s` }}
+                  />
+                </g>
               ))}
             </svg>
           )}
 
-          {/* ─── Logo — nothing behind it ─── */}
-          <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+          {/* ─── Logo — plain, on top of arrow exits ─── */}
+          <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
             {hubBroken ? (
-              <span className="text-4xl font-black text-gray-900">وصول</span>
+              <span className="text-3xl font-black text-gray-900">وصول</span>
             ) : (
               <img
                 ref={logoRef}
                 src={HUB_URL}
                 alt="وصول"
-                className="h-auto w-[400px] max-w-full object-contain"
+                className="h-auto w-[420px] max-w-full object-contain"
                 onError={() => setHubBroken(true)}
-                onLoad={() => {
-                  const el = wrapRef.current;
-                  if (el) {
-                    const wr = el.getBoundingClientRect();
-                    const im = logoRef.current;
-                    if (!im) return;
-                    const lr = im.getBoundingClientRect();
-                    setMetrics((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            logo: {
-                              x: lr.left - wr.left + lr.width / 2,
-                              y: lr.top - wr.top + lr.height / 2,
-                              hw: lr.width / 2,
-                              hh: lr.height / 2,
-                            },
-                          }
-                        : prev
-                    );
-                  }
-                }}
+                onLoad={() => measureRef.current()}
               />
             )}
           </div>
 
-          {/* ─── Feature cards — pop when their arrow arrives ─── */}
-          {nodes.map((node) => {
-            const Icon = node.icon;
-            return (
-              <div
-                key={node.index}
-                className={`node-card group absolute z-10 w-[232px] ${
-                  isVisible ? 'on' : ''
-                }`}
-                style={{
-                  left: `${node.left}%`,
-                  top: `${node.top}%`,
-                  transitionDelay: `${1.05 + node.index * 0.15}s`,
-                }}
-              >
-                <div className="cursor-default rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-gray-300 group-hover:shadow-lg group-hover:shadow-gray-200/60">
-                  <div className="flex items-center gap-2.5">
+          {/* ─── Feature cards — 3×3 grid, pop when arrow arrives ─── */}
+          <div className="mt-[196px] grid grid-cols-3 gap-6">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={index}
+                  ref={(el) => {
+                    cardRefs.current[index] = el;
+                  }}
+                  className={`node-card group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-[box-shadow,transform,border-color] duration-300 hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg hover:shadow-gray-200/60 ${
+                    isVisible ? 'on' : ''
+                  }`}
+                  style={{ transitionDelay: `${0.95 + index * 0.13}s` }}
+                >
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${node.gradient} ring-1 ring-white/50`}
-                      style={{ boxShadow: `0 6px 18px -4px ${node.color}55` }}
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50`}
+                      style={{ boxShadow: `0 6px 18px -4px ${feature.color}55` }}
                     >
-                      <Icon className="h-[18px] w-[18px] text-white" strokeWidth={2} />
+                      <Icon className="h-5 w-5 text-white" strokeWidth={2} />
                     </div>
-                    <h3 className="text-[13px] font-extrabold leading-snug text-gray-900">
-                      {node.title}
+                    <h3 className="text-[15px] font-extrabold leading-snug text-gray-900">
+                      {feature.title}
                     </h3>
                   </div>
-                  <p className="mt-2.5 text-[11px] leading-[1.65] text-gray-500">
-                    {node.description}
+                  <p className="mt-3 text-[13px] leading-relaxed text-gray-500">
+                    {feature.description}
                   </p>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* ═══ Branching list — Mobile ═══ */}
@@ -431,7 +459,7 @@ export default function FeaturesSection({
               <img
                 src={HUB_URL}
                 alt="وصول"
-                className="w-[200px] h-auto object-contain"
+                className="h-auto w-[200px] object-contain"
                 onError={() => setHubBroken(true)}
               />
             )}
