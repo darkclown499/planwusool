@@ -59,26 +59,44 @@ class LandingPageController extends Controller
             if ($plan->pwa_business === 'on') $features[] = __('PWA');
             if ($plan->enable_chatgpt === 'on') $features[] = __('AI Integration');
             if ($plan->enable_shipping_method === 'on') $features[] = __('Shipping Method');
-            
+            if ($plan->enable_mobile_app === 'on') $features[] = __('Mobile App');
+            if ($plan->enable_branding === 'on') $features[] = __('White Label');
+            if ($plan->enable_theme_editor === 'on') $features[] = __('Theme Editor');
+
+            // USD pricing (yearly only)
+            $usdPrices = [
+                'Starter' => 0,
+                'Growth' => 60,
+                'Professional' => 100,
+            ];
+
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
-                'price' => $plan->price,
-                'yearly_price' => $plan->yearly_price,
-                'duration' => 'both', // Support both monthly and yearly
+                'price' => $usdPrices[$plan->name] ?? $plan->price, // USD price
+                'yearly_price' => $usdPrices[$plan->name] ?? $plan->yearly_price, // USD yearly price
+                'duration' => 'yearly', // Yearly only
                 'description' => $plan->description,
                 'features' => $features,
-                'stats' => [
-                    'businesses' => $plan->max_stores ?? 0,
-                    'users' => $plan->max_users_per_store ?? 0,
-                    'products_per_store' => $plan->max_products_per_store ?? 0,
-                    'storage' => $plan->storage_limit . ' GB',
-                    'templates' => is_array($plan->themes) ? count($plan->themes) : 29,
-                    'bio_links' => 'Unlimited',
-                    'bio_links_templates' => '14',
-                ],
+                // Direct field mapping for frontend
+                'max_stores' => $plan->max_stores ?? 0,
+                'max_users_per_store' => $plan->max_users_per_store ?? 0,
+                'max_products_per_store' => $plan->max_products_per_store ?? 0,
+                'max_warehouses' => $plan->max_warehouses ?? 0,
+                'storage_limit' => $plan->storage_limit ?? 0,
+                'themes' => is_array($plan->themes) ? $plan->themes : [],
+                'enable_custdomain' => $plan->enable_custdomain,
+                'enable_custsubdomain' => $plan->enable_custsubdomain,
+                'enable_branding' => $plan->enable_branding,
+                'pwa_business' => $plan->pwa_business,
+                'enable_chatgpt' => $plan->enable_chatgpt,
+                'enable_shipping_method' => $plan->enable_shipping_method,
+                'enable_mobile_app' => $plan->enable_mobile_app,
+                'enable_theme_editor' => $plan->enable_theme_editor,
+                'support_hours' => $plan->support_hours ?? 0,
+                'support_type' => $plan->support_type ?? 'email',
                 'is_plan_enable' => $plan->is_plan_enable,
-                'is_popular' => false
+                'is_popular' => false,
             ];
         });
         

@@ -28,7 +28,6 @@ import {
 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
-import { formatCurrency } from '@/utils/currency-helper';
 
 const encryptPlanId = (planId: number): string => {
   const key = 'Store2025';
@@ -38,6 +37,11 @@ const encryptPlanId = (planId: number): string => {
     encrypted += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
   }
   return btoa(encrypted);
+};
+
+const formatUSD = (amount: number): string => {
+  if (amount === 0) return '$0';
+  return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
 
 interface Plan {
@@ -462,7 +466,7 @@ export default function PlansSection({
                   <div>
                     <h3 className="text-xl font-extrabold text-gray-900">{meta.name}</h3>
                     <p className="text-[12px] font-medium text-gray-400">
-                      {plan.duration === 'yearly' ? 'اشتراك سنوي' : 'اشتراك شهري'}
+                      اشتراك سنوي
                     </p>
                   </div>
                 </div>
@@ -472,11 +476,11 @@ export default function PlansSection({
                 <div className="mt-5 flex items-baseline gap-2">
                   {meta.originalPrice > 0 && price < meta.originalPrice && (
                     <span className="text-lg font-medium text-gray-400 line-through">
-                      {formatCurrency(meta.originalPrice)}
+                      {formatUSD(meta.originalPrice)}
                     </span>
                   )}
                   <span className="text-4xl font-extrabold tracking-tight text-gray-900">
-                    {price === 0 ? 'مجاناً' : formatCurrency(price)}
+                    {price === 0 ? 'مجاناً' : formatUSD(price)}
                   </span>
                   {price > 0 && <span className="text-[14px] text-gray-500">/ سنة</span>}
                 </div>

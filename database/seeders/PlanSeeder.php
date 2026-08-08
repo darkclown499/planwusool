@@ -12,7 +12,7 @@ class PlanSeeder extends Seeder
      */
     public function run(): void
     {
-        $plans = [
+$plans = [
             [
                 'name' => 'Starter',
                 'price' => 0,
@@ -45,8 +45,8 @@ class PlanSeeder extends Seeder
             ],
             [
                 'name' => 'Growth',
-                'price' => 0,
-                'yearly_price' => 240,
+                'price' => 60,
+                'yearly_price' => 60,
                 'duration' => 'yearly',
                 'domain_type' => 'subdomain',
                 'support_hours' => 12,
@@ -75,8 +75,8 @@ class PlanSeeder extends Seeder
             ],
             [
                 'name' => 'Professional',
-                'price' => 0,
-                'yearly_price' => 360,
+                'price' => 100,
+                'yearly_price' => 100,
                 'duration' => 'yearly',
                 'domain_type' => 'custom',
                 'support_hours' => 24,
