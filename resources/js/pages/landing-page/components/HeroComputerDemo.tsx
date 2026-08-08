@@ -14,6 +14,7 @@ import {
   Minus,
   Play,
   Plus,
+  Power,
   RefreshCw,
   RotateCcw,
   Search,
@@ -46,6 +47,8 @@ interface CartItem {
 const QUERY = 'كيف شكل موقعي مع وصول؟';
 const WA_BG = '#25d366';
 
+const sleep = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+
 interface CursorState {
   x: number;
   y: number;
@@ -70,7 +73,6 @@ const ACCOUNTS = [
 export default function HeroComputerDemo({
   brandColor = '#10b77f',
   appName = 'وصول',
-  appLogo = '',
 }: HeroComputerDemoProps) {
   const [stage, setStage] = useState<Stage>('idle');
   const [storeIndex, setStoreIndex] = useState(0);
@@ -97,6 +99,7 @@ export default function HeroComputerDemo({
   const [zoom, setZoom] = useState(1);
 
   const runIdRef = useRef(0);
+  const cursorRef = useRef<CursorState>({ x: 0, y: 0, dur: 600 });
   const screenRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef(stage);
@@ -131,17 +134,23 @@ export default function HeroComputerDemo({
     return () => clearInterval(t);
   }, []);
 
-  const flyTo = useCallback((el: HTMLElement | null, dur = 1000) => {
+  const moveCursor = useCallback((p: CursorState) => {
+    cursorRef.current = p;
+    setCursor(p);
+  }, []);
+
+  const flyTo = useCallback((el: HTMLElement | null, durOverride?: number) => {
     const scr = screenRef.current;
-    if (!scr || !el) return;
+    if (!scr || !el) return 0;
     const sr = scr.getBoundingClientRect();
     const er = el.getBoundingClientRect();
-    setCursor({
-      x: er.left - sr.left + er.width / 2 - 2,
-      y: er.top - sr.top + er.height / 2 - 2,
-      dur,
-    });
-  }, []);
+    const cx = er.left - sr.left + er.width / 2 - 2;
+    const cy = er.top - sr.top + er.height / 2 - 2;
+    const dist = Math.hypot(cx - cursorRef.current.x, cy - cursorRef.current.y);
+    const dur = durOverride ?? Math.round(Math.min(1500, Math.max(280, 340 + dist * 1.05)));
+    moveCursor({ x: cx, y: cy, dur });
+    return dur;
+  }, [moveCursor]);
 
   const doClick = useCallback(() => {
     setClicking(true);
@@ -153,32 +162,70 @@ export default function HeroComputerDemo({
     const scr = screenRef.current;
     if (!scr) return;
     const r = scr.getBoundingClientRect();
-    setCursor({ x: r.width / 2 - 2, y: r.height - 78, dur: 500 });
+    moveCursor({ x: r.width / 2 - 2, y: r.height - 78, dur: 500 });
+  }, [moveCursor]);
+
+  /* wait until a scroll settles (stable measurement across frames) */
+  const waitStable = useCallback((measure: () => number, maxMs = 1800) => {
+    return new Promise<void>((resolve) => {
+      const start = Date.now();
+      let prev = measure();
+      let stable = 0;
+      const tick = () => {
+        const cur = measure();
+        if (Math.abs(cur - prev) < 0.5) stable += 1;
+        else stable = 0;
+        prev = cur;
+        if (stable >= 3 || Date.now() - start > maxMs) resolve();
+        else requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
   }, []);
 
+  const settleEl = useCallback(
+    (el: HTMLElement, maxMs?: number) => waitStable(() => el.getBoundingClientRect().top + el.getBoundingClientRect().height, maxMs),
+    [waitStable]
+  );
+
+  const settleScroll = useCallback((g: HTMLElement, maxMs?: number) => waitStable(() => g.scrollTop, maxMs), [waitStable]);
+
+  /* fly the cursor to the target, click only after it arrives, then run the action */
+  const goAndClick = useCallback(
+    async (el: HTMLElement | null, fn?: () => void) => {
+      const id = runIdRef.current;
+      if (!el) return;
+      const dur = flyTo(el);
+      await sleep(dur + 160);
+      if (runIdRef.current !== id) return;
+      doClick();
+      if (fn) {
+        await sleep(200);
+        if (runIdRef.current === id) fn();
+      }
+    },
+    [flyTo, doClick]
+  );
+
   const revealCard = useCallback(
-    (i: number, dur = 1300) => {
+    async (i: number) => {
+      const id = runIdRef.current;
       const el = cardRefs.current[i];
       const g = scrollRef.current;
       if (!el) return;
       if (g && i === store.products.length - 1) {
         g.scrollTo({ top: g.scrollHeight, behavior: 'smooth' });
-        window.setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 520);
-        window.setTimeout(() => flyTo(el, dur), 1380);
-        return;
+        await settleScroll(g, 1800);
+        await settleEl(el, 900);
+      } else {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await settleEl(el, 1800);
       }
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      window.setTimeout(() => flyTo(el, dur), 820);
+      if (runIdRef.current !== id) return;
+      flyTo(el);
     },
-    [flyTo, store]
+    [flyTo, settleEl, settleScroll, store]
   );
-
-  const scrollGridTop = useCallback(() => {
-    const g = scrollRef.current;
-    if (g) g.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   const handOverControl = useCallback((msg: string) => {
     runIdRef.current += 1;
@@ -284,77 +331,42 @@ export default function HeroComputerDemo({
   useEffect(() => {
     if (stage !== 'login') return;
     const id = runIdRef.current;
-    const timers: number[] = [];
-    const at = (ms: number, fn: () => void) => {
-      timers.push(
-        window.setTimeout(() => {
-          if (runIdRef.current === id) fn();
-        }, ms)
-      );
-    };
-
-    at(600, () => {
+    void (async () => {
+      await sleep(600);
+      if (runIdRef.current !== id) return;
       cursorToScreen();
       setCursorVisible(true);
-      flyTo(avatarRefs.current[0], 1500);
-    });
-    at(2400, () => {
-      doClick();
-      demoAudio.click();
-      setLoginPhase('typing');
-    });
-    at(3300, () => flyTo(passFieldRef.current, 1000));
-    at(4200, () => {
-      doClick();
-      setPassDots(1);
-      demoAudio.key();
-    });
-    at(4580, () => {
-      setPassDots(2);
-      demoAudio.key();
-    });
-    at(4960, () => {
-      setPassDots(3);
-      demoAudio.key();
-    });
-    at(5340, () => {
-      setPassDots(4);
-      demoAudio.key();
-    });
-    at(6250, () => flyTo(passGoRef.current, 1000));
-    at(7450, () => {
-      doClick();
-      demoAudio.login();
-      setStage('desktop');
-    });
-
-    return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [stage, flyTo, doClick, cursorToScreen]);
+      await goAndClick(avatarRefs.current[0], () => setLoginPhase('typing'));
+      await sleep(700);
+      for (const d of [1, 2, 3, 4]) {
+        if (runIdRef.current !== id) return;
+        await goAndClick(passFieldRef.current, () => {
+          setPassDots(d);
+          demoAudio.key();
+        });
+        await sleep(420);
+      }
+      if (runIdRef.current !== id) return;
+      await sleep(450);
+      await goAndClick(passGoRef.current, () => {
+        demoAudio.login();
+        setStage('desktop');
+      });
+    })();
+  }, [stage, goAndClick, cursorToScreen]);
 
   /* ── Stage: desktop → mouse moves to the browser icon ── */
   useEffect(() => {
     if (stage !== 'desktop') return;
     const id = runIdRef.current;
-    const t1 = window.setTimeout(() => {
+    void (async () => {
+      await sleep(700);
       if (runIdRef.current !== id) return;
       cursorToScreen();
       setCursorVisible(true);
-      flyTo(browserIconRef.current, 1600);
-    }, 900);
-    const t2 = window.setTimeout(() => {
-      if (runIdRef.current !== id) return;
-      doClick();
-    }, 2700);
-    const t3 = window.setTimeout(() => {
-      if (runIdRef.current !== id) return;
-      setStage('browser');
-    }, 2980);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.clearTimeout(t3);
-    };
-  }, [stage, cursorToScreen, doClick, flyTo]);
+      await goAndClick(browserIconRef.current, () => setStage('browser'));
+    })();
+  }, [stage, goAndClick, cursorToScreen]);
 
   /* ── Browser → type the query in the address bar ── */
   useEffect(() => {
@@ -409,14 +421,7 @@ export default function HeroComputerDemo({
     const id = runIdRef.current;
     const products = store.products;
     const guided = [0, 4, 11];
-    const timers: number[] = [];
-    const at = (ms: number, fn: () => void) => {
-      timers.push(
-        window.setTimeout(() => {
-          if (runIdRef.current === id) fn();
-        }, ms)
-      );
-    };
+    const miss = () => runIdRef.current !== id;
 
     const openAsking = (i: number) => {
       setDetail(products[i]);
@@ -435,82 +440,79 @@ export default function HeroComputerDemo({
       });
     };
 
-    // 1) add first product at the TOP of the store
-    at(700, () => flyTo(cardRefs.current[0], 1300));
-    at(1250, () => {
-      doClick();
-      openAsking(0);
-    });
-    at(1950, () => flyTo(addBtnRef.current, 1000));
-    at(2800, () => {
-      doClick();
-    });
-    at(2900, () => addGuided(0));
-
-    // 2) scroll to the middle of the grid and add product 4
-    at(3750, () => revealCard(4));
-    at(4750, () => {
-      doClick();
-      openAsking(4);
-    });
-    at(5450, () => flyTo(addBtnRef.current, 1000));
-    at(6300, () => {
-      doClick();
-    });
-    at(6400, () => addGuided(4));
-
-    // 3) add the LAST product — from the very end of the site
-    at(7250, () => revealCard(11));
-    at(8900, () => {
-      doClick();
-      openAsking(11);
-    });
-    at(9600, () => flyTo(addBtnRef.current, 1000));
-    at(10450, () => {
-      doClick();
-    });
-    at(10550, () => addGuided(11));
-
-    // 4) open the cart
-    at(11450, () => flyTo(cartBtnRef.current, 1200));
-    at(12350, () => {
-      doClick();
-      demoAudio.cartOpen();
-      setCartOpen(true);
-    });
-
-    // 5) press "اطلب عبر واتساب"
-    at(13100, () => flyTo(orderBtnRef.current, 1100));
-    at(14050, () => {
-      doClick();
-      demoAudio.chatOpen();
-      setOrder([...cartRef.current]);
-      setCart([]);
-      setCartOpen(false);
-      setChatOpen(true);
-      setChatTyped(0);
-      setChatReplied(false);
-    });
-
-    // 6) after the chat closes, the mouse walks the whole store, then hands it over
+    // message length drives the chat typing time (and when it closes)
     const chatLen =
       `مرحباً ${store.name} 👋\nأريد طلب: ${guided.map((g) => `1× ${products[g].name}`).join('، ')}\nالإجمالي: ${guided.reduce((s, g) => s + products[g].price, 0)}₪`.length;
-    const chatClose = 14050 + chatLen * 45 + 3200;
-    at(chatClose + 400, () => scrollGridTop());
-    at(chatClose + 1800, () => revealCard(6));
-    at(chatClose + 3800, () => flyTo(bubbleRef.current, 3200));
-    at(chatClose + 6200, () => {
-      doClick();
-      demoAudio.pop();
-      setToast('تم فتح واتساب — أرسل رسالتك الآن');
-    });
-    at(chatClose + 7600, () => revealCard(11));
-    at(chatClose + 10400, () => handOverControl('المتجر الآن بين يديك — استكشفه كاملًا'));
 
-    return () => {
-      timers.forEach((t) => window.clearTimeout(t));
-    };
-  }, [stage, storeReady, storeIndex, store, flyTo, doClick, revealCard, scrollGridTop, handOverControl]);
+    void (async () => {
+      // 1) add the first product at the TOP of the store
+      await sleep(600);
+      if (miss()) return;
+      await goAndClick(cardRefs.current[0], () => openAsking(0));
+      await sleep(1100);
+      if (miss()) return;
+      await goAndClick(addBtnRef.current, () => addGuided(0));
+
+      // 2) scroll to the middle of the grid and add product 4
+      await sleep(1000);
+      if (miss()) return;
+      await revealCard(4);
+      await goAndClick(cardRefs.current[4], () => openAsking(4));
+      await sleep(1100);
+      if (miss()) return;
+      await goAndClick(addBtnRef.current, () => addGuided(4));
+
+      // 3) descend to the very end of the site and add the LAST product
+      await sleep(1000);
+      if (miss()) return;
+      await revealCard(11);
+      await goAndClick(cardRefs.current[11], () => openAsking(11));
+      await sleep(1100);
+      if (miss()) return;
+      await goAndClick(addBtnRef.current, () => addGuided(11));
+
+      // 4) back to the top, open the cart
+      const g = scrollRef.current;
+      if (g) g.scrollTo({ top: 0, behavior: 'smooth' });
+      if (g) await settleScroll(g, 1800);
+      await sleep(500);
+      if (miss()) return;
+      await goAndClick(cartBtnRef.current, () => {
+        demoAudio.cartOpen();
+        setCartOpen(true);
+      });
+
+      // 5) press "اطلب عبر واتساب"
+      await sleep(900);
+      if (miss()) return;
+      await goAndClick(orderBtnRef.current, () => {
+        demoAudio.chatOpen();
+        setOrder([...cartRef.current]);
+        setCart([]);
+        setCartOpen(false);
+        setChatOpen(true);
+        setChatTyped(0);
+        setChatReplied(false);
+      });
+
+      // 6) after the chat closes the mouse walks the whole store, then hands it over
+      await sleep(chatLen * 45 + 3200 + 500);
+      if (miss()) return;
+      await revealCard(6);
+      await sleep(1300);
+      if (miss()) return;
+      await goAndClick(bubbleRef.current, () => {
+        demoAudio.pop();
+        setToast('تم فتح واتساب — أرسل رسالتك الآن');
+      });
+      await sleep(1400);
+      if (miss()) return;
+      await revealCard(11);
+      await sleep(2600);
+      if (miss()) return;
+      handOverControl('المتجر الآن بين يديك — استكشفه كاملًا');
+    })();
+  }, [stage, storeReady, storeIndex, store, goAndClick, revealCard, settleScroll, handOverControl]);
 
   /* keep the latest cart reachable inside the cinematic timeline */
   const cartRef = useRef(cart);
@@ -699,13 +701,12 @@ export default function HeroComputerDemo({
                   </span>
                 ))}
               </div>
-              {appLogo ? (
-                <img src={appLogo} alt={appName} className="boot-logo h-12 w-auto max-w-[65%] object-contain" />
-              ) : (
-                <span className="boot-logo select-none text-3xl font-black text-white" style={{ textShadow: '0 0 30px rgba(94,179,246,0.6)' }}>
-                  {appName}
-                </span>
-              )}
+              <img
+                src={toAsset('/images/demo/boot-intro.png')}
+                alt={appName}
+                className="boot-logo h-14 w-auto max-w-[70%] object-contain"
+                style={{ filter: 'drop-shadow(0 6px 24px rgba(94,179,246,0.45))' }}
+              />
               <div className="flex flex-col items-center gap-1">
                 <p className="text-[10px] font-bold text-white/85">جارٍ تحميل النظام...</p>
                 <p className="text-[8px] text-white/35" dir="ltr">Wusool OS · {new Date().getFullYear()}</p>
@@ -746,82 +747,109 @@ export default function HeroComputerDemo({
                   <span className="rounded-md bg-black/20 px-1.5 py-0.5 font-bold" dir="ltr">
                     {clockTime}
                   </span>
+                  <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-md bg-black/20 text-white/90 backdrop-blur-sm">
+                    <Power size={9} />
+                  </span>
                 </div>
               </div>
 
-              {/* accounts + password (windows style, stacked neatly) */}
-              <div className="absolute inset-x-0 bottom-11 z-10 flex flex-col items-center gap-2.5 px-6 pb-2">
-                {loginPhase === 'typing' && (
-                  <div
-                    ref={passFieldRef}
-                    className="login-bar flex w-full max-w-[240px] items-center gap-2 rounded-2xl border border-white/30 bg-black/95 py-2 pl-1 pr-3.5 shadow-2xl backdrop-blur-xl"
+              {/* windows-style account card + password */}
+              <div className="absolute inset-x-0 bottom-14 z-10 flex flex-col items-center px-6 pb-2">
+                <div className={`flex flex-col items-center gap-2.5 transition-all duration-300 ${loginPhase === 'typing' ? '' : 'mb-2'}`}>
+                  <span
+                    className={`flex h-[74px] w-[74px] items-center justify-center rounded-full border-[3px] bg-[#0b2440]/40 p-1 backdrop-blur-sm sm:h-20 sm:w-20 ${
+                      loginPhase === 'typing' ? 'border-white/95' : 'border-white/70'
+                    }`}
+                    style={{
+                      boxShadow:
+                        loginPhase === 'typing'
+                          ? '0 0 0 8px rgba(255,255,255,0.22), 0 16px 34px -10px rgba(0,0,0,0.7)'
+                          : '0 14px 30px -10px rgba(0,0,0,0.6)',
+                    }}
                   >
                     <span
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-black text-white"
-                      style={{ background: `linear-gradient(135deg, ${ACCOUNTS[0].color}, ${ACCOUNTS[0].color}88)`, boxShadow: 'inset 0 -3px 8px rgba(0,0,0,0.3)' }}
+                      className="flex h-full w-full items-center justify-center rounded-full text-[26px] font-black text-white sm:text-[30px]"
+                      style={{
+                        background: `linear-gradient(135deg, ${ACCOUNTS[0].color}, ${ACCOUNTS[0].color}88)`,
+                        boxShadow: 'inset 0 -7px 16px rgba(0,0,0,0.28)',
+                      }}
                     >
                       {ACCOUNTS[0].name[0]}
                     </span>
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                      <span className="text-[7.5px] font-semibold text-white/60">أهلًا {ACCOUNTS[0].name} 👋</span>
-                      <span className="flex items-end gap-1 text-[15px] leading-none tracking-widest text-white">
-                        {[0, 1, 2, 3].map((i) => (
-                          <span key={i} className="inline-block w-2 text-center">
-                            {i < passDots ? '●' : ''}
-                          </span>
-                        ))}
-                      </span>
+                  </span>
+                  <div className="text-center">
+                    <p className="text-[11px] font-bold text-white drop-shadow">{ACCOUNTS[0].name}</p>
+                    <p className="mt-0.5 text-[7.5px] text-white/70">عضو على جهاز {appName}</p>
+                    <p className="mt-1 text-[8px] font-semibold text-white/90">
+                      {loginPhase === 'pick' ? 'انقر للدخول' : 'أهلًا بك 👋'}
+                    </p>
+                  </div>
+                </div>
+
+                {loginPhase === 'typing' && (
+                  <div
+                    ref={passFieldRef}
+                    className="login-bar mt-3 flex w-full max-w-[250px] items-center rounded-2xl border border-white/40 bg-white/15 py-1.5 pl-1 pr-3 shadow-2xl backdrop-blur-xl"
+                  >
+                    <span
+                      className="mx-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-black text-white"
+                      style={{ background: `linear-gradient(135deg, ${ACCOUNTS[0].color}, ${ACCOUNTS[0].color}88)` }}
+                    >
+                      {ACCOUNTS[0].name[0]}
+                    </span>
+                    <div className="flex items-center gap-1 text-[15px] leading-none tracking-widest text-white">
+                      {[0, 1, 2, 3].map((i) => (
+                        <span key={i} className="inline-block w-2 text-center">
+                          {i < passDots ? '●' : ''}
+                        </span>
+                      ))}
                     </div>
                     <button
                       ref={passGoRef}
                       aria-label="دخول"
                       onClick={() => demoAudio.click()}
-                      className="ms-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/25 text-white transition hover:bg-white/40"
+                      className="ms-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/95 text-[#0b66d9] shadow-md transition hover:scale-105"
                     >
-                      <ArrowLeft size={13} />
+                      <ArrowLeft size={14} strokeWidth={3} />
                     </button>
                   </div>
                 )}
-                <div className="flex items-end justify-center gap-8 sm:gap-9">
-                  {ACCOUNTS.map((acc, i) => (
-                    <button
-                      key={acc.name}
-                      ref={(el) => {
-                        avatarRefs.current[i] = el;
-                      }}
-                      onClick={() => {
-                        demoAudio.open();
-                        setLoginPhase('typing');
-                      }}
-                      className={`login-acc flex flex-col items-center gap-1.5 transition ${
-                        loginPhase === 'pick'
-                          ? 'opacity-80 hover:-translate-y-1 hover:opacity-100'
-                          : i === 0
-                          ? '-translate-y-1 opacity-100'
-                          : 'opacity-35'
-                      }`}
-                    >
-                      <span
-                        className={`flex h-16 w-16 items-center justify-center rounded-full border-2 bg-[#0b2440]/30 p-[3.5px] shadow-2xl backdrop-blur-sm sm:h-[72px] sm:w-[72px] ${
-                          i === 0 && loginPhase === 'typing' ? 'border-white/90' : 'border-white/50'
-                        }`}
-                        style={{
-                          boxShadow: i === 0 && loginPhase === 'typing' ? '0 0 0 7px rgba(255,255,255,0.22), 0 14px 30px -8px rgba(0,0,0,0.6)' : '0 14px 30px -8px rgba(0,0,0,0.5)',
+
+                {loginPhase === 'pick' && (
+                  <div className="mt-1 flex items-end justify-center gap-6 sm:gap-7">
+                    {ACCOUNTS.map((acc, i) => (
+                      <button
+                        key={acc.name}
+                        ref={(el) => {
+                          avatarRefs.current[i] = el;
                         }}
+                        onClick={() => {
+                          demoAudio.open();
+                          setLoginPhase('typing');
+                        }}
+                        className={`login-acc flex flex-col items-center gap-1 transition ${
+                          i === 0 ? '-translate-y-1 opacity-100' : 'opacity-45 hover:-translate-y-0.5 hover:opacity-90'
+                        }`}
                       >
                         <span
-                          className="flex h-full w-full items-center justify-center rounded-full text-[24px] font-black text-white sm:text-[27px]"
-                          style={{ background: `linear-gradient(135deg, ${acc.color}, ${acc.color}88)`, boxShadow: 'inset 0 -6px 14px rgba(0,0,0,0.25)' }}
+                          className={`flex h-12 w-12 items-center justify-center rounded-full border-2 bg-[#0b2440]/30 p-[2px] shadow-xl backdrop-blur-sm sm:h-14 sm:w-14 ${
+                            i === 0 ? 'border-white/90' : 'border-white/50'
+                          }`}
                         >
-                          {acc.name[0]}
+                          <span
+                            className="flex h-full w-full items-center justify-center rounded-full text-[17px] font-black text-white sm:text-[19px]"
+                            style={{ background: `linear-gradient(135deg, ${acc.color}, ${acc.color}88)` }}
+                          >
+                            {acc.name[0]}
+                          </span>
                         </span>
-                      </span>
-                      <span className="rounded-full bg-black/35 px-2.5 py-[3px] text-[8.5px] font-bold text-white shadow-lg backdrop-blur">
-                        {acc.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                        <span className="rounded-full bg-black/35 px-2 py-px text-[7.5px] font-bold text-white shadow backdrop-blur">
+                          {acc.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1490,32 +1518,57 @@ interface StoreViewProps {
 }
 
 function StoreView({ store, brandColor, cartCount, onOpenDetail, onWaClick, onCartClick, waBtnRef, bubbleRef, cartBtnRef, cardRefs, scrollRef }: StoreViewProps) {
+  const [cat, setCat] = useState('الكل');
+  const [q, setQ] = useState('');
+  const catOf = (i: number) => store.categories[i % store.categories.length];
+  const cats = ['الكل', ...store.categories];
+
+  const filtered = store.products.filter((p, i) => {
+    const okCat = cat === 'الكل' || catOf(i) === cat;
+    const okQ = !q.trim() || p.name.includes(q.trim());
+    return okCat && okQ;
+  });
+
+  const scrollToGrid = () => {
+    const g = scrollRef.current;
+    if (g) g.scrollTo({ top: Math.min(260, g.scrollHeight), behavior: 'smooth' });
+  };
+
   return (
-    <div className="flex h-full flex-col bg-white" dir="rtl" style={{ fontFamily: "'Tajawal', 'Segoe UI', sans-serif" }}>
-      {/* header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-2 py-1.5">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="flex h-6 w-6 items-center justify-center rounded-lg text-[12px]"
-            style={{ background: `linear-gradient(135deg, ${store.brand}, ${store.brandDeep})` }}
-          >
-            {store.emoji}
-          </span>
-          <div>
-            <p className="text-[10px] font-extrabold leading-none text-gray-800">{store.name}</p>
-            <p className="mt-0.5 text-[7px] leading-none text-gray-400">{store.tagline}</p>
+    <div className="relative h-full bg-white" dir="rtl" style={{ fontFamily: "'Tajawal', 'Segoe UI', sans-serif" }}>
+      {/* one real scrollable page — the whole storefront moves like a real site */}
+      <div ref={scrollRef} className="h-full overflow-y-auto thin-scroll">
+        {/* header — in-flow, so it scrolls away with the page */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-2 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="flex h-6 w-6 items-center justify-center rounded-lg text-[12px]"
+              style={{ background: `linear-gradient(135deg, ${store.brand}, ${store.brandDeep})` }}
+            >
+              {store.emoji}
+            </span>
+            <div>
+              <p className="text-[10px] font-extrabold leading-none text-gray-800">{store.name}</p>
+              <p className="mt-0.5 text-[7px] leading-none text-gray-400">{store.tagline}</p>
+            </div>
           </div>
-        </div>
-        <div className="hidden items-center gap-2 text-[8px] font-semibold text-gray-500 sm:flex">
-          <span className="text-gray-900">{store.categories[0]}</span>
-          <span>المنتجات</span>
-          <span>العروض</span>
-          <span>تواصل معنا</span>
-          <span className="rounded-full px-1.5 py-px text-[7px]" style={{ background: `${brandColor}22`, color: brandColor }}>
-            مميز
-          </span>
-        </div>
-        <div className="relative flex items-center">
+          <div className="hidden items-center gap-2 text-[8px] font-semibold text-gray-500 sm:flex">
+            <button onClick={scrollToGrid} className="text-gray-900 transition hover:text-black">
+              {store.categories[0]}
+            </button>
+            <button onClick={scrollToGrid} className="transition hover:text-black">
+              المنتجات
+            </button>
+            <button onClick={scrollToGrid} className="transition hover:text-black">
+              العروض
+            </button>
+            <button onClick={onWaClick} className="transition hover:text-black">
+              تواصل معنا
+            </button>
+            <span className="rounded-full px-1.5 py-px text-[7px]" style={{ background: `${brandColor}22`, color: brandColor }}>
+              مميز
+            </span>
+          </div>
           <button
             ref={cartBtnRef}
             aria-label="السلة"
@@ -1534,143 +1587,159 @@ function StoreView({ store, brandColor, cartCount, onOpenDetail, onWaClick, onCa
             )}
           </button>
         </div>
-      </div>
 
-      {/* search + categories */}
-      <div className="flex items-center gap-1.5 border-b border-gray-100 bg-gray-50 px-2 py-1.5">
-        <div className="flex flex-1 items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-1 text-[7.5px] text-gray-400">
-          <Search size={8} /> ابحث في {store.name}...
-        </div>
-        {store.categories.slice(0, 3).map((cat, i) => (
-          <span
-            key={cat}
-            className="rounded-full px-2 py-0.5 text-[7.5px] font-bold"
-            style={i === 0 ? { background: store.brand, color: '#fff' } : { background: '#f1f5f9', color: '#64748b' }}
-          >
-            {cat}
-          </span>
-        ))}
-      </div>
-
-      {/* banner */}
-      <div
-        className="mx-1.5 mt-1.5 rounded-lg p-2 text-white"
-        style={{ background: `linear-gradient(120deg, ${store.brand}, ${store.brandDeep})` }}
-      >
-        <p className="text-[10px] font-extrabold">{store.bannerTitle}</p>
-        <p className="mt-0.5 text-[7.5px] text-white/85">{store.bannerSub}</p>
-        <span className="mt-1 inline-block rounded-full bg-white/25 px-2 py-px text-[7px] font-bold backdrop-blur">
-          🏷️ كوبون: {store.coupon} — تسوق الآن
-        </span>
-      </div>
-
-      {/* products grid */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-1.5 pb-3 thin-scroll">
-        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
-          {store.products.map((product, i) => (
-            <div
-              key={product.name}
-              ref={(el) => {
-                cardRefs.current[i] = el;
-              }}
-              onClick={() => onOpenDetail(product)}
-              className="group cursor-pointer rounded-lg border border-gray-100 bg-white p-1 shadow-sm transition hover:-translate-y-px hover:border-gray-300 hover:shadow-md"
+        {/* search + category filter chips — real interaction */}
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-gray-100 bg-gray-50 px-2 py-1.5">
+          <div className="flex min-w-[120px] flex-1 items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-1 text-[7.5px] text-gray-400">
+            <Search size={8} />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={`ابحث في ${store.name}...`}
+              className="w-full bg-transparent text-[7.5px] text-gray-600 outline-none placeholder:text-gray-400"
+            />
+          </div>
+          {cats.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={`rounded-full px-2 py-0.5 text-[7.5px] font-bold transition ${
+                cat === c ? 'text-white shadow-sm' : 'bg-white/80 text-gray-500 hover:bg-white'
+              }`}
+              style={cat === c ? { background: store.brand } : undefined}
             >
-              <div className="relative h-12">
-                <ProductThumb product={product} wrapClass="absolute inset-0 rounded-md" emojiClass="text-2xl" imgClass="rounded-md" />
-                {product.badge && (
-                  <span className="absolute right-0.5 top-0.5 z-[1] rounded bg-red-500 px-1 py-px text-[6.5px] font-bold text-white">
-                    {product.badge}
-                  </span>
-                )}
-              </div>
-              <p className="mt-1 truncate text-[7.5px] font-bold text-gray-700">{product.name}</p>
-              <div className="mt-0.5 flex items-center gap-1 text-[6.5px]">
-                <Star size={7} className="text-amber-400" fill="currentColor" />
-                <span className="font-bold text-gray-600">{product.rating}</span>
-                <span className="text-gray-300">({product.ratingCount})</span>
-              </div>
-              <div className="mt-0.5 flex items-baseline gap-1">
-                <span className="text-[9.5px] font-black" style={{ color: store.brand }}>
-                  {product.price}
-                  <small className="text-[7px]">₪</small>
-                </span>
-                {product.oldPrice && <span className="text-[6.5px] text-gray-400 line-through">{product.oldPrice}₪</span>}
-              </div>
-              <button
-                ref={i === 0 ? waBtnRef : undefined}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onWaClick();
-                }}
-                className="mt-1 flex w-full items-center justify-center gap-0.5 rounded-md py-[3px] text-[7px] font-bold text-white transition hover:brightness-110"
-                style={{ background: WA_BG }}
-              >
-                <MessageCircle size={7} /> اطلب واتساب
-              </button>
-            </div>
+              {c}
+            </button>
           ))}
         </div>
 
-        {/* ── deals strip (extends the store so it really scrolls) ── */}
-        <div className="mt-2 rounded-xl border border-orange-200/70 bg-gradient-to-l from-orange-50 via-amber-50 to-red-50 p-1.5">
-          <div className="flex items-center justify-between px-1 pb-1.5">
-            <p className="text-[9px] font-extrabold text-orange-600">🔥 عروض اليوم — خصم حتى 25%</p>
-            <span className="rounded-full bg-orange-100 px-2 py-px text-[7px] font-bold text-orange-600">تسوق الآن</span>
-          </div>
-          <div className="grid grid-cols-4 gap-1.5">
-            {store.products.slice(5, 9).map((p) => (
-              <div
-                key={p.name}
-                onClick={() => onOpenDetail(p)}
-                className="group cursor-pointer rounded-lg border border-gray-100 bg-white p-1 text-center shadow-sm transition hover:-translate-y-px hover:shadow-md"
-              >
-                <div className="relative mx-auto h-10 w-full overflow-hidden rounded-md">
-                  <ProductThumb product={p} wrapClass="absolute inset-0 rounded-md" emojiClass="text-lg" imgClass="rounded-md" />
+        {/* banner */}
+        <div
+          onClick={scrollToGrid}
+          className="mx-1.5 mt-1.5 cursor-pointer rounded-lg p-2 text-white transition hover:brightness-110"
+          style={{ background: `linear-gradient(120deg, ${store.brand}, ${store.brandDeep})` }}
+        >
+          <p className="text-[10px] font-extrabold">{store.bannerTitle}</p>
+          <p className="mt-0.5 text-[7.5px] text-white/85">{store.bannerSub}</p>
+          <span className="mt-1 inline-block rounded-full bg-white/25 px-2 py-px text-[7px] font-bold backdrop-blur">
+            🏷️ كوبون: {store.coupon} — تسوق الآن
+          </span>
+        </div>
+
+        {/* products grid */}
+        <div className="p-1.5 pb-1">
+          {filtered.length === 0 ? (
+            <p className="pt-8 pb-6 text-center text-[8px] text-gray-400">لا توجد منتجات مطابقة 🔍</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+              {filtered.map((product, i) => (
+                <div
+                  key={product.name}
+                  ref={(el) => {
+                    cardRefs.current[i] = el;
+                  }}
+                  onClick={() => onOpenDetail(product)}
+                  className="group cursor-pointer rounded-lg border border-gray-100 bg-white p-1 shadow-sm transition hover:-translate-y-px hover:border-gray-300 hover:shadow-md"
+                >
+                  <div className="relative h-12">
+                    <ProductThumb product={product} wrapClass="absolute inset-0 rounded-md" emojiClass="text-2xl" imgClass="rounded-md" />
+                    {product.badge && (
+                      <span className="absolute right-0.5 top-0.5 z-[1] rounded bg-red-500 px-1 py-px text-[6.5px] font-bold text-white">
+                        {product.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 truncate text-[7.5px] font-bold text-gray-700">{product.name}</p>
+                  <div className="mt-0.5 flex items-center gap-1 text-[6.5px]">
+                    <Star size={7} className="text-amber-400" fill="currentColor" />
+                    <span className="font-bold text-gray-600">{product.rating}</span>
+                    <span className="text-gray-300">({product.ratingCount})</span>
+                  </div>
+                  <div className="mt-0.5 flex items-baseline gap-1">
+                    <span className="text-[9.5px] font-black" style={{ color: store.brand }}>
+                      {product.price}
+                      <small className="text-[7px]">₪</small>
+                    </span>
+                    {product.oldPrice && <span className="text-[6.5px] text-gray-400 line-through">{product.oldPrice}₪</span>}
+                  </div>
+                  <button
+                    ref={i === 0 ? waBtnRef : undefined}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onWaClick();
+                    }}
+                    className="mt-1 flex w-full items-center justify-center gap-0.5 rounded-md py-[3px] text-[7px] font-bold text-white transition hover:brightness-110"
+                    style={{ background: WA_BG }}
+                  >
+                    <MessageCircle size={7} /> اطلب واتساب
+                  </button>
                 </div>
-                <p className="mt-0.5 truncate text-[6.5px] font-bold text-gray-700">{p.name}</p>
-                <p className="text-[7px] font-black text-red-500">
-                  {p.price}₪ {p.oldPrice && <span className="text-[6px] font-normal text-gray-400 line-through">{p.oldPrice}₪</span>}
-                </p>
+              ))}
+            </div>
+          )}
+
+          {/* ── deals strip (extends the store so it really scrolls) ── */}
+          <div className="mt-2 rounded-xl border border-orange-200/70 bg-gradient-to-l from-orange-50 via-amber-50 to-red-50 p-1.5">
+            <div className="flex items-center justify-between px-1 pb-1.5">
+              <p className="text-[9px] font-extrabold text-orange-600">🔥 عروض اليوم — خصم حتى 25%</p>
+              <span onClick={scrollToGrid} className="cursor-pointer rounded-full bg-orange-100 px-2 py-px text-[7px] font-bold text-orange-600 transition hover:bg-orange-200">
+                تسوق الآن
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {store.products.slice(5, 9).map((p) => (
+                <div
+                  key={p.name}
+                  onClick={() => onOpenDetail(p)}
+                  className="group cursor-pointer rounded-lg border border-gray-100 bg-white p-1 text-center shadow-sm transition hover:-translate-y-px hover:shadow-md"
+                >
+                  <div className="relative mx-auto h-10 w-full overflow-hidden rounded-md">
+                    <ProductThumb product={p} wrapClass="absolute inset-0 rounded-md" emojiClass="text-lg" imgClass="rounded-md" />
+                  </div>
+                  <p className="mt-0.5 truncate text-[6.5px] font-bold text-gray-700">{p.name}</p>
+                  <p className="text-[7px] font-black text-red-500">
+                    {p.price}₪ {p.oldPrice && <span className="text-[6px] font-normal text-gray-400 line-through">{p.oldPrice}₪</span>}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── trust / contact strip ── */}
+          <div
+            className="mt-2 flex items-center justify-between rounded-xl p-2 text-white"
+            style={{ background: `linear-gradient(120deg, ${store.brand}, ${store.brandDeep})` }}
+          >
+            <div className="flex items-center gap-1.5">
+              <MessageCircle size={14} />
+              <div>
+                <p className="text-[8.5px] font-extrabold">فريقنا متاح 24/7</p>
+                <p className="text-[6.5px] text-white/80">ردّ سريع عبر الواتساب خلال دقائق</p>
+              </div>
+            </div>
+            <span onClick={onWaClick} className="cursor-pointer rounded-full bg-white/25 px-2.5 py-1 text-[7px] font-bold backdrop-blur transition hover:bg-white/40">
+              مراسلة الآن
+            </span>
+          </div>
+
+          {/* ── mini trust badges ── */}
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
+            {['توصيل سريع 🚚', 'دفع آمن 💳', 'إرجاع 14 يوم ↩️'].map((t) => (
+              <div key={t} className="rounded-lg border border-gray-100 bg-gray-50 py-1.5 text-center text-[6.5px] font-bold text-gray-600">
+                {t}
               </div>
             ))}
           </div>
-        </div>
 
-        {/* ── trust / contact strip ── */}
-        <div
-          className="mt-2 flex items-center justify-between rounded-xl p-2 text-white"
-          style={{ background: `linear-gradient(120deg, ${store.brand}, ${store.brandDeep})` }}
-        >
-          <div className="flex items-center gap-1.5">
-            <MessageCircle size={14} />
-            <div>
-              <p className="text-[8.5px] font-extrabold">فريقنا متاح 24/7</p>
-              <p className="text-[6.5px] text-white/80">ردّ سريع عبر الواتساب خلال دقائق</p>
-            </div>
+          {/* ── footer strip ── */}
+          <div className="mt-2 flex items-center justify-between border-t border-gray-100 px-1 py-1.5 text-[6.5px] text-gray-400">
+            <span>© {store.name} 2026 — صنع بحب عبر وصول</span>
+            <span className="font-bold text-gray-500">دعم واتساب: 24/7</span>
           </div>
-          <span onClick={onWaClick} className="cursor-pointer rounded-full bg-white/25 px-2.5 py-1 text-[7px] font-bold backdrop-blur transition hover:bg-white/40">
-            مراسلة الآن
-          </span>
-        </div>
-
-        {/* ── mini trust badges ── */}
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
-          {['توصيل سريع 🚚', 'دفع آمن 💳', 'إرجاع 14 يوم ↩️'].map((t) => (
-            <div key={t} className="rounded-lg border border-gray-100 bg-gray-50 py-1.5 text-center text-[6.5px] font-bold text-gray-600">
-              {t}
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* footer strip */}
-      <div className="flex items-center justify-between border-t border-gray-100 px-2 py-1 text-[6.5px] text-gray-400">
-        <span>© {store.name} 2026 — صنع بحب عبر وصول</span>
-        <span className="font-bold text-gray-500">دعم واتساب: 24/7</span>
-      </div>
-
-      {/* WA floating bubble */}
+      {/* WA floating bubble — stays at the window corner like a real store */}
       <div
         ref={bubbleRef}
         onClick={onWaClick}
