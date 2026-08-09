@@ -37,6 +37,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { getStoreThemes } from '@/data/storeThemes';
+import { TemplatePreviewCard } from '@/templates/TemplatePreviewCard';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -135,7 +136,7 @@ export default function Onboarding({
         store_subdomain: '',
         language: defaults.language || 'ar',
         currency: defaults.currency || 'ils',
-        theme: defaults.theme || 'gadgets',
+        theme: defaults.theme || 'basic',
     });
 
     const [step, setStep] = useState(0);
@@ -147,7 +148,8 @@ export default function Onboarding({
     const themes = getStoreThemes();
     const stepKey = STEP_META[step].key;
     const progress = ((step + 1) / STEP_META.length) * 100;
-    const accent = THEME_ACCENT[data.theme] || primaryColor;
+    const selectedTheme = themes.find((t) => t.id === data.theme);
+    const accent = selectedTheme?.primaryColor || THEME_ACCENT[data.theme] || primaryColor;
 
     const previewUrl = useMemo(
         () => (stepKey === 'theme' ? `${demoStoreUrl}?theme=${encodeURIComponent(data.theme)}` : demoStoreUrl),
@@ -809,61 +811,23 @@ export default function Onboarding({
                                                 </p>
                                                 <div className="grid max-h-[28rem] grid-cols-1 gap-4 overflow-y-auto pe-1 sm:grid-cols-2">
                                                     {themes.map((theme) => (
-                                                        <div
+                                                        <TemplatePreviewCard
                                                             key={theme.id}
-                                                            className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
-                                                                data.theme === theme.id
-                                                                    ? 'border-primary'
-                                                                    : 'border-gray-200 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg'
-                                                            }`}
-                                                        >
-                                                            <button type="button" className="w-full text-start" onClick={() => setData('theme', theme.id)}>
-                                                                <div className="relative aspect-video overflow-hidden bg-gray-100 theme-preview-container">
-                                                                    <img
-                                                                        src={theme.thumbnail}
-                                                                        alt={theme.name}
-                                                                        className="h-full w-full object-cover theme-preview-image"
-                                                                        onError={(e) => {
-                                                                            (e.target as HTMLImageElement).src = `https://placehold.co/400x225?text=${encodeURIComponent(
-                                                                                theme.name
-                                                                            )}`;
-                                                                        }}
-                                                                    />
-                                                                    {data.theme === theme.id && (
-                                                                        <span
-                                                                            className="absolute end-2 top-2 flex h-7 w-7 items-center justify-center rounded-full text-white shadow animate-pop"
-                                                                            style={{ backgroundColor: primaryColor }}
-                                                                        >
-                                                                            <Check className="h-4 w-4" />
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                                <div className="p-3">
-                                                                    <div className="flex items-center justify-between gap-2">
-                                                                        <span className="text-sm font-semibold text-gray-900">
-                                                                            {theme.name}
-                                                                        </span>
-                                                                        <Button
-                                                                            type="button"
-                                                                            variant="outline"
-                                                                            size="sm"
-                                                                            className="h-8 shrink-0 gap-1 text-xs"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                window.open(
-                                                                                    `${demoStoreUrl}?theme=${theme.id}`,
-                                                                                    '_blank',
-                                                                                    'noopener,noreferrer'
-                                                                                );
-                                                                            }}
-                                                                        >
-                                                                            <ExternalLink className="h-3.5 w-3.5" />
-                                                                            {t('Preview')}
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            </button>
-                                                        </div>
+                                                            template={{
+                                                                slug: theme.id,
+                                                                name: theme.name,
+                                                                description: theme.description,
+                                                                category: theme.category || 'general',
+                                                                is_free: theme.isFree ?? true,
+                                                                plan_required: 'starter',
+                                                                design_tokens: theme.designTokens,
+                                                                sections: [],
+                                                                layout: { container: 'container mx-auto px-4', spacing: 'normal' },
+                                                            }}
+                                                            demoStoreUrl={demoStoreUrl}
+                                                            isActive={data.theme === theme.id}
+                                                            onSelect={() => setData('theme', theme.id)}
+                                                        />
                                                     ))}
                                                 </div>
                                             </div>

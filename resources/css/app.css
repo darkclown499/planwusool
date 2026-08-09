@@ -607,3 +607,50 @@ button[disabled],
     }
   }
 }
+
+/* --- Template full-page hover preview ------------------------------- */
+.template-preview-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.template-preview-card .template-preview-scroll {
+  display: block;
+  width: 100%;
+  will-change: transform;
+  transition: transform 0.4s ease;
+}
+
+.template-preview-card:hover .template-preview-scroll {
+  animation: template-scroll 5.5s linear forwards;
+}
+
+@keyframes template-scroll {
+  0%   { transform: translateY(0); }
+  85%  { transform: translateY(calc(-100% + 260px)); }
+  100% { transform: translateY(calc(-100% + 260px)); }
+}
+
+.template-preview-card .template-preview-fade {
+  position: absolute;
+  inset-inline: 0;
+  height: 64px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.template-preview-card .template-preview-fade-top {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.9), transparent);
+}
+
+.template-preview-card .template-preview-fade-bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(255,255,255,0.9), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .template-preview-card:hover .template-preview-scroll {
+    animation: none;
+  }
+}

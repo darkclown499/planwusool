@@ -336,11 +336,51 @@ class Store extends BaseModel
     }
 
     /**
+     * Map legacy theme ids (used before the template system) to their
+     * closest equivalent template slug so existing stores automatically
+     * render through the new template system.
+     */
+    public const LEGACY_THEME_MAP = [
+        'gadgets' => 'tech',
+        'electronics' => 'tech',
+        'fashion' => 'fashion',
+        'clothing' => 'fashion',
+        'home-decor' => 'furniture',
+        'home-tools' => 'home-tools',
+        'bakery' => 'food',
+        'food' => 'food',
+        'coffee' => 'coffee-shop',
+        'coffee-dates' => 'coffee-shop',
+        'spices' => 'grocery-delivery',
+        'supermarket' => 'supermarket',
+        'car-accessories' => 'auto-parts',
+        'toy' => 'kids',
+        'kids' => 'kids',
+        'perfumes' => 'perfumes',
+        'fragrances' => 'perfumes',
+        'jewelry' => 'luxury-jewelry',
+        'jewelry-gold' => 'luxury-jewelry',
+        'beauty' => 'beauty',
+        'cosmetics' => 'beauty',
+        'pharmacy' => 'pharmacy',
+        'books' => 'books',
+        'stationery' => 'stationery',
+        'stationery-books' => 'books',
+        'sport' => 'sports',
+        'sports' => 'sports',
+        'pets' => 'pet-store',
+        'flowers' => 'flowers-gifts',
+    ];
+
+    /**
      * Get the active template slug for this store.
      */
     public function getTemplateSlug(): string
     {
-        return $this->template_slug ?? $this->theme ?? 'basic';
+        $slug = $this->template_slug ?? $this->theme ?? 'basic';
+
+        // Legacy theme ids are mapped to their new template equivalent.
+        return self::LEGACY_THEME_MAP[$slug] ?? $slug;
     }
 
     /**

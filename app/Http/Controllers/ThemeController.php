@@ -95,8 +95,8 @@ class ThemeController extends Controller
             'logo' => $configuration['logo'] ?: '/storage/media/logo.png',
             'favicon' => $faviconForPWA,
             'description' => $store->description,
-            'theme' => $store->template_slug ?: ($store->theme ?: 'basic'),
-            'template_slug' => $store->template_slug ?: ($store->theme ?: 'basic'),
+            'theme' => $store->getTemplateSlug(),
+            'template_slug' => $store->getTemplateSlug(),
             'slug' => $store->slug,
             'custom_domain' => $store->custom_domain,
             'custom_subdomain' => $store->custom_subdomain,
@@ -316,8 +316,13 @@ class ThemeController extends Controller
         $theme = $store['theme'] ?? 'basic';
 
         // Detect if this is a new dynamic template (from templates table)
-        // vs a legacy hardcoded theme page.
-        $template = \App\Models\Template::where('slug', $theme)->where('is_active', true)->first();
+        // vs a legacy hardcoded theme page. Guard against a missing templates
+        // table so stores never break before the migration has been run.
+        try {
+            $template = \App\Models\Template::where('slug', $theme)->where('is_active', true)->first();
+        } catch (\Illuminate\Database\QueryException $e) {
+            $template = null;
+        }
 
         // Get countries for checkout modal
         $countries = \App\Models\Country::active()->orderBy('name')->get()->map(function ($country) {

@@ -102,6 +102,26 @@ class DomainResolver
                 }
             }
         }
+
+        // Fallback: default {slug}.{store_domain} subdomain pattern so the
+        // canonical store URLs (e.g. https://my-store.wusool.ps) resolve to the
+        // store even when no custom subdomain was explicitly enabled.
+        if (!$store && str_contains($host, '.')) {
+            $subdomain = explode('.', $host)[0];
+            $storeDomain = str_replace(['http://', 'https://'], '', config('app.store_domain', 'localhost'));
+            $storeDomain = rtrim($storeDomain, '/');
+
+            if (str_ends_with($host, '.' . $storeDomain)) {
+                $store = Store::where('slug', $subdomain)->first();
+
+                if ($store) {
+                    $config = StoreConfiguration::getConfiguration($store->id);
+                    if (!($config['store_status'] ?? true)) {
+                        $store = null;
+                    }
+                }
+            }
+        }
         
         if ($store) {
             // Set store context for the request

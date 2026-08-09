@@ -584,6 +584,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
         Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');
+        Route::get('stores/{id}/template-select', [\App\Http\Controllers\StoreTemplateController::class, 'show'])->middleware('permission:settings-stores')->name('stores.template-select');
+        Route::put('stores/{id}/template-select', [\App\Http\Controllers\StoreTemplateController::class, 'update'])->middleware('permission:settings-stores')->name('stores.template-select.update');
         
         // Store custom domains routes
         Route::get('stores/{id}/domains', [\App\Http\Controllers\StoreDomainController::class, 'index'])->middleware('permission:settings-stores')->name('stores.domains');
@@ -592,11 +594,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/domains/{domain}/check-ssl', [\App\Http\Controllers\StoreDomainController::class, 'checkSsl'])->middleware('permission:settings-stores')->name('stores.domains.check-ssl');
         Route::post('stores/{id}/domains/{domain}/make-primary', [\App\Http\Controllers\StoreDomainController::class, 'makePrimary'])->middleware('permission:settings-stores')->name('stores.domains.primary');
         Route::delete('stores/{id}/domains/{domain}', [\App\Http\Controllers\StoreDomainController::class, 'destroy'])->middleware('permission:settings-stores')->name('stores.domains.destroy');
-        Route::get('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'show'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance');
-        Route::put('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'update'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.update');
-        Route::put('stores/{id}/appearance/autosave', [\App\Http\Controllers\StoreAppearanceController::class, 'autosave'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.autosave');
-        Route::post('stores/{id}/appearance/reset', [\App\Http\Controllers\StoreAppearanceController::class, 'reset'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.reset');
-        Route::post('stores/{id}/appearance/revisions/{revisionId}/revert', [\App\Http\Controllers\StoreAppearanceController::class, 'revert'])->middleware('permission:settings-stores', 'feature.access:theme_editor')->name('stores.appearance.revisions.revert');
+        Route::get('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'show'])->middleware('permission:settings-stores')->name('stores.appearance');
         
         // Product Management routes with permissions
         Route::get('products', [\App\Http\Controllers\ProductController::class, 'index'])->middleware('permission:manage-products')->name('products.index');

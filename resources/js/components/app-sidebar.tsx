@@ -253,13 +253,15 @@ export function AppSidebar() {
         if (hasPermission('settings-stores') && currentStoreId) {
             const storeSettingsChildren: NavItem[] = [
                 { title: t('Store Settings'), href: route('stores.settings', currentStoreId) },
-            ];
-            if (hasFeatureAccess('theme_editor')) {
-                storeSettingsChildren.push({
+                {
+                    title: t('Choose Template'),
+                    href: route('stores.template-select', currentStoreId),
+                },
+                {
                     title: t('Store Customization'),
                     href: route('stores.appearance', currentStoreId),
-                });
-            }
+                },
+            ];
             items.push({
                 title: t('Store Settings'),
                 icon: Store,

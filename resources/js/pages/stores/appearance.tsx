@@ -1,290 +1,204 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import {
-  Save, Loader2, CheckCircle2, XCircle, History, RotateCcw, ExternalLink, Code2, FileCode2, User, Clock,
-} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { ExternalLink, LayoutTemplate, Paintbrush, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { router } from '@inertiajs/react';
-import CodeEditor from '@/components/code-editor';
-import { apiPut, apiPost } from '@/utils/api';
-import { AccordionSection } from '@/components/accordion-section';
-import { formatLocalDate } from '@/utils/date-helper';
+import { Link } from '@inertiajs/react';
+import { AdvancedBuilder } from '@/templates/AdvancedBuilder';
+import type { PlanTier, TemplateConfig } from '@/templates/types';
 
-interface Revision {
+interface StoreProps {
   id: number;
-  key: string;
-  previous_value: string;
-  new_value: string;
-  reason: string;
-  created_at: string;
-  user: string | null;
+  name: string;
+  slug: string;
+  theme: string;
+  template_slug: string;
+  design_tokens?: any;
+  store_url: string;
+}
+
+interface TemplateProps {
+  slug: string;
+  name: string;
+  name_en?: string;
+  description?: string;
+  category: string;
+  is_free: boolean;
+  plan_required: string;
+  design_tokens?: any;
+  sections?: any[];
+  layout?: any;
 }
 
 interface Props {
-  store: any;
-  settings: any;
-  revisions: Revision[];
+  store: StoreProps;
+  currentTemplate?: TemplateProps | null;
+  userPlanName?: string | null;
+  userPlanTier?: PlanTier;
+  isSuperAdmin?: boolean;
+  demoStoreUrl?: string;
 }
 
-const REASON_LABELS: Record<string, string> = {
-  manual: 'Manual',
-  autosave: 'Autosave',
-  revert: 'Revert',
-  reset: 'Reset',
-};
-
-const REASON_VARIANTS: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  manual: 'default',
-  autosave: 'secondary',
-  revert: 'outline',
-  reset: 'destructive',
-};
-
-export default function StoreAppearance({ store, settings, revisions = [] }: Props) {
+export default function StoreAppearance({
+  store,
+  currentTemplate,
+  userPlanName,
+  userPlanTier = 'starter',
+  isSuperAdmin = false,
+}: Props) {
   const { t } = useTranslation();
-  const [formData, setFormData] = useState<any>(settings || {});
-  const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [resetting, setResetting] = useState(false);
-  const [revertingId, setRevertingId] = useState<number | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [reloadKey, setReloadKey] = React.useState(0);
 
-  useEffect(() => {
-    setFormData(settings || {});
-    setDirty(false);
-  }, [settings]);
+  const templateConfig = useMemo<TemplateConfig | null>(() => {
+    if (!currentTemplate) return null;
+    return {
+      slug: currentTemplate.slug,
+      name: currentTemplate.name,
+      name_en: currentTemplate.name_en,
+      description: currentTemplate.description,
+      category: currentTemplate.category,
+      is_free: currentTemplate.is_free,
+      plan_required: (currentTemplate.plan_required as PlanTier) || 'professional',
+      sections: currentTemplate.sections || [],
+      layout: currentTemplate.layout || { container: 'container mx-auto px-4', spacing: 'normal' },
+      design_tokens: currentTemplate.design_tokens || {},
+    };
+  }, [currentTemplate]);
 
-  const updateField = (key: string, value: string) => {
-    setFormData((prev: any) => ({ ...prev, [key]: value }));
-    setDirty(true);
-    setAutoSaveState('idle');
+  // Merge the store's token overrides with the template defaults (deep merge
+  // per group) so the editor always starts from the effective design tokens.
+  const mergedDesignTokens = useMemo(() => {
+    const defaults = (templateConfig?.design_tokens || {}) as Record<string, Record<string, string>>;
+    const overrides = (store.design_tokens || {}) as Record<string, Record<string, string>>;
+    return {
+      colors: { ...(defaults.colors || {}), ...(overrides.colors || {}) },
+      typography: { ...(defaults.typography || {}), ...(overrides.typography || {}) },
+      spacing: { ...(defaults.spacing || {}), ...(overrides.spacing || {}) },
+    };
+  }, [templateConfig, store.design_tokens]);
+
+  const previewUrl = useMemo(
+    () => `${store.store_url}?v=${reloadKey}`,
+    [store.store_url, reloadKey]
+  );
+
+  const handleSaved = () => {
+    // Refresh the live preview so the saved design tokens are applied
+    setReloadKey((k) => k + 1);
   };
-
-  const handleSave = () => {
-    if (saving) return;
-    setSaving(true);
-    router.put(route('stores.appearance.update', store.id), formData, {
-      preserveScroll: true,
-      onFinish: () => {
-        setSaving(false);
-        setDirty(false);
-        setAutoSaveState('saved');
-      },
-    });
-  };
-
-  useEffect(() => {
-    if (!dirty || saving) return;
-    const timer = setTimeout(() => {
-      setAutoSaveState('saving');
-      apiPut(route('stores.appearance.autosave', store.id), formData)
-        .then(() => setAutoSaveState('saved'))
-        .catch(() => setAutoSaveState('error'));
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [formData, dirty, saving, store.id]);
-
-  const handleReset = () => {
-    if (resetting) return;
-    setResetting(true);
-    apiPost(route('stores.appearance.reset', store.id))
-      .catch(() => {})
-      .finally(() => {
-        setResetting(false);
-        router.reload();
-      });
-  };
-
-  const handleRevert = (revisionId: number) => {
-    if (revertingId) return;
-    setRevertingId(revisionId);
-    apiPost(route('stores.appearance.revisions.revert', [store.id, revisionId]))
-      .catch(() => {})
-      .finally(() => {
-        setRevertingId(null);
-        router.reload();
-      });
-  };
-
-  const viewStoreUrl = () => {
-    const protocol = window.location.protocol;
-    if (store.enable_custom_domain && store.custom_domain) {
-      return `${protocol}//${store.custom_domain}`;
-    }
-    if (store.enable_custom_subdomain && store.custom_subdomain) {
-      const currentHost = window.location.hostname;
-      const baseDomain = currentHost.includes('localhost')
-        ? 'localhost'
-        : currentHost.split('.').slice(-2).join('.');
-      return `${protocol}//${store.custom_subdomain}.${baseDomain}`;
-    }
-    return route('store.home', store.slug);
-  };
-
-  const pageActions = [
-    {
-      label: t('View Store'),
-      icon: <ExternalLink className="h-4 w-4" />,
-      variant: 'outline' as const,
-      onClick: () => window.open(viewStoreUrl(), '_blank'),
-    },
-    {
-      label: saving ? t('Saving...') : t('Save Changes'),
-      icon: saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />,
-      variant: 'default' as const,
-      onClick: handleSave,
-      disabled: saving,
-    },
-  ];
 
   return (
     <PageTemplate
-      title={t('Store Appearance')}
+      title={t('Store Customization')}
       url={`/stores/${store.id}/appearance`}
-      description={t('Customize your application\'s branding and appearance')}
-      actions={pageActions}
+      description={t('Customize your store colors, fonts, and spacing with the template editor.')}
       stickyHeader
       backUrl={route('stores.index')}
       breadcrumbs={[
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('Store Management'), href: route('stores.index') },
-        { title: t('Store Appearance') },
+        { title: t('Store Customization') },
       ]}
+      action={
+        <Button asChild variant="outline">
+          <Link href={route('stores.template-select', store.id)}>
+            <LayoutTemplate className="h-4 w-4 me-1" />
+            {t('Change Template')}
+          </Link>
+        </Button>
+      }
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-2 text-sm">
-          {autoSaveState === 'saving' && <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /> <span className="text-muted-foreground">{t('Auto-saving draft...')}</span></>}
-          {autoSaveState === 'saved' && <><CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> <span className="text-green-600">{t('Draft saved automatically')}</span></>}
-          {autoSaveState === 'error' && <><XCircle className="h-3.5 w-3.5 text-red-500" /> <span className="text-red-500">{t('Auto-save failed, please save manually')}</span></>}
-        </div>
-        {dirty && !saving && <span className="text-xs text-muted-foreground">{t('Unsaved changes')}</span>}
-      </div>
-
-      <AccordionSection
-        title={t('Custom CSS & JavaScript')}
-        icon={<Code2 className="h-4 w-4" />}
-        subtitle={t('Add custom CSS and JavaScript to customize your store appearance and functionality.')}
-        defaultOpen
-      >
-        <div className="space-y-6">
-          <div>
-            <Label htmlFor="custom_css" className="flex items-center gap-1.5 mb-2">
-              <FileCode2 className="h-3.5 w-3.5" />
-              {t('Custom CSS')}
-            </Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              {t('Add custom CSS styles to modify your store appearance. Maximum 50,000 characters.')}
-            </p>
-            <CodeEditor
-              value={formData.custom_css || ''}
-              onChange={(value) => updateField('custom_css', value)}
-              language="css"
-              height="300px"
-              placeholder={t('Add your custom CSS here')}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="custom_javascript" className="flex items-center gap-1.5 mb-2">
-              <Code2 className="h-3.5 w-3.5" />
-              {t('Custom JavaScript')}
-            </Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              {t('Add custom JavaScript code to enhance your store functionality. Maximum 50,000 characters.')}
-            </p>
-            <CodeEditor
-              value={formData.custom_javascript || ''}
-              onChange={(value) => updateField('custom_javascript', value)}
-              language="javascript"
-              height="300px"
-              placeholder={t('Add your custom JavaScript here')}
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-dashed p-4">
-            <div className="flex items-center gap-2 text-sm">
-              <RotateCcw className="h-4 w-4 text-muted-foreground" />
-              <span>{t('Reset custom CSS and JavaScript to their default (empty) values.')}</span>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              disabled={resetting}
-            >
-              <Loader2 className={`h-4 w-4 me-1 ${resetting ? 'animate-spin' : ''}`} />
-              {t('Reset Custom Code')}
-            </Button>
-          </div>
-        </div>
-      </AccordionSection>
-
-      <div className="mt-6">
+      <div className="space-y-6">
+        {/* Current template summary */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50">
+                <Paintbrush className="h-5 w-5 text-indigo-600" />
+              </div>
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-4 w-4" />
-                  {t('Revision History')}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t('Every change to your custom code is saved here, so you can restore a previous version at any time.')}
+                <p className="font-semibold text-gray-900">
+                  {currentTemplate ? currentTemplate.name : store.template_slug}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {currentTemplate?.description || t('No template configured yet.')}
                 </p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            {revisions.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-6 text-center">
-                {t('No revisions yet.')}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {revisions.map((revision) => (
-                  <div key={revision.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3">
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary">{revision.key === 'custom_css' ? t('Custom CSS') : t('Custom JavaScript')}</Badge>
-                        <Badge variant={REASON_VARIANTS[revision.reason] || 'outline'}>
-                          {t(REASON_LABELS[revision.reason] || 'Manual')}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        {revision.user && (
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {revision.user}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatLocalDate(revision.created_at)}
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRevert(revision.id)}
-                      disabled={revertingId !== null}
-                    >
-                      {revertingId === revision.id && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
-                      <RotateCcw className="h-4 w-4 me-1" />
-                      {t('Restore this version')}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => iframeRef.current?.contentWindow?.location.reload()}
+              >
+                <RefreshCw className="h-3.5 w-3.5 me-1" />
+                {t('Refresh Preview')}
+              </Button>
+              <a
+                href={store.store_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                {t('Open Store')}
+              </a>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Editor + Live preview */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Advanced builder */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('Template Editor')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AdvancedBuilder
+                template={templateConfig}
+                storeId={store.id}
+                designTokens={mergedDesignTokens}
+                userPlanName={userPlanName}
+                userPlanTier={userPlanTier}
+                isSuperAdmin={isSuperAdmin}
+                onSave={handleSaved}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Live preview */}
+          <Card>
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <CardTitle>{t('Live Preview')}</CardTitle>
+              <a
+                href={store.store_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold text-indigo-600 hover:underline"
+              >
+                {store.store_url}
+              </a>
+            </CardHeader>
+            <CardContent className="p-3">
+              <div className="overflow-hidden rounded-xl border border-gray-200">
+                <iframe
+                  key={reloadKey}
+                  ref={iframeRef}
+                  src={previewUrl}
+                  title={`${store.name} preview`}
+                  className="h-[34rem] w-full bg-white"
+                  loading="lazy"
+                />
+              </div>
+              <p className="mt-2 px-1 text-xs text-gray-400">
+                {t('Preview updates after saving. For a full experience, open the store in a new tab.')}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </PageTemplate>
   );

@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useContext } from 'react';
 import { TemplateRenderer } from '@/templates/TemplateRenderer';
 import { getTemplateConfig } from '@/templates/registry';
-import { useAuth } from '@/contexts/AuthContext';
+import { AuthContext } from '@/contexts/AuthContext';
 
 interface DynamicStoreProps {
   template: string;
@@ -31,7 +31,10 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
   storeSettings,
   isPreview = false,
 }) => {
-  const { isLoggedIn } = useAuth();
+  // The storefront auth context may not be mounted for guest visits,
+  // so read it defensively instead of throwing like useAuth() does.
+  const auth = useContext(AuthContext);
+  const isLoggedIn = auth?.isLoggedIn ?? false;
 
   const resolvedTemplate = useMemo(() => {
     if (templateConfig) {

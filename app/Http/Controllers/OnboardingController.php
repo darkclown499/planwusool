@@ -68,7 +68,7 @@ class OnboardingController extends Controller
                 'storeName' => $store->name,
                 'language' => in_array($user->lang, ['ar', 'en']) ? $user->lang : 'ar',
                 'currency' => $configuration['default_currency'] ?? 'ils',
-                'theme' => $store->theme,
+                'theme' => $store->getTemplateSlug(),
             ],
         ]);
     }
@@ -150,6 +150,7 @@ class OnboardingController extends Controller
         }
         $store->name = $request->store_name;
         $store->theme = $request->theme;
+        $store->template_slug = $request->theme;
         $store->save();
 
         $currency = Currency::where('code', $request->currency)->first();
@@ -225,7 +226,8 @@ class OnboardingController extends Controller
         $store = Store::create([
             'name' => $user->name,
             'slug' => Store::generateUniqueSlug($user->name),
-            'theme' => 'gadgets',
+            'theme' => 'basic',
+            'template_slug' => 'basic',
             'user_id' => $user->id,
             'email' => $user->email,
         ]);

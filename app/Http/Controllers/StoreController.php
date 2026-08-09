@@ -141,6 +141,7 @@ class StoreController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'theme' => $themeValidation,
+            'template_slug' => $themeValidation,
             'enable_custom_domain' => 'boolean',
             'enable_custom_subdomain' => 'boolean',
             'custom_domain' => 'required_if:enable_custom_domain,true|nullable|string|max:255',
@@ -200,6 +201,7 @@ class StoreController extends Controller
         $store->slug = Store::generateUniqueSlug($request->name);
         $store->description = $request->description;
         $store->theme = $request->theme;
+        $store->template_slug = $request->theme;
         $store->user_id = Auth::id();
         $store->email = $request->email ?? null;
         $store->enable_custom_domain = $request->enable_custom_domain ?? false;
@@ -326,6 +328,7 @@ class StoreController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'theme' => $themeValidation,
+            'template_slug' => $themeValidation,
             'enable_custom_domain' => 'boolean',
             'enable_custom_subdomain' => 'boolean',
             'custom_domain' => 'required_if:enable_custom_domain,true|nullable|string|max:255',
@@ -383,6 +386,7 @@ class StoreController extends Controller
         $store->name = $request->name;
         $store->description = $request->description;
         $store->theme = $request->theme;
+        $store->template_slug = $request->theme;
         $store->email = $request->email ?? $store->email;
         $store->enable_custom_domain = $request->enable_custom_domain ?? false;
         $store->enable_custom_subdomain = $request->enable_custom_subdomain ?? false;
