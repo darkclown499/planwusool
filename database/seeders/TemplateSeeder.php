@@ -35,7 +35,7 @@ class TemplateSeeder extends Seeder
      */
     protected function getTemplates(): array
     {
-        return [
+        $templates = [
             // ===================== FREE TEMPLATES (7) =====================
             [
                 'slug' => 'basic',
@@ -888,6 +888,199 @@ class TemplateSeeder extends Seeder
                 'advanced_components' => ['table_reservations', 'countdown_timer', 'interactive_popup'],
                 'sort_order' => 29,
             ],
+        ];
+
+        return array_map(fn (array $template): array => $this->withTemplateDefaults($template), $templates);
+    }
+
+    /**
+     * Normalize a template definition so it ships with a header section,
+     * explicit Tailwind classes per section, per-template product columns
+     * and a complete vivid color palette.
+     */
+    protected function withTemplateDefaults(array $template): array
+    {
+        $slug = $template['slug'] ?? '';
+        $config = $template['config'] ?? ['sections' => [], 'layout' => []];
+        $layout = $config['layout'] ?? [];
+        $dark = (bool) ($layout['dark_mode'] ?? false);
+        $container = $layout['container'] ?? 'max-w-7xl';
+
+        // Vivid color palette — fills any missing token so no template
+        // ever relies on faded default colors.
+        $colors = array_replace_recursive(
+            [
+                'primary-50' => '#ecfeff',
+                'primary-100' => '#cffafe',
+                'primary-500' => '#06b6d4',
+                'primary-600' => '#0891b2',
+                'primary-700' => '#0e7490',
+                'secondary-500' => '#f97316',
+                'background' => '#ffffff',
+                'surface' => '#f1f5f9',
+                'text-primary' => '#0f172a',
+                'text-muted' => '#475569',
+            ],
+            $template['design_tokens']['colors'] ?? [],
+            $this->colorFixes()[$slug] ?? []
+        );
+
+        $sections = $config['sections'] ?? [];
+        $hasHeader = false;
+        foreach ($sections as $section) {
+            if (($section['type'] ?? null) === 'header') {
+                $hasHeader = true;
+                break;
+            }
+        }
+
+        if (!$hasHeader) {
+            array_unshift($sections, [
+                'id' => 'header',
+                'type' => 'header',
+                'enabled' => true,
+                'order' => 1,
+                'props' => [
+                    'sticky' => true,
+                    'show_search' => true,
+                    'show_cart' => true,
+                    'show_auth' => true,
+                    'show_whatsapp' => true,
+                ],
+                'classes' => [
+                    'header' => $dark
+                        ? 'sticky top-0 z-40 w-full border-b border-white/10 bg-neutral-900/95 backdrop-blur-md shadow-sm'
+                        : 'sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur-md shadow-sm',
+                    'container' => 'mx-auto flex h-16 items-center justify-between gap-3 px-4 ' . $container,
+                ],
+            ]);
+        }
+
+        $columnsByLayout = [
+            'grid' => 4,
+            'dense_grid' => 6,
+            'masonry' => 4,
+            'list' => 1,
+            'elegant_list' => 2,
+            'menu_list' => 1,
+            'bulk_table' => 1,
+        ];
+
+        $order = 0;
+        foreach ($sections as $key => $section) {
+            $order++;
+            $sections[$key]['order'] = $order;
+
+            $type = $section['type'] ?? 'custom';
+            $base = $this->sectionClasses($type);
+
+            if (!isset($sections[$key]['classes'])) {
+                $sections[$key]['classes'] = [
+                    'section' => $base['section'],
+                    'container' => rtrim($base['container'] . ' ' . $container),
+                    'heading' => $base['heading'] ?? 'text-2xl font-bold sm:text-3xl',
+                ];
+            } else {
+                $sections[$key]['classes'] += ['section' => $base['section']];
+                $sections[$key]['classes'] += ['container' => rtrim($base['container'] . ' ' . $container)];
+            }
+
+            if ($type === 'products' && !isset($sections[$key]['props']['columns'])) {
+                $sections[$key]['props']['columns'] = $columnsByLayout[$sections[$key]['props']['layout'] ?? 'grid'] ?? 4;
+            }
+        }
+
+        $defaultColumns = in_array($container, ['max-w-3xl', 'max-w-5xl'], true) ? 2 : 4;
+
+        $config['layout'] = array_merge([
+            'container' => $container,
+            'spacing' => 'normal',
+            'columns' => $defaultColumns,
+        ], $layout, [
+            'columns' => $layout['columns'] ?? $defaultColumns,
+        ]);
+
+        $config['sections'] = $sections;
+
+        $template['config'] = $config;
+        $template['design_tokens']['colors'] = $colors;
+
+        return $template;
+    }
+
+    /**
+     * Faded palette fixes keyed by template slug.
+     */
+    protected function colorFixes(): array
+    {
+        return [
+            'handcrafted' => [
+                'primary-500' => '#b45309',
+                'primary-600' => '#92400e',
+                'background' => '#faf7f0',
+                'surface' => '#ffffff',
+                'text-primary' => '#292524',
+                'text-muted' => '#a16207',
+            ],
+            'home-tools' => [
+                'primary-500' => '#f97316',
+                'primary-600' => '#ea580c',
+                'background' => '#fff7ed',
+                'surface' => '#ffffff',
+                'text-primary' => '#431407',
+                'text-muted' => '#c2410c',
+            ],
+            'pharmacy' => ['text-muted' => '#0f766e'],
+            'luxury-watches' => [
+                'primary-500' => '#d8d5cf',
+                'primary-600' => '#b8b2a8',
+                'text-muted' => '#a1a1aa',
+            ],
+            'fashion-premium' => [
+                'primary-500' => '#f0f0f0',
+                'primary-600' => '#d4d4d4',
+                'text-muted' => '#a3a3a3',
+            ],
+            'luxury-jewelry' => [
+                'primary-500' => '#eab308',
+                'primary-600' => '#ca8a04',
+                'text-muted' => '#a1a1aa',
+            ],
+            'food-premium' => ['text-muted' => '#d6cbb8'],
+        ];
+    }
+
+    /**
+     * Explicit Tailwind classes per section type.
+     */
+    protected function sectionClasses(string $type): array
+    {
+        $classes = [
+            'hero' => [
+                'section' => 'relative w-full overflow-hidden',
+                'container' => 'mx-auto px-4 py-12 sm:py-16',
+                'heading' => 'text-3xl font-bold sm:text-5xl',
+            ],
+            'categories' => [
+                'section' => 'w-full py-10 sm:py-12',
+                'container' => 'mx-auto px-4',
+                'heading' => 'text-2xl font-bold sm:text-3xl',
+            ],
+            'products' => [
+                'section' => 'w-full py-10 sm:py-12',
+                'container' => 'mx-auto px-4',
+                'heading' => 'text-2xl font-bold sm:text-3xl',
+            ],
+            'footer' => [
+                'section' => 'w-full border-t border-gray-200',
+                'container' => 'mx-auto px-4 py-12 sm:py-16',
+            ],
+        ];
+
+        return $classes[$type] ?? [
+            'section' => 'w-full py-10 sm:py-12',
+            'container' => 'mx-auto px-4',
+            'heading' => 'text-2xl font-bold sm:text-3xl',
         ];
     }
 }

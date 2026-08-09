@@ -1,15 +1,51 @@
 export type PlanTier = 'starter' | 'growth' | 'professional';
 
+export type TemplateSectionType =
+  | 'header'
+  | 'hero'
+  | 'categories'
+  | 'products'
+  | 'custom'
+  | 'footer'
+  | 'featured'
+  | 'banner'
+  | 'reviews'
+  | 'sidebar';
+
+/**
+ * Explicit Tailwind classes attached to each section from the template JSON.
+ * Keeps the template's visual identity self-contained and prevents flat/white gaps.
+ */
+export interface SectionClasses {
+  section?: string;
+  container?: string;
+  heading?: string;
+  subheading?: string;
+  grid?: string;
+  card?: string;
+  header?: string;
+  footer?: string;
+}
+
 export interface TemplateSectionConfig {
   id: string;
-  type: 'hero' | 'categories' | 'products' | 'custom' | 'footer' | 'featured' | 'banner' | 'reviews';
+  type: TemplateSectionType;
   enabled: boolean;
   order: number;
   props: Record<string, any>;
+  classes?: SectionClasses;
   conditions?: {
     plan_type?: PlanTier[];
     action: 'show' | 'hide' | 'readonly';
   };
+}
+
+export interface TemplateHeaderConfig {
+  sticky?: boolean;
+  show_search?: boolean;
+  show_cart?: boolean;
+  show_auth?: boolean;
+  show_whatsapp?: boolean;
 }
 
 export interface TemplateLayoutConfig {
@@ -17,6 +53,9 @@ export interface TemplateLayoutConfig {
   spacing: 'compact' | 'normal' | 'comfortable';
   dark_mode?: boolean;
   sidebar?: boolean;
+  columns?: number;
+  gap?: string;
+  header?: TemplateHeaderConfig;
 }
 
 export interface DesignTokens {

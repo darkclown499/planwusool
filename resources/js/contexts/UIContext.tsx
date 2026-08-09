@@ -16,7 +16,7 @@ interface UIContextType {
   action: string | null;
 }
 
-const UIContext = createContext<UIContextType | undefined>(undefined);
+export const UIContext = createContext<UIContextType | undefined>(undefined);
 
 interface UIProviderProps {
   children: ReactNode;

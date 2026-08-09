@@ -43,7 +43,7 @@ interface ProductContextType {
   groupProductsByCategory: () => { [key: string]: any[] };
 }
 
-const ProductContext = createContext<ProductContextType | undefined>(undefined);
+export const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
 interface ProductProviderProps {
   children: ReactNode;

@@ -58,7 +58,7 @@ interface StoreContextType {
   store: Store;
 }
 
-const StoreContext = createContext<StoreContextType | undefined>(undefined);
+export const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 interface StoreProviderProps {
   children: ReactNode;

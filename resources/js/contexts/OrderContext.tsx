@@ -31,7 +31,7 @@ interface OrderContextType {
   handleViewOrder: (orderNumber: string) => void;
 }
 
-const OrderContext = createContext<OrderContextType | undefined>(undefined);
+export const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 interface OrderProviderProps {
   children: ReactNode;
