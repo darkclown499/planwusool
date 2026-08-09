@@ -45,7 +45,7 @@ class ThemeController extends Controller
             'email' => 'demo@example.com',
             'logo' => '/storage/media/logo.png',
             'description' => 'Demo store description',
-            'theme' => 'gadgets',
+            'theme' => 'basic',
             'slug' => $storeSlug
         ];
     }
@@ -95,7 +95,8 @@ class ThemeController extends Controller
             'logo' => $configuration['logo'] ?: '/storage/media/logo.png',
             'favicon' => $faviconForPWA,
             'description' => $store->description,
-            'theme' => $store->theme,
+            'theme' => $store->template_slug ?: ($store->theme ?: 'basic'),
+            'template_slug' => $store->template_slug ?: ($store->theme ?: 'basic'),
             'slug' => $store->slug,
             'custom_domain' => $store->custom_domain,
             'custom_subdomain' => $store->custom_subdomain,
@@ -236,12 +237,17 @@ class ThemeController extends Controller
     {
         $store = $this->getStore($storeSlug, $request);
 
-        // Read-only theme preview for the demo store only: demo.APP_DOMAIN?theme=food
+        // Read-only theme/template preview for the demo store only: demo.APP_DOMAIN?theme=food
         $currentRequest = $request ?? request();
         if (($store['slug'] ?? null) === \App\Services\DemoStoreService::SLUG && $currentRequest && $currentRequest->has('theme')) {
             $requestedTheme = $currentRequest->query('theme');
-            if ($requestedTheme && in_array($requestedTheme, $this->getValidThemePages(), true)) {
-                $store['theme'] = $requestedTheme;
+            if ($requestedTheme) {
+                // Allow previewing both new template slugs and legacy theme pages
+                $isTemplate = \App\Models\Template::where('slug', $requestedTheme)->where('is_active', true)->exists();
+                $isLegacyPage = in_array($requestedTheme, $this->getValidThemePages(), true);
+                if ($isTemplate || $isLegacyPage) {
+                    $store['theme'] = $requestedTheme;
+                }
             }
         }
 
@@ -307,7 +313,11 @@ class ThemeController extends Controller
             })->toArray();
         }
 
-        $theme = $store['theme'] ?? 'gadgets';
+        $theme = $store['theme'] ?? 'basic';
+
+        // Detect if this is a new dynamic template (from templates table)
+        // vs a legacy hardcoded theme page.
+        $template = \App\Models\Template::where('slug', $theme)->where('is_active', true)->first();
 
         // Get countries for checkout modal
         $countries = \App\Models\Country::active()->orderBy('name')->get()->map(function ($country) {
@@ -318,7 +328,7 @@ class ThemeController extends Controller
             ];
         })->toArray();
         
-        return Inertia::render('store/' . $theme, array_merge([
+        $props = array_merge([
             'config' => $storeData['config'],
             'categories' => $categories,
             'products' => $products,
@@ -331,17 +341,33 @@ class ThemeController extends Controller
             'vat' => $storeData['config']['vat'],
             'locale' => $storeData['config']['locale'],
             'storeCurrency' => [
-                'code' => $storeData['storeSettings']['currency_code'] ?? 'USD',
-                'symbol' => $storeData['storeSettings']['currency_symbol'] ?? '$',
-                'name' => $storeData['storeSettings']['currency_name'] ?? 'US Dollar',
-                'position' => $storeData['storeSettings']['currency_position'] ?? 'before',
-                'decimals' => (int) ($storeData['storeSettings']['currency_decimals'] ?? 2),
-                'decimal_separator' => $storeData['storeSettings']['decimal_separator'] ?? '.',
-                'thousands_separator' => $storeData['storeSettings']['thousands_separator'] ?? ',',
-                'secondary' => $storeData['config']['secondaryCurrency'],
-                'locale' => $storeData['config']['locale'],
-                'vat' => $storeData['config']['vat'],
+                'code' => $storeData['config']['secondaryCurrency'] ?? 'USD',
+                'symbol' => '$',
+                'name' => 'USD'
             ],
+        ]);
+
+        // New template system: render via dynamic template page
+        if ($template) {
+            $storeModel = $storeModel ?? Store::find($store['id']);
+            $props['template'] = $theme;
+            $props['templateConfig'] = $template->config;
+            $props['designTokens'] = $storeModel
+                ? $storeModel->getMergedDesignTokens()
+                : $template->design_tokens;
+            $props['isPreview'] = isset($currentRequest) && $currentRequest->has('preview');
+
+            return Inertia::render('store/dynamic', array_merge($props, [
+                'action' => $this->resolveAction(),
+                'wishlistCount' => $this->getWishlistCount($store['id']),
+            ], $this->getCommonData()));
+        }
+
+        // Legacy theme page fallback (if template not found in templates table)
+        $legacyPages = $this->getValidThemePages();
+        $themePage = in_array($theme, $legacyPages, true) ? $theme : 'gadgets';
+
+        return Inertia::render('store/' . $themePage, array_merge($props, [
             'showResetModal' => $request ? $request->get('showResetModal', false) : false,
             'resetToken' => $request ? $request->get('resetToken') : null,
             'action' => $this->resolveAction(),

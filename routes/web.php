@@ -196,6 +196,25 @@ Route::post('api/cart/sync', [\App\Http\Controllers\Api\CartController::class, '
 // Abandoned cart tracking API (storefront)
 Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
 
+// Template API (storefront & dashboard)
+Route::prefix('api/templates')->name('api.templates.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\TemplateController::class, 'index'])->name('index');
+    Route::get('{slug}', [\App\Http\Controllers\Api\TemplateController::class, 'show'])->name('show');
+    Route::get('{slug}/preview', [\App\Http\Controllers\Api\TemplateController::class, 'preview'])->name('preview');
+});
+
+// Design tokens API (authenticated, store owner only)
+Route::middleware('auth')->prefix('api/stores/{store}/design-tokens')->name('api.design-tokens.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\DesignTokenController::class, 'show'])->name('show');
+    Route::put('/', [\App\Http\Controllers\Api\DesignTokenController::class, 'update'])->name('update');
+});
+
+// Store template overrides API
+Route::middleware('auth')->prefix('api/stores/{store}')->name('api.store-template.')->group(function () {
+    Route::put('overrides', [\App\Http\Controllers\Api\DesignTokenController::class, 'updateOverrides'])->name('overrides');
+    Route::put('template', [\App\Http\Controllers\Api\DesignTokenController::class, 'selectTemplate'])->name('select');
+});
+
 // Product reviews API (storefront)
 Route::prefix('api/reviews')->name('api.reviews.')->group(function () {
     Route::get('product/{productId}', [ProductReviewController::class, 'productReviews'])->name('product');

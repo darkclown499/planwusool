@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
                 AdditionalUserSeeder::class,
                 StoreSeeder::class,
                 TaxSeeder::class,
+                TemplateSeeder::class,
                 
                 CategorySeeder::class,
                 ProductSeeder::class,
@@ -57,6 +58,7 @@ class DatabaseSeeder extends Seeder
                 UserSeeder::class,
                 StoreSeeder::class,
                 TaxSeeder::class,
+                TemplateSeeder::class,
                 
                 CategorySeeder::class,
                 ProductSeeder::class,

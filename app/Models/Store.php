@@ -14,6 +14,9 @@ class Store extends BaseModel
         'slug',
         'description',
         'theme',
+        'template_slug',
+        'template_overrides',
+        'design_tokens',
         'user_id',
         'custom_domain',
         'custom_subdomain',
@@ -41,6 +44,8 @@ class Store extends BaseModel
         'enable_custom_domain' => 'boolean',
         'enable_custom_subdomain' => 'boolean',
         'enable_pwa' => 'boolean',
+        'template_overrides' => 'array',
+        'design_tokens' => 'array',
     ];
 
     /**
@@ -330,7 +335,73 @@ class Store extends BaseModel
         return $errors;
     }
 
+    /**
+     * Get the active template slug for this store.
+     */
+    public function getTemplateSlug(): string
+    {
+        return $this->template_slug ?? $this->theme ?? 'basic';
+    }
 
+    /**
+     * Get the active Template model for this store.
+     */
+    public function template()
+    {
+        return Template::where('slug', $this->getTemplateSlug())->where('is_active', true)->first();
+    }
 
+    /**
+     * Get merged design tokens (store overrides + template defaults).
+     */
+    public function getMergedDesignTokens(): array
+    {
+        $template = $this->template();
+        $defaults = $template ? $template->design_tokens : [];
 
+        return array_replace_recursive($defaults, $this->design_tokens ?? []);
+    }
+
+    /**
+     * Get merged template config (store overrides + template config).
+     */
+    public function getMergedTemplateConfig(): array
+    {
+        $template = $this->template();
+        $config = $template ? $template->config : ['sections' => []];
+
+        $overrides = $this->template_overrides ?? [];
+        if (!empty($overrides['sections'])) {
+            $config['sections'] = $overrides['sections'];
+        }
+
+        return $config;
+    }
+
+    /**
+     * Check if store can use a given template slug.
+     */
+    public function canUseTemplate(string $templateSlug): bool
+    {
+        $user = $this->user;
+        if (!$user || !$user->plan) {
+            return false;
+        }
+
+        $template = Template::where('slug', $templateSlug)->where('is_active', true)->first();
+        if (!$template) {
+            return false;
+        }
+
+        return $template->is_free || $user->plan->getAccessibleTemplates()->contains('slug', $templateSlug);
+    }
+
+    /**
+     * Check if store owner has advanced builder access.
+     */
+    public function hasAdvancedBuilder(): bool
+    {
+        $user = $this->user;
+        return $user && $user->plan && $user->plan->hasAdvancedBuilder();
+    }
 }
