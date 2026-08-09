@@ -112,8 +112,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Shock-absorbing TPU material</li><li>Precise camera cutouts</li><li>Wireless charging compatible</li><li>Raised edges for screen protection</li><li>Easy installation</li></ul>',
                     'details' => '<p>Protect your iPhone 14 Plus with this premium mobile cover featuring advanced shock absorption technology and precise cutouts for all ports and cameras.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/6/collection.png',
-                    'images' => '/storage/media/11/1.png,/storage/media/10/2.png,/storage/media/9/3.png,/storage/media/8/4.png,/storage/media/7/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-296420?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-304792?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-301766?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-098636?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-666168?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-399742?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'iPhone 14 - Sheath Screen Protector with Applicator Tray',
@@ -121,8 +121,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>9H tempered glass</li><li>Bubble-free installation</li><li>Applicator tray included</li><li>99% transparency</li><li>Oleophobic coating</li></ul>',
                     'details' => '<p>Premium tempered glass screen protector with innovative applicator tray for perfect, bubble-free installation every time.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/12/collection.png',
-                    'images' => '/storage/media/17/1.png,/storage/media/16/2.png,/storage/media/15/3.png,/storage/media/14/4.png,/storage/media/13/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-575336?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-338117?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-284770?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-471037?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-997015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303218?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Luxcell B12 10,000mAh 12W Power Bank',
@@ -131,8 +131,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Keep your devices powered with this high-capacity power bank featuring fast charging technology and support for multiple devices simultaneously.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
-                    'cover_image' => '/storage/media/18/collection.png',
-                    'images' => '/storage/media/23/1.png,/storage/media/22/2.png,/storage/media/21/3.png,/storage/media/20/4.png,/storage/media/19/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-986581?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-649235?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-317316?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-913913?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-024439?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-768196?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Adjustable & Foldable Desktop Phone Holder Stand',
@@ -140,8 +140,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Adjustable viewing angles</li><li>Foldable design</li><li>Non-slip base</li><li>Universal compatibility</li><li>Aluminum construction</li></ul>',
                     'details' => '<p>Ergonomic phone stand designed for comfortable viewing, video calls, and hands-free use with adjustable angles and stable aluminum construction.</p>',
                     'price' => 16.99,
-                    'cover_image' => '/storage/media/24/collection.png',
-                    'images' => '/storage/media/29/1.png,/storage/media/28/2.png,/storage/media/27/3.png,/storage/media/26/4.png,/storage/media/25/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-677379?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-022324?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-543250?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-475617?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-131296?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-535831?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fast Charge USB to Lightning Data Sync and Charging Cable',
@@ -152,8 +152,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Length', 'options' => ['3ft', '6ft', '10ft']]
                     ],
-                    'cover_image' => '/storage/media/30/collection.png',
-                    'images' => '/storage/media/35/1.png,/storage/media/34/2.png,/storage/media/33/3.png,/storage/media/32/4.png,/storage/media/31/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-233258?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-903993?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654422?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-484612?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-712646?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-808658?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'boat Flexcharge 360 3-in-1 Wireless Charger',
@@ -162,8 +162,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Convenient 3-in-1 wireless charging station that can simultaneously charge your phone, earbuds, and smartwatch with fast 15W charging.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
-                    'cover_image' => '/storage/media/36/collection.png',
-                    'images' => '/storage/media/41/1.png,/storage/media/40/2.png,/storage/media/39/3.png,/storage/media/38/4.png,/storage/media/37/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-351169?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-636714?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-705182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-489684?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143712?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-460689?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'WeCool S2-Ultra Selfie Stick Tripod',
@@ -174,8 +174,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black', 'Red']]
                     ],
-                    'cover_image' => '/storage/media/42/collection.png',
-                    'images' => '/storage/media/47/1.png,/storage/media/46/2.png,/storage/media/45/3.png,/storage/media/44/4.png,/storage/media/43/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-382519?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-551356?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214522?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-682024?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-410787?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-232643?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'PopSockets Phone Grip with Expanding Kickstand',
@@ -186,8 +186,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Gray', 'Blue', 'Brown']]
                     ],
-                    'cover_image' => '/storage/media/48/collection.png',
-                    'images' => '/storage/media/53/1.png,/storage/media/52/2.png,/storage/media/51/3.png,/storage/media/50/4.png,/storage/media/49/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-573874?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-987732?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-471160?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-811543?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-385782?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-113267?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Audio Devices' => [
@@ -197,8 +197,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Dual driver technology</li><li>Superior sound quality</li><li>Comfortable fit</li><li>Tangle-free cable</li><li>In-line microphone</li></ul>',
                     'details' => '<p>Experience exceptional audio quality with Mi Dual Driver Wired Earphones featuring advanced dual driver technology for crisp highs and deep bass.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/54/collection.png',
-                    'images' => '/storage/media/59/1.png,/storage/media/58/2.png,/storage/media/57/3.png,/storage/media/56/4.png,/storage/media/55/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-780381?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-315840?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-976200?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-763731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-120462?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-835951?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'boAt Airdopes 138 Pro',
@@ -207,8 +207,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>boAt Airdopes 138 Pro delivers premium wireless audio experience with ANC technology and extended battery life for all-day listening.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
-                    'cover_image' => '/storage/media/60/collection.png',
-                    'images' => '/storage/media/65/1.png,/storage/media/64/2.png,/storage/media/63/3.png,/storage/media/62/4.png,/storage/media/61/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-010633?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-464819?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-563101?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-454748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-750329?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-431205?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'JBL Tune 520BT Wireless On Ear Headphones',
@@ -216,8 +216,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>JBL Pure Bass sound</li><li>57-hour battery life</li><li>Wireless Bluetooth 5.3</li><li>Lightweight design</li><li>Multi-point connection</li></ul>',
                     'details' => '<p>JBL Tune 520BT headphones deliver legendary JBL Pure Bass sound with incredible 57-hour battery life and comfortable on-ear design.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/66/collection.png',
-                    'images' => '/storage/media/71/1.png,/storage/media/70/2.png,/storage/media/69/3.png,/storage/media/68/4.png,/storage/media/67/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-148358?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-612295?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-495869?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-072026?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-236412?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-582503?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Pro Bass Bluetooth Neckband',
@@ -225,8 +225,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Enhanced bass response</li><li>Magnetic earbuds</li><li>15-hour battery life</li><li>IPX5 sweat resistance</li><li>Quick charge support</li></ul>',
                     'details' => '<p>Pro Bass Bluetooth Neckband offers powerful bass response and convenient magnetic earbuds with all-day battery life for active lifestyles.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/72/collection.png',
-                    'images' => '/storage/media/77/1.png,/storage/media/76/2.png,/storage/media/75/3.png,/storage/media/74/4.png,/storage/media/73/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-359408?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-301466?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-135338?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-862995?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-894042?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-470794?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => '10W Bluetooth Soundbar Speaker',
@@ -235,8 +235,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Enhance your TV and music experience with this compact 10W Bluetooth soundbar featuring multiple connectivity options and clear audio output.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
-                    'cover_image' => '/storage/media/78/collection.png',
-                    'images' => '/storage/media/83/1.png,/storage/media/82/2.png,/storage/media/81/3.png,/storage/media/80/4.png,/storage/media/79/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-995688?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-291094?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-745334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126992?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-348714?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-321802?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Zebronics Juke Bar 10000 Soundbar',
@@ -244,8 +244,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Powerful audio output</li><li>Multiple connectivity</li><li>LED display</li><li>Remote control</li><li>Wall mountable</li></ul>',
                     'details' => '<p>Zebronics Juke Bar 10000 delivers premium sound quality with powerful drivers and versatile connectivity for the ultimate home audio experience.</p>',
                     'price' => 129.99,
-                    'cover_image' => '/storage/media/84/collection.png',
-                    'images' => '/storage/media/89/1.png,/storage/media/88/2.png,/storage/media/87/3.png,/storage/media/86/4.png,/storage/media/85/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-763300?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-821106?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-502318?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-848527?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315916?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-716490?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'High-Performance Gaming Headset',
@@ -257,8 +257,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black','White']]
                     ],
-                    'cover_image' => '/storage/media/90/collection.png',
-                    'images' => '/storage/media/95/1.png,/storage/media/94/2.png,/storage/media/93/3.png,/storage/media/92/4.png,/storage/media/91/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-656123?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-859178?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-049481?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-922143?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-160497?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-144632?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Shure MV7 USB / XLR Podcast Microphone',
@@ -269,8 +269,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black','White']]
                     ],
-                    'cover_image' => '/storage/media/96/collection.png',
-                    'images' => '/storage/media/101/1.png,/storage/media/100/2.png,/storage/media/99/3.png,/storage/media/98/4.png,/storage/media/97/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-796258?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-649198?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-583224?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-293285?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-923383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-430979?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Wearable Tech' => [
@@ -280,8 +280,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Limited edition design</li><li>Advanced health monitoring</li><li>7-day battery life</li><li>Water resistant IP68</li><li>Multiple sport modes</li></ul>',
                     'details' => '<p>Noise Halo 2 Limited Edition combines premium aesthetics with cutting-edge health technology for the ultimate smartwatch experience.</p>',
                     'price' => 149.99,
-                    'cover_image' => '/storage/media/150/collection.png',
-                    'images' => '/storage/media/155/1.png,/storage/media/154/2.png,/storage/media/153/3.png,/storage/media/152/4.png,/storage/media/151/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-042563?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-000219?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-910670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-549690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-835036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-022441?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Samsung Galaxy Fit E Smart Band',
@@ -290,8 +290,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Samsung Galaxy Fit E offers essential fitness tracking features in a comfortable, lightweight design perfect for everyday wear.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
-                    'cover_image' => '/storage/media/156/collection.png',
-                    'images' => '/storage/media/161/1.png,/storage/media/160/2.png,/storage/media/159/3.png,/storage/media/158/4.png,/storage/media/157/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-362133?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-861134?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-953686?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-972119?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-895475?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-619748?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Women\'s Smart Ring NFC Control Heart Rate',
@@ -299,8 +299,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>NFC control functionality</li><li>Heart rate monitoring</li><li>Health tracking sensors</li><li>Elegant design</li><li>Waterproof construction</li></ul>',
                     'details' => '<p>Revolutionary smart ring designed for women, combining elegant aesthetics with advanced health monitoring and NFC control capabilities.</p>',
                     'price' => 199.99,
-                    'cover_image' => '/storage/media/162/collection.png',
-                    'images' => '/storage/media/167/1.png,/storage/media/166/2.png,/storage/media/165/3.png,/storage/media/164/4.png,/storage/media/163/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-773439?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-563762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-911587?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-609987?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-919383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-861748?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Pebble Newly Launched Qore Fitness Band',
@@ -308,8 +308,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Comprehensive health monitoring</li><li>15-day battery life</li><li>SpO2 monitoring</li><li>Multiple workout modes</li><li>Water resistant IP67</li></ul>',
                     'details' => '<p>Pebble Qore Fitness Band delivers comprehensive health insights with extended battery life and advanced monitoring capabilities for active lifestyles.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/168/collection.png',
-                    'images' => '/storage/media/173/1.png,/storage/media/172/2.png,/storage/media/171/3.png,/storage/media/170/4.png,/storage/media/169/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-753240?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-477697?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-601676?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-033861?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-738709?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-494572?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Noise Champ 2 Smartwatch',
@@ -318,8 +318,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Noise Champ 2 Smartwatch offers premium features including Bluetooth calling and comprehensive health monitoring in a stylish package.</p>',
                     'price' => 129.99,
                     'sale_price' => 109.99,
-                    'cover_image' => '/storage/media/174/collection.png',
-                    'images' => '/storage/media/179/1.png,/storage/media/178/2.png,/storage/media/177/3.png,/storage/media/176/4.png,/storage/media/175/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-276707?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-861336?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-781425?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-520282?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-546972?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-699327?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Apple Vision Pro',
@@ -327,8 +327,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Spatial computing</li><li>Mixed reality experience</li><li>Eye tracking technology</li><li>Hand gesture control</li><li>Ultra-high resolution displays</li></ul>',
                     'details' => '<p>Apple Vision Pro represents the future of computing with groundbreaking spatial technology and immersive mixed reality experiences.</p>',
                     'price' => 3499.99,
-                    'cover_image' => '/storage/media/180/collection.png',
-                    'images' => '/storage/media/185/1.png,/storage/media/184/2.png,/storage/media/183/3.png,/storage/media/182/4.png,/storage/media/181/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-895032?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-268498?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-452993?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-945909?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-373813?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-373795?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Bluetooth TAG & Item Finder for Keys',
@@ -339,8 +339,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black', 'Green', 'White']],
                     ],
-                    'cover_image' => '/storage/media/186/collection.png',
-                    'images' => '/storage/media/191/1.png,/storage/media/190/2.png,/storage/media/189/3.png,/storage/media/188/4.png,/storage/media/187/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-324359?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-515283?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404442?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-197459?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-403469?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-980928?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Headband Smart Brainwave Sensor Wearable Headband',
@@ -352,8 +352,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['White', 'Blue', 'Black']],
                     ],
-                    'cover_image' => '/storage/media/192/collection.png',
-                    'images' => '/storage/media/197/1.png,/storage/media/196/2.png,/storage/media/195/3.png,/storage/media/194/4.png,/storage/media/193/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-108528?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-018787?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-444982?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-426395?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-106620?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-242551?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Power & Charging' => [
@@ -363,8 +363,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>10000 mAh capacity</li><li>Fast charging support</li><li>Dual USB outputs</li><li>LED power indicator</li><li>Compact design</li></ul>',
                     'details' => '<p>Samsung 10000 mAh Power Bank provides reliable portable charging with fast charging technology and support for multiple devices simultaneously.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/102/collection.png',
-                    'images' => '/storage/media/107/1.png,/storage/media/106/2.png,/storage/media/105/3.png,/storage/media/104/4.png,/storage/media/103/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-474522?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-986820?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-425240?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-799065?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-289367?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-794894?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Noise Power Series Gan 30W GaN Charger',
@@ -373,8 +373,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Noise Power Series GaN 30W charger delivers efficient fast charging in a compact form factor using advanced GaN technology.</p>',
                     'price' => 29.99,
                     'sale_price' => 24.99,
-                    'cover_image' => '/storage/media/108/collection.png',
-                    'images' => '/storage/media/113/1.png,/storage/media/112/2.png,/storage/media/111/3.png,/storage/media/110/4.png,/storage/media/109/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-069716?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-539874?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-398353?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-644793?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-032252?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-094380?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Socket Extension Board with Surge Protector',
@@ -386,8 +386,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Color', 'options' => ['White', 'Black']],
                         ['name' => 'Sockets', 'options' => ['4 Socket', '6 Socket', '8 Socket']]
                     ],
-                    'cover_image' => '/storage/media/114/collection.png',
-                    'images' => '/storage/media/119/1.png,/storage/media/118/2.png,/storage/media/117/3.png,/storage/media/116/4.png,/storage/media/115/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-488726?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-747789?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-302677?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-409954?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-590281?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-109674?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Belkin USB Cable USB-C To USB-A Braided',
@@ -398,8 +398,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Length', 'options' => ['3ft', '6ft', '10ft']]
                     ],
-                    'cover_image' => '/storage/media/120/collection.png',
-                    'images' => '/storage/media/125/1.png,/storage/media/124/2.png,/storage/media/123/3.png,/storage/media/122/4.png,/storage/media/121/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-280195?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-649095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-669208?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-872246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-868265?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959572?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'POP 67W Triple Port GaN5 Adapter',
@@ -408,8 +408,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>POP 67W Triple Port GaN5 Adapter delivers powerful charging for multiple devices simultaneously using advanced GaN5 technology.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
-                    'cover_image' => '/storage/media/126/collection.png',
-                    'images' => '/storage/media/131/1.png,/storage/media/130/2.png,/storage/media/129/3.png,/storage/media/128/4.png,/storage/media/127/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-884432?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-943087?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461449?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-832004?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-843045?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708362?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Power 30 Dual Output Fast Car Charger',
@@ -417,8 +417,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>30W fast charging</li><li>Dual USB outputs</li><li>LED power indicator</li><li>Universal compatibility</li><li>Compact design</li></ul>',
                     'details' => '<p>Car Power 30 provides reliable fast charging for two devices simultaneously while driving, with universal compatibility and safety features.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/132/collection.png',
-                    'images' => '/storage/media/137/1.png,/storage/media/136/2.png,/storage/media/135/3.png,/storage/media/134/4.png,/storage/media/133/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-362752?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-441222?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-164579?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-050368?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-272625?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-881582?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Portronics Power Plate 7 Extension Board',
@@ -429,8 +429,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['White', 'Black']],
                     ],
-                    'cover_image' => '/storage/media/138/collection.png',
-                    'images' => '/storage/media/143/1.png,/storage/media/142/2.png,/storage/media/141/3.png,/storage/media/140/4.png,/storage/media/139/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-691524?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-207024?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708487?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-513557?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654030?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-302259?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => '67W Ultra Fast Type-C Charger',
@@ -439,8 +439,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>67W Ultra Fast Type-C Charger delivers maximum charging speed for USB-C devices including laptops, tablets, and smartphones with safety certifications.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
-                    'cover_image' => '/storage/media/144/collection.png',
-                    'images' => '/storage/media/149/1.png,/storage/media/148/2.png,/storage/media/147/3.png,/storage/media/146/4.png,/storage/media/145/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-938078?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-243082?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-487855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-664199?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-044823?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-783394?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Computer Accessories' => [
@@ -450,8 +450,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Rechargeable battery</li><li>Wireless connectivity</li><li>Ergonomic design</li><li>Precision optical sensor</li><li>USB-C charging</li></ul>',
                     'details' => '<p>ZEBRONICS Charm wireless mouse offers comfortable ergonomic design with rechargeable battery and precise optical tracking for productivity and gaming.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/198/collection.png',
-                    'images' => '/storage/media/203/1.png,/storage/media/202/2.png,/storage/media/201/3.png,/storage/media/200/4.png,/storage/media/199/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-431006?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-693512?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-049015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-112626?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-906844?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-584161?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Wired Keyboard Water-Resistant Silent Typing',
@@ -460,8 +460,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Professional wired keyboard featuring water-resistant design and silent key switches for comfortable and quiet typing in any environment.</p>',
                     'price' => 34.99,
                     'sale_price' => 29.99,
-                    'cover_image' => '/storage/media/204/collection.png',
-                    'images' => '/storage/media/209/1.png,/storage/media/208/2.png,/storage/media/207/3.png,/storage/media/206/4.png,/storage/media/205/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-836552?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-718250?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-944115?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-258861?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-652441?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-824684?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Wireless Keyboard and Mouse Combo',
@@ -469,8 +469,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Wireless keyboard and mouse</li><li>2.4GHz connectivity</li><li>Long battery life</li><li>Compact design</li><li>USB receiver included</li></ul>',
                     'details' => '<p>Complete wireless combo set featuring full-size keyboard and optical mouse with reliable 2.4GHz connectivity and extended battery life.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/215/collection.png',
-                    'images' => '/storage/media/210/1.png,/storage/media/211/2.png,/storage/media/212/3.png,/storage/media/213/4.png,/storage/media/214/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-901190?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-780106?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005786?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-670852?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-517117?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-179129?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Premium Adjustable Laptop Stand',
@@ -478,8 +478,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Multiple height settings</li><li>Adjustable viewing angles</li><li>Aluminum construction</li><li>Heat dissipation design</li><li>Portable and foldable</li></ul>',
                     'details' => '<p>Premium aluminum laptop stand with multiple adjustment options for ergonomic positioning and improved airflow for better laptop cooling.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/221/collection.png',
-                    'images' => '/storage/media/216/1.png,/storage/media/217/2.png,/storage/media/218/3.png,/storage/media/219/4.png,/storage/media/220/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-716833?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-697479?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-354821?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-168030?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-580120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-769047?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Zebronics ZEB-NC3300 USB Powered Laptop Cooling Pad',
@@ -491,8 +491,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Up to 15.6"', 'Up to 17"']]
                     ],
-                    'cover_image' => '/storage/media/222/collection.png',
-                    'images' => '/storage/media/227/1.png,/storage/media/226/2.png,/storage/media/225/3.png,/storage/media/224/4.png,/storage/media/223/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-912774?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-004779?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333910?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-185555?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-268171?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214439?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Zebronics 200HB USB Hub',
@@ -503,8 +503,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Ports', 'options' => ['4 Port', '7 Port']]
                     ],
-                    'cover_image' => '/storage/media/228/collection.png',
-                    'images' => '/storage/media/233/1.png,/storage/media/232/2.png,/storage/media/231/3.png,/storage/media/230/4.png,/storage/media/229/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-909834?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-318563?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-663985?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-771965?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-094490?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-913876?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Zebronics Live Pro Webcam',
@@ -516,8 +516,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black', 'White']]
                     ],
-                    'cover_image' => '/storage/media/234/collection.png',
-                    'images' => '/storage/media/239/1.png,/storage/media/238/2.png,/storage/media/237/3.png,/storage/media/236/4.png,/storage/media/235/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-479324?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-326205?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-642534?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-152297?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777478?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-670329?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'UnionSine External Hard Disk Drive 500GB Portable',
@@ -528,8 +528,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/240/collection.png',
-                    'images' => '/storage/media/245/1.png,/storage/media/244/2.png,/storage/media/243/3.png,/storage/media/242/4.png,/storage/media/241/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-296647?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-525472?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-836137?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-113397?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-660080?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129174?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Men\'s Fashion' => [
@@ -539,8 +539,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>100% Cotton</li><li>Regular fit</li><li>Crew neck</li><li>Short sleeves</li><li>Machine washable</li></ul>',
                     'details' => '<p>Classic regular fit t-shirt perfect for everyday wear. Made from soft cotton blend for comfort and durability.</p>',
                     'price' => 12.99,
-                    'cover_image' => '/storage/media/251/collection.png',
-                    'images' => '/storage/media/256/1.png,/storage/media/255/2.png,/storage/media/254/3.png,/storage/media/253/4.png,/storage/media/252/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-456247?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-363562?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-451867?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-805385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-314472?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026809?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Highlander Men\'s Solid Casual Shirt',
@@ -551,8 +551,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['S', 'M', 'L', 'XL', 'XXL']]
                     ],
-                    'cover_image' => '/storage/media/257/collection.png',
-                    'images' => '/storage/media/262/1.png,/storage/media/261/2.png,/storage/media/260/3.png,/storage/media/259/4.png,/storage/media/258/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-749990?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-817346?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-597680?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-346874?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143402?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-030362?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Levi\'s Men\'s 511 Slim Fit Jeans',
@@ -564,8 +564,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['30', '32', '34', '36', '38', '40']]
                     ],
-                    'cover_image' => '/storage/media/263/collection.png',
-                    'images' => '/storage/media/268/1.png,/storage/media/267/2.png,/storage/media/266/3.png,/storage/media/265/4.png,/storage/media/264/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-998197?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-835718?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-517342?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-869095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-203811?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-162683?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Campus Sutra Men\'s Solid Tailored Trousers',
@@ -576,8 +576,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['30', '32', '34', '36', '38', '40']]
                     ],
-                    'cover_image' => '/storage/media/269/collection.png',
-                    'images' => '/storage/media/274/1.png,/storage/media/273/2.png,/storage/media/272/3.png,/storage/media/271/4.png,/storage/media/270/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-932220?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-624927?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-711208?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777343?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-090316?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-700208?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Lymio Jackets | Jacket for men',
@@ -586,8 +586,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Modern casual jacket perfect for layering. Water-resistant fabric with comfortable fit for everyday wear.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
-                    'cover_image' => '/storage/media/275/collection.png',
-                    'images' => '/storage/media/280/1.png,/storage/media/279/2.png,/storage/media/278/3.png,/storage/media/277/4.png,/storage/media/276/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-815661?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-491411?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-585533?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-756068?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-328120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-499345?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Nobero Oversized Hoodie',
@@ -595,8 +595,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Cotton-polyester blend</li><li>Oversized fit</li><li>Fleece lining</li><li>Kangaroo pocket</li><li>Adjustable hood</li></ul>',
                     'details' => '<p>Trendy oversized hoodie with soft fleece lining for maximum comfort. Perfect for casual wear and streetwear style.</p>',
                     'price' => 44.99,
-                    'cover_image' => '/storage/media/281/collection.png',
-                    'images' => '/storage/media/286/1.png,/storage/media/285/2.png,/storage/media/284/3.png,/storage/media/283/4.png,/storage/media/282/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-681903?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-206454?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-702983?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005492?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-148962?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462524?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cruiser Mens Casual Sneakers',
@@ -608,8 +608,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Size', 'options' => ['7', '8', '9', '10', '11', '12']],
                         ['name' => 'Color', 'options' => ['Black', 'Green', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/287/collection.png',
-                    'images' => '/storage/media/292/1.png,/storage/media/291/2.png,/storage/media/290/3.png,/storage/media/289/4.png,/storage/media/288/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-605445?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-708855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-292696?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-051961?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-477625?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-881592?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fastrack-Tees Hype Adventure Quartz Analog Watch',
@@ -621,8 +621,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Teal', 'Brown', 'Cream', 'White']]
                     ],
-                    'cover_image' => '/storage/media/293/collection.png',
-                    'images' => '/storage/media/298/1.png,/storage/media/297/2.png,/storage/media/296/3.png,/storage/media/295/4.png,/storage/media/294/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-360234?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-356399?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-873215?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-690933?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-429159?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-162255?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Women\'s Fashion' => [
@@ -632,8 +632,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>100% Pure cotton</li><li>Smocked bodice</li><li>Mexican-inspired print</li><li>Midi length</li><li>Machine washable</li></ul>',
                     'details' => '<p>Beautiful pure cotton dress featuring traditional smocked detailing and vibrant Mexican-inspired patterns. Perfect for casual and semi-formal occasions.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/299/collection.png',
-                    'images' => '/storage/media/304/1.png,/storage/media/303/2.png,/storage/media/302/3.png,/storage/media/301/4.png,/storage/media/300/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-275144?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-918818?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-577440?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-591925?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-264563?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-643146?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Stretchable Panelled Peplum Top',
@@ -644,8 +644,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['XS', 'S', 'M', 'L', 'XL']]
                     ],
-                    'cover_image' => '/storage/media/305/collection.png',
-                    'images' => '/storage/media/310/1.png,/storage/media/309/2.png,/storage/media/308/3.png,/storage/media/307/4.png,/storage/media/306/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-911325?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-619150?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-529704?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-398662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-125508?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-020740?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Floral Print Straight Kurtis',
@@ -657,8 +657,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['XS', 'S', 'M', 'L', 'XL', 'XXL']]
                     ],
-                    'cover_image' => '/storage/media/311/collection.png',
-                    'images' => '/storage/media/316/1.png,/storage/media/315/2.png,/storage/media/314/3.png,/storage/media/313/4.png,/storage/media/312/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-968381?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-730786?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-649153?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-060604?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-372958?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-501360?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Light Washed Straight Fit Jeans',
@@ -669,8 +669,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['24', '26', '28', '30', '32', '34']]
                     ],
-                    'cover_image' => '/storage/media/317/collection.png',
-                    'images' => '/storage/media/322/1.png,/storage/media/321/2.png,/storage/media/320/3.png,/storage/media/319/4.png,/storage/media/318/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-196364?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-313328?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-484762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-086383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-221554?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Pure Cotton Box Pleated Midi Skirt',
@@ -681,8 +681,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['XS', 'S', 'M', 'L', 'XL']]
                     ],
-                    'cover_image' => '/storage/media/323/collection.png',
-                    'images' => '/storage/media/328/1.png,/storage/media/327/2.png,/storage/media/326/3.png,/storage/media/325/4.png,/storage/media/324/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-415854?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-676491?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-200169?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-906652?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-534782?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-952346?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Clarice Pleated Shoulder Bag',
@@ -691,8 +691,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Elegant shoulder bag featuring sophisticated pleated design. Multiple compartments and adjustable strap make it perfect for daily use.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
-                    'cover_image' => '/storage/media/329/collection.png',
-                    'images' => '/storage/media/334/1.png,/storage/media/333/2.png,/storage/media/332/3.png,/storage/media/331/4.png,/storage/media/330/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-436231?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-250524?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-291600?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-833493?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404808?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-052606?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Ankle Loop Wedges Heels',
@@ -704,8 +704,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
                         ['name' => 'Color', 'options' => ['Green', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/335/collection.png',
-                    'images' => '/storage/media/340/1.png,/storage/media/339/2.png,/storage/media/338/3.png,/storage/media/337/4.png,/storage/media/336/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-069737?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-369331?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303376?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-823641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-270283?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-568579?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Elowen Vine Lab-Grown Diamond Pendant',
@@ -714,8 +714,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Exquisite pendant featuring ethically sourced lab-grown diamonds in a beautiful vine-inspired design. Perfect for special occasions and everyday elegance.</p>',
                     'price' => 199.99,
                     'sale_price' => 179.99,
-                    'cover_image' => '/storage/media/341/collection.png',
-                    'images' => '/storage/media/346/1.png,/storage/media/345/2.png,/storage/media/344/3.png,/storage/media/343/4.png,/storage/media/342/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-364777?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-463464?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-798356?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-833284?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249408?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-939352?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Kid\'s Fashion' => [
@@ -728,8 +728,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['3-6M']]
                     ],
-                    'cover_image' => '/storage/media/347/collection.png',
-                    'images' => '/storage/media/352/1.png,/storage/media/351/2.png,/storage/media/350/3.png,/storage/media/349/4.png,/storage/media/348/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-188251?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-589925?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-310457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-410968?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-323706?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-413447?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Girls Cotton Casual Dress',
@@ -740,8 +740,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['3-6M']]
                     ],
-                    'cover_image' => '/storage/media/353/collection.png',
-                    'images' => '/storage/media/358/1.png,/storage/media/357/2.png,/storage/media/356/3.png,/storage/media/355/4.png,/storage/media/354/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-379601?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-537623?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-003962?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-509073?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-427162?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-231764?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Kid\'s Running Shorts',
@@ -749,8 +749,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Moisture-wicking fabric</li><li>Lightweight design</li><li>Elastic waistband</li><li>Side pockets</li><li>Quick-dry material</li></ul>',
                     'details' => '<p>Perfect running shorts for active kids featuring moisture-wicking fabric and lightweight design. Elastic waistband and side pockets provide comfort and functionality.</p>',
                     'price' => 16.99,
-                    'cover_image' => '/storage/media/359/collection.png',
-                    'images' => '/storage/media/364/1.png,/storage/media/363/2.png,/storage/media/362/3.png,/storage/media/361/4.png,/storage/media/360/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-888542?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-110975?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-549864?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-893722?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-132236?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-486588?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Sports Walking Shoes for Kids',
@@ -762,8 +762,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['4-4.5 Years']]
                     ],
-                    'cover_image' => '/storage/media/365/collection.png',
-                    'images' => '/storage/media/370/1.png,/storage/media/369/2.png,/storage/media/368/3.png,/storage/media/367/4.png,/storage/media/366/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-938206?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-734465?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-988532?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-883127?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-961271?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-235478?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Kid\'s Official Characters Sweatshirt',
@@ -771,8 +771,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Cotton blend fabric</li><li>Official character designs</li><li>Pullover style</li><li>Ribbed cuffs and hem</li><li>Machine washable</li></ul>',
                     'details' => '<p>Fun and cozy sweatshirt featuring official cartoon characters that kids love. Made from soft cotton blend with ribbed cuffs for comfort and durability.</p>',
                     'price' => 28.99,
-                    'cover_image' => '/storage/media/371/collection.png',
-                    'images' => '/storage/media/376/1.png,/storage/media/375/2.png,/storage/media/374/3.png,/storage/media/373/4.png,/storage/media/372/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-110342?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-013304?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-522853?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-515625?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-760068?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-796778?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Toddler/Preschoolers Backpack for Kids',
@@ -780,8 +780,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Toddler-friendly size</li><li>Padded shoulder straps</li><li>Multiple compartments</li><li>Water-resistant material</li><li>Fun cartoon designs</li></ul>',
                     'details' => '<p>Perfect backpack for toddlers and preschoolers with age-appropriate size and fun designs. Features padded straps and multiple compartments for organization.</p>',
                     'price' => 22.99,
-                    'cover_image' => '/storage/media/377/collection.png',
-                    'images' => '/storage/media/382/1.png,/storage/media/381/2.png,/storage/media/380/3.png,/storage/media/379/4.png,/storage/media/378/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-105206?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-787422?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-323717?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-485206?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-907644?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-087648?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Classic Little Sports Cap for Active Kids',
@@ -792,8 +792,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Yellow', 'Pink', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/383/collection.png',
-                    'images' => '/storage/media/388/1.png,/storage/media/387/2.png,/storage/media/386/3.png,/storage/media/385/4.png,/storage/media/384/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-044689?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-111629?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-952748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-863191?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249869?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-076092?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Pure Cotton Full Sleeve Night Suit for Kids',
@@ -806,8 +806,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Size', 'options' => ['3-6M']],
                         ['name' => 'Color', 'options' => ['Blue', 'Gray', 'Pink']]
                     ],
-                    'cover_image' => '/storage/media/389/collection.png',
-                    'images' => '/storage/media/394/1.png,/storage/media/393/2.png,/storage/media/392/3.png,/storage/media/391/4.png,/storage/media/390/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-844771?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-941559?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-384425?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143701?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-445494?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-577024?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Footwear' => [
@@ -817,8 +817,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Sustainable materials</li><li>Basketball-inspired design</li><li>Rubber outsole</li><li>Padded collar</li><li>Lace-up closure</li></ul>',
                     'details' => '<p>Nike Court Vision Low Next Nature sneakers combine classic basketball style with sustainable materials. Perfect for everyday wear with comfort and iconic Nike design.</p>',
                     'price' => 89.99,
-                    'cover_image' => '/storage/media/395/collection.png',
-                    'images' => '/storage/media/400/1.png,/storage/media/399/2.png,/storage/media/398/3.png,/storage/media/397/4.png,/storage/media/396/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-359926?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-714945?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-466207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-614160?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-888564?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709404?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'ANNIE Grey Women\'s Walking Shoes',
@@ -830,8 +830,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']]
                     ],
-                    'cover_image' => '/storage/media/401/collection.png',
-                    'images' => '/storage/media/406/1.png,/storage/media/405/2.png,/storage/media/404/3.png,/storage/media/403/4.png,/storage/media/402/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-500027?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-932959?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-514017?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-100358?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-797953?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-547410?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Men\'s Loafer Formal Shoes',
@@ -842,8 +842,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12']]
                     ],
-                    'cover_image' => '/storage/media/407/collection.png',
-                    'images' => '/storage/media/412/1.png,/storage/media/411/2.png,/storage/media/410/3.png,/storage/media/409/4.png,/storage/media/408/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-990733?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-654551?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-700208?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-198145?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-500126?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-866045?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Beige Casual Women Sandals',
@@ -851,8 +851,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Beige color design</li><li>Adjustable straps</li><li>Cushioned sole</li><li>Casual style</li><li>Comfortable fit</li></ul>',
                     'details' => '<p>Comfortable beige sandals designed for casual wear. Features adjustable straps and cushioned sole for all-day comfort during summer activities.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/413/collection.png',
-                    'images' => '/storage/media/418/1.png,/storage/media/417/2.png,/storage/media/416/3.png,/storage/media/415/4.png,/storage/media/414/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-860948?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-482518?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-080706?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315981?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-075682?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-058993?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Women\'s Pastel Blue Strappy Block Heels',
@@ -864,8 +864,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']]
                     ],
-                    'cover_image' => '/storage/media/419/collection.png',
-                    'images' => '/storage/media/424/1.png,/storage/media/423/2.png,/storage/media/422/3.png,/storage/media/421/4.png,/storage/media/420/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-368843?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-391104?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-218580?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462637?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-412805?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-025133?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Men Solid Open Toe Synthetic Leather Flats',
@@ -876,8 +876,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12']]
                     ],
-                    'cover_image' => '/storage/media/425/collection.png',
-                    'images' => '/storage/media/430/1.png,/storage/media/429/2.png,/storage/media/428/3.png,/storage/media/427/4.png,/storage/media/426/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-618065?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-003888?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-674442?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-345644?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-488447?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-998922?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Genuine Leather Women Chelsea Boots',
@@ -889,8 +889,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
                         ['name' => 'Color', 'options' => ['Black', 'Brown']]
                     ],
-                    'cover_image' => '/storage/media/431/collection.png',
-                    'images' => '/storage/media/436/1.png,/storage/media/435/2.png,/storage/media/434/3.png,/storage/media/433/4.png,/storage/media/432/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-184672?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-725951?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-096420?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-951041?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-664690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-740118?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Women Thong Strap Flip Flops',
@@ -902,8 +902,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
                         ['name' => 'Color', 'options' => ['Yellow', 'White', 'Pink']]
                     ],
-                    'cover_image' => '/storage/media/437/collection.png',
-                    'images' => '/storage/media/442/1.png,/storage/media/441/2.png,/storage/media/440/3.png,/storage/media/439/4.png,/storage/media/438/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-174353?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-578220?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-719772?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-329119?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-768105?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-521006?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Accessories' => [
@@ -913,8 +913,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Swiss quartz movement</li><li>Stainless steel case</li><li>Sapphire crystal glass</li><li>Water resistant 100m</li><li>Integrated bracelet</li></ul>',
                     'details' => '<p>The iconic Tissot PRX combines retro aesthetics with modern Swiss precision. Features integrated bracelet design and premium materials for sophisticated timekeeping.</p>',
                     'price' => 349.99,
-                    'cover_image' => '/storage/media/443/collection.png',
-                    'images' => '/storage/media/448/1.png,/storage/media/447/2.png,/storage/media/446/3.png,/storage/media/445/4.png,/storage/media/444/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-690326?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-502224?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-789997?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-326161?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461537?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-934467?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'IFLASH Octagonal Polarized Sunglasses',
@@ -923,8 +923,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>IFLASH octagonal sunglasses offer unique geometric styling with superior polarized lenses for optimal eye protection and visual clarity.</p>',
                     'price' => 79.99,
                     'sale_price' => 64.99,
-                    'cover_image' => '/storage/media/449/collection.png',
-                    'images' => '/storage/media/454/1.png,/storage/media/453/2.png,/storage/media/452/3.png,/storage/media/451/4.png,/storage/media/450/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-317280?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-702470?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-487171?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-207121?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-914256?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-160416?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Men Casual Evening Black Nylon Fabric Belt',
@@ -935,8 +935,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['32', '34', '36', '38', '40', '42', '44']]
                     ],
-                    'cover_image' => '/storage/media/455/collection.png',
-                    'images' => '/storage/media/460/1.png,/storage/media/459/2.png,/storage/media/458/3.png,/storage/media/457/4.png,/storage/media/456/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-090967?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-192999?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-626859?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-405336?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-494856?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-965662?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Storite Compact Leather Wallet',
@@ -945,8 +945,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Storite compact leather wallet combines functionality with style. Features RFID blocking technology and organized compartments in a sleek, compact design.</p>',
                     'price' => 49.99,
                     'sale_price' => 39.99,
-                    'cover_image' => '/storage/media/461/collection.png',
-                    'images' => '/storage/media/466/1.png,/storage/media/465/2.png,/storage/media/464/3.png,/storage/media/463/4.png,/storage/media/462/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-453359?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-643645?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-351030?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-446171?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-021657?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-317145?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Casual Cap for Women',
@@ -954,8 +954,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Cotton blend fabric</li><li>Adjustable back strap</li><li>Curved brim design</li><li>Breathable material</li><li>One size fits most</li></ul>',
                     'details' => '<p>Fashionable casual cap perfect for everyday wear. Features comfortable cotton blend fabric and adjustable fit for all-day comfort and style.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/467/collection.png',
-                    'images' => '/storage/media/472/1.png,/storage/media/471/2.png,/storage/media/470/3.png,/storage/media/469/4.png,/storage/media/468/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-239052?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-384922?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-020852?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-790979?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-532667?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-284595?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cotton Scarf for Women',
@@ -963,8 +963,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>100% Cotton material</li><li>Lightweight design</li><li>Elegant patterns</li><li>Versatile styling</li><li>Machine washable</li></ul>',
                     'details' => '<p>Beautiful cotton scarf featuring elegant patterns and soft texture. Perfect for adding style to any outfit while providing comfort in all seasons.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/473/collection.png',
-                    'images' => '/storage/media/478/1.png,/storage/media/477/2.png,/storage/media/476/3.png,/storage/media/475/4.png,/storage/media/474/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-535271?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-061055?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-040547?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-100939?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-842094?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548718?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fancy Teardrop Motif Pendant',
@@ -976,8 +976,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Chain Length', 'options' => ['16 inch', '18 inch', '20 inch']],
                         ['name' => 'Color', 'options' => ['Silver', 'Gold Plated', 'Rose Gold']]
                     ],
-                    'cover_image' => '/storage/media/479/collection.png',
-                    'images' => '/storage/media/484/1.png,/storage/media/483/2.png,/storage/media/482/3.png,/storage/media/481/4.png,/storage/media/480/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-929454?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-062391?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-787223?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665800?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-102743?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-530869?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Monogram Embossed Sling Bag',
@@ -989,8 +989,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['White', 'Brown', 'Sky Blue']]
                     ],
-                    'cover_image' => '/storage/media/485/collection.png',
-                    'images' => '/storage/media/490/1.png,/storage/media/489/2.png,/storage/media/488/3.png,/storage/media/487/4.png,/storage/media/486/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-643812?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-792078?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-109374?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-145384?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558906?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-628939?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Wall Decor' => [
@@ -1003,8 +1003,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['12x16 inch', '16x20 inch', '20x24 inch']]
                     ],
-                    'cover_image' => '/storage/media/693/collection.png',
-                    'images' => '/storage/media/688/1.png,/storage/media/689/2.png,/storage/media/690/3.png,/storage/media/691/4.png,/storage/media/692/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-481055?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-698814?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-496797?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-898289?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-776178?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-119800?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Divine Krishna Canvas Painting',
@@ -1013,8 +1013,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Beautiful Divine Krishna canvas painting featuring traditional spiritual art with vibrant colors and premium quality materials.</p>',
                     'price' => 129.99,
                     'sale_price' => 109.99,
-                    'cover_image' => '/storage/media/694/collection.png',
-                    'images' => '/storage/media/699/1.png,/storage/media/698/2.png,/storage/media/697/3.png,/storage/media/696/4.png,/storage/media/695/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-356324?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-459234?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-877515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-920296?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-551760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-861144?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'FNP Playful Anime Hanging Photo Frame',
@@ -1022,8 +1022,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Anime design</li><li>Hanging style</li><li>Multiple photo slots</li><li>Durable material</li><li>Easy to hang</li></ul>',
                     'details' => '<p>Adorable FNP Playful Anime hanging photo frame with cute designs perfect for displaying your favorite memories in style.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/700/collection.png',
-                    'images' => '/storage/media/705/1.png,/storage/media/704/2.png,/storage/media/703/3.png,/storage/media/702/4.png,/storage/media/701/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-194702?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-202261?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-203095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-403892?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871605?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-690188?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Nautica Modern Wall Clock',
@@ -1032,8 +1032,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Stylish Nautica Modern wall clock combining contemporary design with nautical elements for a sophisticated look.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
-                    'cover_image' => '/storage/media/706/collection.png',
-                    'images' => '/storage/media/711/1.png,/storage/media/710/2.png,/storage/media/709/3.png,/storage/media/708/4.png,/storage/media/707/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-438988?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-519309?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-545700?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-138674?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-829984?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-622570?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Plantex Frameless Mirror',
@@ -1041,8 +1041,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Frameless design</li><li>High-quality glass</li><li>Easy installation</li><li>Modern style</li><li>Beveled edges</li></ul>',
                     'details' => '<p>Elegant Plantex frameless mirror with beveled edges and high-quality glass, perfect for creating a modern and spacious feel.</p>',
                     'price' => 149.99,
-                    'cover_image' => '/storage/media/712/collection.png',
-                    'images' => '/storage/media/717/1.png,/storage/media/716/2.png,/storage/media/715/3.png,/storage/media/714/4.png,/storage/media/713/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-548029?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-060154?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777932?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777567?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-686918?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-523032?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Sheesham Solid Wood Floating Shelf',
@@ -1050,8 +1050,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Solid sheesham wood</li><li>Floating design</li><li>Hidden brackets</li><li>Natural finish</li><li>Easy installation</li></ul>',
                     'details' => '<p>Beautiful Sheesham solid wood floating shelf with natural finish and hidden brackets for a clean, modern look.</p>',
                     'price' => 89.99,
-                    'cover_image' => '/storage/media/718/collection.png',
-                    'images' => '/storage/media/723/1.png,/storage/media/722/2.png,/storage/media/721/3.png,/storage/media/720/4.png,/storage/media/719/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-099391?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-659515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-399102?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-405584?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-167555?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-596637?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Metal Organizer with Hooks for Entryway',
@@ -1064,8 +1064,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Color', 'options' => ['Bronze', 'Silver', 'Gold']],
                         ['name' => 'Hooks', 'options' => ['4 Hooks', '6 Hooks', '8 Hooks']]
                     ],
-                    'cover_image' => '/storage/media/724/collection.png',
-                    'images' => '/storage/media/729/1.png,/storage/media/728/2.png,/storage/media/727/3.png,/storage/media/726/4.png,/storage/media/725/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-515581?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-032638?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-706457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-771811?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-221665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-583897?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Merlion Singapore Metal Statue',
@@ -1076,8 +1076,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black', 'Gold']],
                     ],
-                    'cover_image' => '/storage/media/730/collection.png',
-                    'images' => '/storage/media/735/1.png,/storage/media/734/2.png,/storage/media/733/3.png,/storage/media/732/4.png,/storage/media/731/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-263517?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-257315?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-913184?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-200662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-789817?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-091745?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Lighting & Lamps' => [
@@ -1087,8 +1087,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Beige fabric shade</li><li>Classic design</li><li>Metal base</li><li>E27 bulb socket</li><li>Easy assembly</li></ul>',
                     'details' => '<p>Beautiful Cumberland table lamp with beige shade that provides warm, ambient lighting perfect for reading and relaxation.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/501/collection.png',
-                    'images' => '/storage/media/496/1.png,/storage/media/497/2.png,/storage/media/498/3.png,/storage/media/499/4.png,/storage/media/500/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-070207?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-778206?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-785881?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-268861?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548016?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-146847?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Tripod Floor Lamp With Metal Base',
@@ -1097,8 +1097,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Contemporary tripod floor lamp with metal base offering adjustable height and modern styling for any living space.</p>',
                     'price' => 149.99,
                     'sale_price' => 129.99,
-                    'cover_image' => '/storage/media/507/collection.png',
-                    'images' => '/storage/media/502/1.png,/storage/media/503/2.png,/storage/media/504/3.png,/storage/media/505/4.png,/storage/media/506/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-451523?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-814398?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-920440?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-217758?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-117202?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-138396?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Bedside Golden Wall Light Lamp with Glass Shade',
@@ -1106,8 +1106,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Golden finish</li><li>Glass shade</li><li>Wall mounted</li><li>Bedside design</li><li>Easy installation</li></ul>',
                     'details' => '<p>Sophisticated bedside wall light with golden finish and glass shade, perfect for creating ambient lighting in bedrooms.</p>',
                     'price' => 89.99,
-                    'cover_image' => '/storage/media/513/collection.png',
-                    'images' => '/storage/media/508/1.png,/storage/media/509/2.png,/storage/media/510/3.png,/storage/media/511/4.png,/storage/media/512/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-210243?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-363100?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-725457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-544661?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-953243?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-332966?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Lights Cluster Chandelier Pendant Light',
@@ -1116,8 +1116,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Stunning cluster chandelier featuring multiple pendant lights that create a dramatic focal point for dining rooms and living spaces.</p>',
                     'price' => 299.99,
                     'sale_price' => 259.99,
-                    'cover_image' => '/storage/media/519/collection.png',
-                    'images' => '/storage/media/514/1.png,/storage/media/515/2.png,/storage/media/516/3.png,/storage/media/517/4.png,/storage/media/518/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-876940?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-935588?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-107593?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-012083?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-947246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-194768?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'White Glass Ceiling Flush Mount',
@@ -1125,8 +1125,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>White glass shade</li><li>Flush mount design</li><li>Modern style</li><li>Easy installation</li><li>Energy efficient</li></ul>',
                     'details' => '<p>Sleek white glass ceiling flush mount providing clean, even lighting perfect for modern homes and low ceiling spaces.</p>',
                     'price' => 69.99,
-                    'cover_image' => '/storage/media/525/collection.png',
-                    'images' => '/storage/media/520/1.png,/storage/media/521/2.png,/storage/media/522/3.png,/storage/media/523/4.png,/storage/media/524/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-878487?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-204207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-621221?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-015313?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-758432?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-370516?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => '4 Watts E27 Holder LED Bulb',
@@ -1135,8 +1135,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>High-quality 4W LED bulb with E27 base offering energy efficiency and long lifespan for all your lighting needs.</p>',
                     'price' => 12.99,
                     'sale_price' => 9.99,
-                    'cover_image' => '/storage/media/531/collection.png',
-                    'images' => '/storage/media/526/1.png,/storage/media/527/2.png,/storage/media/528/3.png,/storage/media/529/4.png,/storage/media/530/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-691623?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-315800?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-739929?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-061101?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-679867?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-526412?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Love Reaction Double, Gold, Decorative lights',
@@ -1147,8 +1147,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Gold', 'Black', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/537/collection.png',
-                    'images' => '/storage/media/532/1.png,/storage/media/533/2.png,/storage/media/534/3.png,/storage/media/535/4.png,/storage/media/536/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-912422?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-290431?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-465620?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-358107?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-727205?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-177863?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Venice Shade Night Lamp',
@@ -1160,8 +1160,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Green', 'Blue', 'Beige']]
                     ],
-                    'cover_image' => '/storage/media/543/collection.png',
-                    'images' => '/storage/media/538/1.png,/storage/media/539/2.png,/storage/media/540/3.png,/storage/media/541/4.png,/storage/media/542/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-773477?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-053400?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-371351?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-291748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-607314?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-242861?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Home Furnishings' => [
@@ -1171,8 +1171,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Microfiber fabric</li><li>Premium filling</li><li>Ultra-soft texture</li><li>Machine washable</li><li>Hypoallergenic</li></ul>',
                     'details' => '<p>Luxurious microfiber soft cushion designed for ultimate comfort with premium filling and hypoallergenic properties.</p>',
                     'price' => 29.99,
-                    'cover_image' => '/storage/media/549/collection.png',
-                    'images' => '/storage/media/544/1.png,/storage/media/545/2.png,/storage/media/546/3.png,/storage/media/547/4.png,/storage/media/548/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-968318?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-708365?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-527236?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-882117?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-574795?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-165007?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cotton Throw Bedcover Super Soft & Breathable',
@@ -1181,8 +1181,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Beautiful cotton throw bedcover offering superior softness and breathability, perfect for layering and comfort in any season.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
-                    'cover_image' => '/storage/media/555/collection.png',
-                    'images' => '/storage/media/550/1.png,/storage/media/551/2.png,/storage/media/552/3.png,/storage/media/553/4.png,/storage/media/554/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-624652?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-995022?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-930985?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333413?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-450635?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-523359?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Elegant Solid Semi-Sheer Curtains for Window',
@@ -1193,8 +1193,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Length', 'options' => ['84 inch', '96 inch', '108 inch']]
                     ],
-                    'cover_image' => '/storage/media/561/collection.png',
-                    'images' => '/storage/media/556/1.png,/storage/media/557/2.png,/storage/media/558/3.png,/storage/media/559/4.png,/storage/media/560/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-280890?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-251040?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-764059?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-837468?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-568285?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-736390?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'home Premium Modern Runner Rug',
@@ -1203,8 +1203,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Stylish premium modern runner rug featuring contemporary patterns, perfect for adding elegance to hallways and high-traffic areas.</p>',
                     'price' => 89.99,
                     'sale_price' => 79.99,
-                    'cover_image' => '/storage/media/567/collection.png',
-                    'images' => '/storage/media/562/1.png,/storage/media/563/2.png,/storage/media/564/3.png,/storage/media/565/4.png,/storage/media/566/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-778424?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-166947?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593937?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-821149?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646530?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-084161?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => '100% Cotton Solid King Size Quilted Bed Cover',
@@ -1212,8 +1212,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>100% cotton fabric</li><li>King size</li><li>Quilted design</li><li>Solid color</li><li>Machine washable</li></ul>',
                     'details' => '<p>Luxurious 100% cotton quilted bed cover in king size featuring solid colors and premium quilting for comfort and style.</p>',
                     'price' => 129.99,
-                    'cover_image' => '/storage/media/573/collection.png',
-                    'images' => '/storage/media/568/1.png,/storage/media/569/2.png,/storage/media/570/3.png,/storage/media/571/4.png,/storage/media/572/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-709629?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-720341?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-611606?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-838431?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-927641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-060121?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Super Soft Anti-Skid Super Absorbent Mats',
@@ -1222,8 +1222,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Premium super soft mats with anti-skid backing and superior absorbent properties, perfect for bathrooms and kitchen areas.</p>',
                     'price' => 24.99,
                     'sale_price' => 19.99,
-                    'cover_image' => '/storage/media/579/collection.png',
-                    'images' => '/storage/media/574/1.png,/storage/media/575/2.png,/storage/media/576/3.png,/storage/media/577/4.png,/storage/media/578/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-449915?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-826368?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-115017?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-970999?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-127621?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-901735?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Rose Printed Center Table Cover',
@@ -1231,8 +1231,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Rose print design</li><li>Premium fabric</li><li>Center table size</li><li>Easy to clean</li><li>Decorative border</li></ul>',
                     'details' => '<p>Elegant rose printed center table cover featuring beautiful floral patterns and decorative borders for sophisticated table styling.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/585/collection.png',
-                    'images' => '/storage/media/580/1.png,/storage/media/581/2.png,/storage/media/582/3.png,/storage/media/583/4.png,/storage/media/584/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-417378?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-621771?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-787105?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-236265?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-407923?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-780186?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Corduroy Lace Sofa Cover',
@@ -1244,8 +1244,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Blue', 'Green', 'Pink']]
                     ],
-                    'cover_image' => '/storage/media/591/collection.png',
-                    'images' => '/storage/media/586/1.png,/storage/media/587/2.png,/storage/media/588/3.png,/storage/media/589/4.png,/storage/media/590/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-109788?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-639805?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-311309?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-736905?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-091443?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-393295?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Decorative Accents' => [
@@ -1255,8 +1255,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Hand-glazed ceramic</li><li>Sky blue color</li><li>Artistic finish</li><li>Elegant design</li><li>Waterproof interior</li></ul>',
                     'details' => '<p>Stunning sky blue hand-glazed ceramic vase featuring artistic craftsmanship and elegant design, perfect for fresh or dried flowers.</p>',
                     'price' => 89.99,
-                    'cover_image' => '/storage/media/597/collection.png',
-                    'images' => '/storage/media/592/1.png,/storage/media/593/2.png,/storage/media/594/3.png,/storage/media/595/4.png,/storage/media/596/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-010478?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-284100?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-673251?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-172306?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-089143?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404385?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Decorative Ceramic Showpiece',
@@ -1265,8 +1265,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Beautiful decorative ceramic showpiece featuring intricate craftsmanship and elegant design, perfect for enhancing any living space.</p>',
                     'price' => 69.99,
                     'sale_price' => 59.99,
-                    'cover_image' => '/storage/media/603/collection.png',
-                    'images' => '/storage/media/598/1.png,/storage/media/599/2.png,/storage/media/600/3.png,/storage/media/601/4.png,/storage/media/602/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-997730?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-812207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-848935?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-734588?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-300683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-415749?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Elegant Resin Girl Figurine with Apple',
@@ -1274,8 +1274,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>High-quality resin</li><li>Girl with apple design</li><li>Elegant finish</li><li>Detailed craftsmanship</li><li>Perfect gift item</li></ul>',
                     'details' => '<p>Charming elegant resin figurine featuring a girl with apple, showcasing detailed craftsmanship and perfect for home decor or as a thoughtful gift.</p>',
                     'price' => 45.99,
-                    'cover_image' => '/storage/media/609/collection.png',
-                    'images' => '/storage/media/604/1.png,/storage/media/605/2.png,/storage/media/606/3.png,/storage/media/607/4.png,/storage/media/608/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-595089?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-893765?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-235973?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-800350?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-530092?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-616354?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Home Centre Claire Unscented Pillar Candle',
@@ -1284,8 +1284,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Premium Home Centre Claire unscented pillar candle offering long burning time and elegant ambiance without overpowering fragrances.</p>',
                     'price' => 24.99,
                     'sale_price' => 19.99,
-                    'cover_image' => '/storage/media/615/collection.png',
-                    'images' => '/storage/media/610/1.png,/storage/media/611/2.png,/storage/media/612/3.png,/storage/media/613/4.png,/storage/media/614/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-054969?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-469396?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-051731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-435735?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303352?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-938503?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Decorative Fancy Candle Holder',
@@ -1293,8 +1293,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Fancy decorative design</li><li>Premium materials</li><li>Stable base</li><li>Elegant finish</li><li>Universal candle fit</li></ul>',
                     'details' => '<p>Beautiful decorative fancy candle holder featuring ornate design and premium materials, perfect for creating elegant candle displays.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/621/collection.png',
-                    'images' => '/storage/media/616/1.png,/storage/media/617/2.png,/storage/media/618/3.png,/storage/media/619/4.png,/storage/media/620/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-652064?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-859680?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-652918?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-832801?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-912903?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129466?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Wooden Square Tray with Inlay Work',
@@ -1303,8 +1303,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Exquisite handcrafted wooden square tray with beautiful inlay work, showcasing traditional craftsmanship and perfect for serving or decoration.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
-                    'cover_image' => '/storage/media/627/collection.png',
-                    'images' => '/storage/media/622/1.png,/storage/media/623/2.png,/storage/media/624/3.png,/storage/media/625/4.png,/storage/media/626/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-529575?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-646477?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-048234?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-536378?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-181322?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-065194?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Royal Gold Ceramic Decorative Bowl',
@@ -1315,8 +1315,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['White', 'Gold', 'Pink']]
                     ],
-                    'cover_image' => '/storage/media/633/collection.png',
-                    'images' => '/storage/media/628/1.png,/storage/media/629/2.png,/storage/media/630/3.png,/storage/media/631/4.png,/storage/media/632/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-111826?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-920049?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-847120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-286868?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-197372?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-089903?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Garden Decor Modern Sculptures',
@@ -1328,8 +1328,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Black', 'Gold', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/639/collection.png',
-                    'images' => '/storage/media/634/1.png,/storage/media/635/2.png,/storage/media/636/3.png,/storage/media/637/4.png,/storage/media/638/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-082351?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-217688?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-797270?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-155561?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665409?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-131637?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Storage & Organizers' => [
@@ -1339,8 +1339,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Durable construction</li><li>Stackable design</li><li>Easy access lid</li><li>Multiple sizes</li><li>Space-saving</li></ul>',
                     'details' => '<p>Practical Homestrap storage boxes designed for efficient organization with stackable design and durable construction for long-lasting use.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/645/collection.png',
-                    'images' => '/storage/media/640/1.png,/storage/media/641/2.png,/storage/media/642/3.png,/storage/media/643/4.png,/storage/media/644/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-760084?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-596324?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-724010?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-326681?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-366924?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-814243?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Storage Boxes and Drawers',
@@ -1349,8 +1349,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Comprehensive storage solution combining boxes and drawers in a modular system for maximum organization flexibility and space utilization.</p>',
                     'price' => 89.99,
                     'sale_price' => 79.99,
-                    'cover_image' => '/storage/media/651/collection.png',
-                    'images' => '/storage/media/646/1.png,/storage/media/647/2.png,/storage/media/648/3.png,/storage/media/649/4.png,/storage/media/650/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-527158?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-735174?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-501837?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-061175?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-424109?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-717562?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Metal Storage Shelf',
@@ -1358,8 +1358,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Heavy-duty metal construction</li><li>Multiple tiers</li><li>Adjustable shelves</li><li>High weight capacity</li><li>Easy assembly</li></ul>',
                     'details' => '<p>Robust metal storage shelf featuring heavy-duty construction and adjustable shelves, perfect for garage, warehouse, or heavy-duty storage needs.</p>',
                     'price' => 149.99,
-                    'cover_image' => '/storage/media/657/collection.png',
-                    'images' => '/storage/media/652/1.png,/storage/media/653/2.png,/storage/media/654/3.png,/storage/media/655/4.png,/storage/media/656/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-051275?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-433792?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-267961?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-159510?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-245704?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220479?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Flyngo Foldable Drawer Organizer',
@@ -1368,8 +1368,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Smart Flyngo foldable drawer organizer offering flexible compartments and space-efficient design that folds flat when not needed.</p>',
                     'price' => 24.99,
                     'sale_price' => 19.99,
-                    'cover_image' => '/storage/media/663/collection.png',
-                    'images' => '/storage/media/658/1.png,/storage/media/659/2.png,/storage/media/660/3.png,/storage/media/661/4.png,/storage/media/662/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-863145?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-173113?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-550086?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-364657?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-034979?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-165916?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Heavy Duty Garage Storage Hooks for Wall',
@@ -1377,8 +1377,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Heavy-duty construction</li><li>Wall-mounted design</li><li>High weight capacity</li><li>Garage suitable</li><li>Easy installation</li></ul>',
                     'details' => '<p>Professional heavy-duty garage storage hooks designed for wall mounting with high weight capacity for tools, equipment, and heavy items.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/669/collection.png',
-                    'images' => '/storage/media/664/1.png,/storage/media/665/2.png,/storage/media/666/3.png,/storage/media/667/4.png,/storage/media/668/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-145545?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-204098?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005188?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-744956?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-492066?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-104100?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => '4-Tier Multipurpose Storage Rack',
@@ -1387,8 +1387,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Practical 4-tier multipurpose storage rack offering versatile storage solutions for kitchen, bathroom, office, or any room requiring organized storage.</p>',
                     'price' => 69.99,
                     'sale_price' => 59.99,
-                    'cover_image' => '/storage/media/675/collection.png',
-                    'images' => '/storage/media/670/1.png,/storage/media/671/2.png,/storage/media/672/3.png,/storage/media/673/4.png,/storage/media/674/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-952485?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-357893?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-746971?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315112?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247628?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126010?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Durable 3 Tray Set',
@@ -1399,8 +1399,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Brown', 'White', 'Black']]
                     ],
-                    'cover_image' => '/storage/media/681/collection.png',
-                    'images' => '/storage/media/676/1.png,/storage/media/677/2.png,/storage/media/678/3.png,/storage/media/679/4.png,/storage/media/680/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-036040?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-162101?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-676153?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005258?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-376873?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Evaro Cabinets In Wenge Brown Finish',
@@ -1412,8 +1412,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['Brown', 'Green', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/687/collection.png',
-                    'images' => '/storage/media/682/1.png,/storage/media/683/2.png,/storage/media/684/3.png,/storage/media/685/4.png,/storage/media/686/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-031298?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-762907?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-328995?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-139739?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-801327?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-732281?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Cakes' => [
@@ -1426,8 +1426,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Weight', 'options' => ['1 Kg', '1.5 Kg', '2 Kg']]
                     ],
-                    'cover_image' => '/storage/media/746/collection.png',
-                    'images' => '/storage/media/741/1.png,/storage/media/742/2.png,/storage/media/743/3.png,/storage/media/744/4.png,/storage/media/745/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-729208?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-076197?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-889430?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-609135?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-280457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-933736?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Strawberry Wedding Cake',
@@ -1436,8 +1436,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Stunning strawberry wedding cake with multiple tiers, fresh strawberries, and elegant decorations perfect for your special wedding day.</p>',
                     'price' => 299.99,
                     'sale_price' => 279.99,
-                    'cover_image' => '/storage/media/752/collection.png',
-                    'images' => '/storage/media/747/1.png,/storage/media/748/2.png,/storage/media/749/3.png,/storage/media/750/4.png,/storage/media/751/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-048810?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-724659?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026487?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-557951?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-054046?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-617896?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Yummy Premium Chocolate Cake',
@@ -1445,8 +1445,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium chocolate</li><li>Multiple layers</li><li>Rich chocolate ganache</li><li>Moist sponge</li><li>Chocolate shavings</li></ul>',
                     'details' => '<p>Indulgent Yummy Premium chocolate cake featuring rich chocolate layers, smooth ganache, and premium cocoa for the ultimate chocolate experience.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/758/collection.png',
-                    'images' => '/storage/media/753/1.png,/storage/media/754/2.png,/storage/media/755/3.png,/storage/media/756/4.png,/storage/media/757/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-505017?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-201580?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-261119?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-769359?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-015520?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Just Bake Mixed Fruit Gateaux Half KG',
@@ -1455,8 +1455,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Fresh and fruity Just Bake mixed fruit gateaux featuring seasonal fruits, light cream layers, and a soft sponge base in convenient half KG size.</p>',
                     'price' => 24.99,
                     'sale_price' => 21.99,
-                    'cover_image' => '/storage/media/764/collection.png',
-                    'images' => '/storage/media/759/1.png,/storage/media/760/2.png,/storage/media/761/3.png,/storage/media/762/4.png,/storage/media/763/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-731730?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-324894?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-358302?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593935?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-196744?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-846664?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Ivory Rose Elegance Cake',
@@ -1467,8 +1467,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Weight', 'options' => ['1 Kg', '1.5 Kg', '2 Kg']]
                     ],
-                    'cover_image' => '/storage/media/770/collection.png',
-                    'images' => '/storage/media/765/1.png,/storage/media/766/2.png,/storage/media/767/3.png,/storage/media/768/4.png,/storage/media/769/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-068348?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-365291?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-737452?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-979020?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-723549?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-204620?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'FNP Designer Eggless Half KG',
@@ -1477,8 +1477,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Beautiful FNP Designer eggless cake featuring artistic decorations and premium eggless recipe, perfect for those preferring egg-free desserts.</p>',
                     'price' => 34.99,
                     'sale_price' => 29.99,
-                    'cover_image' => '/storage/media/775/collection.png',
-                    'images' => '/storage/media/771/1.png,/storage/media/772/2.png,/storage/media/773/3.png,/storage/media/776/4.png,/storage/media/774/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-173859?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-216226?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-802545?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-943422?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-505268?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-714425?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => '6 Pcs Cupcake Folding Box',
@@ -1486,8 +1486,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>6 assorted cupcakes</li><li>Folding gift box</li><li>Mixed flavors</li><li>Individual decoration</li><li>Perfect for gifting</li></ul>',
                     'details' => '<p>Delightful set of 6 cupcakes with assorted flavors and decorations, beautifully presented in an elegant folding box perfect for gifts and parties.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/782/collection.png',
-                    'images' => '/storage/media/777/1.png,/storage/media/778/2.png,/storage/media/779/3.png,/storage/media/780/4.png,/storage/media/781/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-895272?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-128461?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-586426?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559318?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-973075?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-039371?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Pearl & Rose Cake 7.0 Kg',
@@ -1496,8 +1496,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Magnificent Pearl & Rose cake weighing 7.0 kg, featuring elegant pearl decorations and rose themes, perfect for grand celebrations and large gatherings.</p>',
                     'price' => 399.99,
                     'sale_price' => 369.99,
-                    'cover_image' => '/storage/media/788/collection.png',
-                    'images' => '/storage/media/783/1.png,/storage/media/784/2.png,/storage/media/785/3.png,/storage/media/786/4.png,/storage/media/787/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-147693?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-448059?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-856724?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-747615?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-529637?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-116512?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Pastries' => [
@@ -1510,8 +1510,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Quantity', 'options' => ['4 Pieces', '6 Pieces', '8 Pieces']]
                     ],
-                    'cover_image' => '/storage/media/794/collection.png',
-                    'images' => '/storage/media/789/1.png,/storage/media/790/2.png,/storage/media/791/3.png,/storage/media/792/4.png,/storage/media/793/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-188418?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-458759?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-506641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-017966?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-618742?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129775?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Fruit Pastries Topped',
@@ -1520,8 +1520,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Beautiful fresh fruit pastries featuring seasonal fruits on light pastry base with cream topping for a refreshing and colorful treat.</p>',
                     'price' => 16.99,
                     'sale_price' => 14.99,
-                    'cover_image' => '/storage/media/800/collection.png',
-                    'images' => '/storage/media/795/1.png,/storage/media/796/2.png,/storage/media/797/3.png,/storage/media/798/4.png,/storage/media/799/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-586268?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-040996?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-380721?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-271184?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-350728?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-533662?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Classic Cream Pastries with Silky Whipped Cream',
@@ -1532,8 +1532,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Regular', 'Large']]
                     ],
-                    'cover_image' => '/storage/media/806/collection.png',
-                    'images' => '/storage/media/801/1.png,/storage/media/802/2.png,/storage/media/803/3.png,/storage/media/804/4.png,/storage/media/805/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-535487?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-405370?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-347792?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-158263?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709658?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-173133?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Premium Creamy Cheesecake Slices',
@@ -1542,8 +1542,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Premium creamy cheesecake slices made with the finest cream cheese and graham cracker crust, offering rich New York-style flavor.</p>',
                     'price' => 22.99,
                     'sale_price' => 19.99,
-                    'cover_image' => '/storage/media/812/collection.png',
-                    'images' => '/storage/media/807/1.png,/storage/media/808/2.png,/storage/media/809/3.png,/storage/media/810/4.png,/storage/media/811/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-200309?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-387460?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-751645?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-356448?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-057615?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-860921?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Light and Airy Mousse Pastries',
@@ -1551,8 +1551,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Light mousse texture</li><li>Airy consistency</li><li>Smooth finish</li><li>Delicate flavor</li><li>Elegant presentation</li></ul>',
                     'details' => '<p>Exquisite light and airy mousse pastries with delicate texture and smooth finish, perfect for those who appreciate refined desserts.</p>',
                     'price' => 20.99,
-                    'cover_image' => '/storage/media/818/collection.png',
-                    'images' => '/storage/media/813/1.png,/storage/media/814/2.png,/storage/media/815/3.png,/storage/media/816/4.png,/storage/media/817/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-142076?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-731213?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-442971?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593558?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-432684?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-401492?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Assorted Mini Pastries with Bite-Sized Portions',
@@ -1560,8 +1560,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Bite-sized portions</li><li>Assorted flavors</li><li>Mini pastries</li><li>Variety pack</li><li>Perfect for sharing</li></ul>',
                     'details' => '<p>Delightful assorted mini pastries in bite-sized portions featuring various flavors and styles, perfect for parties and sharing.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/824/collection.png',
-                    'images' => '/storage/media/819/1.png,/storage/media/820/2.png,/storage/media/821/3.png,/storage/media/822/4.png,/storage/media/823/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-155595?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-794890?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-095470?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-491212?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-530445?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-446329?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Elegant Layered Pastries with Multiple Cream',
@@ -1570,8 +1570,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Sophisticated elegant layered pastries featuring multiple cream layers and complex flavors with premium ingredients and beautiful presentation.</p>',
                     'price' => 28.99,
                     'sale_price' => 25.99,
-                    'cover_image' => '/storage/media/830/collection.png',
-                    'images' => '/storage/media/825/1.png,/storage/media/826/2.png,/storage/media/827/3.png,/storage/media/828/4.png,/storage/media/829/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-643855?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-522453?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-092448?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-008546?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-189563?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-730980?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Signature Special Pastries with Luxurious Design',
@@ -1580,8 +1580,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Exclusive signature special pastries featuring luxurious design and premium craftsmanship, representing the pinnacle of pastry artistry.</p>',
                     'price' => 35.99,
                     'sale_price' => 32.99,
-                    'cover_image' => '/storage/media/836/collection.png',
-                    'images' => '/storage/media/831/1.png,/storage/media/832/2.png,/storage/media/833/3.png,/storage/media/834/4.png,/storage/media/835/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-210824?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-742535?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-875753?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-286338?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-657543?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-671762?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Breads & Loaves' => [
@@ -1591,8 +1591,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium white flour</li><li>Soft texture</li><li>Pre-sliced convenience</li><li>Fresh daily baking</li><li>Perfect for sandwiches</li></ul>',
                     'details' => '<p>Freshly baked premium white bread with exceptionally soft texture and delicious taste, conveniently pre-sliced for your daily needs.</p>',
                     'price' => 4.99,
-                    'cover_image' => '/storage/media/842/collection.png',
-                    'images' => '/storage/media/837/1.png,/storage/media/838/2.png,/storage/media/839/3.png,/storage/media/840/4.png,/storage/media/841/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-180379?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-879399?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-826098?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-624813?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-748944?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-202560?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Brown Bread with Goodness Of Wheat',
@@ -1604,8 +1604,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Slice Type', 'options' => ['Regular Slice', 'Thick Slice']],
                         ['name' => 'Slices', 'options' => ['1', '2', '3']]
                     ],
-                    'cover_image' => '/storage/media/848/collection.png',
-                    'images' => '/storage/media/843/1.png,/storage/media/844/2.png,/storage/media/845/3.png,/storage/media/846/4.png,/storage/media/847/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-691053?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-822312?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-395895?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-916977?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-144751?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-033679?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Factory Zero Maida Multigrain Bread',
@@ -1614,8 +1614,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Revolutionary multigrain bread made without maida, featuring a blend of healthy grains and seeds for maximum nutrition and taste.</p>',
                     'price' => 6.99,
                     'sale_price' => 5.99,
-                    'cover_image' => '/storage/media/854/collection.png',
-                    'images' => '/storage/media/849/1.png,/storage/media/850/2.png,/storage/media/851/3.png,/storage/media/852/4.png,/storage/media/853/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-309329?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-699453?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-730832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-399928?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-351278?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573189?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Great Garlic Bread',
@@ -1623,8 +1623,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Rich garlic flavor</li><li>Herb seasoning</li><li>Aromatic taste</li><li>Ready to serve</li><li>Perfect side dish</li></ul>',
                     'details' => '<p>Deliciously aromatic garlic bread infused with rich garlic flavor and herbs, making it the perfect accompaniment to any meal.</p>',
                     'price' => 7.99,
-                    'cover_image' => '/storage/media/860/collection.png',
-                    'images' => '/storage/media/855/1.png,/storage/media/856/2.png,/storage/media/857/3.png,/storage/media/858/4.png,/storage/media/859/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-912968?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-185056?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-385981?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-144760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-456260?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-076247?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Factory Zero Maida Sourdough Classic Bread',
@@ -1636,8 +1636,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Peices', 'options' => ['1', '2', '3']]
                     ],
-                    'cover_image' => '/storage/media/866/collection.png',
-                    'images' => '/storage/media/861/1.png,/storage/media/862/2.png,/storage/media/863/3.png,/storage/media/864/4.png,/storage/media/865/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-942190?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-337926?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-688789?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249581?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-554942?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-872838?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Oven-Baked Italian Flatbread Focaccia',
@@ -1648,8 +1648,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Topping', 'options' => ['Classic Herbs', 'Rosemary', 'Tomato & Basil', 'Olive']]
                     ],
-                    'cover_image' => '/storage/media/872/collection.png',
-                    'images' => '/storage/media/867/1.png,/storage/media/868/2.png,/storage/media/869/3.png,/storage/media/870/4.png,/storage/media/871/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-309552?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-416964?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-736634?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-079914?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-561655?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-250650?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Freshly Baked Soft Dinner Rolls',
@@ -1660,8 +1660,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Pack Size', 'options' => ['6 Rolls', '12 Rolls', '18 Rolls']]
                     ],
-                    'cover_image' => '/storage/media/878/collection.png',
-                    'images' => '/storage/media/873/1.png,/storage/media/874/2.png,/storage/media/875/3.png,/storage/media/876/4.png,/storage/media/877/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-138547?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-104870?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-290449?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-749241?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-956692?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Premium Soft Burger Buns with Smooth Bites',
@@ -1669,8 +1669,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium quality</li><li>Exceptionally soft</li><li>Smooth bite texture</li><li>Perfect burger size</li><li>Pack of 4 buns</li></ul>',
                     'details' => '<p>Premium soft burger buns designed for the ultimate burger experience, featuring smooth bite texture and perfect size for gourmet burgers.</p>',
                     'price' => 6.99,
-                    'cover_image' => '/storage/media/884/collection.png',
-                    'images' => '/storage/media/879/1.png,/storage/media/880/2.png,/storage/media/881/3.png,/storage/media/882/4.png,/storage/media/883/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-031062?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-167096?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-623240?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-603334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-455762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-790536?w=800&h=800&fit=crop&crop=center'
                 ],
             ],
             'Cookies & Biscuits' => [
@@ -1683,8 +1683,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Regular', 'Large', 'Mini Pack']]
                     ],
-                    'cover_image' => '/storage/media/890/collection.png',
-                    'images' => '/storage/media/885/1.png,/storage/media/886/2.png,/storage/media/887/3.png,/storage/media/888/4.png,/storage/media/889/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-248725?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-361753?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-273905?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-732877?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-730203?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-191448?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Classic Golden Butter Cookies',
@@ -1695,8 +1695,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Pack Size', 'options' => ['8 Pieces', '12 Pieces', '16 Pieces']]
                     ],
-                    'cover_image' => '/storage/media/896/collection.png',
-                    'images' => '/storage/media/891/1.png,/storage/media/892/2.png,/storage/media/893/3.png,/storage/media/894/4.png,/storage/media/895/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-944923?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-505436?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-205626?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-056773?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-587238?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-480645?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Wholesome Oven-Baked Oatmeal Cookies',
@@ -1705,8 +1705,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Wholesome oven-baked oatmeal cookies made with nutritious ingredients and hearty oats for a healthy and satisfying treat.</p>',
                     'price' => 16.99,
                     'sale_price' => 14.99,
-                    'cover_image' => '/storage/media/902/collection.png',
-                    'images' => '/storage/media/897/1.png,/storage/media/898/2.png,/storage/media/899/3.png,/storage/media/900/4.png,/storage/media/901/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-921271?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-816424?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871425?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-918155?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-041242?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-054652?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Premium Almond Cookies Crafted',
@@ -1714,8 +1714,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium almonds</li><li>Crafted recipe</li><li>Rich almond flavor</li><li>Delicate texture</li><li>Artisan quality</li></ul>',
                     'details' => '<p>Premium almond cookies carefully crafted with the finest almonds, delivering rich almond flavor and delicate texture in every bite.</p>',
                     'price' => 22.99,
-                    'cover_image' => '/storage/media/908/collection.png',
-                    'images' => '/storage/media/903/1.png,/storage/media/904/2.png,/storage/media/905/3.png,/storage/media/906/4.png,/storage/media/907/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-166228?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-776629?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-958655?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-621399?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-198734?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-677979?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Classic Scottish-Style Shortbread Biscuits',
@@ -1724,8 +1724,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Authentic Scottish-style shortbread biscuits made with traditional methods and premium butter for the classic crumbly texture and rich taste.</p>',
                     'price' => 19.99,
                     'sale_price' => 17.99,
-                    'cover_image' => '/storage/media/914/collection.png',
-                    'images' => '/storage/media/909/1.png,/storage/media/910/2.png,/storage/media/911/3.png,/storage/media/912/4.png,/storage/media/913/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-554157?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-941122?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-725730?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-518681?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646186?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-277170?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Deluxe Cream-Filled Biscuits',
@@ -1736,8 +1736,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Cream Flavor', 'options' => ['Vanilla', 'Chocolate', 'Strawberry', 'Orange']]
                     ],
-                    'cover_image' => '/storage/media/919/collection.png',
-                    'images' => '/storage/media/915/1.png,/storage/media/916/2.png,/storage/media/920/3.png,/storage/media/917/4.png,/storage/media/918/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-723902?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-718281?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-764629?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573500?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-107950?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-712086?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Traditional Bakery-Style Dry',
@@ -1745,8 +1745,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Traditional bakery recipe</li><li>Dry biscuit style</li><li>Authentic taste</li><li>Perfect crunch</li><li>Long shelf life</li></ul>',
                     'details' => '<p>Traditional bakery-style dry made with authentic recipes, offering perfect crunch and classic taste that pairs well with tea or coffee.</p>',
                     'price' => 12.99,
-                    'cover_image' => '/storage/media/926/collection.png',
-                    'images' => '/storage/media/921/1.png,/storage/media/922/2.png,/storage/media/923/3.png,/storage/media/924/4.png,/storage/media/925/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-427239?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-588407?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-417977?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-970495?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-779228?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-235922?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Luxury Assorted Cookie Gift Boxes',
@@ -1758,8 +1758,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Box Size', 'options' => ['Small (12 pieces)', 'Medium (24 pieces)', 'Large (36 pieces)']],
                     ],
-                    'cover_image' => '/storage/media/932/collection.png',
-                    'images' => '/storage/media/927/1.png,/storage/media/928/2.png,/storage/media/929/3.png,/storage/media/930/4.png,/storage/media/931/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-834694?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-309957?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-581373?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-413760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-762802?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214473?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Savory Bakes' => [
@@ -1769,8 +1769,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Crunchy pastry shell</li><li>Zesty filling</li><li>Bold flavors</li><li>Chinese-style preparation</li><li>Fresh baked daily</li></ul>',
                     'details' => '<p>Delicious Chinese puff featuring crunchy pastry shell filled with zesty ingredients and bold flavors for an authentic taste experience.</p>',
                     'price' => 8.99,
-                    'cover_image' => '/storage/media/938/collection.png',
-                    'images' => '/storage/media/933/1.png,/storage/media/934/2.png,/storage/media/935/3.png,/storage/media/936/4.png,/storage/media/937/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-015497?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-134179?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-114169?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-039081?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-663230?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-859227?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Lakeview Milkbar Butter Croissants',
@@ -1782,8 +1782,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Regular', 'Large', 'Mini Pack']]
                     ],
-                    'cover_image' => '/storage/media/944/collection.png',
-                    'images' => '/storage/media/939/1.png,/storage/media/940/2.png,/storage/media/941/3.png,/storage/media/942/4.png,/storage/media/943/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-664708?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-941953?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369920?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-153421?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-635468?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249252?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Double Decker Sandwich',
@@ -1791,8 +1791,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Multi-layered design</li><li>Fresh ingredients</li><li>Premium fillings</li><li>Double decker style</li><li>Hearty portion</li></ul>',
                     'details' => '<p>Hearty double decker sandwich featuring multiple layers of fresh ingredients and premium fillings for a satisfying meal experience.</p>',
                     'price' => 15.99,
-                    'cover_image' => '/storage/media/950/collection.png',
-                    'images' => '/storage/media/945/1.png,/storage/media/946/2.png,/storage/media/947/3.png,/storage/media/948/4.png,/storage/media/949/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-630683?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-201015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-044550?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-879484?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665865?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-052125?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Veg Mini Quiches',
@@ -1803,8 +1803,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Pack Size', 'options' => ['6 Pieces', '12 Pieces', '18 Pieces']]
                     ],
-                    'cover_image' => '/storage/media/956/collection.png',
-                    'images' => '/storage/media/951/1.png,/storage/media/952/2.png,/storage/media/953/3.png,/storage/media/954/4.png,/storage/media/955/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-092385?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-281363?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-011306?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-596716?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-076418?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-661712?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Spelled Pizza Slice with Vegetables',
@@ -1813,8 +1813,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Nutritious spelled flour pizza slice topped with fresh vegetables and quality cheese for a healthy and delicious meal option.</p>',
                     'price' => 9.99,
                     'sale_price' => 8.99,
-                    'cover_image' => '/storage/media/962/collection.png',
-                    'images' => '/storage/media/957/1.png,/storage/media/958/2.png,/storage/media/959/3.png,/storage/media/960/4.png,/storage/media/961/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-965639?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-167069?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-676748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-629321?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-465367?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-122097?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Frozen Sliced Soft Deli Bread Rolls',
@@ -1822,8 +1822,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Frozen for freshness</li><li>Pre-sliced convenience</li><li>Soft texture</li><li>Deli quality</li><li>Easy to thaw</li></ul>',
                     'details' => '<p>Convenient frozen soft deli bread rolls that are pre-sliced for easy use, maintaining freshness and soft texture when thawed.</p>',
                     'price' => 6.99,
-                    'cover_image' => '/storage/media/968/collection.png',
-                    'images' => '/storage/media/963/1.png,/storage/media/964/2.png,/storage/media/965/3.png,/storage/media/966/4.png,/storage/media/967/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-774789?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-892207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-286331?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-104747?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665729?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-598771?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cheese Stuffed Korean Bun',
@@ -1831,8 +1831,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Korean-style bun</li><li>Melted cheese filling</li><li>Soft texture</li><li>Traditional flavors</li><li>Authentic recipe</li></ul>',
                     'details' => '<p>Authentic Korean-style bun with soft texture and melted cheese filling, prepared with traditional flavors for an authentic taste experience.</p>',
                     'price' => 11.99,
-                    'cover_image' => '/storage/media/974/collection.png',
-                    'images' => '/storage/media/969/1.png,/storage/media/970/2.png,/storage/media/971/3.png,/storage/media/972/4.png,/storage/media/973/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-105458?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-058515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-731637?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-750343?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-327450?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-147227?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Spinach Corn & Cheese Hand Pie Single Piece',
@@ -1840,8 +1840,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Individual serving</li><li>Spinach and corn filling</li><li>Cheese blend</li><li>Flaky pastry</li><li>Hand-held convenience</li></ul>',
                     'details' => '<p>Delicious individual hand pie featuring spinach, corn, and cheese filling wrapped in flaky pastry for convenient hand-held enjoyment.</p>',
                     'price' => 7.99,
-                    'cover_image' => '/storage/media/980/collection.png',
-                    'images' => '/storage/media/975/1.png,/storage/media/976/2.png,/storage/media/977/3.png,/storage/media/978/4.png,/storage/media/979/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-117720?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-804567?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-531987?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-722705?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-518947?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-337716?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Fruits & Vegetables' => [
@@ -1852,8 +1852,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Best quality hybrid strawberries with exceptional sweetness and vibrant flavor. Rich in vitamin C and antioxidants, perfect for snacking or desserts.</p>',
                     'price' => 5.99,
                     'sale_price' => 4.99,
-                    'cover_image' => '/storage/media/991/collection.png',
-                    'images' => '/storage/media/986/1.png,/storage/media/987/2.png,/storage/media/988/3.png,/storage/media/989/4.png,/storage/media/990/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-374266?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-707297?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461709?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-205517?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-155649?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-093174?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Organic Palak Spinach',
@@ -1861,8 +1861,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Certified organic</li><li>Rich in iron</li><li>Fresh palak variety</li><li>500g bundle</li><li>Pesticide-free</li></ul>',
                     'details' => '<p>Fresh organic palak spinach with tender leaves rich in iron and essential nutrients. Pesticide-free and perfect for healthy cooking.</p>',
                     'price' => 3.99,
-                    'cover_image' => '/storage/media/997/collection.png',
-                    'images' => '/storage/media/992/1.png,/storage/media/993/2.png,/storage/media/994/3.png,/storage/media/995/4.png,/storage/media/996/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-483904?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-443333?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-415749?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-389307?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-391692?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-975023?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Farm Fresh Carrot',
@@ -1873,8 +1873,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large']]
                     ],
-                    'cover_image' => '/storage/media/1003/collection.png',
-                    'images' => '/storage/media/998/1.png,/storage/media/999/2.png,/storage/media/1000/3.png,/storage/media/1001/4.png,/storage/media/1002/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-111414?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-911819?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-056741?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-769901?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-053036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-058497?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Harvest Organic Apple',
@@ -1886,8 +1886,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Variety', 'options' => ['Red Delicious', 'Green Apple', 'Gala']]
                     ],
-                    'cover_image' => '/storage/media/1009/collection.png',
-                    'images' => '/storage/media/1004/1.png,/storage/media/1005/2.png,/storage/media/1006/3.png,/storage/media/1007/4.png,/storage/media/1008/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-931172?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-191890?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-273349?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-763474?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-700194?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-630375?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Cut Mixed Vegetables',
@@ -1895,8 +1895,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Ready-to-cook</li><li>Freshly cut</li><li>Mixed varieties</li><li>500g pack</li><li>Pre-washed</li></ul>',
                     'details' => '<p>Convenient fresh cut mixed vegetables that are ready-to-cook. Pre-washed and cleaned for quick meal preparation.</p>',
                     'price' => 3.49,
-                    'cover_image' => '/storage/media/1015/collection.png',
-                    'images' => '/storage/media/1010/1.png,/storage/media/1011/2.png,/storage/media/1012/3.png,/storage/media/1013/4.png,/storage/media/1014/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-043397?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-755627?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-336846?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-494850?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-692824?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-938602?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Handpicked Exotic Dragon Fruit',
@@ -1907,8 +1907,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Type', 'options' => ['White Flesh', 'Red Flesh']]
                     ],
-                    'cover_image' => '/storage/media/1021/collection.png',
-                    'images' => '/storage/media/1016/1.png,/storage/media/1017/2.png,/storage/media/1018/3.png,/storage/media/1019/4.png,/storage/media/1020/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-312211?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-996488?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-946939?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-300832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-063841?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-587921?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Luxury Seasonal Fruits Hamper',
@@ -1917,8 +1917,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Luxury seasonal fruits hamper featuring premium quality assorted fruits. Perfect for gifting or special occasions.</p>',
                     'price' => 24.99,
                     'sale_price' => 21.99,
-                    'cover_image' => '/storage/media/1027/collection.png',
-                    'images' => '/storage/media/1022/1.png,/storage/media/1023/2.png,/storage/media/1024/3.png,/storage/media/1025/4.png,/storage/media/1026/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-532360?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-292668?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-686837?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-553683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-406648?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-937558?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Mint / Pudina Plant',
@@ -1926,8 +1926,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Live plant</li><li>Fresh mint variety</li><li>Home gardening</li><li>Potted plant</li><li>Aromatic leaves</li></ul>',
                     'details' => '<p>Live fresh mint plant perfect for home gardening. Aromatic leaves ideal for cooking, teas, and natural remedies.</p>',
                     'price' => 6.99,
-                    'cover_image' => '/storage/media/1033/collection.png',
-                    'images' => '/storage/media/1028/1.png,/storage/media/1029/2.png,/storage/media/1030/3.png,/storage/media/1031/4.png,/storage/media/1032/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-851854?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-081548?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-477056?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-328791?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-492143?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871401?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Mushroom',
@@ -1935,8 +1935,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium quality</li><li>Earthy flavor</li><li>Meaty texture</li><li>250g pack</li><li>Rich in protein</li></ul>',
                     'details' => '<p>Premium fresh mushrooms with rich earthy flavor and meaty texture. High in protein and perfect for cooking, salads, and gourmet dishes.</p>',
                     'price' => 4.99,
-                    'cover_image' => '/storage/media/1231/collection.png',
-                    'images' => '/storage/media/1226/1.png,/storage/media/1227/2.png,/storage/media/1228/3.png,/storage/media/1229/4.png,/storage/media/1230/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-151316?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-812341?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-289246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559981?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-108897?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-213160?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Broccoli',
@@ -1944,8 +1944,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Fresh florets</li><li>Rich in vitamins</li><li>High fiber content</li><li>500g pack</li><li>Organic grown</li></ul>',
                     'details' => '<p>Crisp fresh broccoli florets packed with vitamins C and K, fiber, and essential nutrients. Organic grown and perfect for healthy cooking.</p>',
                     'price' => 3.49,
-                    'cover_image' => '/storage/media/1237/collection.png',
-                    'images' => '/storage/media/1232/1.png,/storage/media/1233/2.png,/storage/media/1234/3.png,/storage/media/1235/4.png,/storage/media/1236/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-874299?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-162432?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-043591?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-771737?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-975579?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-164487?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Dairy & Eggs' => [
@@ -1955,8 +1955,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium cream milk</li><li>Rich and creamy</li><li>Natural taste</li><li>1 liter pack</li><li>Fresh daily</li></ul>',
                     'details' => '<p>Aurora Cream Milk offers premium quality with rich, creamy texture and natural taste. Perfect for drinking, cooking, and baking needs.</p>',
                     'price' => 3.99,
-                    'cover_image' => '/storage/media/1039/collection.png',
-                    'images' => '/storage/media/1034/1.png,/storage/media/1035/2.png,/storage/media/1036/3.png,/storage/media/1037/4.png,/storage/media/1038/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-561205?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-928320?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-608594?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-592248?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-754989?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-136315?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Finest Salted Butter',
@@ -1965,8 +1965,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Finest Salted Butter crafted from fresh cream with perfect salt balance for rich flavor. Ideal for cooking, baking, and spreading.</p>',
                     'price' => 6.99,
                     'sale_price' => 5.99,
-                    'cover_image' => '/storage/media/1045/collection.png',
-                    'images' => '/storage/media/1040/1.png,/storage/media/1041/2.png,/storage/media/1042/3.png,/storage/media/1043/4.png,/storage/media/1044/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-473817?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-491090?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-225505?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-588650?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-668560?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-755138?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Aurora Cheese',
@@ -1974,8 +1974,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium quality</li><li>Rich flavor</li><li>Smooth texture</li><li>200g pack</li><li>Natural ingredients</li></ul>',
                     'details' => '<p>Aurora Cheese offers premium quality with rich flavor and smooth texture. Made from natural ingredients for authentic taste.</p>',
                     'price' => 8.99,
-                    'cover_image' => '/storage/media/1051/collection.png',
-                    'images' => '/storage/media/1046/1.png,/storage/media/1047/2.png,/storage/media/1048/3.png,/storage/media/1049/4.png,/storage/media/1050/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-925324?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-871529?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-264680?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-274361?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-371794?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573945?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Honey Flavor Yogurt',
@@ -1983,8 +1983,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Natural honey flavor</li><li>Live active cultures</li><li>Creamy texture</li><li>400g container</li><li>Probiotic benefits</li></ul>',
                     'details' => '<p>Honey Flavor Yogurt combines creamy texture with natural honey sweetness and beneficial live cultures for healthy digestion.</p>',
                     'price' => 4.49,
-                    'cover_image' => '/storage/media/1057/collection.png',
-                    'images' => '/storage/media/1052/1.png,/storage/media/1053/2.png,/storage/media/1054/3.png,/storage/media/1055/4.png,/storage/media/1056/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-396247?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-161772?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-395688?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247743?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-127495?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-565190?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Creamvia Fresh Cream',
@@ -1996,8 +1996,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Quantity', 'options' => ['200ml', '250ml', '500ml']]
                     ],
-                    'cover_image' => '/storage/media/1063/collection.png',
-                    'images' => '/storage/media/1058/1.png,/storage/media/1059/2.png,/storage/media/1060/3.png,/storage/media/1061/4.png,/storage/media/1062/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-131677?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-267279?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026321?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-351639?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333240?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333829?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Lactobloom Paneer',
@@ -2005,8 +2005,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Fresh paneer</li><li>Soft texture</li><li>Authentic taste</li><li>200g pack</li><li>High protein</li></ul>',
                     'details' => '<p>Lactobloom Paneer offers fresh, soft texture with authentic taste. High in protein and perfect for Indian cooking and healthy meals.</p>',
                     'price' => 7.99,
-                    'cover_image' => '/storage/media/1069/collection.png',
-                    'images' => '/storage/media/1064/1.png,/storage/media/1065/2.png,/storage/media/1066/3.png,/storage/media/1067/4.png,/storage/media/1068/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-570282?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-240013?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-012228?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-179584?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-848874?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-046230?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Large Fresh Eggs from Free-Roaming Hens',
@@ -2018,8 +2018,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Pack Size', 'options' => ['6 Eggs', '12 Eggs', '18 Eggs']]
                     ],
-                    'cover_image' => '/storage/media/1075/collection.png',
-                    'images' => '/storage/media/1070/1.png,/storage/media/1071/2.png,/storage/media/1072/3.png,/storage/media/1073/4.png,/storage/media/1074/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-272397?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-076823?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-567664?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-097348?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-907458?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-340080?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Frothy Yogurt Drink',
@@ -2027,8 +2027,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Frothy texture</li><li>Smooth consistency</li><li>Natural taste</li><li>250ml bottle</li><li>Refreshing drink</li></ul>',
                     'details' => '<p>Frothy Yogurt Drink offers refreshing taste with smooth, frothy texture. Perfect for on-the-go refreshment and healthy hydration.</p>',
                     'price' => 3.49,
-                    'cover_image' => '/storage/media/1081/collection.png',
-                    'images' => '/storage/media/1076/1.png,/storage/media/1077/2.png,/storage/media/1078/3.png,/storage/media/1079/4.png,/storage/media/1080/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-766831?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-448561?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-233090?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-682025?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-697580?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-181903?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Chocolate Flavoured Milk',
@@ -2036,8 +2036,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium cocoa</li><li>Rich chocolate flavor</li><li>Creamy texture</li><li>500ml bottle</li><li>No artificial colors</li></ul>',
                     'details' => '<p>Rich and creamy chocolate flavoured milk made with premium cocoa for authentic chocolate taste. Perfect for kids and chocolate lovers.</p>',
                     'price' => 2.99,
-                    'cover_image' => '/storage/media/1243/collection.png',
-                    'images' => '/storage/media/1238/1.png,/storage/media/1239/2.png,/storage/media/1240/3.png,/storage/media/1241/4.png,/storage/media/1242/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-570119?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-926668?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-720348?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-383866?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-759007?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-184891?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Strawberry Milkshake',
@@ -2045,8 +2045,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Real strawberry pieces</li><li>Creamy milk base</li><li>Natural fruit flavor</li><li>400ml bottle</li><li>Rich in calcium</li></ul>',
                     'details' => '<p>Delicious strawberry milkshake made with real fruit pieces and creamy milk. Natural fruit flavor and rich in calcium for a healthy treat.</p>',
                     'price' => 3.49,
-                    'cover_image' => '/storage/media/1249/collection.png',
-                    'images' => '/storage/media/1244/1.png,/storage/media/1245/2.png,/storage/media/1246/3.png,/storage/media/1247/4.png,/storage/media/1248/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-023218?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-170705?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-723589?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-072592?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-425803?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-536207?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Grocery & Staples' => [
@@ -2057,8 +2057,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Golden Harvest Basmati Rice offers premium quality with distinctive aromatic fragrance and fluffy texture. Aged for enhanced flavor and perfect for biryanis and pulao.</p>',
                     'price' => 15.99,
                     'sale_price' => 13.99,
-                    'cover_image' => '/storage/media/1087/collection.png',
-                    'images' => '/storage/media/1082/1.png,/storage/media/1083/2.png,/storage/media/1084/3.png,/storage/media/1085/4.png,/storage/media/1086/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-789893?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-165120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-760095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-497665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708357?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-644023?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Khapli Whole Wheat Flour',
@@ -2069,8 +2069,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Pack Size', 'options' => ['1kg', '2kg', '5kg']]
                     ],
-                    'cover_image' => '/storage/media/1093/collection.png',
-                    'images' => '/storage/media/1088/1.png,/storage/media/1089/2.png,/storage/media/1090/3.png,/storage/media/1091/4.png,/storage/media/1092/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-766001?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-111933?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-914820?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-992281?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-973175?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-151643?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Masoor Dal and Moong Dal Pulses',
@@ -2079,8 +2079,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Premium Masoor Dal and Moong Dal Pulses offer excellent protein content and easy cooking. Machine cleaned and sorted for quality assurance.</p>',
                     'price' => 12.99,
                     'sale_price' => 10.99,
-                    'cover_image' => '/storage/media/1099/collection.png',
-                    'images' => '/storage/media/1094/1.png,/storage/media/1095/2.png,/storage/media/1096/3.png,/storage/media/1097/4.png,/storage/media/1098/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-187090?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-555214?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-149124?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-729941?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-607128?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-584160?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Premium Brown Lentils',
@@ -2088,8 +2088,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium quality</li><li>Rich flavor</li><li>High nutrition</li><li>500g pack</li><li>Organic certified</li></ul>',
                     'details' => '<p>Premium Brown Lentils offer rich flavor and high nutritional value. Organic certified and perfect for healthy soups, curries, and salads.</p>',
                     'price' => 6.99,
-                    'cover_image' => '/storage/media/1105/collection.png',
-                    'images' => '/storage/media/1100/1.png,/storage/media/1101/2.png,/storage/media/1102/3.png,/storage/media/1103/4.png,/storage/media/1104/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-027718?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-569522?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247887?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026766?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-561319?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-140724?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fortune Cooking Oils',
@@ -2098,8 +2098,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Fortune Cooking Oils provide premium quality for healthy cooking and frying. Available in multiple varieties including sunflower, mustard, and refined oil.</p>',
                     'price' => 9.99,
                     'sale_price' => 8.49,
-                    'cover_image' => '/storage/media/1111/collection.png',
-                    'images' => '/storage/media/1106/1.png,/storage/media/1107/2.png,/storage/media/1108/3.png,/storage/media/1109/4.png,/storage/media/1110/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-937854?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-896024?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-598958?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559293?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-130904?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Sugar & Salt',
@@ -2107,8 +2107,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium quality</li><li>Refined sugar</li><li>Iodized salt</li><li>Combo pack</li><li>Daily essentials</li></ul>',
                     'details' => '<p>Premium Sugar & Salt combo pack includes refined sugar and iodized salt for daily cooking needs. Essential ingredients for every kitchen.</p>',
                     'price' => 4.99,
-                    'cover_image' => '/storage/media/1117/collection.png',
-                    'images' => '/storage/media/1112/1.png,/storage/media/1113/2.png,/storage/media/1114/3.png,/storage/media/1115/4.png,/storage/media/1116/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-863446?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-169006?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709560?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-297262?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-492383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-827429?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Outino Spices',
@@ -2117,8 +2117,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Outino Spices offer premium quality spice collection with authentic flavors. Fresh ground spices perfect for Indian cooking and international cuisines.</p>',
                     'price' => 11.99,
                     'sale_price' => 9.99,
-                    'cover_image' => '/storage/media/1123/collection.png',
-                    'images' => '/storage/media/1118/1.png,/storage/media/1119/2.png,/storage/media/1120/3.png,/storage/media/1121/4.png,/storage/media/1122/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-780721?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-092773?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-987559?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709064?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-058349?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-809600?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Healthy Ready Mixes',
@@ -2129,8 +2129,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Mix Type', 'options' => ['Idli Mix', 'Dosa Mix', 'Upma Mix', 'Pancake Mix']]
                     ],
-                    'cover_image' => '/storage/media/1129/collection.png',
-                    'images' => '/storage/media/1124/1.png,/storage/media/1125/2.png,/storage/media/1126/3.png,/storage/media/1127/4.png,/storage/media/1128/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-110497?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-870831?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-552390?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-947998?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-772182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-908808?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Royal Almonds',
@@ -2138,8 +2138,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium quality</li><li>Rich in protein</li><li>Natural goodness</li><li>500g pack</li><li>Raw almonds</li></ul>',
                     'details' => '<p>Premium Royal Almonds with rich flavor and natural goodness. High in protein and healthy fats, perfect for snacking and cooking.</p>',
                     'price' => 18.99,
-                    'cover_image' => '/storage/media/1255/collection.png',
-                    'images' => '/storage/media/1250/1.png,/storage/media/1251/2.png,/storage/media/1252/3.png,/storage/media/1253/4.png,/storage/media/1254/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-485904?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-853871?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-860011?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-746942?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-037470?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-627221?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Nutrios Breakfast Cereals',
@@ -2147,8 +2147,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Whole grain cereals</li><li>Essential vitamins</li><li>High fiber content</li><li>400g box</li><li>Fortified with minerals</li></ul>',
                     'details' => '<p>Nutrios Breakfast Cereals provide nutritious start to your day with whole grains and essential vitamins. High fiber content and fortified with minerals.</p>',
                     'price' => 8.99,
-                    'cover_image' => '/storage/media/1261/collection.png',
-                    'images' => '/storage/media/1256/1.png,/storage/media/1257/2.png,/storage/media/1258/3.png,/storage/media/1259/4.png,/storage/media/1260/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-260887?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-067672?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-661923?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-618620?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-874269?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-797266?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Snacks & Beverages' => [
@@ -2158,8 +2158,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Crispy potato chips</li><li>Classic flavor</li><li>Perfect crunch</li><li>50g pack</li><li>No artificial colors</li></ul>',
                     'details' => '<p>Lays Chips offer the perfect combination of crispy texture and classic flavor. Made from quality potatoes for the ultimate snacking experience.</p>',
                     'price' => 2.99,
-                    'cover_image' => '/storage/media/1135/collection.png',
-                    'images' => '/storage/media/1130/1.png,/storage/media/1131/2.png,/storage/media/1132/3.png,/storage/media/1133/4.png,/storage/media/1134/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-679762?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-258116?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-803124?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-569017?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-557486?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-136580?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Hide & Seek Biscuits',
@@ -2168,8 +2168,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Hide & Seek Biscuits feature delicious chocolate chips in every bite with rich chocolate flavor and perfect crunchy texture.</p>',
                     'price' => 3.49,
                     'sale_price' => 2.99,
-                    'cover_image' => '/storage/media/1141/collection.png',
-                    'images' => '/storage/media/1136/1.png,/storage/media/1137/2.png,/storage/media/1138/3.png,/storage/media/1139/4.png,/storage/media/1140/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-546973?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-817453?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-281338?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-918147?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462043?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-675069?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Indya Amul Chocomini Chocolate',
@@ -2177,8 +2177,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Premium chocolate</li><li>Rich cocoa content</li><li>Smooth texture</li><li>Mini size</li><li>Amul quality</li></ul>',
                     'details' => '<p>Indya Amul Chocomini Chocolate offers premium quality with rich cocoa content and smooth texture in convenient mini size portions.</p>',
                     'price' => 4.99,
-                    'cover_image' => '/storage/media/1147/collection.png',
-                    'images' => '/storage/media/1142/1.png,/storage/media/1143/2.png,/storage/media/1144/3.png,/storage/media/1145/4.png,/storage/media/1146/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-574479?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-912328?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214967?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-732808?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-331551?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-542644?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cranbery Flavoured Soft Drink',
@@ -2190,8 +2190,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['330ml', '500ml', '1L']]
                     ],
-                    'cover_image' => '/storage/media/1153/collection.png',
-                    'images' => '/storage/media/1148/1.png,/storage/media/1149/2.png,/storage/media/1150/3.png,/storage/media/1151/4.png,/storage/media/1152/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-786209?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-059532?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-164836?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126522?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-066908?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-628678?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Organic Juice',
@@ -2199,8 +2199,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>100% organic fruits</li><li>Fresh pressed</li><li>No preservatives</li><li>250ml bottle</li><li>Natural vitamins</li></ul>',
                     'details' => '<p>Fresh Organic Juice made from 100% organic fruits with no preservatives. Rich in natural vitamins and fresh pressed for maximum nutrition.</p>',
                     'price' => 3.99,
-                    'cover_image' => '/storage/media/1159/collection.png',
-                    'images' => '/storage/media/1154/1.png,/storage/media/1155/2.png,/storage/media/1156/3.png,/storage/media/1157/4.png,/storage/media/1158/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-140905?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-098306?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-240150?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-045217?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-426914?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-039819?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Artisan Grey Tea',
@@ -2209,8 +2209,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Artisan Grey Tea features premium tea leaves infused with bergamot oil and natural flavors for an authentic and refined tea experience.</p>',
                     'price' => 6.99,
                     'sale_price' => 5.99,
-                    'cover_image' => '/storage/media/1165/collection.png',
-                    'images' => '/storage/media/1160/1.png,/storage/media/1161/2.png,/storage/media/1162/3.png,/storage/media/1163/4.png,/storage/media/1164/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-241762?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-440924?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-615499?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-854725?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959040?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-153920?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Nitro Boost Energy Drinks',
@@ -2221,8 +2221,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Flavor', 'options' => ['Original', 'Berry Blast', 'Citrus Rush', 'Sugar-Free']]
                     ],
-                    'cover_image' => '/storage/media/1171/collection.png',
-                    'images' => '/storage/media/1166/1.png,/storage/media/1167/2.png,/storage/media/1168/3.png,/storage/media/1169/4.png,/storage/media/1170/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-815841?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-040548?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-198552?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-579677?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-410295?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-359340?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Savory Mix Namkeen',
@@ -2230,8 +2230,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Traditional recipe</li><li>Spicy flavor</li><li>Crunchy texture</li><li>200g pack</li><li>Mixed ingredients</li></ul>',
                     'details' => '<p>Savory Mix Namkeen offers traditional Indian snacking experience with perfect blend of spices and crunchy ingredients for authentic taste.</p>',
                     'price' => 3.99,
-                    'cover_image' => '/storage/media/1177/collection.png',
-                    'images' => '/storage/media/1172/1.png,/storage/media/1173/2.png,/storage/media/1174/3.png,/storage/media/1175/4.png,/storage/media/1176/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-528459?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-481414?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-456277?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-246015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-856886?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-894275?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Noodle King Instant Noodles',
@@ -2239,8 +2239,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Quick 3-minute cooking</li><li>Rich flavor packet</li><li>Perfect texture</li><li>70g pack</li><li>No preservatives</li></ul>',
                     'details' => '<p>Noodle King Instant Noodles provide quick and satisfying meal with rich flavor and perfect texture. Ready in just 3 minutes with no preservatives.</p>',
                     'price' => 1.99,
-                    'cover_image' => '/storage/media/1267/collection.png',
-                    'images' => '/storage/media/1262/1.png,/storage/media/1263/2.png,/storage/media/1264/3.png,/storage/media/1265/4.png,/storage/media/1266/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-909009?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-902056?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-332472?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-158372?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-701549?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Nutri-Core Energy Bars',
@@ -2248,8 +2248,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>High protein content</li><li>Natural ingredients</li><li>Energy boost formula</li><li>40g bar</li><li>No artificial flavors</li></ul>',
                     'details' => '<p>Nutri-Core Energy Bars provide sustained energy with high protein content and natural ingredients. Perfect for pre-workout or healthy snacking.</p>',
                     'price' => 2.49,
-                    'cover_image' => '/storage/media/1273/collection.png',
-                    'images' => '/storage/media/1268/1.png,/storage/media/1269/2.png,/storage/media/1270/3.png,/storage/media/1271/4.png,/storage/media/1272/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-734345?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-478812?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-154271?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-533053?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-738168?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-421291?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Household & Personal Care' => [
@@ -2260,8 +2260,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Revolutionary spin mop with wheels and deluxe wringer system for effortless floor cleaning. Features 360-degree spin technology and microfiber head for superior cleaning performance.</p>',
                     'price' => 49.99,
                     'sale_price' => 44.99,
-                    'cover_image' => '/storage/media/1183/collection.png',
-                    'images' => '/storage/media/1178/1.png,/storage/media/1179/2.png,/storage/media/1180/3.png,/storage/media/1181/4.png,/storage/media/1182/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-101674?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-678650?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-550842?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-491095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-675316?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-386683?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fresh Liquid Detergent',
@@ -2269,8 +2269,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Concentrated formula</li><li>Fresh fragrance</li><li>Stain removal power</li><li>1L bottle</li><li>Eco-friendly ingredients</li></ul>',
                     'details' => '<p>Fresh Liquid Detergent provides powerful cleaning action with concentrated formula and fresh fragrance. Eco-friendly ingredients for effective stain removal.</p>',
                     'price' => 8.99,
-                    'cover_image' => '/storage/media/1189/collection.png',
-                    'images' => '/storage/media/1184/1.png,/storage/media/1185/2.png,/storage/media/1186/3.png,/storage/media/1187/4.png,/storage/media/1188/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-668691?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-640120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-512774?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-169731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-019776?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-298017?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Ecowash Drop Liquid Lemon Dishwash',
@@ -2279,8 +2279,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Ecowash Drop Liquid Lemon Dishwash combines eco-friendly formula with natural lemon extract for powerful grease cutting while being gentle on hands.</p>',
                     'price' => 4.99,
                     'sale_price' => 4.49,
-                    'cover_image' => '/storage/media/1195/collection.png',
-                    'images' => '/storage/media/1190/1.png,/storage/media/1191/2.png,/storage/media/1192/3.png,/storage/media/1193/4.png,/storage/media/1194/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-043836?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-352604?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-078136?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-423771?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-364624?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-679412?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Elemental Soap with Nutrient Serum',
@@ -2291,8 +2291,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Variant', 'options' => ['Aloe Vera', 'Honey & Oats', 'Charcoal', 'Rose']]
                     ],
-                    'cover_image' => '/storage/media/1201/collection.png',
-                    'images' => '/storage/media/1196/1.png,/storage/media/1197/2.png,/storage/media/1198/3.png,/storage/media/1199/4.png,/storage/media/1200/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-507633?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-017660?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-405837?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461645?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-339000?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-619955?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Daily Care Herbal Shampoo',
@@ -2301,8 +2301,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Daily Care Herbal Shampoo provides gentle cleansing with natural herbal ingredients. Sulfate-free formula suitable for daily use and all hair types.</p>',
                     'price' => 7.99,
                     'sale_price' => 6.99,
-                    'cover_image' => '/storage/media/1207/collection.png',
-                    'images' => '/storage/media/1202/1.png,/storage/media/1203/2.png,/storage/media/1204/3.png,/storage/media/1205/4.png,/storage/media/1206/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-584900?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-556368?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-257166?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-009862?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-159310?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-382287?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Denawhite Toothpaste',
@@ -2313,8 +2313,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Flavor', 'options' => ['Fresh Mint', 'Cool Mint', 'Herbal', 'Sensitive']]
                     ],
-                    'cover_image' => '/storage/media/1213/collection.png',
-                    'images' => '/storage/media/1208/1.png,/storage/media/1209/2.png,/storage/media/1210/3.png,/storage/media/1211/4.png,/storage/media/1212/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-460953?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-916520?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-335166?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-085330?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-854391?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959830?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Disposable Paper Products',
@@ -2322,8 +2322,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>High-quality paper</li><li>Disposable convenience</li><li>Multi-purpose use</li><li>Pack of 100 pieces</li><li>Eco-friendly material</li></ul>',
                     'details' => '<p>Disposable Paper Products offer convenient household solutions with high-quality paper and eco-friendly materials. Perfect for various cleaning and serving needs.</p>',
                     'price' => 5.99,
-                    'cover_image' => '/storage/media/1219/collection.png',
-                    'images' => '/storage/media/1214/1.png,/storage/media/1215/2.png,/storage/media/1216/3.png,/storage/media/1217/4.png,/storage/media/1218/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-568773?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-724881?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-270944?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-073121?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247158?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-601159?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Aromist Air Freshener',
@@ -2332,8 +2332,8 @@ class ProductSeeder extends Seeder
                     'details' => '<p>Aromist Air Freshener provides premium quality fragrance with long-lasting freshness. Instant room transformation with multiple delightful scents to choose from.</p>',
                     'price' => 6.49,
                     'sale_price' => 5.99,
-                    'cover_image' => '/storage/media/1225/collection.png',
-                    'images' => '/storage/media/1220/1.png,/storage/media/1221/2.png,/storage/media/1222/3.png,/storage/media/1223/4.png,/storage/media/1224/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-558799?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-704384?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-391738?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220857?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369583?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-158325?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Sparkler Floor Cleaner',
@@ -2341,8 +2341,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Powerful cleaning formula</li><li>Removes tough stains</li><li>Sparkling clean finish</li><li>1L bottle</li><li>Pleasant fragrance</li></ul>',
                     'details' => '<p>Sparkler Floor Cleaner provides powerful cleaning action that removes tough stains and dirt, leaving your floors sparkling clean with a pleasant fragrance.</p>',
                     'price' => 7.99,
-                    'cover_image' => '/storage/media/1279/collection.png',
-                    'images' => '/storage/media/1274/1.png,/storage/media/1275/2.png,/storage/media/1276/3.png,/storage/media/1277/4.png,/storage/media/1278/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-602956?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-317670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-982385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-957039?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-508980?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-251185?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Aura Clean Hand Wash',
@@ -2350,8 +2350,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Antibacterial formula</li><li>Moisturizing ingredients</li><li>Gentle on skin</li><li>250ml pump bottle</li><li>Fresh fragrance</li></ul>',
                     'details' => '<p>Aura Clean Hand Wash provides effective antibacterial protection while moisturizing your hands. Gentle formula keeps hands soft and clean with fresh fragrance.</p>',
                     'price' => 4.99,
-                    'cover_image' => '/storage/media/1285/collection.png',
-                    'images' => '/storage/media/1280/1.png,/storage/media/1281/2.png,/storage/media/1282/3.png,/storage/media/1283/4.png,/storage/media/1284/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-909660?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-345174?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129067?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-491438?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-551437?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-705912?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Interior Accessories' => [
@@ -2364,8 +2364,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Material', 'options' => ['Leather', 'Fabric', 'Neoprene']]
                     ],
-                    'cover_image' => '/storage/media/1301/collection.png',
-                    'images' => '/storage/media/1296/1.png,/storage/media/1297/2.png,/storage/media/1298/3.png,/storage/media/1299/4.png,/storage/media/1300/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-838836?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-513385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-212663?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-424639?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-302771?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-285665?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Steering Wheel Cover',
@@ -2373,8 +2373,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Enhanced grip</li><li>Comfortable feel</li><li>Easy installation</li><li>Universal size</li><li>Durable material</li></ul>',
                     'details' => '<p>Comfortable steering wheel cover designed for enhanced grip and driving comfort. Easy installation with universal sizing for most vehicles.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/1307/collection.png',
-                    'images' => '/storage/media/1302/1.png,/storage/media/1303/2.png,/storage/media/1304/3.png,/storage/media/1305/4.png,/storage/media/1306/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-055209?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-853052?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-619499?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-557002?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-498078?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-586056?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Luxury Floor Mats for Cars',
@@ -2382,8 +2382,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>All-weather protection</li><li>Luxury design</li><li>Custom fit</li><li>Easy to clean</li><li>Anti-slip backing</li></ul>',
                     'details' => '<p>Luxury floor mats providing superior protection against dirt and moisture. Custom fit design with anti-slip backing for safety and style.</p>',
                     'price' => 129.99,
-                    'cover_image' => '/storage/media/1313/collection.png',
-                    'images' => '/storage/media/1308/1.png,/storage/media/1309/2.png,/storage/media/1310/3.png,/storage/media/1311/4.png,/storage/media/1312/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-301456?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-709660?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-265564?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-613635?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-752654?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-029794?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Elegant Car Dashboard Cover',
@@ -2391,8 +2391,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>UV protection</li><li>Elegant design</li><li>Custom fit</li><li>Heat resistant</li><li>Easy installation</li></ul>',
                     'details' => '<p>Elegant dashboard cover providing UV protection while enhancing interior aesthetics. Custom fit design with heat resistant materials.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/1319/collection.png',
-                    'images' => '/storage/media/1314/1.png,/storage/media/1315/2.png,/storage/media/1316/3.png,/storage/media/1317/4.png,/storage/media/1318/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-194996?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-623401?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-567141?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-064409?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-828674?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-729208?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'ComfortDrive Armrest Cushion',
@@ -2400,8 +2400,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Ergonomic design</li><li>Memory foam</li><li>Universal fit</li><li>Easy attachment</li><li>Breathable cover</li></ul>',
                     'details' => '<p>ComfortDrive armrest cushion with ergonomic design and memory foam for enhanced comfort during long drives. Universal fit with easy attachment.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/1325/collection.png',
-                    'images' => '/storage/media/1320/1.png,/storage/media/1321/2.png,/storage/media/1322/3.png,/storage/media/1323/4.png,/storage/media/1324/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-612355?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-137863?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708601?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-719855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-411149?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-542472?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'AutoShade Window Sunshade',
@@ -2409,8 +2409,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>UV protection</li><li>Temperature control</li><li>Easy installation</li><li>Foldable design</li><li>Universal fit</li></ul>',
                     'details' => '<p>AutoShade window sunshade providing excellent UV protection and temperature control. Foldable design with easy installation for all vehicles.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/1331/collection.png',
-                    'images' => '/storage/media/1326/1.png,/storage/media/1327/2.png,/storage/media/1328/3.png,/storage/media/1329/4.png,/storage/media/1330/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-646084?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-049643?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-227690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-748807?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-639179?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-092355?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'SmartStore Car Organizer',
@@ -2418,8 +2418,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Multi-compartment design</li><li>Durable materials</li><li>Easy installation</li><li>Adjustable straps</li><li>Compact size</li></ul>',
                     'details' => '<p>SmartStore car organizer with multi-compartment design for efficient storage. Durable materials with adjustable straps for secure installation.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/1337/collection.png',
-                    'images' => '/storage/media/1332/1.png,/storage/media/1333/2.png,/storage/media/1334/3.png,/storage/media/1335/4.png,/storage/media/1336/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-111547?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-051044?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-210743?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-396136?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-812323?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-206467?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'SmartGlow Ambient Lighting',
@@ -2430,8 +2430,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Length', 'options' => ['2 meters', '3 meters', '5 meters']]
                     ],
-                    'cover_image' => '/storage/media/1343/collection.png',
-                    'images' => '/storage/media/1338/1.png,/storage/media/1339/2.png,/storage/media/1340/3.png,/storage/media/1341/4.png,/storage/media/1342/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-308117?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-694270?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-564205?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-417530?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573520?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-727843?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Dual Grip Cleaning Tool',
@@ -2439,8 +2439,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Dual-grip design</li><li>Microfiber attachments</li><li>Ergonomic handle</li><li>Washable pads</li><li>Multi-surface use</li></ul>',
                     'details' => '<p>Dual Grip cleaning tool with versatile design for interior detailing. Includes microfiber attachments and ergonomic handle for effective cleaning.</p>',
                     'price' => 29.99,
-                    'cover_image' => '/storage/media/1349/collection.png',
-                    'images' => '/storage/media/1344/1.png,/storage/media/1345/2.png,/storage/media/1346/3.png,/storage/media/1347/4.png,/storage/media/1348/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-959292?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-642486?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-350999?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-845906?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-755314?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-085568?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Seat Neck Support Pillow',
@@ -2448,8 +2448,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Ergonomic design</li><li>Memory foam core</li><li>Adjustable strap</li><li>Breathable cover</li><li>Universal fit</li></ul>',
                     'details' => '<p>Car Seat Neck Support Pillow with ergonomic design and memory foam core for optimal comfort. Adjustable strap with breathable cover for all vehicles.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/1355/collection.png',
-                    'images' => '/storage/media/1350/1.png,/storage/media/1351/2.png,/storage/media/1352/3.png,/storage/media/1353/4.png,/storage/media/1354/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-203647?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-911908?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-299821?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-393927?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-584955?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-798967?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Exterior Accessories' => [
@@ -2462,8 +2462,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large', 'XL']]
                     ],
-                    'cover_image' => '/storage/media/1361/collection.png',
-                    'images' => '/storage/media/1356/1.png,/storage/media/1357/2.png,/storage/media/1358/3.png,/storage/media/1359/4.png,/storage/media/1360/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-474644?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-040253?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-115777?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-464246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-073293?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-260908?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Unbreakable Door Visor',
@@ -2474,8 +2474,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['White', 'Black', 'Gray']]
                     ],
-                    'cover_image' => '/storage/media/1367/collection.png',
-                    'images' => '/storage/media/1362/1.png,/storage/media/1366/15.png,/storage/media/1363/3.png,/storage/media/1364/4.png,/storage/media/1365/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-972776?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-687621?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-170485?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-947016?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-659969?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-185684?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Mud Flap Automotive Wheels Car Mudguard',
@@ -2483,8 +2483,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Heavy-duty construction</li><li>Flexible material</li><li>Easy installation</li><li>Universal fit</li><li>Set of 4 pieces</li></ul>',
                     'details' => '<p>Heavy-duty mud flaps designed to protect your vehicle and other cars from mud, rocks, and debris. Flexible material with universal fit for all vehicles.</p>',
                     'price' => 35.99,
-                    'cover_image' => '/storage/media/1373/collection.png',
-                    'images' => '/storage/media/1368/1.png,/storage/media/1369/2.png,/storage/media/1370/3.png,/storage/media/1371/4.png,/storage/media/1372/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-868621?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-755105?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-751394?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-382085?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-940790?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-115619?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Chrome Trim Strip',
@@ -2495,8 +2495,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['White', 'Red', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/1379/collection.png',
-                    'images' => '/storage/media/1374/1.png,/storage/media/1375/2.png,/storage/media/1376/3.png,/storage/media/1377/4.png,/storage/media/1378/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-170007?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-420444?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-976972?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-902998?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-717676?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-400330?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cars Side Graphics Stickers',
@@ -2507,8 +2507,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Color', 'options' => ['White', 'Yellow', 'Black', 'Blue']]
                     ],
-                    'cover_image' => '/storage/media/1385/collection.png',
-                    'images' => '/storage/media/1380/1.png,/storage/media/1381/2.png,/storage/media/1382/3.png,/storage/media/1383/4.png,/storage/media/1384/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-236813?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-994325?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-803670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303430?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-048876?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-989480?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Roof Rails Black Suitable For All Cars',
@@ -2516,8 +2516,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Universal fit</li><li>Black finish</li><li>High load capacity</li><li>Easy installation</li><li>Aerodynamic design</li></ul>',
                     'details' => '<p>Universal black roof rails designed for all cars to increase cargo carrying capacity. Aerodynamic design with high load capacity and easy installation.</p>',
                     'price' => 129.99,
-                    'cover_image' => '/storage/media/1391/collection.png',
-                    'images' => '/storage/media/1386/1.png,/storage/media/1387/2.png,/storage/media/1388/3.png,/storage/media/1389/4.png,/storage/media/1390/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-542974?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-177762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-059864?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462892?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646778?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-868280?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Stainless Steel License Plate Frames',
@@ -2525,8 +2525,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Stainless steel construction</li><li>Rust resistant</li><li>Easy installation</li><li>Universal fit</li><li>Set of 2 frames</li></ul>',
                     'details' => '<p>Premium stainless steel license plate frames offering superior durability and rust resistance. Universal fit with easy installation for front and rear plates.</p>',
                     'price' => 29.99,
-                    'cover_image' => '/storage/media/1397/collection.png',
-                    'images' => '/storage/media/1392/1.png,/storage/media/1393/2.png,/storage/media/1394/3.png,/storage/media/1395/4.png,/storage/media/1396/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-987688?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-444455?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-274467?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-080702?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-882849?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-489151?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Economical Wiper Blade',
@@ -2534,8 +2534,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Economical design</li><li>All-weather performance</li><li>Easy installation</li><li>Multiple sizes</li><li>Durable rubber</li></ul>',
                     'details' => '<p>Economical wiper blade providing reliable performance in all weather conditions. Durable rubber construction with easy installation and multiple size options.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/1403/collection.png',
-                    'images' => '/storage/media/1398/1.png,/storage/media/1399/2.png,/storage/media/1400/3.png,/storage/media/1401/4.png,/storage/media/1402/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-811106?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-148688?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-869464?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-253825?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-868759?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-763870?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Mini Spoiler Wing For All Cars',
@@ -2543,8 +2543,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Universal fit</li><li>Aerodynamic design</li><li>Lightweight construction</li><li>Easy installation</li><li>Multiple colors</li></ul>',
                     'details' => '<p>Universal mini spoiler wing designed for all cars to enhance aerodynamics and styling. Lightweight construction with easy installation and multiple color options.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/1409/collection.png',
-                    'images' => '/storage/media/1404/1.png,/storage/media/1405/2.png,/storage/media/1406/3.png,/storage/media/1407/4.png,/storage/media/1408/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-969067?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-249930?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-799832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-625353?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-171541?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-835500?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Front Fog Lamp Cover',
@@ -2552,8 +2552,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Protective design</li><li>Enhanced durability</li><li>Easy installation</li><li>Perfect fit</li><li>Pair included</li></ul>',
                     'details' => '<p>Protective front fog lamp cover designed to enhance durability and style. Perfect fit with easy installation and pair included for complete protection.</p>',
                     'price' => 55.99,
-                    'cover_image' => '/storage/media/1415/collection.png',
-                    'images' => '/storage/media/1410/1.png,/storage/media/1411/2.png,/storage/media/1412/3.png,/storage/media/1413/4.png,/storage/media/1414/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-082980?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-906334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-199878?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-079612?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-986826?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-122061?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Car Electronics' => [
@@ -2563,8 +2563,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>85W fast charging</li><li>Multiple USB ports</li><li>LED indicator</li><li>Overcharge protection</li><li>Universal compatibility</li></ul>',
                     'details' => '<p>Voltmax 85W car charger providing fast charging for mobile devices with multiple USB ports and safety protection features.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/1421/collection.png',
-                    'images' => '/storage/media/1416/1.png,/storage/media/1417/2.png,/storage/media/1418/3.png,/storage/media/1419/4.png,/storage/media/1420/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-559994?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-748810?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-930236?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-798091?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-372451?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-966050?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Garmin Dash Cam Mini 3',
@@ -2572,8 +2572,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>1080p HD recording</li><li>140° field of view</li><li>Night vision</li><li>G-sensor</li><li>Loop recording</li></ul>',
                     'details' => '<p>Garmin Dash Cam Mini 3 with compact design, 1080p HD recording, and smart features for comprehensive driving protection.</p>',
                     'price' => 199.99,
-                    'cover_image' => '/storage/media/1427/collection.png',
-                    'images' => '/storage/media/1422/1.png,/storage/media/1423/2.png,/storage/media/1424/3.png,/storage/media/1425/4.png,/storage/media/1426/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-561665?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-609023?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-869781?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-506348?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-690109?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-036113?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Reversing Parking Sensor System',
@@ -2584,8 +2584,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Sensor Count', 'options' => ['4 Sensors', '6 Sensors', '8 Sensors']]
                     ],
-                    'cover_image' => '/storage/media/1433/collection.png',
-                    'images' => '/storage/media/1428/1.png,/storage/media/1429/2.png,/storage/media/1430/3.png,/storage/media/1431/4.png,/storage/media/1432/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-239730?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-922481?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-245659?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-523395?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315598?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-479105?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Backup Rear View Reverse Parking',
@@ -2593,8 +2593,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>HD resolution</li><li>Night vision</li><li>Waterproof design</li><li>Wide angle view</li><li>Easy installation</li></ul>',
                     'details' => '<p>High-definition backup camera providing clear rear view visibility with night vision and waterproof design for all weather conditions.</p>',
                     'price' => 129.99,
-                    'cover_image' => '/storage/media/1439/collection.png',
-                    'images' => '/storage/media/1434/1.png,/storage/media/1435/2.png,/storage/media/1436/3.png,/storage/media/1437/4.png,/storage/media/1438/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-178226?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-662036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-533909?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-728551?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-478919?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-966088?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => '7 Inch GPS Navigation for Car',
@@ -2602,8 +2602,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>7-inch touchscreen</li><li>Real-time traffic</li><li>Voice guidance</li><li>Lifetime map updates</li><li>Bluetooth connectivity</li></ul>',
                     'details' => '<p>7-inch GPS navigation system with large touchscreen, real-time traffic updates, voice guidance, and lifetime map updates for convenient navigation.</p>',
                     'price' => 179.99,
-                    'cover_image' => '/storage/media/1445/collection.png',
-                    'images' => '/storage/media/1440/1.png,/storage/media/1441/2.png,/storage/media/1442/3.png,/storage/media/1443/4.png,/storage/media/1444/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-162486?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-340216?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-991327?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871597?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-887734?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-170919?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Dual Knob Car Android Player',
@@ -2614,8 +2614,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Screen Size', 'options' => ['7 inch', '9 inch', '10 inch']]
                     ],
-                    'cover_image' => '/storage/media/1451/collection.png',
-                    'images' => '/storage/media/1446/1.png,/storage/media/1447/2.png,/storage/media/1448/3.png,/storage/media/1449/4.png,/storage/media/1450/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-852533?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-802444?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-932548?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-948103?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559983?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-013160?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Wireless Bluetooth Transmitter & Receiver Adapter',
@@ -2623,8 +2623,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Bluetooth 5.0</li><li>Transmitter & receiver modes</li><li>Long battery life</li><li>3.5mm audio jack</li><li>Low latency</li></ul>',
                     'details' => '<p>Versatile Bluetooth adapter with transmitter and receiver modes, Bluetooth 5.0 technology, and long battery life for wireless audio solutions.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/1469/collection.png',
-                    'images' => '/storage/media/1464/1.png,/storage/media/1465/2.png,/storage/media/1466/3.png,/storage/media/1467/4.png,/storage/media/1468/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-573663?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-436763?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-170662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-425856?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-923019?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-589985?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'TPMS Tyre Pressure Monitoring System',
@@ -2632,8 +2632,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Real-time monitoring</li><li>Wireless sensors</li><li>LCD display</li><li>Temperature monitoring</li><li>Easy installation</li></ul>',
                     'details' => '<p>Advanced TPMS system providing real-time tire pressure and temperature monitoring with wireless sensors and LCD display for enhanced safety.</p>',
                     'price' => 159.99,
-                    'cover_image' => '/storage/media/1475/collection.png',
-                    'images' => '/storage/media/1470/1.png,/storage/media/1471/2.png,/storage/media/1472/3.png,/storage/media/1473/4.png,/storage/media/1474/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-009104?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-474499?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-811626?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-668721?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-307683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-020100?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Handheld Vacuum Cleaner',
@@ -2641,8 +2641,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Cordless design</li><li>Strong suction power</li><li>Multiple attachments</li><li>Rechargeable battery</li><li>Compact size</li></ul>',
                     'details' => '<p>Portable handheld vacuum cleaner with cordless design, strong suction power, and multiple attachments for thorough car interior cleaning.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/1457/collection.png',
-                    'images' => '/storage/media/1452/1.png,/storage/media/1453/2.png,/storage/media/1454/3.png,/storage/media/1455/4.png,/storage/media/1456/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-738587?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-478781?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-840560?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-543611?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-829654?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-196264?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Smart Car HUD Speed Display',
@@ -2650,8 +2650,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>HUD projection</li><li>Speed display</li><li>OBD2 connection</li><li>Auto brightness</li><li>Multiple display modes</li></ul>',
                     'details' => '<p>Smart car HUD displaying speed and driving information directly on windshield with OBD2 connection and automatic brightness adjustment.</p>',
                     'price' => 119.99,
-                    'cover_image' => '/storage/media/1463/collection.png',
-                    'images' => '/storage/media/1458/1.png,/storage/media/1459/2.png,/storage/media/1460/3.png,/storage/media/1461/4.png,/storage/media/1462/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-286477?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-655963?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-795006?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-894869?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-929310?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-497431?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Safety & Security' => [
@@ -2665,8 +2665,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Range', 'options' => ['500m', '1km', '2km']],
                         ['name' => 'Features', 'options' => ['Basic', 'Premium', 'Pro']]
                     ],
-                    'cover_image' => '/storage/media/1481/collection.png',
-                    'images' => '/storage/media/1476/1.png,/storage/media/1477/2.png,/storage/media/1478/3.png,/storage/media/1479/4.png,/storage/media/1480/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-465111?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-757160?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-621158?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-316557?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220261?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220903?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Heavy Duty Car Steering Wheel Lock',
@@ -2674,8 +2674,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Heavy-duty steel</li><li>Universal fit</li><li>Visible deterrent</li><li>Easy installation</li><li>Anti-theft protection</li></ul>',
                     'details' => '<p>Heavy-duty steering wheel lock made from reinforced steel providing maximum security and visible deterrent against vehicle theft.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/1487/collection.png',
-                    'images' => '/storage/media/1482/1.png,/storage/media/1483/2.png,/storage/media/1484/3.png,/storage/media/1485/4.png,/storage/media/1486/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-346638?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-382681?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-110397?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-561751?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-090667?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-887373?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Heavy Duty Car Lock Anti Theft Wheel Lock',
@@ -2686,8 +2686,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large']]
                     ],
-                    'cover_image' => '/storage/media/1493/collection.png',
-                    'images' => '/storage/media/1488/1.png,/storage/media/1489/2.png,/storage/media/1490/3.png,/storage/media/1491/4.png,/storage/media/1492/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-915717?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-007353?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-107087?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-490460?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-368509?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-630592?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Fire Extinguisher ABC Dry Powder',
@@ -2695,8 +2695,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>ABC dry powder</li><li>Multi-class protection</li><li>Pressure gauge</li><li>Wall bracket included</li><li>Certified safety</li></ul>',
                     'details' => '<p>ABC dry powder fire extinguisher providing multi-class fire protection for vehicles. Includes pressure gauge and wall mounting bracket for easy access.</p>',
                     'price' => 59.99,
-                    'cover_image' => '/storage/media/1499/collection.png',
-                    'images' => '/storage/media/1494/1.png,/storage/media/1495/2.png,/storage/media/1496/3.png,/storage/media/1497/4.png,/storage/media/1498/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-913223?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-771738?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-014582?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-546515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-945991?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-691814?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Emergency Health Kit',
@@ -2704,8 +2704,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Comprehensive supplies</li><li>Compact design</li><li>Emergency medications</li><li>Instruction manual</li><li>Durable case</li></ul>',
                     'details' => '<p>Comprehensive emergency health kit containing essential medical supplies for roadside emergencies. Compact design with durable carrying case.</p>',
                     'price' => 89.99,
-                    'cover_image' => '/storage/media/1505/collection.png',
-                    'images' => '/storage/media/1500/1.png,/storage/media/1501/2.png,/storage/media/1502/3.png,/storage/media/1503/4.png,/storage/media/1504/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-778966?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-733395?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-065146?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-358193?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-459530?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-431309?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Waterproof First Aid Kit',
@@ -2716,8 +2716,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Compact', 'Standard', 'Large']]
                     ],
-                    'cover_image' => '/storage/media/1511/collection.png',
-                    'images' => '/storage/media/1506/1.png,/storage/media/1507/2.png,/storage/media/1508/3.png,/storage/media/1509/4.png,/storage/media/1510/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-058378?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-182539?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-568284?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-698253?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593761?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-551480?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Multipurpose Reflective Triangles Emergency',
@@ -2725,8 +2725,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>High visibility</li><li>Reflective material</li><li>Foldable design</li><li>Stable base</li><li>Set of 3 triangles</li></ul>',
                     'details' => '<p>Multipurpose reflective emergency triangles providing high visibility for roadside safety. Foldable design with stable base, set of 3 triangles included.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/1517/collection.png',
-                    'images' => '/storage/media/1512/1.png,/storage/media/1513/2.png,/storage/media/1514/3.png,/storage/media/1515/4.png,/storage/media/1516/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-903094?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-479871?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-917304?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-127002?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-635138?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-973330?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Car Seat Belt Extensions Straps',
@@ -2734,8 +2734,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Adjustable length</li><li>Safety certified</li><li>Universal compatibility</li><li>Durable materials</li><li>Easy installation</li></ul>',
                     'details' => '<p>Adjustable seat belt extension straps providing enhanced comfort and safety. Safety certified with universal compatibility and durable construction.</p>',
                     'price' => 29.99,
-                    'cover_image' => '/storage/media/1523/collection.png',
-                    'images' => '/storage/media/1518/1.png,/storage/media/1519/2.png,/storage/media/1520/3.png,/storage/media/1521/4.png,/storage/media/1522/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-235500?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-409840?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143090?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-018572?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-407828?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-958519?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Galaxy Tyre Air Pump',
@@ -2743,8 +2743,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Digital display</li><li>Auto shut-off</li><li>Portable design</li><li>12V power</li><li>Multiple attachments</li></ul>',
                     'details' => '<p>Galaxy portable tire air pump with digital display and auto shut-off feature. 12V power operation with multiple attachments for various inflation needs.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/1529/collection.png',
-                    'images' => '/storage/media/1524/1.png,/storage/media/1525/2.png,/storage/media/1526/3.png,/storage/media/1527/4.png,/storage/media/1528/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-787538?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-384731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-775624?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-474864?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-597790?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-655505?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Smart Battery Jump Starter and Tyre Inflator',
@@ -2752,8 +2752,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Jump starter function</li><li>Tire inflator</li><li>USB charging ports</li><li>LED flashlight</li><li>Safety protection</li></ul>',
                     'details' => '<p>Smart multi-function device combining battery jump starter and tire inflator with USB charging ports, LED flashlight, and comprehensive safety protection.</p>',
                     'price' => 199.99,
-                    'cover_image' => '/storage/media/1535/collection.png',
-                    'images' => '/storage/media/1530/1.png,/storage/media/1531/2.png,/storage/media/1532/3.png,/storage/media/1533/4.png,/storage/media/1534/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-165630?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-503679?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-131720?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-402722?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-636752?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-140652?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Cleaning & Maintenance' => [
@@ -2767,8 +2767,8 @@ class ProductSeeder extends Seeder
                         ['name' => 'Size', 'options' => ['500ml', '1L', '2L']],
                         ['name' => 'Type', 'options' => ['Regular', 'Wax Enhanced', 'Ceramic Safe']]
                     ],
-                    'cover_image' => '/storage/media/1541/collection.png',
-                    'images' => '/storage/media/1536/1.png,/storage/media/1537/2.png,/storage/media/1538/3.png,/storage/media/1539/4.png,/storage/media/1540/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-141342?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-225576?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646750?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-605331?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-396036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-035220?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Microfiber Car Cleaning Cloth',
@@ -2776,8 +2776,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Ultra-soft microfiber</li><li>Scratch-free cleaning</li><li>Highly absorbent</li><li>Machine washable</li><li>Lint-free</li></ul>',
                     'details' => '<p>Ultra-soft microfiber cleaning cloth designed for scratch-free car care. Highly absorbent and machine washable for long-lasting use.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/1547/collection.png',
-                    'images' => '/storage/media/1542/1.png,/storage/media/1543/2.png,/storage/media/1544/3.png,/storage/media/1545/4.png,/storage/media/1546/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-188837?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-259908?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-766349?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-864877?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-191809?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-134362?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cordless Vacuum Cleaner for Car',
@@ -2788,8 +2788,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Power', 'options' => ['120W', '150W', '180W']]
                     ],
-                    'cover_image' => '/storage/media/1553/collection.png',
-                    'images' => '/storage/media/1548/1.png,/storage/media/1549/2.png,/storage/media/1550/3.png,/storage/media/1551/4.png,/storage/media/1552/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-729969?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-891760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-445131?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-029460?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-946662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-560793?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Hybrid Solutions Ceramic Polish & Wax',
@@ -2797,8 +2797,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Ceramic technology</li><li>Long-lasting protection</li><li>High gloss finish</li><li>UV protection</li><li>Easy application</li></ul>',
                     'details' => '<p>Advanced hybrid ceramic polish and wax providing superior protection and high gloss finish. Long-lasting formula with UV protection and easy application.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/1559/collection.png',
-                    'images' => '/storage/media/1554/1.png,/storage/media/1555/2.png,/storage/media/1556/3.png,/storage/media/1557/4.png,/storage/media/1558/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-398942?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-321940?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-161512?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-966521?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-120766?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-457892?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Wheel and Tyre Cleaner Concentrate',
@@ -2806,8 +2806,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Concentrated formula</li><li>Deep cleaning action</li><li>Safe for all wheels</li><li>Removes brake dust</li><li>Biodegradable</li></ul>',
                     'details' => '<p>Concentrated wheel and tire cleaner with deep cleaning action safe for all wheel types. Effectively removes brake dust and grime while being biodegradable.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/1565/collection.png',
-                    'images' => '/storage/media/1560/1.png,/storage/media/1561/2.png,/storage/media/1562/3.png,/storage/media/1563/4.png,/storage/media/1564/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-523359?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-395385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-916751?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-049808?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-282526?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-921508?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Lemongrass Air Freshener for Car',
@@ -2815,8 +2815,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Natural lemongrass scent</li><li>Long-lasting fragrance</li><li>Non-toxic formula</li><li>Easy installation</li><li>Adjustable intensity</li></ul>',
                     'details' => '<p>Natural lemongrass air freshener providing long-lasting fragrance with non-toxic formula. Easy installation with adjustable intensity control.</p>',
                     'price' => 14.99,
-                    'cover_image' => '/storage/media/1571/collection.png',
-                    'images' => '/storage/media/1566/1.png,/storage/media/1567/2.png,/storage/media/1568/3.png,/storage/media/1569/4.png,/storage/media/1570/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-439708?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-422879?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-088278?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-228769?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-100300?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-685364?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Essential Car Care Kit',
@@ -2824,8 +2824,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Complete care kit</li><li>Multiple products included</li><li>Professional quality</li><li>Storage case</li><li>Instruction guide</li></ul>',
                     'details' => '<p>Complete essential car care kit containing multiple professional-quality cleaning and maintenance products with storage case and instruction guide.</p>',
                     'price' => 89.99,
-                    'cover_image' => '/storage/media/1577/collection.png',
-                    'images' => '/storage/media/1572/1.png,/storage/media/1573/2.png,/storage/media/1574/3.png,/storage/media/1575/4.png,/storage/media/1576/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-974304?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-130782?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-263855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-278282?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-964136?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-903272?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Vehicle Scratch Repair',
@@ -2833,8 +2833,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Professional formula</li><li>Easy application</li><li>Color matching</li><li>Permanent repair</li><li>Clear coat safe</li></ul>',
                     'details' => '<p>Professional vehicle scratch repair solution with easy application and color matching technology for permanent paint restoration. Safe for clear coats.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/1583/collection.png',
-                    'images' => '/storage/media/1578/1.png,/storage/media/1579/2.png,/storage/media/1580/3.png,/storage/media/1581/4.png,/storage/media/1582/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-674404?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-131037?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315725?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-958544?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-168906?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558517?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Windshield Washer Fluid Concentrate',
@@ -2842,8 +2842,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Concentrated formula</li><li>All-season protection</li><li>Streak-free cleaning</li><li>Anti-freeze properties</li><li>Biodegradable</li></ul>',
                     'details' => '<p>Concentrated windshield washer fluid providing all-season protection with streak-free cleaning and anti-freeze properties. Biodegradable formula.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/1589/collection.png',
-                    'images' => '/storage/media/1584/1.png,/storage/media/1585/2.png,/storage/media/1586/3.png,/storage/media/1587/4.png,/storage/media/1588/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-748380?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-065696?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-948454?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-756691?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-274636?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-003235?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Microfiber Car Cleaning Cloth and Wash Kit',
@@ -2851,8 +2851,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Multiple microfiber cloths</li><li>Wash mitt included</li><li>Different cloth types</li><li>Machine washable</li><li>Storage bag</li></ul>',
                     'details' => '<p>Complete microfiber cleaning cloth and wash kit with multiple cloth types and wash mitt for comprehensive car care. Includes storage bag and machine washable.</p>',
                     'price' => 44.99,
-                    'cover_image' => '/storage/media/1595/collection.png',
-                    'images' => '/storage/media/1590/1.png,/storage/media/1591/2.png,/storage/media/1592/3.png,/storage/media/1593/4.png,/storage/media/1594/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-300452?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-474690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-327662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-727704?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-663082?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-357651?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Soft Toys & Plush' => [
@@ -2865,8 +2865,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Large (36 inch)', 'Extra-Large (48 inch)', 'Giant (60 inch)']]
                     ],
-                    'cover_image' => '/storage/media/1596/collection.png',
-                    'images' => '/storage/media/1601/1.png,/storage/media/1597/5.png,/storage/media/1598/4.png,/storage/media/1599/3.png,/storage/media/1600/2.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-432840?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-780084?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-681684?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-061490?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-672269?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-997243?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Babique Elephant Sitting Plush Soft Toy',
@@ -2874,8 +2874,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Sitting position design</li><li>Realistic elephant features</li><li>Super soft plush</li><li>Safe materials</li><li>Ages 0+ years</li></ul>',
                     'details' => '<p>Babique elephant plush toy in sitting position with realistic features and super soft texture. Made from safe materials perfect for children of all ages.</p>',
                     'price' => 45.99,
-                    'cover_image' => '/storage/media/1602/collection.png',
-                    'images' => '/storage/media/1607/1.png,/storage/media/1606/2.png,/storage/media/1605/3.png,/storage/media/1604/4.png,/storage/media/1603/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-405212?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-302366?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-689270?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-911962?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-284922?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247022?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Brown Cat Soft Toy for Kids',
@@ -2883,8 +2883,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Realistic cat design</li><li>Brown plush fur</li><li>Soft and cuddly</li><li>Child-safe materials</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Adorable brown cat soft toy with realistic features and cuddly design. Made from child-safe materials with soft plush fur for comfortable play.</p>',
                     'price' => 29.99,
-                    'cover_image' => '/storage/media/1608/collection.png',
-                    'images' => '/storage/media/1613/1.png,/storage/media/1612/2.png,/storage/media/1611/3.png,/storage/media/1610/4.png,/storage/media/1609/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-128129?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-482886?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-190846?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558070?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-276968?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-431534?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cute Plush Pillow Stuffed Soft Toy',
@@ -2892,8 +2892,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Dual-purpose design</li><li>Pillow and toy function</li><li>Ultra-soft material</li><li>Hypoallergenic filling</li><li>Machine washable</li></ul>',
                     'details' => '<p>Cute plush pillow that serves as both a comfortable pillow and adorable soft toy. Ultra-soft material with hypoallergenic filling and machine washable.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/1614/collection.png',
-                    'images' => '/storage/media/1619/1.png,/storage/media/1618/2.png,/storage/media/1617/3.png,/storage/media/1616/4.png,/storage/media/1615/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-975672?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-714955?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-195180?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-436130?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-524923?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Musical Toy-Plush Teddy Bear',
@@ -2904,8 +2904,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Large (36 inch)', 'Extra-Large (48 inch)', 'Giant (60 inch)']]
                     ],
-                    'cover_image' => '/storage/media/1620/collection.png',
-                    'images' => '/storage/media/1625/1.png,/storage/media/1624/2.png,/storage/media/1623/3.png,/storage/media/1622/4.png,/storage/media/1621/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-329556?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-381794?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-432740?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-746262?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-036069?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-782285?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Monkey Super Cute Plushie Soft Toys',
@@ -2913,8 +2913,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Adorable monkey design</li><li>Super soft plush</li><li>Cute facial features</li><li>Safe for children</li><li>Ages 0+ years</li></ul>',
                     'details' => '<p>Super cute monkey plushie with adorable features and incredibly soft texture. Safe for children with cute facial features and premium plush material.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/1626/collection.png',
-                    'images' => '/storage/media/1631/1.png,/storage/media/1630/2.png,/storage/media/1629/3.png,/storage/media/1628/4.png,/storage/media/1627/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-587540?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-461832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-337261?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548604?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-465781?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-595734?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Stuffed Toys for Kids Set of 3 Mini Teddy Toys',
@@ -2922,8 +2922,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Set of 3 mini teddies</li><li>Different colors</li><li>Compact size</li><li>Soft plush material</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Adorable set of 3 mini teddy bear toys in different colors. Compact size perfect for collection, travel, and imaginative play with soft plush material.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/1632/collection.png',
-                    'images' => '/storage/media/1637/1.png,/storage/media/1636/2.png,/storage/media/1635/3.png,/storage/media/1634/4.png,/storage/media/1633/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-561985?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-151723?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-243619?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-960831?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-634892?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-962060?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Giant Teddy Bears Big Cute Plush Teddy Bear',
@@ -2931,8 +2931,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Giant size</li><li>Ultra-soft plush</li><li>Cute design</li><li>Premium quality</li><li>Ages 0+ years</li></ul>',
                     'details' => '<p>Giant-sized cute plush teddy bear providing the ultimate cuddling experience. Ultra-soft plush material with premium quality construction and adorable design.</p>',
                     'price' => 149.99,
-                    'cover_image' => '/storage/media/1638/collection.png',
-                    'images' => '/storage/media/1643/1.png,/storage/media/1642/2.png,/storage/media/1641/3.png,/storage/media/1640/4.png,/storage/media/1639/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-001944?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-557167?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-787365?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-932838?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654607?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-651251?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Plush Stuffed Animal Toy',
@@ -2940,8 +2940,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Various animal options</li><li>Soft stuffed design</li><li>High-quality plush</li><li>Safe materials</li><li>Ages 0+ years</li></ul>',
                     'details' => '<p>Versatile plush stuffed animal toy available in various cute animal designs. High-quality plush material with safe construction for children of all ages.</p>',
                     'price' => 42.99,
-                    'cover_image' => '/storage/media/1644/collection.png',
-                    'images' => '/storage/media/1649/1.png,/storage/media/1648/2.png,/storage/media/1647/3.png,/storage/media/1646/4.png,/storage/media/1645/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-173373?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-705286?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-455158?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-297695?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-685599?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871843?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Puppets Tommy Glove Puppet',
@@ -2949,8 +2949,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Glove puppet design</li><li>Interactive play</li><li>Soft fabric construction</li><li>Easy to use</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Interactive Tommy glove puppet perfect for storytelling and imaginative play. Soft fabric construction with easy-to-use design for engaging puppet shows.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/1650/collection.png',
-                    'images' => '/storage/media/1655/1.png,/storage/media/1654/2.png,/storage/media/1653/3.png,/storage/media/1652/4.png,/storage/media/1651/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-956566?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-655194?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-631369?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-111207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-414057?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-529443?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Educational Toys' => [
@@ -2963,8 +2963,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Set Size', 'options' => ['50 pieces', '100 pieces', '150 pieces']]
                     ],
-                    'cover_image' => '/storage/media/1661/collection.png',
-                    'images' => '/storage/media/1656/1.png,/storage/media/1657/2.png,/storage/media/1658/3.png,/storage/media/1659/4.png,/storage/media/1660/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-224418?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-652827?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-813780?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-822609?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-550099?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-419987?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Plastic Alphabet Number Puzzle Toy',
@@ -2972,8 +2972,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Alphabet and number pieces</li><li>Durable plastic construction</li><li>Bright colors</li><li>Easy-grip pieces</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Interactive plastic puzzle toy combining alphabet letters and numbers for comprehensive early learning. Durable construction with bright colors and easy-grip pieces.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/1662/collection.png',
-                    'images' => '/storage/media/1667/1.png,/storage/media/1666/2.png,/storage/media/1665/3.png,/storage/media/1664/4.png,/storage/media/1663/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-148842?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-842262?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-757276?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369053?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-742947?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-563311?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Toys Wooden Russian Blocks Puzzles',
@@ -2984,8 +2984,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Difficulty', 'options' => ['Beginner', 'Intermediate', 'Advanced']]
                     ],
-                    'cover_image' => '/storage/media/1668/collection.png',
-                    'images' => '/storage/media/1673/1.png,/storage/media/1672/2.png,/storage/media/1671/3.png,/storage/media/1670/4.png,/storage/media/1669/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-732801?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-527823?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-055641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-998841?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-262411?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-975175?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Ultimate Science STEM Learning Educational Toys',
@@ -2993,8 +2993,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>100+ science experiments</li><li>STEM learning focus</li><li>Safety tested materials</li><li>Detailed instruction guide</li><li>Ages 8+ years</li></ul>',
                     'details' => '<p>Ultimate science STEM learning kit featuring over 100 experiments and educational activities. Comprehensive instruction guide with safety-tested materials for hands-on learning.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/1674/collection.png',
-                    'images' => '/storage/media/1679/1.png,/storage/media/1678/2.png,/storage/media/1677/3.png,/storage/media/1676/4.png,/storage/media/1675/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-955287?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-221338?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-672600?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-780250?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-483735?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-599685?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Montessori Busy Board for Toddlers',
@@ -3002,8 +3002,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Montessori method</li><li>Multiple activity stations</li><li>Fine motor skill development</li><li>Safe materials</li><li>Ages 18 months-4 years</li></ul>',
                     'details' => '<p>Montessori-inspired busy board featuring multiple activity stations designed to develop fine motor skills and cognitive abilities in toddlers through hands-on exploration.</p>',
                     'price' => 59.99,
-                    'cover_image' => '/storage/media/1680/collection.png',
-                    'images' => '/storage/media/1685/1.png,/storage/media/1684/2.png,/storage/media/1683/3.png,/storage/media/1682/4.png,/storage/media/1681/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-736205?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-567252?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-506776?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-466678?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-996816?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-636226?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Toys Rechargeable Educational Flash Cards',
@@ -3014,8 +3014,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Subject', 'options' => ['Alphabet', 'Numbers', 'Animals', 'Mixed']]
                     ],
-                    'cover_image' => '/storage/media/1686/collection.png',
-                    'images' => '/storage/media/1691/1.png,/storage/media/1690/2.png,/storage/media/1689/3.png,/storage/media/1688/4.png,/storage/media/1687/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-757740?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-029390?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-799312?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-085092?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-496711?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-374927?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Wooden Memory Chess Color Matching Game',
@@ -3023,8 +3023,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Natural wood construction</li><li>Memory training</li><li>Color matching elements</li><li>Chess-inspired design</li><li>Ages 4+ years</li></ul>',
                     'details' => '<p>Wooden memory chess game combining color matching and memory training elements. Natural wood construction with chess-inspired design for cognitive development.</p>',
                     'price' => 44.99,
-                    'cover_image' => '/storage/media/1692/collection.png',
-                    'images' => '/storage/media/1715/1.png,/storage/media/1714/2.png,/storage/media/1713/3.png,/storage/media/1712/4.png,/storage/media/1711/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-714615?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-694129?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-248070?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-876039?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-681334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-566562?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Children Learning & Puzzle Cards',
@@ -3032,8 +3032,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Educational content</li><li>Puzzle format</li><li>Durable card material</li><li>Age-appropriate designs</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Educational puzzle cards specifically designed for children learning and development. Durable card material with age-appropriate designs and educational content.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/1698/collection.png',
-                    'images' => '/storage/media/1703/1.png,/storage/media/1702/2.png,/storage/media/1701/3.png,/storage/media/1700/4.png,/storage/media/1699/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-025143?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-090393?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-542500?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593823?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-658674?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777518?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Kids Alphabet & Number Learning Board',
@@ -3041,8 +3041,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Alphabet and numbers</li><li>Interactive features</li><li>Durable construction</li><li>Bright colors</li><li>Ages 2+ years</li></ul>',
                     'details' => '<p>Interactive learning board combining alphabet letters and numbers for comprehensive early education. Features bright colors and durable construction for long-lasting use.</p>',
                     'price' => 29.99,
-                    'cover_image' => '/storage/media/1704/collection.png',
-                    'images' => '/storage/media/1709/1.png,/storage/media/1708/2.png,/storage/media/1707/3.png,/storage/media/1706/4.png,/storage/media/1705/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-622149?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-556724?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-051820?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-136600?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-953967?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-492517?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Science Volcano Lab for Kids',
@@ -3050,8 +3050,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Volcano model included</li><li>Safe experiment materials</li><li>Educational guide</li><li>Hands-on learning</li><li>Ages 6+ years</li></ul>',
                     'details' => '<p>Exciting science volcano lab kit providing hands-on geological learning through safe experiments. Includes volcano model and comprehensive educational guide for interactive learning.</p>',
                     'price' => 54.99,
-                    'cover_image' => '/storage/media/1710/collection.png',
-                    'images' => '/storage/media/1715/1.png,/storage/media/1714/2.png,/storage/media/1713/3.png,/storage/media/1712/4.png,/storage/media/1711/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-809629?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-694129?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-248070?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-876039?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-681334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-566562?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             "Action Figures & Playsets" => [
@@ -3064,8 +3064,8 @@ class ProductSeeder extends Seeder
                     "variants" => [
                         ["name" => "Size", "options" => ["6 inch", "12 inch", "18 inch"]]
                     ],
-                    "cover_image" => "/storage/media/1716/collection.png",
-                    "images" => "/storage/media/1721/1.png,/storage/media/1720/2.png,/storage/media/1719/3.png,/storage/media/1718/4.png,/storage/media/1717/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-029543?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-043067?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-202975?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-078006?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-848445?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-209313?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Blue Fox Cartoon Character",
@@ -3073,8 +3073,8 @@ class ProductSeeder extends Seeder
                     "specifications" => "<ul><li>Cartoon design</li><li>Moveable parts</li><li>Bright blue color</li><li>Child-safe materials</li><li>Ages 3+ years</li></ul>",
                     "details" => "<p>Adorable blue fox cartoon character figure with moveable parts and bright blue color. Made from child-safe materials perfect for imaginative play.</p>",
                     "price" => 24.99,
-                    "cover_image" => "/storage/media/1722/collection.png",
-                    "images" => "/storage/media/1727/1.png,/storage/media/1726/2.png,/storage/media/1725/3.png,/storage/media/1724/4.png,/storage/media/1723/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-472575?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-170798?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-859095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-517898?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-009398?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-299436?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Building & Constructions Playsets",
@@ -3082,8 +3082,8 @@ class ProductSeeder extends Seeder
                     "specifications" => "<ul><li>Building blocks included</li><li>Construction vehicles</li><li>Worker figures</li><li>Realistic accessories</li><li>Ages 5+ years</li></ul>",
                     "details" => "<p>Construction-themed playset featuring building blocks, construction vehicles, and worker figures with realistic accessories for creative building play.</p>",
                     "price" => 69.99,
-                    "cover_image" => "/storage/media/1728/collection.png",
-                    "images" => "/storage/media/1733/1.png,/storage/media/1732/2.png,/storage/media/1731/3.png,/storage/media/1730/4.png,/storage/media/1729/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-549268?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-737068?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-025765?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-883450?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-624476?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-251605?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Home Miniature Playset",
@@ -3091,8 +3091,8 @@ class ProductSeeder extends Seeder
                     "specifications" => "<ul><li>Miniature home design</li><li>Furniture included</li><li>Family figures</li><li>Multiple rooms</li><li>Ages 3+ years</li></ul>",
                     "details" => "<p>Detailed miniature home playset with furniture and family figures. Features multiple rooms for realistic home play and storytelling adventures.</p>",
                     "price" => 89.99,
-                    "cover_image" => "/storage/media/1734/collection.png",
-                    "images" => "/storage/media/1739/1.png,/storage/media/1738/2.png,/storage/media/1737/3.png,/storage/media/1736/4.png,/storage/media/1735/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-827472?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-995258?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-166602?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-977317?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-640007?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-728814?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Royal Armor Warrior Toy",
@@ -3103,8 +3103,8 @@ class ProductSeeder extends Seeder
                     "variants" => [
                         ["name" => "Size", "options" => ["6 inch", "12 inch", "18 inch"]]
                     ],
-                    "cover_image" => "/storage/media/1740/collection.png",
-                    "images" => "/storage/media/1745/1.png,/storage/media/1744/2.png,/storage/media/1743/3.png,/storage/media/1742/4.png,/storage/media/1741/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-307064?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-818309?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-626385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-704988?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-306285?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-108709?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Magic Ruins Explorer Playset",
@@ -3112,8 +3112,8 @@ class ProductSeeder extends Seeder
                     "specifications" => "<ul><li>Magic ruins setting</li><li>Explorer figures</li><li>Hidden treasures</li><li>Adventure accessories</li><li>Ages 5+ years</li></ul>",
                     "details" => "<p>Adventure playset featuring magic ruins setting with explorer figures and hidden treasures. Includes adventure accessories for exciting exploration play.</p>",
                     "price" => 79.99,
-                    "cover_image" => "/storage/media/1746/collection.png",
-                    "images" => "/storage/media/1751/1.png,/storage/media/1750/2.png,/storage/media/1749/3.png,/storage/media/1748/4.png,/storage/media/1747/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-835537?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-599885?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-898683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-177747?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-639182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-866543?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Iron Ronin Shadow Warrior",
@@ -3121,8 +3121,8 @@ class ProductSeeder extends Seeder
                     "specifications" => "<ul><li>Iron armor design</li><li>Shadow combat theme</li><li>Ninja accessories</li><li>Articulated joints</li><li>Ages 8+ years</li></ul>",
                     "details" => "<p>Ninja warrior figure with iron armor design and shadow combat theme. Features ninja accessories and articulated joints for dynamic action poses.</p>",
                     "price" => 44.99,
-                    "cover_image" => "/storage/media/1752/collection.png",
-                    "images" => "/storage/media/1757/1.png,/storage/media/1756/2.png,/storage/media/1755/3.png,/storage/media/1754/4.png,/storage/media/1753/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-391240?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-175668?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-444688?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-724173?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-066641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-987157?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Crown Guard Lion Knight Figure",
@@ -3133,8 +3133,8 @@ class ProductSeeder extends Seeder
                     "variants" => [
                         ["name" => "Size", "options" => ["6 inch", "12 inch", "18 inch"]]
                     ],
-                    "cover_image" => "/storage/media/1758/collection.png",
-                    "images" => "/storage/media/1763/1.png,/storage/media/1762/2.png,/storage/media/1761/3.png,/storage/media/1760/4.png,/storage/media/1759/5.png"
+                    "cover_image" => "https://images.unsplash.com/photo-741293?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-066713?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-875103?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-298098?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-927095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-360056?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Damage Scorpios Rex Dinosaur Figure",
@@ -3142,8 +3142,8 @@ class ProductSeeder extends Seeder
                     "specifications" => "<ul><li>Scorpios Rex design</li><li>Battle damage details</li><li>Moveable parts</li><li>Realistic features</li><li>Ages 4+ years</li></ul>",
                     "details" => "<p>Fierce Scorpios Rex dinosaur figure with battle damage details and moveable parts. Realistic features for prehistoric adventures and dinosaur battles.</p>",
                     "price" => 54.99,
-                    "cover_image" => "/storage/media/1764/collection.png",
-                    "images" => "/storage/media/1769/7.png,/storage/media/1768/8.png,/storage/media/1767/9.png,/storage/media/1766/10.png,/storage/media/1765/11.png"
+                    "cover_image" => "https://images.unsplash.com/photo-539642?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-790419?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-793325?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-781555?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-271469?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-671302?w=800&h=800&fit=crop&crop=center"
                 ],
                 [
                     "name" => "Construction Site Building Blocks Set",
@@ -3151,8 +3151,8 @@ class ProductSeeder extends Seeder
                     "specifications" => "<ul><li>Building blocks included</li><li>Construction vehicles</li><li>Worker figures</li><li>Site accessories</li><li>Ages 4+ years</li></ul>",
                     "details" => "<p>Complete construction site building blocks set featuring construction vehicles, worker figures, and site accessories for realistic construction play.</p>",
                     "price" => 64.99,
-                    "cover_image" => "/storage/media/1770/collection.png",
-                    "images" => "/storage/media/1775/12.png,/storage/media/1774/13.png,/storage/media/1773/14.png,/storage/media/1772/15.png,/storage/media/1771/16.png"
+                    "cover_image" => "https://images.unsplash.com/photo-857319?w=800&h=800&fit=crop&crop=center",
+                    "images" => "https://images.unsplash.com/photo-357871?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-256837?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-663747?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-197040?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-627938?w=800&h=800&fit=crop&crop=center"
                 ]
             ],
             'Outdoor & Sports Toys' => [
@@ -3165,8 +3165,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['12 inch', '16 inch', '20 inch']]
                     ],
-                    'cover_image' => '/storage/media/1776/collection.png',
-                    'images' => '/storage/media/1781/1.png,/storage/media/1780/2.png,/storage/media/1779/3.png,/storage/media/1778/4.png,/storage/media/1777/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-832031?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-828004?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-651346?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-011120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-436780?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-470710?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Kidsmate Rider Pro Kick Scooter',
@@ -3174,8 +3174,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Adjustable height</li><li>Smooth rolling wheels</li><li>Lightweight design</li><li>Safety brake</li><li>Ages 5+ years</li></ul>',
                     'details' => '<p>Kidsmate Rider Pro kick scooter with adjustable height and smooth rolling wheels. Lightweight design with safety brake for secure riding.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/1782/collection.png',
-                    'images' => '/storage/media/1787/1.png,/storage/media/1786/2.png,/storage/media/1785/3.png,/storage/media/1784/4.png,/storage/media/1783/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-737745?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-521026?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-165485?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-702443?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-295461?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-216883?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Soccer Ball Black White Football',
@@ -3183,8 +3183,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Classic black white design</li><li>Official size and weight</li><li>Durable construction</li><li>Weather resistant</li><li>Ages 6+ years</li></ul>',
                     'details' => '<p>Classic black and white soccer ball with official size and weight. Durable construction and weather resistant for outdoor play and sports.</p>',
                     'price' => 24.99,
-                    'cover_image' => '/storage/media/1788/collection.png',
-                    'images' => '/storage/media/1793/1.png,/storage/media/1792/2.png,/storage/media/1791/3.png,/storage/media/1790/4.png,/storage/media/1789/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-260090?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-078120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-299566?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-538746?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-847432?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-028402?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Skipping Rope with Built-In Counter',
@@ -3192,8 +3192,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Built-in digital counter</li><li>Adjustable length</li><li>Comfortable handles</li><li>Exercise tracking</li><li>Ages 8+ years</li></ul>',
                     'details' => '<p>Digital skipping rope with built-in counter for tracking jumps and exercise progress. Adjustable length with comfortable handles for fitness fun.</p>',
                     'price' => 19.99,
-                    'cover_image' => '/storage/media/1794/collection.png',
-                    'images' => '/storage/media/1799/1.png,/storage/media/1798/2.png,/storage/media/1797/3.png,/storage/media/1796/4.png,/storage/media/1795/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-892908?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-469222?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-466253?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-204634?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-390533?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-954995?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Toddler Foot to Floor Sliding Walker',
@@ -3204,8 +3204,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large']]
                     ],
-                    'cover_image' => '/storage/media/1800/collection.png',
-                    'images' => '/storage/media/1805/1.png,/storage/media/1804/2.png,/storage/media/1803/3.png,/storage/media/1802/4.png,/storage/media/1801/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-429290?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-752899?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-536581?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-743794?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-617496?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-545322?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Kids Crab Water Slide Playset',
@@ -3213,8 +3213,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Crab-themed design</li><li>Water slide feature</li><li>Outdoor play</li><li>Summer activities</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Exciting kids crab water slide playset featuring fun crab theme with water slide for outdoor summer play and refreshing water activities.</p>',
                     'price' => 49.99,
-                    'cover_image' => '/storage/media/1806/collection.png',
-                    'images' => '/storage/media/1811/1.png,/storage/media/1810/2.png,/storage/media/1809/3.png,/storage/media/1808/4.png,/storage/media/1807/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-915401?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-323596?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-317400?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-866698?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-018437?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-775927?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Colorful Kids Slide',
@@ -3222,8 +3222,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Colorful design</li><li>Safe construction</li><li>Indoor outdoor use</li><li>Playground fun</li><li>Ages 2+ years</li></ul>',
                     'details' => '<p>Bright and colorful kids slide with safe construction for indoor and outdoor use. Perfect playground equipment for safe and fun sliding activities.</p>',
                     'price' => 44.99,
-                    'cover_image' => '/storage/media/1812/collection.png',
-                    'images' => '/storage/media/1817/1.png,/storage/media/1816/2.png,/storage/media/1815/3.png,/storage/media/1814/4.png,/storage/media/1813/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-287573?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-986676?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-478600?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-423860?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-842610?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-162300?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Webby Kids Jungle Adventure Play Tent House',
@@ -3231,8 +3231,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Jungle adventure theme</li><li>Easy setup</li><li>Indoor outdoor use</li><li>Spacious interior</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Webby Kids jungle adventure play tent house with easy setup for indoor and outdoor use. Spacious interior with jungle theme for imaginative play.</p>',
                     'price' => 59.99,
-                    'cover_image' => '/storage/media/1818/collection.png',
-                    'images' => '/storage/media/1823/1.png,/storage/media/1822/2.png,/storage/media/1821/3.png,/storage/media/1820/4.png,/storage/media/1819/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-594820?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-944170?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-992141?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-901959?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-935944?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-436380?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Eagle Strike Flying Disc',
@@ -3240,8 +3240,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Aerodynamic design</li><li>Durable material</li><li>Perfect weight balance</li><li>Outdoor sports</li><li>Ages 6+ years</li></ul>',
                     'details' => '<p>Eagle Strike flying disc with aerodynamic design and perfect weight balance. Durable material construction for outdoor throwing games and sports.</p>',
                     'price' => 14.99,
-                    'cover_image' => '/storage/media/1824/collection.png',
-                    'images' => '/storage/media/1829/1.png,/storage/media/1828/2.png,/storage/media/1827/3.png,/storage/media/1826/4.png,/storage/media/1825/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-158016?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-806758?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-722323?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-928780?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-941983?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-243193?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Summer Splash Kids Pool',
@@ -3249,8 +3249,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Inflatable design</li><li>Easy setup</li><li>Summer water fun</li><li>Safe materials</li><li>Ages 2+ years</li></ul>',
                     'details' => '<p>Summer Splash inflatable kids pool with easy setup for summer water fun. Made from safe materials perfect for outdoor water play and cooling off.</p>',
                     'price' => 39.99,
-                    'cover_image' => '/storage/media/1830/collection.png',
-                    'images' => '/storage/media/1835/1.png,/storage/media/1834/2.png,/storage/media/1833/3.png,/storage/media/1832/4.png,/storage/media/1831/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-530802?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-481939?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-431721?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-194232?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-579683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-476503?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
             'Electronic & Remote Toys' => [
@@ -3263,8 +3263,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large']]
                     ],
-                    'cover_image' => '/storage/media/1836/collection.png',
-                    'images' => '/storage/media/1841/1.png,/storage/media/1840/2.png,/storage/media/1839/3.png,/storage/media/1838/4.png,/storage/media/1837/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-412565?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-293725?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-712794?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-281077?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-963947?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-433849?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Mirana Air Football Smart Red',
@@ -3272,8 +3272,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Hover technology</li><li>LED lights</li><li>Rechargeable battery</li><li>Safe foam bumpers</li><li>Ages 5+ years</li></ul>',
                     'details' => '<p>Mirana smart air football with hover technology and LED lights. Safe foam bumpers and rechargeable battery for indoor flying fun.</p>',
                     'price' => 45.99,
-                    'cover_image' => '/storage/media/1842/collection.png',
-                    'images' => '/storage/media/1847/1.png,/storage/media/1846/2.png,/storage/media/1845/3.png,/storage/media/1844/4.png,/storage/media/1843/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-138096?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-390527?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-347379?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-276694?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-860219?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-816794?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Interactive Music Piano Toy for Kids',
@@ -3281,8 +3281,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Interactive music features</li><li>Learning modes</li><li>Multiple instruments</li><li>Recording function</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Interactive music piano toy with learning modes and multiple instrument sounds. Features recording function for creative musical play.</p>',
                     'price' => 79.99,
-                    'cover_image' => '/storage/media/1848/collection.png',
-                    'images' => '/storage/media/1853/1.png,/storage/media/1852/2.png,/storage/media/1851/3.png,/storage/media/1850/4.png,/storage/media/1849/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-974914?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-327088?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-737212?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-876961?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-930649?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-594493?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Smart Talking Robot Toy',
@@ -3290,8 +3290,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>AI conversation</li><li>Voice recognition</li><li>Educational content</li><li>Rechargeable battery</li><li>Ages 6+ years</li></ul>',
                     'details' => '<p>Smart talking robot toy with AI conversation features and voice recognition. Educational content and rechargeable battery for hours of interactive play.</p>',
                     'price' => 149.99,
-                    'cover_image' => '/storage/media/1854/collection.png',
-                    'images' => '/storage/media/1859/1.png,/storage/media/1858/2.png,/storage/media/1857/3.png,/storage/media/1856/4.png,/storage/media/1855/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-284881?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-137332?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-149455?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-141181?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-889838?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-108589?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Big Face Fox Night Light for Kids',
@@ -3299,8 +3299,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Fox design</li><li>Soft LED light</li><li>Touch control</li><li>Rechargeable battery</li><li>Ages 0+ years</li></ul>',
                     'details' => '<p>Big face fox night light with cute design and soft LED illumination. Touch control and rechargeable battery for bedtime comfort and security.</p>',
                     'price' => 34.99,
-                    'cover_image' => '/storage/media/1860/collection.png',
-                    'images' => '/storage/media/1865/1.png,/storage/media/1864/2.png,/storage/media/1863/3.png,/storage/media/1862/4.png,/storage/media/1861/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-144685?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-264009?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-679728?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-880707?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-216419?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-072767?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Cute Robot Pets for Kids',
@@ -3308,8 +3308,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Realistic movements</li><li>Pet sounds</li><li>Touch sensors</li><li>Rechargeable battery</li><li>Ages 4+ years</li></ul>',
                     'details' => '<p>Cute robot pet with realistic movements and pet sounds. Touch sensors and rechargeable battery for interactive pet care experience.</p>',
                     'price' => 99.99,
-                    'cover_image' => '/storage/media/1866/collection.png',
-                    'images' => '/storage/media/1871/1.png,/storage/media/1870/2.png,/storage/media/1869/3.png,/storage/media/1868/4.png,/storage/media/1867/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-645029?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-537600?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-957705?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-583809?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-223798?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-957527?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Mini Remote Control Helicopter',
@@ -3317,8 +3317,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Gyroscope stabilization</li><li>LED lights</li><li>Rechargeable battery</li><li>Indoor flying</li><li>Ages 8+ years</li></ul>',
                     'details' => '<p>Mini remote control helicopter with gyroscope stabilization for stable flight. LED lights and rechargeable battery for indoor flying adventures.</p>',
                     'price' => 59.99,
-                    'cover_image' => '/storage/media/1872/collection.png',
-                    'images' => '/storage/media/1877/1.png,/storage/media/1876/2.png,/storage/media/1875/3.png,/storage/media/1874/4.png,/storage/media/1873/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-966552?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-024700?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-328438?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-065510?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-391070?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-073085?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Talking Cactus Toy for Kids',
@@ -3329,8 +3329,8 @@ class ProductSeeder extends Seeder
                     'variants' => [
                         ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large']]
                     ],
-                    'cover_image' => '/storage/media/1878/collection.png',
-                    'images' => '/storage/media/1883/1.png,/storage/media/1882/2.png,/storage/media/1879/6.png,/storage/media/1881/4.png,/storage/media/1880/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-750190?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-583975?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-960517?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-716856?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-031824?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-474157?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Lightning Pro Racing Boat',
@@ -3338,8 +3338,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>High-speed motor</li><li>Waterproof design</li><li>Remote control</li><li>Rechargeable battery</li><li>Ages 8+ years</li></ul>',
                     'details' => '<p>Lightning Pro racing boat with high-speed motor and waterproof design. Remote control and rechargeable battery for exciting water racing adventures.</p>',
                     'price' => 119.99,
-                    'cover_image' => '/storage/media/1884/collection.png',
-                    'images' => '/storage/media/1889/1.png,/storage/media/1888/2.png,/storage/media/1887/3.png,/storage/media/1886/4.png,/storage/media/1885/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-916639?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-788165?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-812271?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-813967?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-344780?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-293423?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
                     'name' => 'Smart Educational Toy Tablet',
@@ -3347,8 +3347,8 @@ class ProductSeeder extends Seeder
                     'specifications' => '<ul><li>Educational games</li><li>Interactive activities</li><li>Touchscreen display</li><li>Parental controls</li><li>Ages 3+ years</li></ul>',
                     'details' => '<p>Smart educational toy tablet with interactive learning games and activities. Touchscreen display with parental controls for safe educational entertainment.</p>',
                     'price' => 109.99,
-                    'cover_image' => '/storage/media/1890/collection.png',
-                    'images' => '/storage/media/1895/1.png,/storage/media/1894/2.png,/storage/media/1893/3.png,/storage/media/1892/4.png,/storage/media/1891/5.png'
+                    'cover_image' => 'https://images.unsplash.com/photo-270135?w=800&h=800&fit=crop&crop=center',
+                    'images' => 'https://images.unsplash.com/photo-963474?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-686866?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-930610?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-976459?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-221691?w=800&h=800&fit=crop&crop=center'
                 ]
             ]
         ];

@@ -16,7 +16,6 @@ class FlutterwaveController extends Controller
             $order = Order::where('order_number', $orderNumber)->firstOrFail();
             $storeModel = Store::where('slug', $storeSlug)->firstOrFail();
 
-            $status = $request->input('status');
             $txRef  = $request->input('tx_ref');
             $transactionId = $request->input('transaction_id');
 
@@ -26,6 +25,10 @@ class FlutterwaveController extends Controller
             $flutterwaveConfig = getPaymentMethodConfig('flutterwave', $storeModel->user->id, $order->store_id);
             $secretKey = $flutterwaveConfig['secret_key'] ?? '';
 
+            // The client-supplied $status is NEVER trusted. Payment is only
+            // confirmed by verifying the transaction with the Flutterwave API
+            // and checking status, tx_ref, and amount. There is intentionally
+            // NO unverified fallback branch.
             if ($secretKey && $transactionId) {
                 $response = \Http::withHeaders([
                     'Authorization' => 'Bearer ' . $secretKey,
@@ -64,19 +67,6 @@ class FlutterwaveController extends Controller
                             'amount_expected' => $order->total_amount,
                         ]);
                     }
-                }
-            } elseif ($status === 'successful' || $status === 'success') {
-                // Fallback: no secret key configured but status says successful
-                $isPaid = true;
-                if ($order->payment_status !== 'paid') {
-                    $order->update([
-                        'status'         => 'confirmed',
-                        'payment_status' => 'paid',
-                        'payment_details' => array_merge($order->payment_details ?? [], [
-                            'tx_ref'      => $txRef,
-                            'verified_at' => now(),
-                        ]),
-                    ]);
                 }
             }
 

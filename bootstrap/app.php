@@ -72,6 +72,21 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/coupon/validate',
             'api/cart',
             'api/cart/*',
+
+            // Store subdomain callback/webhook routes (payment gateways POST
+            // without a CSRF token).
+            'store-cashfree/webhook',
+            'skrill/callback',
+            'coingate/callback',
+            'midtrans/callback',
+            'mollie/callback',
+            'benefit/callback',
+            'yookassa/callback',
+            'skrill/success/*',
+            'coingate/success/*',
+            'mollie/success/*',
+            'benefit/success/*',
+            'yookassa/success/*',
             ],
         );
 

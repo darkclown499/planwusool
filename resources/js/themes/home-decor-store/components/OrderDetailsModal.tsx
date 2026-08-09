@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 
 interface OrderDetailsModalProps {
@@ -181,7 +181,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                 {order.items.map((item: any, index: any) => {
                   const itemTotal = item.price * item.quantity;
                   const itemTotalWithTax = itemTotal + item.tax_amount;
-                  const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                  let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                  if (typeof item.variants === 'string') {
+                    try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                  }
                   
                   return (
                     <div key={index} className="bg-amber-50 rounded-xl p-4 border border-amber-100">

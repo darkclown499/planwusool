@@ -65,10 +65,7 @@ if (! function_exists('settings')) {
             return [];
         }
 
-        return Setting::where('user_id', $user_id)
-                     ->where('store_id', $store_id)
-                     ->pluck('value', 'key')
-                     ->toArray();
+        return \App\Models\Setting::getUserSettings($user_id, $store_id);
     }
 }
 
@@ -220,10 +217,12 @@ if (! function_exists('updateSetting')) {
             return false;
         }
 
-        return Setting::updateOrCreate(
+        $result = Setting::updateOrCreate(
             ['user_id' => $user_id, 'store_id' => null, 'key' => $key],
             ['value' => $value]
         );
+        \App\Models\Setting::forgetUserSettings($user_id, null);
+        return $result;
     }
 }
 
@@ -1178,6 +1177,7 @@ if (! function_exists('copySettingsFromSuperAdmin')) {
                 ],
                 ['value' => $setting->value]
             );
+            \App\Models\Setting::forgetUserSettings($companyUserId, $companyUserCurrentStore);
         }
     }
 }

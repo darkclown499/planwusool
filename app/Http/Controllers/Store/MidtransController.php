@@ -35,7 +35,7 @@ class MidtransController extends Controller
                 'Accept: application/json',
             ]);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
             $response = curl_exec($ch);
             curl_close($ch);
             $result = json_decode($response, true);
@@ -98,6 +98,9 @@ class MidtransController extends Controller
             $payload           = $request->all();
             $orderId           = $payload['order_id'] ?? null;
             $transactionStatus = $payload['transaction_status'] ?? null;
+            $signatureKey      = $payload['signature_key'] ?? null;
+            $grossAmount       = $payload['gross_amount'] ?? null;
+            $statusCode        = $payload['status_code'] ?? null;
 
             if (!$orderId) {
                 return response()->json(['error' => 'Missing order ID'], 400);
@@ -108,8 +111,38 @@ class MidtransController extends Controller
                 return response()->json(['error' => 'Order not found'], 404);
             }
 
-            // Get store Midtrans config (for future signature verification)
+            // Get store Midtrans config
             $midtransConfig = getPaymentMethodConfig('midtrans', $order->store->user->id, $order->store_id);
+            $serverKey      = $midtransConfig['secret_key'] ?? $midtransConfig['server_key'] ?? '';
+
+            // Verify the webhook signature (SHA512 over
+            // order_id + status_code + gross_amount + server_key).
+            if ($serverKey && $signatureKey && $statusCode !== null && $grossAmount !== null) {
+                $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+                if (!hash_equals($expectedSignature, (string) $signatureKey)) {
+                    Log::warning('Midtrans webhook signature verification failed', [
+                        'order_id' => $orderId,
+                    ]);
+                    return response()->json(['error' => 'Invalid signature'], 403);
+                }
+            } elseif ($serverKey) {
+                // Signature required whenever a server key is configured.
+                Log::warning('Midtrans webhook missing signature', ['order_id' => $orderId]);
+                return response()->json(['error' => 'Missing signature'], 403);
+            }
+
+            // Verify the amount matches the order total when available.
+            if ($grossAmount !== null) {
+                $grossAmount = (float) str_replace(['.', ','], ['', '.'], (string) $grossAmount);
+                if (abs($grossAmount - (float) $order->total_amount) > 0.01) {
+                    Log::warning('Midtrans webhook amount mismatch', [
+                        'order_id' => $orderId,
+                        'gross_amount' => $grossAmount,
+                        'order_total' => $order->total_amount,
+                    ]);
+                    return response()->json(['error' => 'Amount mismatch'], 400);
+                }
+            }
 
             if (in_array($transactionStatus, ['capture', 'settlement'])) {
                 if ($order->payment_status === 'pending') {
@@ -134,7 +167,7 @@ class MidtransController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Wusool Midtrans callback error: ' . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Webhook processing failed'], 500);
         }
     }
 }

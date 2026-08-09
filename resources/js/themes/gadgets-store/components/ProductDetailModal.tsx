@@ -1,3 +1,4 @@
+﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
@@ -233,7 +234,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <h4 className="font-semibold md:text-sm text-gray-900 mb-2 md:mb-1">الوصف</h4>
                     <div 
                       className="text-gray-600 md:text-sm leading-relaxed" 
-                      dangerouslySetInnerHTML={{ __html: product.description }} 
+                      dangerouslySetInnerHTML={createSafeHtml(product.description)} 
                     />
                   </div>
                 )}

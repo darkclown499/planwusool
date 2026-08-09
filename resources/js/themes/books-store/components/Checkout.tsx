@@ -1,3 +1,4 @@
+﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
@@ -333,7 +334,10 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         <div className="flex-1 min-w-0">
                           <h4 className="font-serif font-bold text-amber-900 mb-1 sm:mb-2 text-sm sm:text-base truncate">{item.name}</h4>
                           {(() => {
-                            const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                            let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                            if (typeof item.variants === 'string') {
+                              try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                            }
                             return variants && Object.keys(variants).length > 0 && (
                               <div className="text-xs sm:text-sm text-amber-600 mb-2">
                                 {Object.entries(variants).map(([key, value], index) => (
@@ -520,7 +524,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             />
                             <div className="w-6 h-6 sm:w-8 sm:h-8 text-amber-700 flex-shrink-0">
                               {method.icon ? (
-                                <div dangerouslySetInnerHTML={{ __html: method.icon }} />
+                                <div dangerouslySetInnerHTML={createSafeHtml(method.icon)} />
                               ) : (
                                 <CreditCard className="w-6 h-6 sm:w-8 sm:h-8" />
                               )}

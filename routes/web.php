@@ -90,8 +90,8 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::get('/order/{orderNumber}', [ThemeController::class, 'orderDetail'])->name('store.order-detail');
 
     // Auth routes
-    Route::post('/login', [\App\Http\Controllers\Store\AuthController::class, 'login'])->name('store.login');
-    Route::post('/register', [\App\Http\Controllers\Store\AuthController::class, 'register'])->name('store.register');
+    Route::post('/login', [\App\Http\Controllers\Store\AuthController::class, 'login'])->middleware('throttle:5,1')->name('store.login');
+    Route::post('/register', [\App\Http\Controllers\Store\AuthController::class, 'register'])->middleware('throttle:10,1')->name('store.register');
     Route::post('/logout', [\App\Http\Controllers\Store\AuthController::class, 'logout'])->name('store.logout');
 
     // Profile routes
@@ -99,7 +99,7 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::post('/profile/password', [\App\Http\Controllers\Store\ProfileController::class, 'updatePassword'])->name('store.profile.password');
 
     // Password reset routes
-    Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->name('store.forgot-password');
+    Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->middleware('throttle:5,1')->name('store.forgot-password');
     Route::get('/reset-password/{token}', [\App\Http\Controllers\Store\AuthController::class, 'showResetForm'])->name('store.reset-password');
     Route::post('/reset-password', [\App\Http\Controllers\Store\AuthController::class, 'resetPassword'])->name('store.reset-password.update');
 
@@ -428,7 +428,7 @@ Route::post('payments/xendit/callback', [XenditPaymentController::class, 'callba
 
 
 
-Route::get('/landing-page', [LandingPageController::class, 'settings'])->name('landing-page');
+Route::get('/landing-page', [LandingPageController::class, 'settings'])->middleware(['auth', 'App\Http\Middleware\SuperAdminMiddleware'])->name('landing-page');
 
 Route::post('/landing-page/subscribe', [LandingPageController::class, 'subscribe'])->name('landing-page.subscribe');
 Route::post('/landing-page/contact', [LandingPageController::class, 'submitContact'])->name('landing-page.contact');

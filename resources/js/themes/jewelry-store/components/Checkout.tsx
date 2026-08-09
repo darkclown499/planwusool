@@ -1,3 +1,4 @@
+﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
@@ -400,7 +401,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             />
                             <div className="w-8 h-8 text-yellow-600">
                               {method.icon ? (
-                                <div dangerouslySetInnerHTML={{ __html: method.icon }} />
+                                <div dangerouslySetInnerHTML={createSafeHtml(method.icon)} />
                               ) : (
                                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -553,7 +554,10 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-yellow-900 text-sm md:text-base leading-tight mb-1">{item.name}</h4>
                         {(() => {
-                          const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                          let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                          if (typeof item.variants === 'string') {
+                            try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                          }
                           return variants && Object.keys(variants).length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-2">
                               {Object.entries(variants).map(([key, value], index) => (

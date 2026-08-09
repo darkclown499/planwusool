@@ -204,22 +204,25 @@ class AuthController extends Controller
             ->where('is_active', true)
             ->first();
 
+        // Always send the same response whether or not the customer exists,
+        // to prevent account enumeration. If no customer was found we simply
+        // skip sending a reset email but still report success.
         if (!$customer) {
-            throw ValidationException::withMessages([
-                'email' => [__('No customer found with this email address.')],
-            ]);
+            return back()->with('success', __('Password reset link sent to your email.'));
         }
 
         // Generate reset token
         $token = Str::random(60);
         
-        // Store token in database
-        \DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $request->email],
+        // Store token in the store-scoped table (expires after 60 minutes)
+        \DB::table('store_password_reset_tokens')->updateOrInsert(
             [
                 'email' => $request->email,
+                'store_id' => $store->id,
+            ],
+            [
                 'token' => Hash::make($token),
-                'created_at' => now()
+                'created_at' => now(),
             ]
         );
 
@@ -255,12 +258,17 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        // Verify token
-        $passwordReset = \DB::table('password_reset_tokens')
+        // Verify token (store-scoped, with a 60-minute expiry)
+        $passwordReset = \DB::table('store_password_reset_tokens')
             ->where('email', $request->email)
+            ->where('store_id', $store->id)
             ->first();
 
-        if (!$passwordReset || !Hash::check($request->token, $passwordReset->token)) {
+        $tokenExpired = !$passwordReset
+            || !$passwordReset->created_at
+            || \Carbon\Carbon::parse($passwordReset->created_at)->lt(now()->subMinutes(60));
+
+        if (!$passwordReset || !Hash::check($request->token, $passwordReset->token) || $tokenExpired) {
             throw ValidationException::withMessages([
                 'token' => [__('Invalid or expired reset token.')],
             ]);
@@ -275,8 +283,11 @@ class AuthController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        // Delete the reset token
-        \DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        // Delete the reset token (scoped to store + email)
+        \DB::table('store_password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('store_id', $store->id)
+            ->delete();
 
         return back()->with('success', __('Password has been reset successfully.'));
     }

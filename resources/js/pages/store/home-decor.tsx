@@ -1,6 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { HomeDecorStore } from '../../themes/home-decor-store/HomeDecorStore';
 import StoreHead from '@/components/StoreHead';
+import StoreBoundary from '@/components/StoreBoundary';
 
 interface HomeDecorPageProps {
   config: any;
@@ -30,7 +31,7 @@ const HomeDecorPage: React.FC<HomeDecorPageProps> = (props) => {
         defaultDescription="Transform your living space with our curated collection of premium furniture and home décor pieces."
         defaultKeywords="furniture, home decor, interior design, living room, bedroom, dining room"
       />
-      <HomeDecorStore {...props} />
+      <StoreBoundary>        <HomeDecorStore {...props} />      </StoreBoundary>
     </>
   );
 };

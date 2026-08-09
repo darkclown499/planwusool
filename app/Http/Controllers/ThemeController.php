@@ -72,7 +72,7 @@ class ThemeController extends Controller
         $pwaData = null;
         $plan = $store->user ? $store->user->getCurrentPlan() : null;
         if ($store->enable_pwa && $plan && $plan->pwa_business === 'on') {
-            $cacheVersion = time(); // Cache busting
+            $cacheVersion = $store->updated_at ? $store->updated_at->timestamp : 0; // Bust cache only when the store changes
             $pwaData = [
                 'enabled' => true,
                 'name' => $store->pwa_name ?: $store->name,
@@ -253,64 +253,91 @@ class ThemeController extends Controller
 
         // Get store configuration with settings and currencies
         $storeData = $this->getStoreConfig($store);
+
+        $storeModel = Store::find($store['id']);
+        
+        // Cache the serialized product catalog for 5 minutes. This avoids
+        // re-hydrating + re-serializing every product on every page view.
+        // Invalidated automatically when a product is saved/deleted (see
+        // Product model boot()).
+        $products = \Illuminate\Support\Facades\Cache::remember(
+            'store_catalog.' . $store['id'],
+            300,
+            function () use ($store) {
+                return Product::where('store_id', $store['id'])
+                    ->where('is_active', true)
+                    ->with('category')
+                    ->orderBy('created_at', 'desc')
+                    // Hard cap to keep the storefront payload bounded even for
+                    // stores with thousands of products.
+                    ->limit(300)
+                    ->get()
+                    ->map(function ($product) {
+                        return [
+                            'id' => (string) $product->id,
+                            'name' => $product->name,
+                            'price' => $product->sale_price ? (float) $product->sale_price : (float) $product->price,
+                            'originalPrice' => $product->sale_price ? (float) $product->price : null,
+                            'image' => $product->cover_image ? $product->cover_image : asset('public/images/avatar/avatar.png'),
+                            'images' => $product->images ? (is_array($product->images) ? $product->images : (strpos($product->images, ',') !== false ? explode(',', $product->images) : json_decode($product->images, true))) : null,
+                            'categoryId' => (string) $product->category_id,
+                            'category' => $product->category ? $product->category->name : 'Uncategorized',
+                            'availability' => $product->stock > 0 ? 'in_stock' : 'out_of_stock',
+                            'sku' => $product->sku ?: 'SKU-' . $product->id,
+                            'stockQuantity' => (int) $product->stock,
+                            'description' => $product->description,
+                            'variants' => $product->variants ? (is_array($product->variants) ? $product->variants : json_decode($product->variants, true)) : null,
+                            'customFields' => $product->custom_fields ? (is_array($product->custom_fields) ? $product->custom_fields : json_decode($product->custom_fields, true)) : null,
+                            'taxName' => $product->tax_name ?? null,
+                            'taxPercentage' => $product->tax_percentage ?? null,
+                        ];
+                    })
+                    ->values();
+            }
+        );
         
         // Get categories for the store
-        $categories = Category::where('store_id', $store['id'])
-            ->where('is_active', true)
-            ->whereNull('parent_id')
-            ->withCount(['products' => function ($query) {
-                $query->where('is_active', true);
-            }])
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'id' => (string) $category->id,
-                    'name' => $category->name,
-                    'description' => $category->description,
-                    'product_count' => $category->products_count,
-                ];
-            });
-        
-        // Get products for the store
-        $products = Product::where('store_id', $store['id'])
-            ->where('is_active', true)
-            ->with('category')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => (string) $product->id,
-                    'name' => $product->name,
-                    'price' => $product->sale_price ? (float) $product->sale_price : (float) $product->price,
-                    'originalPrice' => $product->sale_price ? (float) $product->price : null,
-                    'image' => $product->cover_image ? $product->cover_image : asset('public/images/avatar/avatar.png'),
-                    'images' => $product->images ? (is_array($product->images) ? $product->images : (strpos($product->images, ',') !== false ? explode(',', $product->images) : json_decode($product->images, true))) : null,
-                    'categoryId' => (string) $product->category_id,
-                    'category' => $product->category ? $product->category->name : 'Uncategorized',
-                    'availability' => $product->stock > 0 ? 'in_stock' : 'out_of_stock',
-                    'sku' => $product->sku ?: 'SKU-' . $product->id,
-                    'stockQuantity' => (int) $product->stock,
-                    'description' => $product->description,
-                    'variants' => $product->variants ? (is_array($product->variants) ? $product->variants : json_decode($product->variants, true)) : null,
-                    'customFields' => $product->custom_fields ? (is_array($product->custom_fields) ? $product->custom_fields : json_decode($product->custom_fields, true)) : null,
-                    'taxName' => $product->tax_name ?? null,
-                    'taxPercentage' => $product->tax_percentage ?? null,
-                ];
-            });
+        $categories = \Illuminate\Support\Facades\Cache::remember(
+            'store_categories.' . $store['id'],
+            300,
+            function () use ($store) {
+                return Category::where('store_id', $store['id'])
+                    ->where('is_active', true)
+                    ->whereNull('parent_id')
+                    ->withCount(['products' => function ($query) {
+                        $query->where('is_active', true);
+                    }])
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->get()
+                    ->map(function ($category) {
+                        return [
+                            'id' => (string) $category->id,
+                            'name' => $category->name,
+                            'description' => $category->description,
+                            'product_count' => $category->products_count,
+                        ];
+                    })
+                    ->values();
+            }
+        );
 
-        // Get currencies
-        $storeModel = Store::find($store['id']);
+        // Get currencies (cached for 24h - rarely changes)
         $currencies = [];
         if ($storeModel && $storeModel->user) {
-            $currencies = \App\Models\Currency::all()->map(function ($currency) {
-                return [
-                    'code' => $currency->code,
-                    'symbol' => $currency->symbol,
-                    'name' => $currency->name
-                ];
-            })->toArray();
+            $currencies = \Illuminate\Support\Facades\Cache::remember(
+                'currencies_all',
+                86400,
+                function () {
+                    return \App\Models\Currency::orderBy('name')->get()->map(function ($currency) {
+                        return [
+                            'code' => $currency->code,
+                            'symbol' => $currency->symbol,
+                            'name' => $currency->name
+                        ];
+                    })->toArray();
+                }
+            );
         }
 
         $theme = $store['theme'] ?? 'basic';
@@ -324,14 +351,20 @@ class ThemeController extends Controller
             $template = null;
         }
 
-        // Get countries for checkout modal
-        $countries = \App\Models\Country::active()->orderBy('name')->get()->map(function ($country) {
-            return [
-                'id' => $country->id,
-                'name' => $country->name,
-                'code' => $country->code
-            ];
-        })->toArray();
+        // Get countries for checkout modal (cached for 24h)
+        $countries = \Illuminate\Support\Facades\Cache::remember(
+            'countries_active',
+            86400,
+            function () {
+                return \App\Models\Country::active()->orderBy('name')->get()->map(function ($country) {
+                    return [
+                        'id' => $country->id,
+                        'name' => $country->name,
+                        'code' => $country->code
+                    ];
+                })->toArray();
+            }
+        );
         
         $props = array_merge([
             'config' => $storeData['config'],
@@ -357,7 +390,6 @@ class ThemeController extends Controller
 
         // New template system: render via dynamic template page
         if ($template) {
-            $storeModel = $storeModel ?? Store::find($store['id']);
 
             // Plan gating on the storefront is based on the STORE OWNER's plan,
             // not the viewer (who is a customer). Pass the owner's plan tier so
@@ -454,17 +486,35 @@ class ThemeController extends Controller
     }
 
     /**
+     * Find an order that belongs to the current customer session. Only orders
+     * placed under the current customer id or the current guest session id are
+     * returned, preventing unauthenticated IDOR access to other buyers' orders.
+     */
+    protected function findOwnedOrder($orderNumber, $storeId): ?Order
+    {
+        $customer = Auth::guard('customer')->user();
+
+        return Order::where('order_number', $orderNumber)
+            ->where('store_id', $storeId)
+            ->where(function ($query) use ($customer) {
+                $query->where('session_id', session()->getId());
+                if ($customer) {
+                    $query->orWhere('customer_id', $customer->id);
+                }
+            })
+            ->with(['items.product', 'shippingMethod'])
+            ->first();
+    }
+
+    /**
      * Display the order confirmation page.
      */
     public function orderConfirmation($storeSlug, $orderNumber = null)
     {
         $store = $this->getStore($storeSlug);
         
-        // Get order data for the invoice
-        $orderData = Order::where('order_number', $orderNumber)
-            ->where('store_id', $store['id'])
-            ->with(['items.product', 'shippingMethod'])
-            ->first();
+        // Get order data for the invoice (ownership-scoped to prevent IDOR)
+        $orderData = $this->findOwnedOrder($orderNumber, $store['id']);
             
         $storeSettings = [];
         $configuration = [];
@@ -592,11 +642,8 @@ class ThemeController extends Controller
     {
         $store = $this->getStore($storeSlug);
         
-        // Get order data
-        $orderData = Order::where('order_number', $orderNumber)
-            ->where('store_id', $store['id'])
-            ->with(['items.product', 'shippingMethod'])
-            ->first();
+        // Get order data (ownership-scoped to prevent IDOR)
+        $orderData = $this->findOwnedOrder($orderNumber, $store['id']);
             
         if (!$orderData) {
             abort(404, 'Order not found');

@@ -1,6 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { ToyStore } from '../../themes/toy-store/ToyStore';
 import StoreHead from '@/components/StoreHead';
+import StoreBoundary from '@/components/StoreBoundary';
 
 interface ToyStorePageProps {
   config: any;
@@ -25,7 +26,7 @@ export default function ToyStorePage(props: ToyStorePageProps) {
         defaultDescription="Fun and colorful toy store with educational toys, games, and activities for children of all ages."
         defaultKeywords="toys, games, educational toys, children toys, kids games, puzzles, action figures, dolls"
       />
-      <ToyStore {...props} />
+      <StoreBoundary>        <ToyStore {...props} />      </StoreBoundary>
     </>
   );
 }

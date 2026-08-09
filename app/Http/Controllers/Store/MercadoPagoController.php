@@ -39,8 +39,33 @@ class MercadoPagoController extends Controller
                 return $this->redirectToCheckoutError($store, $storeSlug, 'Invalid payment reference');
             }
             
-            // Update order based on payment status
-            if ($status === 'approved' || $paymentId) {
+            // The payment_id and status query params are CLIENT-CONTROLLED and MUST
+            // never be trusted. Always re-verify the payment server-side via the
+            // MercadoPago SDK before marking an order as paid.
+            if (!$paymentId) {
+                return $this->redirectToCheckoutError($store, $storeSlug, 'Payment reference missing');
+            }
+
+            // Get store owner's MercadoPago settings
+            $mercadopagoConfig = getPaymentMethodConfig('mercadopago', $store->user->id, $store->id);
+            if (!$mercadopagoConfig['enabled'] || !$mercadopagoConfig['access_token']) {
+                return $this->redirectToCheckoutError($store, $storeSlug, 'Payment gateway not configured');
+            }
+
+            // Initialize MercadoPago SDK and fetch the real payment
+            SDK::setAccessToken($mercadopagoConfig['access_token']);
+            $payment = Payment::find_by_id($paymentId);
+
+            if (!$payment) {
+                return $this->redirectToCheckoutError($store, $storeSlug, 'Payment could not be verified');
+            }
+
+            // Only mark as paid when the payment is truly approved AND the amount
+            // matches the order total.
+            $amountMatches = isset($payment->transaction_amount)
+                && abs((float) $payment->transaction_amount - (float) $order->total_amount) < 0.01;
+
+            if ($payment->status === 'approved' && $amountMatches) {
                 $order->update([
                     'status' => 'confirmed',
                     'payment_status' => 'paid',
@@ -48,7 +73,9 @@ class MercadoPagoController extends Controller
                     'payment_details' => array_merge($order->payment_details ?? [], [
                         'payment_id' => $paymentId,
                         'payment_method' => 'mercadopago',
-                        'status' => $status,
+                        'status' => $payment->status,
+                        'status_detail' => $payment->status_detail ?? null,
+                        'transaction_amount' => $payment->transaction_amount ?? null,
                     ]),
                 ]);
                 

@@ -42,8 +42,14 @@ export default function PWAProvider({ children, store }: PWAProviderProps) {
     // Show popup after delay
     const timer = setTimeout(() => {
       // Check if user permanently dismissed or app is installed
-      const permanentlyDismissed = localStorage.getItem('pwa-install-dismissed');
-      const appInstalled = localStorage.getItem('pwa-app-installed');
+      let permanentlyDismissed: string | null = null;
+      let appInstalled: string | null = null;
+      try {
+        permanentlyDismissed = localStorage.getItem('pwa-install-dismissed');
+        appInstalled = localStorage.getItem('pwa-app-installed');
+      } catch {
+        // ignore storage access errors (private mode)
+      }
       
       if (!hasShownPopup && !permanentlyDismissed && !appInstalled) {
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -62,7 +68,7 @@ export default function PWAProvider({ children, store }: PWAProviderProps) {
     const result = await install();
     
     if (result === 'accepted') {
-      localStorage.setItem('pwa-app-installed', 'true');
+      try { localStorage.setItem('pwa-app-installed', 'true'); } catch { /* ignore */ }
       setShowInstallPopup(false);
     } else if (result === 'dismissed') {
       setShowInstallPopup(false);
@@ -91,7 +97,7 @@ export default function PWAProvider({ children, store }: PWAProviderProps) {
 
   const handleClosePopup = () => {
     setShowInstallPopup(false);
-    localStorage.setItem('pwa-install-dismissed', 'true');
+    try { localStorage.setItem('pwa-install-dismissed', 'true'); } catch { /* ignore */ }
   };
 
   return (

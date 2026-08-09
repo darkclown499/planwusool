@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Head } from '@inertiajs/react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { Printer, Download, Package, User, MapPin, Receipt, ShoppingBag } from 'lucide-react';
@@ -202,7 +202,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   <div key={index} className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
                     <h4 className="font-medium text-gray-900 mb-2">{item.name}</h4>
                     {(() => {
-                      const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                      let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                      if (typeof item.variants === 'string') {
+                        try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                      }
                       return variants && Object.keys(variants).length > 0 && (
                         <div className="text-xs text-gray-500 mb-2">
                           {Object.entries(variants).map(([key, value], index) => (
@@ -266,7 +269,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                         <td className="py-4 px-2">
                           <h4 className="font-medium text-gray-900">{item.name}</h4>
                           {(() => {
-                            const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                            let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                            if (typeof item.variants === 'string') {
+                              try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                            }
                             return variants && Object.keys(variants).length > 0 && (
                               <div className="text-xs text-gray-500 mt-1">
                                 {Object.entries(variants).map(([key, value], index) => (

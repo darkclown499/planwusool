@@ -186,14 +186,17 @@ class DomainResolver
         }
 
         if ($segments[0] === 'products') {
-            // Products listing
-            return app(\App\Http\Controllers\ThemeController::class)->products($store->slug, $request);
+            // Products listing (single-page storefront: render the homepage)
+            $request->merge(['action' => 'products']);
+            return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
         } elseif ($segments[0] === 'product' && isset($segments[1])) {
-            // Product detail page
-            return app(\App\Http\Controllers\ThemeController::class)->product($store->slug, $segments[1]);
+            // Product detail page (single-page storefront: render the homepage)
+            $request->merge(['action' => 'product', 'product_id' => $segments[1]]);
+            return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
         } elseif ($segments[0] === 'category' && isset($segments[1])) {
-            // Category page
-            return app(\App\Http\Controllers\ThemeController::class)->category($store->slug, $segments[1]);
+            // Category page (single-page storefront: render the homepage)
+            $request->merge(['action' => 'category', 'category_id' => $segments[1]]);
+            return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
         } elseif ($segments[0] === 'cart') {
             // Cart page
             $request->merge(['action' => 'cart']);

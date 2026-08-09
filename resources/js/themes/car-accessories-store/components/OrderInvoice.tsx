@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Head } from '@inertiajs/react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { Package, Calendar, Receipt, MapPin, Download, Printer, User, Wrench, DollarSign } from 'lucide-react';
@@ -172,7 +172,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
               {order.items.map((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 const itemTotalWithTax = itemTotal + (item.tax_amount || 0);
-                const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                if (typeof item.variants === 'string') {
+                  try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                }
                 
                 return (
                   <div key={index} className="bg-black border border-slate-700 p-3 sm:p-4 print:bg-gray-50 print:border-gray-200">

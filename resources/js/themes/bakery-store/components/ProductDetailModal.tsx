@@ -1,10 +1,10 @@
+﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React, { useEffect } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
-import { log } from 'console';
 import { WishlistButton } from '@/components/storefront/WishlistButton';
 import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
 import { ProductReviews } from '@/components/storefront/ProductReviews';
@@ -155,7 +155,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {product.description && (
                   <div>
                     <h4 className="font-serif font-semibold text-stone-900 mb-2">الوصف</h4>
-                    <div className="text-stone-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: product.description }} />
+                    <div className="text-stone-600 text-sm leading-relaxed" dangerouslySetInnerHTML={createSafeHtml(product.description)} />
                   </div>
                 )}
 

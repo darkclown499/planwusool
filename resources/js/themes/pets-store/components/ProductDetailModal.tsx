@@ -1,3 +1,4 @@
+﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React, { useState } from 'react';
 import { X, Plus, Minus, Star, Truck, Shield, Heart } from 'lucide-react';
 import { getImageUrl } from '../../../utils/image-helper';
@@ -287,7 +288,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     {activeTab === 'description' && product.description && (
                       <div 
                         className="text-xs sm:text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none overflow-wrap-anywhere"
-                        dangerouslySetInnerHTML={{ __html: product.description }}
+                        dangerouslySetInnerHTML={createSafeHtml(product.description)}
                       />
                     )}
                   </div>

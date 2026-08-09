@@ -18,10 +18,10 @@ export default function DefaultStore({ store, categories, products, settings }: 
                 <div className="container mx-auto px-4 py-8">
                     <div className="text-center">
                         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                            Welcome to {store.name}
+                            Welcome to {store?.name}
                         </h1>
                         <p className="text-lg text-gray-600 mb-8">
-                            {store.description}
+                            {store?.description}
                         </p>
 
                         {products && products.length > 0 && (

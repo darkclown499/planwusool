@@ -414,7 +414,21 @@ export const ProductsSection: React.FC<SectionProps> = ({ section, storeData, la
 
     const products = productCtx.filteredProducts?.length ? productCtx.filteredProducts : storeData?.products || [];
     const activeCat = productCtx.activeCategory;
-    const visibleProducts = activeCat && activeCat !== 'all' ? products.filter((p: any) => String(p.categoryId) === String(activeCat)) : products;
+    const allVisible = activeCat && activeCat !== 'all' ? products.filter((p: any) => String(p.categoryId) === String(activeCat)) : products;
+
+    // Honour the template's per_page setting so the homepage never renders the
+    // entire catalog (which can be thousands of products) at once. A "load
+    // more" button reveals additional products in chunks.
+    const perPage = Math.max(Number(props.per_page) || 24, 8);
+    const [visibleCount, setVisibleCount] = useState(perPage);
+    const visibleProducts = allVisible.slice(0, visibleCount);
+
+    // Reset pagination when the active category changes.
+    React.useEffect(() => {
+        setVisibleCount(perPage);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeCat]);
+
     const columns = Math.min(Number(props.columns || layout?.columns || 4) || 4, 6);
     const gridClass = GRID_CLASSES[columns] || GRID_CLASSES[4];
     const layoutName = props.layout || 'grid';
@@ -589,6 +603,19 @@ export const ProductsSection: React.FC<SectionProps> = ({ section, storeData, la
                         {visibleProducts.map((product: any) => (
                             <ProductCard key={product.id} product={product} columns={columns} isPreview={isPreview} />
                         ))}
+                    </div>
+                )}
+
+                {allVisible.length > visibleCount && (
+                    <div className="mt-8 text-center">
+                        <button
+                            type="button"
+                            onClick={() => setVisibleCount((prev) => prev + perPage)}
+                            className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
+                            style={{ background: 'var(--twc-primary-600, #059669)' }}
+                        >
+                            عرض المزيد من المنتجات
+                        </button>
                     </div>
                 )}
             </div>

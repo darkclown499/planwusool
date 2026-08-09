@@ -133,8 +133,12 @@ class OrderController extends Controller
             // Create order
             $order = $this->orderService->createOrder($orderData, $cartItems);
             
-            // Update coupon usage if coupon was used
-            if ($request->coupon_code && $calculation['coupon']) {
+            // Update coupon usage if coupon was used.
+            // $calculation['coupon'] is an Eloquent StoreCoupon model for legacy
+            // coupons, but a plain array for AdvancedCoupon (whose usage is
+            // recorded inside OrderService::handlePostOrderExtras). Only call
+            // ->increment() on the model to avoid a fatal "call on array".
+            if ($request->coupon_code && $calculation['coupon'] instanceof \App\Models\StoreCoupon) {
                 $calculation['coupon']->increment('used_count');
             }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { X, Package, User, MapPin, ShoppingCart, Download, Calendar, CreditCard, Truck } from 'lucide-react';
 
@@ -192,7 +192,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900 mb-1">{item.name}</h4>
                             {(() => {
-                              const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                              let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                              if (typeof item.variants === 'string') {
+                                try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                              }
                               return variants && Object.keys(variants).length > 0 && (
                                 <div className="text-xs text-gray-500 mb-2">
                                   {Object.entries(variants).map(([key, value], index) => (

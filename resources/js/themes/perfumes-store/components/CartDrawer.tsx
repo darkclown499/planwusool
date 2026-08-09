@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { X, ShoppingCart, Minus, Plus, Trash2, ShoppingBag, Receipt } from 'lucide-react';
@@ -128,7 +128,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       
                       {/* Variants */}
                       {(() => {
-                        const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                        let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                        if (typeof item.variants === 'string') {
+                          try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                        }
                         return variants && Object.keys(variants).length > 0 && (
                           <div className="text-xs text-slate-400 mb-2 font-medium">
                             {Object.entries(variants).map(([key, value], index) => (

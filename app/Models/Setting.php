@@ -37,10 +37,28 @@ class Setting extends BaseModel
      */
     public static function getUserSettings($userId, $storeId = null)
     {
-        return self::where('user_id', $userId)
-                  ->where('store_id', $storeId)
-                  ->pluck('value', 'key')
-                  ->toArray();
+        if (!$userId) {
+            return [];
+        }
+
+        return \Illuminate\Support\Facades\Cache::remember(
+            'user_settings.' . $userId . '.' . ($storeId ?? 'global'),
+            300,
+            function () use ($userId, $storeId) {
+                return self::where('user_id', $userId)
+                          ->where('store_id', $storeId)
+                          ->pluck('value', 'key')
+                          ->toArray();
+            }
+        );
+    }
+
+    /**
+     * Forget the cached settings for a user/store.
+     */
+    public static function forgetUserSettings($userId, $storeId = null)
+    {
+        \Illuminate\Support\Facades\Cache::forget('user_settings.' . $userId . '.' . ($storeId ?? 'global'));
     }
 
     /**
@@ -61,9 +79,11 @@ class Setting extends BaseModel
      */
     public static function setSetting($key, $value, $userId, $storeId = null)
     {
-        return self::updateOrCreate(
+        $result = self::updateOrCreate(
             ['user_id' => $userId, 'store_id' => $storeId, 'key' => $key],
             ['value' => $value]
         );
+        self::forgetUserSettings($userId, $storeId);
+        return $result;
     }
 }

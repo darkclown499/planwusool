@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, Package, MapPin, Calendar, CreditCard, Receipt, Download } from 'lucide-react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 
@@ -185,7 +185,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                   {order.items.map((item: any, index: any) => {
                     const itemTotal = item.price * item.quantity;
                     const itemTotalWithTax = itemTotal + item.tax_amount;
-                    const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                    let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                    if (typeof item.variants === 'string') {
+                      try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                    }
                     
                     return (
                       <div key={index} className="p-5 hover:bg-stone-50 transition-colors">

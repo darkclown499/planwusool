@@ -1,3 +1,4 @@
+﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { ArrowLeft, Edit, Star, Package, DollarSign, Eye } from 'lucide-react';
@@ -205,7 +206,7 @@ export default function ShowProduct() {
               <CardTitle>{t('Product Description')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: product.description }} />
+              <div className="prose max-w-none" dangerouslySetInnerHTML={createSafeHtml(product.description)} />
             </CardContent>
           </Card>
         )}
@@ -216,7 +217,7 @@ export default function ShowProduct() {
               <CardTitle>{t('Product Specifications')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: product.specifications }} />
+              <div className="prose max-w-none" dangerouslySetInnerHTML={createSafeHtml(product.specifications)} />
             </CardContent>
           </Card>
         )}
@@ -227,7 +228,7 @@ export default function ShowProduct() {
               <CardTitle>{t('Product Details')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: product.details }} />
+              <div className="prose max-w-none" dangerouslySetInnerHTML={createSafeHtml(product.details)} />
             </CardContent>
           </Card>
         )}

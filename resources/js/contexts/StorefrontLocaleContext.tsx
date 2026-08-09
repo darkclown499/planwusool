@@ -1340,7 +1340,12 @@ const TRANSLATIONS: Record<StorefrontLocale, Record<string, string>> = {
 };
 
 function getInitialLocale(storeDefault?: string): StorefrontLocale {
-  const stored = typeof window !== 'undefined' ? window.localStorage.getItem(STORE_KEY) : null;
+  let stored: string | null = null;
+  try {
+    stored = typeof window !== 'undefined' ? window.localStorage.getItem(STORE_KEY) : null;
+  } catch {
+    stored = null;
+  }
   const candidate = stored || storeDefault || 'ar';
   return candidate === 'he' || candidate === 'en' ? candidate : 'ar';
 }

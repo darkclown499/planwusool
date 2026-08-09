@@ -36,8 +36,11 @@ class XenditController extends Controller
                     }
                 }
             } else {
-                // Fallback if no invoice ID (should not happen with our new implementation)
-                $isPaid = true; 
+                // No invoice ID means we cannot verify the payment server-side.
+                // There is intentionally NO unverified fallback here.
+                \Illuminate\Support\Facades\Log::warning('Xendit success without invoice ID', [
+                    'order_number' => $orderNumber,
+                ]);
             }
             
             if ($isPaid) {

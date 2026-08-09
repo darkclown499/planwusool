@@ -1,3 +1,4 @@
+﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React from 'react';
 import { usePage, Head } from '@inertiajs/react';
 import Header from './components/Header';
@@ -143,7 +144,7 @@ export default function CustomPage() {
               <h1 className="text-4xl font-bold mb-8 text-gray-900">{page.title}</h1>
               <div
                 className="custom-page-content prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: page.content }}
+                dangerouslySetInnerHTML={createSafeHtml(page.content)}
               />
             </div>
           </div>

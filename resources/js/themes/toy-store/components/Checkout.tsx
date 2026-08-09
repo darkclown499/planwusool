@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 import { formatCurrency } from '../../../utils/currency-formatter';
 import { CheckoutProvider, useCheckoutContext } from '../../../contexts/CheckoutContext';
@@ -362,7 +362,10 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                           <div className="flex-1 min-w-0">
                             <h4 className="font-bold text-purple-800 mb-1 text-sm sm:text-base line-clamp-2">{item.name}</h4>
                             {(() => {
-                              const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                              let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                              if (typeof item.variants === 'string') {
+                                try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                              }
                               return variants && Object.keys(variants).length > 0 && (
                                 <div className="text-xs text-purple-500 mb-2 font-medium">
                                   {Object.entries(variants).map(([key, value], index) => (

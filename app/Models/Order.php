@@ -83,7 +83,7 @@ class Order extends Model
     public static function generateOrderNumber(): string
     {
         do {
-            $orderNumber = 'ORD-' . strtoupper(uniqid());
+            $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(12));
         } while (self::where('order_number', $orderNumber)->exists());
 
         return $orderNumber;

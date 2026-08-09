@@ -1,4 +1,5 @@
 import StoreHead from '@/components/StoreHead';
+import StoreBoundary from '@/components/StoreBoundary';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { TemplateRenderer } from '@/templates/TemplateRenderer';
 import { getTemplateConfig } from '@/templates/registry';
@@ -90,20 +91,22 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 customerAddress={customer_address}
                 action={action}
             >
-                <TemplateStorefront>
-                    <div className="pb-24 md:pb-16" style={{ background: 'var(--twc-background, #ffffff)' }}>
-                        <TemplateRenderer
-                            template={resolvedTemplate}
-                            storeData={storeData}
-                            designTokens={designTokens}
-                            isPreview={isPreview}
-                            userPlanName={userPlanName}
-                            userPlanTier={userPlanTier}
-                            isSuperAdmin={effectiveSuperAdmin}
-                            demoStoreUrl={demoStoreUrl}
-                        />
-                    </div>
-                </TemplateStorefront>
+                <StoreBoundary>
+                    <TemplateStorefront>
+                        <div className="pb-24 md:pb-16" style={{ background: 'var(--twc-background, #ffffff)' }}>
+                            <TemplateRenderer
+                                template={resolvedTemplate}
+                                storeData={storeData}
+                                designTokens={designTokens}
+                                isPreview={isPreview}
+                                userPlanName={userPlanName}
+                                userPlanTier={userPlanTier}
+                                isSuperAdmin={effectiveSuperAdmin}
+                                demoStoreUrl={demoStoreUrl}
+                            />
+                        </div>
+                    </TemplateStorefront>
+                </StoreBoundary>
             </ThemeProvider>
         </>
     );

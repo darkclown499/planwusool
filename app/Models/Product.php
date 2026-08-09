@@ -152,6 +152,20 @@ class Product extends Model
             } catch (\Exception $e) {
                 \Log::error('Product updated event failed: ' . $e->getMessage(), ['product_id' => $product->id]);
             }
+
+            // Invalidate the storefront catalog cache
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $product->store_id);
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $product->store_id);
+        });
+
+        static::created(function ($product) {
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $product->store_id);
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $product->store_id);
+        });
+
+        static::deleted(function ($product) {
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $product->store_id);
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $product->store_id);
         });
     }
 }

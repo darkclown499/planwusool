@@ -71,4 +71,22 @@ class Category extends Model
         
         return $count > 0 ? "{$slug}-{$count}" : $slug;
     }
+
+    /**
+     * Invalidate the cached storefront catalog/categories for this store.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($category) {
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $category->store_id);
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $category->store_id);
+        });
+
+        static::deleted(function ($category) {
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $category->store_id);
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $category->store_id);
+        });
+    }
 }

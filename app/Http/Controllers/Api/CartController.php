@@ -60,7 +60,10 @@ class CartController extends Controller
     {
         $request->validate([
             'store_id' => 'required|exists:stores,id',
-            'product_id' => 'required|exists:products,id',
+            'product_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('products', 'id')->where('store_id', $request->store_id),
+            ],
             'quantity' => 'required|integer|min:1',
             'variants' => 'nullable|array'
         ]);
@@ -131,11 +134,13 @@ class CartController extends Controller
     {
         $request->validate([
             'store_id' => 'required|exists:stores,id',
-            'guest_session_id' => 'nullable|string',
             'items' => 'required|array'
         ]);
 
-        $sessionId = $request->guest_session_id ?: session()->getId();
+        // The session id is ALWAYS taken from the server-side session cookie,
+        // never from a client-supplied value. This prevents an attacker from
+        // claiming or poisoning another guest's cart.
+        $sessionId = session()->getId();
 
         // Update guest cart items to assign them to the logged-in customer
         CartItem::where('store_id', $request->store_id)

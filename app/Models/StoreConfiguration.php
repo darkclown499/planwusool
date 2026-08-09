@@ -18,70 +18,84 @@ class StoreConfiguration extends Model
     }
 
     /**
-     * Get configuration for a store
+     * Get configuration for a store (cached for 5 minutes).
      */
     public static function getConfiguration($storeId)
     {
-        $configs = self::where('store_id', $storeId)->pluck('value', 'key')->toArray();
-        
-        // Default values (original + plan management)
-        $defaults = [
-            'default_currency' => 'ils',
-            'timezone' => 'utc',
-            'language' => 'ar',
-            'meta_title' => '',
-            'meta_description' => '',
-            'google_analytics_id' => '',
-            'meta_pixel_id' => '',
-            'store_status' => 'true',
-            'maintenance_mode' => 'false',
-            'maintenance_message' => '',
-            'logo' => '',
-            'favicon' => '',
-            'welcome_message' => '',
-            'store_description' => '',
-            'copyright_text' => '',
-            'facebook_url' => '',
-            'instagram_url' => '',
-            'twitter_url' => '',
-            'youtube_url' => '',
-            'whatsapp_url' => '',
-            'social_links' => '[]',
-            'address' => '',
-            'city' => '',
-            'state' => '',
-            'country' => '',
-            'postal_code' => '',
-            'email' => '',
-            'plan_disabled' => 'false',
-            'custom_css' => '',
-            'custom_javascript' => '',
-            // WhatsApp Widget Settings (separate from payment WhatsApp)
-            'whatsapp_widget_enabled' => 'false',
-            'whatsapp_widget_phone' => '',
-            'whatsapp_widget_message' => 'Hello! I need help with...',
-            'whatsapp_widget_position' => 'right',
-            'whatsapp_widget_show_on_mobile' => 'true',
-            'whatsapp_widget_show_on_desktop' => 'true',
-        ];
-        
-        $result = array_merge($defaults, $configs);
-        
-        // Convert string values to boolean for specific keys
-        $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop'];
-        foreach ($booleanKeys as $key) {
-            if (isset($result[$key])) {
-                $result[$key] = $result[$key] === 'true' || $result[$key] === true;
-            }
-        }
+        return \Illuminate\Support\Facades\Cache::remember(
+            'store_configuration.' . $storeId,
+            300,
+            function () use ($storeId) {
+                $configs = self::where('store_id', $storeId)->pluck('value', 'key')->toArray();
 
-        // Decode social_links JSON
-        if (isset($result['social_links'])) {
-            $decoded = json_decode($result['social_links'], true);
-            $result['social_links'] = is_array($decoded) ? $decoded : [];
-        }
-        
-        return $result;
+                // Default values (original + plan management)
+                $defaults = [
+                    'default_currency' => 'ils',
+                    'timezone' => 'utc',
+                    'language' => 'ar',
+                    'meta_title' => '',
+                    'meta_description' => '',
+                    'google_analytics_id' => '',
+                    'meta_pixel_id' => '',
+                    'store_status' => 'true',
+                    'maintenance_mode' => 'false',
+                    'maintenance_message' => '',
+                    'logo' => '',
+                    'favicon' => '',
+                    'welcome_message' => '',
+                    'store_description' => '',
+                    'copyright_text' => '',
+                    'facebook_url' => '',
+                    'instagram_url' => '',
+                    'twitter_url' => '',
+                    'youtube_url' => '',
+                    'whatsapp_url' => '',
+                    'social_links' => '[]',
+                    'address' => '',
+                    'city' => '',
+                    'state' => '',
+                    'country' => '',
+                    'postal_code' => '',
+                    'email' => '',
+                    'plan_disabled' => 'false',
+                    'custom_css' => '',
+                    'custom_javascript' => '',
+                    // WhatsApp Widget Settings (separate from payment WhatsApp)
+                    'whatsapp_widget_enabled' => 'false',
+                    'whatsapp_widget_phone' => '',
+                    'whatsapp_widget_message' => 'Hello! I need help with...',
+                    'whatsapp_widget_position' => 'right',
+                    'whatsapp_widget_show_on_mobile' => 'true',
+                    'whatsapp_widget_show_on_desktop' => 'true',
+                ];
+
+                $result = array_merge($defaults, $configs);
+
+                // Convert string values to boolean for specific keys
+                $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop'];
+                foreach ($booleanKeys as $key) {
+                    if (isset($result[$key])) {
+                        $result[$key] = $result[$key] === 'true' || $result[$key] === true;
+                    }
+                }
+
+                // Decode social_links JSON
+                if (isset($result['social_links'])) {
+                    $decoded = json_decode($result['social_links'], true);
+                    $result['social_links'] = is_array($decoded) ? $decoded : [];
+                }
+
+                return $result;
+            }
+        );
+    }
+
+    /**
+     * Forget the cached configuration for a store.
+     */
+    public static function forgetConfiguration($storeId)
+    {
+        \Illuminate\Support\Facades\Cache::forget('store_configuration.' . $storeId);
     }
 
     /**
@@ -89,10 +103,12 @@ class StoreConfiguration extends Model
      */
     public static function setConfiguration($storeId, $key, $value)
     {
-        return self::updateOrCreate(
+        $result = self::updateOrCreate(
             ['store_id' => $storeId, 'key' => $key],
             ['value' => $value]
         );
+        self::forgetConfiguration($storeId);
+        return $result;
     }
     
     /**
@@ -114,6 +130,8 @@ class StoreConfiguration extends Model
                 ['value' => $storedValue]
             );
         }
+
+        self::forgetConfiguration($storeId);
     }
 
     /**
@@ -128,6 +146,8 @@ class StoreConfiguration extends Model
         self::where('store_id', $storeId)
             ->whereIn('key', $keys)
             ->delete();
+
+        self::forgetConfiguration($storeId);
     }
     
     /**

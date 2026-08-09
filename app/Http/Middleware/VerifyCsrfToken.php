@@ -34,7 +34,23 @@ class VerifyCsrfToken extends Middleware
         'mercadopago/webhook',
         'paytabs/webhook',
         'paytabs/callback',
-        
+
+        // Store subdomain callback/webhook routes (payment gateways POST
+        // without a CSRF token). Laravel matches exceptions against the URI
+        // path, so the subdomain path segment is matched as-is.
+        'store-cashfree/webhook',
+        'skrill/callback',
+        'coingate/callback',
+        'midtrans/callback',
+        'mollie/callback',
+        'benefit/callback',
+        'yookassa/callback',
+        'skrill/success/*',
+        'coingate/success/*',
+        'mollie/success/*',
+        'benefit/success/*',
+        'yookassa/success/*',
+
         // API endpoints that need CSRF exemption (stateless API)
         'api/coupon/validate',
         'api/cart',

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Head } from '@inertiajs/react';
 import { formatCurrency } from '../../../utils/currency-formatter';
 
@@ -167,7 +167,10 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                         <td className="py-3 md:py-4 px-2 md:px-4">
                           <h4 className="font-medium text-yellow-900 text-xs md:text-sm leading-tight">{item.name}</h4>
                           {(() => {
-                            const variants: Record<string, any> = typeof item.variants === 'string' ? JSON.parse(item.variants) : item.variants;
+                            let variants: Record<string, any> = (item.variants ?? {}) as Record<string, any>;
+                            if (typeof item.variants === 'string') {
+                              try { variants = JSON.parse(item.variants); } catch { variants = {}; }
+                            }
                             return variants && Object.keys(variants).length > 0 && (
                               <div className="text-xs text-yellow-600 mt-1 font-medium">
                                 {Object.entries(variants).map(([key, value], index) => (

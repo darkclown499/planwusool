@@ -71,10 +71,25 @@ class SkrillController extends Controller
                 . $request->mb_currency
                 . $request->status;
 
-            if (strtoupper(md5($concatFields)) == $request->md5sig && $request->status == 2) {
+            // Use a constant-time comparison and verify the paid amount matches
+            // the order total before confirming the order.
+            $signatureValid = isset($request->md5sig)
+                && hash_equals(strtoupper(md5($concatFields)), strtoupper((string) $request->md5sig));
+
+            $amountMatches = isset($request->mb_amount)
+                && abs((float) $request->mb_amount - (float) $order->total_amount) < 0.01;
+
+            if ($signatureValid && $amountMatches && (int) $request->status === 2) {
                 $order->update([
                     'status'         => 'confirmed',
                     'payment_status' => 'paid',
+                ]);
+            } else {
+                \Illuminate\Support\Facades\Log::warning('Skrill callback rejected', [
+                    'order_id' => $order->id,
+                    'signature_valid' => $signatureValid,
+                    'amount_matches' => $amountMatches,
+                    'status' => $request->status,
                 ]);
             }
         }

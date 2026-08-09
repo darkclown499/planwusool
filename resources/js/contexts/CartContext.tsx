@@ -204,7 +204,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
         },
         body: JSON.stringify({
           store_id: storeId,
-          guest_session_id: sessionStorage.getItem('guest_session_id'),
           items: cartItems.map(item => ({
             product_id: item.id,
             quantity: item.quantity,
