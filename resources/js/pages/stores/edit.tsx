@@ -41,7 +41,7 @@ export default function EditStore({ store, availableThemes, planPermissions, ser
  name: store?.name || '',
  description: store?.description || '',
  email: store?.email || '',
- theme: store?.theme || 'gadgets',
+ theme: store?.theme || 'basic',
  enable_custom_domain: store?.enable_custom_domain || false,
  enable_custom_subdomain: store?.enable_custom_subdomain || false,
  custom_domain: store?.custom_domain || '',

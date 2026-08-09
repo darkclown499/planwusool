@@ -13,6 +13,10 @@ interface DynamicStoreProps {
   config?: any;
   storeSettings?: any;
   isPreview?: boolean;
+  userPlanName?: string | null;
+  userPlanTier?: 'starter' | 'growth' | 'professional';
+  isSuperAdmin?: boolean;
+  demoStoreUrl?: string;
 }
 
 /**
@@ -30,6 +34,10 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
   config,
   storeSettings,
   isPreview = false,
+  userPlanName = null,
+  userPlanTier = 'starter',
+  isSuperAdmin = false,
+  demoStoreUrl = '',
 }) => {
   // The storefront auth context may not be mounted for guest visits,
   // so read it defensively instead of throwing like useAuth() does.
@@ -54,14 +62,20 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     [store, categories, products, config, storeSettings]
   );
 
-  // If previewing a demo store, allow all templates to render
+  // Plan gating on the storefront is based on the store owner's plan (passed
+  // from the server), not the viewer. Preview/demo + superadmin bypass gating.
+  const effectiveSuperAdmin = isSuperAdmin || isLoggedIn || isPreview;
+
   return (
     <TemplateRenderer
       template={resolvedTemplate}
       storeData={storeData}
       designTokens={designTokens}
       isPreview={isPreview}
-      isSuperAdmin={isLoggedIn || isPreview}
+      userPlanName={userPlanName}
+      userPlanTier={userPlanTier}
+      isSuperAdmin={effectiveSuperAdmin}
+      demoStoreUrl={demoStoreUrl}
     />
   );
 };

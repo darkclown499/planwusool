@@ -15,6 +15,7 @@ interface TemplateRendererProps {
   isSuperAdmin?: boolean;
   isPreview?: boolean;
   loading?: boolean;
+  demoStoreUrl?: string;
 }
 
 /**
@@ -31,6 +32,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
   isSuperAdmin = false,
   isPreview = false,
   loading = false,
+  demoStoreUrl = '',
 }) => {
   const { canActivate, filterSections } = useTemplateAccess({
     templateSlug: template?.slug,
@@ -74,6 +76,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
           requiredPlan={template.plan_required}
           userPlanName={userPlanName}
           userPlanTier={userPlanTier}
+          demoStoreUrl={demoStoreUrl}
         />
       </div>
     );

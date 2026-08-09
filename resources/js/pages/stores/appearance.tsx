@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, LayoutTemplate, Paintbrush, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '@inertiajs/react';
+import { routeIfExists } from '@/utils/route-helpers';
 import { AdvancedBuilder } from '@/templates/AdvancedBuilder';
 import type { PlanTier, TemplateConfig } from '@/templates/types';
 
@@ -102,12 +103,18 @@ export default function StoreAppearance({
         { title: t('Store Customization') },
       ]}
       action={
-        <Button asChild variant="outline">
-          <Link href={route('stores.template-select', store.id)}>
-            <LayoutTemplate className="h-4 w-4 me-1" />
-            {t('Change Template')}
-          </Link>
-        </Button>
+        (() => {
+          const templateSelectHref = routeIfExists('stores.template-select', store.id);
+          if (!templateSelectHref) return null;
+          return (
+            <Button asChild variant="outline">
+              <Link href={templateSelectHref}>
+                <LayoutTemplate className="h-4 w-4 me-1" />
+                {t('Change Template')}
+              </Link>
+            </Button>
+          );
+        })()
       }
     >
       <div className="space-y-6">

@@ -53,6 +53,7 @@ interface UpgradePromptProps {
   requiredPlan?: string;
   userPlanName?: string | null;
   userPlanTier?: 'starter' | 'growth' | 'professional';
+  demoStoreUrl?: string;
   className?: string;
 }
 
@@ -66,6 +67,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
   requiredPlan,
   userPlanName,
   userPlanTier,
+  demoStoreUrl = '',
   className = '',
 }) => {
   const { template, planTier } = useTemplateAccess({
@@ -76,6 +78,11 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
 
   const displayName = templateName || template?.name || templateSlug;
   const displayRequired = requiredPlan || template?.plan_required || 'professional';
+
+  // Preview links to the demo store with this template applied
+  const previewUrl = demoStoreUrl
+    ? `${demoStoreUrl}?theme=${encodeURIComponent(templateSlug || 'basic')}&preview=1`
+    : `/demo?template=${encodeURIComponent(templateSlug || '')}`;
 
   const planLabels: Record<string, string> = {
     starter: 'باقة البداية',
@@ -101,7 +108,7 @@ export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
           ترقية الباقة الآن
         </a>
         <a
-          href={`/demo?template=${templateSlug || ''}`}
+          href={previewUrl}
           className="rounded-xl border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
         >
           معاينة القالب

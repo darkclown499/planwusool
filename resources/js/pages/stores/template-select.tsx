@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, CheckCircle2, Store as StoreIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
+import { routeIfExists } from '@/utils/route-helpers';
 import { TemplateGallery } from '@/templates/TemplateGallery';
 import type { PlanTier } from '@/templates/types';
 
@@ -52,11 +53,13 @@ export default function TemplateSelect({
     setSelected(slug);
   };
 
+  const saveRoute = routeIfExists('stores.template-select.update', store.id);
+
   const handleSave = () => {
-    if (!selected || saving) return;
+    if (!selected || saving || !saveRoute) return;
     setSaving(true);
     router.put(
-      route('stores.template-select.update', store.id),
+      saveRoute,
       { template_slug: selected },
       {
         preserveScroll: true,
@@ -78,7 +81,7 @@ export default function TemplateSelect({
         { title: t('Choose Template') },
       ]}
       action={
-        selected ? (
+        selected && saveRoute ? (
           <Button onClick={handleSave} disabled={saving}>
             <CheckCircle2 className="h-4 w-4 me-1" />
             {saving ? t('Saving...') : t('Save Template')}

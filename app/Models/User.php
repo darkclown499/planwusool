@@ -372,8 +372,9 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     public function getAvailableThemes()
     {
+        // No plan (e.g. superadmin) means no restriction on theme selection.
         if (!$this->plan) {
-            return [];
+            return null;
         }
         
         // If plan has specific themes, return only those

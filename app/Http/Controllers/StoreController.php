@@ -137,11 +137,14 @@ class StoreController extends Controller
             $themeValidation .= '|in:' . implode(',', $availableThemes);
         }
         
+        // Normalize legacy theme ids to their new template slug
+        $theme = \App\Models\Store::normalizeThemeSlug($request->theme);
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'theme' => $themeValidation,
-            'template_slug' => $themeValidation,
+            'template_slug' => 'nullable|string|max:255',
             'enable_custom_domain' => 'boolean',
             'enable_custom_subdomain' => 'boolean',
             'custom_domain' => 'required_if:enable_custom_domain,true|nullable|string|max:255',
@@ -200,8 +203,8 @@ class StoreController extends Controller
         $store->name = $request->name;
         $store->slug = Store::generateUniqueSlug($request->name);
         $store->description = $request->description;
-        $store->theme = $request->theme;
-        $store->template_slug = $request->theme;
+        $store->theme = $theme;
+        $store->template_slug = $theme;
         $store->user_id = Auth::id();
         $store->email = $request->email ?? null;
         $store->enable_custom_domain = $request->enable_custom_domain ?? false;
@@ -283,6 +286,10 @@ class StoreController extends Controller
         $user = Auth::user();
         $store = resolveStoreQuery($user)->findOrFail($id);
         $user = Auth::user();
+
+        // Expose the effective template slug so legacy stores (theme='gadgets')
+        // show the correct template selection in the editor.
+        $store->theme = $store->getTemplateSlug();
         
         // Get available themes based on user's plan
         $availableThemes = $user->getAvailableThemes();
@@ -324,11 +331,14 @@ class StoreController extends Controller
             $themeValidation .= '|in:' . implode(',', $availableThemes);
         }
         
+        // Normalize legacy theme ids to their new template slug
+        $theme = \App\Models\Store::normalizeThemeSlug($request->theme);
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'theme' => $themeValidation,
-            'template_slug' => $themeValidation,
+            'template_slug' => 'nullable|string|max:255',
             'enable_custom_domain' => 'boolean',
             'enable_custom_subdomain' => 'boolean',
             'custom_domain' => 'required_if:enable_custom_domain,true|nullable|string|max:255',
@@ -385,8 +395,8 @@ class StoreController extends Controller
 
         $store->name = $request->name;
         $store->description = $request->description;
-        $store->theme = $request->theme;
-        $store->template_slug = $request->theme;
+        $store->theme = $theme;
+        $store->template_slug = $theme;
         $store->email = $request->email ?? $store->email;
         $store->enable_custom_domain = $request->enable_custom_domain ?? false;
         $store->enable_custom_subdomain = $request->enable_custom_subdomain ?? false;

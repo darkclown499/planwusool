@@ -33,7 +33,7 @@ export default function CreateStore({ availableThemes, planPermissions, serverIp
  name: '',
  description: '',
  email: '',
- theme: 'gadgets',
+ theme: 'basic',
  enable_custom_domain: false,
  enable_custom_subdomain: false,
  custom_domain: '',

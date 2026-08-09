@@ -355,12 +355,31 @@ class ThemeController extends Controller
         // New template system: render via dynamic template page
         if ($template) {
             $storeModel = $storeModel ?? Store::find($store['id']);
+
+            // Plan gating on the storefront is based on the STORE OWNER's plan,
+            // not the viewer (who is a customer). Pass the owner's plan tier so
+            // a Professional store renders its professional templates while a
+            // downgraded store still shows the upgrade prompt.
+            $ownerPlan = $storeModel?->user?->plan;
+            $ownerIsSuperAdmin = $storeModel?->user?->type === 'superadmin';
+
             $props['template'] = $theme;
-            $props['templateConfig'] = $template->config;
+            $props['templateConfig'] = array_merge($template->config ?? [], [
+                'slug' => $template->slug,
+                'name' => $template->name,
+                'name_en' => $template->name_en,
+                'is_free' => (bool) $template->is_free,
+                'plan_required' => $template->plan_required,
+                'design_tokens' => $template->design_tokens ?? [],
+            ]);
             $props['designTokens'] = $storeModel
                 ? $storeModel->getMergedDesignTokens()
                 : $template->design_tokens;
             $props['isPreview'] = isset($currentRequest) && $currentRequest->has('preview');
+            $props['userPlanName'] = $ownerPlan?->name;
+            $props['userPlanTier'] = $ownerPlan ? $ownerPlan->getTier() : 'starter';
+            $props['isSuperAdmin'] = $ownerIsSuperAdmin;
+            $props['demoStoreUrl'] = app(\App\Services\DemoStoreService::class)->demoStoreUrl();
 
             return Inertia::render('store/dynamic', array_merge($props, [
                 'action' => $this->resolveAction(),

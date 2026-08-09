@@ -384,6 +384,21 @@ class Store extends BaseModel
     }
 
     /**
+     * Normalize a theme/template value into a valid template slug.
+     * Maps legacy theme ids and falls back to 'basic' for unknown values.
+     */
+    public static function normalizeThemeSlug(?string $slug): string
+    {
+        $slug = trim((string) $slug);
+
+        if ($slug === '') {
+            return 'basic';
+        }
+
+        return self::LEGACY_THEME_MAP[$slug] ?? $slug;
+    }
+
+    /**
      * Get the active Template model for this store.
      */
     public function template()
