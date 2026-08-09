@@ -2,11 +2,12 @@ import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdvancedBuilder } from '@/templates/AdvancedBuilder';
+import { SectionsManager } from '@/templates/SectionsManager';
 import { StoreContentEditor } from '@/templates/StoreContentEditor';
 import type { PlanTier, TemplateConfig } from '@/templates/types';
 import { routeIfExists } from '@/utils/route-helpers';
 import { Link } from '@inertiajs/react';
-import { ExternalLink, LayoutTemplate, Megaphone, Paintbrush, RefreshCw } from 'lucide-react';
+import { ExternalLink, LayoutList, LayoutTemplate, Megaphone, Paintbrush, RefreshCw } from 'lucide-react';
 import React, { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -46,7 +47,7 @@ export default function StoreAppearance({ store, currentTemplate, userPlanName, 
     const { t } = useTranslation();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [reloadKey, setReloadKey] = React.useState(0);
-    const [activeTab, setActiveTab] = useState<'template' | 'content'>('template');
+    const [activeTab, setActiveTab] = useState<'template' | 'content' | 'sections'>('template');
 
     const templateConfig = useMemo<TemplateConfig | null>(() => {
         if (!currentTemplate) return null;
@@ -127,6 +128,14 @@ export default function StoreAppearance({ store, currentTemplate, userPlanName, 
                         <Megaphone className="h-4 w-4" />
                         {t('Content & Banners')}
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('sections')}
+                        className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition ${activeTab === 'sections' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <LayoutList className="h-4 w-4" />
+                        {t('Sections')}
+                    </button>
                 </div>
 
                 {/* Current template summary */}
@@ -177,6 +186,16 @@ export default function StoreAppearance({ store, currentTemplate, userPlanName, 
                                     isSuperAdmin={isSuperAdmin}
                                     onSave={handleSaved}
                                 />
+                            </CardContent>
+                        </Card>
+                    ) : activeTab === 'sections' ? (
+                        /* Sections manager */
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('Sections')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <SectionsManager storeId={store.id} template={templateConfig} onSave={handleSaved} />
                             </CardContent>
                         </Card>
                     ) : (

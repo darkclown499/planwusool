@@ -124,9 +124,9 @@ export const HeroSection: React.FC<SectionProps> = ({ section, storeData }) => {
     const classes = section.classes || {};
     const { config } = useStorefrontCore();
 
-    const storeName = config?.storeName || storeData?.name || 'متجرك الرائع';
-    const description = config?.description || storeData?.description || 'اكتشف منتجاتنا المميزة بأسعار تنافسية وخدمة استثنائية.';
-    const welcome = config?.welcomeMessage || 'أهلاً بك في';
+    const storeName = props.title || config?.storeName || storeData?.name || 'متجرك الرائع';
+    const description = props.subtitle || config?.description || storeData?.description || 'اكتشف منتجاتنا المميزة بأسعار تنافسية وخدمة استثنائية.';
+    const welcome = props.badge || config?.welcomeMessage || '';
 
     const primary = 'var(--twc-primary-600, #059669)';
 
