@@ -215,6 +215,12 @@ Route::middleware('auth')->prefix('api/stores/{store}')->name('api.store-templat
     Route::put('template', [\App\Http\Controllers\Api\DesignTokenController::class, 'selectTemplate'])->name('select');
 });
 
+// Store content/banners API (authenticated, store owner only)
+Route::middleware('auth')->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\StoreContentController::class, 'show'])->name('show');
+    Route::put('/', [\App\Http\Controllers\Api\StoreContentController::class, 'update'])->name('update');
+});
+
 // Product reviews API (storefront)
 Route::prefix('api/reviews')->name('api.reviews.')->group(function () {
     Route::get('product/{productId}', [ProductReviewController::class, 'productReviews'])->name('product');

@@ -47,6 +47,7 @@ export function useStorefrontCore() {
     const storeCtx = useContext(StoreContext) || {
         store: { id: 0, slug: '', name: '' } as any,
         config: {} as any,
+        content: undefined,
     };
 
     const product = useContext(ProductContext) || {
@@ -76,6 +77,7 @@ export function useStorefrontCore() {
         ui,
         store: storeCtx.store,
         config: storeCtx.config,
+        content: storeCtx.content,
         product,
         order,
         wishlist,

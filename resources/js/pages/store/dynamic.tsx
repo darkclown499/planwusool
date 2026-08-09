@@ -14,6 +14,7 @@ interface DynamicStoreProps {
     products: any[];
     config?: any;
     storeSettings?: any;
+    storeContent?: any;
     isPreview?: boolean;
     userPlanName?: string | null;
     userPlanTier?: 'starter' | 'growth' | 'professional';
@@ -41,6 +42,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     products,
     config,
     storeSettings,
+    storeContent,
     isPreview = false,
     userPlanName = null,
     userPlanTier = 'starter',
@@ -65,8 +67,9 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             products,
             config,
             storeSettings,
+            content: storeContent,
         }),
-        [store, categories, products, config, storeSettings],
+        [store, categories, products, config, storeSettings, storeContent],
     );
 
     // Plan gating on the storefront is based on the store owner's plan (passed
@@ -81,6 +84,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 store={store}
                 categories={categories}
                 products={products}
+                content={storeContent}
                 isLoggedIn={isLoggedIn}
                 customer={customer}
                 customerAddress={customer_address}

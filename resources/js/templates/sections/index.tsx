@@ -1,3 +1,4 @@
+import { FAQSection, FeatureGrid, NewsletterForm, TestimonialsSection } from '@/templates/pages/ui';
 import { AccountButton, CartButton, WhatsAppButton, useStorefrontCore } from '@/templates/storefront';
 import type { DesignTokens, TemplateLayoutConfig, TemplateSectionConfig } from '@/templates/types';
 import { formatCurrency } from '@/utils/currency-formatter';
@@ -843,6 +844,100 @@ export const CustomSection: React.FC<SectionProps> = (props) => {
     );
 };
 
+/* ============================== ANNOUNCEMENT (banner) ============================== */
+
+export const AnnouncementSection: React.FC<SectionProps> = ({ section, storeData }) => {
+    const props = section.props || {};
+    const classes = section.classes || {};
+    const content = storeData?.content || {};
+    const announcement = { ...(content.announcement || {}), ...(props.announcement || {}) };
+
+    const text = props.text || announcement.text || '🎉 شحن مجاني للطلبات فوق 200₪ — عروض حصرية كل أسبوع';
+    if (announcement.enabled === false) return null;
+
+    const inner = <span className="px-8 text-sm font-semibold text-white">{text}</span>;
+
+    return (
+        <div className={classes.section || 'w-full overflow-hidden'} style={{ background: props.background || 'var(--twc-primary-600,#059669)' }}>
+            {announcement.link ? (
+                <a href={announcement.link} target="_blank" rel="noopener noreferrer" className="animate-marquee flex py-2 whitespace-nowrap">
+                    {[0, 1].map((n) => (
+                        <span key={n}>{inner}</span>
+                    ))}
+                </a>
+            ) : (
+                <div className="animate-marquee flex py-2 whitespace-nowrap">
+                    {[0, 1].map((n) => (
+                        <span key={n}>{inner}</span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+/* ============================== CONTENT (custom kinds) ============================== */
+
+export const ContentSection: React.FC<SectionProps> = ({ section, storeData }) => {
+    const props = section.props || {};
+    const classes = section.classes || {};
+    const kind = props.kind || section.id || 'custom';
+    const title = props.title || '';
+
+    const heading = title ? (
+        <h2 className="mb-6 text-center text-2xl font-extrabold" style={{ color: 'var(--twc-text-primary,#111827)' }}>
+            {title}
+        </h2>
+    ) : null;
+
+    if (kind === 'features') {
+        return (
+            <section className={classes.section || 'w-full py-10 sm:py-12'} style={{ background: 'var(--twc-background,#ffffff)' }}>
+                <div className={classes.container || 'mx-auto max-w-7xl px-4'}>
+                    {heading}
+                    <FeatureGrid />
+                </div>
+            </section>
+        );
+    }
+
+    if (kind === 'testimonials') {
+        return (
+            <section className={classes.section || 'w-full py-10 sm:py-12'} style={{ background: 'var(--twc-surface,#f1f5f9)' }}>
+                <div className={classes.container || 'mx-auto max-w-7xl px-4'}>
+                    {heading}
+                    <TestimonialsSection />
+                </div>
+            </section>
+        );
+    }
+
+    if (kind === 'faqs') {
+        return (
+            <section className={classes.section || 'w-full py-10 sm:py-12'} style={{ background: 'var(--twc-background,#ffffff)' }}>
+                <div className={`${classes.container || 'mx-auto max-w-7xl px-4'} mx-auto max-w-3xl`}>
+                    {heading}
+                    <FAQSection />
+                </div>
+            </section>
+        );
+    }
+
+    if (kind === 'newsletter') {
+        return (
+            <section className={classes.section || 'w-full py-10 sm:py-12'} style={{ background: 'var(--twc-surface,#f1f5f9)' }}>
+                <div className="mx-auto max-w-3xl px-4 text-center">
+                    {heading}
+                    <NewsletterForm className="mx-auto" />
+                </div>
+            </section>
+        );
+    }
+
+    // Unknown custom kinds keep the original placeholder behaviour.
+    return <CustomSection section={section} storeData={storeData} />;
+};
+
 /* ============================== MAP ============================== */
 
 export const SECTION_COMPONENTS: Record<string, React.FC<SectionProps>> = {
@@ -852,8 +947,8 @@ export const SECTION_COMPONENTS: Record<string, React.FC<SectionProps>> = {
     products: ProductsSection,
     reviews: ReviewsSection,
     footer: FooterSection,
-    custom: CustomSection,
-    featured: CustomSection,
-    banner: CustomSection,
+    custom: ContentSection,
+    featured: ContentSection,
+    banner: AnnouncementSection,
     sidebar: CustomSection,
 };

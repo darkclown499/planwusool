@@ -340,6 +340,9 @@ class ThemeController extends Controller
             'store' => $store,
             'theme' => $theme,
             'storeSettings' => $storeData['storeSettings'],
+            'storeContent' => $storeModel && $storeModel->exists
+                ? $storeModel->getMergedStoreContent()
+                : [],
             'currencies' => $currencies,
             'countries' => $countries,
             'secondaryCurrency' => $storeData['config']['secondaryCurrency'],

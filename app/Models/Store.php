@@ -17,6 +17,7 @@ class Store extends BaseModel
         'template_slug',
         'template_overrides',
         'design_tokens',
+        'store_content',
         'user_id',
         'custom_domain',
         'custom_subdomain',
@@ -46,6 +47,7 @@ class Store extends BaseModel
         'enable_pwa' => 'boolean',
         'template_overrides' => 'array',
         'design_tokens' => 'array',
+        'store_content' => 'array',
     ];
 
     /**
@@ -458,5 +460,42 @@ class Store extends BaseModel
     {
         $user = $this->user;
         return $user && $user->plan && $user->plan->hasAdvancedBuilder();
+    }
+
+    /**
+     * Structural defaults for the store content blob. Empty collections mean
+     * "not configured" — the storefront components fall back to their own
+     * built-in Arabic defaults until the owner saves real content.
+     */
+    public const DEFAULT_STORE_CONTENT = [
+        'announcement' => [
+            'enabled' => true,
+            'text' => '',
+            'link' => '',
+        ],
+        'features' => [],
+        'testimonials' => [],
+        'faqs' => [],
+        'trust_bar' => ['enabled' => true],
+        'newsletter' => ['enabled' => true],
+        'banner' => [
+            'enabled' => false,
+            'title' => '',
+            'subtitle' => '',
+            'button_text' => 'تسوّق الآن',
+            'button_link' => '#template-products',
+            'image' => '',
+            'background' => '',
+        ],
+    ];
+
+    /**
+     * Get the store content (store values merged over structural defaults).
+     * The frontend uses this to drive announcements, features, testimonials,
+     * FAQs and banners across both dedicated pages and JSON-section templates.
+     */
+    public function getMergedStoreContent(): array
+    {
+        return array_replace_recursive(self::DEFAULT_STORE_CONTENT, $this->store_content ?? []);
     }
 }
