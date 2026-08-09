@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
+import { sanitizeHtml } from '@/utils/xss-protection';
 
 const formatUSD = (amount: number): string => {
   if (amount === 0) return '$0';
@@ -58,6 +59,7 @@ interface Plan {
   enable_shipping_method?: string;
   enable_mobile_app?: string;
   enable_theme_editor?: string;
+  enable_accounting_integration?: string;
   is_trial?: string | null;
   trial_day?: number;
   is_plan_enable: string;
@@ -108,6 +110,7 @@ const fallbackPlans: Plan[] = [
     enable_shipping_method: 'off',
     enable_mobile_app: 'off',
     enable_theme_editor: 'off',
+    enable_accounting_integration: 'off',
     is_plan_enable: 'on',
     is_default: true,
     is_recommended: false,
@@ -135,6 +138,7 @@ const fallbackPlans: Plan[] = [
     enable_shipping_method: 'on',
     enable_mobile_app: 'off',
     enable_theme_editor: 'off',
+    enable_accounting_integration: 'off',
     is_plan_enable: 'on',
     is_default: false,
     is_recommended: true,
@@ -162,6 +166,7 @@ const fallbackPlans: Plan[] = [
     enable_shipping_method: 'on',
     enable_mobile_app: 'on',
     enable_theme_editor: 'on',
+    enable_accounting_integration: 'on',
     is_plan_enable: 'on',
     is_default: false,
     is_recommended: false,
@@ -169,6 +174,8 @@ const fallbackPlans: Plan[] = [
 ];
 
 const isOn = (v: unknown): boolean => v === 'on' || v === true || v === 1 || v === '1';
+
+const isPaidPlan = (p: Plan): boolean => (p.price || 0) > 0 || (p.yearly_price || 0) > 0;
 
 const fmtNumber = (n: number): string => {
   if (n >= 10000) return `${Math.round(n / 1000)}K+`;
@@ -194,9 +201,10 @@ const COMPARE_GROUPS: CompareGroup[] = [
     title: 'المتجر والتصميم',
     icon: Layout,
     rows: [
-      { label: 'قوالب احترافية جاهزة', get: (p) => ({ kind: 'text', text: `${p.themes?.length || 29} قالباً` }) },
+      { label: 'قوالب احترافية جاهزة', get: (p) => ({ kind: 'text', text: `${(p.themes || []).length} قالباً` }) },
       { label: 'محرر قوالب متقدم', tooltip: 'تعديل الألوان والخطوط والتنسيقات بالكامل بدون أي كود برمجي.', get: (p) => yesNo(p.enable_theme_editor) },
       { label: 'ربط نطاق مخصص', tooltip: 'ربط دومين خاص بمتجرك مثل store.com بدلاً من النطاق الفرعي.', get: (p) => yesNo(p.enable_custdomain) },
+      { label: 'نوع النطاق', tooltip: 'نطاق مخصص (custom) أو نطاق فرعي (subdomain).', get: (p) => ({ kind: 'text', text: p.domain_type === 'custom' ? 'نطاق مخصص' : 'نطاق فرعي' }) },
       { label: 'نطاق فرعي مجاني', get: (p) => yesNo(p.enable_custsubdomain) },
       { label: 'تطبيق ويب PWA', tooltip: 'تطبيق ويب يمكن للعملاء تثبيته على أجهزتهم مثل التطبيقات العادية، بسرعة وأداء مميز.', get: (p) => yesNo(p.pwa_business) },
       { label: 'تطبيق موبايل أصلي', tooltip: 'تطبيق أندرويد وآيفون لمتجرك وتقديمه على متجري Google Play و App Store.', get: (p) => yesNo(p.enable_mobile_app) },
@@ -211,23 +219,23 @@ const COMPARE_GROUPS: CompareGroup[] = [
       { label: 'المخازن', get: (p) => ({ kind: 'text', text: String(p.max_warehouses || 0) }) },
       { label: 'الموظفون والصلاحيات', get: (p) => ({ kind: 'text', text: String(p.max_users_per_store || 0) }) },
       { label: 'مساحة التخزين', get: (p) => ({ kind: 'text', text: `${p.storage_limit || 0} GB` }) },
-      { label: 'أتمتة طلبات واتساب', tooltip: 'كل طلب يصل مباشرة إلى واتسابك كرسالة معبأة بكل التفاصيل: المنتجات والسعر والعنوان.', get: () => yes() },
-      { label: 'رمز QR واستيراد/تصدير', tooltip: 'رمز QR يفتح متجرك مباشرة، مع استيراد وتصدير المنتجات بسهولة.', get: () => yes() },
+      { label: 'أتمتة طلبات واتساب', tooltip: 'كل طلب يصل مباشرة إلى واتسابك كرسالة معبأة بكل التفاصيل: المنتجات والسعر والعنوان.', get: (p) => isPaidPlan(p) ? yes() : ({ kind: 'no', text: '—' }) },
+      { label: 'رمز QR واستيراد/تصدير', tooltip: 'رمز QR يفتح متجرك مباشرة، مع استيراد وتصدير المنتجات بسهولة.', get: (p) => isPaidPlan(p) ? yes() : ({ kind: 'no', text: '—' }) },
     ],
   },
   {
     title: 'الدفع',
     icon: Wallet,
     rows: [
-      { label: 'بوابات دفع عالمية', tooltip: 'Stripe, PayPal, Razorpay, Paystack, Flutterwave, Mollie, Midtrans وغيرها من 20+ بوابة.', get: () => yes() },
+      { label: 'بوابات دفع عالمية', tooltip: 'Stripe, PayPal, Razorpay, Paystack, Flutterwave, Mollie, Midtrans وغيرها من 20+ بوابة.', get: (p) => isPaidPlan(p) ? yes() : ({ kind: 'no', text: '—' }) },
     ],
   },
   {
     title: 'التسويق والنمو',
     icon: Rocket,
     rows: [
-      { label: 'استعادة السلات المتروكة', tooltip: 'تذكيرات تلقائية عبر البريد والواتساب للعملاء الذين لم يكملوا الشراء.', get: () => yes() },
-      { label: 'نظام الإحالة', tooltip: 'مكافأة عملائك عند دعوة أصدقائهم للشراء من متجرك.', get: () => yes() },
+      { label: 'استعادة السلات المتروكة', tooltip: 'تذكيرات تلقائية عبر البريد والواتساب للعملاء الذين لم يكملوا الشراء.', get: (p) => isPaidPlan(p) ? yes() : ({ kind: 'no', text: '—' }) },
+      { label: 'نظام الإحالة', tooltip: 'مكافأة عملائك عند دعوة أصدقائهم للشراء من متجرك.', get: (p) => isPaidPlan(p) ? yes() : ({ kind: 'no', text: '—' }) },
     ],
   },
   {
@@ -235,6 +243,7 @@ const COMPARE_GROUPS: CompareGroup[] = [
     icon: Bot,
     rows: [
       { label: 'توليد المحتوى بالـ AI', tooltip: 'كتابة أوصاف المنتجات وترجمتها واقتراح أسعار تنافسية تلقائياً.', get: (p) => yesNo(p.enable_chatgpt) },
+      { label: 'تكامل المحاسبة', tooltip: 'مزامنة الفواتير والمصاريف مع أنظمة المحاسبة الخارجية.', get: (p) => yesNo(p.enable_accounting_integration) },
     ],
   },
   {
@@ -475,8 +484,10 @@ export default function PlansSection({
                 )}
                 {plan.is_trial === 'on' && (plan.trial_day ?? 0) > 0 && (
                   <span
-                    className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-md"
-                    style={{ backgroundColor: '#f59e0b', marginTop: isPopular ? '32px' : 0 }}
+                    className={`absolute left-6 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-md ${
+                      isPopular ? 'top-[38px]' : 'top-6'
+                    }`}
+                    style={{ backgroundColor: '#f59e0b' }}
                   >
                     <Clock className="h-3 w-3 fill-current" />
                     تجربة مجانية {plan.trial_day} يوم
@@ -501,7 +512,7 @@ export default function PlansSection({
                   </div>
                 </div>
 
-                <p className="mt-4 text-[14px] leading-relaxed text-gray-500">{meta.description}</p>
+                <p className="mt-4 text-[14px] leading-relaxed text-gray-500">{sanitizeHtml(meta.description || '')}</p>
 
                 <div className="mt-5 flex items-baseline gap-2">
                   {meta.originalPrice > 0 && price < meta.originalPrice && (
@@ -662,7 +673,7 @@ export default function PlansSection({
 
         {sectionData?.faq_text && (
           <div className="mt-10 text-center">
-            <p className="text-[14px] text-gray-500">{sectionData.faq_text}</p>
+            <p className="text-[14px] text-gray-500">{sanitizeHtml(sectionData.faq_text)}</p>
           </div>
         )}
       </div>

@@ -62,19 +62,17 @@ class LandingPageController extends Controller
             if ($plan->enable_mobile_app === 'on') $features[] = __('Mobile App');
             if ($plan->enable_branding === 'on') $features[] = __('White Label');
             if ($plan->enable_theme_editor === 'on') $features[] = __('Theme Editor');
+            if ($plan->enable_accounting_integration === 'on') $features[] = __('Accounting Integration');
 
-            // USD pricing (yearly only)
-            $usdPrices = [
-                'Starter' => 0,
-                'Growth' => 270,
-                'Professional' => 360,
-            ];
+            // Use database prices (yearly only since duration is yearly)
+            $yearlyPrice = $plan->yearly_price ?? $plan->price;
+            $monthlyPrice = $plan->price;
 
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
-                'price' => $usdPrices[$plan->name] ?? $plan->price, // USD price
-                'yearly_price' => $usdPrices[$plan->name] ?? $plan->yearly_price, // USD yearly price
+                'price' => $monthlyPrice, // Monthly price (for reference)
+                'yearly_price' => $yearlyPrice, // Yearly price (primary)
                 'duration' => 'yearly', // Yearly only
                 'description' => $plan->description,
                 'features' => $features,
@@ -93,29 +91,19 @@ class LandingPageController extends Controller
                 'enable_shipping_method' => $plan->enable_shipping_method,
                 'enable_mobile_app' => $plan->enable_mobile_app,
                 'enable_theme_editor' => $plan->enable_theme_editor,
+                'enable_accounting_integration' => $plan->enable_accounting_integration,
                 'support_hours' => $plan->support_hours ?? 0,
                 'support_type' => $plan->support_type ?? 'email',
                 'is_trial' => $plan->is_trial,
                 'trial_day' => $plan->trial_day ?? 0,
+                'domain_type' => $plan->domain_type ?? 'subdomain',
                 'is_plan_enable' => $plan->is_plan_enable,
-                'is_popular' => false,
+                'is_popular' => (bool) $plan->is_recommended, // Use DB is_recommended field
             ];
         });
         
-        // Mark most subscribed plan as popular
-        $planSubscriberCounts = Plan::withCount('users')->get()->pluck('users_count', 'id');
-        if ($planSubscriberCounts->isNotEmpty()) {
-            $mostSubscribedPlanId = $planSubscriberCounts->keys()->sortByDesc(function($planId) use ($planSubscriberCounts) {
-                return $planSubscriberCounts[$planId];
-            })->first();
-            
-            $plans = $plans->map(function($plan) use ($mostSubscribedPlanId) {
-                if ($plan['id'] == $mostSubscribedPlanId && $plan['price'] != '0') {
-                    $plan['is_popular'] = true;
-                }
-                return $plan;
-            });
-        }
+        // No longer override is_popular based on subscriber count
+        // The DB is_recommended field is used instead
         
         // Get featured stores instead of campaigns
         $featuredStores = Store::whereHas('configurations', function($q) {
