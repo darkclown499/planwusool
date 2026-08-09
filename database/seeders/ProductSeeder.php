@@ -13,7 +13,9 @@ class ProductSeeder extends Seeder
 
     public function run(): void
     {
-        $stores = Store::whereIn('theme', ['gadgets', 'fashion', 'home-decor', 'bakery', 'supermarket', 'car-accessories', 'toy'])->get();
+        // Seed every store (legacy themes + all dedicated template stores).
+        // Existing stores are skipped below to preserve client data.
+        $stores = Store::all();
 
         foreach ($stores as $store) {
             // Skip if products already exist for this store - preserve existing client data
@@ -71,14 +73,29 @@ class ProductSeeder extends Seeder
     private function generateSKU($storeId, $categoryId): string
     {
         $store = Store::find($storeId);
-        $prefix = match($store->theme) {
-            'gadgets' => 'TV',
-            'fashion' => 'TT',
-            'home-decor' => 'CC',
-            'bakery' => 'SD',
-            'supermarket' => 'DE',
-            'car-accessories' => 'AE',
-            'toy-store' => 'WT',
+        $prefix = match($store->getTemplateSlug()) {
+            'gadgets', 'tech', 'electronics-pro' => 'TV',
+            'fashion', 'fashion-premium' => 'TT',
+            'home-decor', 'furniture' => 'CC',
+            'bakery', 'food', 'food-premium', 'restaurant' => 'SD',
+            'supermarket', 'grocery-delivery' => 'DE',
+            'car-accessories', 'auto-parts' => 'AE',
+            'toy', 'kids' => 'WT',
+            'books' => 'BN',
+            'coffee-shop' => 'CH',
+            'pharmacy' => 'PC',
+            'pet-store' => 'PF',
+            'perfumes' => 'ES',
+            'flowers-gifts' => 'BG',
+            'home-tools' => 'TD',
+            'handcrafted' => 'HH',
+            'stationery' => 'PS',
+            'luxury-jewelry' => 'GL',
+            'luxury-watches' => 'TE',
+            'b2b-wholesale' => 'WC',
+            'sports' => 'AG',
+            'beauty', 'beauty-premium' => 'BT',
+            'basic', 'single-product', 'digital' => 'DS',
             default => 'TV'
         };
         return $prefix . $storeId . 'C' . $categoryId . 'P' . rand(1000, 9999);
@@ -3336,6 +3353,245 @@ class ProductSeeder extends Seeder
             ]
         ];
 
-        return $products[$categoryName] ?? [];
+        $newProducts = [
+            'Fiction & Literature' => [
+                ['name' => 'Novel "The Shadow of the Wind"', 'description' => 'An unforgettable literary journey through a city of secrets.', 'price' => 29.99, 'sale_price' => 24.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+                ['name' => 'Arabic Poetry Collection', 'description' => 'A curated anthology of timeless Arabic poetry.', 'price' => 24.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+                ['name' => 'Short Stories Bundle', 'description' => 'Three short story collections in one elegant box.', 'price' => 39.99, 'sale_price' => 34.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+            ],
+            'Self Development' => [
+                ['name' => 'The Art of Thinking', 'description' => 'A practical guide to critical thinking and decision making.', 'price' => 19.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+                ['name' => 'Habits for Growth', 'description' => 'Build lasting habits that compound into real change.', 'price' => 22.99, 'sale_price' => 18.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+                ['name' => 'Focus & Flow', 'description' => 'Master deep work in a distracted world.', 'price' => 17.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+            ],
+            'Science & History' => [
+                ['name' => 'Illustrated History Atlas', 'description' => 'A richly illustrated journey through civilizations.', 'price' => 49.99, 'sale_price' => 42.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+                ['name' => 'The Story of Science', 'description' => 'From the wheel to the smartphone in one volume.', 'price' => 35.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+            ],
+            'Hot Drinks' => [
+                ['name' => 'Specialty Espresso Blend', 'description' => 'Freshly roasted beans with rich crema and bold flavor.', 'price' => 24.99, 'cover_image' => '/storage/demo/p14.svg', 'images' => '/storage/demo/p14.svg'],
+                ['name' => 'Arabic Coffee Gift Tin', 'description' => 'Traditional Arabic coffee in an elegant collectible tin.', 'price' => 29.99, 'sale_price' => 24.99, 'cover_image' => '/storage/demo/p14.svg', 'images' => '/storage/demo/p14.svg'],
+                ['name' => 'Latte Art Cups Set', 'description' => 'Two ceramic cups crafted for the perfect latte art.', 'price' => 19.99, 'cover_image' => '/storage/demo/p14.svg', 'images' => '/storage/demo/p14.svg'],
+            ],
+            'Cold Drinks' => [
+                ['name' => 'Iced Coffee Kit', 'description' => 'Everything you need for café-style iced coffee at home.', 'price' => 32.99, 'sale_price' => 27.99, 'cover_image' => '/storage/demo/p15.svg', 'images' => '/storage/demo/p15.svg'],
+                ['name' => 'Cold Brew Bottle', 'description' => 'Reusable bottle with built-in infuser for slow cold brew.', 'price' => 18.99, 'cover_image' => '/storage/demo/p15.svg', 'images' => '/storage/demo/p15.svg'],
+            ],
+            'Fresh Pastries' => [
+                ['name' => 'Butter Croissant Box', 'description' => 'Six flaky, golden croissants baked fresh each morning.', 'price' => 12.99, 'cover_image' => '/storage/demo/p15.svg', 'images' => '/storage/demo/p15.svg'],
+                ['name' => 'Assorted Danish Tray', 'description' => 'A mix of fruit and cheese danishes for sharing.', 'price' => 16.99, 'sale_price' => 13.99, 'cover_image' => '/storage/demo/p15.svg', 'images' => '/storage/demo/p15.svg'],
+            ],
+            'Vitamins & Supplements' => [
+                ['name' => 'Vitamin D3 2000IU', 'description' => 'Daily support for immunity and bone health.', 'price' => 14.99, 'sale_price' => 11.99, 'cover_image' => '/storage/demo/p16.svg', 'images' => '/storage/demo/p16.svg'],
+                ['name' => 'Multivitamin Complex', 'description' => 'Complete daily vitamins and minerals in one dose.', 'price' => 19.99, 'cover_image' => '/storage/demo/p16.svg', 'images' => '/storage/demo/p16.svg'],
+                ['name' => 'Omega-3 Fish Oil', 'description' => 'High-purity omega-3 for heart and brain health.', 'price' => 22.99, 'sale_price' => 18.99, 'cover_image' => '/storage/demo/p16.svg', 'images' => '/storage/demo/p16.svg'],
+            ],
+            'Skin Care' => [
+                ['name' => 'Gentle Hydrating Cream', 'description' => 'Non-greasy daily moisturizer for sensitive skin.', 'price' => 15.99, 'cover_image' => '/storage/demo/p16.svg', 'images' => '/storage/demo/p16.svg'],
+                ['name' => 'Sunscreen SPF 50', 'description' => 'Lightweight broad-spectrum daily protection.', 'price' => 17.99, 'sale_price' => 14.99, 'cover_image' => '/storage/demo/p16.svg', 'images' => '/storage/demo/p16.svg'],
+            ],
+            'Medical Devices' => [
+                ['name' => 'Digital Blood Pressure Monitor', 'description' => 'Accurate home readings with memory storage.', 'price' => 34.99, 'sale_price' => 29.99, 'cover_image' => '/storage/demo/p16.svg', 'images' => '/storage/demo/p16.svg'],
+                ['name' => 'Digital Thermometer', 'description' => 'Fast, safe temperature readings for the whole family.', 'price' => 12.99, 'cover_image' => '/storage/demo/p16.svg', 'images' => '/storage/demo/p16.svg'],
+            ],
+            'Pet Food' => [
+                ['name' => 'Premium Dog Food 3kg', 'description' => 'Balanced high-protein formula for adult dogs.', 'price' => 29.99, 'sale_price' => 24.99, 'cover_image' => '/storage/demo/p17.svg', 'images' => '/storage/demo/p17.svg'],
+                ['name' => 'Cat Food with Salmon', 'description' => 'Omega-rich salmon formula for healthy coats.', 'price' => 24.99, 'cover_image' => '/storage/demo/p17.svg', 'images' => '/storage/demo/p17.svg'],
+            ],
+            'Toys & Play' => [
+                ['name' => 'Interactive Feather Wand', 'description' => 'Endless fun for curious cats of every age.', 'price' => 9.99, 'cover_image' => '/storage/demo/p18.svg', 'images' => '/storage/demo/p18.svg'],
+                ['name' => 'Chew-Resistant Rope', 'description' => 'Durable rope toy for energetic dogs.', 'price' => 11.99, 'sale_price' => 9.49, 'cover_image' => '/storage/demo/p18.svg', 'images' => '/storage/demo/p18.svg'],
+            ],
+            'Bedding & Comfort' => [
+                ['name' => 'Orthopedic Dog Bed', 'description' => 'Memory foam support for aches and joint care.', 'price' => 49.99, 'sale_price' => 42.99, 'cover_image' => '/storage/demo/p18.svg', 'images' => '/storage/demo/p18.svg'],
+                ['name' => 'Cozy Cat Cave', 'description' => 'A snug hideaway cats love to curl up in.', 'price' => 27.99, 'cover_image' => '/storage/demo/p18.svg', 'images' => '/storage/demo/p18.svg'],
+            ],
+            'Men Fragrances' => [
+                ['name' => 'Oud Royal Eau de Parfum', 'description' => 'Rich oriental oud and amber that lasts all day.', 'price' => 59.99, 'sale_price' => 49.99, 'cover_image' => '/storage/demo/p19.svg', 'images' => '/storage/demo/p19.svg'],
+                ['name' => 'Citrus & Cedar Cologne', 'description' => 'Fresh daytime scent with a woody dry-down.', 'price' => 39.99, 'cover_image' => '/storage/demo/p19.svg', 'images' => '/storage/demo/p19.svg'],
+            ],
+            'Women Fragrances' => [
+                ['name' => 'Floral Bloom Parfum', 'description' => 'Elegant floral bouquet with a soft powdery finish.', 'price' => 44.99, 'sale_price' => 37.99, 'cover_image' => '/storage/demo/p19.svg', 'images' => '/storage/demo/p19.svg'],
+                ['name' => 'Rose & Musk Attar', 'description' => 'A classic oriental blend of rose and musk.', 'price' => 49.99, 'cover_image' => '/storage/demo/p19.svg', 'images' => '/storage/demo/p19.svg'],
+            ],
+            'Gift Sets' => [
+                ['name' => 'Discovery Fragrance Set', 'description' => 'Five miniature scents to find your signature.', 'price' => 34.99, 'sale_price' => 29.99, 'cover_image' => '/storage/demo/p20.svg', 'images' => '/storage/demo/p20.svg'],
+                ['name' => 'Perfume & Bakhoor Gift Box', 'description' => 'The perfect oriental gift pairing.', 'price' => 54.99, 'cover_image' => '/storage/demo/p20.svg', 'images' => '/storage/demo/p20.svg'],
+            ],
+            'Bouquets' => [
+                ['name' => 'Fresh Rose Bouquet', 'description' => 'A dozen fresh roses arranged by hand.', 'price' => 39.99, 'sale_price' => 34.99, 'cover_image' => '/storage/demo/p21.svg', 'images' => '/storage/demo/p21.svg'],
+                ['name' => 'Mixed Wildflower Bouquet', 'description' => 'A cheerful mix of seasonal blooms.', 'price' => 29.99, 'cover_image' => '/storage/demo/p21.svg', 'images' => '/storage/demo/p21.svg'],
+            ],
+            'Gifts' => [
+                ['name' => 'Flower Box with Chocolate', 'description' => 'A keepsake box of dried flowers and chocolates.', 'price' => 44.99, 'sale_price' => 37.99, 'cover_image' => '/storage/demo/p21.svg', 'images' => '/storage/demo/p21.svg'],
+                ['name' => 'Birthday Surprise Set', 'description' => 'Balloon, blooms, and a candle — ready to gift.', 'price' => 34.99, 'cover_image' => '/storage/demo/p21.svg', 'images' => '/storage/demo/p21.svg'],
+            ],
+            'Plants' => [
+                ['name' => 'Snake Plant in Ceramic', 'description' => 'Low-maintenance air-purifying houseplant.', 'price' => 24.99, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+                ['name' => 'Mini Succulent Trio', 'description' => 'Three easy-care succulents in a stone planter.', 'price' => 19.99, 'sale_price' => 16.99, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+            ],
+            'Hand Tools' => [
+                ['name' => 'Professional Tool Set', 'description' => '96-piece household tool set in a sturdy case.', 'price' => 79.99, 'sale_price' => 64.99, 'cover_image' => '/storage/demo/p23.svg', 'images' => '/storage/demo/p23.svg'],
+                ['name' => 'Claw Hammer 16oz', 'description' => 'Forged steel hammer with anti-slip grip.', 'price' => 17.99, 'cover_image' => '/storage/demo/p23.svg', 'images' => '/storage/demo/p23.svg'],
+            ],
+            'Power Tools' => [
+                ['name' => 'Cordless Drill 18V', 'description' => 'Long-lasting battery with variable speeds.', 'price' => 89.99, 'sale_price' => 74.99, 'cover_image' => '/storage/demo/p23.svg', 'images' => '/storage/demo/p23.svg'],
+                ['name' => 'Angle Grinder Kit', 'description' => 'Heavy-duty grinder with cutting and grinding discs.', 'price' => 69.99, 'cover_image' => '/storage/demo/p23.svg', 'images' => '/storage/demo/p23.svg'],
+            ],
+            'Safety & Hardware' => [
+                ['name' => 'Work Gloves (Pair)', 'description' => 'Cut-resistant gloves for tough jobs.', 'price' => 8.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+                ['name' => 'Laser Distance Measurer', 'description' => 'Precise digital measuring up to 40m.', 'price' => 32.99, 'sale_price' => 27.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+            ],
+            'Woven & Textile' => [
+                ['name' => 'Hand-Woven Basket', 'description' => 'Natural seagrass basket woven by local artisans.', 'price' => 24.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+                ['name' => 'Wool Knit Shawl', 'description' => 'Warm shawl hand-knitted in earthy tones.', 'price' => 44.99, 'sale_price' => 37.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+            ],
+            'Pottery & Ceramics' => [
+                ['name' => 'Hand-Thrown Clay Mug', 'description' => 'One-of-a-kind mug with a rustic glaze.', 'price' => 19.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+                ['name' => 'Decorated Ceramic Vase', 'description' => 'Hand-painted vase with traditional motifs.', 'price' => 29.99, 'sale_price' => 24.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+            ],
+            'Wood Crafts' => [
+                ['name' => 'Carved Wooden Bowl', 'description' => 'Hand-carved from a single block of olive wood.', 'price' => 34.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+                ['name' => 'Wooden Spice Box', 'description' => 'Handcrafted organizer with carved lid.', 'price' => 27.99, 'sale_price' => 22.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+            ],
+            'Fresh Produce' => [
+                ['name' => 'Seasonal Fruit Box', 'description' => 'Farm-fresh seasonal fruits hand-picked daily.', 'price' => 19.99, 'sale_price' => 16.99, 'cover_image' => '/storage/demo/p27.svg', 'images' => '/storage/demo/p27.svg'],
+                ['name' => 'Organic Vegetables Bundle', 'description' => 'A week of fresh organic vegetables.', 'price' => 22.99, 'cover_image' => '/storage/demo/p27.svg', 'images' => '/storage/demo/p27.svg'],
+            ],
+            'Dairy & Eggs' => [
+                ['name' => 'Farm Fresh Eggs (30)', 'description' => 'Free-range eggs from local farms.', 'price' => 6.99, 'cover_image' => '/storage/demo/p27.svg', 'images' => '/storage/demo/p27.svg'],
+                ['name' => 'Greek Yogurt Tub', 'description' => 'Thick, creamy strained yogurt.', 'price' => 5.49, 'sale_price' => 4.79, 'cover_image' => '/storage/demo/p27.svg', 'images' => '/storage/demo/p27.svg'],
+            ],
+            'Pantry Staples' => [
+                ['name' => 'Extra Virgin Olive Oil 1L', 'description' => 'Cold-pressed first harvest olive oil.', 'price' => 14.99, 'sale_price' => 12.49, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+                ['name' => 'Organic Basmati Rice 5kg', 'description' => 'Long-grain fragrant rice from organic farms.', 'price' => 16.99, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+            ],
+            'Pens & Writing' => [
+                ['name' => 'Fountain Pen Gift Set', 'description' => 'Elegant fountain pen with ink bottles.', 'price' => 24.99, 'sale_price' => 19.99, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+                ['name' => 'Premium Ballpoint 5-Pack', 'description' => 'Buttery-smooth refillable ballpoints.', 'price' => 9.99, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+            ],
+            'Notebooks' => [
+                ['name' => 'Leather Journal', 'description' => 'Faux-leather cover with 192 ruled pages.', 'price' => 14.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+                ['name' => 'Bullet Dot Notebook', 'description' => 'Dot-grid notebook perfect for planning.', 'price' => 12.99, 'sale_price' => 10.49, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+            ],
+            'Art Supplies' => [
+                ['name' => 'Watercolor 24-Pan Set', 'description' => 'Vibrant watercolors in a travel tin.', 'price' => 22.99, 'sale_price' => 18.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+                ['name' => 'Graphite Pencil Set', 'description' => '12 professional grades for sketching.', 'price' => 11.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+            ],
+            'Computers' => [
+                ['name' => 'Creator Laptop 16"', 'description' => 'Powerful CPU, discrete GPU, and 32GB RAM.', 'price' => 1299.99, 'sale_price' => 1199.99, 'cover_image' => '/storage/demo/p23.svg', 'images' => '/storage/demo/p23.svg'],
+                ['name' => 'Compact Desktop Workstation', 'description' => 'Silent, upgradeable tower for heavy workloads.', 'price' => 899.99, 'cover_image' => '/storage/demo/p23.svg', 'images' => '/storage/demo/p23.svg'],
+            ],
+            'Displays & Audio' => [
+                ['name' => '27" 4K UHD Monitor', 'description' => 'Color-accurate panel for designers.', 'price' => 449.99, 'sale_price' => 399.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+                ['name' => 'Studio Monitor Speakers', 'description' => 'Reference-quality powered monitors.', 'price' => 249.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+            ],
+            'Cameras' => [
+                ['name' => 'Mirrorless Camera Body', 'description' => 'Full-frame sensor with 4K video.', 'price' => 1499.99, 'sale_price' => 1349.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+                ['name' => 'Portrait Prime Lens 50mm', 'description' => 'Fast f/1.8 lens for gorgeous bokeh.', 'price' => 199.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+            ],
+            'Rings' => [
+                ['name' => '18K Gold Diamond Ring', 'description' => 'Hand-set brilliant diamonds in solid gold.', 'price' => 899.99, 'sale_price' => 799.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+                ['name' => 'Silver Eternity Band', 'description' => 'Classic sterling silver band.', 'price' => 129.99, 'cover_image' => '/storage/demo/p24.svg', 'images' => '/storage/demo/p24.svg'],
+            ],
+            'Necklaces' => [
+                ['name' => 'Diamond Pendant Necklace', 'description' => 'A radiant pendant on a fine chain.', 'price' => 649.99, 'sale_price' => 569.99, 'cover_image' => '/storage/demo/p1.svg', 'images' => '/storage/demo/p1.svg'],
+                ['name' => 'Pearl Strand Necklace', 'description' => 'Hand-knotted freshwater pearls.', 'price' => 399.99, 'cover_image' => '/storage/demo/p1.svg', 'images' => '/storage/demo/p1.svg'],
+            ],
+            'Bracelets' => [
+                ['name' => 'Gold Chain Bracelet', 'description' => 'Sturdy woven gold link bracelet.', 'price' => 329.99, 'sale_price' => 289.99, 'cover_image' => '/storage/demo/p2.svg', 'images' => '/storage/demo/p2.svg'],
+                ['name' => 'Charm Bracelet with Crystals', 'description' => 'Sparkling crystals on a silver base.', 'price' => 179.99, 'cover_image' => '/storage/demo/p2.svg', 'images' => '/storage/demo/p2.svg'],
+            ],
+            'Classic Watches' => [
+                ['name' => 'Automatic Dress Watch', 'description' => 'Swiss movement with sapphire crystal.', 'price' => 699.99, 'sale_price' => 599.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+                ['name' => 'Leather Strap Classic', 'description' => 'Timeless design with genuine leather.', 'price' => 249.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+            ],
+            'Sports Watches' => [
+                ['name' => 'Diver Watch 200m', 'description' => 'Water-resistant with unidirectional bezel.', 'price' => 399.99, 'sale_price' => 349.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+                ['name' => 'Chronograph Racing Watch', 'description' => 'Multi-function chronograph with tachymeter.', 'price' => 299.99, 'cover_image' => '/storage/demo/p26.svg', 'images' => '/storage/demo/p26.svg'],
+            ],
+            'Limited Edition' => [
+                ['name' => 'Limited Gold Edition Watch', 'description' => 'Numbered piece with gold accents.', 'price' => 1299.99, 'sale_price' => 1099.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+                ['name' => 'Anniversary Tribute Watch', 'description' => 'A collector tribute to watchmaking.', 'price' => 899.99, 'cover_image' => '/storage/demo/p25.svg', 'images' => '/storage/demo/p25.svg'],
+            ],
+            'Packaging' => [
+                ['name' => 'Corrugated Boxes (50)', 'description' => 'Heavy-duty shipping boxes in bulk.', 'price' => 89.99, 'sale_price' => 74.99, 'cover_image' => '/storage/demo/p26.svg', 'images' => '/storage/demo/p26.svg'],
+                ['name' => 'Bubble Wrap Roll', 'description' => 'Protective wrap for safe shipping.', 'price' => 24.99, 'cover_image' => '/storage/demo/p26.svg', 'images' => '/storage/demo/p26.svg'],
+            ],
+            'Office Bulk' => [
+                ['name' => 'Promo Pens (500)', 'description' => 'Customizable pens for bulk distribution.', 'price' => 99.99, 'sale_price' => 84.99, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+                ['name' => 'Notebooks Carton (100)', 'description' => 'Bulk carton of A5 notebooks.', 'price' => 119.99, 'cover_image' => '/storage/demo/p13.svg', 'images' => '/storage/demo/p13.svg'],
+            ],
+            'Business Supplies' => [
+                ['name' => 'Thermal Receipt Rolls (50)', 'description' => 'POS thermal rolls for retail.', 'price' => 59.99, 'cover_image' => '/storage/demo/p26.svg', 'images' => '/storage/demo/p26.svg'],
+                ['name' => 'Heavy-Duty Stapler Set', 'description' => 'Desktop stapler plus 5000 staples.', 'price' => 18.99, 'sale_price' => 15.49, 'cover_image' => '/storage/demo/p22.svg', 'images' => '/storage/demo/p22.svg'],
+            ],
+            'Football & Balls' => [
+                ['name' => 'Match Ball Size 5', 'description' => 'FIFA-approved match football.', 'price' => 44.99, 'sale_price' => 37.99, 'cover_image' => '/storage/demo/p27.svg', 'images' => '/storage/demo/p27.svg'],
+                ['name' => 'Training Ball Multi-Pack', 'description' => 'Four durable training balls.', 'price' => 59.99, 'cover_image' => '/storage/demo/p27.svg', 'images' => '/storage/demo/p27.svg'],
+            ],
+            'Fitness' => [
+                ['name' => 'Adjustable Dumbbell 24kg', 'description' => 'One pair that replaces a full rack.', 'price' => 189.99, 'sale_price' => 159.99, 'cover_image' => '/storage/demo/p27.svg', 'images' => '/storage/demo/p27.svg'],
+                ['name' => 'Yoga Mat 6mm', 'description' => 'Non-slip cushioned mat with carry strap.', 'price' => 29.99, 'cover_image' => '/storage/demo/p3.svg', 'images' => '/storage/demo/p3.svg'],
+            ],
+            'Athletic Wear' => [
+                ['name' => 'Performance Running Shirt', 'description' => 'Moisture-wicking fabric for training.', 'price' => 24.99, 'cover_image' => '/storage/demo/p5.svg', 'images' => '/storage/demo/p5.svg'],
+                ['name' => 'Compression Leggings', 'description' => 'Squat-proof supportive tights.', 'price' => 34.99, 'sale_price' => 29.99, 'cover_image' => '/storage/demo/p5.svg', 'images' => '/storage/demo/p5.svg'],
+            ],
+            'Skincare Rituals' => [
+                ['name' => 'Vitamin C Serum', 'description' => 'Brightening serum for radiant skin.', 'price' => 29.99, 'sale_price' => 24.99, 'cover_image' => '/storage/demo/p9.svg', 'images' => '/storage/demo/p9.svg'],
+                ['name' => 'Night Repair Cream', 'description' => 'Deeply nourishing overnight formula.', 'price' => 34.99, 'cover_image' => '/storage/demo/p9.svg', 'images' => '/storage/demo/p9.svg'],
+            ],
+            'Makeup' => [
+                ['name' => 'Longwear Matte Lipstick', 'description' => 'Transfer-proof color that lasts.', 'price' => 19.99, 'cover_image' => '/storage/demo/p10.svg', 'images' => '/storage/demo/p10.svg'],
+                ['name' => 'Eyeshadow Palette', 'description' => '12 neutral shades, highly pigmented.', 'price' => 32.99, 'sale_price' => 27.99, 'cover_image' => '/storage/demo/p10.svg', 'images' => '/storage/demo/p10.svg'],
+            ],
+            'Hair Care' => [
+                ['name' => 'Argan Oil Hair Serum', 'description' => 'Frizz control with a silky finish.', 'price' => 18.99, 'cover_image' => '/storage/demo/p9.svg', 'images' => '/storage/demo/p9.svg'],
+                ['name' => 'Repairing Hair Mask', 'description' => 'Deep conditioning for damaged hair.', 'price' => 22.99, 'sale_price' => 18.99, 'cover_image' => '/storage/demo/p9.svg', 'images' => '/storage/demo/p9.svg'],
+            ],
+            'Dresses' => [
+                ['name' => 'Silk Evening Dress', 'description' => 'Floor-length silk dress with a slit.', 'price' => 189.99, 'sale_price' => 159.99, 'cover_image' => '/storage/demo/p4.svg', 'images' => '/storage/demo/p4.svg'],
+                ['name' => 'Linen Summer Dress', 'description' => 'Breathable linen midi dress.', 'price' => 79.99, 'cover_image' => '/storage/demo/p4.svg', 'images' => '/storage/demo/p4.svg'],
+            ],
+            'Outerwear' => [
+                ['name' => 'Tailored Wool Coat', 'description' => 'Sharp wool-blend coat for cold days.', 'price' => 249.99, 'sale_price' => 209.99, 'cover_image' => '/storage/demo/p5.svg', 'images' => '/storage/demo/p5.svg'],
+                ['name' => 'Premium Denim Jacket', 'description' => 'Classic fit in heavy-weight denim.', 'price' => 99.99, 'cover_image' => '/storage/demo/p5.svg', 'images' => '/storage/demo/p5.svg'],
+            ],
+            'Accessories' => [
+                ['name' => 'Leather Tote Bag', 'description' => 'Genuine leather with gold hardware.', 'price' => 149.99, 'sale_price' => 129.99, 'cover_image' => '/storage/demo/p4.svg', 'images' => '/storage/demo/p4.svg'],
+                ['name' => 'Silk Scarf', 'description' => 'Hand-rolled edges, elegant print.', 'price' => 49.99, 'cover_image' => '/storage/demo/p4.svg', 'images' => '/storage/demo/p4.svg'],
+            ],
+            'Main Courses' => [
+                ['name' => 'Chef\'s Signature Grill', 'description' => 'Slow-grilled premium cuts with house rub.', 'price' => 39.99, 'cover_image' => '/storage/demo/p20.svg', 'images' => '/storage/demo/p20.svg'],
+                ['name' => 'Seafood Tagine', 'description' => 'Fresh seafood simmered with spices.', 'price' => 34.99, 'sale_price' => 29.99, 'cover_image' => '/storage/demo/p21.svg', 'images' => '/storage/demo/p21.svg'],
+            ],
+            'Starters' => [
+                ['name' => 'Truffle Mushroom Soup', 'description' => 'Velvety soup with truffle oil.', 'price' => 14.99, 'cover_image' => '/storage/demo/p14.svg', 'images' => '/storage/demo/p14.svg'],
+                ['name' => 'Mezze Selection', 'description' => 'A curated platter of house mezze.', 'price' => 19.99, 'sale_price' => 16.99, 'cover_image' => '/storage/demo/p14.svg', 'images' => '/storage/demo/p14.svg'],
+            ],
+            'Desserts' => [
+                ['name' => 'Molten Chocolate Cake', 'description' => 'Warm cake with a flowing center.', 'price' => 12.99, 'cover_image' => '/storage/demo/p15.svg', 'images' => '/storage/demo/p15.svg'],
+                ['name' => 'Pistachio Baklava Plate', 'description' => 'Handmade layers with crushed pistachio.', 'price' => 16.99, 'sale_price' => 13.99, 'cover_image' => '/storage/demo/p15.svg', 'images' => '/storage/demo/p15.svg'],
+            ],
+            'Featured Products' => [
+                ['name' => 'Best Seller Pick', 'description' => 'A customer favourite, hand-picked for you.', 'price' => 29.99, 'cover_image' => '/storage/demo/p1.svg', 'images' => '/storage/demo/p1.svg'],
+                ['name' => 'Top Rated Product', 'description' => 'Highly rated by customers this month.', 'price' => 39.99, 'sale_price' => 34.99, 'cover_image' => '/storage/demo/p2.svg', 'images' => '/storage/demo/p2.svg'],
+            ],
+            'New Arrivals' => [
+                ['name' => 'Just Arrived', 'description' => 'The latest addition to our catalog.', 'price' => 24.99, 'cover_image' => '/storage/demo/p3.svg', 'images' => '/storage/demo/p3.svg'],
+                ['name' => 'Fresh in Stock', 'description' => 'New products restocked weekly.', 'price' => 19.99, 'sale_price' => 16.99, 'cover_image' => '/storage/demo/p8.svg', 'images' => '/storage/demo/p8.svg'],
+            ],
+            'Best Sellers' => [
+                ['name' => 'Customer Favourite', 'description' => 'The most loved product in this store.', 'price' => 49.99, 'cover_image' => '/storage/demo/p6.svg', 'images' => '/storage/demo/p6.svg'],
+                ['name' => 'Most Wanted', 'description' => 'Back in stock after high demand.', 'price' => 34.99, 'sale_price' => 29.99, 'cover_image' => '/storage/demo/p7.svg', 'images' => '/storage/demo/p7.svg'],
+            ],
+        ];
+
+        if (isset($products[$categoryName])) {
+            return $products[$categoryName];
+        }
+
+        return $newProducts[$categoryName] ?? [];
     }
 }

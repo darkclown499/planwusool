@@ -31,44 +31,134 @@ class StoreSeeder extends Seeder
                 'name' => 'TechVibe',
                 'description' => 'Your one-stop destination for the latest smartphones, laptops, gaming gear, smart home devices, and cutting-edge technology with expert support and warranty.',
                 'email' => 'hello@techvibe.com',
-                'theme' => 'gadgets',
+                'template_slug' => 'tech',
             ],
             [
                 'name' => 'Trendy Threads',
                 'description' => 'Discover the latest fashion trends with our curated collection of clothing, shoes, accessories, and designer pieces for every style and occasion.',
                 'email' => 'style@trendythreads.com',
-                'theme' => 'fashion',
+                'template_slug' => 'fashion',
             ],
             [
                 'name' => 'Cozy Corner',
                 'description' => 'Transform your living space with our premium furniture, lighting, decor, and home accessories for every room.',
                 'email' => 'hello@cozycorner.com',
-                'theme' => 'home-decor',
+                'template_slug' => 'furniture',
             ],
             [
                 'name' => 'Sweet Delights',
                 'description' => 'Fresh artisan breads, custom cakes, pastries, and baked goods made daily with premium ingredients.',
                 'email' => 'orders@sweetdelights.com',
-                'theme' => 'bakery',
+                'template_slug' => 'food',
             ],
             [
                 'name' => 'Daily Essentials',
                 'description' => 'Complete grocery shopping with fresh produce, organic foods, household essentials, and daily necessities.',
                 'email' => 'support@dailyessentials.com',
-                'theme' => 'supermarket',
+                'template_slug' => 'supermarket',
             ],
             [
                 'name' => 'Auto Express',
                 'description' => 'Quality automotive parts, accessories, tools, and maintenance products for all vehicle types.',
                 'email' => 'parts@autoexpress.com',
-                'theme' => 'car-accessories',
+                'template_slug' => 'auto-parts',
             ],
             [
                 'name' => 'Wonder Toys',
                 'description' => 'Educational toys, games, puzzles, and fun activities for children of all ages and developmental stages.',
                 'email' => 'play@wondertoys.com',
-                'theme' => 'toy',
-            ]
+                'template_slug' => 'kids',
+            ],
+            [
+                'name' => 'BookNook',
+                'description' => 'Curated collection of literature, philosophy, and science books delivered straight to your door.',
+                'email' => 'read@booknook.com',
+                'template_slug' => 'books',
+            ],
+            [
+                'name' => 'Coffee Haven',
+                'description' => 'Specialty roasted coffee, fresh pastries, and a cozy corner for every coffee lover.',
+                'email' => 'brew@coffeehaven.com',
+                'template_slug' => 'coffee-shop',
+            ],
+            [
+                'name' => 'Pet Friends',
+                'description' => 'Everything your furry companion needs — premium food, toys, bedding, and accessories.',
+                'email' => 'care@petfriends.com',
+                'template_slug' => 'pet-store',
+            ],
+            [
+                'name' => 'Elegant Scents',
+                'description' => 'Luxury fragrances and attar crafted from the finest ingredients for a signature you deserve.',
+                'email' => 'hello@elegantscents.com',
+                'template_slug' => 'perfumes',
+            ],
+            [
+                'name' => 'Bloom & Gift',
+                'description' => 'Fresh daily-cut flowers and thoughtful gifts delivered straight to your loved ones.',
+                'email' => 'love@bloomgift.com',
+                'template_slug' => 'flowers-gifts',
+            ],
+            [
+                'name' => 'Tool Depot',
+                'description' => 'Durable tools and home improvement gear with wholesale pricing for workshops and projects.',
+                'email' => 'tools@tooldepot.com',
+                'template_slug' => 'home-tools',
+            ],
+            [
+                'name' => 'Handcraft House',
+                'description' => 'Authentic handmade crafts and artisanal pieces made with natural materials and love.',
+                'email' => 'craft@handcrafthouse.com',
+                'template_slug' => 'handcrafted',
+            ],
+            [
+                'name' => 'Fresh Basket',
+                'description' => 'Lightning-fast grocery delivery — fresh produce and household essentials in 30 minutes.',
+                'email' => 'fresh@freshbasket.com',
+                'template_slug' => 'grocery-delivery',
+            ],
+            [
+                'name' => 'Paper Station',
+                'description' => 'Bright stationery, school supplies, and creative tools for every student and artist.',
+                'email' => 'write@paperstation.com',
+                'template_slug' => 'stationery',
+            ],
+            [
+                'name' => 'Pro Electronics',
+                'description' => 'Professional-grade electronics for creators — laptops, cameras, and 4K displays.',
+                'email' => 'pro@proelectronics.com',
+                'template_slug' => 'electronics-pro',
+            ],
+            [
+                'name' => 'Gold Luxe',
+                'description' => 'Fine gold and diamond jewelry crafted for life\'s most precious moments.',
+                'email' => 'luxe@goldluxe.com',
+                'template_slug' => 'luxury-jewelry',
+            ],
+            [
+                'name' => 'Time Elegance',
+                'description' => 'Masterful timepieces from Swiss movements to classic leather — luxury that lasts.',
+                'email' => 'time@timeelegance.com',
+                'template_slug' => 'luxury-watches',
+            ],
+            [
+                'name' => 'Wholesale Central',
+                'description' => 'B2B wholesale supply with competitive bulk pricing, fast delivery, and tax invoices.',
+                'email' => 'b2b@wholesalecentral.com',
+                'template_slug' => 'b2b-wholesale',
+            ],
+            [
+                'name' => 'Active Gear',
+                'description' => 'Performance sportswear and gear for athletes, from football to fitness.',
+                'email' => 'move@activegear.com',
+                'template_slug' => 'sports',
+            ],
+            [
+                'name' => 'Pharmacy Care',
+                'description' => 'Trusted pharmacy essentials, supplements, and wellness products delivered with care.',
+                'email' => 'care@pharmacycare.com',
+                'template_slug' => 'pharmacy',
+            ],
         ];
 
         foreach ($companyUsers as $companyUser) {
@@ -113,7 +203,7 @@ class StoreSeeder extends Seeder
                 'name' => 'TechVibe',
                 'description' => 'Your one-stop destination for the latest smartphones, laptops, gaming gear, smart home devices, and cutting-edge technology with expert support and warranty.',
                 'email' => 'hello@techvibe.com',
-                'theme' => 'gadgets',
+                'template_slug' => 'tech',
             ]
         ];
         $this->createStoresForUser($companyUser, $store);
@@ -126,12 +216,13 @@ class StoreSeeder extends Seeder
         $createdStores = [];
         foreach ($storeTemplates as $storeData) {
             $slug = Store::generateUniqueSlug($storeData['name']);
-            
+
             $store = Store::create([
                 'name' => $storeData['name'],
                 'slug' => $slug,
                 'description' => $storeData['description'],
-                'theme' => $storeData['theme'],
+                'theme' => $storeData['template_slug'] ?? $storeData['theme'],
+                'template_slug' => $storeData['template_slug'] ?? null,
                 'user_id' => $user->id,
                 'email' => $storeData['email'],
             ]);
