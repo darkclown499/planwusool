@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   Check,
   X,
@@ -26,18 +26,8 @@ import {
   Wallet,
   Star,
 } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
-
-const encryptPlanId = (planId: number): string => {
-  const key = 'Store2025';
-  const str = planId.toString();
-  let encrypted = '';
-  for (let i = 0; i < str.length; i++) {
-    encrypted += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-  }
-  return btoa(encrypted);
-};
 
 const formatUSD = (amount: number): string => {
   if (amount === 0) return '$0';
@@ -349,6 +339,30 @@ export default function PlansSection({
 }: PlansSectionProps) {
   const { ref, isVisible } = useScrollAnimation();
 
+  const encryptPlanId = useCallback(async (planId: number): Promise<string> => {
+    try {
+      const response = await fetch(route('api.plan.encrypt'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        body: JSON.stringify({ plan_id: planId }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to encrypt plan ID');
+      }
+      
+      const data = await response.json();
+      return data.encrypted_plan_id;
+    } catch (error) {
+      console.error('Failed to encrypt plan ID:', error);
+      // Fallback to simple base64 (not secure, but prevents complete breakage)
+      return btoa(planId.toString());
+    }
+  }, []);
+
   const displayPlans = useMemo(() => {
     const source = plans && plans.length > 0 ? plans : fallbackPlans;
     return [...source]
@@ -530,27 +544,30 @@ export default function PlansSection({
                 </ul>
 
                 <div className="mt-8">
-                  <Link
-                    href={route('register', { plan: encryptPlanId(plan.id) })}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-[15px] font-bold transition-all duration-300 hover:-translate-y-0.5"
-                    style={
-                      isPopular
-                        ? {
-                            backgroundColor: brandColor,
-                            color: '#fff',
-                            boxShadow: `0 12px 28px -8px ${hexToRgba(brandColor, 0.55)}`,
-                          }
-                        : {
-                            border: `1px solid ${hexToRgba(brandColor, 0.4)}`,
-                            color: brandColor,
-                            backgroundColor: hexToRgba(brandColor, 0.06),
-                          }
-                    }
-                  >
-                    {price === 0 ? 'ابدأ مجاناً' : 'ابدأ الآن'}
-                    <ArrowLeft className="h-4 w-4" />
-                  </Link>
-                </div>
+                    <button
+                      onClick={async () => {
+                        const encryptedPlanId = await encryptPlanId(plan.id);
+                        router.get(route('register', { plan: encryptedPlanId }));
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-[15px] font-bold transition-all duration-300 hover:-translate-y-0.5"
+                      style={
+                        isPopular
+                          ? {
+                              backgroundColor: brandColor,
+                              color: '#fff',
+                              boxShadow: `0 12px 28px -8px ${hexToRgba(brandColor, 0.55)}`,
+                            }
+                          : {
+                              border: `1px solid ${hexToRgba(brandColor, 0.4)}`,
+                              color: brandColor,
+                              backgroundColor: hexToRgba(brandColor, 0.06),
+                            }
+                      }
+                    >
+                      {price === 0 ? 'ابدأ مجاناً' : 'ابدأ الآن'}
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                  </div>
               </div>
             );
           })}

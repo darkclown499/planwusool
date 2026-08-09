@@ -35,8 +35,10 @@ class BankPaymentController extends Controller
             $pricing = calculatePlanPricing($plan, $request->coupon_code, $request->billing_cycle);
             $finalPrice = $pricing['final_price'];
 
-            // Logic from AccountGo: If 0 amount, auto-approve
-            $status = ($finalPrice <= 0) ? 'approved' : 'pending';
+            // SECURITY FIX: Only auto-approve if the PLAN itself is free (price = 0)
+            // Not if a coupon makes a paid plan free - that requires admin verification
+            $isFreePlan = ($plan->price == 0 && $plan->yearly_price == 0);
+            $status = ($isFreePlan && $finalPrice <= 0) ? 'approved' : 'pending';
 
             $planOrder = createPlanOrder([
                 'user_id' => $user->id,

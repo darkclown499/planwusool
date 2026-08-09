@@ -80,11 +80,11 @@ class PaymentSetting extends Model
             'cashfree_public_key'
         ];
         
-        // if (in_array($this->key, $sensitiveKeys) && $value) {
-        //     $this->attributes['value'] = Crypt::encryptString($value);
-        // } else {
+        if (in_array($this->key, $sensitiveKeys) && $value) {
+            $this->attributes['value'] = Crypt::encryptString($value);
+        } else {
             $this->attributes['value'] = is_bool($value) ? ($value ? '1' : '0') : $value;
-        // }
+        }
     }
 
     public function getValueAttribute($value)
@@ -101,15 +101,45 @@ class PaymentSetting extends Model
             'paystack_secret_key',
             'flutterwave_public_key',
             'flutterwave_secret_key',
-            'paytabs_profile_id',
             'paytabs_server_key',
+            'paytabs_profile_id',
             'paytabs_region',
             'skrill_merchant_id',
             'skrill_secret_word',
             'coingate_api_token',
             'payfast_merchant_id',
             'payfast_merchant_key',
-            'payfast_passphrase'
+            'payfast_passphrase',
+            'tap_secret_key',
+            'xendit_api_key',
+            'paytr_merchant_key',
+            'paytr_merchant_salt',
+            'mollie_api_key',
+            'toyyibpay_secret_key',
+            'benefit_secret_key',
+            'benefit_public_key',
+            'iyzipay_secret_key',
+            'iyzipay_public_key',
+            'aamarpay_signature',
+            'midtrans_secret_key',
+            'yookassa_secret_key',
+            'nepalste_secret_key',
+            'nepalste_public_key',
+            'cinetpay_api_key',
+            'cinetpay_secret_key',
+            'payhere_merchant_secret',
+            'payhere_app_secret',
+            'fedapay_secret_key',
+            'fedapay_public_key',
+            'authorizenet_transaction_key',
+            'khalti_secret_key',
+            'khalti_public_key',
+            'easebuzz_merchant_key',
+            'easebuzz_salt_key',
+            'ozow_private_key',
+            'ozow_api_key',
+            'cashfree_secret_key',
+            'cashfree_public_key'
         ];
         
         $booleanKeys = [
@@ -150,13 +180,13 @@ class PaymentSetting extends Model
             'is_telegram_enabled'
         ];
         
-        // if (in_array($this->key, $sensitiveKeys) && $value) {
-        //     try {
-        //         return Crypt::decryptString($value);
-        //     } catch (\Exception $e) {
-        //         return null;
-        //     }
-        // }
+        if (in_array($this->key, $sensitiveKeys) && $value) {
+            try {
+                return Crypt::decryptString($value);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
         
         if (in_array($this->key, $booleanKeys)) {
             return $value === '1' || $value === 1 || $value === true;

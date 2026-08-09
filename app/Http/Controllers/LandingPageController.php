@@ -207,6 +207,20 @@ class LandingPageController extends Controller
         return back()->with('success', __('Landing page settings updated successfully!'));
     }
 
+    /**
+     * Encrypt plan ID for secure registration links
+     */
+    public function encryptPlanId(Request $request)
+    {
+        $request->validate([
+            'plan_id' => 'required|integer|exists:plans,id',
+        ]);
+
+        $encrypted = \Illuminate\Support\Facades\Crypt::encryptString((string)$request->plan_id);
+
+        return response()->json(['encrypted_plan_id' => $encrypted]);
+    }
+
     public function about()
     {
         return Inertia::render('static/AboutPage');

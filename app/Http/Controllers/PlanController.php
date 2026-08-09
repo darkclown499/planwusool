@@ -429,6 +429,30 @@ class PlanController extends Controller
                 return back()->withErrors(['coupon_code' => __('Invalid or expired coupon code.')]);
             }
             
+            // If plan is free (price = 0), assign directly
+            if ($pricing['final_price'] == 0) {
+                $planOrder = \App\Models\PlanOrder::create([
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                    'coupon_id' => $pricing['coupon_id'],
+                    'coupon_code' => $request->coupon_code,
+                    'billing_cycle' => $request->billing_cycle,
+                    'original_price' => $pricing['original_price'],
+                    'discount_amount' => $pricing['discount_amount'],
+                    'final_price' => $pricing['final_price'],
+                    'status' => 'approved'
+                ]);
+                
+                if ($pricing['coupon_id']) {
+                    \App\Models\Coupon::where('id', $pricing['coupon_id'])->increment('used_count');
+                }
+                
+                assignPlanToUser($user, $plan, $request->billing_cycle);
+                
+                return back()->with('success', __('Plan assigned successfully'));
+            }
+            
+            // For paid plans, create pending order and redirect to payment
             $planOrder = \App\Models\PlanOrder::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
@@ -438,16 +462,12 @@ class PlanController extends Controller
                 'original_price' => $pricing['original_price'],
                 'discount_amount' => $pricing['discount_amount'],
                 'final_price' => $pricing['final_price'],
-                'status' => 'approved'
+                'status' => 'pending'
             ]);
             
-            if ($pricing['coupon_id']) {
-                \App\Models\Coupon::where('id', $pricing['coupon_id'])->increment('used_count');
-            }
-            
-            assignPlanToUser($user, $plan, $request->billing_cycle);
-            
-            return back()->with('success', __('Plan assigned successfully'));
+            // Redirect to payment gateway selection
+            return redirect()->route('payment.select', ['plan_order_id' => $planOrder->id])
+                ->with('success', __('Please complete the payment to activate your plan.'));
             
         } catch (\Exception $e) {
             \Log::error('Plan subscription failed: ' . $e->getMessage(), ['user_id' => $user->id, 'plan_id' => $plan->id]);

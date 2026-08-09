@@ -4,6 +4,7 @@ import { formatCurrency } from '../../../utils/currency-formatter';
 import { CheckoutProvider, useCheckoutContext } from '../../../contexts/CheckoutContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, ShoppingCart, User, Package, CreditCard, Check, Minus, Plus, Trash2, Gift, Sparkles } from 'lucide-react';
+import { SafeSVG } from '@/components/SafeSVG';
 
 interface Product {
   id: string;
@@ -537,7 +538,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                             />
                             <div className="w-6 h-6 text-purple-600 flex-shrink-0">
                               {method.icon ? (
-                                <div dangerouslySetInnerHTML={{ __html: method.icon }} />
+                                <SafeSVG svgString={method.icon} width={24} height={24} />
                               ) : (
                                 <CreditCard className="w-6 h-6" />
                               )}

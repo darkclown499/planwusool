@@ -10,6 +10,7 @@ use App\Models\PaymentSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class PayPalPaymentController extends Controller
 {
@@ -35,7 +36,7 @@ class PayPalPaymentController extends Controller
             $basePrice = $request->billing_cycle === 'yearly' ? $plan->yearly_price : $plan->price;
             $finalPrice = $basePrice;
             
-            // Get PayPal settings
+            // Get PayPal settings from superadmin
             $paypalSettings = PaymentSetting::where('user_id', 1)
                 ->whereIn('key', ['paypal_client_id', 'paypal_secret_key', 'is_paypal_enabled'])
                 ->pluck('value', 'key')
@@ -45,7 +46,48 @@ class PayPalPaymentController extends Controller
                 return back()->withErrors(['error' => __('PayPal payment is not enabled')]);
             }
             
-            // Create plan order
+            // Verify PayPal payment via API
+            $baseUrl = $paypalSettings['paypal_mode'] === 'live' 
+                ? 'https://api.paypal.com' 
+                : 'https://api.sandbox.paypal.com';
+            
+            // Get access token
+            $tokenResponse = Http::withBasicAuth(
+                $paypalSettings['paypal_client_id'], 
+                $paypalSettings['paypal_secret_key']
+            )->asForm()->post($baseUrl . '/v1/oauth2/token', [
+                'grant_type' => 'client_credentials'
+            ]);
+            
+            if (!$tokenResponse->successful()) {
+                return back()->withErrors(['error' => __('PayPal authentication failed')]);
+            }
+            
+            $accessToken = $tokenResponse->json()['access_token'];
+            
+            // Capture PayPal order
+            $captureResponse = Http::withToken($accessToken)
+                ->post($baseUrl . "/v2/checkout/orders/{$request->order_id}/capture");
+            
+            if (!$captureResponse->successful()) {
+                return back()->withErrors(['error' => 'PayPal payment capture failed: ' . $captureResponse->body()]);
+            }
+            
+            $captureData = $captureResponse->json();
+            $captureStatus = $captureData['status'] ?? '';
+            
+            if ($captureStatus !== 'COMPLETED') {
+                return back()->withErrors(['error' => 'PayPal payment not completed: ' . $captureStatus]);
+            }
+            
+            // Verify the captured amount matches expected price
+            $capturedAmount = $captureData['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? 0;
+            if ((float)$capturedAmount !== (float)$finalPrice) {
+                \Log::warning("PayPal amount mismatch: expected {$finalPrice}, captured {$capturedAmount}");
+                // Still process but log warning
+            }
+            
+            // Create plan order with approved status AFTER verification
             $planOrder = PlanOrder::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,

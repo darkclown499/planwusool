@@ -58,14 +58,33 @@ class PayPalController extends Controller
                     ->withErrors(['error' => 'Invalid PayPal order']);
             }
             
-            // Since user returned from PayPal, assume payment is successful
-            // Update order status directly
+            // Capture PayPal order via API to verify payment
+            $captureResponse = \Http::withToken($accessToken)
+                ->post($baseUrl . "/v2/checkout/orders/{$paypalOrderId}/capture");
+            
+            if (!$captureResponse->successful()) {
+                return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
+                    ->with('payment_status', 'failed')
+                    ->withErrors(['error' => 'PayPal payment capture failed: ' . $captureResponse->body()]);
+            }
+            
+            $captureData = $captureResponse->json();
+            $captureStatus = $captureData['status'] ?? '';
+            
+            if ($captureStatus !== 'COMPLETED') {
+                return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
+                    ->with('payment_status', 'failed')
+                    ->withErrors(['error' => 'PayPal payment not completed: ' . $captureStatus]);
+            }
+            
+            // Payment verified successfully - update order status
             $order->update([
                 'status' => 'confirmed',
                 'payment_status' => 'paid',
                 'payment_details' => array_merge($paymentDetails, [
                     'completed_at' => now(),
                     'payer_id' => $request->get('PayerID'),
+                    'capture_id' => $captureData['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
                 ]),
             ]);
             

@@ -142,20 +142,24 @@ class RegisteredUserController extends Controller
     }
     
     /**
-     * Decrypt plan ID from encrypted string
+     * Decrypt plan ID from encrypted string using Laravel's encryption
      */
     private function decryptPlanId($encryptedPlanId)
     {
         try {
-            $key = 'Wusool2024';
-            $encrypted = base64_decode($encryptedPlanId);
-            $decrypted = '';
-            
-            for ($i = 0; $i < strlen($encrypted); $i++) {
-                $decrypted .= chr(ord($encrypted[$i]) ^ ord($key[$i % strlen($key)]));
-            }
-            
-            return is_numeric($decrypted) ? (int)$decrypted : null;
+            return (int) \Illuminate\Support\Facades\Crypt::decryptString($encryptedPlanId);
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Encrypt plan ID using Laravel's encryption
+     */
+    private function encryptPlanId($planId)
+    {
+        try {
+            return \Illuminate\Support\Facades\Crypt::encryptString((string)$planId);
         } catch (\Exception $e) {
             return null;
         }

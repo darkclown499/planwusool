@@ -174,6 +174,9 @@ Route::get('store/{storeSlug}/{any}', function ($storeSlug, $any) {
 // Main landing page
 Route::get('/', [LandingPageController::class, 'show'])->name('home');
 
+// Encrypt plan ID for secure registration links
+Route::post('/api/plan/encrypt', [LandingPageController::class, 'encryptPlanId'])->name('api.plan.encrypt');
+
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 

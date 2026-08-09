@@ -57,6 +57,29 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     ];
 
     /**
+     * The attributes that are not mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $guarded = [
+        'id',
+        'plan_id',
+        'plan_duration',
+        'plan_expire_date',
+        'plan_is_active',
+        'is_trial',
+        'trial_day',
+        'trial_expire_date',
+        'created_by',
+        'google2fa_secret',
+        'google2fa_enable',
+        'referral_code',
+        'used_referral_code',
+        'password',
+        'remember_token',
+    ];
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

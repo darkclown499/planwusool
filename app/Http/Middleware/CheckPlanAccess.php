@@ -37,31 +37,12 @@ class CheckPlanAccess
             
             if ($user->isTrialExpired()) {
                 $message = __('Your trial period has expired. Please subscribe to a plan to continue.');
-                $defaultPlan = Plan::getDefaultPlan();
-                if ($defaultPlan) {
-                    $user->update([
-                        'plan_id' => $defaultPlan->id,
-                        'is_trial' => 0,
-                        'trial_expire_date' => null,
-                        'plan_is_active' => 1
-                    ]);
-                    enforcePlanLimitations($user->fresh());
-                } else {
-                    \Log::warning('No default plan found for expired trial user', ['user_id' => $user->id]);
-                }
+                // Note: Trial expiration downgrade is handled by scheduled command (CheckExpiredTrials)
+                // Not in middleware to avoid side effects
             } elseif ($user->isPlanExpired()) {
                 $message = __('Your plan has expired. Please renew your subscription.');
-                $defaultPlan = Plan::getDefaultPlan();
-                if ($defaultPlan) {
-                    $user->update([
-                        'plan_id' => $defaultPlan->id,
-                        'plan_expire_date' => null,
-                        'plan_is_active' => 1
-                    ]);
-                    enforcePlanLimitations($user->fresh());
-                } else {
-                    \Log::warning('No default plan found for expired plan user', ['user_id' => $user->id]);
-                }
+                // Note: Plan expiration downgrade is handled by scheduled command (CheckPlanExpirations)
+                // Not in middleware to avoid side effects
             }
             
             return redirect()->route('plans.index')->with('error', $message);
