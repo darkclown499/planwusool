@@ -1,5 +1,6 @@
 import { UpgradePrompt } from '@/templates/PlanGuard';
 import { SECTION_COMPONENTS } from '@/templates/sections';
+import { hasDedicatedPage, TEMPLATE_PAGES } from '@/templates/pages';
 import type { DesignTokens, TemplateConfig, TemplateSectionConfig } from '@/templates/types';
 import { useTemplateAccess } from '@/templates/useTemplateAccess';
 import { applyDesignTokensToCSS, mergeDesignTokens, tokensToCssVars } from '@/utils/designTokens';
@@ -73,6 +74,30 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
                     requiredPlan={template.plan_required}
                     userPlanName={userPlanName}
                     userPlanTier={userPlanTier}
+                    demoStoreUrl={demoStoreUrl}
+                />
+            </div>
+        );
+    }
+
+    // Dedicated hand-crafted page for this template (structurally unique
+    // design). Falls back to the generic JSON-section renderer below.
+    if (hasDedicatedPage(template.slug)) {
+        const Page = TEMPLATE_PAGES[template.slug];
+        return (
+            <div
+                className={`min-h-screen overflow-x-hidden ${template.layout.dark_mode ? 'dark' : ''}`}
+                style={{ ...tokensToCssVars(mergedTokens) }}
+                dir="rtl"
+            >
+                <Page
+                    template={template}
+                    storeData={storeData}
+                    designTokens={mergedTokens}
+                    isPreview={isPreview}
+                    userPlanName={userPlanName}
+                    userPlanTier={userPlanTier}
+                    isSuperAdmin={isSuperAdmin}
                     demoStoreUrl={demoStoreUrl}
                 />
             </div>
