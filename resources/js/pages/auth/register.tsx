@@ -194,11 +194,14 @@ export default function Register({ referralCode, planId }: RegisterProps) {
 
  const json = await res.json();
 
- if (res.ok && json.success) {
- window.location.href = json.redirect;
- } else {
- setOtpError(json.message || 'رمز التحقق غير صحيح.');
- }
+  if (res.ok && json.success) {
+  window.location.href = json.redirect;
+  } else {
+  const errMsg = json.errors
+  ? Object.values(json.errors).flat().join(' ')
+  : json.message || 'رمز التحقق غير صحيح.';
+  setOtpError(errMsg);
+  }
  } catch {
  setOtpError('حدث خطأ في الاتصال بالخادم.');
  } finally {

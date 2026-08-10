@@ -143,6 +143,18 @@ class OtpController extends Controller
         }
         unset($createdAt);
 
+        // If this email is already registered, tell the user instead of
+        // crashing with a duplicate-key error. The OTP already proved that
+        // the person completing the form owns this email address.
+        if (\App\Models\User::where('email', $pending['email'])->exists()) {
+            $request->session()->forget('pending_registration');
+            return response()->json([
+                'errors' => [
+                    'email' => ['هذا البريد الإلكتروني مسجل مسبقاً. يمكنك تسجيل الدخول مباشرة.'],
+                ],
+            ], 422);
+        }
+
         // Create user
         $userData = [
             'name' => $pending['name'],
