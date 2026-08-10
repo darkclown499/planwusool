@@ -484,7 +484,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 </div>
  <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
  {(dashboardData.metrics.orders || 0) > 0 ? (
- <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 15) + 3)}%</span>
+ <span className="text-xs font-medium text-emerald-700">+{(Math.floor(Math.random() * 15) + 3)}%</span>
  ) : (
  <span className="text-xs text-muted-foreground">—</span>
  )}
@@ -505,7 +505,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 <Package className="h-4 w-4 text-muted-foreground" />
 </div>
  <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
- <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 10) + 1)}%</span>
+ <span className="text-xs font-medium text-emerald-700">+{(Math.floor(Math.random() * 10) + 1)}%</span>
  <span className="text-xs text-muted-foreground">{t('vs last month')}</span>
  </div>
  </CardContent>
@@ -524,7 +524,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 </div>
  <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
  {(dashboardData.metrics.customers || 0) > 0 ? (
- <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 12) + 2)}%</span>
+ <span className="text-xs font-medium text-emerald-700">+{(Math.floor(Math.random() * 12) + 2)}%</span>
  ) : (
  <span className="text-xs text-muted-foreground">—</span>
  )}
@@ -545,7 +545,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <Wallet className="h-4 w-4 text-muted-foreground" />
  </div>
  <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
- <span className="text-xs font-medium text-emerald-600">
+ <span className="text-xs font-medium text-emerald-700">
  {dashboardData.metrics.monthlyGrowth || 0 >= 0 ? '+' : ''}{dashboardData.metrics.monthlyGrowth || 0}%
  </span>
  <span className="text-xs text-muted-foreground">{t('vs last month')}</span>

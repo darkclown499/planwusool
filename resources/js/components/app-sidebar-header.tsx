@@ -44,6 +44,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                aria-label={t('Search for an order, product, or customer...')}
                                 placeholder={t('Search for an order, product, or customer...')}
                                 className="h-8 w-48 rounded-md border bg-background px-8 text-xs outline-none focus:w-64 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground"
                             />
@@ -51,11 +52,12 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     </form>
 
                     {/* Refresh Button */}
-                    <button
-                        onClick={() => router.reload({ only: ['dashboardData'] })}
-                        className="inline-flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-                        title={t('Refresh')}
-                    >
+                        <button
+                            onClick={() => router.reload({ only: ['dashboardData'] })}
+                            className="inline-flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                            aria-label={t('Refresh')}
+                            title={t('Refresh')}
+                        >
                         <RefreshCw className="h-3.5 w-3.5" />
                     </button>
 
@@ -63,6 +65,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     <button
                         onClick={() => start()}
                         className="inline-flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                        aria-label={t('Guide Tour')}
                         title={t('Guide Tour')}
                     >
                         <HelpCircle className="h-3.5 w-3.5" />

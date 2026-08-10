@@ -25,7 +25,7 @@ interface Language {
 import languageData from '@/../../resources/lang/language.json';
 
 export const LanguageSwitcher: React.FC = () => {
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const { auth } = usePage().props as any;
     const currentLanguage = React.useMemo(() =>
         languageData.find(lang => lang.code === i18n.language) || languageData[0],
@@ -39,7 +39,7 @@ export const LanguageSwitcher: React.FC = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 h-8 rounded-md border">
+                <Button variant="ghost" aria-label={t('Switch language')} className="flex items-center gap-2 h-8 rounded-md border">
                     <Globe className="h-4 w-4" />
                     <span className="text-sm font-medium hidden md:inline-block">
                         {currentLanguage.name}
