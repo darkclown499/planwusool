@@ -74,6 +74,21 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // ===========================================================================
+// Storage fallback — serve uploaded files through PHP when the
+// public/storage symlink is missing or broken (some hosts do not allow
+// symlinks). Fixes 404s on uploaded images (e.g. /storage/media/...).
+// ===========================================================================
+if (! file_exists(public_path('storage'))) {
+    Route::get('storage/{path}', function (string $path) {
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        if ($disk->exists($path)) {
+            return $disk->response($path);
+        }
+        abort(404);
+    })->where('path', '.*');
+}
+
+// ===========================================================================
 // Store frontend routes — every store is served on its own subdomain:
 // {storeSlug}.{APP_DOMAIN} (e.g. techvibe.wusool.ps, techvibe.localhost).
 // Registered before the landing page route so the subdomain root ("/")
