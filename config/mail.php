@@ -50,13 +50,7 @@ return [
             // The app and the mail server run on the same host (127.0.0.1).
             // Postfix uses a self-signed certificate there, so relax peer
             // verification for STARTTLS. Remove once a valid cert is in use.
-            'stream' => [
-                'ssl' => [
-                    'allow_self_signed' => true,
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                ],
-            ],
+            'verify_peer' => false,
         ],
 
         'ses' => [
