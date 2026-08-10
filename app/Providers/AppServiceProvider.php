@@ -8,6 +8,7 @@ use App\Observers\UserObserver;
 use App\Observers\PlanObserver;
 use App\Social\AppleProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -26,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force all generated URLs, asset paths and API calls to use HTTPS
+        // in production so the browser never blocks resources as Mixed Content.
+        if (config('app.env') === 'production' || env('APP_ENV') === 'production') {
+            URL::forceScheme('https');
+        }
+
         // Register the UserObserver
         User::observe(UserObserver::class);
         

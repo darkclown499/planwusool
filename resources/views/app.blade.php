@@ -32,6 +32,10 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        {{-- Force the browser to upgrade any HTTP resource to HTTPS and stop
+             Mixed-Content blocking (fixes unresponsive buttons when assets
+             are loaded over http:// inside an https:// page). --}}
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
         <style>
             html {
