@@ -178,20 +178,20 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
               <div className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 text-gray-500 shrink-0" />
                 <a
-                  href={`mailto:${settings.contact_email || 'info@wusool.ps'}`}
+                  href={`mailto:${settings.contact_email || 'support@wusool.ps'}`}
                   className="hover:text-white transition-colors"
                 >
-                  {settings.contact_email || 'info@wusool.ps'}
+                  {settings.contact_email || 'support@wusool.ps'}
                 </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-gray-500 shrink-0" />
                 <a
-                  href={`tel:${(settings.contact_phone || '+970 59 123 4567').replace(/[^+\d]/g, '')}`}
+                  href={`tel:${(settings.contact_phone || '+972559886886').replace(/[^+\d]/g, '')}`}
                   className="hover:text-white transition-colors"
                   dir="ltr"
                 >
-                  {settings.contact_phone || '+970 59 123 4567'}
+                  {settings.contact_phone || '+972559886886'}
                 </a>
               </div>
               <div className="flex items-center gap-2.5">

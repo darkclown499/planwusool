@@ -203,7 +203,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         className={`w-full px-4 py-2 border-2 rounded-xl focus:outline-none bg-yellow-50/30 ${phoneError ? 'border-red-500 focus:border-red-500' : 'border-yellow-200 focus:border-yellow-500'
                           }`}
-                        placeholder="+970 59 123 4567"
+                        placeholder="+972 55 988 6886"
                       />
                       {phoneError && <p className="text-red-500 text-sm mt-1">{phoneError}</p>}
                     </div>

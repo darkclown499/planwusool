@@ -88,10 +88,10 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
                   <div className="min-w-0">
                     <p className="text-emerald-100 text-[13px] mb-0.5">{t('البريد الإلكتروني')}</p>
                     <a
-                      href={`mailto:${settings?.contact_email || 'info@wusool.ps'}`}
+                      href={`mailto:${settings?.contact_email || 'support@wusool.ps'}`}
                       className="text-white font-semibold text-[15px] truncate block hover:underline"
                     >
-                      {settings?.contact_email || 'info@wusool.ps'}
+                      {settings?.contact_email || 'support@wusool.ps'}
                     </a>
                   </div>
                 </div>
@@ -104,11 +104,11 @@ export default function ContactSection({ flash, settings, sectionData, brandColo
                   <div className="min-w-0">
                     <p className="text-emerald-100 text-[13px] mb-0.5">{t('الهاتف')}</p>
                     <a
-                      href={`tel:${(settings?.contact_phone || '+970 59 123 4567').replace(/[^+\d]/g, '')}`}
+                      href={`tel:${(settings?.contact_phone || '+972559886886').replace(/[^+\d]/g, '')}`}
                       className="text-white font-semibold text-[15px] block hover:underline"
                       dir="ltr"
                     >
-                      {settings?.contact_phone || '+970 59 123 4567'}
+                      {settings?.contact_phone || '+972559886886'}
                     </a>
                   </div>
                 </div>
