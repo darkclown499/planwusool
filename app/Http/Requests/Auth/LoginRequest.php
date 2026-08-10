@@ -88,7 +88,12 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Only allow active accounts whose login was not disabled. Using the
+        // same generic error keeps attackers from probing account states.
+        if (! Auth::attempt(
+            array_merge($this->only('email', 'password'), ['status' => 'active', 'is_enable_login' => 1]),
+            $this->boolean('remember')
+        )) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

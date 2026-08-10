@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -103,7 +104,7 @@ class AuthController extends Controller
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255',
-                'password' => 'required|string|min:8|confirmed',
+                'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
                 'phone' => 'required|string|max:255',
             ]);
 
@@ -255,7 +256,7 @@ class AuthController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         // Verify token (store-scoped, with a 60-minute expiry)

@@ -224,8 +224,9 @@ class OtpController extends Controller
     {
         $validated = $request->validated();
 
-        // Rate limit: max 5 resend requests per minute (independent of send limit)
-        $key = 'otp_resend_' . $request->ip();
+        // Rate limit: max 5 resend requests per minute per email+IP.
+        // The counter is NOT cleared on success, so the limit always applies.
+        $key = 'otp_resend_' . strtolower($validated['email']) . '|' . $request->ip();
         $attempts = cache()->get($key, 0);
         if ($attempts >= 5) {
             return response()->json([
@@ -240,9 +241,6 @@ class OtpController extends Controller
                 'message' => 'انتهت صلاحية بيانات التسجيل. يُرجى إعادة التسجيل.',
             ], 422);
         }
-
-        // Expire the resend rate limiter on success
-        cache()->forget($key);
 
         // Mark old codes as used
         \App\Models\VerificationCode::where('email', $validated['email'])

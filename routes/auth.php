@@ -18,7 +18,7 @@ Route::middleware(['guest', 'landing.enabled'])->group(function () {
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store'])
-        ->middleware('registration.enabled');
+        ->middleware(['registration.enabled', 'throttle:10,1']);
 
     // OTP verification for registration
     // Rate-limited to prevent brute-force attacks on the 6-digit code.

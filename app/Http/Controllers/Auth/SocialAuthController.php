@@ -39,12 +39,16 @@ class SocialAuthController extends Controller
         }
 
         if ($provider === 'plankton') {
+            // Generate + persist state so the callback can detect login CSRF.
+            $state = Str::random(40);
+            $request->session()->put('plankton_oauth_state', $state);
+
             $params = [
                 'client_id' => config('services.plankton.client_id'),
                 'redirect_uri' => route('social.callback', ['provider' => 'plankton']),
                 'response_type' => 'code',
                 'scope' => config('services.plankton.scope', 'openid email profile'),
-                'state' => Str::random(40),
+                'state' => $state,
             ];
 
             $url = rtrim(config('services.plankton.authorize_url', ''), '/') . '?' . http_build_query($params);
@@ -77,6 +81,12 @@ class SocialAuthController extends Controller
 
             $providerId = $socialUser->getId() ?? ($socialUser->user['sub'] ?? null);
         } elseif ($provider === 'plankton') {
+            // Verify the state param from the redirect flow (login CSRF guard).
+            $expectedState = $request->session()->pull('plankton_oauth_state');
+            if (!$expectedState || !hash_equals($expectedState, (string) $request->get('state'))) {
+                return redirect()->route('login')->with('status', 'State mismatch. Please try again.');
+            }
+
             $code = $request->get('code');
             if (!$code) {
                 return redirect()->route('login')->with('status', 'Authorization failed');
