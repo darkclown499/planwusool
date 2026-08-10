@@ -409,7 +409,7 @@ function SidebarGroupLabel({
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
       className={cn(
-        "text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+        "text-sidebar-foreground/90 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className
       )}
@@ -696,7 +696,7 @@ function SidebarMenuSubButton({
       data-size={size}
       data-active={isActive}
       className={cn(
-        "text-gray-500 ring-sidebar-ring hover:bg-gray-50 hover:text-gray-700 active:bg-gray-50 active:text-gray-700 [&>svg]:text-gray-400 flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-lg px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-3.5 [&>svg]:shrink-0",
+        "text-gray-600 ring-sidebar-ring hover:bg-gray-50 hover:text-gray-700 active:bg-gray-50 active:text-gray-700 [&>svg]:text-gray-400 flex h-7 min-w-0 items-center gap-2 overflow-hidden rounded-lg px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-3.5 [&>svg]:shrink-0",
         "data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-800 data-[active=true]:font-medium",
         size === "sm" && "text-xs",
         size === "md" && "text-sm",

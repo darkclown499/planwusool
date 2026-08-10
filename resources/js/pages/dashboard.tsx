@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Download, Building2, ShoppingCart, Users, DollarSign, Package, TrendingUp, QrCode, Copy, Check, CreditCard, FileText, Tag, Activity, ArrowRight, Sparkles, Store, Clock, Zap, ChevronRight, Settings, Palette, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, Palette, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,6 @@ import QRCode from 'react-qr-code';
 import { formatCurrency } from '@/utils/currency-helper';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
-import { DashboardOverview } from '@/components/dashboard/dashboard-overview';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 
 interface Props {
@@ -70,7 +69,9 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   return isSuperAdmin || hasPermission(permission);
   };
 
-  const themeEditorEnabled = isSuperAdmin || ((usePage().props as any).auth?.user?.plan?.enable_theme_editor ?? 'off') === 'on';
+   const themeEditorEnabled = isSuperAdmin || ((usePage().props as any).auth?.user?.plan?.enable_theme_editor ?? 'off') === 'on';
+
+   const hasPendingAlerts = (dashboardData.alerts?.length || 0) > 0 || (dashboardData.metrics.pendingOrders || 0) > 0 || (dashboardData.metrics.pendingRequests || 0) > 0;
  
  const handleCardClick = (routeName: string, requiredPermission: string, id?: any) => {
  if (!checkPermission(requiredPermission, (usePage().props as any).auth)) {
@@ -126,7 +127,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  title: t('Total Revenue'),
  value: formatCurrency(dashboardData.metrics.totalRevenue || 0),
  subtitle: t('All-time earnings'),
- icon: DollarSign,
+ icon: Wallet,
  color: 'bg-yellow-100 text-yellow-600',
  trend: dashboardData.metrics.monthlyGrowth,
  },
@@ -250,7 +251,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   Timer,
   FileText,
   CheckCircle,
-  DollarSign,
+  Wallet,
   Bell,
   };
   const getAlertIcon = (icon: string | null | undefined) => alertIconMap[icon || ''] || Activity;
@@ -475,12 +476,12 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <CardTitle className="text-sm font-medium">{t('Total Orders')}</CardTitle>
  </CardHeader>
  <CardContent>
- <div className="flex items-center justify-between mb-2">
- <div className="text-2xl font-bold">{dashboardData.metrics.orders?.toLocaleString() || 0}</div>
- <div className="p-2 rounded-full bg-blue-100 text-blue-600">
- <ShoppingCart className="h-4 w-4" />
- </div>
- </div>
+<div className="flex items-center justify-between mb-2">
+<div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.orders?.toLocaleString() || 0}</div>
+<div className="p-2 rounded-full bg-blue-100 text-blue-600">
+<ShoppingCart className="h-4 w-4" />
+</div>
+</div>
  <div className="flex items-center gap-1">
  {(dashboardData.metrics.orders || 0) > 0 ? (
  <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 15) + 3)}%</span>
@@ -499,10 +500,10 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <CardTitle className="text-sm font-medium">{t('Total Products')}</CardTitle>
  </CardHeader>
  <CardContent>
- <div className="flex items-center justify-between mb-2">
- <div className="text-2xl font-bold">{dashboardData.metrics.products?.toLocaleString() || 0}</div>
- <Package className="h-4 w-4 text-muted-foreground" />
- </div>
+<div className="flex items-center justify-between mb-2">
+<div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.products?.toLocaleString() || 0}</div>
+<Package className="h-4 w-4 text-muted-foreground" />
+</div>
  <div className="flex items-center gap-1">
  <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 10) + 1)}%</span>
  <span className="text-xs text-muted-foreground">{t('vs last month')}</span>
@@ -517,10 +518,10 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  <CardTitle className="text-sm font-medium">{t('Total Customers')}</CardTitle>
  </CardHeader>
  <CardContent>
- <div className="flex items-center justify-between mb-2">
- <div className="text-2xl font-bold">{dashboardData.metrics.customers?.toLocaleString() || 0}</div>
- <Users className="h-4 w-4 text-muted-foreground" />
- </div>
+<div className="flex items-center justify-between mb-2">
+<div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.customers?.toLocaleString() || 0}</div>
+<Users className="h-4 w-4 text-muted-foreground" />
+</div>
  <div className="flex items-center gap-1">
  {(dashboardData.metrics.customers || 0) > 0 ? (
  <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 12) + 2)}%</span>
@@ -540,8 +541,8 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </CardHeader>
  <CardContent>
  <div className="flex items-center justify-between mb-2">
-  <div className="text-2xl font-bold ltr-num">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
- <DollarSign className="h-4 w-4 text-muted-foreground" />
+  <div className="text-2xl font-bold ltr-num tabular-nums whitespace-nowrap">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
+ <Wallet className="h-4 w-4 text-muted-foreground" />
  </div>
  <div className="flex items-center gap-1">
  <span className="text-xs font-medium text-emerald-600">
@@ -603,10 +604,10 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 
  {/* Vital Alerts */}
  {userHasPermission('manage-orders') && (
- <Card className="border-amber-200 bg-amber-50/50">
+ <Card className={hasPendingAlerts ? "border-amber-200 bg-amber-50/50" : "border-emerald-200 bg-emerald-50/50"}>
  <CardHeader className="pb-2">
  <CardTitle className="flex items-center gap-2 text-sm">
- <Activity className="h-4 w-4 text-amber-600" />
+ <Activity className={hasPendingAlerts ? "h-4 w-4 text-amber-600" : "h-4 w-4 text-emerald-600"} />
  {t('Vital Alerts')}
  </CardTitle>
  </CardHeader>
@@ -701,6 +702,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </div>
  )) : (
  <div className="text-center py-8 text-muted-foreground">
+ <ShoppingCart className="h-10 w-10 mx-auto mb-2 opacity-30" />
  {t('No recent orders')}
  </div>
  )}
@@ -740,6 +742,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </div>
  )) || (
  <div className="text-center py-8 text-muted-foreground">
+ <Package className="h-10 w-10 mx-auto mb-2 opacity-30" />
  {t('No products available')}
  </div>
  )}
