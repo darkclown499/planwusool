@@ -9,6 +9,7 @@ use App\Observers\PlanObserver;
 use App\Social\AppleProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -31,6 +32,20 @@ class AppServiceProvider extends ServiceProvider
         // in production so the browser never blocks resources as Mixed Content.
         if (config('app.env') === 'production' || env('APP_ENV') === 'production') {
             URL::forceScheme('https');
+        }
+
+        // Ensure the public/storage symlink exists (equivalent to `storage:link`).
+        // On shared hosts / new deployments the link is often missing or broken,
+        // which makes uploaded images 404 in the browser.
+        if (! File::exists(public_path('storage'))) {
+            if (is_link(public_path('storage')) || is_dir(public_path('storage'))) {
+                @unlink(public_path('storage'));
+            }
+            try {
+                \Illuminate\Support\Facades\Artisan::call('storage:link');
+            } catch (\Exception $e) {
+                // Silently ignore if the link cannot be created (e.g. no permissions).
+            }
         }
 
         // Register the UserObserver
