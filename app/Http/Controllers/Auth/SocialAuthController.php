@@ -28,7 +28,9 @@ class SocialAuthController extends Controller
                 return redirect()->route('login')->with('error', __('Social login via :provider is not configured.', ['provider' => $provider]));
             }
 
-            $driver = Socialite::driver($provider)->stateless();
+            // Stateful flow: Socialite stores the state param in the session
+            // and verifies it on the callback (login CSRF protection).
+            $driver = Socialite::driver($provider);
 
             // Always show the Google account chooser/consent screen
             if ($provider === 'google') {
@@ -64,7 +66,7 @@ class SocialAuthController extends Controller
 
         if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
             try {
-                $socialUser = Socialite::driver($provider)->stateless()->user();
+                $socialUser = Socialite::driver($provider)->user();
             } catch (\Throwable $e) {
                 // User cancelled, state mismatch, expired/invalid code, etc.
                 return redirect()->route('login')->with('status', __('Social login failed. Please try again.'));
