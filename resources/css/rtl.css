@@ -122,6 +122,16 @@ html[dir="rtl"] .border-r {
   text-align: right;
 }
 
+/* ===== Dashboard Stat Cards: Force RTL start alignment =====
+   The bottom rows (percentage + helper text) inside the four top stat
+   cards must start from the RIGHT edge, regardless of any inherited or
+   overridden direction / justify value. Applied with !important so no
+   cached stylesheet, direction attribute or flex override can flip it. */
+.rtl-start {
+  direction: rtl !important;
+  justify-content: flex-start !important;
+}
+
 /* Modal drawers should slide from the left in RTL */
 [data-storefront="true"] .cart-drawer {
   right: 0;

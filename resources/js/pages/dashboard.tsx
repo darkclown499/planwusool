@@ -482,7 +482,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 <ShoppingCart className="h-4 w-4" />
 </div>
 </div>
- <div className="flex items-center gap-1 justify-start" dir="rtl">
+ <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
  {(dashboardData.metrics.orders || 0) > 0 ? (
  <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 15) + 3)}%</span>
  ) : (
@@ -504,7 +504,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 <div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.products?.toLocaleString() || 0}</div>
 <Package className="h-4 w-4 text-muted-foreground" />
 </div>
- <div className="flex items-center gap-1 justify-start" dir="rtl">
+ <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
  <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 10) + 1)}%</span>
  <span className="text-xs text-muted-foreground">{t('vs last month')}</span>
  </div>
@@ -522,7 +522,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
 <div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.customers?.toLocaleString() || 0}</div>
 <Users className="h-4 w-4 text-muted-foreground" />
 </div>
- <div className="flex items-center gap-1 justify-start" dir="rtl">
+ <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
  {(dashboardData.metrics.customers || 0) > 0 ? (
  <span className="text-xs font-medium text-emerald-600">+{(Math.floor(Math.random() * 12) + 2)}%</span>
  ) : (
@@ -544,7 +544,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   <div className="text-2xl font-bold ltr-num tabular-nums whitespace-nowrap">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
  <Wallet className="h-4 w-4 text-muted-foreground" />
  </div>
- <div className="flex items-center gap-1 justify-start" dir="rtl">
+ <div className="flex items-center gap-1 justify-start rtl-start" dir="rtl">
  <span className="text-xs font-medium text-emerald-600">
  {dashboardData.metrics.monthlyGrowth || 0 >= 0 ? '+' : ''}{dashboardData.metrics.monthlyGrowth || 0}%
  </span>
