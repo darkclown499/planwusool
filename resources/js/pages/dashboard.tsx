@@ -368,9 +368,9 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  ) : (
  /* Chart Placeholder */
  <div className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
- <BarChart3 className="h-12 w-12 text-gray-300 mb-3" />
+ <BarChart3 className="h-12 w-12 text-gray-500 mb-3" />
  <p className="text-sm font-medium text-gray-400">{t('Subscription Plans Performance')}</p>
- <p className="text-xs text-gray-300 mt-1">{t('Chart will appear here once data is available')}</p>
+ <p className="text-xs text-gray-500 mt-1">{t('Chart will appear here once data is available')}</p>
  </div>
  )}
  </CardContent>
@@ -667,9 +667,9 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
  </CardHeader>
  <CardContent>
  <div className="h-56 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
- <BarChart3 className="h-10 w-10 text-gray-300 mb-2" />
- <p className="text-sm font-medium text-gray-400">{t('Sales chart')}</p>
- <p className="text-xs text-gray-300 mt-1">{t('Chart will appear once data is available')}</p>
+ <BarChart3 className="h-10 w-10 text-gray-500 mb-2" />
+ <p className="text-sm font-medium text-gray-500">{t('Sales chart')}</p>
+ <p className="text-xs text-gray-500 mt-1">{t('Chart will appear once data is available')}</p>
  </div>
  </CardContent>
  </Card>

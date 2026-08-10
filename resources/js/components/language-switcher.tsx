@@ -47,6 +47,7 @@ export const LanguageSwitcher: React.FC = () => {
                     <ReactCountryFlag
                         countryCode={currentLanguage.countryCode}
                         svg
+                        alt={currentLanguage.name}
                         style={{
                             width: '1.2em',
                             height: '1.2em',

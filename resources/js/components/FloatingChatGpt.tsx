@@ -85,6 +85,7 @@ export function FloatingChatGpt() {
             e.stopPropagation();
             handleModalOpen();
           }}
+          aria-label={t("AI Assistant")}
           className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow pointer-events-auto cursor-pointer"
           size="lg"
           data-chatgpt-button
