@@ -119,11 +119,11 @@ export default function PrivacyPage() {
           <div className="mt-4 space-y-2">
             <p>
               {t('البريد الإلكتروني:')}{' '}
-              <a href="mailto:info@wusool.ps" className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">info@wusool.ps</a>
+              <a href="mailto:support@wusool.ps" className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">support@wusool.ps</a>
             </p>
             <p>
               {t('الواتساب:')}{' '}
-              <a href="https://wa.me/970591234567" dir="ltr" className="inline-block text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">+970 59 123 4567</a>
+              <a href="https://wa.me/972559886886" dir="ltr" className="inline-block text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">+972 55 988 6886</a>
             </p>
             <p>{t('العنوان:')} وكالة بلانكتون، قلقيلية، فلسطين</p>
           </div>

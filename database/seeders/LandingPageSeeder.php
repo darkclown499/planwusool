@@ -13,8 +13,8 @@ class LandingPageSeeder extends Seeder
             ['id' => 1],
             [
                 'company_name' => 'Wusool',
-                'contact_email' => 'info@wusool.ps',
-                'contact_phone' => '+970 59 123 4567',
+                'contact_email' => 'support@wusool.ps',
+                'contact_phone' => '+972559886886',
                 'contact_address' => 'وكالة بلانكتون، قلقيلية، فلسطين',
                 'config_sections' => $this->getConfigSections()
             ]

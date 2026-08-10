@@ -25,6 +25,11 @@ class OtpService
 
     public function send(string $email, string $code, string $type = 'register'): void
     {
+        // Apply the SMTP settings saved in the admin panel (settings table)
+        // so the OTP is sent through the configured mail server, not the
+        // default .env (mailtrap) placeholders.
+        MailConfigService::setDynamicConfig();
+
         Mail::raw($this->buildBody($code, $type), function ($message) use ($email, $code, $type) {
             $subject = $type === 'register'
                 ? 'Wusool - رمز التحقق لتسجيل حساب جديد'

@@ -90,9 +90,9 @@ export default function TermsPage() {
           <h2 className="text-xl font-bold text-emerald-400 mb-3">{t('١١. التواصل')}</h2>
           <p>
             {t('لأي استفسارات حول هذه الاتفاقية، يُرجى التواصل معنا عبر البريد الإلكتروني')}{' '}
-            <a href="mailto:info@wusool.ps" className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">info@wusool.ps</a>
+            <a href="mailto:support@wusool.ps" className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">support@wusool.ps</a>
             {' '}{t('أو عبر الواتساب على الرقم')}{' '}
-            <a href="https://wa.me/970591234567" dir="ltr" className="inline-block text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">+970 59 123 4567</a>
+            <a href="https://wa.me/972559886886" dir="ltr" className="inline-block text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors">+972 55 988 6886</a>
           </p>
         </section>
       </div>
