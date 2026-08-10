@@ -59,6 +59,28 @@ class StoreCouponController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return Inertia::render('coupon-system/create');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $user = Auth::user();
+        $currentStoreId = $user->current_store;
+        $coupon = StoreCoupon::where('store_id', $currentStoreId)->findOrFail($id);
+
+        return Inertia::render('coupon-system/edit', [
+            'coupon' => $coupon
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

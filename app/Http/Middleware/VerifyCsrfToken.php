@@ -50,10 +50,5 @@ class VerifyCsrfToken extends Middleware
         'mollie/success/*',
         'benefit/success/*',
         'yookassa/success/*',
-
-        // API endpoints that need CSRF exemption (stateless API)
-        'api/coupon/validate',
-        'api/cart',
-        'api/cart/*',
     ];
 }

@@ -54,8 +54,13 @@ class PlanOrderController extends BaseController
         }
 
         // Apply sorting
-        $sortBy = $request->get('sort_by', 'ordered_at');
+        $allowedSortFields = ['ordered_at', 'id', 'created_at', 'updated_at', 'status', 'total_amount', 'discount_amount', 'final_price', 'order_number'];
+        $sortBy = in_array($request->get('sort_by'), $allowedSortFields)
+            ? $request->get('sort_by') : 'ordered_at';
         $sortOrder = $request->get('sort_order', 'desc');
+        if (!in_array(strtolower($sortOrder), ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
         $query->orderBy($sortBy, $sortOrder);
 
         $perPage = $request->get('per_page', 10);

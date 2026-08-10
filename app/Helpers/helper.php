@@ -2031,9 +2031,11 @@ if (! function_exists('formatCurrencyAmount')) {
     }
 }
 
-if (! function_exists('get_file')) {
+    if (! function_exists('get_file')) {
     /**
-     * Get the correct URL for a file based on active storage disk
+     * Get the correct URL for a file based on active storage disk.
+     * Includes path traversal protection to prevent accessing files outside
+     * the intended storage directory.
      */
     function get_file($path)
     {
@@ -2045,6 +2047,9 @@ if (! function_exists('get_file')) {
         if (filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
+
+        // Prevent path traversal: remove any ../ sequences and leading slashes
+        $path = ltrim(str_replace(['../', '..\\'], '', $path), '/');
 
         \App\Services\DynamicStorageService::configureDynamicDisks();
         $disk = \App\Services\StorageConfigService::getActiveDisk();
@@ -2124,5 +2129,62 @@ if (!function_exists('getSchemeAwareStorageUrl')) {
             return $baseUrl . '/' . ltrim($path, '/');
         }
         return $baseUrl;
+    }
+}
+
+if (! function_exists('getSensitiveKeys')) {
+    /**
+     * Get the list of sensitive keys that should be masked/filtered
+     * before being sent to frontend views or JavaScript.
+     */
+    function getSensitiveKeys(): array
+    {
+        return array_merge(
+            config('sensitive-keys', []),
+            [
+                'telegram_bot_token',
+                'telegram_chat_id',
+                'whatsapp_number',
+                'messaging_message_template',
+                'messaging_item_template',
+            ]
+        );
+    }
+}
+
+if (! function_exists('filterSensitiveSettings')) {
+    /**
+     * Remove sensitive keys from a settings array before passing to
+     * the frontend. Useful for Inertia shared props and JSON API responses.
+     */
+    function filterSensitiveSettings(array $settings): array
+    {
+        $sensitiveKeys = getSensitiveKeys();
+
+        return array_filter(
+            $settings,
+            fn ($key) => ! in_array($key, $sensitiveKeys, true),
+            ARRAY_FILTER_USE_KEY
+        );
+    }
+}
+
+if (! function_exists('getMaskedSettings')) {
+    /**
+     * Return a copy of the settings array where sensitive values are
+     * masked (replaced with '*************'). Non-sensitive values
+     * are passed through unchanged.
+     */
+    function getMaskedSettings(array $settings): array
+    {
+        $sensitiveKeys = getSensitiveKeys();
+
+        foreach ($settings as $key => $value) {
+            if (in_array($key, $sensitiveKeys, true)) {
+                $settings[$key] = '*************';
+            }
+        }
+
+        return $settings;
     }
 }

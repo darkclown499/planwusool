@@ -57,6 +57,52 @@ class SettingsController extends Controller
         
         $currencies = Currency::all();
         $paymentSettings = PaymentSetting::getUserSettings($settingsUserId, $storeId);
+
+        // Mask sensitive payment credentials before sending to the frontend.
+        $sensitivePaymentKeys = [
+            'stripe_secret',
+            'paypal_client_id',
+            'paypal_secret_key',
+            'razorpay_secret',
+            'mercadopago_access_token',
+            'paystack_secret_key',
+            'flutterwave_secret_key',
+            'paytabs_server_key',
+            'skrill_secret_word',
+            'coingate_api_token',
+            'payfast_passphrase',
+            'tap_secret_key',
+            'xendit_api_key',
+            'paytr_merchant_key',
+            'mollie_api_key',
+            'toyyibpay_secret_key',
+            'benefit_secret_key',
+            'iyzipay_secret_key',
+            'midtrans_secret_key',
+            'yookassa_secret_key',
+            'nepalste_secret_key',
+            'cinetpay_api_key',
+            'cinetpay_secret_key',
+            'payhere_merchant_secret',
+            'payhere_app_secret',
+            'fedapay_secret_key',
+            'authorizenet_transaction_key',
+            'khalti_secret_key',
+            'easebuzz_merchant_key',
+            'easebuzz_salt_key',
+            'ozow_private_key',
+            'ozow_api_key',
+            'cashfree_secret_key',
+            'telegram_bot_token',
+        ];
+
+        $paymentSettingsForUi = $paymentSettings;
+        foreach ($sensitivePaymentKeys as $sensitiveKey) {
+            if (isset($paymentSettingsForUi[$sensitiveKey]) && $paymentSettingsForUi[$sensitiveKey] !== '') {
+                $paymentSettingsForUi[$sensitiveKey] = '*************';
+            }
+        }
+
         $webhooks = Webhook::where('user_id', $settingsUserId)->get();
         $templates = Notification::all();
         
@@ -92,7 +138,7 @@ class SettingsController extends Controller
             'timezones' => config('timezones'),
             'dateFormats' => config('dateformat'),
             'timeFormats' => config('timeformat'),
-            'paymentSettings' => $paymentSettings,
+            'paymentSettings' => $paymentSettingsForUi,
             'messagingVariables' => $messagingVariables,
             'webhooks' => $webhooks,
             'availableModules' => Webhook::modules(),

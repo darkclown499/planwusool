@@ -1,3 +1,24 @@
+<IfModule mod_headers.c>
+    # Prevent MIME-type sniffing
+    Header set X-Content-Type-Options "nosniff"
+
+    # Prevent clickjacking
+    Header set X-Frame-Options "SAMEORIGIN"
+
+    # Referrer policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Content Security Policy (adjust as needed for your frontend build)
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com/recaptcha/ https://accounts.google.com/ https://cdn.jsdelivr.net/ https://cdn.jsdelivr.net/npm/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/; img-src 'self' data: https:; connect-src 'self' https://*; font-src 'self' https://fonts.gstatic.com/ https://cdn.jsdelivr.net/; object-src 'none'; frame-src https://www.google.com/recaptcha/ https://accounts.google.com/; base-uri 'self'; form-action 'self'; frame-ancestors 'self';"
+
+    # HTTP Strict Transport Security (HSTS) — تفعيل في الإنتاج
+    # يُرسل هذا الرأس لجميع الاتصالات لضمان استخدام HTTPS فقط لمدة سنة كاملة.
+    # يُساعد على منع هجمات man-in-the-middle.
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
+    # ملحوظة: إذا كنت تستخدم بروكسي خلفيًا، تأكد من أنه يضيف رأس 'HTTPS' بشكل صحيح.
+    # بديل: استخدم البرمجيات الوسيطة (middleware) في Laravel للتحقق من X-Forwarded-Proto.
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

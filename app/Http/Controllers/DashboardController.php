@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         
         // Super admin gets system-wide dashboard
-        if ($user->type === 'superadmin' || $user->type === 'super admin') {
+        if ($user->type === 'superadmin' || $user->type === 'superadmin') {
             return $this->renderSuperAdminDashboard();
         }
         
@@ -445,7 +445,7 @@ class DashboardController extends Controller
     }
     
     /**
-     * Get recent system activity for super admin dashboard
+     * Get recent system activity for superadmin dashboard
      */
     private function getRecentSystemActivity()
     {

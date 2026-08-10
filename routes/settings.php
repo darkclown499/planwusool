@@ -27,7 +27,7 @@ use Inertia\Inertia;
 */
 
 // Payment routes accessible without plan check
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission:manage-settings'])->group(function () {
     Route::get('/payment-methods', [PaymentSettingController::class, 'getPaymentMethods'])->name('payment.methods');
     Route::get('/enabled-payment-methods', [PaymentSettingController::class, 'getEnabledMethods'])->name('payment.enabled-methods');
     Route::post('/plan-orders', [PlanOrderController::class, 'create'])->name('plan-orders.create');

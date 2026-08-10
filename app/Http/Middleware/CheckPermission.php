@@ -20,7 +20,7 @@ class CheckPermission
         $user = auth()->user();
         
         // Super admin has all permissions
-        if ($user->type === 'superadmin' || $user->type === 'super admin') {
+        if ($user->type === 'superadmin' || $user->type === 'superadmin') {
             return $next($request);
         }
 

@@ -309,17 +309,11 @@ Route::prefix('api/locations')->group(function () {
 
 
 // WhatsApp Store Theme Demo Routes
-Route::get('/whatsapp-demo', function() {
-    return Inertia::render('store/whatsapp-demo');
-})->name('whatsapp.demo');
+Route::get('/whatsapp-demo', [\App\Http\Controllers\PageController::class, 'whatsappDemo'])->name('whatsapp.demo');
 
-Route::get('/whatsapp-food-demo', function() {
-    return Inertia::render('store/whatsapp-food-demo');
-})->name('whatsapp.food.demo');
+Route::get('/whatsapp-food-demo', [\App\Http\Controllers\PageController::class, 'whatsappFoodDemo'])->name('whatsapp.food.demo');
 
-Route::get('/whatsapp-fashion-demo', function() {
-    return Inertia::render('store/whatsapp-fashion-demo');
-})->name('whatsapp.fashion.demo');
+Route::get('/whatsapp-fashion-demo', [\App\Http\Controllers\PageController::class, 'whatsappFashionDemo'])->name('whatsapp.fashion.demo');
 
 // Order invoice demo route
 Route::get('/demo-order/{orderNumber}', function($orderNumber) {
@@ -430,8 +424,8 @@ Route::post('payments/xendit/callback', [XenditPaymentController::class, 'callba
 
 Route::get('/landing-page', [LandingPageController::class, 'settings'])->middleware(['auth', 'App\Http\Middleware\SuperAdminMiddleware'])->name('landing-page');
 
-Route::post('/landing-page/subscribe', [LandingPageController::class, 'subscribe'])->name('landing-page.subscribe');
-Route::post('/landing-page/contact', [LandingPageController::class, 'submitContact'])->name('landing-page.contact');
+Route::post('/landing-page/subscribe', [LandingPageController::class, 'subscribe'])->middleware('throttle:5,10')->name('landing-page.subscribe');
+Route::post('/landing-page/contact', [LandingPageController::class, 'submitContact'])->middleware('throttle:5,10')->name('landing-page.contact');
 Route::get('/page/{slug}', [CustomPageController::class, 'show'])->name('custom-page.show');
 
 // Cookie consent routes
@@ -635,17 +629,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Coupon System routes with permissions
             Route::get('coupon-system', [\App\Http\Controllers\StoreCouponController::class, 'index'])->middleware('permission:manage-coupon-system')->name('coupon-system.index');
             Route::get('coupon-system/export', [\App\Http\Controllers\StoreCouponController::class, 'export'])->middleware('permission:export-coupon-system')->name('coupon-system.export');
-            Route::get('coupon-system/create', function () {
-                return Inertia::render('coupon-system/create');
-            })->middleware('permission:create-coupon-system')->name('coupon-system.create');
-            Route::get('coupon-system/{id}/edit', function ($id) {
-                $user = Auth::user();
-                $currentStoreId = $user->current_store;
-                $coupon = \App\Models\StoreCoupon::where('store_id', $currentStoreId)->findOrFail($id);
-                return Inertia::render('coupon-system/edit', [
-                    'coupon' => $coupon
-                ]);
-            })->middleware('permission:edit-coupon-system')->name('coupon-system.edit');
+            Route::get('coupon-system/create', [\App\Http\Controllers\StoreCouponController::class, 'create'])->middleware('permission:create-coupon-system')->name('coupon-system.create');
+            Route::get('coupon-system/{id}/edit', [\App\Http\Controllers\StoreCouponController::class, 'edit'])->middleware('permission:edit-coupon-system')->name('coupon-system.edit');
             // Route::get('coupon-system/{id}', function ($id) {
             //     $user = Auth::user();
             //     $currentStoreId = $user->current_store;
@@ -764,39 +749,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('analytics/export', [\App\Http\Controllers\AnalyticsController::class, 'export'])->middleware('permission:export-analytics')->name('analytics.export');
         
         // Payment Gateway routes
-        Route::get('payment-gateways', function () {
-            return Inertia::render('payment-gateways/index');
-        })->name('payment-gateways.index');
-        
+        Route::get('payment-gateways', [\App\Http\Controllers\PageController::class, 'paymentGateways'])->name('payment-gateways.index');
 
-        
         // AI Templates routes
-        Route::get('ai-templates', function () {
-            return Inertia::render('ai-templates/index');
-        })->name('ai-templates.index');
-        
+        Route::get('ai-templates', [\App\Http\Controllers\PageController::class, 'aiTemplates'])->name('ai-templates.index');
+
         // Webhook System routes
-        Route::get('webhooks', function () {
-            return Inertia::render('webhooks/index');
-        })->name('webhooks.index');
-        
-        // AI Templates routes
-        Route::get('ai-templates', function () {
-            return Inertia::render('ai-templates/index');
-        })->name('ai-templates.index');
-        
-        // Webhook System routes
-        Route::get('webhooks', function () {
-            return Inertia::render('webhooks/index');
-        })->name('webhooks.index');
-        
-        Route::get('media-library', function () {
-            return Inertia::render('media-library-demo');
-        })->middleware('permission:manage-media')->name('media-library');
-        
-        Route::get('examples/chatgpt-demo', function () {
-            return Inertia::render('examples/chatgpt-demo');
-        })->name('examples.chatgpt-demo');
+        Route::get('webhooks', [\App\Http\Controllers\PageController::class, 'webhooks'])->name('webhooks.index');
+
+        Route::get('media-library', [\App\Http\Controllers\PageController::class, 'mediaLibrary'])->middleware('permission:manage-media')->name('media-library');
+
+        Route::get('examples/chatgpt-demo', [\App\Http\Controllers\PageController::class, 'chatGptDemo'])->name('examples.chatgpt-demo');
 
     // Media Library API routes
     Route::get('api/media', [MediaController::class, 'index'])->middleware('permission:manage-media')->name('api.media.index');
@@ -962,9 +925,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Impersonation routes
     Route::middleware('App\Http\Middleware\SuperAdminMiddleware')->group(function () {
         Route::get('impersonate/{userId}', [ImpersonateController::class, 'start'])->name('impersonate.start');
+        Route::post('impersonate/leave', [ImpersonateController::class, 'leave'])->name('impersonate.leave');
     });
-
-    Route::post('impersonate/leave', [ImpersonateController::class, 'leave'])->name('impersonate.leave');
 
 
     

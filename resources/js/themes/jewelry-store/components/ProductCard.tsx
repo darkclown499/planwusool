@@ -5,6 +5,7 @@ import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
 import { WishlistButton } from '@/components/storefront/WishlistButton';
 import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
+import { createSafeHtml } from '@/utils/xss-protection';
 
 interface Product {
   id: string;
@@ -130,9 +131,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
             {/* Description - Hidden on mobile */}
             {product.description && (
-              <div 
+                <div 
                 className="text-sm text-yellow-700/70 mb-4 line-clamp-2"
-                dangerouslySetInnerHTML={{ __html: product.description }}
+                dangerouslySetInnerHTML={createSafeHtml(product.description)}
               />
             )}
 

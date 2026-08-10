@@ -20,8 +20,13 @@ class EmailTemplateController extends Controller
         }
         
         // Sorting
-        $sortField = $request->get('sort_field', 'created_at');
+        $allowedSortFields = ['name', 'from', 'created_at', 'id', 'updated_at'];
+        $sortField = in_array($request->get('sort_field'), $allowedSortFields)
+            ? $request->get('sort_field') : 'created_at';
         $sortDirection = $request->get('sort_direction', 'desc');
+        if (!in_array(strtolower($sortDirection), ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
         $query->orderBy($sortField, $sortDirection);
         
         // Pagination

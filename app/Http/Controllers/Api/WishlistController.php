@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\WishlistRequest;
 use App\Models\WishlistItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -49,13 +50,8 @@ class WishlistController extends Controller
         ]);
     }
 
-    public function add(Request $request)
+    public function add(WishlistRequest $request)
     {
-        $request->validate([
-            'store_id' => 'required|exists:stores,id',
-            'product_id' => 'required|exists:products,id'
-        ]);
-
         $whereConditions = [
             'store_id' => $request->store_id,
             'product_id' => $request->product_id
@@ -101,13 +97,8 @@ class WishlistController extends Controller
         return response()->json(['message' => 'Item removed from wishlist']);
     }
 
-    public function toggle(Request $request)
+    public function toggle(WishlistRequest $request)
     {
-        $request->validate([
-            'store_id' => 'required|exists:stores,id',
-            'product_id' => 'required|exists:products,id'
-        ]);
-
         $whereConditions = [
             'store_id' => $request->store_id,
             'product_id' => $request->product_id

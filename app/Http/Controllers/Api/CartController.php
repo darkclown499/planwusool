@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\AddToCartRequest;
+use App\Http\Requests\Api\UpdateCartRequest;
+use App\Http\Requests\Api\CartStoreRequest;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Services\CartCalculationService;
@@ -56,17 +59,8 @@ class CartController extends Controller
         ]);
     }
 
-    public function add(Request $request)
+    public function add(AddToCartRequest $request)
     {
-        $request->validate([
-            'store_id' => 'required|exists:stores,id',
-            'product_id' => [
-                'required',
-                \Illuminate\Validation\Rule::exists('products', 'id')->where('store_id', $request->store_id),
-            ],
-            'quantity' => 'required|integer|min:1',
-            'variants' => 'nullable|array'
-        ]);
         $product = Product::findOrFail($request->product_id);
         // Fix variants structure
         $variants = $request->variants;
@@ -105,38 +99,24 @@ class CartController extends Controller
         return response()->json(['message' => 'Added to cart', 'item' => $cartItem]);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateCartRequest $request, $id)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
-            'store_id' => 'required|exists:stores,id'
-        ]);
-        
         $cartItem = $this->getCartItems($request->store_id, $request)->findOrFail($id);
         $cartItem->update(['quantity' => $request->quantity]);
         
         return response()->json(['message' => 'Cart updated', 'item' => $cartItem]);
     }
 
-    public function remove($id, Request $request)
+    public function remove($id, CartStoreRequest $request)
     {
-        $request->validate([
-            'store_id' => 'required|exists:stores,id'
-        ]);
-        
         $cartItem = $this->getCartItems($request->store_id, $request)->findOrFail($id);
         $cartItem->delete();
         
         return response()->json(['message' => 'Item removed']);
     }
 
-    public function sync(Request $request)
+    public function sync(CartStoreRequest $request)
     {
-        $request->validate([
-            'store_id' => 'required|exists:stores,id',
-            'items' => 'required|array'
-        ]);
-
         // The session id is ALWAYS taken from the server-side session cookie,
         // never from a client-supplied value. This prevents an attacker from
         // claiming or poisoning another guest's cart.

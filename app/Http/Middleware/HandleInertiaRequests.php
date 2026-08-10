@@ -212,7 +212,8 @@ class HandleInertiaRequests extends Middleware
                 'error'   => $request->session()->get('error'),
             ],
             'globalSettings' => $globalSettings,
-            'superadminSettings' => settings(getSuperadminId()),
+            // Filter sensitive keys (API secrets, passwords, etc.) before sharing with frontend
+            'superadminSettings' => filterSensitiveSettings(settings(getSuperadminId())),
             'storeCurrency' => $storeCurrency,
             'is_demo' => config('app.is_demo', false),
         ];

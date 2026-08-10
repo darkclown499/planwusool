@@ -1,0 +1,22 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Password Reset Language Lines
+    |--------------------------------------------------------------------------
+    |
+    | The following language lines are the default lines which match reasons
+    | that passwords are rejected by the broker. You may tweak these to match
+    | your application's requirements.
+    |
+    */
+
+    'reset' => 'تم إعادة تعيين كلمة المرور بنجاح.',
+    'sent' => 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.',
+    'throttled' => 'يرجى الانتظار قبل إعادة المحاولة.',
+    'token' => 'رمز إعادة تعيين كلمة المرور غير صالح.',
+    'user' => "لا يمكن العثور على مستخدم بهذا البريد الإلكتروني.",
+
+];

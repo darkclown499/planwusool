@@ -30,3 +30,13 @@ server.log
 vite.log
 .env
 
+# Temporary translation/helper scripts
+/check_overlap.py
+/en_strings.json
+/extract_php_translations.php
+/gen.php
+/gen_ar_common.php
+/php_translations.json
+/temp.php
+/temp_count.php
+

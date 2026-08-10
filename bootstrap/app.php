@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(
-            at: '*',
+            at: env('TRUSTED_PROXIES', '127.0.0.1,::1'),
             headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
@@ -51,6 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'feature.access' => \App\Http\Middleware\CheckFeatureAccess::class,
             'store.status' => \App\Http\Middleware\CheckStoreStatus::class,
             'onboarded' => \App\Http\Middleware\EnsureOnboarding::class,
+            'webhook.signature' => \App\Http\Middleware\VerifyWebhookSignature::class,
         ]);
 
         $middleware->validateCsrfTokens(
@@ -69,9 +70,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'payments/benefit/success',
             'payments/benefit/callback',
             'payments/paytabs/callback',
-            'api/coupon/validate',
-            'api/cart',
-            'api/cart/*',
 
             // Store subdomain callback/webhook routes (payment gateways POST
             // without a CSRF token).

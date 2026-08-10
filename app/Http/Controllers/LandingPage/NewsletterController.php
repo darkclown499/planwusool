@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\LandingPage;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LandingPage\NewsletterRequest;
 use App\Models\Newsletter;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -59,12 +60,8 @@ class NewsletterController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(NewsletterRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|unique:newsletters,email'
-        ]);
-
         Newsletter::create([
             'email' => $request->email,
             'status' => 'active',

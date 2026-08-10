@@ -5,6 +5,7 @@ import { formatCurrency } from '../../../utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
 import { WishlistButton } from '@/components/storefront/WishlistButton';
 import { WhatsAppOrderButton } from '@/components/storefront/WhatsAppOrderButton';
+import { createSafeHtml } from '@/utils/xss-protection';
 
 interface Product {
   id: string;
@@ -122,7 +123,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                   {product.description && (
                     <div 
                       className="text-stone-600 text-xs mb-2 line-clamp-1"
-                      dangerouslySetInnerHTML={{ __html: product.description }}
+                      dangerouslySetInnerHTML={createSafeHtml(product.description)}
                     />
                   )}
 

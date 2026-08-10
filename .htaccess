@@ -8,6 +8,18 @@
         Deny from all
     </Files>
 
+    # Protect sensitive files and directories from web access
+    <FilesMatch "(^\.git|^\.svn|^\.env|composer\.json|composer\.lock|package\.json|package-lock\.json|yarn\.lock|\.htaccess|\.htpasswd|\.sql|README\.md|DEPLOYMENT\.md|TODO\.md)">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
+
+    # Deny access to backup files
+    <FilesMatch "\.(bak|backup|old|orig|swp|save|tmp|tar\.gz|zip)$">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
+
     RewriteEngine On
 
     # Handle Authorization Header

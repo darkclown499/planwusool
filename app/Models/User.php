@@ -117,7 +117,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     public function creatorId()
     {
-        if ($this->type == 'superadmin' || $this->type == 'super admin' || $this->type == 'admin') {
+        if ($this->type == 'superadmin') {
             return $this->id;
         } else {
             return $this->created_by;
@@ -160,7 +160,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     public function isSuperAdmin()
     {
-        return $this->type === 'superadmin' || $this->type === 'super admin';
+        return $this->type === 'superadmin';
     }
 
     /**

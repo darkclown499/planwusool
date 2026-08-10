@@ -11,6 +11,7 @@ use App\Models\LandingPageSetting;
 use App\Models\LandingPageCustomPage;
 use App\Models\Store;
 use App\Services\DemoStoreService;
+use App\Http\Requests\ContactRequest;
 
 class LandingPageController extends Controller
 {
@@ -135,15 +136,8 @@ class LandingPageController extends Controller
         ]);
     }
 
-    public function submitContact(Request $request)
+    public function submitContact(ContactRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string'
-        ]);
-
         Contact::create([
             'name' => $request->name,
             'email' => $request->email,

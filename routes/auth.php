@@ -21,25 +21,30 @@ Route::middleware(['guest', 'landing.enabled'])->group(function () {
         ->middleware('registration.enabled');
 
     // OTP verification for registration
+    // Rate-limited to prevent brute-force attacks on the 6-digit code.
     Route::post('otp/send', [OtpController::class, 'send'])
-        ->middleware('registration.enabled')
+        ->middleware(['registration.enabled', 'throttle:3,1'])
         ->name('otp.send');
 
     Route::post('otp/verify', [OtpController::class, 'verify'])
+        ->middleware('throttle:5,1')
         ->name('otp.verify');
 
     Route::post('otp/resend', [OtpController::class, 'resend'])
+        ->middleware('throttle:5,1')
         ->name('otp.resend');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:5,1');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:3,1')
         ->name('password.email');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])

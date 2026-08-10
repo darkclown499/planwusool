@@ -10,6 +10,44 @@ use Illuminate\Http\Response;
 class PWAController extends Controller
 {
     /**
+     * Sanitize a URL path and extract the relative path after /storage/.
+     * Prevents path traversal attacks (../../etc/passwd).
+     */
+    private function sanitizeAndExtractStoragePath(string $urlPath): ?string
+    {
+        // Only allow safe characters in the path
+        $cleanPath = preg_replace('/[^a-zA-Z0-9\/_.-]/', '', $urlPath);
+
+        // Split on /storage/ and take everything after it
+        $parts = explode('/storage/', $cleanPath, 2);
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        $relativePath = $parts[1];
+
+        // Collapse any remaining ../ sequences to prevent path traversal
+        while (strpos($relativePath, '../') !== false) {
+            $relativePath = str_replace('../', '', $relativePath);
+        }
+        while (strpos($relativePath, '..\\') !== false) {
+            $relativePath = str_replace('..\\', '', $relativePath);
+        }
+
+        // Final check: ensure the resolved path stays within the storage directory
+        $resolvedPath = realpath(storage_path('app/public/' . $relativePath));
+        $baseStoragePath = realpath(storage_path('app/public'));
+        if ($resolvedPath === false || $baseStoragePath === false) {
+            return null;
+        }
+        if (strpos($resolvedPath, $baseStoragePath) !== 0) {
+            return null;
+        }
+
+        return $relativePath;
+    }
+
+    /**
      * Check whether the store's effective plan allows the PWA feature.
      *
      * Uses the store owner's current plan (with default-plan fallback) so that
@@ -68,6 +106,10 @@ class PWAController extends Controller
         if (!$store->enable_pwa || !$this->pwaAllowedForStore($store)) {
             return response('// PWA not available', 404, ['Content-Type' => 'application/javascript']);
         }
+
+        // Safely JS-escape the store name before injecting into the service-worker script.
+        // Prevents JS injection if the store name contains quotes or special characters.
+        $safeStoreName = json_encode($store->name ?? '', JSON_HEX_TAG | JSON_HEX_AMP);
 
         $storeUrl = rtrim($store->getStoreUrl(), '/');
         $cacheName = 'store-' . $store->slug . '-v1';
@@ -138,13 +180,10 @@ self.addEventListener('message', function(event) {
 // Web Push Notifications
 self.addEventListener('push', function(event) {
     var data = {};
-    try {
-        data = event.data ? event.data.json() : {};
-    } catch (err) {
-        data = { title: '{$store->name}', body: event.data ? event.data.text() : '' };
+        data = { title: {$safeStoreName}, body: event.data ? event.data.text() : '' };
     }
 
-    var title = data.title || '{$store->name}';
+    var title = data.title || {$safeStoreName};
     var options = {
         body: data.body || '',
         icon: data.icon || '{$storeUrl}/pwa-icon/192',
@@ -212,6 +251,14 @@ self.addEventListener('notificationclick', function(event) {
 
         $urlPath = parse_url($iconUrl, PHP_URL_PATH);
         if ($urlPath) {
+            // Prevent path traversal: only allow alphanumeric, dashes, underscores, slashes, and dots
+            $cleanPath = preg_replace('/[^a-zA-Z0-9\/_.-]/', '', $urlPath);
+            // Collapse any remaining ../ sequences
+            while (strpos($cleanPath, '../') !== false) {
+                $cleanPath = str_replace('../', '', $cleanPath);
+            }
+            $urlPath = $cleanPath;
+
             if (str_contains($urlPath, '/storage/')) {
                 $relativePath = explode('/storage/', $urlPath)[1];
                 $path = storage_path('app/public/' . $relativePath);
@@ -248,9 +295,9 @@ self.addEventListener('notificationclick', function(event) {
                 $disk = \App\Services\StorageConfigService::getActiveDisk();
 
                 if ($urlPath && str_contains($urlPath, '/storage/')) {
-                    $relativePath = explode('/storage/', $urlPath)[1];
+                    $relativePath = $this->sanitizeAndExtractStoragePath($urlPath);
 
-                    if ($disk !== 'public' && $disk !== 'local') {
+                    if ($relativePath && $disk !== 'public' && $disk !== 'local') {
                         if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($relativePath)) {
                             $tempPath = tempnam(sys_get_temp_dir(), 'pwa_icon_');
                             $contents = \Illuminate\Support\Facades\Storage::disk($disk)->get($relativePath);

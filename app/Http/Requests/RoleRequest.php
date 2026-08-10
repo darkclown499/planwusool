@@ -44,7 +44,7 @@ class RoleRequest extends FormRequest
         $userType = $user->type ?? 'company';
         
         // Superadmin can assign any permission
-        if ($userType === 'superadmin' || $userType === 'super admin') {
+        if ($userType === 'superadmin' || $userType === 'superadmin') {
             return;
         }
         
@@ -68,11 +68,11 @@ class RoleRequest extends FormRequest
         $userType = $user->type ?? 'company';
         
         // Superadmin can create/edit any role
-        if ($userType === 'superadmin' || $userType === 'super admin') {
+        if ($userType === 'superadmin' || $userType === 'superadmin') {
             return;
         }
         
-        $systemRoles = ['superadmin', 'super admin', 'company'];
+        $systemRoles = ['superadmin', 'superadmin', 'company'];
         $slug = \Illuminate\Support\Str::slug($label);
         
         if (in_array(strtolower($label), array_map('strtolower', $systemRoles)) || 

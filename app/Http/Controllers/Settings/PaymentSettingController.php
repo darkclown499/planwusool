@@ -27,8 +27,57 @@ class PaymentSettingController extends Controller
             $storeId = $companyUser ? getCurrentStoreId($companyUser) : null;
         }
         
-        // Get payment settings for the current user and store
+        // Get payment settings for the current user and store.
+        // Mask sensitive credential values before sending to the frontend
+        // (the full decrypted values are only needed server-side; the UI
+        // already supports masked display with the '************' pattern).
         $paymentSettings = getPaymentSettings($settingsUserId, $storeId);
+        $sensitivePaymentKeys = [
+            'stripe_secret',
+            'paypal_client_id',
+            'paypal_secret_key',
+            'razorpay_secret',
+            'mercadopago_access_token',
+            'paystack_secret_key',
+            'flutterwave_secret_key',
+            'paytabs_server_key',
+            'skrill_secret_word',
+            'coingate_api_token',
+            'payfast_passphrase',
+            'tap_secret_key',
+            'xendit_api_key',
+            'paytr_merchant_key',
+            'paytr_merchant_secret',
+            'mollie_api_key',
+            'toyyibpay_secret_key',
+            'benefit_secret_key',
+            'iyzipay_secret_key',
+            'aamarpay_signature',
+            'midtrans_secret_key',
+            'yookassa_secret_key',
+            'nepalste_secret_key',
+            'paiement_merchant_id',
+            'cinetpay_api_key',
+            'cinetpay_secret_key',
+            'payhere_merchant_secret',
+            'payhere_app_secret',
+            'fedapay_secret_key',
+            'authorizenet_transaction_key',
+            'khalti_secret_key',
+            'easebuzz_merchant_key',
+            'easebuzz_salt_key',
+            'ozow_private_key',
+            'ozow_api_key',
+            'cashfree_secret_key',
+            'telegram_bot_token',
+        ];
+
+        $paymentSettingsForUi = $paymentSettings;
+        foreach ($sensitivePaymentKeys as $sensitiveKey) {
+            if (isset($paymentSettingsForUi[$sensitiveKey]) && $paymentSettingsForUi[$sensitiveKey] !== '') {
+                $paymentSettingsForUi[$sensitiveKey] = '*************';
+            }
+        }
         
         $orderVars = isset($paymentSettings['messaging_order_variables']) ? json_decode($paymentSettings['messaging_order_variables'], true) : [];
         $itemVars = isset($paymentSettings['messaging_item_variables']) ? json_decode($paymentSettings['messaging_item_variables'], true) : [];
@@ -39,13 +88,19 @@ class PaymentSettingController extends Controller
         ];
         
         return Inertia::render('settings/index', [
-            'paymentSettings' => $paymentSettings,
+            'paymentSettings' => $paymentSettingsForUi,
             'messagingVariables' => $messagingVariables,
         ]);
     }
 
     public function getPaymentMethods()
     {
+        // Permission check: only users with manage-settings or manage-payments permission can access
+        $user = auth()->user();
+        if (!$user || (!$user->hasPermissionTo('manage-settings') && !$user->hasPermissionTo('manage-payments'))) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         // Always use superadmin settings for plan subscriptions
         $superAdminId = \App\Models\User::where('type', 'superadmin')->first()?->id;
         if (!$superAdminId) {
@@ -62,7 +117,10 @@ class PaymentSettingController extends Controller
         // Add demo mode flag for frontend handling
         $paymentSettings['is_demo'] = config('app.is_demo', false);
         $paymentSettings['user_type'] = auth()->user()?->type;
-        
+
+        // Filter sensitive keys before sending to frontend
+        $paymentSettings = filterSensitiveSettings($paymentSettings);
+
         return response()->json($paymentSettings);
     }
     public function store(Request $request)
@@ -658,7 +716,12 @@ class PaymentSettingController extends Controller
     public function getEnabledMethods()
     {
         $user = auth()->user();
-        
+
+        // Permission check
+        if (!$user || (!$user->hasPermissionTo('manage-settings') && !$user->hasPermissionTo('manage-payments'))) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         // Determine the correct user_id and store_id for settings
         if ($user->type === 'superadmin') {
             $enabledMethods = getEnabledPaymentMethods();

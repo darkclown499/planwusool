@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\SendOtpRequest;
+use App\Http\Requests\Auth\VerifyOtpRequest;
+use App\Http\Requests\Auth\ResendOtpRequest;
 use App\Models\User;
-use App\Models\Plan;
 use App\Models\Referral;
 use App\Models\ReferralSetting;
 use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Crypt;
 
 class OtpController extends Controller
 {
@@ -23,25 +23,31 @@ class OtpController extends Controller
     /**
      * Step 1: Validate form data, save to session, send OTP email, return success.
      */
-    public function send(Request $request): JsonResponse
+    public function send(SendOtpRequest $request): JsonResponse
     {
-        $rules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'terms' => 'accepted',
-        ];
+        $validated = $request->validated();
+        $email = $validated['email'];
 
         $recaptchaEnabled = \App\Models\Setting::where('key', 'recaptchaEnabled')->value('value');
-        if ($recaptchaEnabled === 'true' || $recaptchaEnabled === true || $recaptchaEnabled === 1 || $recaptchaEnabled === '1') {
-            $rules['recaptcha_token'] = 'required|string';
+        $recaptchaEnabled = $recaptchaEnabled === 'true' || $recaptchaEnabled === true || $recaptchaEnabled === 1 || $recaptchaEnabled === '1';
+
+        if ($recaptchaEnabled && empty($validated['recaptcha_token'])) {
+            return response()->json(['errors' => ['recaptcha_token' => ['reCAPTCHA token is required.']]], 422);
         }
 
-        $validated = $request->validate($rules);
+        // Rate limit: max 5 OTP requests per email per minute (checked AFTER validation)
+        $key = 'otp_send_' . $email;
+        $attempts = cache()->get($key, 0);
+        if ($attempts >= 5) {
+            return response()->json([
+                'message' => 'تم إرسال رموز التحقق كثيراً. يرجى المحاولة لاحقاً.',
+            ], 429);
+        }
+        cache()->put($key, $attempts + 1, now()->addMinute());
 
         // Verify reCAPTCHA if enabled
-        if ($recaptchaEnabled === 'true' || $recaptchaEnabled === true || $recaptchaEnabled === 1 || $recaptchaEnabled === '1') {
-            $token = $request->input('recaptcha_token');
+        if ($recaptchaEnabled) {
+            $token = $validated['recaptcha_token'];
             $secretKey = \App\Models\Setting::where('key', 'recaptchaSecretKey')->value('value');
 
             if (!empty($token) && !empty($secretKey)) {
@@ -57,13 +63,16 @@ class OtpController extends Controller
             }
         }
 
-        // Store registration data in session for step 2
+        // Store registration data in session for step 2.
+        // IMPORTANT: The password is encrypted before being stored in the session
+        // to prevent it from being exposed as plaintext in session storage files.
         $request->session()->put('pending_registration', [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => $validated['password'],
+            'password' => Crypt::encryptString($validated['password']),
             'plan_id' => $request->input('plan_id'),
             'referral_code' => $request->input('referral_code'),
+            'created_at' => now()->toDateTimeString(),
         ]);
 
         // Generate and send OTP
@@ -80,12 +89,19 @@ class OtpController extends Controller
     /**
      * Step 2: Verify OTP code, complete registration, login user.
      */
-    public function verify(Request $request): JsonResponse
+    public function verify(VerifyOtpRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'code' => 'required|string|size:6',
-        ]);
+        $validated = $request->validated();
+
+        // Rate limit: max 5 verification attempts per email per minute
+        $key = 'otp_verify_' . $validated['email'];
+        $attempts = cache()->get($key, 0);
+        if ($attempts >= 5) {
+            return response()->json([
+                'message' => 'تم تجاوز الحد الأقصى لمحاولات التحقق. يرجى المحاولة لاحقاً.',
+            ], 429);
+        }
+        cache()->put($key, $attempts + 1, now()->addMinute());
 
         $success = $this->otpService->verify($validated['email'], $validated['code'], 'register');
 
@@ -104,11 +120,34 @@ class OtpController extends Controller
             ], 422);
         }
 
+        // Expire the OTP verification rate limiter on success
+        cache()->forget($key);
+
+        // Decrypt the password that was encrypted before session storage
+        $decryptedPassword = $pending['password']
+            ? Crypt::decryptString($pending['password']) : null;
+
+        if (!$decryptedPassword) {
+            return response()->json([
+                'message' => 'حدث خطأ في البيانات. يُرجى إعادة التسجيل.',
+            ], 422);
+        }
+
+        // Check that the pending registration hasn't expired (5 minute TTL)
+        $createdAt = $pending['created_at'] ?? null;
+        if ($createdAt && now()->diffInMinutes($createdAt) > 5) {
+            $request->session()->forget('pending_registration');
+            return response()->json([
+                'message' => 'انتهت صلاحية بيانات التسجيل. يُرجى إعادة التسجيل.',
+            ], 422);
+        }
+        unset($createdAt);
+
         // Create user
         $userData = [
             'name' => $pending['name'],
             'email' => $pending['email'],
-            'password' => $pending['password'],
+            'password' => $decryptedPassword,
             'type' => 'company',
             'is_active' => 1,
             'is_enable_login' => 1,
@@ -169,11 +208,19 @@ class OtpController extends Controller
     /**
      * Resend OTP code.
      */
-    public function resend(Request $request): JsonResponse
+    public function resend(ResendOtpRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'email' => 'required|email',
-        ]);
+        $validated = $request->validated();
+
+        // Rate limit: max 5 resend requests per minute (independent of send limit)
+        $key = 'otp_resend_' . $request->ip();
+        $attempts = cache()->get($key, 0);
+        if ($attempts >= 5) {
+            return response()->json([
+                'message' => 'تم تجاوز الحد الأقصى لعدد مرات إعادة الإرسال. يرجى المحاولة لاحقاً.',
+            ], 429);
+        }
+        cache()->put($key, $attempts + 1, now()->addMinute());
 
         $pending = $request->session()->get('pending_registration');
         if (!$pending || $pending['email'] !== $validated['email']) {
@@ -181,6 +228,9 @@ class OtpController extends Controller
                 'message' => 'انتهت صلاحية بيانات التسجيل. يُرجى إعادة التسجيل.',
             ], 422);
         }
+
+        // Expire the resend rate limiter on success
+        cache()->forget($key);
 
         // Mark old codes as used
         \App\Models\VerificationCode::where('email', $validated['email'])
