@@ -53,23 +53,24 @@ class OnboardingController extends Controller
                 'language' => 'ar',
                 'currency' => strtoupper($configuration['default_currency'] ?? 'ils'),
                 'theme' => $store->getTemplateSlug(),
-                'storeEmail' => $configuration['email'] ?? $user->email,
-                'storeDescription' => $configuration['store_description'] ?? '',
-                'welcomeMessage' => $configuration['welcome_message'] ?? '',
-                'whatsappEnabled' => (bool) ($configuration['whatsapp_widget_enabled'] ?? false),
-                'whatsappPhone' => $configuration['whatsapp_widget_phone'] ?? '',
-                'address' => $configuration['address'] ?? '',
-                'city' => $configuration['city'] ?? '',
-                'country' => $configuration['country'] ?? '',
-                'logo' => $configuration['logo'] ?? '',
-                'timezone' => ($configuration['timezone'] && $configuration['timezone'] !== 'utc')
-                    ? $configuration['timezone']
-                    : (
-                        in_array($tz = getSetting('defaultTimezone'), array_keys(config('timezones', [])), true)
-                            ? $tz
-                            : 'Asia/Gaza'
-                    ),
-                'publishStore' => (bool) ($configuration['store_status'] ?? true),
+                // The onboarding wizard always starts clean: detail fields are
+                // NOT pre-filled from previously saved store data so old values
+                // (or test data) never leak back into the form.
+                'storeEmail' => $user->email,
+                'storeDescription' => '',
+                'welcomeMessage' => '',
+                'whatsappEnabled' => false,
+                'whatsappPhone' => '',
+                'address' => '',
+                'city' => '',
+                'country' => '',
+                'logo' => '',
+                'timezone' => (
+                    in_array($tz = getSetting('defaultTimezone'), array_keys(config('timezones', [])), true)
+                        ? $tz
+                        : 'Asia/Gaza'
+                ),
+                'publishStore' => true,
             ],
         ]);
     }
