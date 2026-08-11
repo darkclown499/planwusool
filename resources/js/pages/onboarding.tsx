@@ -906,7 +906,7 @@ export default function Onboarding({
                                                                 id="address"
                                                                 value={data.address}
                                                                 onChange={(e) => setData('address', e.target.value)}
-                                                                placeholder={t('Street address')}
+                                                                placeholder={t('Salah al-Din Street 291')}
                                                                 className="h-12 rounded-xl ps-9"
                                                             />
                                                         </div>
@@ -923,7 +923,7 @@ export default function Onboarding({
                                                             id="city"
                                                             value={data.city}
                                                             onChange={(e) => setData('city', e.target.value)}
-                                                            placeholder={t('City')}
+                                                            placeholder={t('Ramallah')}
                                                             className="mt-2 h-12 rounded-xl"
                                                         />
                                                         {errors.city && (
@@ -939,7 +939,7 @@ export default function Onboarding({
                                                             id="country"
                                                             value={data.country}
                                                             onChange={(e) => setData('country', e.target.value)}
-                                                            placeholder={t('Country')}
+                                                            placeholder={t('Palestine')}
                                                             className="mt-2 h-12 rounded-xl"
                                                         />
                                                         {errors.country && (

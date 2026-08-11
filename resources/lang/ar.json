@@ -4228,5 +4228,14 @@
     "About your store": "نبذة عن المتجر",
     "Location (optional)": "الموقع (اختياري)",
     "Go back to previous step": "العودة إلى خطوة سابقة",
+    "Store email": "إيميل المتجر",
+    "Welcome message": "رسالة الترحيب",
+    "Store logo": "شعار المتجر",
+    "Street address": "عنوان الشارع",
+    "Salah al-Din Street 291": "شارع صلاح الدين 291",
+    "Ramallah": "رام الله",
+    "Palestine": "فلسطين",
+    "WhatsApp number": "رقم واتساب",
+    "Select image": "اختيار صورة",
     "🛍️ Order {order_no} from {store_name}\\nCustomer: {customer_name}\\nTotal: {final_total}\\n\\nItems:\\n{item_variable}": "️ طلب {رقم الطلب} من {اسم المتجر}\\nعميل: {اسم العميل}\\nمجموع: {مجموع_نهائي}\\n\\nالعناصر:\\n{العناصر_متغيرة}"
 }
