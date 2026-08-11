@@ -47,7 +47,6 @@ class OnboardingController extends Controller
             'storeDomain' => config('app.store_domain', 'localhost'),
             'currencies' => $currencies,
             'timezones' => config('timezones', []),
-            'demoData' => $this->demoStoreData($demoStoreService, $demoStoreUrl),
             'defaults' => [
                 'name' => $user->name,
                 'storeName' => $store->name,
@@ -69,45 +68,6 @@ class OnboardingController extends Controller
                 'publishStore' => (bool) ($configuration['store_status'] ?? true),
             ],
         ]);
-    }
-
-    /**
-     * Real demo store content used to build the on-page device previews.
-     */
-    protected function demoStoreData(DemoStoreService $demoStoreService, string $demoStoreUrl): array
-    {
-        $store = $demoStoreService->ensureDemoStore();
-
-        $categories = Category::where('store_id', $store->id)
-            ->where('is_active', true)
-            ->whereNull('parent_id')
-            ->orderBy('sort_order')
-            ->get()
-            ->map(fn ($category) => [
-                'name' => $category->name,
-                'image' => $category->image ? asset($category->image) : null,
-            ])
-            ->values();
-
-        $products = Product::where('store_id', $store->id)
-            ->where('is_active', true)
-            ->orderBy('id')
-            ->limit(6)
-            ->get()
-            ->map(fn ($product) => [
-                'name' => $product->name,
-                'price' => (float) $product->price,
-                'sale_price' => (float) $product->sale_price,
-                'image' => $product->cover_image ? asset($product->cover_image) : null,
-            ])
-            ->values();
-
-        return [
-            'name' => $store->name,
-            'url' => $demoStoreUrl,
-            'categories' => $categories,
-            'products' => $products,
-        ];
     }
 
     /**

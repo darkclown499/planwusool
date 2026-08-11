@@ -6,26 +6,23 @@ import {
     Banknote,
     Check,
     CheckCircle2,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     Coins,
     Contact,
     CreditCard,
-    ExternalLink,
     Globe,
     Languages,
     Loader2,
-    Lock,
     Mail,
     MapPin,
     MessageCircle,
-    Monitor,
     Palette,
     PartyPopper,
     Phone,
     ShieldCheck,
     ShoppingBag,
-    Smartphone,
     Sparkles,
     Store,
     User,
@@ -74,24 +71,7 @@ interface OnboardingProps {
         timezone: string;
         publishStore: boolean;
     };
-    demoData: {
-        name: string;
-        url: string;
-        categories: { name: string; image: string | null }[];
-        products: { name: string; price: number; sale_price: number; image: string | null }[];
-    };
 }
-
-const THEME_ACCENT: Record<string, string> = {
-    gadgets: '#4F46E5', fashion: '#EC4899', 'home-decor': '#F59E0B', bakery: '#D97706',
-    supermarket: '#16A34A', 'car-accessories': '#1F2937', toy: '#F97316', perfumes: '#7C3AED',
-    jewelry: '#D97706', beauty: '#D946EF', pharmacy: '#059669', books: '#B45309',
-    sport: '#F97316', pets: '#EA580C', flowers: '#EC4899', coffee: '#92400E',
-    stationery: '#0EA5E9', spices: '#A16207', clothing: '#F43F5E', electronics: '#3B82F6',
-    cosmetics: '#E879F9', food: '#F97316', fragrances: '#8B5CF6', 'home-tools': '#EA580C',
-    'coffee-dates': '#78350F', 'jewelry-gold': '#B45309', kids: '#22C55E', sports: '#16A34A',
-    'stationery-books': '#1E3A8A',
-};
 
 const STEP_META: { key: string; icon: LucideIcon }[] = [
     { key: 'welcome', icon: Sparkles },
@@ -149,7 +129,6 @@ export default function Onboarding({
     currencies,
     timezones,
     defaults,
-    demoData,
 }: OnboardingProps) {
     const { t, i18n } = useTranslation();
     const { themeColor, customColor, logoDark, logoLight, titleText } = useBrand();
@@ -178,29 +157,15 @@ export default function Onboarding({
     });
 
     const [step, setStep] = useState(0);
-    const [deviceView, setDeviceView] = useState<'phone' | 'desktop'>('phone');
     const [checking, setChecking] = useState(false);
     const [availability, setAvailability] = useState<{ available: boolean; message: string } | null>(null);
-    const [previewLoaded, setPreviewLoaded] = useState(false);
-    const [previewFailed, setPreviewFailed] = useState(false);
     const [generalError, setGeneralError] = useState<string | null>(null);
 
     const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const themes = getStoreThemes();
     const stepKey = STEP_META[step].key;
     const progress = ((step + 1) / STEP_META.length) * 100;
-    const selectedTheme = themes.find((t) => t.id === data.theme);
-    const accent = selectedTheme?.primaryColor || THEME_ACCENT[data.theme] || primaryColor;
-
-    // The demo store preview unlocks all themes when ?preview=1 is present, so
-    // premium templates render cleanly without any "upgrade required" blocks.
-    const previewUrl = useMemo(() => {
-        const base = stepKey === 'theme' ? `${demoStoreUrl}?theme=${encodeURIComponent(data.theme)}` : demoStoreUrl;
-        const sep = base.includes('?') ? '&' : '?';
-        return `${base}${sep}preview=1`;
-    }, [demoStoreUrl, stepKey, data.theme]);
 
     const confettiPieces = useMemo(
         () =>
@@ -212,20 +177,6 @@ export default function Onboarding({
             })),
         []
     );
-
-    // Keep the loading overlay in sync whenever the preview iframe reloads,
-    // and fall back gracefully if the preview cannot load in time.
-    useEffect(() => {
-        setPreviewLoaded(false);
-        setPreviewFailed(false);
-        if (previewTimer.current) clearTimeout(previewTimer.current);
-        previewTimer.current = setTimeout(() => {
-            setPreviewFailed(true);
-        }, 10000);
-        return () => {
-            if (previewTimer.current) clearTimeout(previewTimer.current);
-        };
-    }, [previewUrl, deviceView]);
 
     // Auto-suggest a subdomain from the store name, but never overwrite the
     // value the user typed manually.
@@ -404,7 +355,7 @@ export default function Onboarding({
     const isStoreNameNonLatin = data.store_name.trim() !== '' && slugify(data.store_name) === '';
 
     return (
-        <div className="min-h-screen bg-white relative font-sans">
+        <div className="relative min-h-screen overflow-x-hidden bg-white font-sans">
             <Head title={t('Onboarding')} />
 
             <div className="flex min-h-screen">
@@ -458,164 +409,38 @@ export default function Onboarding({
                             {t("Let's get your store up and running in a few simple steps.")}
                         </p>
 
-                        {/* Device preview — toggle between phone and desktop */}
-                        <div key={deviceView} className="flex flex-col items-center animate-fade-slide">
-                            <div className="mb-4 inline-flex items-center gap-1 rounded-full bg-white/15 p-1 backdrop-blur">
-                                <button
-                                    type="button"
-                                    onClick={() => setDeviceView('phone')}
-                                    className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 ${
-                                        deviceView === 'phone' ? 'bg-white text-gray-900 shadow' : 'text-white/80 hover:text-white'
-                                    }`}
+                        {/* How it works */}
+                        <div className="w-full max-w-sm space-y-3 animate-fade-slide">
+                            {[
+                                {
+                                    title: t('Create your store'),
+                                    desc: t('Choose a name and a unique link for your store.'),
+                                },
+                                {
+                                    title: t('Make it yours'),
+                                    desc: t('Pick your language, currency, theme and contact details.'),
+                                },
+                                {
+                                    title: t('Start selling'),
+                                    desc: t('Share your store link and take orders through WhatsApp.'),
+                                },
+                            ].map((item, i) => (
+                                <div
+                                    key={i}
+                                    className="onboarding-stagger flex items-start gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur"
                                 >
-                                    <Smartphone className="h-3.5 w-3.5" />
-                                    {t('Phone')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setDeviceView('desktop')}
-                                    className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 ${
-                                        deviceView === 'desktop' ? 'bg-white text-gray-900 shadow' : 'text-white/80 hover:text-white'
-                                    }`}
-                                >
-                                    <Monitor className="h-3.5 w-3.5" />
-                                    {t('Desktop')}
-                                </button>
-                            </div>
-
-                            <div className="relative">
-                                <div className="absolute -inset-6 rounded-[3rem] bg-white/20 blur-3xl" />
-
-                                {deviceView === 'phone' ? (
-                                    <div className="relative">
-                                        {/* Side buttons */}
-                                        <div className="absolute -start-[3px] top-24 h-10 w-[3px] rounded-l bg-gray-900/80" />
-                                        <div className="absolute -start-[3px] top-40 h-6 w-[3px] rounded-l bg-gray-900/80" />
-                                        <div className="absolute -end-[3px] top-32 h-14 w-[3px] rounded-r bg-gray-900/80" />
-                                        {/* Frame */}
-                                        <div className="relative overflow-hidden rounded-[2.8rem] border-[8px] border-gray-900 bg-gray-900 shadow-2xl">
-                                            {/* Dynamic island */}
-                                            <div className="absolute left-1/2 top-2.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
-                                            {/* Real mobile store render (375px viewport) scaled to the phone screen */}
-                                            <div className="relative pointer-events-none bg-white [zoom:0.62] xl:[zoom:0.66]">
-                                                {!previewLoaded && !previewFailed && (
-                                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100">
-                                                        <Loader2 className="h-8 w-8 animate-spin" style={{ color: primaryColor }} />
-                                                    </div>
-                                                )}
-                                                {previewFailed && (
-                                                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-100 p-6 text-center">
-                                                        <Monitor className="h-8 w-8 text-gray-300" />
-                                                        <p className="text-xs text-gray-500">
-                                                            {t('Could not load the live preview.')}
-                                                        </p>
-                                                        <a
-                                                            href={previewUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white"
-                                                        >
-                                                            <ExternalLink className="h-3.5 w-3.5" />
-                                                            {t('Open in new tab')}
-                                                        </a>
-                                                    </div>
-                                                )}
-                                                <iframe
-                                                    src={previewUrl}
-                                                    title={t('Live store preview')}
-                                                    loading="lazy"
-                                                    onLoad={() => {
-                                                        setPreviewLoaded(true);
-                                                        setPreviewFailed(false);
-                                                        if (previewTimer.current) clearTimeout(previewTimer.current);
-                                                    }}
-                                                    className="block h-[812px] w-[375px] border-0 bg-white"
-                                                />
-                                            </div>
-                                            {/* Home indicator */}
-                                            <div className="absolute bottom-2 left-1/2 h-1 w-20 -translate-x-1/2 rounded-full bg-gray-900/70" />
-                                        </div>
-                                        {/* Floating WhatsApp bubble */}
-                                        <a
-                                            href={demoData?.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="absolute bottom-9 end-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl animate-pulse"
-                                            title={t('Open real store')}
-                                        >
-                                            <MessageCircle className="h-5 w-5" />
-                                        </a>
+                                    <span
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold"
+                                        style={{ color: primaryColor }}
+                                    >
+                                        {i + 1}
+                                    </span>
+                                    <div className="min-w-0">
+                                        <div className="text-sm font-semibold text-white">{item.title}</div>
+                                        <div className="mt-0.5 text-xs leading-relaxed text-white/70">{item.desc}</div>
                                     </div>
-                                ) : (
-                                    <div className="relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl">
-                                        {/* Browser chrome */}
-                                        <div className="flex items-center gap-2.5 border-b border-gray-200 bg-gray-100 px-3 py-2">
-                                            <span className="flex shrink-0 gap-1.5">
-                                                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                                                <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-                                                <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-                                            </span>
-                                            <div className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md bg-white px-2.5 py-1 text-[10px] text-gray-600">
-                                                <Lock className="h-2.5 w-2.5 shrink-0 text-emerald-600" />
-                                                <span className="truncate" dir="ltr">{previewUrl}</span>
-                                            </div>
-                                        </div>
-                                        {/* Tab */}
-                                        <div className="flex items-center gap-1 border-b border-gray-200 bg-gray-50 px-3 pt-1.5">
-                                            <span className="flex items-center gap-1.5 rounded-t border border-b-0 border-gray-200 bg-white px-3 py-1.5 text-[10px] font-medium text-gray-700">
-                                                <Store className="h-3 w-3" style={{ color: accent }} />
-                                                {demoData?.name || ''}
-                                            </span>
-                                        </div>
-                                        {/* Real desktop store render (1200px viewport) scaled to the browser window */}
-                                        <div className="relative pointer-events-none overflow-hidden [zoom:0.32] lg:[zoom:0.38] xl:[zoom:0.45] 2xl:[zoom:0.5]">
-                                            {!previewLoaded && !previewFailed && (
-                                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100">
-                                                    <Loader2 className="h-8 w-8 animate-spin" style={{ color: primaryColor }} />
-                                                </div>
-                                            )}
-                                            {previewFailed && (
-                                                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-100 p-6 text-center">
-                                                    <Monitor className="h-10 w-10 text-gray-300" />
-                                                    <p className="text-sm text-gray-500">
-                                                        {t('Could not load the live preview.')}
-                                                    </p>
-                                                    <a
-                                                        href={previewUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-3.5 py-2 text-xs font-medium text-white"
-                                                    >
-                                                        <ExternalLink className="h-3.5 w-3.5" />
-                                                        {t('Open in new tab')}
-                                                    </a>
-                                                </div>
-                                            )}
-                                            <iframe
-                                                src={previewUrl}
-                                                title={t('Live store preview')}
-                                                loading="lazy"
-                                                onLoad={() => {
-                                                    setPreviewLoaded(true);
-                                                    setPreviewFailed(false);
-                                                    if (previewTimer.current) clearTimeout(previewTimer.current);
-                                                }}
-                                                className="block h-[800px] w-[1200px] border-0 bg-white"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <a
-                                href={demoData?.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-white/80 transition-colors hover:text-white"
-                            >
-                                <ExternalLink className="h-3.5 w-3.5" />
-                                {t('Open real store')}
-                            </a>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Feature chips */}
@@ -643,12 +468,20 @@ export default function Onboarding({
                                 <span className="text-lg font-bold text-gray-900">{titleText}</span>
                             )}
                         </div>
-                        <div className="ms-auto text-xs font-medium text-gray-400">
-                            {Math.round(progress)}%
+                        <div className="ms-auto flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
+                            <span
+                                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                                style={{ backgroundColor: primaryColor }}
+                            >
+                                {step + 1}
+                            </span>
+                            <span className="text-xs font-semibold text-gray-500">
+                                / {STEP_META.length}
+                            </span>
                         </div>
                     </div>
 
-                    <div className="flex flex-1 flex-col justify-center px-4 pb-10 pt-2">
+                    <div className="flex flex-1 flex-col justify-start px-4 pb-10 pt-2 md:justify-center">
                         <div className="mx-auto w-full max-w-xl">
                             {/* Step indicators */}
                             <div className="mb-5 overflow-x-auto scrollbar-custom">
@@ -667,21 +500,33 @@ export default function Onboarding({
                                                         style={i <= step ? { backgroundColor: primaryColor } : undefined}
                                                     />
                                                 )}
-                                                <div
-                                                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] transition-all duration-300 sm:h-8 sm:w-8 ${
-                                                        isDone || isCurrent
-                                                            ? 'scale-105 text-white'
-                                                            : 'border border-gray-300 text-gray-400'
-                                                    } ${isCurrent ? 'ring-4' : ''}`}
-style={{
-                                                    backgroundColor: isDone || isCurrent ? primaryColor : undefined,
-                                                    ...(isCurrent
-                                                        ? ({ ['--tw-ring-color']: `${primaryColor}40` } as CSSProperties)
-                                                        : {}),
-                                                }}
-                                                >
-                                                    {isDone ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
-                                                </div>
+                                                {isDone ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setStep(i)}
+                                                        className="flex h-7 w-7 items-center justify-center rounded-full text-white transition-transform duration-300 hover:scale-110 sm:h-8 sm:w-8"
+                                                        style={{ backgroundColor: primaryColor }}
+                                                        aria-label={t('Go back to previous step')}
+                                                    >
+                                                        <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                                    </button>
+                                                ) : (
+                                                    <div
+                                                        className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] transition-all duration-300 sm:h-8 sm:w-8 ${
+                                                            isCurrent
+                                                                ? 'scale-105 text-white ring-4'
+                                                                : 'border border-gray-300 text-gray-400'
+                                                        }`}
+                                                        style={{
+                                                            backgroundColor: isCurrent ? primaryColor : undefined,
+                                                            ...(isCurrent
+                                                                ? ({ ['--tw-ring-color']: `${primaryColor}40` } as CSSProperties)
+                                                                : {}),
+                                                        }}
+                                                    >
+                                                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -709,6 +554,10 @@ style={{
                             </div>
 
                             <Card className="relative overflow-hidden rounded-2xl border-gray-100 shadow-xl shadow-gray-200/70">
+                                <span
+                                    className="absolute inset-x-0 top-0 h-1"
+                                    style={{ background: `linear-gradient(90deg, ${primaryColor}b3, ${primaryColor})` }}
+                                />
                                 {generalError && (
                                     <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-6 py-3 text-sm font-medium text-red-700">
                                         <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
@@ -913,8 +762,14 @@ style={{
                                                     </div>
                                                 </div>
 
+                                                {/* Contact */}
+                                                <div className="mb-3 flex items-center gap-2">
+                                                    <MessageCircle className="h-4 w-4" style={{ color: primaryColor }} />
+                                                    <span className="text-sm font-semibold text-gray-700">{t('Contact')}</span>
+                                                    <span className="h-px flex-1 bg-gray-100" />
+                                                </div>
                                                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                                    <div className="sm:col-span-1">
+                                                    <div>
                                                         <Label htmlFor="store_email" className="text-sm font-medium">
                                                             {t('Store email')}
                                                         </Label>
@@ -935,7 +790,7 @@ style={{
                                                         )}
                                                     </div>
 
-                                                    <div className="sm:col-span-1">
+                                                    <div>
                                                         <Label className="text-sm font-medium">
                                                             {t('WhatsApp number')}
                                                         </Label>
@@ -975,7 +830,15 @@ style={{
                                                             <p className="mt-2 text-sm text-red-600">{errors.whatsapp_phone}</p>
                                                         )}
                                                     </div>
+                                                </div>
 
+                                                {/* About your store */}
+                                                <div className="mb-3 mt-6 flex items-center gap-2">
+                                                    <Store className="h-4 w-4" style={{ color: primaryColor }} />
+                                                    <span className="text-sm font-semibold text-gray-700">{t('About your store')}</span>
+                                                    <span className="h-px flex-1 bg-gray-100" />
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                                                     <div className="sm:col-span-2">
                                                         <Label htmlFor="welcome_message" className="text-sm font-medium">
                                                             {t('Welcome message')}
@@ -1024,7 +887,15 @@ style={{
                                                             <p className="mt-2 text-sm text-red-600">{errors.logo}</p>
                                                         )}
                                                     </div>
+                                                </div>
 
+                                                {/* Location */}
+                                                <div className="mb-3 mt-6 flex items-center gap-2">
+                                                    <MapPin className="h-4 w-4" style={{ color: primaryColor }} />
+                                                    <span className="text-sm font-semibold text-gray-700">{t('Location (optional)')}</span>
+                                                    <span className="h-px flex-1 bg-gray-100" />
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                                                     <div className="sm:col-span-2">
                                                         <Label htmlFor="address" className="text-sm font-medium">
                                                             {t('Address')}
@@ -1075,7 +946,15 @@ style={{
                                                             <p className="mt-2 text-sm text-red-600">{errors.country}</p>
                                                         )}
                                                     </div>
+                                                </div>
 
+                                                {/* Preferences */}
+                                                <div className="mb-3 mt-6 flex items-center gap-2">
+                                                    <Globe className="h-4 w-4" style={{ color: primaryColor }} />
+                                                    <span className="text-sm font-semibold text-gray-700">{t('Preferences')}</span>
+                                                    <span className="h-px flex-1 bg-gray-100" />
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                                                     <div className="sm:col-span-2">
                                                         <div className="flex items-center justify-between gap-3">
                                                             <Label htmlFor="timezone" className="text-sm font-medium">
@@ -1092,19 +971,22 @@ style={{
                                                                 </button>
                                                             )}
                                                         </div>
-                                                        <select
-                                                            id="timezone"
-                                                            value={data.timezone}
-                                                            onChange={(e) => setData('timezone', e.target.value)}
-                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
-                                                            dir="ltr"
-                                                        >
-                                                            {Object.entries(timezones).map(([value, label]) => (
-                                                                <option key={value} value={value}>
-                                                                    {label}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                        <div className="relative mt-2">
+                                                            <select
+                                                                id="timezone"
+                                                                value={data.timezone}
+                                                                onChange={(e) => setData('timezone', e.target.value)}
+                                                                className="h-12 w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-3 pe-9 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                                                dir="ltr"
+                                                            >
+                                                                {Object.entries(timezones).map(([value, label]) => (
+                                                                    <option key={value} value={value}>
+                                                                        {label}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <ChevronDown className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        </div>
                                                         {errors.timezone && (
                                                             <p className="mt-2 text-sm text-red-600">{errors.timezone}</p>
                                                         )}
@@ -1436,8 +1318,8 @@ style={{
 
                                     {/* Footer navigation */}
                                     {stepKey !== 'welcome' && (
-                                        <div className="mt-8 flex items-center justify-between border-t border-gray-100 pt-6">
-                                            <Button type="button" variant="ghost" onClick={back} className="gap-1">
+                                        <div className="mt-8 flex items-center justify-between gap-3 border-t border-gray-100 pt-6">
+                                            <Button type="button" variant="ghost" onClick={back} className="h-11 gap-1 rounded-xl px-4">
                                                 <ChevronRight className="h-4 w-4" />
                                                 {t('Back')}
                                             </Button>
@@ -1446,7 +1328,7 @@ style={{
                                                 <Button
                                                     onClick={submit}
                                                     disabled={processing}
-                                                    className="gap-2 hover:-translate-y-0.5 transition-transform"
+                                                    className="h-11 gap-2 rounded-xl px-6 hover:-translate-y-0.5 transition-transform"
                                                     style={{ backgroundColor: primaryColor }}
                                                 >
                                                     {processing ? (
@@ -1461,7 +1343,7 @@ style={{
                                                     type="button"
                                                     onClick={next}
                                                     disabled={!canProceed()}
-                                                    className="gap-1 hover:-translate-y-0.5 transition-transform"
+                                                    className="h-11 gap-1 rounded-xl px-6 hover:-translate-y-0.5 transition-transform"
                                                     style={{ backgroundColor: primaryColor }}
                                                 >
                                                     {t('Next')}

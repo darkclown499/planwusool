@@ -4219,5 +4219,14 @@
     "Invite friends and earn commission": "ادعُ أصدقاءك واربح عمولة",
     "Get more ideas on how to get started": "اكتشف أفكارًا إضافية للبدء",
     "Your store is saved as a draft and is not public yet. You can publish it anytime from the store settings.": "متجرك محفوظ كمسودة وغير عام للجمهور بعد. يمكنك نشره في أي وقت من إعدادات المتجر.",
+    "Create your store": "أنشئ متجرك",
+    "Choose a name and a unique link for your store.": "اختر اسمًا ورابطًا فريدًا لمتجرك.",
+    "Make it yours": "خصّصه على ذوقك",
+    "Pick your language, currency, theme and contact details.": "اختر لغتك وعملتك وثيمك وبيانات التواصل.",
+    "Start selling": "ابدأ البيع",
+    "Share your store link and take orders through WhatsApp.": "شارك رابط متجرك واستقبل الطلبات عبر واتساب.",
+    "About your store": "نبذة عن المتجر",
+    "Location (optional)": "الموقع (اختياري)",
+    "Go back to previous step": "العودة إلى خطوة سابقة",
     "🛍️ Order {order_no} from {store_name}\\nCustomer: {customer_name}\\nTotal: {final_total}\\n\\nItems:\\n{item_variable}": "️ طلب {رقم الطلب} من {اسم المتجر}\\nعميل: {اسم العميل}\\nمجموع: {مجموع_نهائي}\\n\\nالعناصر:\\n{العناصر_متغيرة}"
 }
