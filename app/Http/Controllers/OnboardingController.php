@@ -42,33 +42,31 @@ class OnboardingController extends Controller
             ];
         })->values();
 
-        $plans = Plan::where('is_plan_enable', 1)->orderBy('price')->get()->map(function ($plan) {
-            return [
-                'id' => $plan->id,
-                'name' => $plan->name,
-                'price' => (float) $plan->price,
-                'duration' => $plan->duration,
-                'description' => $plan->description,
-                'max_stores' => $plan->max_stores,
-                'max_products_per_store' => $plan->max_products_per_store,
-                'is_recommended' => (bool) $plan->is_recommended,
-            ];
-        })->values();
-
         return Inertia::render('onboarding', [
             'demoStoreUrl' => $demoStoreUrl,
             'storeDomain' => config('app.store_domain', 'localhost'),
             'currencies' => $currencies,
-            'plans' => $plans,
+            'timezones' => config('timezones', []),
             'demoData' => $this->demoStoreData($demoStoreService, $demoStoreUrl),
-            'referralCode' => $user->referral_code,
-            'referralUrl' => $user->referral_code ? route('register', ['ref' => $user->referral_code]) : null,
             'defaults' => [
                 'name' => $user->name,
                 'storeName' => $store->name,
                 'language' => in_array($user->lang, ['ar', 'en']) ? $user->lang : 'ar',
-                'currency' => $configuration['default_currency'] ?? 'ils',
+                'currency' => strtoupper($configuration['default_currency'] ?? 'ils'),
                 'theme' => $store->getTemplateSlug(),
+                'storeEmail' => $configuration['email'] ?? $user->email,
+                'storeDescription' => $configuration['store_description'] ?? '',
+                'welcomeMessage' => $configuration['welcome_message'] ?? '',
+                'whatsappEnabled' => (bool) ($configuration['whatsapp_widget_enabled'] ?? false),
+                'whatsappPhone' => $configuration['whatsapp_widget_phone'] ?? '',
+                'address' => $configuration['address'] ?? '',
+                'city' => $configuration['city'] ?? '',
+                'country' => $configuration['country'] ?? '',
+                'logo' => $configuration['logo'] ?? '',
+                'timezone' => ($configuration['timezone'] && $configuration['timezone'] !== 'utc')
+                    ? $configuration['timezone']
+                    : (getSetting('defaultTimezone') ?: 'UTC'),
+                'publishStore' => (bool) ($configuration['store_status'] ?? true),
             ],
         ]);
     }
@@ -130,6 +128,18 @@ class OnboardingController extends Controller
             'language' => ['required', 'in:ar,en'],
             'currency' => ['required', 'exists:currencies,code'],
             'theme' => ['required', 'string', 'max:100'],
+            'store_email' => ['nullable', 'email', 'max:255'],
+            'store_description' => ['nullable', 'string', 'max:1000'],
+            'welcome_message' => ['nullable', 'string', 'max:500'],
+            'whatsapp_enabled' => ['boolean'],
+            'whatsapp_phone' => ['nullable', 'string', 'regex:/^\+[1-9]\d{1,14}$/'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'logo' => ['nullable', 'string', 'max:255'],
+            'timezone' => ['required', 'string', 'max:100'],
+            'publish_store' => ['boolean'],
+            'import_demo_products' => ['boolean'],
         ]);
 
         $store = $this->resolveStore($user);
@@ -171,6 +181,7 @@ class OnboardingController extends Controller
             'currency_decimals' => 2,
             'decimal_separator' => '.',
             'thousands_separator' => ',',
+            'defaultTimezone' => $request->timezone,
         ];
 
         foreach ($settingsKeys as $key => $value) {
@@ -179,12 +190,108 @@ class OnboardingController extends Controller
             }
         }
 
+        // Store-level store details / contact settings
+        StoreConfiguration::setConfiguration($store->id, 'email', $request->store_email ?? '');
+        StoreConfiguration::setConfiguration($store->id, 'store_description', $request->store_description ?? '');
+        StoreConfiguration::setConfiguration($store->id, 'welcome_message', $request->welcome_message ?? '');
+        StoreConfiguration::setConfiguration($store->id, 'address', $request->address ?? '');
+        StoreConfiguration::setConfiguration($store->id, 'city', $request->city ?? '');
+        StoreConfiguration::setConfiguration($store->id, 'country', $request->country ?? '');
+        StoreConfiguration::setConfiguration($store->id, 'logo', $request->logo ?? '');
+
+        $whatsappEnabled = $request->boolean('whatsapp_enabled');
+        StoreConfiguration::setConfiguration($store->id, 'whatsapp_widget_enabled', $whatsappEnabled ? 'true' : 'false');
+        if ($request->whatsapp_phone) {
+            StoreConfiguration::setConfiguration($store->id, 'whatsapp_widget_phone', $request->whatsapp_phone);
+        }
+
+        // Regional + publish settings
+        StoreConfiguration::setConfiguration($store->id, 'timezone', $request->timezone);
+        StoreConfiguration::setConfiguration(
+            $store->id,
+            'store_status',
+            $request->boolean('publish_store') ? 'true' : 'false'
+        );
+
+        if ($request->boolean('import_demo_products')) {
+            $this->importDemoData($store);
+        }
+
         $user->name = $request->name;
         $user->lang = $request->language;
+
+        // Assign the default (free) plan so the user lands on the dashboard
+        // directly instead of being bounced to the plans page.
+        if (!$user->plan_id) {
+            $defaultPlan = Plan::getDefaultPlan();
+            if ($defaultPlan) {
+                $user->plan_id = $defaultPlan->id;
+                $user->plan_is_active = 1;
+            }
+        }
+
         $user->onboarded_at = now();
         $user->save();
 
-        return redirect()->route('dashboard');
+        // Show a short "store ready" confirmation page instead of jumping
+        // straight into the dashboard.
+        return Inertia::render('onboarding/success', [
+            'storeName' => $store->name,
+            'storeUrl' => $store->getStoreUrl(),
+            'publishStore' => $request->boolean('publish_store'),
+            'referralCode' => $user->referral_code,
+            'referralUrl' => $user->referral_code ? route('register', ['ref' => $user->referral_code]) : null,
+        ]);
+    }
+
+    /**
+     * Clone the demo store categories and products into the new store so a
+     * fresh merchant starts with a real catalog instead of an empty store.
+     */
+    private function importDemoData(Store $store): void
+    {
+        $demo = app(DemoStoreService::class)->ensureDemoStore();
+
+        $categoryMap = [];
+
+        Category::where('store_id', $demo->id)
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->get()
+            ->each(function ($category) use (&$categoryMap, $store) {
+                $new = Category::create([
+                    'name' => $category->name,
+                    'slug' => Category::generateUniqueSlug($category->name, $store->id),
+                    'description' => $category->description,
+                    'image' => $category->image,
+                    'parent_id' => null,
+                    'store_id' => $store->id,
+                    'sort_order' => $category->sort_order,
+                    'is_active' => true,
+                ]);
+                $categoryMap[$category->id] = $new->id;
+            });
+
+        Product::where('store_id', $demo->id)
+            ->orderBy('id')
+            ->get()
+            ->each(function ($product) use (&$categoryMap, $store) {
+                Product::create([
+                    'name' => $product->name,
+                    'sku' => $product->sku ?: 'SKU-' . $product->id,
+                    'description' => $product->description,
+                    'details' => $product->details,
+                    'price' => $product->price,
+                    'sale_price' => $product->sale_price,
+                    'stock' => $product->stock,
+                    'cover_image' => $product->cover_image,
+                    'images' => $product->images,
+                    'variants' => $product->variants,
+                    'category_id' => $categoryMap[$product->category_id] ?? null,
+                    'store_id' => $store->id,
+                    'is_active' => true,
+                ]);
+            });
     }
 
     /**

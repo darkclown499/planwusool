@@ -1,6 +1,6 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import ReactCountryFlag from 'react-country-flag';
 import {
     Banknote,
@@ -9,18 +9,20 @@ import {
     ChevronLeft,
     ChevronRight,
     Coins,
-    Copy,
+    Contact,
     CreditCard,
     ExternalLink,
     Globe,
     Languages,
     Loader2,
     Lock,
+    Mail,
+    MapPin,
     MessageCircle,
     Monitor,
     Palette,
     PartyPopper,
-    Share2,
+    Phone,
     ShieldCheck,
     ShoppingBag,
     Smartphone,
@@ -34,13 +36,14 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { getStoreThemes } from '@/data/storeThemes';
 import { TemplatePreviewCard } from '@/templates/TemplatePreviewCard';
+import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
-import { LanguageSwitcher } from '@/components/language-switcher';
 
 interface Currency {
     code: string;
@@ -48,28 +51,28 @@ interface Currency {
     name: string;
 }
 
-interface Plan {
-    id: number;
-    name: string;
-    price: number;
-    duration: string;
-    description: string | null;
-    is_recommended: boolean;
-}
-
 interface OnboardingProps {
     demoStoreUrl: string;
     storeDomain: string;
     currencies: Currency[];
-    plans: Plan[];
-    referralCode: string | null;
-    referralUrl: string | null;
+    timezones: Record<string, string>;
     defaults: {
         name: string;
         storeName: string;
         language: string;
         currency: string;
         theme: string;
+        storeEmail: string;
+        storeDescription: string;
+        welcomeMessage: string;
+        whatsappEnabled: boolean;
+        whatsappPhone: string;
+        address: string;
+        city: string;
+        country: string;
+        logo: string;
+        timezone: string;
+        publishStore: boolean;
     };
     demoData: {
         name: string;
@@ -94,12 +97,34 @@ const STEP_META: { key: string; icon: LucideIcon }[] = [
     { key: 'welcome', icon: Sparkles },
     { key: 'name', icon: User },
     { key: 'store', icon: Store },
+    { key: 'details', icon: Contact },
     { key: 'language', icon: Languages },
     { key: 'currency', icon: Coins },
     { key: 'theme', icon: Palette },
-    { key: 'plans', icon: CreditCard },
     { key: 'confirm', icon: CheckCircle2 },
 ];
+
+// Maps every form field to the step index that owns it so we can jump the
+// wizard to the correct step when the server rejects the submission.
+const FIELD_STEP: Record<string, number> = {
+    name: 1,
+    store_name: 2,
+    store_subdomain: 2,
+    store_email: 3,
+    store_description: 3,
+    welcome_message: 3,
+    whatsapp_enabled: 3,
+    whatsapp_phone: 3,
+    address: 3,
+    city: 3,
+    country: 3,
+    logo: 3,
+    timezone: 3,
+    publish_store: 3,
+    language: 4,
+    currency: 5,
+    theme: 6,
+};
 
 const CONFETTI_COLORS = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ec4899', '#8b5cf6'];
 
@@ -115,13 +140,14 @@ function slugify(value: string): string {
     return latin || '';
 }
 
+const WHATSAPP_PATTERN = /^\+[1-9]\d{1,14}$/;
+const EMAIL_PATTERN = /\S+@\S+\.\S+/;
+
 export default function Onboarding({
     demoStoreUrl,
     storeDomain,
     currencies,
-    plans,
-    referralCode,
-    referralUrl,
+    timezones,
     defaults,
     demoData,
 }: OnboardingProps) {
@@ -134,16 +160,33 @@ export default function Onboarding({
         name: defaults.name || '',
         store_name: defaults.storeName || '',
         store_subdomain: '',
+        store_email: defaults.storeEmail || '',
+        store_description: defaults.storeDescription || '',
+        welcome_message: defaults.welcomeMessage || '',
+        whatsapp_enabled: defaults.whatsappEnabled || false,
+        whatsapp_phone: defaults.whatsappPhone || '',
+        address: defaults.address || '',
+        city: defaults.city || '',
+        country: defaults.country || '',
+        logo: defaults.logo || '',
+        timezone: defaults.timezone || 'UTC',
+        publish_store: defaults.publishStore !== undefined ? defaults.publishStore : true,
+        import_demo_products: true,
         language: defaults.language || 'ar',
-        currency: defaults.currency || 'ils',
+        currency: defaults.currency || 'ILS',
         theme: defaults.theme || 'basic',
     });
 
     const [step, setStep] = useState(0);
     const [deviceView, setDeviceView] = useState<'phone' | 'desktop'>('phone');
-    const [copied, setCopied] = useState(false);
     const [checking, setChecking] = useState(false);
     const [availability, setAvailability] = useState<{ available: boolean; message: string } | null>(null);
+    const [previewLoaded, setPreviewLoaded] = useState(false);
+    const [previewFailed, setPreviewFailed] = useState(false);
+    const [generalError, setGeneralError] = useState<string | null>(null);
+
+    const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const previewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const themes = getStoreThemes();
     const stepKey = STEP_META[step].key;
@@ -151,10 +194,13 @@ export default function Onboarding({
     const selectedTheme = themes.find((t) => t.id === data.theme);
     const accent = selectedTheme?.primaryColor || THEME_ACCENT[data.theme] || primaryColor;
 
-    const previewUrl = useMemo(
-        () => (stepKey === 'theme' ? `${demoStoreUrl}?theme=${encodeURIComponent(data.theme)}` : demoStoreUrl),
-        [demoStoreUrl, stepKey, data.theme]
-    );
+    // The demo store preview unlocks all themes when ?preview=1 is present, so
+    // premium templates render cleanly without any "upgrade required" blocks.
+    const previewUrl = useMemo(() => {
+        const base = stepKey === 'theme' ? `${demoStoreUrl}?theme=${encodeURIComponent(data.theme)}` : demoStoreUrl;
+        const sep = base.includes('?') ? '&' : '?';
+        return `${base}${sep}preview=1`;
+    }, [demoStoreUrl, stepKey, data.theme]);
 
     const confettiPieces = useMemo(
         () =>
@@ -167,7 +213,26 @@ export default function Onboarding({
         []
     );
 
+    // Keep the loading overlay in sync whenever the preview iframe reloads,
+    // and fall back gracefully if the preview cannot load in time.
+    useEffect(() => {
+        setPreviewLoaded(false);
+        setPreviewFailed(false);
+        if (previewTimer.current) clearTimeout(previewTimer.current);
+        previewTimer.current = setTimeout(() => {
+            setPreviewFailed(true);
+        }, 10000);
+        return () => {
+            if (previewTimer.current) clearTimeout(previewTimer.current);
+        };
+    }, [previewUrl, deviceView]);
+
+    // Auto-suggest a subdomain from the store name, but never overwrite the
+    // value the user typed manually.
     const updateSubdomainFromStoreName = (name: string) => {
+        if (data.store_subdomain.trim() !== '') {
+            return;
+        }
         const slug = slugify(name);
         if (slug) {
             setData('store_subdomain', slug);
@@ -190,8 +255,10 @@ export default function Onboarding({
                 params: { subdomain: data.store_subdomain },
             });
             setAvailability(result);
-        } catch (e: any) {
-            const message = e?.response?.data?.errors?.subdomain?.[0];
+            setGeneralError(null);
+        } catch (e: unknown) {
+            const err = e as { response?: { data?: { errors?: { subdomain?: string[] } } } };
+            const message = err?.response?.data?.errors?.subdomain?.[0];
             setAvailability({
                 available: false,
                 message:
@@ -203,20 +270,24 @@ export default function Onboarding({
         }
     };
 
+    // Debounced availability check while typing the subdomain.
+    useEffect(() => {
+        if (stepKey !== 'store') return;
+        const sub = data.store_subdomain.trim();
+        if (!sub || sub.length < 3) return;
+        if (checkTimeout.current) clearTimeout(checkTimeout.current);
+        checkTimeout.current = setTimeout(() => {
+            runAvailabilityCheck();
+        }, 500);
+        return () => {
+            if (checkTimeout.current) clearTimeout(checkTimeout.current);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data.store_subdomain, stepKey]);
+
     const selectLanguage = (code: string) => {
         setData('language', code);
         i18n.changeLanguage(code);
-    };
-
-    const copyReferral = async () => {
-        if (!referralUrl) return;
-        try {
-            await navigator.clipboard.writeText(referralUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (e) {
-            setCopied(false);
-        }
     };
 
     const canProceed = () => {
@@ -224,7 +295,23 @@ export default function Onboarding({
             case 'name':
                 return data.name.trim().length > 0;
             case 'store':
-                return data.store_name.trim().length > 0 && data.store_subdomain.trim().length > 0;
+                return (
+                    data.store_name.trim().length > 0 &&
+                    data.store_subdomain.trim().length > 0 &&
+                    availability !== null &&
+                    availability.available
+                );
+            case 'details':
+                if (data.whatsapp_enabled && data.whatsapp_phone.trim() !== '' && !WHATSAPP_PATTERN.test(data.whatsapp_phone.trim())) {
+                    return false;
+                }
+                if (data.whatsapp_enabled && data.whatsapp_phone.trim() === '') {
+                    return false;
+                }
+                if (data.store_email.trim() !== '' && !EMAIL_PATTERN.test(data.store_email.trim())) {
+                    return false;
+                }
+                return true;
             case 'language':
                 return data.language === 'ar' || data.language === 'en';
             case 'currency':
@@ -237,7 +324,10 @@ export default function Onboarding({
     };
 
     const next = () => {
-        if (stepKey === 'store' && availability && !availability.available) {
+        if (stepKey === 'store' && (!availability || !availability.available)) {
+            return;
+        }
+        if (stepKey === 'details' && !canProceed()) {
             return;
         }
         if (step < STEP_META.length - 1) {
@@ -252,8 +342,53 @@ export default function Onboarding({
     };
 
     const submit = () => {
-        post(route('onboarding.store'));
+        setGeneralError(null);
+        post(route('onboarding.store'), {
+            onError: (errs) => {
+                const keys = Object.keys(errs);
+                if (keys.length) {
+                    const idx = FIELD_STEP[keys[0]];
+                    if (typeof idx === 'number') {
+                        setStep(idx);
+                    }
+                }
+                setGeneralError(Object.values(errs)[0] as string);
+            },
+        });
     };
+
+    // Keyboard navigation: Enter advances, arrows move back/forward.
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (processing) return;
+            if (e.key !== 'Enter' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            if ((e.target as HTMLElement)?.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'Enter') {
+                if (stepKey === 'welcome') {
+                    setStep(1);
+                    return;
+                }
+                if (stepKey === 'confirm') {
+                    submit();
+                    return;
+                }
+                if (e.key === 'Enter' && canProceed()) {
+                    next();
+                }
+                return;
+            }
+
+            if (stepKey === 'welcome' || stepKey === 'confirm') return;
+            if (e.key === 'ArrowRight') {
+                next();
+            } else if (e.key === 'ArrowLeft') {
+                back();
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    });
 
     const langOptions = [
         { code: 'ar', name: t('Arabic'), countryCode: 'SA' },
@@ -265,6 +400,8 @@ export default function Onboarding({
         { icon: Palette, label: t('Professional themes') },
         { icon: CreditCard, label: t('Multiple payment gateways') },
     ];
+
+    const isStoreNameNonLatin = data.store_name.trim() !== '' && slugify(data.store_name) === '';
 
     return (
         <div className="min-h-screen bg-white relative font-sans">
@@ -360,11 +497,38 @@ export default function Onboarding({
                                             {/* Dynamic island */}
                                             <div className="absolute left-1/2 top-2.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
                                             {/* Real mobile store render (375px viewport) scaled to the phone screen */}
-                                            <div className="pointer-events-none bg-white [zoom:0.62] xl:[zoom:0.66]">
+                                            <div className="relative pointer-events-none bg-white [zoom:0.62] xl:[zoom:0.66]">
+                                                {!previewLoaded && !previewFailed && (
+                                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100">
+                                                        <Loader2 className="h-8 w-8 animate-spin" style={{ color: primaryColor }} />
+                                                    </div>
+                                                )}
+                                                {previewFailed && (
+                                                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-100 p-6 text-center">
+                                                        <Monitor className="h-8 w-8 text-gray-300" />
+                                                        <p className="text-xs text-gray-500">
+                                                            {t('Could not load the live preview.')}
+                                                        </p>
+                                                        <a
+                                                            href={previewUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white"
+                                                        >
+                                                            <ExternalLink className="h-3.5 w-3.5" />
+                                                            {t('Open in new tab')}
+                                                        </a>
+                                                    </div>
+                                                )}
                                                 <iframe
                                                     src={previewUrl}
                                                     title={t('Live store preview')}
                                                     loading="lazy"
+                                                    onLoad={() => {
+                                                        setPreviewLoaded(true);
+                                                        setPreviewFailed(false);
+                                                        if (previewTimer.current) clearTimeout(previewTimer.current);
+                                                    }}
                                                     className="block h-[812px] w-[375px] border-0 bg-white"
                                                 />
                                             </div>
@@ -404,11 +568,38 @@ export default function Onboarding({
                                             </span>
                                         </div>
                                         {/* Real desktop store render (1200px viewport) scaled to the browser window */}
-                                        <div className="pointer-events-none overflow-hidden [zoom:0.32] lg:[zoom:0.38] xl:[zoom:0.45] 2xl:[zoom:0.5]">
+                                        <div className="relative pointer-events-none overflow-hidden [zoom:0.32] lg:[zoom:0.38] xl:[zoom:0.45] 2xl:[zoom:0.5]">
+                                            {!previewLoaded && !previewFailed && (
+                                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100">
+                                                    <Loader2 className="h-8 w-8 animate-spin" style={{ color: primaryColor }} />
+                                                </div>
+                                            )}
+                                            {previewFailed && (
+                                                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-gray-100 p-6 text-center">
+                                                    <Monitor className="h-10 w-10 text-gray-300" />
+                                                    <p className="text-sm text-gray-500">
+                                                        {t('Could not load the live preview.')}
+                                                    </p>
+                                                    <a
+                                                        href={previewUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-3.5 py-2 text-xs font-medium text-white"
+                                                    >
+                                                        <ExternalLink className="h-3.5 w-3.5" />
+                                                        {t('Open in new tab')}
+                                                    </a>
+                                                </div>
+                                            )}
                                             <iframe
                                                 src={previewUrl}
                                                 title={t('Live store preview')}
                                                 loading="lazy"
+                                                onLoad={() => {
+                                                    setPreviewLoaded(true);
+                                                    setPreviewFailed(false);
+                                                    if (previewTimer.current) clearTimeout(previewTimer.current);
+                                                }}
                                                 className="block h-[800px] w-[1200px] border-0 bg-white"
                                             />
                                         </div>
@@ -452,47 +643,49 @@ export default function Onboarding({
                                 <span className="text-lg font-bold text-gray-900">{titleText}</span>
                             )}
                         </div>
-                        <div className={step !== 0 ? 'lg:ms-auto' : 'ms-auto'}>
-                            <LanguageSwitcher />
+                        <div className="ms-auto text-xs font-medium text-gray-400">
+                            {Math.round(progress)}%
                         </div>
                     </div>
 
                     <div className="flex flex-1 flex-col justify-center px-4 pb-10 pt-2">
                         <div className="mx-auto w-full max-w-xl">
                             {/* Step indicators */}
-                            <div className="mb-5 flex items-center justify-center gap-1 sm:gap-1.5">
-                                {STEP_META.map((meta, i) => {
-                                    const Icon = meta.icon;
-                                    const isDone = i < step;
-                                    const isCurrent = i === step;
-                                    return (
-                                        <div key={meta.key} className="flex items-center gap-1 sm:gap-1.5">
-                                            {i > 0 && (
+                            <div className="mb-5 overflow-x-auto scrollbar-custom">
+                                <div className="mx-auto flex w-max items-center justify-center gap-1 sm:gap-1.5">
+                                    {STEP_META.map((meta, i) => {
+                                        const Icon = meta.icon;
+                                        const isDone = i < step;
+                                        const isCurrent = i === step;
+                                        return (
+                                            <div key={meta.key} className="flex items-center gap-1 sm:gap-1.5">
+                                                {i > 0 && (
+                                                    <div
+                                                        className={`h-0.5 rounded-full transition-all duration-500 sm:w-8 ${
+                                                            i <= step ? 'w-4 sm:w-8' : 'w-3 sm:w-4'
+                                                        } ${i <= step ? '' : 'bg-gray-200'}`}
+                                                        style={i <= step ? { backgroundColor: primaryColor } : undefined}
+                                                    />
+                                                )}
                                                 <div
-                                                    className={`h-0.5 rounded-full transition-all duration-500 sm:w-8 ${
-                                                        i <= step ? 'w-4 sm:w-8' : 'w-3 sm:w-4'
-                                                    } ${i <= step ? '' : 'bg-gray-200'}`}
-                                                    style={i <= step ? { backgroundColor: primaryColor } : undefined}
-                                                />
-                                            )}
-                                            <div
-                                                className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] transition-all duration-300 sm:h-8 sm:w-8 ${
-                                                    isDone || isCurrent
-                                                        ? 'scale-105 text-white'
-                                                        : 'border border-gray-300 text-gray-400'
-                                                } ${isCurrent ? 'ring-4' : ''}`}
-                                                style={{
+                                                    className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] transition-all duration-300 sm:h-8 sm:w-8 ${
+                                                        isDone || isCurrent
+                                                            ? 'scale-105 text-white'
+                                                            : 'border border-gray-300 text-gray-400'
+                                                    } ${isCurrent ? 'ring-4' : ''}`}
+style={{
                                                     backgroundColor: isDone || isCurrent ? primaryColor : undefined,
-                                                    ['--tw-ring-color' as any]: isCurrent
-                                                        ? `${primaryColor}40`
-                                                        : undefined,
+                                                    ...(isCurrent
+                                                        ? ({ ['--tw-ring-color']: `${primaryColor}40` } as CSSProperties)
+                                                        : {}),
                                                 }}
-                                            >
-                                                {isDone ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                                                >
+                                                    {isDone ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
 
                             {/* Progress bar */}
@@ -516,6 +709,12 @@ export default function Onboarding({
                             </div>
 
                             <Card className="relative overflow-hidden rounded-2xl border-gray-100 shadow-xl shadow-gray-200/70">
+                                {generalError && (
+                                    <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-6 py-3 text-sm font-medium text-red-700">
+                                        <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                                        {generalError}
+                                    </div>
+                                )}
                                 <CardContent className="p-6 sm:p-9">
                                     <div key={step} className="animate-fade-slide">
                                         {stepKey === 'welcome' && (
@@ -609,7 +808,14 @@ export default function Onboarding({
                                                     }}
                                                     placeholder={t('Store name')}
                                                     className="mt-2 h-12 rounded-xl"
+                                                    autoFocus
                                                 />
+                                                {isStoreNameNonLatin && (
+                                                    <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-600">
+                                                        <Globe className="h-3.5 w-3.5 shrink-0" />
+                                                        {t('Your store name uses a non-Latin script, so the subdomain could not be created automatically. Please type it manually below.')}
+                                                    </p>
+                                                )}
                                                 {errors.store_name && (
                                                     <p className="mt-2 text-sm text-red-600">{errors.store_name}</p>
                                                 )}
@@ -621,7 +827,7 @@ export default function Onboarding({
                                                     <p className="mt-1 mb-2 text-sm text-gray-500">
                                                         {t('Your store will be available at')}
                                                     </p>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                                         <div className="relative flex-1">
                                                             <Input
                                                                 id="store_subdomain"
@@ -630,6 +836,7 @@ export default function Onboarding({
                                                                     setData('store_subdomain', e.target.value.toLowerCase());
                                                                     setAvailability(null);
                                                                 }}
+                                                                placeholder="my-store"
                                                                 className="h-12 rounded-xl pe-16 text-sm"
                                                                 dir="ltr"
                                                             />
@@ -662,7 +869,11 @@ export default function Onboarding({
                                                                     : 'text-red-600'
                                                             }`}
                                                         >
-                                                            <Check className="h-4 w-4" />
+                                                            {availability.available ? (
+                                                                <Check className="h-4 w-4" />
+                                                            ) : (
+                                                                <span className="text-base leading-none">!</span>
+                                                            )}
                                                             {availability.message}
                                                         </p>
                                                     )}
@@ -678,6 +889,242 @@ export default function Onboarding({
                                                     >
                                                         <Globe className="h-3.5 w-3.5" />
                                                         {data.store_subdomain || 'your-store'}.{storeDomain}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {stepKey === 'details' && (
+                                            <div className="onboarding-stagger py-4">
+                                                <div className="mb-6 flex items-center gap-3">
+                                                    <div
+                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
+                                                        style={{ backgroundColor: `${primaryColor}1a` }}
+                                                    >
+                                                        <Contact className="h-5 w-5" style={{ color: primaryColor }} />
+                                                    </div>
+                                                    <div>
+                                                        <h2 className="text-xl font-bold text-gray-900">
+                                                            {t('Store details & contact')}
+                                                        </h2>
+                                                        <p className="text-sm text-gray-500">
+                                                            {t('Add the details customers need to reach you. You can edit them anytime.')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                                                    <div className="sm:col-span-1">
+                                                        <Label htmlFor="store_email" className="text-sm font-medium">
+                                                            {t('Store email')}
+                                                        </Label>
+                                                        <div className="relative mt-2">
+                                                            <Mail className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                            <Input
+                                                                id="store_email"
+                                                                type="email"
+                                                                value={data.store_email}
+                                                                onChange={(e) => setData('store_email', e.target.value)}
+                                                                placeholder="store@example.com"
+                                                                className="h-12 rounded-xl ps-9"
+                                                                dir="ltr"
+                                                            />
+                                                        </div>
+                                                        {errors.store_email && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.store_email}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="sm:col-span-1">
+                                                        <Label className="text-sm font-medium">
+                                                            {t('WhatsApp number')}
+                                                        </Label>
+                                                        <div className="relative mt-2">
+                                                            <Phone className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                            <Input
+                                                                id="whatsapp_phone"
+                                                                value={data.whatsapp_phone}
+                                                                onChange={(e) => setData('whatsapp_phone', e.target.value)}
+                                                                placeholder="+9705"
+                                                                className="h-12 rounded-xl ps-9"
+                                                                dir="ltr"
+                                                            />
+                                                        </div>
+                                                        <div className="mt-2 flex items-center gap-2">
+                                                            <Switch
+                                                                id="whatsapp_enabled"
+                                                                checked={data.whatsapp_enabled}
+                                                                onCheckedChange={(v) => setData('whatsapp_enabled', !!v)}
+                                                                className="data-[state=checked]:bg-[#25D366]"
+                                                            />
+                                                            <Label htmlFor="whatsapp_enabled" className="text-xs text-gray-500">
+                                                                {t('Show the WhatsApp button on my store')}
+                                                            </Label>
+                                                        </div>
+                                                        {data.whatsapp_enabled && data.whatsapp_phone.trim() !== '' && !WHATSAPP_PATTERN.test(data.whatsapp_phone.trim()) && (
+                                                            <p className="mt-2 text-sm text-red-600">
+                                                                {t('Use the international format, e.g. +9705...')}
+                                                            </p>
+                                                        )}
+                                                        {data.whatsapp_enabled && data.whatsapp_phone.trim() === '' && (
+                                                            <p className="mt-2 text-sm text-amber-600">
+                                                                {t('Enter a WhatsApp number to show the button.')}
+                                                            </p>
+                                                        )}
+                                                        {errors.whatsapp_phone && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.whatsapp_phone}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="sm:col-span-2">
+                                                        <Label htmlFor="welcome_message" className="text-sm font-medium">
+                                                            {t('Welcome message')}
+                                                        </Label>
+                                                        <Input
+                                                            id="welcome_message"
+                                                            value={data.welcome_message}
+                                                            onChange={(e) => setData('welcome_message', e.target.value)}
+                                                            placeholder={t('E.g. Welcome to our store!')}
+                                                            className="mt-2 h-12 rounded-xl"
+                                                        />
+                                                        {errors.welcome_message && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.welcome_message}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="sm:col-span-2">
+                                                        <Label htmlFor="store_description" className="text-sm font-medium">
+                                                            {t('Store description')}
+                                                        </Label>
+                                                        <Textarea
+                                                            id="store_description"
+                                                            value={data.store_description}
+                                                            onChange={(e) => setData('store_description', e.target.value)}
+                                                            placeholder={t('A short description of your store and what you sell.')}
+                                                            className="mt-2 min-h-[80px] rounded-xl"
+                                                        />
+                                                        {errors.store_description && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.store_description}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="sm:col-span-2">
+                                                        <Label className="text-sm font-medium">
+                                                            {t('Store logo')}
+                                                        </Label>
+                                                        <div className="mt-2">
+                                                            <MediaPicker
+                                                                value={data.logo}
+                                                                onChange={(v) => setData('logo', v)}
+                                                                placeholder={t('Select a logo image')}
+                                                                showPreview
+                                                            />
+                                                        </div>
+                                                        {errors.logo && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.logo}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="sm:col-span-2">
+                                                        <Label htmlFor="address" className="text-sm font-medium">
+                                                            {t('Address')}
+                                                        </Label>
+                                                        <div className="relative mt-2">
+                                                            <MapPin className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                            <Input
+                                                                id="address"
+                                                                value={data.address}
+                                                                onChange={(e) => setData('address', e.target.value)}
+                                                                placeholder={t('Street address')}
+                                                                className="h-12 rounded-xl ps-9"
+                                                            />
+                                                        </div>
+                                                        {errors.address && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.address}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <Label htmlFor="city" className="text-sm font-medium">
+                                                            {t('City')}
+                                                        </Label>
+                                                        <Input
+                                                            id="city"
+                                                            value={data.city}
+                                                            onChange={(e) => setData('city', e.target.value)}
+                                                            placeholder={t('City')}
+                                                            className="mt-2 h-12 rounded-xl"
+                                                        />
+                                                        {errors.city && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.city}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <Label htmlFor="country" className="text-sm font-medium">
+                                                            {t('Country')}
+                                                        </Label>
+                                                        <Input
+                                                            id="country"
+                                                            value={data.country}
+                                                            onChange={(e) => setData('country', e.target.value)}
+                                                            placeholder={t('Country')}
+                                                            className="mt-2 h-12 rounded-xl"
+                                                        />
+                                                        {errors.country && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.country}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="sm:col-span-2">
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <Label htmlFor="timezone" className="text-sm font-medium">
+                                                                {t('Timezone')}
+                                                            </Label>
+                                                            {typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setData('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone)}
+                                                                    className="text-xs font-medium transition-colors hover:opacity-80"
+                                                                    style={{ color: primaryColor }}
+                                                                >
+                                                                    {t('Detect automatically')}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <select
+                                                            id="timezone"
+                                                            value={data.timezone}
+                                                            onChange={(e) => setData('timezone', e.target.value)}
+                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                                            dir="ltr"
+                                                        >
+                                                            {Object.entries(timezones).map(([value, label]) => (
+                                                                <option key={value} value={value}>
+                                                                    {label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        {errors.timezone && (
+                                                            <p className="mt-2 text-sm text-red-600">{errors.timezone}</p>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="sm:col-span-2 rounded-2xl border border-gray-200 p-4">
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <div>
+                                                                <div className="text-sm font-semibold text-gray-900">
+                                                                    {t('Publish my store now')}
+                                                                </div>
+                                                                <p className="mt-1 text-xs text-gray-500">
+                                                                    {t('Your store goes live on your subdomain as soon as you finish. Turn this off to build quietly first.')}
+                                                                </p>
+                                                            </div>
+                                                            <Switch
+                                                                checked={data.publish_store}
+                                                                onCheckedChange={(v) => setData('publish_store', !!v)}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -833,124 +1280,6 @@ export default function Onboarding({
                                             </div>
                                         )}
 
-                                        {stepKey === 'plans' && (
-                                            <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <CreditCard className="h-5 w-5" style={{ color: primaryColor }} />
-                                                    </div>
-                                                    <div>
-                                                        <h2 className="text-xl font-bold text-gray-900">{t('Plans')}</h2>
-                                                        <p className="text-sm text-gray-500">
-                                                            {t('Start free and upgrade as your business grows')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                                                    {plans.slice(0, 3).map((plan) => (
-                                                        <div
-                                                            key={plan.id}
-                                                            className={`relative rounded-2xl border-2 p-4 transition-all duration-300 ${
-                                                                plan.is_recommended
-                                                                    ? 'border-primary bg-primary/5'
-                                                                    : 'border-gray-200'
-                                                            }`}
-                                                        >
-                                                            {plan.is_recommended && (
-                                                                <Badge
-                                                                    className="absolute -top-2 start-3 animate-pop"
-                                                                    style={{ backgroundColor: primaryColor }}
-                                                                >
-                                                                    {t('Recommended')}
-                                                                </Badge>
-                                                            )}
-                                                            <div className="font-semibold text-gray-900">{plan.name}</div>
-                                                            <div className="mt-2 text-2xl font-bold text-gray-900">
-                                                                {plan.price}
-                                                                <span className="text-sm font-normal text-gray-500">
-                                                                    {' '}/ {plan.duration}
-                                                                </span>
-                                                            </div>
-                                                            {plan.description && (
-                                                                <p className="mt-2 line-clamp-2 text-xs text-gray-500">
-                                                                    {plan.description}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                <div className="mb-6 rounded-2xl border border-gray-200 p-4">
-                                                    <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-900">
-                                                        <Share2 className="h-4 w-4" style={{ color: primaryColor }} />
-                                                        {t('Share your referral link and earn commission')}
-                                                    </div>
-                                                    <p className="mb-3 text-xs text-gray-500">
-                                                        {t('When someone registers through your link and subscribes to a paid plan, you earn commission.')}
-                                                    </p>
-                                                    {referralUrl && (
-                                                        <div className="flex items-center gap-2">
-                                                            <code
-                                                                className="flex-1 truncate rounded-xl bg-gray-100 px-3 py-2 text-xs text-gray-700"
-                                                                dir="ltr"
-                                                            >
-                                                                {referralUrl}
-                                                            </code>
-                                                            <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={copyReferral}
-                                                                className="shrink-0 gap-1"
-                                                            >
-                                                                {copied ? (
-                                                                    <Check className="h-4 w-4 text-emerald-600" />
-                                                                ) : (
-                                                                    <Copy className="h-4 w-4" />
-                                                                )}
-                                                                {copied ? t('Copied!') : t('Copy link')}
-                                                            </Button>
-                                                        </div>
-                                                    )}
-                                                    {referralCode && (
-                                                        <p className="mt-2 text-xs text-gray-400">
-                                                            {t('Code')}:{' '}
-                                                            <span className="font-mono" dir="ltr">
-                                                                {referralCode}
-                                                            </span>
-                                                        </p>
-                                                    )}
-                                                </div>
-
-                                                <div className="flex flex-col gap-3 sm:flex-row">
-                                                    <Button
-                                                        className="flex-1 gap-2"
-                                                        style={{ backgroundColor: primaryColor }}
-                                                        onClick={next}
-                                                    >
-                                                        <CreditCard className="h-4 w-4" />
-                                                        {t('Start free')}
-                                                    </Button>
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        className="flex-1 gap-2"
-                                                        onClick={() => router.visit(route('plans.index'))}
-                                                    >
-                                                        <Globe className="h-4 w-4" />
-                                                        {t('Browse plans')}
-                                                    </Button>
-                                                </div>
-                                                <p className="mt-3 text-center text-xs text-gray-400">
-                                                    {t('You are currently on the free plan.')}
-                                                </p>
-                                            </div>
-                                        )}
-
                                         {stepKey === 'confirm' && (
                                             <div className="py-4">
                                                 {/* Confetti */}
@@ -989,6 +1318,24 @@ export default function Onboarding({
                                                         </p>
                                                     </div>
 
+                                                    <div className="mb-4 flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                                        <input
+                                                            id="import_demo"
+                                                            type="checkbox"
+                                                            checked={data.import_demo_products}
+                                                            onChange={(e) => setData('import_demo_products', e.target.checked)}
+                                                            className="mt-1 h-4 w-4 rounded border-gray-300 accent-emerald-600"
+                                                        />
+                                                        <div>
+                                                            <Label htmlFor="import_demo" className="text-sm font-semibold text-gray-900">
+                                                                {t('Start with demo products')}
+                                                            </Label>
+                                                            <p className="mt-1 text-xs text-gray-500">
+                                                                {t('Import a sample catalog so your store is not empty. You can edit or remove everything later.')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
                                                     <div className="space-y-2.5 rounded-2xl border border-gray-200 p-5">
                                                         {[
                                                             {
@@ -1007,6 +1354,31 @@ export default function Onboarding({
                                                                 value: `${data.store_subdomain}.${storeDomain}`,
                                                                 ltr: true,
                                                             },
+                                                            {
+                                                                icon: Mail,
+                                                                label: t('Store Email'),
+                                                                value: data.store_email || '—',
+                                                                ltr: true,
+                                                            },
+                                                            ...(data.whatsapp_enabled && data.whatsapp_phone
+                                                                ? [
+                                                                      {
+                                                                          icon: MessageCircle,
+                                                                          label: t('WhatsApp'),
+                                                                          value: data.whatsapp_phone,
+                                                                          ltr: true,
+                                                                      },
+                                                                  ]
+                                                                : []),
+                                                            ...(data.city || data.country
+                                                                ? [
+                                                                      {
+                                                                          icon: MapPin,
+                                                                          label: t('Location'),
+                                                                          value: [data.city, data.country].filter(Boolean).join(', '),
+                                                                      },
+                                                                  ]
+                                                                : []),
                                                             {
                                                                 icon: Languages,
                                                                 label: t('Language'),
@@ -1028,6 +1400,13 @@ export default function Onboarding({
                                                                 value:
                                                                     themes.find((th) => th.id === data.theme)?.name ||
                                                                     data.theme,
+                                                            },
+                                                            {
+                                                                icon: Globe,
+                                                                label: t('Status'),
+                                                                value: data.publish_store
+                                                                    ? t('Published')
+                                                                    : t('Draft (not published)'),
                                                             },
                                                         ].map((row, i) => (
                                                             <div
@@ -1077,11 +1456,11 @@ export default function Onboarding({
                                                     )}
                                                     {t('Finish')}
                                                 </Button>
-                                            ) : stepKey === 'plans' ? null : (
+                                            ) : (
                                                 <Button
                                                     type="button"
                                                     onClick={next}
-                                                    disabled={!canProceed() || (stepKey === 'store' && availability !== null && !availability.available)}
+                                                    disabled={!canProceed()}
                                                     className="gap-1 hover:-translate-y-0.5 transition-transform"
                                                     style={{ backgroundColor: primaryColor }}
                                                 >

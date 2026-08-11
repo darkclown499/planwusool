@@ -29,7 +29,7 @@ export const TemplatePreviewCard: React.FC<TemplatePreviewCardProps> = ({
     previewImageUrl || `/templates/previews/${template.slug}.webp`;
 
   const previewUrl = demoStoreUrl
-    ? `${demoStoreUrl}?theme=${encodeURIComponent(template.slug)}`
+    ? `${demoStoreUrl}?theme=${encodeURIComponent(template.slug)}&preview=1`
     : '';
 
   const openPreview = (e: React.MouseEvent) => {

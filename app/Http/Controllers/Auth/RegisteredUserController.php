@@ -95,7 +95,6 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'type' => 'company',
-            'is_active' => 1,
             'is_enable_login' => 1,
             'created_by' => 0,
             'plan_is_active' => 0,
