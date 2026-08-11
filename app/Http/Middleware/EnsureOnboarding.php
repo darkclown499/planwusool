@@ -15,6 +15,13 @@ class EnsureOnboarding
     {
         $user = $request->user();
 
+        // Super admin viewing the store through impersonation must not be
+        // forced through the onboarding wizard regardless of the target
+        // user's onboarding state.
+        if (session('impersonated_by')) {
+            return $next($request);
+        }
+
         if ($user && $user->type === 'company' && $user->onboarded_at === null) {
             // The onboarding wizard itself needs authenticated API / JSON calls
             // (e.g. logo upload through the media library), so only full page

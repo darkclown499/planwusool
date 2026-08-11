@@ -43,6 +43,25 @@ html[dir="rtl"] .rtl-flip {
   transform: scaleX(-1);
 }
 
+/* ===== Global RTL text alignment enforcement =====
+   Arabic-first UI: any text that isn't explicitly marked as LTR
+   (codes, numbers, currency fields) must align to the RIGHT, including
+   stray hardcoded left/start classes so no Arabic word ever lands on the
+   left. Elements carrying dir="ltr" or .ltr semantics keep their layout. */
+html[dir="rtl"] .text-left,
+html[dir="rtl"] .md\:text-left,
+html[dir="rtl"] .lg\:text-left,
+html[dir="rtl"] .sm\:text-left {
+  text-align: right !important;
+}
+
+html[dir="rtl"] .text-left:dir(ltr),
+html[dir="rtl"] [dir="ltr"] .text-left,
+html[dir="rtl"] .ltr .text-left,
+html[dir="rtl"] .ltr-num {
+  text-align: left !important;
+}
+
 /* ===== Sidebar RTL Support ===== */
 html[dir="rtl"] [data-slot="sidebar-wrapper"] {
   direction: rtl;
