@@ -25,7 +25,7 @@ interface SuccessProps {
 
 export default function OnboardingSuccess({ storeName, storeUrl, publishStore, referralCode, referralUrl }: SuccessProps) {
     const { t } = useTranslation();
-    const { themeColor, customColor, logoDark, titleText } = useBrand();
+    const { themeColor, customColor, titleText } = useBrand();
     const primaryColor =
         themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS] || '#10b77f';
     const [copied, setCopied] = useState(false);
@@ -67,11 +67,9 @@ export default function OnboardingSuccess({ storeName, storeUrl, publishStore, r
                 </div>
 
                 <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-xl shadow-gray-200/60">
-                    {logoDark && (
-                        <div className="mb-4 flex justify-center">
-                            <img src={logoDark} alt={titleText} className="h-8 w-auto" />
+                    <div className="mb-4 flex justify-center">
+                            <img src="/images/logos/wusool-logo.png" alt={titleText} className="h-10 w-auto" />
                         </div>
-                    )}
                     <h1 className="text-2xl font-bold text-gray-900">
                         {t('Your store is ready!')}
                     </h1>

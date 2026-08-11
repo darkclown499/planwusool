@@ -50,7 +50,7 @@ class OnboardingController extends Controller
             'defaults' => [
                 'name' => $user->name,
                 'storeName' => $store->name,
-                'language' => in_array($user->lang, ['ar', 'en']) ? $user->lang : 'ar',
+                'language' => 'ar',
                 'currency' => strtoupper($configuration['default_currency'] ?? 'ils'),
                 'theme' => $store->getTemplateSlug(),
                 'storeEmail' => $configuration['email'] ?? $user->email,
@@ -64,7 +64,11 @@ class OnboardingController extends Controller
                 'logo' => $configuration['logo'] ?? '',
                 'timezone' => ($configuration['timezone'] && $configuration['timezone'] !== 'utc')
                     ? $configuration['timezone']
-                    : (getSetting('defaultTimezone') ?: 'UTC'),
+                    : (
+                        in_array($tz = getSetting('defaultTimezone'), array_keys(config('timezones', [])), true)
+                            ? $tz
+                            : 'Asia/Gaza'
+                    ),
                 'publishStore' => (bool) ($configuration['store_status'] ?? true),
             ],
         ]);

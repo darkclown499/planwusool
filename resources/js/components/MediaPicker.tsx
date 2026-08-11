@@ -71,17 +71,18 @@ export default function MediaPicker({
       });
       const result = await response.json();
       if (response.ok && result.data && result.data.length > 0) {
+        const uploaded = result.data as { url: string }[];
         if (multiple) {
-          const paths = result.data.map((item: any) => convertToRelativePath(item.url));
+          const paths = uploaded.map((item) => convertToRelativePath(item.url));
           onChange([...(value ? value.split(',').filter(Boolean) : []), ...paths].join(','));
         } else {
-          onChange(convertToRelativePath(result.data[0].url));
+          onChange(convertToRelativePath(uploaded[0].url));
         }
         toast.success(result.message || t('Image uploaded successfully'));
       } else {
         toast.error(result.message || t('Upload failed'));
       }
-    } catch (e) {
+    } catch {
       toast.error(t('Error uploading file'));
     } finally {
       setUploading(false);
@@ -170,7 +171,7 @@ export default function MediaPicker({
             onClick={() => setIsModalOpen(true)}
           >
             <ImageIcon className="h-4 w-4 me-2" />
-            {t('اختيار صورة')}
+            {t('Select image')}
           </Button>
           {value && (
             <Button
@@ -192,7 +193,7 @@ export default function MediaPicker({
             <div key={index} className="relative">
               <img
                 src={getImageUrl(url)}
-                alt={`Preview ${index + 1}`}
+                alt={`${t('Preview')} ${index + 1}`}
                 className={`${dragDrop ? 'w-24 h-24' : 'w-full h-20'} object-cover rounded-lg border shadow-sm`}
               />
               <Button

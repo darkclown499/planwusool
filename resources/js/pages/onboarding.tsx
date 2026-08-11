@@ -131,7 +131,7 @@ export default function Onboarding({
     defaults,
 }: OnboardingProps) {
     const { t, i18n } = useTranslation();
-    const { themeColor, customColor, logoDark, logoLight, titleText } = useBrand();
+    const { themeColor, customColor, titleText } = useBrand();
     const primaryColor =
         themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS] || '#10b77f';
 
@@ -148,7 +148,7 @@ export default function Onboarding({
         city: defaults.city || '',
         country: defaults.country || '',
         logo: defaults.logo || '',
-        timezone: defaults.timezone || 'UTC',
+        timezone: defaults.timezone || 'Asia/Gaza',
         publish_store: defaults.publishStore !== undefined ? defaults.publishStore : true,
         import_demo_products: true,
         language: defaults.language || 'ar',
@@ -395,11 +395,11 @@ export default function Onboarding({
 
                     <div className="relative z-10 flex w-full flex-col items-center justify-center overflow-y-auto px-10 py-8 scrollbar-custom">
                         <div className="mb-4 flex items-center gap-2.5">
-                            {logoLight ? (
-                                <img src={logoLight} alt={titleText} className="h-9 w-auto animate-pop" />
-                            ) : (
-                                <span className="animate-pop text-2xl font-bold text-white">{titleText}</span>
-                            )}
+                            <img
+                                src="/images/logos/wusool-logo.png"
+                                alt={titleText}
+                                className="h-10 w-auto animate-pop"
+                            />
                         </div>
 
                         <h1 className="animate-fade-slide mb-2 text-center text-3xl font-bold leading-tight text-white xl:text-4xl">
@@ -462,11 +462,11 @@ export default function Onboarding({
                 <main className="flex flex-1 flex-col">
                     <div className="flex items-center justify-between p-5">
                         <div className="flex items-center gap-2 lg:hidden">
-                            {logoDark ? (
-                                <img src={logoDark} alt={titleText} className="h-8 w-auto" />
-                            ) : (
-                                <span className="text-lg font-bold text-gray-900">{titleText}</span>
-                            )}
+                            <img
+                                src="/images/logos/wusool-logo.png"
+                                alt={titleText}
+                                className="h-8 w-auto"
+                            />
                         </div>
                         <div className="ms-auto flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
                             <span
