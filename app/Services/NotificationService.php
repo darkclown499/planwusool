@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CustomerNotification;
 use App\Models\NotificationPreference;
 use App\Models\PushSubscription;
+use App\Services\TwilioService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -70,6 +71,9 @@ class NotificationService
             switch ($channel) {
                 case 'push':
                     $sent = $this->sendPush($notification);
+                    break;
+                case 'sms':
+                    $sent = $this->sendSms($notification);
                     break;
                 case 'in_app':
                 default:
@@ -190,6 +194,26 @@ class NotificationService
         }
 
         return $sentAny;
+    }
+
+    /**
+     * إرسال SMS عبر Twilio لعميل.
+     */
+    protected function sendSms(CustomerNotification $notification): bool
+    {
+        $store = \App\Models\Store::find($notification->store_id);
+        $customer = $notification->customer;
+
+        if (!$store || !$customer || !$customer->phone) {
+            return false;
+        }
+
+        return TwilioService::sendRawSMS(
+            $store->user_id,
+            $store->id,
+            $customer->phone,
+            trim($notification->title . "\n" . $notification->body)
+        );
     }
 
     /**

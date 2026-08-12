@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Services\NotificationService;
+use App\Services\TwilioService;
 use Illuminate\Support\Facades\Log;
 
 class SendUniversalNotification
@@ -23,21 +23,14 @@ class SendUniversalNotification
             'order_date' => $order->created_at->format('d/m/Y H:i'),
         ];
 
-        try {
-            NotificationService::send(
-                $store->user_id,
-                $store->id,
-                'sms',
-                $order->customer_phone,
-                'Order Created',
-                $variables
-            );
-        } catch (\Throwable $e) {
-            Log::warning('Universal notification failed for order created', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        TwilioService::sendSMS(
+            $store->user_id,
+            $store->id,
+            $order->customer_phone,
+            'Order Created',
+            $variables,
+            getSetting('defaultLanguage', 'en', $store->user_id, $store->id)
+        );
     }
 
     public function handleOrderStatusChanged($event)
@@ -56,21 +49,14 @@ class SendUniversalNotification
             'order_date' => $order->created_at->format('d/m/Y H:i'),
         ];
 
-        try {
-            NotificationService::send(
-                $store->user_id,
-                $store->id,
-                'sms',
-                $order->customer_phone,
-                'Order Status Updated',
-                $variables
-            );
-        } catch (\Throwable $e) {
-            Log::warning('Universal notification failed for order status update', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        TwilioService::sendSMS(
+            $store->user_id,
+            $store->id,
+            $order->customer_phone,
+            'Order Status Updated',
+            $variables,
+            getSetting('defaultLanguage', 'en', $store->user_id, $store->id)
+        );
     }
 
     public function handleCustomerCreated($event)
@@ -87,20 +73,13 @@ class SendUniversalNotification
             'customer_email' => $customer->email,
         ];
 
-        try {
-            NotificationService::send(
-                $store->user_id,
-                $store->id,
-                'sms',
-                $customer->phone,
-                'New Customer',
-                $variables
-            );
-        } catch (\Throwable $e) {
-            Log::warning('Universal notification failed for customer created', [
-                'customer_id' => $customer->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        TwilioService::sendSMS(
+            $store->user_id,
+            $store->id,
+            $customer->phone,
+            'New Customer',
+            $variables,
+            getSetting('defaultLanguage', 'en', $store->user_id, $store->id)
+        );
     }
 }

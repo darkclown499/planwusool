@@ -305,7 +305,7 @@ export default function Settings() {
           {/* Twilio Settings Section */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
             <section id="twilio-settings" ref={twilioSettingsRef} className="mb-8">
-              {planFeatures?.enable_shipping_method || planFeatures?.enable_mobile_app ? (
+              {planFeatures?.enable_sms ? (
                 <TwilioSettings systemSettings={systemSettings} templates={templates} />
               ) : (
                 <FeatureLockedOverlay featureName="Twilio / SMS Settings" requiredPlan="Growth" />

@@ -25,6 +25,7 @@ import {
   Headphones,
   Wallet,
   Star,
+  MessageSquare,
 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
@@ -58,6 +59,7 @@ interface Plan {
   enable_chatgpt?: string;
   enable_shipping_method?: string;
   enable_mobile_app?: string;
+  enable_sms?: string;
   enable_theme_editor?: string;
   enable_accounting_integration?: string;
   is_trial?: string | null;
@@ -109,6 +111,7 @@ const fallbackPlans: Plan[] = [
     enable_chatgpt: 'off',
     enable_shipping_method: 'off',
     enable_mobile_app: 'off',
+    enable_sms: 'off',
     enable_theme_editor: 'off',
     enable_accounting_integration: 'off',
     is_plan_enable: 'on',
@@ -137,6 +140,7 @@ const fallbackPlans: Plan[] = [
     enable_chatgpt: 'on',
     enable_shipping_method: 'on',
     enable_mobile_app: 'off',
+    enable_sms: 'on',
     enable_theme_editor: 'off',
     enable_accounting_integration: 'off',
     is_plan_enable: 'on',
@@ -165,6 +169,7 @@ const fallbackPlans: Plan[] = [
     enable_chatgpt: 'on',
     enable_shipping_method: 'on',
     enable_mobile_app: 'on',
+    enable_sms: 'on',
     enable_theme_editor: 'on',
     enable_accounting_integration: 'on',
     is_plan_enable: 'on',
@@ -208,6 +213,7 @@ const COMPARE_GROUPS: CompareGroup[] = [
       { label: 'نطاق فرعي مجاني', get: (p) => yesNo(p.enable_custsubdomain) },
       { label: 'تطبيق ويب PWA', tooltip: 'تطبيق ويب يمكن للعملاء تثبيته على أجهزتهم مثل التطبيقات العادية، بسرعة وأداء مميز.', get: (p) => yesNo(p.pwa_business) },
       { label: 'تطبيق موبايل أصلي', tooltip: 'تطبيق أندرويد وآيفون لمتجرك وتقديمه على متجري Google Play و App Store.', get: (p) => yesNo(p.enable_mobile_app) },
+      { label: 'إشعارات SMS', tooltip: 'رسائل نصية تلقائية للعملاء عند إنشاء الطلب وتغيير حالته.', get: (p) => yesNo(p.enable_sms) },
       { label: 'إزالة علامة المنصة', tooltip: 'إخفاء هوية المنصة وإظهار علامتك التجارية فقط (White Label).', get: (p) => yesNo(p.enable_branding) },
     ],
   },
@@ -282,6 +288,7 @@ function getProminentFeatures(plan: Plan): Array<{ icon: IconType; text: string 
   push(isOn(plan.enable_theme_editor), Palette, 'محرر قوالب احترافي');
   push(isOn(plan.enable_branding), Shield, 'إزالة علامة المنصة (White Label)');
   push(isOn(plan.pwa_business), Smartphone, 'تطبيق ويب PWA قابل للتثبيت');
+  push(isOn(plan.enable_sms), MessageSquare, 'إشعارات SMS تلقائية للعملاء');
   push(isOn(plan.enable_shipping_method), Truck, 'طرق شحن ومناطق توصيل');
   push(isOn(plan.enable_custsubdomain), Globe, 'نطاق فرعي مجاني (store.wusool.ps)');
 

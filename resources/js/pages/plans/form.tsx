@@ -34,6 +34,7 @@ interface Plan {
   enable_chatgpt: string;
   enable_shipping_method: string;
   enable_mobile_app: string;
+  enable_sms: string;
   themes: string[] | null;
   is_trial: string | null;
   trial_day: number;
@@ -74,6 +75,7 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
     enable_chatgpt: plan?.enable_chatgpt || 'off',
     enable_shipping_method: plan?.enable_shipping_method || 'off',
     enable_mobile_app: plan?.enable_mobile_app || 'off',
+    enable_sms: plan?.enable_sms || 'off',
     themes: plan?.themes || [],
     is_trial: plan?.is_trial || null,
     trial_day: plan?.trial_day || 0,
@@ -355,6 +357,15 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   id="enable_mobile_app"
                   checked={formData.enable_mobile_app === 'on'}
                   onCheckedChange={(checked) => handleSwitchChange('enable_mobile_app', checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="enable_sms">{t("SMS Notifications")}</Label>
+                <Switch
+                  id="enable_sms"
+                  checked={formData.enable_sms === 'on'}
+                  onCheckedChange={(checked) => handleSwitchChange('enable_sms', checked)}
                 />
               </div>
               

@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     
     // Twilio Settings
     Route::post('/settings/twilio', [TwilioSettingController::class, 'store'])->name('settings.twilio');
+    Route::post('/settings/twilio/test', [TwilioSettingController::class, 'test'])->name('settings.twilio.test');
     
     // Profile settings page with profile and password sections
     Route::get('profile', function () {

@@ -30,6 +30,7 @@ class Plan extends Model
         'enable_chatgpt',
         'enable_shipping_method',
         'enable_mobile_app',
+        'enable_sms',
         'storage_limit',
         'is_trial',
         'trial_day',

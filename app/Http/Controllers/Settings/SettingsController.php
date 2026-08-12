@@ -105,6 +105,11 @@ class SettingsController extends Controller
 
         $webhooks = Webhook::where('user_id', $settingsUserId)->get();
         $templates = Notification::all();
+
+        // Mask sensitive Twilio credentials before sending to the frontend
+        if (isset($systemSettings['twilio_token']) && $systemSettings['twilio_token'] !== '') {
+            $systemSettings['twilio_token'] = '*************';
+        }
         
         // Get user's plan features for frontend feature gating
         $planFeatures = null;
@@ -112,6 +117,7 @@ class SettingsController extends Controller
             $planFeatures = [
                 'enable_chatgpt'        => $user->plan->enable_chatgpt === 'on',
                 'enable_mobile_app'     => $user->plan->enable_mobile_app === 'on',
+                'enable_sms'            => $user->plan->enable_sms === 'on',
                 'enable_shipping_method'=> $user->plan->enable_shipping_method === 'on',
                 'enable_custdomain'     => $user->plan->enable_custdomain === 'on',
                 'enable_custsubdomain'  => $user->plan->enable_custsubdomain === 'on',

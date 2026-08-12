@@ -23,6 +23,7 @@ interface Plan {
   enable_chatgpt: string;
   enable_shipping_method: string;
   enable_mobile_app: string;
+  enable_sms: string;
   themes: string[] | null;
   is_trial: string | null;
   trial_day: number;
