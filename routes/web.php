@@ -116,7 +116,7 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // Password reset routes
     Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->middleware('throttle:5,1')->name('store.forgot-password');
     Route::get('/reset-password/{token}', [\App\Http\Controllers\Store\AuthController::class, 'showResetForm'])->name('store.reset-password');
-    Route::post('/reset-password', [\App\Http\Controllers\Store\AuthController::class, 'resetPassword'])->name('store.reset-password.update');
+    Route::post('/reset-password', [\App\Http\Controllers\Store\AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('store.reset-password.update');
 
     // Order routes
     Route::post('/order/place', [\App\Http\Controllers\Store\OrderController::class, 'placeOrder'])->name('store.order.place');

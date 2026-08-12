@@ -169,6 +169,7 @@ class SocialAuthController extends Controller
         }
 
         Auth::login($user, true);
+        $request->session()->regenerate();
 
         if ($emailMissing) {
             // Notify user that email must be completed/verified

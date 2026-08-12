@@ -106,7 +106,12 @@ class HandleInertiaRequests extends Middleware
                         return !empty(config('services.apple.client_id')) && !empty(config('services.apple.private_key'));
                     }
 
-                    return !empty(config("services.{$provider}.client_id"));
+                    if ($provider === 'plankton') {
+                        return !empty(config('services.plankton.client_id'));
+                    }
+
+                    return !empty(config("services.{$provider}.client_id"))
+                        && !empty(config("services.{$provider}.client_secret"));
                 })
                 ->values()
                 ->all(),
