@@ -1,5 +1,6 @@
 import StoreHead from '@/components/StoreHead';
 import StoreBoundary from '@/components/StoreBoundary';
+import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { TemplateRenderer } from '@/templates/TemplateRenderer';
 import { getTemplateConfig } from '@/templates/registry';
@@ -10,6 +11,7 @@ interface DynamicStoreProps {
     template: string;
     templateConfig?: any;
     designTokens?: any;
+    templateOverrides?: { sections?: any[] } | null;
     store: any;
     categories: any[];
     products: any[];
@@ -38,6 +40,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     template,
     templateConfig,
     designTokens,
+    templateOverrides,
     store,
     categories,
     products,
@@ -79,6 +82,10 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
 
     return (
         <>
+            <CustomCodeInjector
+                customCss={store?.custom_css}
+                customJavascript={store?.custom_javascript}
+            />
             <StoreHead store={store} defaultTitle={config?.storeName || store?.name || 'متجري'} defaultDescription={config?.description} />
             <ThemeProvider
                 config={config ?? {}}
@@ -98,6 +105,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                                 template={resolvedTemplate}
                                 storeData={storeData}
                                 designTokens={designTokens}
+                                overrides={templateOverrides}
                                 isPreview={isPreview}
                                 userPlanName={userPlanName}
                                 userPlanTier={userPlanTier}

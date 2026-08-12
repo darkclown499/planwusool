@@ -399,7 +399,8 @@ class ThemeController extends Controller
             $ownerIsSuperAdmin = $storeModel?->user?->type === 'superadmin';
 
             $props['template'] = $theme;
-            $props['templateConfig'] = array_merge($template->config ?? [], [
+            $mergedTemplateConfig = $storeModel ? $storeModel->getMergedTemplateConfig() : ($template->config ?? []);
+            $props['templateConfig'] = array_merge($mergedTemplateConfig, [
                 'slug' => $template->slug,
                 'name' => $template->name,
                 'name_en' => $template->name_en,
@@ -407,6 +408,7 @@ class ThemeController extends Controller
                 'plan_required' => $template->plan_required,
                 'design_tokens' => $template->design_tokens ?? [],
             ]);
+            $props['templateOverrides'] = $storeModel ? $storeModel->template_overrides : null;
             $props['designTokens'] = $storeModel
                 ? $storeModel->getMergedDesignTokens()
                 : $template->design_tokens;
