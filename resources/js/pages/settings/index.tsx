@@ -56,7 +56,7 @@ export default function Settings() {
       permission: 'manage-settings'
     },
     {
-      title: t('Twilio Settings'),
+      title: t('SMS Settings'),
       href: '#twilio-settings',
       icon: <MessageSquare className="w-5 h-5 shrink-0" />,
       permission: 'manage-settings'
@@ -119,7 +119,7 @@ export default function Settings() {
       return auth.user?.type === 'company';
     }
     
-    // Special case: Twilio Settings - exclude superadmin
+    // Special case: SMS Settings - exclude superadmin
     if (item.href === '#twilio-settings') {
       return auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin';
     }

@@ -7,8 +7,11 @@ use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class TwilioService
+class HotsmsService
 {
+    /**
+     * إرسال رسالة SMS بناءً على قالب الإشعارات (نفس منطق Twilio).
+     */
     public static function sendSMS($userId, $storeId, $to, $templateAction, $variables = [], $lang = 'en')
     {
         try {
@@ -16,10 +19,9 @@ class TwilioService
                 return false;
             }
 
-            // Get Twilio settings from settings table
             $settings = Setting::getUserSettings($userId, $storeId);
-            
-            if (($settings['is_twilio_enabled'] ?? 'off') !== 'on') {
+
+            if (($settings['is_hotsms_enabled'] ?? 'off') !== 'on') {
                 return false;
             }
 
@@ -28,8 +30,8 @@ class TwilioService
                 return false;
             }
 
-            // Prevent duplicate SMS within a short window (multiple payment webhooks may fire)
-            $dedupeKey = 'twilio_sms_' . md5($userId . '|' . $storeId . '|' . $to . '|' . $templateAction . '|' . serialize($variables));
+            // منع الرسائل المكررة خلال نافذة قصيرة
+            $dedupeKey = 'hotsms_sms_' . md5($userId . '|' . $storeId . '|' . $to . '|' . $templateAction . '|' . serialize($variables));
             if (Cache::has($dedupeKey)) {
                 return false;
             }
@@ -37,14 +39,14 @@ class TwilioService
 
             $sent = self::sendWithSettings($settings, $to, $message);
 
-            // Notify the store owner about new orders / status updates
-            if (($settings['twilio_notify_owner'] ?? 'off') === 'on' && !empty($settings['twilio_owner_phone'])) {
-                self::sendWithSettings($settings, $settings['twilio_owner_phone'], $message);
+            // إشعار المالك بطلب جديد / تحديث حالة
+            if (($settings['hotsms_notify_owner'] ?? 'off') === 'on' && !empty($settings['hotsms_owner_phone'])) {
+                self::sendWithSettings($settings, $settings['hotsms_owner_phone'], $message);
             }
 
             return $sent;
         } catch (Exception $e) {
-            Log::error('Twilio SMS error: ' . $e->getMessage());
+            Log::error('HotSMS SMS error: ' . $e->getMessage());
             return false;
         }
     }
@@ -59,7 +61,7 @@ class TwilioService
         }
 
         try {
-            $dedupeKey = 'twilio_sms_raw_' . md5($userId . '|' . $storeId . '|' . $to . '|' . $message);
+            $dedupeKey = 'hotsms_sms_raw_' . md5($userId . '|' . $storeId . '|' . $to . '|' . $message);
             if (Cache::has($dedupeKey)) {
                 return false;
             }
@@ -68,7 +70,7 @@ class TwilioService
             $settings = Setting::getUserSettings($userId, $storeId);
             return self::sendWithSettings($settings, $to, $message);
         } catch (Exception $e) {
-            Log::error('Twilio SMS error: ' . $e->getMessage());
+            Log::error('HotSMS SMS error: ' . $e->getMessage());
             return false;
         }
     }
@@ -76,17 +78,17 @@ class TwilioService
     /**
      * إرسال رسالة SMS تجريبية باستخدام البيانات المُدخلة مباشرة.
      */
-    public static function sendTestSMS($sid, $token, $fromNumber, $to)
+    public static function sendTestSMS($userName, $password, $sender, $to)
     {
         try {
-            if (!$sid || !$token || !$fromNumber || !$to) {
-                throw new Exception('Twilio credentials not configured');
+            if (!$userName || !$password || !$to) {
+                throw new Exception('HotSMS credentials not configured');
             }
 
             $message = __('Test SMS from') . ' ' . config('app.name', 'Wusool') . ' - ' . now()->format('Y-m-d H:i:s');
-            return self::sendViaCredentials($sid, $token, $fromNumber, $to, $message);
+            return self::sendViaCredentials($userName, $password, $sender, $to, $message);
         } catch (Exception $e) {
-            Log::error('Twilio test SMS error: ' . $e->getMessage());
+            Log::error('HotSMS test SMS error: ' . $e->getMessage());
             return false;
         }
     }
@@ -96,79 +98,78 @@ class TwilioService
      */
     private static function sendWithSettings(array $settings, $to, $message)
     {
-        if (($settings['is_twilio_enabled'] ?? 'off') !== 'on') {
+        if (($settings['is_hotsms_enabled'] ?? 'off') !== 'on') {
             return false;
         }
 
-        $sid = $settings['twilio_sid'] ?? null;
-        $token = $settings['twilio_token'] ?? null;
-        $fromNumber = $settings['twilio_from'] ?? null;
+        $userName = $settings['hotsms_user_name'] ?? null;
+        $password = $settings['hotsms_password'] ?? null;
+        $sender = $settings['hotsms_sender'] ?? null;
 
-        if (!$sid || !$token || !$fromNumber) {
-            throw new Exception('Twilio credentials not configured');
+        if (!$userName || !$password) {
+            throw new Exception('HotSMS credentials not configured');
         }
 
-        return self::sendViaCredentials($sid, $token, $fromNumber, $to, $message);
+        return self::sendViaCredentials($userName, $password, $sender, $to, $message);
     }
 
     /**
-     * إرسال رسالة SMS مباشرة إلى Twilio API.
+     * إرسال رسالة SMS مباشرة إلى HotSMS API.
      */
-    private static function sendViaCredentials($sid, $token, $fromNumber, $to, $message)
+    private static function sendViaCredentials($userName, $password, $sender, $to, $message)
     {
-        // Normalize phone number to E.164-like format
         $to = self::normalizePhone($to);
-        $fromNumber = self::normalizePhone($fromNumber);
 
-        $url = 'https://api.twilio.com/2010-04-01/Accounts/' . $sid . '/Messages.json';
-        
+        $url = 'https://www.hotsms.ps/sendbulksms.php';
+
         $data = [
-            'From' => $fromNumber,
-            'To' => $to,
-            'Body' => $message
+            'user_name' => $userName,
+            'password' => $password,
+            'msg' => $message,
+            'numbers' => $to,
+            'urlencode' => 1,
         ];
+
+        if (!empty($sender)) {
+            $data['sender'] = $sender;
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERPWD, $sid . ':' . $token);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($httpCode === 201) {
-            Log::info('Twilio SMS sent', ['to' => $to]);
+        $response = trim((string) $response);
+
+        // HotSMS تُرجع "OK" عند النجاح، أو رمز خطأ نصي
+        if (str_starts_with($response, 'OK')) {
+            Log::info('HotSMS SMS sent', ['to' => $to]);
             return true;
-        } else {
-            Log::error('Twilio SMS failed', ['response' => $response, 'http_code' => $httpCode]);
-            return false;
         }
+
+        Log::error('HotSMS SMS failed', ['response' => $response, 'http_code' => $httpCode]);
+        return false;
     }
 
     /**
-     * تطبيع رقم الهاتف إلى صيغة مناسبة لـ Twilio.
+     * تطبيع رقم الهاتف إلى الصيغة الدولية بدون + (مثل 970591234567).
      */
     private static function normalizePhone($phone)
     {
         $phone = trim((string) $phone);
-
-        // Remove spaces, dashes, parentheses and dots
         $phone = preg_replace('/[\s\-\(\)\.]/', '', $phone);
-
-        // Replace leading 00 with +
         if (str_starts_with($phone, '00')) {
-            $phone = '+' . substr($phone, 2);
+            $phone = substr($phone, 2);
         }
-
-        // Ensure a leading + exists so Twilio accepts it as E.164
-        if ($phone !== '' && !str_starts_with($phone, '+')) {
-            $phone = '+' . $phone;
+        if (str_starts_with($phone, '+')) {
+            $phone = substr($phone, 1);
         }
-
         return $phone;
     }
 }

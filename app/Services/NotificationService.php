@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\CustomerNotification;
 use App\Models\NotificationPreference;
 use App\Models\PushSubscription;
-use App\Services\TwilioService;
+use App\Services\SmsService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -208,7 +208,7 @@ class NotificationService
             return false;
         }
 
-        return TwilioService::sendRawSMS(
+        return SmsService::sendRawSMS(
             $store->user_id,
             $store->id,
             $customer->phone,

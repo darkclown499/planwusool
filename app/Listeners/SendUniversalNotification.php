@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Services\TwilioService;
+use App\Services\SmsService;
 use Illuminate\Support\Facades\Log;
 
 class SendUniversalNotification
@@ -23,7 +23,7 @@ class SendUniversalNotification
             'order_date' => $order->created_at->format('d/m/Y H:i'),
         ];
 
-        TwilioService::sendSMS(
+        SmsService::sendSMS(
             $store->user_id,
             $store->id,
             $order->customer_phone,
@@ -49,7 +49,7 @@ class SendUniversalNotification
             'order_date' => $order->created_at->format('d/m/Y H:i'),
         ];
 
-        TwilioService::sendSMS(
+        SmsService::sendSMS(
             $store->user_id,
             $store->id,
             $order->customer_phone,
@@ -73,7 +73,7 @@ class SendUniversalNotification
             'customer_email' => $customer->email,
         ];
 
-        TwilioService::sendSMS(
+        SmsService::sendSMS(
             $store->user_id,
             $store->id,
             $customer->phone,

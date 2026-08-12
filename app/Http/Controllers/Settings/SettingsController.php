@@ -110,6 +110,11 @@ class SettingsController extends Controller
         if (isset($systemSettings['twilio_token']) && $systemSettings['twilio_token'] !== '') {
             $systemSettings['twilio_token'] = '*************';
         }
+
+        // Mask sensitive HotSMS credentials before sending to the frontend
+        if (isset($systemSettings['hotsms_password']) && $systemSettings['hotsms_password'] !== '') {
+            $systemSettings['hotsms_password'] = '*************';
+        }
         
         // Get user's plan features for frontend feature gating
         $planFeatures = null;
