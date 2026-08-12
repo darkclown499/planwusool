@@ -70,6 +70,9 @@ class SitemapController extends Controller
 
     private function urlEntry(string $url, string $priority, string $changefreq): string
     {
+        // Escape XML-significant characters (store names/domains are user-supplied)
+        $url = htmlspecialchars($url, ENT_QUOTES | ENT_XML1, 'UTF-8');
+
         return "  <url>\n" .
                "    <loc>{$url}</loc>\n" .
                "    <lastmod>" . now()->format('Y-m-d') . "</lastmod>\n" .

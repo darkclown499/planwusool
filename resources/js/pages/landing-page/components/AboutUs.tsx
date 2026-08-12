@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Target, Heart, Award, Lightbulb, Star, Shield, Users, Zap } from 'lucide-react';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
 import { useTranslation } from 'react-i18next';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { getImageUrl } from '@/utils/image-helper';
 
 interface AboutUsProps {
@@ -165,9 +166,9 @@ export default function AboutUs({ settings, sectionData, brandColor = '#3b82f6' 
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               {t(sectionData.story_title || 'Revolutionizing Multi-Store E-commerce Since 2020')}
             </h3>
-            <div className="text-gray-600 mb-8 leading-relaxed" dangerouslySetInnerHTML={{
-              __html: (t(sectionData.story_content || 'Founded by e-commerce experts and technology innovators, Wusool was created to solve the complex challenges of managing multiple online stores. Our platform enables entrepreneurs to build, customize, and scale their store empire from a single powerful dashboard.')).replace(/\n/g, '</p><p className="mb-6">')
-            }} />
+            <div className="text-gray-600 mb-8 leading-relaxed" dangerouslySetInnerHTML={createSafeHtml(
+              String(t(sectionData.story_content || 'Founded by e-commerce experts and technology innovators, Wusool was created to solve the complex challenges of managing multiple online stores. Our platform enables entrepreneurs to build, customize, and scale their store empire from a single powerful dashboard.')).replace(/\n/g, '</p><p className="mb-6">')
+            )} />
             
             {stats.length > 0 && (
               <div className="flex items-center gap-8">
