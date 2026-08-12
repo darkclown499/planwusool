@@ -57,7 +57,7 @@ class UserController extends BaseController
         }
 
         // Handle sorting
-        $allowedSortFields = ['name', 'email', 'created_at', 'status', 'id'];
+        $allowedSortFields = ['name', 'email', 'created_at', 'last_login_at', 'status', 'id'];
         $sortField = $request->input('sort_field', 'created_at');
         if (!in_array($sortField, $allowedSortFields)) {
             $sortField = 'created_at';

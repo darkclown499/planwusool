@@ -153,14 +153,16 @@ class LandingPageController extends Controller
     public function subscribe(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|max:255|unique:newsletters,email'
+            'email' => 'required|email|max:255'
         ]);
 
-        Newsletter::create([
-            'email' => $request->email,
-            'status' => 'active',
-            'subscribed_at' => now()
-        ]);
+        // firstOrCreate keeps the response identical whether or not the email
+        // is already subscribed, so the endpoint cannot be used to enumerate
+        // newsletter subscribers.
+        Newsletter::firstOrCreate(
+            ['email' => strtolower(trim($request->email))],
+            ['status' => 'active', 'subscribed_at' => now()]
+        );
 
         return back()->with('success', __('Thank you for subscribing to our newsletter!'));
     }

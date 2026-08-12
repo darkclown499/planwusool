@@ -54,6 +54,9 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'commission_amount',
         'terms_accepted_at',
         'onboarded_at',
+        'last_login_at',
+        'last_login_ip',
+        'last_login_ua',
     ];
 
     /**
@@ -109,6 +112,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             'storage_limit' => 'float',
             'terms_accepted_at' => 'datetime',
             'onboarded_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 

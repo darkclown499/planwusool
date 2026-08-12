@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http as HttpClient;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 // Socialite is optional; project may need `composer require laravel/socialite`
 use Laravel\Socialite\Facades\Socialite;
@@ -171,6 +172,8 @@ class SocialAuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
+        \App\Services\LoginAlertService::checkAndAlert($user, $request);
+
         if ($emailMissing) {
             // Notify user that email must be completed/verified
             $request->session()->flash('social_email_missing', true);
@@ -178,7 +181,45 @@ class SocialAuthController extends Controller
             $request->session()->flash('social_email_missing_message', 'Your provider did not return an email address. Please update your email in your profile.');
         }
 
+        // Social signup bypasses the normal registration form, so the terms
+        // must be accepted explicitly before granting access.
+        if ($user->terms_accepted_at === null) {
+            return redirect()->route('social.terms');
+        }
+
         if ($user->type === 'company' && $user->onboarded_at === null) {
+            return redirect()->route('onboarding');
+        }
+
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
+
+    /**
+     * Show the mandatory terms acceptance page for social signups.
+     */
+    public function showTerms()
+    {
+        return Inertia::render('auth/social-terms');
+    }
+
+    /**
+     * Mark terms as accepted then continue the normal flow.
+     */
+    public function acceptTerms(Request $request)
+    {
+        $request->validate([
+            'terms' => 'accepted',
+        ], [
+            'terms.accepted' => __('Please accept the terms to continue.'),
+        ]);
+
+        $user = $request->user();
+
+        if ($user) {
+            $user->forceFill(['terms_accepted_at' => now()])->save();
+        }
+
+        if ($user && $user->type === 'company' && $user->onboarded_at === null) {
             return redirect()->route('onboarding');
         }
 

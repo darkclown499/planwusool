@@ -302,6 +302,14 @@ export default function Users() {
       label: t('Joined'),
       sortable: true,
       render: (value: string) => window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()
+    },
+    {
+      key: 'last_login_at',
+      label: t('Last login'),
+      sortable: true,
+      render: (value: string | null) => value
+        ? (window.appSettings?.formatDateTime(value) || new Date(value).toLocaleString())
+        : <span className="text-muted-foreground">{t('Never')}</span>
     }
   ];
 

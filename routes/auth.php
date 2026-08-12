@@ -40,6 +40,15 @@ Route::middleware(['guest', 'landing.enabled'])->group(function () {
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->middleware('throttle:5,1');
 
+    // Passwordless login with a one-time code sent to the email address.
+    Route::post('login/otp/send', [\App\Http\Controllers\Auth\PasswordlessLoginController::class, 'send'])
+        ->middleware('throttle:5,1')
+        ->name('login.otp.send');
+
+    Route::post('login/otp/verify', [\App\Http\Controllers\Auth\PasswordlessLoginController::class, 'verify'])
+        ->middleware('throttle:5,1')
+        ->name('login.otp.verify');
+
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
@@ -66,6 +75,13 @@ Route::middleware(['guest', 'landing.enabled'])->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Mandatory terms acceptance for social (OAuth) signups.
+    Route::get('social-terms', [SocialAuthController::class, 'showTerms'])
+        ->name('social.terms');
+
+    Route::post('social-terms/accept', [SocialAuthController::class, 'acceptTerms'])
+        ->name('social.terms.accept');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

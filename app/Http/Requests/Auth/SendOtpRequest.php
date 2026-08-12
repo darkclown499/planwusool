@@ -25,7 +25,7 @@ class SendOtpRequest extends FormRequest
         return [
             'name'            => 'required|string|max:255',
             'email'           => 'required|string|lowercase|email|max:255',
-            'password'        => ['required', 'confirmed', Rules\Password::defaults()],
+            'password'        => ['required', 'confirmed', (new Rules\Password(8))->letters()->mixedCase()->numbers()],
             'terms'           => 'accepted',
             'recaptcha_token' => 'nullable|string',
             'plan_id'         => 'nullable|integer',

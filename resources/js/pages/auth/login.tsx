@@ -1,6 +1,6 @@
 import { useForm, router, usePage } from '@inertiajs/react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { FormEventHandler, useState, useEffect } from 'react';
+import { Mail, Lock, Eye, EyeOff, ShieldCheck, RefreshCw, ArrowLeft, KeyRound } from 'lucide-react';
+import { FormEventHandler, useState, useEffect, useRef, useCallback } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -42,7 +42,7 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
  const [showPassword, setShowPassword] = useState(false);
  const { themeColor, customColor } = useBrand();
- const { settings = {}, authProviders = [] } = usePage().props as any;
+ const { settings = {}, authProviders = [], rtl } = usePage().props as any;
  const recaptchaEnabled = settings.recaptchaEnabled === 'true' || settings.recaptchaEnabled === true || settings.recaptchaEnabled === 1 || settings.recaptchaEnabled === '1';
  const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
 
@@ -54,6 +54,17 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  remember: false,
  });
 
+ // Passwordless OTP state
+ const [mode, setMode] = useState<'password' | 'otp'>('password');
+ const [otpStep, setOtpStep] = useState<'send' | 'verify'>('send');
+ const [otpEmail, setOtpEmail] = useState('');
+ const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
+ const [otpError, setOtpError] = useState('');
+ const [otpSuccess, setOtpSuccess] = useState('');
+ const [otpProcessing, setOtpProcessing] = useState(false);
+ const [resendCooldown, setResendCooldown] = useState(0);
+ const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
  useEffect(() => {
  if (isDemo) {
  setData({
@@ -63,6 +74,13 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  });
  }
  }, [isDemo]);
+
+ // Cooldown timer for resend
+ useEffect(() => {
+ if (resendCooldown <= 0) return;
+ const timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
+ return () => clearTimeout(timer);
+ }, [resendCooldown]);
 
  const submit: FormEventHandler = async (e) => {
  e.preventDefault();
@@ -111,6 +129,399 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  }
  return acc;
  }, []);
+
+ const registrationEnabled = settings.registrationEnabled === 'true' || settings.registrationEnabled === true || settings.registrationEnabled === '1' || settings.registrationEnabled === 1;
+
+ // Passwordless login is only usable when outbound email is configured
+ // (an OTP cannot be delivered otherwise).
+ const mailConfigured = settings.mailConfigured !== false;
+
+ // ==================== OTP METHODS ====================
+ const openOtpMode = () => {
+ setOtpError('');
+ setOtpSuccess('');
+ setOtpValues(['', '', '', '', '', '']);
+ setOtpStep('send');
+ setOtpEmail(data.email);
+ setMode('otp');
+ };
+
+ const backToPassword = () => {
+ setMode('password');
+ setOtpError('');
+ setOtpSuccess('');
+ setOtpValues(['', '', '', '', '', '']);
+ };
+
+ const handleOtpSend = async () => {
+ setOtpProcessing(true);
+ setOtpError('');
+ setOtpSuccess('');
+
+ const email = otpEmail.trim();
+
+ if (!email) {
+ setOtpError(t('Please enter your email address'));
+ setOtpProcessing(false);
+ return;
+ }
+
+ try {
+ const res = await fetch(route('login.otp.send'), {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'Accept': 'application/json',
+ 'X-Requested-With': 'XMLHttpRequest',
+ 'X-XSRF-TOKEN': decodeURIComponent(
+ document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
+ ),
+ },
+ body: JSON.stringify({ email }),
+ });
+
+ const json = await res.json();
+
+ if (res.ok && json.success) {
+ setOtpEmail(email);
+ setOtpStep('verify');
+ setResendCooldown(60);
+ setOtpSuccess(json.message || t('If an account exists for this email, a login code has been sent.'));
+ } else {
+ const errMsg = json.errors
+ ? Object.values(json.errors).flat().join(' ')
+ : json.message || t('Something went wrong. Please try again.');
+ setOtpError(errMsg);
+ }
+ } catch {
+ setOtpError(t('Connection error. Please try again.'));
+ } finally {
+ setOtpProcessing(false);
+ }
+ };
+
+ const handleOtpChange = useCallback((index: number, value: string) => {
+ if (!/^\d*$/.test(value)) return;
+ const digit = value.slice(-1);
+ const newValues = [...otpValues];
+ newValues[index] = digit;
+ setOtpValues(newValues);
+ setOtpError('');
+
+ if (digit && index < 5) {
+ otpRefs.current[index + 1]?.focus();
+ }
+ }, [otpValues]);
+
+ const handleOtpKeyDown = useCallback((index: number, e: React.KeyboardEvent) => {
+ if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
+ otpRefs.current[index - 1]?.focus();
+ const newValues = [...otpValues];
+ newValues[index - 1] = '';
+ setOtpValues(newValues);
+ }
+ }, [otpValues]);
+
+ const handleOtpPaste = useCallback((e: React.ClipboardEvent) => {
+ e.preventDefault();
+ const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+ if (pasted.length === 0) return;
+ const newValues = [...otpValues];
+ for (let i = 0; i < 6; i++) {
+ newValues[i] = pasted[i] || '';
+ }
+ setOtpValues(newValues);
+ const focusIndex = Math.min(pasted.length, 5);
+ otpRefs.current[focusIndex]?.focus();
+ }, [otpValues]);
+
+ const handleOtpVerify = async () => {
+ const code = otpValues.join('');
+ if (code.length !== 6) {
+ setOtpError(t('Enter the 6-digit code'));
+ return;
+ }
+
+ setOtpProcessing(true);
+ setOtpError('');
+ setOtpSuccess('');
+
+ try {
+ const res = await fetch(route('login.otp.verify'), {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'Accept': 'application/json',
+ 'X-Requested-With': 'XMLHttpRequest',
+ 'X-XSRF-TOKEN': decodeURIComponent(
+ document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
+ ),
+ },
+ body: JSON.stringify({ email: otpEmail.trim(), code }),
+ });
+
+ const json = await res.json();
+
+ if (res.ok && json.success) {
+ window.location.href = json.redirect;
+ } else {
+ const errMsg = json.errors
+ ? Object.values(json.errors).flat().join(' ')
+ : json.message || t('Invalid or expired code.');
+ setOtpError(errMsg);
+ }
+ } catch {
+ setOtpError(t('Connection error. Please try again.'));
+ } finally {
+ setOtpProcessing(false);
+ }
+ };
+
+ const handleOtpResend = async () => {
+ if (resendCooldown > 0) return;
+ setOtpError('');
+ setOtpSuccess('');
+
+ try {
+ const res = await fetch(route('login.otp.send'), {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'Accept': 'application/json',
+ 'X-Requested-With': 'XMLHttpRequest',
+ 'X-XSRF-TOKEN': decodeURIComponent(
+ document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] || ''
+ ),
+ },
+ body: JSON.stringify({ email: otpEmail.trim() }),
+ });
+
+ const json = await res.json();
+ if (res.ok && json.success) {
+ setOtpSuccess(json.message || t('If an account exists for this email, a login code has been sent.'));
+ setResendCooldown(60);
+ setOtpValues(['', '', '', '', '', '']);
+ otpRefs.current[0]?.focus();
+ } else {
+ setOtpError(json.message || t('Something went wrong. Please try again.'));
+ }
+ } catch {
+ setOtpError(t('Connection error. Please try again.'));
+ }
+ };
+
+ // ==================== OTP MODE VIEW ====================
+ if (mode === 'otp') {
+ return (
+ <AuthLayout
+ title={t("Login")}
+ description={t("Login with a code")}
+ >
+ <div className="space-y-6">
+ {/* Back button */}
+ <button
+ type="button"
+ onClick={backToPassword}
+ className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+ >
+ <ArrowLeft size={16} className={rtl ? 'rotate-180' : ''} />
+ {t("Back to password login")}
+ </button>
+
+ {/* OTP icon */}
+ <div className="flex justify-center">
+ <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: `${primaryColor}15` }}>
+ <ShieldCheck size={32} style={{ color: primaryColor }} />
+ </div>
+ </div>
+
+ {otpStep === 'send' ? (
+ <>
+ <p className="text-sm text-gray-500 text-center leading-relaxed">
+ {t("We'll email you a one-time code to sign in without a password.")}
+ </p>
+
+ {/* Email */}
+ <div>
+ <Label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-1.5">{t("Email")}</Label>
+ <div className="relative">
+ <div className="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none">
+ <Mail className="h-4 w-4 text-gray-400" />
+ </div>
+ <Input
+ id="otp-email"
+ type="email"
+ required
+ autoFocus
+ autoComplete="email"
+ value={otpEmail}
+ onChange={(e) => setOtpEmail(e.target.value)}
+ placeholder={t("Enter your email")}
+ onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOtpSend(); } }}
+ className="w-full ps-10 pe-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 placeholder-gray-400 bg-gray-50 focus:bg-white"
+ style={{ '--tw-ring-color': `${primaryColor}33` } as React.CSSProperties}
+ />
+ </div>
+ <InputError message={otpError} />
+ </div>
+
+ {/* Send button */}
+ <div>
+ <button
+ type="button"
+ onClick={handleOtpSend}
+ disabled={otpProcessing}
+ className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+ style={{ backgroundColor: primaryColor }}
+ >
+ {otpProcessing ? (
+ <>
+ <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+ {t("Sending...")}
+ </>
+ ) : (
+ <>
+ <KeyRound size={18} />
+ {t("Send code")}
+ </>
+ )}
+ </button>
+ </div>
+ </>
+ ) : (
+ <>
+ <p className="text-sm text-gray-500 text-center">
+ {t("We sent a code to")} <span className="font-medium text-gray-700">{otpEmail}</span>
+ </p>
+
+ <button
+ type="button"
+ onClick={() => setOtpStep('send')}
+ className="mx-auto flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors -mt-2"
+ >
+ <Mail size={12} />
+ {t("Use a different email")}
+ </button>
+
+ <p className="text-xs text-gray-400 text-center -mt-2">
+ {t("Enter the 6-digit code below")}
+ </p>
+
+ {/* OTP inputs */}
+ <div className="flex justify-center gap-2.5 sm:gap-3" dir="ltr">
+ {otpValues.map((val, i) => (
+ <input
+ key={i}
+ ref={(el) => { otpRefs.current[i] = el; }}
+ type="text"
+ inputMode="numeric"
+ maxLength={1}
+ value={val}
+ onChange={(e) => handleOtpChange(i, e.target.value)}
+ onKeyDown={(e) => handleOtpKeyDown(i, e)}
+ onPaste={handleOtpPaste}
+ autoFocus={i === 0}
+ className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-bold rounded-xl border-2 transition-all duration-200 focus:outline-none"
+ style={{
+ borderColor: val ? primaryColor : undefined,
+ backgroundColor: val ? `${primaryColor}10` : undefined,
+ '--tw-ring-color': `${primaryColor}33`,
+ color: val ? primaryColor : undefined,
+ } as React.CSSProperties}
+ />
+ ))}
+ </div>
+
+ {/* Error */}
+ {otpError && (
+ <div className="text-center text-sm text-red-500 bg-red-50 rounded-lg px-4 py-2.5">
+ {otpError}
+ </div>
+ )}
+
+ {/* Success */}
+ {otpSuccess && (
+ <div className="text-center text-sm text-emerald-600 bg-emerald-50 rounded-lg px-4 py-2.5">
+ {otpSuccess}
+ </div>
+ )}
+
+ {/* Verify button */}
+ <div>
+ <button
+ type="button"
+ onClick={handleOtpVerify}
+ disabled={otpProcessing || otpValues.join('').length !== 6}
+ className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+ style={{ backgroundColor: primaryColor }}
+ >
+ {otpProcessing ? (
+ <>
+ <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+ {t("Verifying...")}
+ </>
+ ) : (
+ <>
+ <ShieldCheck size={18} />
+ {t("Verify & Login")}
+ </>
+ )}
+ </button>
+ </div>
+
+ {/* Resend */}
+ <div className="text-center">
+ {resendCooldown > 0 ? (
+ <p className="text-sm text-gray-400">
+ {t("Resend code in")} <span className="font-medium text-gray-500">{resendCooldown}s</span>
+ </p>
+ ) : (
+ <button
+ type="button"
+ onClick={handleOtpResend}
+ className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:underline"
+ style={{ color: primaryColor }}
+ >
+ <RefreshCw size={14} />
+ {t("Resend code")}
+ </button>
+ )}
+ </div>
+ </>
+ )}
+
+ {/* Register link */}
+ {registrationEnabled && (
+ <div className="text-center text-sm text-gray-500 mt-5">
+ {t("Don't have an account?")}{' '}
+ <TextLink
+ href={route('register')}
+ className="font-semibold hover:underline"
+ style={{ color: primaryColor }}
+ >
+ {t("Create one")}
+ </TextLink>
+ </div>
+ )}
+
+ {/* Divider */}
+ {authProviders.length > 0 && (
+ <div className="relative my-6">
+ <div className="absolute inset-0 flex items-center">
+ <div className="w-full border-t border-gray-200"></div>
+ </div>
+ <div className="relative flex justify-center text-sm">
+ <span className="px-3 bg-white text-gray-400">{t("or continue with")}</span>
+ </div>
+ </div>
+ )}
+
+ {/* Social Login Buttons */}
+ <SocialButtons primaryColor={primaryColor} availableProviders={authProviders} />
+ </div>
+ </AuthLayout>
+ );
+ }
 
  return (
   <AuthLayout
@@ -236,8 +647,23 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  </AuthButton>
  </div>
 
+ {/* Passwordless login link */}
+ {mailConfigured && (
+ <div className="text-center text-sm mt-3">
+ <button
+ type="button"
+ onClick={openOtpMode}
+ className="inline-flex items-center gap-1.5 font-medium hover:underline transition-colors"
+ style={{ color: primaryColor }}
+ >
+ <KeyRound size={14} />
+ {t("Login with a code")}
+ </button>
+ </div>
+ )}
+
  {/* Register link */}
- {(settings.registrationEnabled === 'true' || settings.registrationEnabled === true || settings.registrationEnabled === '1' || settings.registrationEnabled === 1) && (
+ {registrationEnabled && (
  <div className="text-center text-sm text-gray-500 mt-5">
  {t("Don't have an account?")}{' '}
  <TextLink

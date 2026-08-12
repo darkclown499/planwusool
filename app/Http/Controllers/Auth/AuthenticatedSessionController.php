@@ -32,7 +32,9 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('auth/login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
-            'settings' => settings(),
+            'settings' => array_merge(settings(), [
+                'mailConfigured' => \App\Services\MailConfigService::isConfigured(),
+            ]),
             'isDemo' => $isDemo,
             'demoStores' => $demoStores,
         ]);
@@ -46,6 +48,8 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        \App\Services\LoginAlertService::checkAndAlert($request->user(), $request);
 
         // Check if email verification is enabled and user is not verified
         $emailVerificationEnabled = getSetting('emailVerification', false);

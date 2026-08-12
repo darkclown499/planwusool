@@ -14,6 +14,7 @@ import SocialButtons from '@/components/auth/SocialButtons';
 import Recaptcha, { executeRecaptcha } from '@/components/recaptcha';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
+import { getPasswordScore, passwordScoreColor, passwordScoreLabelKey } from '@/utils/password-strength';
 
 type RegisterForm = {
  name: string;
@@ -37,7 +38,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  const [showPassword, setShowPassword] = useState(false);
  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
  const { themeColor, customColor } = useBrand();
- const { settings = {}, authProviders = [] } = usePage().props as any;
+ const { settings = {}, authProviders = [], rtl } = usePage().props as any;
  const recaptchaEnabled = settings.recaptchaEnabled === 'true' || settings.recaptchaEnabled === true || settings.recaptchaEnabled === 1 || settings.recaptchaEnabled === '1';
  const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
 
@@ -265,7 +266,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  onClick={handleBackToForm}
  className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
  >
- <ArrowLeft size={16} className={usePage().props.rtl ? 'rotate-180' : ''} />
+ <ArrowLeft size={16} className={rtl ? 'rotate-180' : ''} />
  {t("Back to registration")}
  </button>
 
@@ -447,6 +448,33 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  </button>
  </div>
  <InputError message={errors.password} />
+
+ {/* Password strength meter */}
+ {data.password.length > 0 && (
+ <div className="mt-2">
+ <div className="flex items-center justify-between mb-1.5">
+ <span className="text-xs text-gray-500">{t("Password strength")}</span>
+ {getPasswordScore(data.password) > 0 && (
+ <span className="text-xs font-medium" style={{ color: passwordScoreColor(getPasswordScore(data.password)) }}>
+ {t(passwordScoreLabelKey(getPasswordScore(data.password)))}
+ </span>
+ )}
+ </div>
+ <div className="flex gap-1.5">
+ {[1, 2, 3, 4].map((level) => (
+ <div
+ key={level}
+ className="h-1.5 flex-1 rounded-full transition-all duration-300"
+ style={{
+ backgroundColor: getPasswordScore(data.password) >= level
+ ? passwordScoreColor(getPasswordScore(data.password))
+ : '#e5e7eb',
+ }}
+ />
+ ))}
+ </div>
+ </div>
+ )}
  </div>
 
  {/* Confirm Password */}

@@ -214,6 +214,30 @@ class MerchantNotificationService
     }
 
     /**
+     * Create a notification for a login from a new device (security alert).
+     */
+    public static function newDeviceLogin(User $user, string $ip, string $ua, ?int $storeId = null): void
+    {
+        self::create([
+            'user_id' => $user->id,
+            'store_id' => $storeId ?? $user->current_store,
+            'type' => 'system',
+            'title' => 'تسجيل دخول جديد من جهاز جديد',
+            'body' => "تم تسجيل الدخول إلى حسابك من جهاز جديد (IP: {$ip}). إذا لم تكن أنت، غيّر كلمة مرورك فوراً.",
+            'icon' => 'AlertTriangle',
+            'color' => 'amber',
+            'related_id' => $user->id,
+            'related_type' => 'user',
+            'data' => [
+                'ip' => $ip,
+                'user_agent' => $ua,
+                'logged_in_at' => now()->toDateTimeString(),
+            ],
+            'is_urgent' => true,
+        ]);
+    }
+
+    /**
      * Get notifications for a user (optionally filtered by store).
      */
     public static function getForUser(int $userId, ?int $storeId = null, int $limit = 20, bool $unreadOnly = false): Collection

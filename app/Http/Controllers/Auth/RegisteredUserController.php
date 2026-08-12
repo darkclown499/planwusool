@@ -60,7 +60,9 @@ class RegisteredUserController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            // Enforced server-side to match the password strength meter shown in
+            // the registration form (8+ chars, mixed case, at least one number).
+            'password' => ['required', 'confirmed', (new Rules\Password(8))->letters()->mixedCase()->numbers()],
             'terms' => 'accepted',
         ];
         
