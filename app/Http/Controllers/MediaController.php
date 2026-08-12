@@ -155,6 +155,7 @@ class MediaController extends Controller
 
         DB::transaction(function () use ($request, &$uploadedMedia, &$errors, $allowedMimes) {
             foreach ($request->file('files') as $file) {
+                $tempFilePath = null;
                 try {
                     $sanitizedName = $this->sanitizeFilename($file->getClientOriginalName());
 
@@ -162,10 +163,32 @@ class MediaController extends Controller
                         'name' => $sanitizedName,
                     ]);
 
-                    $media = $mediaItem
-                        ->addMedia($file)
-                        ->usingName($sanitizedName)
-                        ->toMediaCollection('images');
+                    $isSvg = strtolower(pathinfo($sanitizedName, PATHINFO_EXTENSION)) === 'svg';
+
+                    if ($isSvg) {
+                        // SVG can contain scripts when served inline — strip
+                        // dangerous content before persisting.
+                        $tempFilePath = tempnam(sys_get_temp_dir(), 'med_svg_');
+                        file_put_contents($tempFilePath, $this->sanitizeSvgContent($file->get()));
+                        $source = $tempFilePath;
+                    } else {
+                        $source = $file;
+                    }
+
+                    $fileAdder = $mediaItem
+                        ->addMedia($source)
+                        ->usingName($sanitizedName);
+
+                    if ($isSvg) {
+                        $fileAdder->usingFileName($sanitizedName);
+                    }
+
+                    $media = $fileAdder->toMediaCollection('images');
+
+                    if ($tempFilePath) {
+                        @unlink($tempFilePath);
+                        $tempFilePath = null;
+                    }
 
                     $media->user_id = auth()->id();
                     $media->save();
@@ -193,6 +216,9 @@ class MediaController extends Controller
                         'created_at' => $media->created_at,
                     ];
                 } catch (\Exception $e) {
+                    if ($tempFilePath) {
+                        @unlink($tempFilePath);
+                    }
                     if (isset($mediaItem)) {
                         $mediaItem->delete();
                     }
@@ -365,6 +391,35 @@ class MediaController extends Controller
         }
 
         return $extension ? $safeName . '.' . $extension : $safeName;
+    }
+
+    /**
+     * Strip executable content from uploaded SVG files so they cannot run
+     * scripts when served inline from the storage disk.
+     */
+    private function sanitizeSvgContent(string $content): string
+    {
+        if ($content === '') {
+            return $content;
+        }
+
+        // Remove entire <script> blocks
+        $content = preg_replace('/<script\b[^>]*>.*?<\/script\s*>/is', '', $content);
+
+        // Remove unsafe embedded/executable elements
+        $content = preg_replace('/<\s*(iframe|object|embed|foreignObject|animate|animateTransform|set|handler)\b[^>]*>.*?<\s*\/\s*(iframe|object|embed|foreignObject|animate|animateTransform|set|handler)\s*>/is', '', $content);
+
+        // Remove leftover event handler attributes
+        $content = preg_replace('/\s+on\w+\s*=\s*"[^"]*"/i', '', $content);
+        $content = preg_replace("/\s+on\w+\s*=\s*'[^']*'/i", '', $content);
+
+        // Drop javascript:, vbscript: and data: URLs in link/src attributes
+        $content = preg_replace('/(\s(?:href|xlink:href|src)\s*=\s*["\'])\s*(?:javascript|vbscript|data)\s*:/i', '$1removed:', $content);
+
+        // Remove processing instructions that can pull external resources
+        $content = preg_replace('/<\?xml-stylesheet\b[^>]*\?>/i', '', $content);
+
+        return $content;
     }
 
     private function getUserFriendlyError(\Exception $e, $fileName): string

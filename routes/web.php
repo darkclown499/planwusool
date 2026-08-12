@@ -447,7 +447,7 @@ Route::get('/page/{slug}', [CustomPageController::class, 'show'])->name('custom-
 Route::post('/cookie-consent/store', [\App\Http\Controllers\CookieConsentController::class, 'store'])->name('cookie.consent.store');
 Route::get('/cookie-consent/download', [\App\Http\Controllers\CookieConsentController::class, 'download'])->name('cookie.consent.download');
 
-Route::get('/translations/{locale}', [TranslationController::class, 'getTranslations'])->name('translations');
+Route::get('/translations/{locale}', [TranslationController::class, 'getTranslations'])->where('locale', '[A-Za-z0-9_-]+')->name('translations');
 
 
 

@@ -201,7 +201,7 @@ class AccountingService
         }
 
         $signature = $request->header('X-Signature');
-        if ($signature && !$this->verifySignature($request->getContent(), $signature, $config->api_key)) {
+        if (!$signature || !$this->verifySignature($request->getContent(), $signature, $config->api_key)) {
             return ['success' => false, 'message' => 'Invalid signature'];
         }
 
