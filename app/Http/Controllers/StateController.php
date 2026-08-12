@@ -51,7 +51,7 @@ class StateController extends Controller
 
         State::create($request->all());
 
-        return redirect()->route('states.index')->with('success', 'State created successfully.');
+        return redirect()->route('states.index')->with('success', __('State created successfully.'));
     }
 
     public function show(State $state)
@@ -84,13 +84,13 @@ class StateController extends Controller
 
         $state->update($request->all());
 
-        return redirect()->route('states.index')->with('success', 'State updated successfully.');
+        return redirect()->route('states.index')->with('success', __('State updated successfully.'));
     }
 
     public function destroy(State $state)
     {
         $state->delete();
 
-        return redirect()->route('states.index')->with('success', 'State deleted successfully.');
+        return redirect()->route('states.index')->with('success', __('State deleted successfully.'));
     }
 }

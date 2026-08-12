@@ -54,7 +54,7 @@ class CityController extends Controller
 
         City::create($request->all());
 
-        return redirect()->route('cities.index')->with('success', 'City created successfully.');
+        return redirect()->route('cities.index')->with('success', __('City created successfully.'));
     }
 
     public function show(City $city)
@@ -91,13 +91,13 @@ class CityController extends Controller
 
         $city->update($request->all());
 
-        return redirect()->route('cities.index')->with('success', 'City updated successfully.');
+        return redirect()->route('cities.index')->with('success', __('City updated successfully.'));
     }
 
     public function destroy(City $city)
     {
         $city->delete();
 
-        return redirect()->route('cities.index')->with('success', 'City deleted successfully.');
+        return redirect()->route('cities.index')->with('success', __('City deleted successfully.'));
     }
 }

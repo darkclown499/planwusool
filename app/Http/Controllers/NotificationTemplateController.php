@@ -47,7 +47,7 @@ class NotificationTemplateController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->with('error', 'Validation failed');
+            return back()->withErrors($validator)->with('error', __('Validation failed'));
         }
 
         try {
@@ -66,9 +66,9 @@ class NotificationTemplateController extends Controller
                 ]);
             }
 
-            return redirect()->route('notification-templates.index')->with('success', 'Template created successfully');
+            return redirect()->route('notification-templates.index')->with('success', __('Template created successfully'));
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to create template: ' . $e->getMessage());
+            return back()->with('error', __('Failed to create template: ') . $e->getMessage());
         }
     }
 
@@ -105,7 +105,7 @@ class NotificationTemplateController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->with('error', 'Validation failed');
+            return back()->withErrors($validator)->with('error', __('Validation failed'));
         }
 
         try {
@@ -127,9 +127,9 @@ class NotificationTemplateController extends Controller
                 );
             }
 
-            return back()->with('success', 'Template updated successfully');
+            return back()->with('success', __('Template updated successfully'));
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to update template: ' . $e->getMessage());
+            return back()->with('error', __('Failed to update template: ') . $e->getMessage());
         }
     }
 

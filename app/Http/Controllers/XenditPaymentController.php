@@ -169,7 +169,7 @@ class XenditPaymentController extends Controller
                 'payment_id' => $validated['external_id'],
             ]);
             
-            return redirect()->route('plans.index')->with('success', 'Xendit payment completed (Demo)');
+            return redirect()->route('plans.index')->with('success', __('Xendit payment completed (Demo)'));
         } catch (\Exception $e) {
             return handlePaymentError($e, 'xendit');
         }

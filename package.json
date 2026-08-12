@@ -27,6 +27,7 @@
     "dependencies": {
         "@codemirror/lang-css": "^6.3.1",
         "@codemirror/lang-javascript": "^6.2.5",
+        "@codemirror/lang-json": "^6.0.2",
         "@fullcalendar/daygrid": "^6.1.17",
         "@fullcalendar/interaction": "^6.1.17",
         "@fullcalendar/react": "^6.1.17",

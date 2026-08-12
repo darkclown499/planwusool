@@ -20,7 +20,7 @@ class TwilioSettingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->with('error', 'Validation failed');
+            return back()->withErrors($validator)->with('error', __('Validation failed'));
         }
 
         $user = auth()->user();
@@ -46,9 +46,9 @@ class TwilioSettingController extends Controller
                 }
             }
 
-            return back()->with('success', 'Twilio settings updated successfully');
+            return back()->with('success', __('Twilio settings updated successfully'));
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to update Twilio settings: ' . $e->getMessage());
+            return back()->with('error', __('Failed to update Twilio settings: ') . $e->getMessage());
         }
     }
 }

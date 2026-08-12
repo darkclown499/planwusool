@@ -93,7 +93,7 @@ class PayPalController extends Controller
             return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
                 ->with('payment_status', 'success')
                 ->with('order_number', $order->order_number)
-                ->with('success', 'Payment completed successfully!');
+                ->with('success', __('Payment completed successfully!'));
             
         } catch (\Exception $e) {
             $storeModel = \App\Models\Store::where('slug', $storeSlug)->first();

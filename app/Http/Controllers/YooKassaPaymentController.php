@@ -108,7 +108,7 @@ class YooKassaPaymentController extends Controller
                         'payment_id' => $orderId,
                     ]);
                     
-                    return redirect()->route('plans.index')->with('success', 'Payment successful and plan activated');
+                    return redirect()->route('plans.index')->with('success', __('Payment successful and plan activated'));
                 }
             }
             return redirect()->route('plans.index')->with('error', __('Payment verification failed'));

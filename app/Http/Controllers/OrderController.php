@@ -358,7 +358,7 @@ class OrderController extends Controller
             }
         }
         
-        return redirect()->route('orders.show', $id)->with('success', 'Order updated successfully.');
+        return redirect()->route('orders.show', $id)->with('success', __('Order updated successfully.'));
     }
 
     /**
@@ -375,7 +375,7 @@ class OrderController extends Controller
             
         $order->delete();
         
-        return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+        return redirect()->route('orders.index')->with('success', __('Order deleted successfully.'));
     }
     
     /**

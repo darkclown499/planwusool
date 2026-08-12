@@ -44,7 +44,7 @@ class CountryController extends Controller
 
         Country::create($request->all());
 
-        return redirect()->route('countries.index')->with('success', 'Country created successfully.');
+        return redirect()->route('countries.index')->with('success', __('Country created successfully.'));
     }
 
     public function show(Country $country)
@@ -75,13 +75,13 @@ class CountryController extends Controller
 
         $country->update($request->all());
 
-        return redirect()->route('countries.index')->with('success', 'Country updated successfully.');
+        return redirect()->route('countries.index')->with('success', __('Country updated successfully.'));
     }
 
     public function destroy(Country $country)
     {
         $country->delete();
 
-        return redirect()->route('countries.index')->with('success', 'Country deleted successfully.');
+        return redirect()->route('countries.index')->with('success', __('Country deleted successfully.'));
     }
 }

@@ -109,7 +109,7 @@ class ExpressCheckoutController extends Controller
         ]);
 
         return redirect()->route('express-checkout.index')
-            ->with('success', 'Express checkout created successfully!');
+            ->with('success', __('Express checkout created successfully!'));
     }
 
     /**
@@ -235,7 +235,7 @@ class ExpressCheckoutController extends Controller
         ]);
 
         return redirect()->route('express-checkout.index')
-            ->with('success', 'Express checkout updated successfully!');
+            ->with('success', __('Express checkout updated successfully!'));
     }
 
     /**
@@ -252,6 +252,6 @@ class ExpressCheckoutController extends Controller
         $checkout->delete();
 
         return redirect()->route('express-checkout.index')
-            ->with('success', 'Express checkout deleted successfully!');
+            ->with('success', __('Express checkout deleted successfully!'));
     }
 }

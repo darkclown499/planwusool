@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Customer;
-use App\Models\Product;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -17,15 +15,24 @@ class AnalyticsController extends Controller
     {
         $user = Auth::user();
         $storeId = $user->current_store;
+        // Super admins have no store selected; for them the analytics page
+        // shows platform-wide numbers aggregated across every store.
+        $aggregate = $user->isSuperAdmin();
 
-        // Always return static data for demo purposes
+        // A merchant without a selected store has nothing to aggregate yet.
+        if (!$aggregate && !$storeId) {
+            return Inertia::render('analytics/index', [
+                'analytics' => $this->emptyAnalytics()
+            ]);
+        }
+
         $analytics = [
-            'metrics' => $this->getKeyMetrics($storeId),
-            'topProducts' => $this->getTopProducts($storeId),
-            'topCustomers' => $this->getTopCustomers($storeId),
-            'recentActivity' => $this->getRecentActivity($storeId),
-            'revenueChart' => $this->getStaticRevenueChart(),
-            'salesChart' => $this->getStaticSalesChart()
+            'metrics' => $this->getKeyMetrics($storeId, $aggregate),
+            'topProducts' => $this->getTopProducts($storeId, $aggregate),
+            'topCustomers' => $this->getTopCustomers($storeId, $aggregate),
+            'recentActivity' => $this->getRecentActivity($storeId, $aggregate),
+            'revenueChart' => $this->getRevenueChartData($storeId, $aggregate),
+            'salesChart' => $this->getSalesChartData($storeId, $aggregate)
         ];
 
         return Inertia::render('analytics/index', [
@@ -33,40 +40,61 @@ class AnalyticsController extends Controller
         ]);
     }
 
-    private function getKeyMetrics($storeId)
+    /**
+     * Build an order query scoped to the current context.
+     *
+     * @param int|null $storeId
+     * @param bool $aggregate When true (super admin), ignore the store filter.
+     * @param bool $paidOnly Only count paid orders.
+     */
+    private function orderQuery($storeId, $aggregate, $paidOnly = false)
+    {
+        $query = Order::query();
+
+        if ($paidOnly) {
+            $query->where('payment_status', 'paid');
+        }
+
+        if (!$aggregate && $storeId) {
+            $query->where('store_id', $storeId);
+        }
+
+        return $query;
+    }
+
+    private function getKeyMetrics($storeId, $aggregate)
     {
         $currentMonth = Carbon::now()->startOfMonth();
         $lastMonth = Carbon::now()->subMonth()->startOfMonth();
 
-        // Total revenue (all time) and current month revenue
-        $totalRevenue = Order::where('store_id', $storeId)
-            ->where('payment_status', 'paid')
-            ->sum('total_amount');
-            
-        $currentMonthRevenue = Order::where('store_id', $storeId)
-            ->where('payment_status', 'paid')
+        // Revenue (paid orders only)
+        $totalRevenue = $this->orderQuery($storeId, $aggregate, true)->sum('total_amount');
+        $currentMonthRevenue = $this->orderQuery($storeId, $aggregate, true)
             ->where('created_at', '>=', $currentMonth)
             ->sum('total_amount');
-
-        $lastMonthRevenue = Order::where('store_id', $storeId)
-            ->where('payment_status', 'paid')
+        $lastMonthRevenue = $this->orderQuery($storeId, $aggregate, true)
             ->whereBetween('created_at', [$lastMonth, $currentMonth])
             ->sum('total_amount');
 
-        $currentOrders = Order::where('store_id', $storeId)
+        // Orders
+        $currentOrders = $this->orderQuery($storeId, $aggregate)
             ->where('created_at', '>=', $currentMonth)
             ->count();
-
-        $lastMonthOrders = Order::where('store_id', $storeId)
+        $lastMonthOrders = $this->orderQuery($storeId, $aggregate)
             ->whereBetween('created_at', [$lastMonth, $currentMonth])
             ->count();
 
-        $totalCustomers = Customer::where('store_id', $storeId)->count();
-        $newCustomers = Customer::where('store_id', $storeId)
+        // Customers
+        $customerQuery = Customer::query();
+        if (!$aggregate && $storeId) {
+            $customerQuery->where('store_id', $storeId);
+        }
+        $totalCustomers = $customerQuery->count();
+        $newCustomers = (clone $customerQuery)
             ->where('created_at', '>=', $currentMonth)
             ->count();
 
-        // Fix revenue growth calculation
+        // Revenue growth (current month vs last month)
         $revenueGrowth = 0;
         if ($lastMonthRevenue > 0) {
             $revenueGrowth = (($currentMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100;
@@ -74,9 +102,23 @@ class AnalyticsController extends Controller
             $revenueGrowth = 100;
         }
 
+        // Conversion rate proxy: paid orders placed this month as % of total customers
+        $currentMonthPaid = $this->orderQuery($storeId, $aggregate, true)
+            ->where('created_at', '>=', $currentMonth)
+            ->count();
+        $lastMonthPaid = $this->orderQuery($storeId, $aggregate, true)
+            ->whereBetween('created_at', [$lastMonth, $currentMonth])
+            ->count();
+        $conversionRate = $totalCustomers > 0 ? round(($currentMonthPaid / $totalCustomers) * 100, 1) : 0;
+        $lastMonthRate = $totalCustomers > 0 ? round(($lastMonthPaid / $totalCustomers) * 100, 1) : 0;
+
         return [
             'revenue' => [
-                'current' => $totalRevenue, // Show total revenue, not just current month
+                // "current" is this month's revenue so the "% from last month"
+                // delta below it is meaningful and truthful.
+                'current' => round($currentMonthRevenue, 2),
+                // All-time revenue, shown as a secondary figure on the card.
+                'total' => round($totalRevenue, 2),
                 'change' => round($revenueGrowth, 1)
             ],
             'orders' => [
@@ -88,82 +130,96 @@ class AnalyticsController extends Controller
                 'new' => $newCustomers
             ],
             'conversion' => [
-                'rate' => 3.2, // Placeholder
-                'change' => 0.5
+                'rate' => $conversionRate,
+                'change' => round($conversionRate - $lastMonthRate, 1)
             ]
         ];
     }
 
-    private function getTopProducts($storeId)
+    private function getTopProducts($storeId, $aggregate)
     {
         return OrderItem::select('product_name', 'product_id')
             ->selectRaw('SUM(quantity) as total_sold')
             ->selectRaw('SUM(total_price) as total_revenue')
-            ->whereHas('order', function($query) use ($storeId) {
-                $query->where('store_id', $storeId);
+            ->whereHas('order', function ($query) use ($storeId, $aggregate) {
+                $query->where('payment_status', 'paid');
+                if (!$aggregate && $storeId) {
+                    $query->where('store_id', $storeId);
+                }
             })
             ->groupBy('product_id', 'product_name')
             ->orderBy('total_revenue', 'desc')
             ->limit(4)
             ->get()
-            ->map(function($item) use ($storeId) {
+            ->map(function ($item) use ($storeId) {
                 $user = Auth::user();
                 return [
-                    'name' => $item->product_name,
-                    'sales' => $item->total_sold,
+                    'name' => cleanUtf8((string) $item->product_name),
+                    'sales' => (int) $item->total_sold,
                     'revenue' => formatStoreCurrency($item->total_revenue, $user->id, $storeId)
                 ];
             });
     }
 
-    private function getTopCustomers($storeId)
+    private function getTopCustomers($storeId, $aggregate)
     {
         return Customer::select('customers.*')
-            ->selectRaw('COUNT(orders.id) as order_count')
-            ->selectRaw('SUM(orders.total_amount) as total_spent')
+            ->selectRaw("COUNT(CASE WHEN orders.payment_status = 'paid' THEN 1 ELSE NULL END) as order_count")
+            ->selectRaw("SUM(CASE WHEN orders.payment_status = 'paid' THEN orders.total_amount ELSE 0 END) as total_spent")
             ->leftJoin('orders', 'customers.id', '=', 'orders.customer_id')
-            ->where('customers.store_id', $storeId)
+            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
+                $query->where('customers.store_id', $storeId);
+            })
             ->groupBy('customers.id')
             ->orderBy('total_spent', 'desc')
             ->limit(4)
             ->get()
-            ->map(function($customer) use ($storeId) {
+            ->map(function ($customer) use ($storeId) {
                 $user = Auth::user();
                 return [
-                    'name' => cleanUtf8($customer->first_name . ' ' . $customer->last_name),
-                    'orders' => $customer->order_count ?: 0,
+                    'name' => cleanUtf8(trim($customer->first_name . ' ' . $customer->last_name)),
+                    'orders' => (int) ($customer->order_count ?: 0),
                     'spent' => formatStoreCurrency($customer->total_spent ?: 0, $user->id, $storeId)
                 ];
             });
     }
 
-    private function getRecentActivity($storeId)
+    private function getRecentActivity($storeId, $aggregate)
     {
-        return Order::where('store_id', $storeId)
+        return Order::query()
             ->with('customer')
+            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            })
             ->orderBy('created_at', 'desc')
             ->limit(4)
             ->get()
-            ->map(function($order) use ($storeId) {
+            ->map(function ($order) use ($storeId) {
                 $user = Auth::user();
                 return [
                     'type' => 'Order',
-                    'description' => "New order {$order->order_number} from {$order->customer_first_name} {$order->customer_last_name}",
+                    'description' => cleanUtf8(
+                        'New order ' . $order->order_number . ' from ' . $order->customer_first_name . ' ' . $order->customer_last_name
+                    ),
                     'amount' => formatStoreCurrency($order->total_amount, $user->id, $storeId),
-                    'time' => $order->created_at->diffForHumans()
+                    'time' => $order->created_at ? $order->created_at->diffForHumans() : ''
                 ];
             });
     }
 
-    private function getRevenueChartData($storeId)
+    private function getRevenueChartData($storeId, $aggregate)
     {
-        return Order::where('store_id', $storeId)
+        return Order::query()
+            ->where('payment_status', 'paid')
+            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            })
             ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue')
             ->where('created_at', '>=', Carbon::now()->subDays(30))
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'date' => Carbon::parse($item->date)->format('M d'),
                     'revenue' => (float) $item->revenue
@@ -171,15 +227,18 @@ class AnalyticsController extends Controller
             });
     }
 
-    private function getSalesChartData($storeId)
+    private function getSalesChartData($storeId, $aggregate)
     {
-        return Order::where('store_id', $storeId)
+        return Order::query()
+            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
+                $query->where('store_id', $storeId);
+            })
             ->selectRaw('DATE(created_at) as date, COUNT(*) as orders')
             ->where('created_at', '>=', Carbon::now()->subDays(30))
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'date' => Carbon::parse($item->date)->format('M d'),
                     'orders' => (int) $item->orders
@@ -187,128 +246,47 @@ class AnalyticsController extends Controller
             });
     }
 
-    private function getEmptyAnalytics()
+    private function emptyAnalytics()
     {
         return [
             'metrics' => [
-                'revenue' => ['current' => 45250, 'change' => 12.5],
-                'orders' => ['current' => 156, 'change' => 23],
-                'customers' => ['total' => 89, 'new' => 12],
-                'conversion' => ['rate' => 3.2, 'change' => 0.5]
+                'revenue' => ['current' => 0, 'total' => 0, 'change' => 0],
+                'orders' => ['current' => 0, 'change' => 0],
+                'customers' => ['total' => 0, 'new' => 0],
+                'conversion' => ['rate' => 0, 'change' => 0]
             ],
-            'topProducts' => [
-                ['name' => 'iPhone 15 Pro Max', 'sales' => 45, 'revenue' => '$22,500'],
-                ['name' => 'Samsung Galaxy S24', 'sales' => 32, 'revenue' => '$16,800'],
-                ['name' => 'MacBook Air M3', 'sales' => 18, 'revenue' => '$21,600'],
-                ['name' => 'AirPods Pro', 'sales' => 67, 'revenue' => '$13,400']
-            ],
-            'topCustomers' => [
-                ['name' => 'John Smith', 'orders' => 8, 'spent' => '$3,250'],
-                ['name' => 'Sarah Johnson', 'orders' => 6, 'spent' => '$2,890'],
-                ['name' => 'Mike Wilson', 'orders' => 5, 'spent' => '$2,450'],
-                ['name' => 'Emma Davis', 'orders' => 4, 'spent' => '$1,980']
-            ],
-            'recentActivity' => [
-                ['type' => 'Order', 'description' => 'New order #1234 from John Smith', 'amount' => '$450', 'time' => '2 minutes ago'],
-                ['type' => 'Customer', 'description' => 'New customer Sarah Johnson registered', 'amount' => null, 'time' => '15 minutes ago'],
-                ['type' => 'Order', 'description' => 'New order #1233 from Mike Wilson', 'amount' => '$320', 'time' => '1 hour ago'],
-                ['type' => 'Payment', 'description' => 'Payment received for order #1232', 'amount' => '$680', 'time' => '2 hours ago']
-            ],
-            'revenueChart' => [
-                ['date' => 'Jan 1', 'revenue' => 1200],
-                ['date' => 'Jan 2', 'revenue' => 1450],
-                ['date' => 'Jan 3', 'revenue' => 1100],
-                ['date' => 'Jan 4', 'revenue' => 1800],
-                ['date' => 'Jan 5', 'revenue' => 1650],
-                ['date' => 'Jan 6', 'revenue' => 2100],
-                ['date' => 'Jan 7', 'revenue' => 1900],
-                ['date' => 'Jan 8', 'revenue' => 2300],
-                ['date' => 'Jan 9', 'revenue' => 2050],
-                ['date' => 'Jan 10', 'revenue' => 2400],
-                ['date' => 'Jan 11', 'revenue' => 2200],
-                ['date' => 'Jan 12', 'revenue' => 2650],
-                ['date' => 'Jan 13', 'revenue' => 2800],
-                ['date' => 'Jan 14', 'revenue' => 2450]
-            ],
-            'salesChart' => [
-                ['date' => 'Jan 1', 'orders' => 8],
-                ['date' => 'Jan 2', 'orders' => 12],
-                ['date' => 'Jan 3', 'orders' => 7],
-                ['date' => 'Jan 4', 'orders' => 15],
-                ['date' => 'Jan 5', 'orders' => 11],
-                ['date' => 'Jan 6', 'orders' => 18],
-                ['date' => 'Jan 7', 'orders' => 14],
-                ['date' => 'Jan 8', 'orders' => 20],
-                ['date' => 'Jan 9', 'orders' => 16],
-                ['date' => 'Jan 10', 'orders' => 22],
-                ['date' => 'Jan 11', 'orders' => 19],
-                ['date' => 'Jan 12', 'orders' => 25],
-                ['date' => 'Jan 13', 'orders' => 28],
-                ['date' => 'Jan 14', 'orders' => 24]
-            ]
-        ];
-    }
-    
-    private function getStaticRevenueChart()
-    {
-        return [
-            ['date' => 'Jan 1', 'revenue' => 1200],
-            ['date' => 'Jan 2', 'revenue' => 1450],
-            ['date' => 'Jan 3', 'revenue' => 1100],
-            ['date' => 'Jan 4', 'revenue' => 1800],
-            ['date' => 'Jan 5', 'revenue' => 1650],
-            ['date' => 'Jan 6', 'revenue' => 2100],
-            ['date' => 'Jan 7', 'revenue' => 1900],
-            ['date' => 'Jan 8', 'revenue' => 2300],
-            ['date' => 'Jan 9', 'revenue' => 2050],
-            ['date' => 'Jan 10', 'revenue' => 2400],
-            ['date' => 'Jan 11', 'revenue' => 2200],
-            ['date' => 'Jan 12', 'revenue' => 2650],
-            ['date' => 'Jan 13', 'revenue' => 2800],
-            ['date' => 'Jan 14', 'revenue' => 2450]
+            'topProducts' => [],
+            'topCustomers' => [],
+            'recentActivity' => [],
+            'revenueChart' => [],
+            'salesChart' => []
         ];
     }
 
-    private function getStaticSalesChart()
-    {
-        return [
-            ['date' => 'Jan 1', 'orders' => 8],
-            ['date' => 'Jan 2', 'orders' => 12],
-            ['date' => 'Jan 3', 'orders' => 7],
-            ['date' => 'Jan 4', 'orders' => 15],
-            ['date' => 'Jan 5', 'orders' => 11],
-            ['date' => 'Jan 6', 'orders' => 18],
-            ['date' => 'Jan 7', 'orders' => 14],
-            ['date' => 'Jan 8', 'orders' => 20],
-            ['date' => 'Jan 9', 'orders' => 16],
-            ['date' => 'Jan 10', 'orders' => 22],
-            ['date' => 'Jan 11', 'orders' => 19],
-            ['date' => 'Jan 12', 'orders' => 25],
-            ['date' => 'Jan 13', 'orders' => 28],
-            ['date' => 'Jan 14', 'orders' => 24]
-        ];
-    }
     public function export()
     {
         $user = Auth::user();
         $storeId = $user->current_store;
-        
-        if (!$storeId) {
+        $aggregate = $user->isSuperAdmin();
+
+        // A merchant without a selected store cannot export anything.
+        if (!$aggregate && !$storeId) {
             return response()->json(['error' => 'No store selected'], 400);
         }
-        
+
         $analytics = [
-            'metrics' => $this->getKeyMetrics($storeId),
-            'topProducts' => $this->getTopProducts($storeId),
-            'topCustomers' => $this->getTopCustomers($storeId),
-            'revenueChart' => $this->getRevenueChartData($storeId)
+            'metrics' => $this->getKeyMetrics($storeId, $aggregate),
+            'topProducts' => $this->getTopProducts($storeId, $aggregate),
+            'topCustomers' => $this->getTopCustomers($storeId, $aggregate),
+            'revenueChart' => $this->getRevenueChartData($storeId, $aggregate)
         ];
-        
+
         $csvData = [];
-        $csvData[] = ['Analytics Export - Store ID: ' . $storeId];
+        $scopeLabel = $aggregate ? 'All Stores (Platform)' : 'Store ID: ' . $storeId;
+        $csvData[] = ['Analytics Export - ' . $scopeLabel];
         $csvData[] = ['Generated on: ' . now()->format('Y-m-d H:i:s')];
         $csvData[] = [];
-        
+
         // Key Metrics
         $csvData[] = ['KEY METRICS'];
         $csvData[] = ['Metric', 'Current Value', 'Change'];
@@ -317,7 +295,7 @@ class AnalyticsController extends Controller
         $csvData[] = ['Total Customers', $analytics['metrics']['customers']['total'], ''];
         $csvData[] = ['New Customers', $analytics['metrics']['customers']['new'], ''];
         $csvData[] = [];
-        
+
         // Top Products
         $csvData[] = ['TOP PRODUCTS'];
         $csvData[] = ['Product Name', 'Units Sold', 'Revenue'];
@@ -325,7 +303,7 @@ class AnalyticsController extends Controller
             $csvData[] = [$product['name'], $product['sales'], $product['revenue']];
         }
         $csvData[] = [];
-        
+
         // Top Customers
         $csvData[] = ['TOP CUSTOMERS'];
         $csvData[] = ['Customer Name', 'Orders', 'Total Spent'];
@@ -333,29 +311,29 @@ class AnalyticsController extends Controller
             $csvData[] = [$customer['name'], $customer['orders'], $customer['spent']];
         }
         $csvData[] = [];
-        
+
         // Revenue Chart Data
         $csvData[] = ['DAILY REVENUE (Last 30 Days)'];
         $csvData[] = ['Date', 'Revenue'];
         foreach ($analytics['revenueChart'] as $data) {
             $csvData[] = [$data['date'], formatStoreCurrency($data['revenue'], $user->id, $storeId)];
         }
-        
+
         $filename = 'analytics-export-' . now()->format('Y-m-d') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
-        
-        $callback = function() use ($csvData) {
+
+        $callback = function () use ($csvData) {
             $file = fopen('php://output', 'w');
             foreach ($csvData as $row) {
                 fputcsv($file, $row);
             }
             fclose($file);
         };
-        
+
         return response()->stream($callback, 200, $headers);
     }
 }

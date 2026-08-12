@@ -119,15 +119,15 @@ class NepalstePaymentController extends Controller
                         'payment_id' => $orderId,
                     ]);
                     
-                    return redirect()->route('plans.index')->with('success', 'Payment successful and plan activated');
+                    return redirect()->route('plans.index')->with('success', __('Payment successful and plan activated'));
                 }
             }
             
-            return redirect()->route('plans.index')->with('error', 'Payment verification failed');
+            return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
             
         } catch (\Exception $e) {
             \Log::error('Nepalste success error: ' . $e->getMessage());
-            return redirect()->route('plans.index')->with('error', 'Payment processing failed');
+            return redirect()->route('plans.index')->with('error', __('Payment processing failed'));
         }
     }
 

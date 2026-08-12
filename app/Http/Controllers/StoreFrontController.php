@@ -22,14 +22,14 @@ class StoreFrontController extends Controller
                 $q->where('key', 'store_status')->where('value', 'true');
             })->first();
             if (!$store) {
-                return redirect()->route('home')->with('error', 'No active stores found.');
+                return redirect()->route('home')->with('error', __('No active stores found.'));
             }
             $storeId = $store->id;
         } else {
             $store = Store::findOrFail($storeId);
             $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
             if (!($config['store_status'] ?? true)) {
-                return redirect()->route('home')->with('error', 'This store is not active.');
+                return redirect()->route('home')->with('error', __('This store is not active.'));
             }
         }
         

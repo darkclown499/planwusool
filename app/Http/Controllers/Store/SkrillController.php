@@ -26,7 +26,7 @@ class SkrillController extends Controller
             return redirect()->to($this->getStoreHomeUrl($order->store, $storeSlug) . '?payment_status=success&order_number=' . $order->order_number)
                 ->with('payment_status', 'success')
                 ->with('order_number', $order->order_number)
-                ->with('success', 'Payment successful! Your order has been confirmed.');
+                ->with('success', __('Payment successful! Your order has been confirmed.'));
 
         } catch (\Exception $e) {
             $storeModel = \App\Models\Store::where('slug', $storeSlug)->first();

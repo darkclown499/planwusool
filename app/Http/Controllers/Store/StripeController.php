@@ -57,7 +57,7 @@ class StripeController extends Controller
                 return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
                     ->with('payment_status', 'success')
                     ->with('order_number', $order->order_number)
-                    ->with('success', 'Payment completed successfully!');
+                    ->with('success', __('Payment completed successfully!'));
             } else {
                 return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
                     ->with('payment_status', 'failed')

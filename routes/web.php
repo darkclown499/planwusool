@@ -940,6 +940,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Impersonation routes
     Route::middleware('App\Http\Middleware\SuperAdminMiddleware')->group(function () {
         Route::get('impersonate/{userId}', [ImpersonateController::class, 'start'])->name('impersonate.start');
+
+        // Template Editor (super admin only) - allows editing a store's own
+        // overrides/CSS/JS scoped to that store without touching shared templates.
+        Route::get('template-editor', [\App\Http\Controllers\TemplateEditorController::class, 'index'])->name('template-editor.index');
+        Route::get('template-editor/{store}', [\App\Http\Controllers\TemplateEditorController::class, 'show'])->name('template-editor.show');
+        Route::post('template-editor/{store}/save', [\App\Http\Controllers\TemplateEditorController::class, 'save'])->name('template-editor.save');
     });
 
     // Leaving impersonation is requested while still logged in as the

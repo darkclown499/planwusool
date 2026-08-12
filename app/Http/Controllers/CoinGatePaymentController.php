@@ -85,11 +85,11 @@ class CoinGatePaymentController extends Controller
                 return redirect($orderResponse->payment_url);
             } else {
                 $planOrder->update(['status' => 'cancelled']);
-                return redirect()->route('plans.index')->with('error', 'Payment initialization failed');
+                return redirect()->route('plans.index')->with('error', __('Payment initialization failed'));
             }
             
         } catch (\Exception $e) {
-            return redirect()->route('plans.index')->with('error', 'Payment failed: ' . $e->getMessage());
+            return redirect()->route('plans.index')->with('error', __('Payment failed: ') . $e->getMessage());
         }
     }
     
@@ -101,7 +101,7 @@ class CoinGatePaymentController extends Controller
             
             if (!$coingateData) {
                 Log::error('CoinGate data not found in session');
-                return redirect()->route('plans.index')->with('error', 'Payment session expired');
+                return redirect()->route('plans.index')->with('error', __('Payment session expired'));
             }
             
             $orderId = is_object($coingateData) ? $coingateData->order_id : $coingateData['order_id'];
@@ -109,7 +109,7 @@ class CoinGatePaymentController extends Controller
             
             if (!$planOrder) {
                 Log::error('Plan order not found', ['order_id' => $orderId]);
-                return redirect()->route('plans.index')->with('error', 'Order not found');
+                return redirect()->route('plans.index')->with('error', __('Order not found'));
             }
             
             // Mark as successful and activate subscription
@@ -123,11 +123,11 @@ class CoinGatePaymentController extends Controller
             // Clear session
             session()->forget('coingate_data');
             
-            return redirect()->route('plans.index')->with('success', 'Plan activated successfully!');
+            return redirect()->route('plans.index')->with('success', __('Plan activated successfully!'));
             
         } catch (\Exception $e) {
             Log::error('CoinGate callback error: ' . $e->getMessage());
-            return redirect()->route('plans.index')->with('error', 'Payment processing failed');
+            return redirect()->route('plans.index')->with('error', __('Payment processing failed'));
         }
     }
 }

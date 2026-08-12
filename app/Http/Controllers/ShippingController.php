@@ -117,7 +117,7 @@ class ShippingController extends Controller
         Shipping::create($data);
 
         return redirect()->route('shipping.index')
-            ->with('success', 'Shipping method created successfully!');
+            ->with('success', __('Shipping method created successfully!'));
     }
 
     /**
@@ -260,7 +260,7 @@ class ShippingController extends Controller
         $shipping->update($data);
 
         return redirect()->route('shipping.index')
-            ->with('success', 'Shipping method updated successfully!');
+            ->with('success', __('Shipping method updated successfully!'));
     }
 
     /**
@@ -277,7 +277,7 @@ class ShippingController extends Controller
         $shipping->delete();
 
         return redirect()->route('shipping.index')
-            ->with('success', 'Shipping method deleted successfully!');
+            ->with('success', __('Shipping method deleted successfully!'));
     }
     
     /**

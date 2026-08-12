@@ -222,7 +222,7 @@ class PaymentSettingController extends Controller
             $this->validateEnabledPaymentMethods($request, $validatedData);
             $this->savePaymentSettings($settings);
 
-            return back()->with('success', 'Payment settings saved successfully.');
+            return back()->with('success', __('Payment settings saved successfully.'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Exception $e) {

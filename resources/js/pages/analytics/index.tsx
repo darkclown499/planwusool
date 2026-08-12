@@ -70,6 +70,9 @@ export default function Analytics({ analytics }: Props) {
               <p className="text-xs text-muted-foreground">
                 {analytics.metrics.revenue.change >= 0 ? '+' : ''}{analytics.metrics.revenue.change.toFixed(1)}% from last month
               </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('Total')}: {formatCurrency(analytics.metrics.revenue.total)}
+              </p>
             </CardContent>
           </Card>
 
@@ -105,8 +108,10 @@ export default function Analytics({ analytics }: Props) {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3.2%</div>
-              <p className="text-xs text-muted-foreground">+0.5% from last month</p>
+              <div className="text-2xl font-bold">{analytics.metrics.conversion.rate.toFixed(1)}%</div>
+              <p className="text-xs text-muted-foreground">
+                {analytics.metrics.conversion.change >= 0 ? '+' : ''}{analytics.metrics.conversion.change.toFixed(1)}% from last month
+              </p>
             </CardContent>
           </Card>
         </div>

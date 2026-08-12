@@ -2,12 +2,15 @@ import React from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
+import { json } from '@codemirror/lang-json';
 import { EditorView } from '@codemirror/view';
+
+type EditorLanguage = 'css' | 'javascript' | 'json';
 
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
-  language?: 'css' | 'javascript';
+  language?: EditorLanguage;
   height?: string;
   readOnly?: boolean;
   placeholder?: string;
@@ -33,7 +36,7 @@ export function CodeEditor({
         readOnly={readOnly}
         placeholder={placeholder}
         extensions={[
-          language === 'css' ? css() : javascript(),
+          language === 'css' ? css() : language === 'json' ? json() : javascript(),
           EditorView.lineWrapping,
         ]}
         basicSetup={{

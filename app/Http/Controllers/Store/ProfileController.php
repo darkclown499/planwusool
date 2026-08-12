@@ -68,7 +68,7 @@ class ProfileController extends Controller
             ]
         );
 
-        return back()->with('success', 'Profile updated successfully!');
+        return back()->with('success', __('Profile updated successfully!'));
     }
 
     public function updatePassword(Request $request, $storeSlug)
@@ -90,6 +90,6 @@ class ProfileController extends Controller
             'password' => $request->password,
         ]);
 
-        return back()->with('success', 'Password updated successfully!');
+        return back()->with('success', __('Password updated successfully!'));
     }
 }

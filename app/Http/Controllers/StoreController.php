@@ -179,10 +179,10 @@ class StoreController extends Controller
         // Validate plan permissions for domain features
         $plan = $user->getCurrentPlan();
         if ($request->enable_custom_domain && $plan->enable_custdomain !== 'on') {
-            return redirect()->back()->with('error', 'Custom domain feature is not available in your current plan.');
+            return redirect()->back()->with('error', __('Custom domain feature is not available in your current plan.'));
         }
         if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on') {
-            return redirect()->back()->with('error', 'Custom subdomain feature is not available in your current plan.');
+            return redirect()->back()->with('error', __('Custom subdomain feature is not available in your current plan.'));
         }
         if ($request->enable_pwa && $plan->pwa_business !== 'on') {
             return redirect()->back()->with('error', __('PWA feature is not available in your current plan.'));
@@ -190,7 +190,7 @@ class StoreController extends Controller
         
         // Ensure only one domain type is enabled
         if ($request->enable_custom_domain && $request->enable_custom_subdomain) {
-            return redirect()->back()->with('error', 'You can enable either Custom Domain or Custom Subdomain, not both.');
+            return redirect()->back()->with('error', __('You can enable either Custom Domain or Custom Subdomain, not both.'));
         }
         
         // Validate domain availability
@@ -373,10 +373,10 @@ class StoreController extends Controller
         // Validate plan permissions for domain features
         $plan = $user->getCurrentPlan();
         if ($request->enable_custom_domain && $plan->enable_custdomain !== 'on') {
-            return redirect()->back()->with('error', 'Custom domain feature is not available in your current plan.');
+            return redirect()->back()->with('error', __('Custom domain feature is not available in your current plan.'));
         }
         if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on') {
-            return redirect()->back()->with('error', 'Custom subdomain feature is not available in your current plan.');
+            return redirect()->back()->with('error', __('Custom subdomain feature is not available in your current plan.'));
         }
         if ($request->enable_pwa && $plan->pwa_business !== 'on') {
             return redirect()->back()->with('error', __('PWA feature is not available in your current plan.'));
@@ -384,7 +384,7 @@ class StoreController extends Controller
         
         // Ensure only one domain type is enabled
         if ($request->enable_custom_domain && $request->enable_custom_subdomain) {
-            return redirect()->back()->with('error', 'You can enable either Custom Domain or Custom Subdomain, not both.');
+            return redirect()->back()->with('error', __('You can enable either Custom Domain or Custom Subdomain, not both.'));
         }
         
         // Validate domain availability (exclude current store)

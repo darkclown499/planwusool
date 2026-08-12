@@ -201,7 +201,7 @@ class MolliePaymentController extends Controller
             $credentials = $this->getMollieCredentials();
             
             if (!$credentials['api_key']) {
-                return redirect()->route('plans.index')->with('error', 'Payment configuration error.');
+                return redirect()->route('plans.index')->with('error', __('Payment configuration error.'));
             }
             
             // Find the most recent pending order for this user

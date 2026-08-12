@@ -10,7 +10,7 @@ class SuperAdminMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!auth()->user() || !auth()->user()->isSuperAdmin()) {
-            return redirect()->back()->with('error', 'Unauthorized access');
+            return redirect()->back()->with('error', __('Unauthorized access'));
         }
 
         return $next($request);
