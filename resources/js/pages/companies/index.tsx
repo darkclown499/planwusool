@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Filter, Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, ExternalLink, Info, ArrowUpRight, CreditCard, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Filter, Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, ExternalLink, Info, ArrowUpRight, CreditCard, ChevronRight, ChevronLeft, Code2, Store as StoreIcon } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslation } from 'react-i18next';
@@ -892,6 +892,34 @@ export default function Companies() {
                   </div>
 
 
+
+                  {/* Template editor */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-9 text-sm border-gray-300 mb-2"
+                        disabled={!company.stores || company.stores.length === 0}
+                      >
+                        <Code2 className="h-4 w-4 me-2" />
+                        {t("Edit Template")}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="w-64 z-50" sideOffset={5}>
+                      {company.stores?.length === 0 && (
+                        <DropdownMenuItem disabled>
+                          <span>{t("No stores available")}</span>
+                        </DropdownMenuItem>
+                      )}
+                      {company.stores?.map((store: any) => (
+                        <DropdownMenuItem key={store.id} onClick={() => router.visit(route('template-editor.show', store.id))}>
+                          <StoreIcon className="h-4 w-4 me-2 text-muted-foreground" />
+                          <span className="truncate">{store.name}</span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   {/* Action buttons */}
                   <div className="flex gap-2">

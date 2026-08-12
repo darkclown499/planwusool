@@ -17,7 +17,8 @@ class CompanyController extends Controller
         $query = User::query()
             ->where('type', 'company')
             ->with('plan')
-            ->withCount('stores');
+            ->withCount('stores')
+            ->with('stores:id,name,slug');
             
         // Apply search filter
         if ($request->has('search') && !empty($request->search)) {
@@ -96,6 +97,13 @@ class CompanyController extends Controller
                 'plan_expiry_date' => $company->plan_expire_date,
                 'plan_duration' => $company->plan_duration ?? null,
                 'stores_count' => $company->stores_count ?? 0,
+                'stores' => $company->stores->map(function ($store) {
+                    return [
+                        'id' => $store->id,
+                        'name' => $store->name,
+                        'slug' => $store->slug,
+                    ];
+                }),
                 'subscription_status' => $subscription_status,
             ];
         });
