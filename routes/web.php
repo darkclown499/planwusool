@@ -940,8 +940,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Impersonation routes
     Route::middleware('App\Http\Middleware\SuperAdminMiddleware')->group(function () {
         Route::get('impersonate/{userId}', [ImpersonateController::class, 'start'])->name('impersonate.start');
-        Route::post('impersonate/leave', [ImpersonateController::class, 'leave'])->name('impersonate.leave');
     });
+
+    // Leaving impersonation is requested while still logged in as the
+    // impersonated company user (who is NOT a super admin), so it must not be
+    // behind SuperAdminMiddleware. It only reverts to the original user stored
+    // in the session, so it is inherently safe.
+    Route::post('impersonate/leave', [ImpersonateController::class, 'leave'])->name('impersonate.leave');
 
 
     
