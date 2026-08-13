@@ -1,5 +1,4 @@
 import { AccountArea } from '@/components/storefront/AccountArea';
-import { LanguageSwitcher } from '@/components/storefront/LanguageSwitcher';
 import { MobileAppShell } from '@/components/storefront/MobileAppShell';
 import React, { ReactNode } from 'react';
 import { AuthProvider } from './AuthContext';
@@ -152,7 +151,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
                                         <MobileAppShell />
                                         {children}
                                         <AccountArea />
-                                        <LanguageSwitcher />
                                     </UIProvider>
                                 </OrderProvider>
                             </ProductProvider>
