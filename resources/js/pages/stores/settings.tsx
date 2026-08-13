@@ -129,11 +129,28 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
   const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== 'undefined' && window.location.search.includes('tab=template')) {
+    if (typeof window !== 'undefined') {
+      if (window.location.search.includes('tab=general')) {
+        return 'general';
+      }
       return 'template';
     }
-    return 'general';
+    return 'template';
   });
+  const [initialTemplateAction, setInitialTemplateAction] = useState<'theme' | 'editor' | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const search = window.location.search;
+    if (search.includes('action=theme')) return 'theme';
+    if (search.includes('action=editor')) return 'editor';
+    return null;
+  });
+
+  useEffect(() => {
+    if (initialTemplateAction) {
+      const timer = setTimeout(() => setInitialTemplateAction(null), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [initialTemplateAction]);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -355,7 +372,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
         </TabsList>
 
         <TabsContent value="template" className="space-y-4 mt-6">
-          <TemplateTab store={store} availableThemes={availableThemes} storeContent={storeContent} />
+          <TemplateTab store={store} availableThemes={availableThemes} storeContent={storeContent} initialAction={initialTemplateAction} />
         </TabsContent>
 
         <TabsContent value="general" className="space-y-4 mt-6">

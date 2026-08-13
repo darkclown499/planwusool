@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, LayoutTemplate } from 'lucide-react';
+import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, LayoutTemplate, Paintbrush } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -217,9 +217,15 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                       </Button>
                     )}
                     {hasPermission('settings-stores') && (
-                      <Button variant="outline" size="sm" className="gap-1.5 text-primary" onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template'); }}>
+                      <Button variant="outline" size="sm" className="gap-1.5 text-primary" onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=theme'); }}>
+                        <Paintbrush className="h-3.5 w-3.5" />
+                        {t('Choose Template')}
+                      </Button>
+                    )}
+                    {hasPermission('settings-stores') && (
+                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=editor'); }}>
                         <LayoutTemplate className="h-3.5 w-3.5" />
-                        {t('Template')}
+                        {t('Edit Template')}
                       </Button>
                     )}
                     {hasPermission('delete-stores') && (

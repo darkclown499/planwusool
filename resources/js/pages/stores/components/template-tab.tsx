@@ -19,6 +19,7 @@ interface TemplateTabProps {
   store: any;
   availableThemes?: string[];
   storeContent?: any;
+  initialAction?: 'theme' | 'editor' | null;
 }
 
 interface ThemeOption {
@@ -56,7 +57,7 @@ const DEFAULT_CONTENT: any = {
   newsletter: { enabled: true },
 };
 
-export default function TemplateTab({ store, availableThemes = [], storeContent = {} }: TemplateTabProps) {
+export default function TemplateTab({ store, availableThemes = [], storeContent = {}, initialAction = null }: TemplateTabProps) {
   const { t } = useTranslation();
 
   const themes = THEME_OPTIONS.filter((th) => !availableThemes.length || availableThemes.includes(th.value));
@@ -78,6 +79,14 @@ export default function TemplateTab({ store, availableThemes = [], storeContent 
   useEffect(() => {
     setSelectedTheme(store?.theme || 'basic');
   }, [store?.theme]);
+
+  useEffect(() => {
+    if (initialAction === 'theme') {
+      setThemeDialogOpen(true);
+    } else if (initialAction === 'editor') {
+      setEditorOpen(true);
+    }
+  }, [initialAction]);
 
   const handleChooseTheme = () => {
     if (!selectedTheme || savingTheme) return;
