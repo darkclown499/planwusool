@@ -353,7 +353,7 @@ export function AppSidebar() {
             settingsChildren.push({ title: t('Media Library'), href: route('media-library') });
         }
         if (hasPermission('manage-notifications')) {
-            settingsChildren.push({ title: t('Notifications'), href: route('notifications.index') });
+            settingsChildren.push({ title: t('Customer Notifications'), href: route('notifications.index') });
         }
         if (hasPermission('manage-plans')) {
             settingsChildren.push({ title: t('My Plan'), href: route('plans.index') });

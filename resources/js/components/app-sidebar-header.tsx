@@ -9,21 +9,15 @@ import { useTranslation } from 'react-i18next';
 import { StoreSwitcher } from '@/components/store-switcher';
 import { MerchantNotificationBell } from '@/components/merchant-notification-bell';
 import { useTour } from '@/components/tour/tour-context';
+import { GlobalSearch } from '@/components/global-search';
 import { Search, RefreshCw, HelpCircle } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     const { t } = useTranslation();
     const { position } = useLayout();
     const { start } = useTour();
-    const [searchQuery, setSearchQuery] = useState('');
-
-    const handleSearch = useCallback((e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.get(route('companies.index'), { search: searchQuery.trim() }, { preserveState: true });
-        }
-    }, [searchQuery]);
+    const [searchOpen, setSearchOpen] = useState(false);
 
     return (
         <>
@@ -36,20 +30,21 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* Search Bar */}
-                    <form onSubmit={handleSearch} className="hidden md:flex items-center gap-2">
-                        <div className="relative">
-                            <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                aria-label={t('Search for an order, product, or customer...')}
-                                placeholder={t('Search for an order, product, or customer...')}
-                                className="h-8 w-48 rounded-md border bg-background px-8 text-xs outline-none focus:w-64 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground"
-                            />
-                        </div>
-                    </form>
+                    {/* Global Search Button */}
+                    <GlobalSearch
+                        open={searchOpen}
+                        onOpenChange={setSearchOpen}
+                        trigger={
+                            <button
+                                onClick={() => setSearchOpen(true)}
+                                className="inline-flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+                                aria-label={t('Search for products, orders, customers or pages...')}
+                                title={t('Search for products, orders, customers or pages...')}
+                            >
+                                <Search className="h-3.5 w-3.5" />
+                            </button>
+                        }
+                    />
 
                     {/* Refresh Button */}
                         <button

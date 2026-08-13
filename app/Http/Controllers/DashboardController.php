@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $user = auth()->user();
         
         // Super admin gets system-wide dashboard
-        if ($user->type === 'superadmin' || $user->type === 'superadmin') {
+        if ($user->type === 'superadmin') {
             return $this->renderSuperAdminDashboard();
         }
         
@@ -107,8 +107,59 @@ class DashboardController extends Controller
             'dashboardData' => $dashboardData,
             'currentStore' => $currentStore,
             'storeUrl' => $currentStore->getStoreUrl(),
+            'onboarding' => $this->getOnboardingChecklist($currentStore, $user),
             'isSuperAdmin' => false
         ]);
+    }
+    
+    /**
+     * دليل البدء السريع للتاجر الجديد — يظهر حتى يكتمل الإعداد الأساسي.
+     */
+    private function getOnboardingChecklist(Store $store, $user)
+    {
+        $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
+        
+        $hasProducts = Product::where('store_id', $store->id)->exists();
+        $whatsappSet = !empty($config['whatsapp_widget_phone']);
+        $storePublished = ($config['store_status'] ?? null) === true || ($config['store_status'] ?? null) === 'true' || !array_key_exists('store_status', $config);
+        $hasPayments = count(getEnabledPaymentMethods($user->id, $store->id)) > 0;
+        try {
+            $canManageSettings = $user->can('manage-settings');
+        } catch (\Exception $e) {
+            $canManageSettings = true;
+        }
+        
+        $steps = [
+            [
+                'key' => 'products',
+                'done' => $hasProducts,
+                'href' => $hasProducts ? null : route('products.create'),
+            ],
+            [
+                'key' => 'whatsapp',
+                'done' => $whatsappSet,
+                'href' => $whatsappSet ? null : route('stores.settings', $store->id) . '?tab=general',
+            ],
+            [
+                'key' => 'payments',
+                'done' => $hasPayments,
+                'href' => $hasPayments || !$canManageSettings ? null : route('settings'),
+            ],
+            [
+                'key' => 'published',
+                'done' => $storePublished,
+                'href' => $storePublished ? null : route('stores.settings', $store->id) . '?tab=general',
+            ],
+        ];
+        
+        $pendingCount = collect($steps)->where('done', false)->count();
+        
+        return [
+            'show' => $pendingCount > 0,
+            'pendingCount' => $pendingCount,
+            'totalCount' => count($steps),
+            'steps' => $steps,
+        ];
     }
     
     private function getSuperAdminDashboardData()
@@ -211,14 +262,37 @@ class DashboardController extends Controller
     
     private function getDashboardData($storeId)
     {
-        $currentMonth = Carbon::now()->startOfMonth();
-        $lastMonth = Carbon::now()->subMonth()->startOfMonth();
-        
+        $currentMonth = Carbon::now()->startOfMonth()->subSecond();
+        $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
+        $lastMonthEnd = Carbon::now()->startOfMonth();
+
         $totalOrders = Order::where('store_id', $storeId)->count();
         $totalProducts = Product::where('store_id', $storeId)->count();
         $totalCustomers = Customer::where('store_id', $storeId)->count();
-        $totalRevenue = Order::where('store_id', $storeId)->sum('total_amount');
-        
+
+        // Revenue only counts paid orders, consistent with Analytics & Store pages.
+        $totalRevenue = Order::where('store_id', $storeId)
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
+        $currentMonthRevenue = Order::where('store_id', $storeId)
+            ->where('payment_status', 'paid')
+            ->where('created_at', '>=', $currentMonth)
+            ->sum('total_amount');
+        $lastMonthRevenue = Order::where('store_id', $storeId)
+            ->where('payment_status', 'paid')
+            ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
+            ->sum('total_amount');
+
+        // Month-over-month counts for real growth deltas.
+        $currentOrders = Order::where('store_id', $storeId)->where('created_at', '>=', $currentMonth)->count();
+        $lastMonthOrders = Order::where('store_id', $storeId)->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+        $currentProducts = Product::where('store_id', $storeId)->where('created_at', '>=', $currentMonth)->count();
+        $lastMonthProducts = Product::where('store_id', $storeId)->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+        $currentCustomers = Customer::where('store_id', $storeId)->where('created_at', '>=', $currentMonth)->count();
+        $lastMonthCustomers = Customer::where('store_id', $storeId)->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+
+        $growth = fn ($current, $last) => $last > 0 ? (($current - $last) / $last) * 100 : ($current > 0 ? 100 : 0);
+
         $recentOrders = Order::where('store_id', $storeId)
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -259,12 +333,56 @@ class DashboardController extends Controller
                 'orders' => $totalOrders,
                 'products' => $totalProducts,
                 'customers' => $totalCustomers,
-                'revenue' => $totalRevenue
+                'revenue' => $totalRevenue,
+                'monthlyRevenue' => round($currentMonthRevenue, 2),
+                'monthlyGrowth' => round($growth($currentMonthRevenue, $lastMonthRevenue), 1),
+                'ordersGrowth' => round($growth($currentOrders, $lastMonthOrders), 1),
+                'productsGrowth' => round($growth($currentProducts, $lastMonthProducts), 1),
+                'customersGrowth' => round($growth($currentCustomers, $lastMonthCustomers), 1)
             ],
             'recentOrders' => $recentOrders,
             'topProducts' => $topProducts,
+            'revenueChart' => $this->getStoreRevenueChartData($storeId),
+            'salesChart' => $this->getStoreSalesChartData($storeId),
             'alerts' => $this->getMerchantAlerts(auth()->id(), $storeId)
         ];
+    }
+
+    /**
+     * Daily paid revenue for the last 30 days, matching the Analytics chart.
+     */
+    private function getStoreRevenueChartData($storeId)
+    {
+        return Order::query()
+            ->where('store_id', $storeId)
+            ->where('payment_status', 'paid')
+            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue')
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->map(fn ($item) => [
+                'date' => Carbon::parse($item->date)->format('M d'),
+                'revenue' => (float) $item->revenue
+            ]);
+    }
+
+    /**
+     * Daily order count for the last 30 days, matching the Analytics chart.
+     */
+    private function getStoreSalesChartData($storeId)
+    {
+        return Order::query()
+            ->where('store_id', $storeId)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as orders')
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->map(fn ($item) => [
+                'date' => Carbon::parse($item->date)->format('M d'),
+                'orders' => (int) $item->orders
+            ]);
     }
     
     private function getEmptyDashboard()
@@ -274,10 +392,17 @@ class DashboardController extends Controller
                 'orders' => 0,
                 'products' => 0,
                 'customers' => 0,
-                'revenue' => 0
+                'revenue' => 0,
+                'monthlyRevenue' => 0,
+                'monthlyGrowth' => 0,
+                'ordersGrowth' => 0,
+                'productsGrowth' => 0,
+                'customersGrowth' => 0
             ],
             'recentOrders' => [],
             'topProducts' => [],
+            'revenueChart' => [],
+            'salesChart' => [],
             'alerts' => []
         ];
     }

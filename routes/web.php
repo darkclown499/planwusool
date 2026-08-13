@@ -560,6 +560,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // All other routes require plan access check (and completed onboarding)
     Route::middleware(['plan.access', 'onboarded'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('search', [\App\Http\Controllers\SearchController::class, 'search'])->name('search');
         Route::get('dashboard/redirect', [DashboardController::class, 'redirectToFirstAvailablePage'])->name('dashboard.redirect');
         Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
 

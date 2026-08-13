@@ -12,10 +12,12 @@ import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { useState } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import { StoreSwitcher } from '@/components/store-switcher';
 import { MerchantNotificationBell } from '@/components/merchant-notification-bell';
+import { GlobalSearch } from '@/components/global-search';
 
 const mainNavItems: NavItem[] = [
     {
@@ -27,13 +29,13 @@ const mainNavItems: NavItem[] = [
 
 const rightNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
+        title: 'Support',
+        href: 'https://wusool.ps/support',
         icon: Folder,
     },
     {
         title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
+        href: 'https://wusool.ps/docs',
         icon: BookOpen,
     },
 ];
@@ -49,6 +51,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const { auth, stores = [] } = page.props;
     const user = auth.user;
     const getInitials = useInitials();
+    const [searchOpen, setSearchOpen] = useState(false);
     if (!user) {
         return null;
     }
@@ -144,11 +147,16 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
 
                     <div className="ms-auto flex items-center space-x-2">
-                        <div className="relative flex items-center space-x-1">
-                            <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
-                            </Button>
-                            <div className="hidden lg:flex">
+                        <GlobalSearch
+                            open={searchOpen}
+                            onOpenChange={setSearchOpen}
+                            trigger={
+                                <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer" onClick={() => setSearchOpen(true)}>
+                                    <Search className="!size-5 opacity-80 group-hover:opacity-100" />
+                                </Button>
+                            }
+                        />
+                        <div className="hidden lg:flex">
                                 {rightNavItems.map((item) => (
                                     <TooltipProvider key={item.title} delayDuration={0}>
                                         <Tooltip>
@@ -170,7 +178,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     </TooltipProvider>
                                 ))}
                             </div>
-                        </div>
                         <MerchantNotificationBell />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
