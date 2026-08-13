@@ -188,6 +188,32 @@ class OrderService
                 return $this->processBenefitPayment($order, $storeSlug);
             case 'yookassa':
                 return $this->processYooKassaPayment($order, $storeSlug);
+            case 'jawwal_pay':
+            case 'pal_pay':
+            case 'zain_cash':
+            case 'orange_money':
+            case 'cliq':
+            case 'zain_cash_jo':
+            case 'orange_money_jo':
+            case 'etihad_wallet':
+            case 'dinar_pay':
+            case 'bank_palestine':
+            case 'al_quds_bank':
+            case 'arab_islamic_bank':
+            case 'cairo_amman_bank':
+            case 'housing_bank':
+            case 'safad_bank':
+            case 'jordan_kuwait_bank':
+            case 'arab_bank':
+            case 'housing_bank_jo':
+            case 'cairo_amman_bank_jo':
+            case 'safad_bank_jo':
+            case 'usdt_trc20':
+            case 'usdt_erc20':
+            case 'usdt_bep20':
+            case 'usdt_polygon':
+            case 'usdt_solana':
+                return $this->processOfflinePayment($order);
             default:
                 return ['success' => false, 'message' => 'Unsupported payment method: ' . $order->payment_method];
         }
@@ -218,6 +244,22 @@ class OrderService
         return [
             'success' => true,
             'message' => 'Order placed successfully. Please transfer the payment to the provided bank details. Your order will be processed after payment verification.',
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+        ];
+    }
+
+    private function processOfflinePayment(Order $order): array
+    {
+        $order->update([
+            'status' => 'pending',
+            'payment_status' => 'pending',
+            'payment_gateway' => $order->payment_method,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Order placed successfully. Please complete the payment using the provided instructions. Your order will be processed after payment verification.',
             'order_id' => $order->id,
             'order_number' => $order->order_number,
         ];

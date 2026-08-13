@@ -29,7 +29,32 @@ export const PAYMENT_METHODS = {
   KHALTI: 'khalti',
   EASEBUZZ: 'easebuzz',
   OZOW: 'ozow',
-  CASHFREE: 'cashfree'
+  CASHFREE: 'cashfree',
+  JAWWAL_PAY: 'jawwal_pay',
+  PAL_PAY: 'pal_pay',
+  ZAIN_CASH: 'zain_cash',
+  ORANGE_MONEY: 'orange_money',
+  BANK_PALESTINE: 'bank_palestine',
+  AL_QUDS_BANK: 'al_quds_bank',
+  ARAB_ISLAMIC_BANK: 'arab_islamic_bank',
+  CAIRO_AMMAN_BANK: 'cairo_amman_bank',
+  HOUSING_BANK: 'housing_bank',
+  SAFAD_BANK: 'safad_bank',
+  CLIQ: 'cliq',
+  ZAIN_CASH_JO: 'zain_cash_jo',
+  ORANGE_MONEY_JO: 'orange_money_jo',
+  ETIHAD_WALLET: 'etihad_wallet',
+  DINAR_PAY: 'dinar_pay',
+  JORDAN_KUWAIT_BANK: 'jordan_kuwait_bank',
+  ARAB_BANK: 'arab_bank',
+  HOUSING_BANK_JO: 'housing_bank_jo',
+  CAIRO_AMMAN_BANK_JO: 'cairo_amman_bank_jo',
+  SAFAD_BANK_JO: 'safad_bank_jo',
+  USDT_TRC20: 'usdt_trc20',
+  USDT_ERC20: 'usdt_erc20',
+  USDT_BEP20: 'usdt_bep20',
+  USDT_POLYGON: 'usdt_polygon',
+  USDT_SOLANA: 'usdt_solana'
 } as const;
 
 export const PAYMENT_METHOD_LABELS = {
@@ -63,7 +88,32 @@ export const PAYMENT_METHOD_LABELS = {
   [PAYMENT_METHODS.KHALTI]: 'Khalti',
   [PAYMENT_METHODS.EASEBUZZ]: 'Easebuzz',
   [PAYMENT_METHODS.OZOW]: 'Ozow',
-  [PAYMENT_METHODS.CASHFREE]: 'Cashfree'
+  [PAYMENT_METHODS.CASHFREE]: 'Cashfree',
+  [PAYMENT_METHODS.JAWWAL_PAY]: 'Jawwal Pay',
+  [PAYMENT_METHODS.PAL_PAY]: 'Pal Pay',
+  [PAYMENT_METHODS.ZAIN_CASH]: 'Zain Cash',
+  [PAYMENT_METHODS.ORANGE_MONEY]: 'Orange Money',
+  [PAYMENT_METHODS.BANK_PALESTINE]: 'Bank of Palestine',
+  [PAYMENT_METHODS.AL_QUDS_BANK]: 'Al Quds Bank',
+  [PAYMENT_METHODS.ARAB_ISLAMIC_BANK]: 'Arab Islamic Bank',
+  [PAYMENT_METHODS.CAIRO_AMMAN_BANK]: 'Cairo Amman Bank',
+  [PAYMENT_METHODS.HOUSING_BANK]: 'Housing Bank',
+  [PAYMENT_METHODS.SAFAD_BANK]: 'Safad Bank',
+  [PAYMENT_METHODS.CLIQ]: 'CliQ',
+  [PAYMENT_METHODS.ZAIN_CASH_JO]: 'Zain Cash Jordan',
+  [PAYMENT_METHODS.ORANGE_MONEY_JO]: 'Orange Money Jordan',
+  [PAYMENT_METHODS.ETIHAD_WALLET]: 'Etihad Wallet',
+  [PAYMENT_METHODS.DINAR_PAY]: 'Dinar Pay',
+  [PAYMENT_METHODS.JORDAN_KUWAIT_BANK]: 'Jordan Kuwait Bank',
+  [PAYMENT_METHODS.ARAB_BANK]: 'Arab Bank',
+  [PAYMENT_METHODS.HOUSING_BANK_JO]: 'Housing Bank Jordan',
+  [PAYMENT_METHODS.CAIRO_AMMAN_BANK_JO]: 'Cairo Amman Bank Jordan',
+  [PAYMENT_METHODS.SAFAD_BANK_JO]: 'Safad Bank Jordan',
+  [PAYMENT_METHODS.USDT_TRC20]: 'USDT (TRC20)',
+  [PAYMENT_METHODS.USDT_ERC20]: 'USDT (ERC20)',
+  [PAYMENT_METHODS.USDT_BEP20]: 'USDT (BEP20)',
+  [PAYMENT_METHODS.USDT_POLYGON]: 'USDT (Polygon)',
+  [PAYMENT_METHODS.USDT_SOLANA]: 'USDT (Solana)'
 } as const;
 
 export const PAYMENT_METHOD_HELP_URLS = {
@@ -96,7 +146,32 @@ export const PAYMENT_METHOD_HELP_URLS = {
   [PAYMENT_METHODS.KHALTI]: 'https://docs.khalti.com/',
   [PAYMENT_METHODS.EASEBUZZ]: 'https://www.easebuzz.in/developer/',
   [PAYMENT_METHODS.OZOW]: 'https://developers.ozow.com/',
-  [PAYMENT_METHODS.CASHFREE]: 'https://docs.cashfree.com/'
+  [PAYMENT_METHODS.CASHFREE]: 'https://docs.cashfree.com/',
+  [PAYMENT_METHODS.JAWWAL_PAY]: 'https://www.jawwal.ps/ar/jawwalpay',
+  [PAYMENT_METHODS.PAL_PAY]: 'https://www.palpay.ps/',
+  [PAYMENT_METHODS.ZAIN_CASH]: 'https://www.zaincash.jo/',
+  [PAYMENT_METHODS.ORANGE_MONEY]: 'https://www.orange.ps/personal/orange-money',
+  [PAYMENT_METHODS.BANK_PALESTINE]: 'https://www.bop.ps/',
+  [PAYMENT_METHODS.AL_QUDS_BANK]: 'https://www.alqudsbank.ps/',
+  [PAYMENT_METHODS.ARAB_ISLAMIC_BANK]: 'https://www.arabbank.ps/',
+  [PAYMENT_METHODS.CAIRO_AMMAN_BANK]: 'https://www.cab.ps/',
+  [PAYMENT_METHODS.HOUSING_BANK]: 'https://www.housingbank.ps/',
+  [PAYMENT_METHODS.SAFAD_BANK]: 'https://www.safadbank.ps/',
+  [PAYMENT_METHODS.CLIQ]: 'https://cliq.jo/',
+  [PAYMENT_METHODS.ZAIN_CASH_JO]: 'https://www.zaincash.jo/',
+  [PAYMENT_METHODS.ORANGE_MONEY_JO]: 'https://www.orange.jo/personal/orange-money',
+  [PAYMENT_METHODS.ETIHAD_WALLET]: 'https://www.etihadwallet.com/',
+  [PAYMENT_METHODS.DINAR_PAY]: 'https://dinarpay.com/',
+  [PAYMENT_METHODS.JORDAN_KUWAIT_BANK]: 'https://www.jkb.com/',
+  [PAYMENT_METHODS.ARAB_BANK]: 'https://www.arabbank.com/',
+  [PAYMENT_METHODS.HOUSING_BANK_JO]: 'https://www.housingbank.com/',
+  [PAYMENT_METHODS.CAIRO_AMMAN_BANK_JO]: 'https://www.cab.jo/',
+  [PAYMENT_METHODS.SAFAD_BANK_JO]: 'https://www.safadbank.com/',
+  [PAYMENT_METHODS.USDT_TRC20]: 'https://tronscan.org/',
+  [PAYMENT_METHODS.USDT_ERC20]: 'https://etherscan.io/',
+  [PAYMENT_METHODS.USDT_BEP20]: 'https://bscscan.com/',
+  [PAYMENT_METHODS.USDT_POLYGON]: 'https://polygonscan.com/',
+  [PAYMENT_METHODS.USDT_SOLANA]: 'https://solscan.io/'
 } as const;
 
 export const PAYMENT_MODES = {
@@ -110,7 +185,7 @@ export type PaymentMode = typeof PAYMENT_MODES[keyof typeof PAYMENT_MODES];
 export interface PaymentConfig {
   enabled: boolean;
   mode?: PaymentMode;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface PaymentFormData {
@@ -127,7 +202,7 @@ export function formatPaymentAmount(amount: number, currency: string = 'USD'): s
   }).format(amount);
 }
 
-export function validatePaymentMethodCredentials(method: PaymentMethod, config: any): string[] {
+export function validatePaymentMethodCredentials(method: PaymentMethod, config: Record<string, unknown>): string[] {
   const errors: string[] = [];
 
   switch (method) {
@@ -215,6 +290,62 @@ export function validatePaymentMethodCredentials(method: PaymentMethod, config: 
       if (!config.public_key) errors.push('Benefit API key is required');
       if (!config.secret_key) errors.push('Benefit secret key is required');
       break;
+
+    case PAYMENT_METHODS.JAWWAL_PAY:
+    case PAYMENT_METHODS.PAL_PAY:
+    case PAYMENT_METHODS.ZAIN_CASH:
+    case PAYMENT_METHODS.ORANGE_MONEY:
+    case PAYMENT_METHODS.CLIQ:
+    case PAYMENT_METHODS.ZAIN_CASH_JO:
+    case PAYMENT_METHODS.ORANGE_MONEY_JO:
+    case PAYMENT_METHODS.ETIHAD_WALLET:
+    case PAYMENT_METHODS.DINAR_PAY:
+      if (config.mode === 'api') {
+        if (!config.api_key) errors.push('API Key is required');
+        if (!config.secret_key) errors.push('Secret Key is required');
+        if (!config.merchant_id) errors.push('Merchant ID is required');
+      } else {
+        if (!config.phone_number) errors.push('Phone number is required');
+        if (!config.merchant_name) errors.push('Merchant name is required');
+      }
+      break;
+
+    case PAYMENT_METHODS.BANK_PALESTINE:
+    case PAYMENT_METHODS.AL_QUDS_BANK:
+    case PAYMENT_METHODS.ARAB_ISLAMIC_BANK:
+    case PAYMENT_METHODS.CAIRO_AMMAN_BANK:
+    case PAYMENT_METHODS.HOUSING_BANK:
+    case PAYMENT_METHODS.SAFAD_BANK:
+    case PAYMENT_METHODS.JORDAN_KUWAIT_BANK:
+    case PAYMENT_METHODS.ARAB_BANK:
+    case PAYMENT_METHODS.HOUSING_BANK_JO:
+    case PAYMENT_METHODS.CAIRO_AMMAN_BANK_JO:
+    case PAYMENT_METHODS.SAFAD_BANK_JO:
+      if (config.mode === 'api') {
+        if (!config.api_key) errors.push('API Key is required');
+        if (!config.secret_key) errors.push('Secret Key is required');
+        if (!config.merchant_id) errors.push('Merchant ID is required');
+      } else {
+        if (!config.phone_number) errors.push('Phone number is required');
+        if (!config.merchant_name) errors.push('Merchant name is required');
+        if (!config.instructions) errors.push('Payment instructions are required');
+      }
+      break;
+
+    case PAYMENT_METHODS.USDT_TRC20:
+    case PAYMENT_METHODS.USDT_ERC20:
+    case PAYMENT_METHODS.USDT_BEP20:
+    case PAYMENT_METHODS.USDT_POLYGON:
+    case PAYMENT_METHODS.USDT_SOLANA:
+      if (config.mode === 'api') {
+        if (!config.api_key) errors.push('API Key is required');
+        if (!config.secret_key) errors.push('Secret Key is required');
+        if (!config.merchant_id) errors.push('Merchant ID is required');
+      } else {
+        if (!config.wallet_address) errors.push('Wallet address is required');
+        if (!config.network) errors.push('Network is required');
+      }
+      break;
   }
 
   return errors;
@@ -239,7 +370,32 @@ export function getPaymentMethodIcon(method: PaymentMethod): string {
     [PAYMENT_METHODS.MOLLIE]: 'credit-card',
     [PAYMENT_METHODS.TOYYIBPAY]: 'credit-card',
     [PAYMENT_METHODS.IYZIPAY]: 'credit-card',
-    [PAYMENT_METHODS.BENEFIT]: 'credit-card'
+    [PAYMENT_METHODS.BENEFIT]: 'credit-card',
+    [PAYMENT_METHODS.JAWWAL_PAY]: 'smartphone',
+    [PAYMENT_METHODS.PAL_PAY]: 'smartphone',
+    [PAYMENT_METHODS.ZAIN_CASH]: 'smartphone',
+    [PAYMENT_METHODS.ORANGE_MONEY]: 'smartphone',
+    [PAYMENT_METHODS.BANK_PALESTINE]: 'banknote',
+    [PAYMENT_METHODS.AL_QUDS_BANK]: 'banknote',
+    [PAYMENT_METHODS.ARAB_ISLAMIC_BANK]: 'banknote',
+    [PAYMENT_METHODS.CAIRO_AMMAN_BANK]: 'banknote',
+    [PAYMENT_METHODS.HOUSING_BANK]: 'banknote',
+    [PAYMENT_METHODS.SAFAD_BANK]: 'banknote',
+    [PAYMENT_METHODS.CLIQ]: 'smartphone',
+    [PAYMENT_METHODS.ZAIN_CASH_JO]: 'smartphone',
+    [PAYMENT_METHODS.ORANGE_MONEY_JO]: 'smartphone',
+    [PAYMENT_METHODS.ETIHAD_WALLET]: 'smartphone',
+    [PAYMENT_METHODS.DINAR_PAY]: 'smartphone',
+    [PAYMENT_METHODS.JORDAN_KUWAIT_BANK]: 'banknote',
+    [PAYMENT_METHODS.ARAB_BANK]: 'banknote',
+    [PAYMENT_METHODS.HOUSING_BANK_JO]: 'banknote',
+    [PAYMENT_METHODS.CAIRO_AMMAN_BANK_JO]: 'banknote',
+    [PAYMENT_METHODS.SAFAD_BANK_JO]: 'banknote',
+    [PAYMENT_METHODS.USDT_TRC20]: 'coins',
+    [PAYMENT_METHODS.USDT_ERC20]: 'coins',
+    [PAYMENT_METHODS.USDT_BEP20]: 'coins',
+    [PAYMENT_METHODS.USDT_POLYGON]: 'coins',
+    [PAYMENT_METHODS.USDT_SOLANA]: 'coins'
   };
 
   return icons[method] || 'credit-card';

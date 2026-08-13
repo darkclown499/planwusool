@@ -575,6 +575,64 @@ if (! function_exists('getPaymentMethodConfig')) {
                     'description' => 'Send order confirmation via Telegram',
                 ];
                 
+            case 'jawwal_pay':
+            case 'pal_pay':
+            case 'zain_cash':
+            case 'orange_money':
+            case 'cliq':
+            case 'zain_cash_jo':
+            case 'orange_money_jo':
+            case 'etihad_wallet':
+            case 'dinar_pay':
+                return [
+                    'enabled' => isPaymentMethodEnabled($method, $userId, $storeId),
+                    'mode' => $settings[$method . '_mode'] ?? 'offline',
+                    'phone_number' => $settings[$method . '_phone_number'] ?? null,
+                    'merchant_name' => $settings[$method . '_merchant_name'] ?? null,
+                    'instructions' => $settings[$method . '_instructions'] ?? null,
+                    'api_key' => $settings[$method . '_api_key'] ?? null,
+                    'secret_key' => $settings[$method . '_secret_key'] ?? null,
+                    'merchant_id' => $settings[$method . '_merchant_id'] ?? null,
+                ];
+
+            case 'bank_palestine':
+            case 'al_quds_bank':
+            case 'arab_islamic_bank':
+            case 'cairo_amman_bank':
+            case 'housing_bank':
+            case 'safad_bank':
+            case 'jordan_kuwait_bank':
+            case 'arab_bank':
+            case 'housing_bank_jo':
+            case 'cairo_amman_bank_jo':
+            case 'safad_bank_jo':
+                return [
+                    'enabled' => isPaymentMethodEnabled($method, $userId, $storeId),
+                    'mode' => $settings[$method . '_mode'] ?? 'offline',
+                    'phone_number' => $settings[$method . '_phone_number'] ?? null,
+                    'merchant_name' => $settings[$method . '_merchant_name'] ?? null,
+                    'instructions' => $settings[$method . '_instructions'] ?? null,
+                    'api_key' => $settings[$method . '_api_key'] ?? null,
+                    'secret_key' => $settings[$method . '_secret_key'] ?? null,
+                    'merchant_id' => $settings[$method . '_merchant_id'] ?? null,
+                ];
+
+            case 'usdt_trc20':
+            case 'usdt_erc20':
+            case 'usdt_bep20':
+            case 'usdt_polygon':
+            case 'usdt_solana':
+                return [
+                    'enabled' => isPaymentMethodEnabled($method, $userId, $storeId),
+                    'mode' => $settings[$method . '_mode'] ?? 'offline',
+                    'wallet_address' => $settings[$method . '_wallet_address'] ?? null,
+                    'network' => $settings[$method . '_network'] ?? str_replace('usdt_', '', $method),
+                    'memo' => $settings[$method . '_memo'] ?? null,
+                    'api_key' => $settings[$method . '_api_key'] ?? null,
+                    'secret_key' => $settings[$method . '_secret_key'] ?? null,
+                    'merchant_id' => $settings[$method . '_merchant_id'] ?? null,
+                ];
+
             default:
                 return [];
         }
@@ -590,7 +648,11 @@ if (! function_exists('getEnabledPaymentMethods')) {
      */
     function getEnabledPaymentMethods($userId = null, $storeId = null)
     {
-        $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'midtrans', 'yookassa'];
+        $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'midtrans', 'yookassa',
+            'jawwal_pay', 'pal_pay', 'zain_cash', 'orange_money', 'bank_palestine', 'al_quds_bank', 'arab_islamic_bank', 'cairo_amman_bank', 'housing_bank', 'safad_bank',
+            'cliq', 'zain_cash_jo', 'orange_money_jo', 'etihad_wallet', 'dinar_pay', 'jordan_kuwait_bank', 'arab_bank', 'housing_bank_jo', 'cairo_amman_bank_jo', 'safad_bank_jo',
+            'usdt_trc20', 'usdt_erc20', 'usdt_bep20', 'usdt_polygon', 'usdt_solana'
+        ];
         
         // Add COD, WhatsApp and Telegram only for company users (not superadmin)
         if ($userId) {
@@ -882,6 +944,94 @@ if (! function_exists('validatePaymentMethodConfig')) {
                 }
                 if (empty($config['chat_id'])) {
                     $errors[] = 'Telegram chat ID is required';
+                }
+                break;
+
+            case 'jawwal_pay':
+            case 'pal_pay':
+            case 'zain_cash':
+            case 'orange_money':
+            case 'cliq':
+            case 'zain_cash_jo':
+            case 'orange_money_jo':
+            case 'etihad_wallet':
+            case 'dinar_pay':
+                if (($config['mode'] ?? 'offline') === 'api') {
+                    if (empty($config['api_key'])) {
+                        $errors[] = 'API Key is required';
+                    }
+                    if (empty($config['secret_key'])) {
+                        $errors[] = 'Secret Key is required';
+                    }
+                    if (empty($config['merchant_id'])) {
+                        $errors[] = 'Merchant ID is required';
+                    }
+                } else {
+                    if (empty($config['phone_number'])) {
+                        $errors[] = 'Phone number is required';
+                    }
+                    if (empty($config['merchant_name'])) {
+                        $errors[] = 'Merchant name is required';
+                    }
+                }
+                break;
+
+            case 'bank_palestine':
+            case 'al_quds_bank':
+            case 'arab_islamic_bank':
+            case 'cairo_amman_bank':
+            case 'housing_bank':
+            case 'safad_bank':
+            case 'jordan_kuwait_bank':
+            case 'arab_bank':
+            case 'housing_bank_jo':
+            case 'cairo_amman_bank_jo':
+            case 'safad_bank_jo':
+                if (($config['mode'] ?? 'offline') === 'api') {
+                    if (empty($config['api_key'])) {
+                        $errors[] = 'API Key is required';
+                    }
+                    if (empty($config['secret_key'])) {
+                        $errors[] = 'Secret Key is required';
+                    }
+                    if (empty($config['merchant_id'])) {
+                        $errors[] = 'Merchant ID is required';
+                    }
+                } else {
+                    if (empty($config['phone_number'])) {
+                        $errors[] = 'Phone number is required';
+                    }
+                    if (empty($config['merchant_name'])) {
+                        $errors[] = 'Merchant name is required';
+                    }
+                    if (empty($config['instructions'])) {
+                        $errors[] = 'Payment instructions are required';
+                    }
+                }
+                break;
+
+            case 'usdt_trc20':
+            case 'usdt_erc20':
+            case 'usdt_bep20':
+            case 'usdt_polygon':
+            case 'usdt_solana':
+                if (($config['mode'] ?? 'offline') === 'api') {
+                    if (empty($config['api_key'])) {
+                        $errors[] = 'API Key is required';
+                    }
+                    if (empty($config['secret_key'])) {
+                        $errors[] = 'Secret Key is required';
+                    }
+                    if (empty($config['merchant_id'])) {
+                        $errors[] = 'Merchant ID is required';
+                    }
+                } else {
+                    if (empty($config['wallet_address'])) {
+                        $errors[] = 'Wallet address is required';
+                    }
+                    if (empty($config['network'])) {
+                        $errors[] = 'Network is required';
+                    }
                 }
                 break;
         }

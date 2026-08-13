@@ -528,6 +528,46 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                                             </div>
                                                         )}
 
+                                                        {active && method.name !== 'bank' && method.details && (
+                                                            <div className="mt-3 rounded-xl bg-blue-50 p-3 text-sm whitespace-pre-line text-blue-800">
+                                                                {method.details}
+                                                            </div>
+                                                        )}
+
+                                                        {active && method.name !== 'bank' && method.form_fields && method.form_fields.length > 0 && (
+                                                            <div className="mt-3 space-y-3">
+                                                                {method.form_fields.map((field: any, idx: number) => (
+                                                                    <div key={idx}>
+                                                                        <label
+                                                                            className="mb-1.5 block text-xs font-semibold"
+                                                                            style={{ color: 'var(--twc-text-primary, #111827)' }}
+                                                                        >
+                                                                            {field.label}
+                                                                            {field.required && <span className="text-red-500"> *</span>}
+                                                                        </label>
+                                                                        {field.type === 'file' ? (
+                                                                            <input
+                                                                                type="file"
+                                                                                accept={field.accept || 'image/*,.pdf'}
+                                                                                onChange={(e) => setBankTransferFile(e.target.files?.[0] || null)}
+                                                                                className="block w-full text-sm"
+                                                                            />
+                                                                        ) : (
+                                                                            <input
+                                                                                type={field.type === 'textarea' ? 'text' : field.type || 'text'}
+                                                                                placeholder={field.placeholder || ''}
+                                                                                className={inputClass}
+                                                                                style={{
+                                                                                    borderColor: 'var(--twc-border, #e5e7eb)',
+                                                                                    background: 'var(--twc-background, #ffffff)',
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
                                                         {active && method.name === 'bank' && (
                                                             <div className="mt-3">
                                                                 <label

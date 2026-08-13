@@ -18,6 +18,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { PaymentMethodCard } from '@/components/payment/payment-method-card';
 import { PaymentInputField } from '@/components/payment/payment-input-field';
 import { PaymentModeSelector } from '@/components/payment/payment-mode-selector';
+import { DualModePaymentCard } from '@/components/payment/dual-mode-payment-card';
 
 interface PaymentSettings {
   [key: string]: any;
@@ -320,6 +321,206 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
     payfast_merchant_key: settings.payfast_merchant_key || '',
     payfast_passphrase: settings.payfast_passphrase || '',
     payfast_mode: settings.payfast_mode || 'sandbox',
+    is_jawwal_pay_enabled: settings.is_jawwal_pay_enabled === true || settings.is_jawwal_pay_enabled === '1',
+    jawwal_pay_mode: settings.jawwal_pay_mode || 'offline',
+    jawwal_pay_phone_number: settings.jawwal_pay_phone_number || '',
+    jawwal_pay_merchant_name: settings.jawwal_pay_merchant_name || '',
+    jawwal_pay_instructions: settings.jawwal_pay_instructions || '',
+    jawwal_pay_api_key: settings.jawwal_pay_api_key || '',
+    jawwal_pay_secret_key: settings.jawwal_pay_secret_key || '',
+    jawwal_pay_merchant_id: settings.jawwal_pay_merchant_id || '',
+    is_pal_pay_enabled: settings.is_pal_pay_enabled === true || settings.is_pal_pay_enabled === '1',
+    pal_pay_mode: settings.pal_pay_mode || 'offline',
+    pal_pay_phone_number: settings.pal_pay_phone_number || '',
+    pal_pay_merchant_name: settings.pal_pay_merchant_name || '',
+    pal_pay_instructions: settings.pal_pay_instructions || '',
+    pal_pay_api_key: settings.pal_pay_api_key || '',
+    pal_pay_secret_key: settings.pal_pay_secret_key || '',
+    pal_pay_merchant_id: settings.pal_pay_merchant_id || '',
+    is_zain_cash_enabled: settings.is_zain_cash_enabled === true || settings.is_zain_cash_enabled === '1',
+    zain_cash_mode: settings.zain_cash_mode || 'offline',
+    zain_cash_phone_number: settings.zain_cash_phone_number || '',
+    zain_cash_merchant_name: settings.zain_cash_merchant_name || '',
+    zain_cash_instructions: settings.zain_cash_instructions || '',
+    zain_cash_api_key: settings.zain_cash_api_key || '',
+    zain_cash_secret_key: settings.zain_cash_secret_key || '',
+    zain_cash_merchant_id: settings.zain_cash_merchant_id || '',
+    is_orange_money_enabled: settings.is_orange_money_enabled === true || settings.is_orange_money_enabled === '1',
+    orange_money_mode: settings.orange_money_mode || 'offline',
+    orange_money_phone_number: settings.orange_money_phone_number || '',
+    orange_money_merchant_name: settings.orange_money_merchant_name || '',
+    orange_money_instructions: settings.orange_money_instructions || '',
+    orange_money_api_key: settings.orange_money_api_key || '',
+    orange_money_secret_key: settings.orange_money_secret_key || '',
+    orange_money_merchant_id: settings.orange_money_merchant_id || '',
+    is_cliq_enabled: settings.is_cliq_enabled === true || settings.is_cliq_enabled === '1',
+    cliq_mode: settings.cliq_mode || 'offline',
+    cliq_phone_number: settings.cliq_phone_number || '',
+    cliq_merchant_name: settings.cliq_merchant_name || '',
+    cliq_instructions: settings.cliq_instructions || '',
+    cliq_api_key: settings.cliq_api_key || '',
+    cliq_secret_key: settings.cliq_secret_key || '',
+    cliq_merchant_id: settings.cliq_merchant_id || '',
+    is_zain_cash_jo_enabled: settings.is_zain_cash_jo_enabled === true || settings.is_zain_cash_jo_enabled === '1',
+    zain_cash_jo_mode: settings.zain_cash_jo_mode || 'offline',
+    zain_cash_jo_phone_number: settings.zain_cash_jo_phone_number || '',
+    zain_cash_jo_merchant_name: settings.zain_cash_jo_merchant_name || '',
+    zain_cash_jo_instructions: settings.zain_cash_jo_instructions || '',
+    zain_cash_jo_api_key: settings.zain_cash_jo_api_key || '',
+    zain_cash_jo_secret_key: settings.zain_cash_jo_secret_key || '',
+    zain_cash_jo_merchant_id: settings.zain_cash_jo_merchant_id || '',
+    is_orange_money_jo_enabled: settings.is_orange_money_jo_enabled === true || settings.is_orange_money_jo_enabled === '1',
+    orange_money_jo_mode: settings.orange_money_jo_mode || 'offline',
+    orange_money_jo_phone_number: settings.orange_money_jo_phone_number || '',
+    orange_money_jo_merchant_name: settings.orange_money_jo_merchant_name || '',
+    orange_money_jo_instructions: settings.orange_money_jo_instructions || '',
+    orange_money_jo_api_key: settings.orange_money_jo_api_key || '',
+    orange_money_jo_secret_key: settings.orange_money_jo_secret_key || '',
+    orange_money_jo_merchant_id: settings.orange_money_jo_merchant_id || '',
+    is_etihad_wallet_enabled: settings.is_etihad_wallet_enabled === true || settings.is_etihad_wallet_enabled === '1',
+    etihad_wallet_mode: settings.etihad_wallet_mode || 'offline',
+    etihad_wallet_phone_number: settings.etihad_wallet_phone_number || '',
+    etihad_wallet_merchant_name: settings.etihad_wallet_merchant_name || '',
+    etihad_wallet_instructions: settings.etihad_wallet_instructions || '',
+    etihad_wallet_api_key: settings.etihad_wallet_api_key || '',
+    etihad_wallet_secret_key: settings.etihad_wallet_secret_key || '',
+    etihad_wallet_merchant_id: settings.etihad_wallet_merchant_id || '',
+    is_dinar_pay_enabled: settings.is_dinar_pay_enabled === true || settings.is_dinar_pay_enabled === '1',
+    dinar_pay_mode: settings.dinar_pay_mode || 'offline',
+    dinar_pay_phone_number: settings.dinar_pay_phone_number || '',
+    dinar_pay_merchant_name: settings.dinar_pay_merchant_name || '',
+    dinar_pay_instructions: settings.dinar_pay_instructions || '',
+    dinar_pay_api_key: settings.dinar_pay_api_key || '',
+    dinar_pay_secret_key: settings.dinar_pay_secret_key || '',
+    dinar_pay_merchant_id: settings.dinar_pay_merchant_id || '',
+    is_bank_palestine_enabled: settings.is_bank_palestine_enabled === true || settings.is_bank_palestine_enabled === '1',
+    bank_palestine_mode: settings.bank_palestine_mode || 'offline',
+    bank_palestine_phone_number: settings.bank_palestine_phone_number || '',
+    bank_palestine_merchant_name: settings.bank_palestine_merchant_name || '',
+    bank_palestine_instructions: settings.bank_palestine_instructions || '',
+    bank_palestine_api_key: settings.bank_palestine_api_key || '',
+    bank_palestine_secret_key: settings.bank_palestine_secret_key || '',
+    bank_palestine_merchant_id: settings.bank_palestine_merchant_id || '',
+    is_al_quds_bank_enabled: settings.is_al_quds_bank_enabled === true || settings.is_al_quds_bank_enabled === '1',
+    al_quds_bank_mode: settings.al_quds_bank_mode || 'offline',
+    al_quds_bank_phone_number: settings.al_quds_bank_phone_number || '',
+    al_quds_bank_merchant_name: settings.al_quds_bank_merchant_name || '',
+    al_quds_bank_instructions: settings.al_quds_bank_instructions || '',
+    al_quds_bank_api_key: settings.al_quds_bank_api_key || '',
+    al_quds_bank_secret_key: settings.al_quds_bank_secret_key || '',
+    al_quds_bank_merchant_id: settings.al_quds_bank_merchant_id || '',
+    is_arab_islamic_bank_enabled: settings.is_arab_islamic_bank_enabled === true || settings.is_arab_islamic_bank_enabled === '1',
+    arab_islamic_bank_mode: settings.arab_islamic_bank_mode || 'offline',
+    arab_islamic_bank_phone_number: settings.arab_islamic_bank_phone_number || '',
+    arab_islamic_bank_merchant_name: settings.arab_islamic_bank_merchant_name || '',
+    arab_islamic_bank_instructions: settings.arab_islamic_bank_instructions || '',
+    arab_islamic_bank_api_key: settings.arab_islamic_bank_api_key || '',
+    arab_islamic_bank_secret_key: settings.arab_islamic_bank_secret_key || '',
+    arab_islamic_bank_merchant_id: settings.arab_islamic_bank_merchant_id || '',
+    is_cairo_amman_bank_enabled: settings.is_cairo_amman_bank_enabled === true || settings.is_cairo_amman_bank_enabled === '1',
+    cairo_amman_bank_mode: settings.cairo_amman_bank_mode || 'offline',
+    cairo_amman_bank_phone_number: settings.cairo_amman_bank_phone_number || '',
+    cairo_amman_bank_merchant_name: settings.cairo_amman_bank_merchant_name || '',
+    cairo_amman_bank_instructions: settings.cairo_amman_bank_instructions || '',
+    cairo_amman_bank_api_key: settings.cairo_amman_bank_api_key || '',
+    cairo_amman_bank_secret_key: settings.cairo_amman_bank_secret_key || '',
+    cairo_amman_bank_merchant_id: settings.cairo_amman_bank_merchant_id || '',
+    is_housing_bank_enabled: settings.is_housing_bank_enabled === true || settings.is_housing_bank_enabled === '1',
+    housing_bank_mode: settings.housing_bank_mode || 'offline',
+    housing_bank_phone_number: settings.housing_bank_phone_number || '',
+    housing_bank_merchant_name: settings.housing_bank_merchant_name || '',
+    housing_bank_instructions: settings.housing_bank_instructions || '',
+    housing_bank_api_key: settings.housing_bank_api_key || '',
+    housing_bank_secret_key: settings.housing_bank_secret_key || '',
+    housing_bank_merchant_id: settings.housing_bank_merchant_id || '',
+    is_safad_bank_enabled: settings.is_safad_bank_enabled === true || settings.is_safad_bank_enabled === '1',
+    safad_bank_mode: settings.safad_bank_mode || 'offline',
+    safad_bank_phone_number: settings.safad_bank_phone_number || '',
+    safad_bank_merchant_name: settings.safad_bank_merchant_name || '',
+    safad_bank_instructions: settings.safad_bank_instructions || '',
+    safad_bank_api_key: settings.safad_bank_api_key || '',
+    safad_bank_secret_key: settings.safad_bank_secret_key || '',
+    safad_bank_merchant_id: settings.safad_bank_merchant_id || '',
+    is_jordan_kuwait_bank_enabled: settings.is_jordan_kuwait_bank_enabled === true || settings.is_jordan_kuwait_bank_enabled === '1',
+    jordan_kuwait_bank_mode: settings.jordan_kuwait_bank_mode || 'offline',
+    jordan_kuwait_bank_phone_number: settings.jordan_kuwait_bank_phone_number || '',
+    jordan_kuwait_bank_merchant_name: settings.jordan_kuwait_bank_merchant_name || '',
+    jordan_kuwait_bank_instructions: settings.jordan_kuwait_bank_instructions || '',
+    jordan_kuwait_bank_api_key: settings.jordan_kuwait_bank_api_key || '',
+    jordan_kuwait_bank_secret_key: settings.jordan_kuwait_bank_secret_key || '',
+    jordan_kuwait_bank_merchant_id: settings.jordan_kuwait_bank_merchant_id || '',
+    is_arab_bank_enabled: settings.is_arab_bank_enabled === true || settings.is_arab_bank_enabled === '1',
+    arab_bank_mode: settings.arab_bank_mode || 'offline',
+    arab_bank_phone_number: settings.arab_bank_phone_number || '',
+    arab_bank_merchant_name: settings.arab_bank_merchant_name || '',
+    arab_bank_instructions: settings.arab_bank_instructions || '',
+    arab_bank_api_key: settings.arab_bank_api_key || '',
+    arab_bank_secret_key: settings.arab_bank_secret_key || '',
+    arab_bank_merchant_id: settings.arab_bank_merchant_id || '',
+    is_housing_bank_jo_enabled: settings.is_housing_bank_jo_enabled === true || settings.is_housing_bank_jo_enabled === '1',
+    housing_bank_jo_mode: settings.housing_bank_jo_mode || 'offline',
+    housing_bank_jo_phone_number: settings.housing_bank_jo_phone_number || '',
+    housing_bank_jo_merchant_name: settings.housing_bank_jo_merchant_name || '',
+    housing_bank_jo_instructions: settings.housing_bank_jo_instructions || '',
+    housing_bank_jo_api_key: settings.housing_bank_jo_api_key || '',
+    housing_bank_jo_secret_key: settings.housing_bank_jo_secret_key || '',
+    housing_bank_jo_merchant_id: settings.housing_bank_jo_merchant_id || '',
+    is_cairo_amman_bank_jo_enabled: settings.is_cairo_amman_bank_jo_enabled === true || settings.is_cairo_amman_bank_jo_enabled === '1',
+    cairo_amman_bank_jo_mode: settings.cairo_amman_bank_jo_mode || 'offline',
+    cairo_amman_bank_jo_phone_number: settings.cairo_amman_bank_jo_phone_number || '',
+    cairo_amman_bank_jo_merchant_name: settings.cairo_amman_bank_jo_merchant_name || '',
+    cairo_amman_bank_jo_instructions: settings.cairo_amman_bank_jo_instructions || '',
+    cairo_amman_bank_jo_api_key: settings.cairo_amman_bank_jo_api_key || '',
+    cairo_amman_bank_jo_secret_key: settings.cairo_amman_bank_jo_secret_key || '',
+    cairo_amman_bank_jo_merchant_id: settings.cairo_amman_bank_jo_merchant_id || '',
+    is_safad_bank_jo_enabled: settings.is_safad_bank_jo_enabled === true || settings.is_safad_bank_jo_enabled === '1',
+    safad_bank_jo_mode: settings.safad_bank_jo_mode || 'offline',
+    safad_bank_jo_phone_number: settings.safad_bank_jo_phone_number || '',
+    safad_bank_jo_merchant_name: settings.safad_bank_jo_merchant_name || '',
+    safad_bank_jo_instructions: settings.safad_bank_jo_instructions || '',
+    safad_bank_jo_api_key: settings.safad_bank_jo_api_key || '',
+    safad_bank_jo_secret_key: settings.safad_bank_jo_secret_key || '',
+    safad_bank_jo_merchant_id: settings.safad_bank_jo_merchant_id || '',
+    is_usdt_trc20_enabled: settings.is_usdt_trc20_enabled === true || settings.is_usdt_trc20_enabled === '1',
+    usdt_trc20_mode: settings.usdt_trc20_mode || 'offline',
+    usdt_trc20_wallet_address: settings.usdt_trc20_wallet_address || '',
+    usdt_trc20_network: settings.usdt_trc20_network || '',
+    usdt_trc20_memo: settings.usdt_trc20_memo || '',
+    usdt_trc20_api_key: settings.usdt_trc20_api_key || '',
+    usdt_trc20_secret_key: settings.usdt_trc20_secret_key || '',
+    usdt_trc20_merchant_id: settings.usdt_trc20_merchant_id || '',
+    is_usdt_erc20_enabled: settings.is_usdt_erc20_enabled === true || settings.is_usdt_erc20_enabled === '1',
+    usdt_erc20_mode: settings.usdt_erc20_mode || 'offline',
+    usdt_erc20_wallet_address: settings.usdt_erc20_wallet_address || '',
+    usdt_erc20_network: settings.usdt_erc20_network || '',
+    usdt_erc20_memo: settings.usdt_erc20_memo || '',
+    usdt_erc20_api_key: settings.usdt_erc20_api_key || '',
+    usdt_erc20_secret_key: settings.usdt_erc20_secret_key || '',
+    usdt_erc20_merchant_id: settings.usdt_erc20_merchant_id || '',
+    is_usdt_bep20_enabled: settings.is_usdt_bep20_enabled === true || settings.is_usdt_bep20_enabled === '1',
+    usdt_bep20_mode: settings.usdt_bep20_mode || 'offline',
+    usdt_bep20_wallet_address: settings.usdt_bep20_wallet_address || '',
+    usdt_bep20_network: settings.usdt_bep20_network || '',
+    usdt_bep20_memo: settings.usdt_bep20_memo || '',
+    usdt_bep20_api_key: settings.usdt_bep20_api_key || '',
+    usdt_bep20_secret_key: settings.usdt_bep20_secret_key || '',
+    usdt_bep20_merchant_id: settings.usdt_bep20_merchant_id || '',
+    is_usdt_polygon_enabled: settings.is_usdt_polygon_enabled === true || settings.is_usdt_polygon_enabled === '1',
+    usdt_polygon_mode: settings.usdt_polygon_mode || 'offline',
+    usdt_polygon_wallet_address: settings.usdt_polygon_wallet_address || '',
+    usdt_polygon_network: settings.usdt_polygon_network || '',
+    usdt_polygon_memo: settings.usdt_polygon_memo || '',
+    usdt_polygon_api_key: settings.usdt_polygon_api_key || '',
+    usdt_polygon_secret_key: settings.usdt_polygon_secret_key || '',
+    usdt_polygon_merchant_id: settings.usdt_polygon_merchant_id || '',
+    is_usdt_solana_enabled: settings.is_usdt_solana_enabled === true || settings.is_usdt_solana_enabled === '1',
+    usdt_solana_mode: settings.usdt_solana_mode || 'offline',
+    usdt_solana_wallet_address: settings.usdt_solana_wallet_address || '',
+    usdt_solana_network: settings.usdt_solana_network || '',
+    usdt_solana_memo: settings.usdt_solana_memo || '',
+    usdt_solana_api_key: settings.usdt_solana_api_key || '',
+    usdt_solana_secret_key: settings.usdt_solana_secret_key || '',
+    usdt_solana_merchant_id: settings.usdt_solana_merchant_id || '',
   });
 
   const previewText = useMemo(() => {
@@ -393,6 +594,36 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
     // PayPal
     methods.push({ key: 'paypal', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAYPAL]) });
 
+    // Palestinian & Jordanian local methods + USDT
+    const localMethods: { key: string; name: string }[] = [
+      { key: 'jawwal_pay', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.JAWWAL_PAY]) },
+      { key: 'pal_pay', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAL_PAY]) },
+      { key: 'zain_cash', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ZAIN_CASH]) },
+      { key: 'orange_money', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ORANGE_MONEY]) },
+      { key: 'bank_palestine', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK_PALESTINE]) },
+      { key: 'al_quds_bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.AL_QUDS_BANK]) },
+      { key: 'arab_islamic_bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ARAB_ISLAMIC_BANK]) },
+      { key: 'cairo_amman_bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CAIRO_AMMAN_BANK]) },
+      { key: 'housing_bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.HOUSING_BANK]) },
+      { key: 'safad_bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.SAFAD_BANK]) },
+      { key: 'cliq', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CLIQ]) },
+      { key: 'zain_cash_jo', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ZAIN_CASH_JO]) },
+      { key: 'orange_money_jo', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ORANGE_MONEY_JO]) },
+      { key: 'etihad_wallet', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ETIHAD_WALLET]) },
+      { key: 'dinar_pay', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.DINAR_PAY]) },
+      { key: 'jordan_kuwait_bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.JORDAN_KUWAIT_BANK]) },
+      { key: 'arab_bank', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ARAB_BANK]) },
+      { key: 'housing_bank_jo', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.HOUSING_BANK_JO]) },
+      { key: 'cairo_amman_bank_jo', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CAIRO_AMMAN_BANK_JO]) },
+      { key: 'safad_bank_jo', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.SAFAD_BANK_JO]) },
+      { key: 'usdt_trc20', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_TRC20]) },
+      { key: 'usdt_erc20', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_ERC20]) },
+      { key: 'usdt_bep20', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_BEP20]) },
+      { key: 'usdt_polygon', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_POLYGON]) },
+      { key: 'usdt_solana', name: t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_SOLANA]) },
+    ];
+    methods.push(...localMethods);
+
     return methods;
   }, [t, auth]);
 
@@ -421,6 +652,25 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
   // Check if method should be shown
   const shouldShowMethod = (methodKey: string) => {
     return filteredMethods.some(m => m.key === methodKey);
+  };
+
+  // Build data object for DualModePaymentCard
+  const buildLocalData = (method: string) => ({
+    is_enabled: (data[`is_${method}_enabled` as keyof PaymentSettings] as boolean) || false,
+    mode: (data[`${method}_mode` as keyof PaymentSettings] as 'offline' | 'api') || 'offline',
+    phone_number: (data[`${method}_phone_number` as keyof PaymentSettings] as string) || '',
+    merchant_name: (data[`${method}_merchant_name` as keyof PaymentSettings] as string) || '',
+    instructions: (data[`${method}_instructions` as keyof PaymentSettings] as string) || '',
+    api_key: (data[`${method}_api_key` as keyof PaymentSettings] as string) || '',
+    secret_key: (data[`${method}_secret_key` as keyof PaymentSettings] as string) || '',
+    merchant_id: (data[`${method}_merchant_id` as keyof PaymentSettings] as string) || '',
+    network: (data[`${method}_network` as keyof PaymentSettings] as string) || '',
+    wallet_address: (data[`${method}_wallet_address` as keyof PaymentSettings] as string) || '',
+    memo: (data[`${method}_memo` as keyof PaymentSettings] as string) || '',
+  });
+
+  const setLocalField = (method: string, field: string, value: string) => {
+    setData(`${method}_${field}` as Extract<keyof PaymentSettings, string>, value);
   };
 
   // Handle form submission
@@ -1717,6 +1967,358 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                     />
                   </div>
                 </PaymentMethodCard>
+              )}
+
+              {/* Palestinian & Jordanian Local Payment Methods */}
+              {shouldShowMethod('jawwal_pay') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.JAWWAL_PAY])}
+                  methodKey="jawwal_pay"
+                  kind="local"
+                  data={buildLocalData('jawwal_pay')}
+                  onToggle={(checked) => setData('is_jawwal_pay_enabled', checked)}
+                  onModeChange={(mode) => setData('jawwal_pay_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('jawwal_pay', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.JAWWAL_PAY]}
+                  helpText={t("Get your Jawwal Pay credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('pal_pay') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.PAL_PAY])}
+                  methodKey="pal_pay"
+                  kind="local"
+                  data={buildLocalData('pal_pay')}
+                  onToggle={(checked) => setData('is_pal_pay_enabled', checked)}
+                  onModeChange={(mode) => setData('pal_pay_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('pal_pay', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.PAL_PAY]}
+                  helpText={t("Get your PalPay credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('zain_cash') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ZAIN_CASH])}
+                  methodKey="zain_cash"
+                  kind="local"
+                  data={buildLocalData('zain_cash')}
+                  onToggle={(checked) => setData('is_zain_cash_enabled', checked)}
+                  onModeChange={(mode) => setData('zain_cash_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('zain_cash', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.ZAIN_CASH]}
+                  helpText={t("Get your Zain Cash credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('orange_money') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ORANGE_MONEY])}
+                  methodKey="orange_money"
+                  kind="local"
+                  data={buildLocalData('orange_money')}
+                  onToggle={(checked) => setData('is_orange_money_enabled', checked)}
+                  onModeChange={(mode) => setData('orange_money_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('orange_money', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.ORANGE_MONEY]}
+                  helpText={t("Get your Orange Money credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('bank_palestine') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.BANK_PALESTINE])}
+                  methodKey="bank_palestine"
+                  kind="local"
+                  data={buildLocalData('bank_palestine')}
+                  onToggle={(checked) => setData('is_bank_palestine_enabled', checked)}
+                  onModeChange={(mode) => setData('bank_palestine_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('bank_palestine', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.BANK_PALESTINE]}
+                  helpText={t("Get your Bank of Palestine credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('al_quds_bank') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.AL_QUDS_BANK])}
+                  methodKey="al_quds_bank"
+                  kind="local"
+                  data={buildLocalData('al_quds_bank')}
+                  onToggle={(checked) => setData('is_al_quds_bank_enabled', checked)}
+                  onModeChange={(mode) => setData('al_quds_bank_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('al_quds_bank', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.AL_QUDS_BANK]}
+                  helpText={t("Get your Al Quds Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('arab_islamic_bank') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ARAB_ISLAMIC_BANK])}
+                  methodKey="arab_islamic_bank"
+                  kind="local"
+                  data={buildLocalData('arab_islamic_bank')}
+                  onToggle={(checked) => setData('is_arab_islamic_bank_enabled', checked)}
+                  onModeChange={(mode) => setData('arab_islamic_bank_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('arab_islamic_bank', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.ARAB_ISLAMIC_BANK]}
+                  helpText={t("Get your Arab Islamic Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('cairo_amman_bank') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CAIRO_AMMAN_BANK])}
+                  methodKey="cairo_amman_bank"
+                  kind="local"
+                  data={buildLocalData('cairo_amman_bank')}
+                  onToggle={(checked) => setData('is_cairo_amman_bank_enabled', checked)}
+                  onModeChange={(mode) => setData('cairo_amman_bank_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('cairo_amman_bank', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.CAIRO_AMMAN_BANK]}
+                  helpText={t("Get your Cairo Amman Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('housing_bank') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.HOUSING_BANK])}
+                  methodKey="housing_bank"
+                  kind="local"
+                  data={buildLocalData('housing_bank')}
+                  onToggle={(checked) => setData('is_housing_bank_enabled', checked)}
+                  onModeChange={(mode) => setData('housing_bank_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('housing_bank', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.HOUSING_BANK]}
+                  helpText={t("Get your Housing Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('safad_bank') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.SAFAD_BANK])}
+                  methodKey="safad_bank"
+                  kind="local"
+                  data={buildLocalData('safad_bank')}
+                  onToggle={(checked) => setData('is_safad_bank_enabled', checked)}
+                  onModeChange={(mode) => setData('safad_bank_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('safad_bank', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.SAFAD_BANK]}
+                  helpText={t("Get your Safad Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('cliq') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CLIQ])}
+                  methodKey="cliq"
+                  kind="local"
+                  data={buildLocalData('cliq')}
+                  onToggle={(checked) => setData('is_cliq_enabled', checked)}
+                  onModeChange={(mode) => setData('cliq_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('cliq', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.CLIQ]}
+                  helpText={t("Get your CLIQ credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('zain_cash_jo') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ZAIN_CASH_JO])}
+                  methodKey="zain_cash_jo"
+                  kind="local"
+                  data={buildLocalData('zain_cash_jo')}
+                  onToggle={(checked) => setData('is_zain_cash_jo_enabled', checked)}
+                  onModeChange={(mode) => setData('zain_cash_jo_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('zain_cash_jo', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.ZAIN_CASH_JO]}
+                  helpText={t("Get your Zain Cash credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('orange_money_jo') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ORANGE_MONEY_JO])}
+                  methodKey="orange_money_jo"
+                  kind="local"
+                  data={buildLocalData('orange_money_jo')}
+                  onToggle={(checked) => setData('is_orange_money_jo_enabled', checked)}
+                  onModeChange={(mode) => setData('orange_money_jo_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('orange_money_jo', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.ORANGE_MONEY_JO]}
+                  helpText={t("Get your Orange Money credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('etihad_wallet') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ETIHAD_WALLET])}
+                  methodKey="etihad_wallet"
+                  kind="local"
+                  data={buildLocalData('etihad_wallet')}
+                  onToggle={(checked) => setData('is_etihad_wallet_enabled', checked)}
+                  onModeChange={(mode) => setData('etihad_wallet_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('etihad_wallet', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.ETIHAD_WALLET]}
+                  helpText={t("Get your Etihad Wallet credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('dinar_pay') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.DINAR_PAY])}
+                  methodKey="dinar_pay"
+                  kind="local"
+                  data={buildLocalData('dinar_pay')}
+                  onToggle={(checked) => setData('is_dinar_pay_enabled', checked)}
+                  onModeChange={(mode) => setData('dinar_pay_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('dinar_pay', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.DINAR_PAY]}
+                  helpText={t("Get your DinarPay credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('jordan_kuwait_bank') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.JORDAN_KUWAIT_BANK])}
+                  methodKey="jordan_kuwait_bank"
+                  kind="local"
+                  data={buildLocalData('jordan_kuwait_bank')}
+                  onToggle={(checked) => setData('is_jordan_kuwait_bank_enabled', checked)}
+                  onModeChange={(mode) => setData('jordan_kuwait_bank_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('jordan_kuwait_bank', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.JORDAN_KUWAIT_BANK]}
+                  helpText={t("Get your Jordan Kuwait Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('arab_bank') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.ARAB_BANK])}
+                  methodKey="arab_bank"
+                  kind="local"
+                  data={buildLocalData('arab_bank')}
+                  onToggle={(checked) => setData('is_arab_bank_enabled', checked)}
+                  onModeChange={(mode) => setData('arab_bank_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('arab_bank', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.ARAB_BANK]}
+                  helpText={t("Get your Arab Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('housing_bank_jo') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.HOUSING_BANK_JO])}
+                  methodKey="housing_bank_jo"
+                  kind="local"
+                  data={buildLocalData('housing_bank_jo')}
+                  onToggle={(checked) => setData('is_housing_bank_jo_enabled', checked)}
+                  onModeChange={(mode) => setData('housing_bank_jo_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('housing_bank_jo', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.HOUSING_BANK_JO]}
+                  helpText={t("Get your Housing Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('cairo_amman_bank_jo') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.CAIRO_AMMAN_BANK_JO])}
+                  methodKey="cairo_amman_bank_jo"
+                  kind="local"
+                  data={buildLocalData('cairo_amman_bank_jo')}
+                  onToggle={(checked) => setData('is_cairo_amman_bank_jo_enabled', checked)}
+                  onModeChange={(mode) => setData('cairo_amman_bank_jo_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('cairo_amman_bank_jo', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.CAIRO_AMMAN_BANK_JO]}
+                  helpText={t("Get your Cairo Amman Bank credentials from your")}
+                />
+              )}
+
+              {shouldShowMethod('safad_bank_jo') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.SAFAD_BANK_JO])}
+                  methodKey="safad_bank_jo"
+                  kind="local"
+                  data={buildLocalData('safad_bank_jo')}
+                  onToggle={(checked) => setData('is_safad_bank_jo_enabled', checked)}
+                  onModeChange={(mode) => setData('safad_bank_jo_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('safad_bank_jo', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.SAFAD_BANK_JO]}
+                  helpText={t("Get your Safad Bank credentials from your")}
+                />
+              )}
+
+              {/* USDT Crypto Payment Methods */}
+              {shouldShowMethod('usdt_trc20') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_TRC20])}
+                  methodKey="usdt_trc20"
+                  kind="usdt"
+                  data={buildLocalData('usdt_trc20')}
+                  onToggle={(checked) => setData('is_usdt_trc20_enabled', checked)}
+                  onModeChange={(mode) => setData('usdt_trc20_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('usdt_trc20', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.USDT_TRC20]}
+                  helpText={t("Configure your USDT wallet for TRC20 network")}
+                />
+              )}
+
+              {shouldShowMethod('usdt_erc20') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_ERC20])}
+                  methodKey="usdt_erc20"
+                  kind="usdt"
+                  data={buildLocalData('usdt_erc20')}
+                  onToggle={(checked) => setData('is_usdt_erc20_enabled', checked)}
+                  onModeChange={(mode) => setData('usdt_erc20_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('usdt_erc20', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.USDT_ERC20]}
+                  helpText={t("Configure your USDT wallet for ERC20 network")}
+                />
+              )}
+
+              {shouldShowMethod('usdt_bep20') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_BEP20])}
+                  methodKey="usdt_bep20"
+                  kind="usdt"
+                  data={buildLocalData('usdt_bep20')}
+                  onToggle={(checked) => setData('is_usdt_bep20_enabled', checked)}
+                  onModeChange={(mode) => setData('usdt_bep20_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('usdt_bep20', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.USDT_BEP20]}
+                  helpText={t("Configure your USDT wallet for BEP20 network")}
+                />
+              )}
+
+              {shouldShowMethod('usdt_polygon') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_POLYGON])}
+                  methodKey="usdt_polygon"
+                  kind="usdt"
+                  data={buildLocalData('usdt_polygon')}
+                  onToggle={(checked) => setData('is_usdt_polygon_enabled', checked)}
+                  onModeChange={(mode) => setData('usdt_polygon_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('usdt_polygon', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.USDT_POLYGON]}
+                  helpText={t("Configure your USDT wallet for Polygon network")}
+                />
+              )}
+
+              {shouldShowMethod('usdt_solana') && (
+                <DualModePaymentCard
+                  title={t(PAYMENT_METHOD_LABELS[PAYMENT_METHODS.USDT_SOLANA])}
+                  methodKey="usdt_solana"
+                  kind="usdt"
+                  data={buildLocalData('usdt_solana')}
+                  onToggle={(checked) => setData('is_usdt_solana_enabled', checked)}
+                  onModeChange={(mode) => setData('usdt_solana_mode', mode)}
+                  onFieldChange={(field, value) => setLocalField('usdt_solana', field, value)}
+                  helpUrl={PAYMENT_METHOD_HELP_URLS[PAYMENT_METHODS.USDT_SOLANA]}
+                  helpText={t("Configure your USDT wallet for Solana network")}
+                />
               )}
 
               {/* WhatsApp - For company users and sub-users */}
