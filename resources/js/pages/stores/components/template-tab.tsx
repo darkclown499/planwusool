@@ -111,6 +111,7 @@ export default function TemplateTab({ store, availableThemes = [], storeContent 
   };
 
   const storeUrl = (() => {
+    if (typeof window === 'undefined') return '';
     const slug = store?.slug;
     if (!slug) return '';
     const { protocol, hostname, port } = window.location;

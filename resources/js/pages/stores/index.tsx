@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, LayoutTemplate } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -214,6 +214,12 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                       <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('settings', 'settings-stores', store.id); }}>
                         <Settings className="h-3.5 w-3.5" />
                         {t('Settings')}
+                      </Button>
+                    )}
+                    {hasPermission('settings-stores') && (
+                      <Button variant="outline" size="sm" className="gap-1.5 text-primary" onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template'); }}>
+                        <LayoutTemplate className="h-3.5 w-3.5" />
+                        {t('Template')}
                       </Button>
                     )}
                     {hasPermission('delete-stores') && (

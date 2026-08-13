@@ -128,7 +128,12 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
   const { t } = useTranslation();
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('tab=template')) {
+      return 'template';
+    }
+    return 'general';
+  });
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
