@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
   Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-  BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText,
+  BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ import { SearchableSelect } from '@/components/searchable-select';
 import { AccordionSection } from '@/components/accordion-section';
 import { apiPut, apiPost } from '@/utils/api';
 import DomainsTab from './components/domains-tab';
+import TemplateTab from './components/template-tab';
 
 interface Props {
   store: any;
@@ -28,6 +29,8 @@ interface Props {
   currencies: any[];
   timezones: Record<string, string>;
   locationData: any[];
+  availableThemes?: string[];
+  storeContent?: any;
 }
 
 const STORE_LANGUAGES: { code: string; label: string }[] = [
@@ -121,7 +124,7 @@ function initSocialLinks(s: any): any[] {
   return legacy;
 }
 
-export default function StoreSettings({ store, settings, currencies, timezones, locationData = [] }: Props) {
+export default function StoreSettings({ store, settings, currencies, timezones, locationData = [], availableThemes = [], storeContent = {} }: Props) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
@@ -323,10 +326,14 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 border-b border-border bg-transparent p-0">
+        <TabsList className="grid w-full grid-cols-5 border-b border-border bg-transparent p-0">
           <TabsTrigger value="general" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <PenLine className="h-4 w-4 me-2" />
             {t('General')}
+          </TabsTrigger>
+          <TabsTrigger value="template" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <LayoutTemplate className="h-4 w-4 me-2" />
+            {t('Template')}
           </TabsTrigger>
           <TabsTrigger value="seo" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Search className="h-4 w-4 me-2" />
@@ -341,6 +348,10 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
             {t('Domains')}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="template" className="space-y-4 mt-6">
+          <TemplateTab store={store} availableThemes={availableThemes} storeContent={storeContent} />
+        </TabsContent>
 
         <TabsContent value="general" className="space-y-4 mt-6">
           <AccordionSection

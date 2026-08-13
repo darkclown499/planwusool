@@ -580,6 +580,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
         Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');
+        Route::put('stores/{id}/settings/theme', [\App\Http\Controllers\StoreSettingsController::class, 'updateTheme'])->middleware('permission:settings-stores')->name('stores.settings.theme');
         
         // Store custom domains routes
         Route::get('stores/{id}/domains', [\App\Http\Controllers\StoreDomainController::class, 'index'])->middleware('permission:settings-stores')->name('stores.domains');

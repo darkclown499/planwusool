@@ -58,6 +58,38 @@ class StoreSettingsController extends Controller
             'currencies' => $currencies,
             'timezones' => $timezones,
             'locationData' => $locationData,
+            'availableThemes' => Auth::user()->getAvailableThemes(),
+            'storeContent' => $store->getMergedStoreContent(),
+        ]);
+    }
+
+    /**
+     * Update the store's selected theme/template slug.
+     */
+    public function updateTheme(Request $request, $storeId)
+    {
+        if (!Auth::user()->can('settings-stores')) {
+            return response()->json(['error' => __('You do not have permission to update the template.')], 403);
+        }
+
+        $store = $this->resolveStore($storeId);
+
+        $request->validate([
+            'theme' => 'required|string|max:50',
+        ]);
+
+        $theme = \App\Models\Store::normalizeThemeSlug($request->theme);
+        $available = Auth::user()->getAvailableThemes();
+
+        if (!in_array($theme, $available, true)) {
+            return response()->json(['error' => __('This template is not available on your current plan.')], 422);
+        }
+
+        $store->update(['theme' => $theme]);
+
+        return response()->json([
+            'success' => true,
+            'theme' => $theme,
         ]);
     }
 
