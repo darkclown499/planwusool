@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, Palette, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -68,8 +68,6 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   const userHasPermission = (permission: string) => {
   return isSuperAdmin || hasPermission(permission);
   };
-
-   const themeEditorEnabled = isSuperAdmin || ((usePage().props as any).auth?.user?.plan?.enable_theme_editor ?? 'off') === 'on';
 
    const hasPendingAlerts = (dashboardData.alerts?.length || 0) > 0 || (dashboardData.metrics.pendingOrders || 0) > 0 || (dashboardData.metrics.pendingRequests || 0) > 0;
  
@@ -583,12 +581,6 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, isSup
   <Button size="sm" variant="outline" onClick={() => router.visit(route('stores.settings', currentStore.id))} className="h-8 gap-1.5">
   <Settings className="h-3.5 w-3.5" />
   {t('Store Settings')}
-  </Button>
-  )}
-  {currentStore && userHasPermission('settings-stores') && themeEditorEnabled && (
-  <Button size="sm" variant="outline" onClick={() => router.visit(route('stores.appearance', currentStore.id))} className="h-8 gap-1.5">
-  <Palette className="h-3.5 w-3.5" />
-  {t('Edit Template')}
   </Button>
   )}
   {userHasPermission('manage-stores') && (

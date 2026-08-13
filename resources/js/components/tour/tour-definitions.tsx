@@ -54,20 +54,12 @@ export function getTourSteps(storeId?: number | null): TourStep[] {
     ];
 
     if (storeId) {
-        steps.push(
-            {
-                id: 'store-settings',
-                path: route('stores.settings', storeId),
-                titleKey: 'Store Settings',
-                descKey: 'Tour store settings description',
-            },
-            {
-                id: 'store-customization',
-                path: route('stores.appearance', storeId),
-                titleKey: 'Store Customization',
-                descKey: 'Tour store customization description',
-            },
-        );
+        steps.push({
+            id: 'store-settings',
+            path: route('stores.settings', storeId),
+            titleKey: 'Store Settings',
+            descKey: 'Tour store settings description',
+        });
     }
 
     steps.push(

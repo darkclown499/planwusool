@@ -18,7 +18,6 @@ import {
     Mail,
     MapPin,
     MessageCircle,
-    Palette,
     PartyPopper,
     Phone,
     ShieldCheck,
@@ -36,8 +35,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
-import { getStoreThemes } from '@/data/storeThemes';
-import { TemplatePreviewCard } from '@/templates/TemplatePreviewCard';
 import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
@@ -80,7 +77,6 @@ const STEP_META: { key: string; icon: LucideIcon }[] = [
     { key: 'details', icon: Contact },
     { key: 'language', icon: Languages },
     { key: 'currency', icon: Coins },
-    { key: 'theme', icon: Palette },
     { key: 'confirm', icon: CheckCircle2 },
 ];
 
@@ -103,7 +99,6 @@ const FIELD_STEP: Record<string, number> = {
     publish_store: 3,
     language: 4,
     currency: 5,
-    theme: 6,
 };
 
 const CONFETTI_COLORS = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ec4899', '#8b5cf6'];
@@ -163,7 +158,6 @@ export default function Onboarding({
 
     const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const themes = getStoreThemes();
     const stepKey = STEP_META[step].key;
     const progress = ((step + 1) / STEP_META.length) * 100;
 
@@ -267,8 +261,6 @@ export default function Onboarding({
                 return data.language === 'ar' || data.language === 'en';
             case 'currency':
                 return data.currency.length > 0;
-            case 'theme':
-                return data.theme.length > 0;
             default:
                 return true;
         }
@@ -348,8 +340,8 @@ export default function Onboarding({
 
     const featureChips = [
         { icon: Store, label: t('Your store on WhatsApp') },
-        { icon: Palette, label: t('Professional themes') },
         { icon: CreditCard, label: t('Multiple payment gateways') },
+        { icon: Globe, label: t('Customizable store design') },
     ];
 
     const isStoreNameNonLatin = data.store_name.trim() !== '' && slugify(data.store_name) === '';
@@ -1117,51 +1109,6 @@ export default function Onboarding({
                                             </div>
                                         )}
 
-                                        {stepKey === 'theme' && (
-                                            <div className="onboarding-stagger py-4">
-                                                <div className="mb-2 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <Palette className="h-5 w-5" style={{ color: primaryColor }} />
-                                                    </div>
-                                                    <div>
-                                                        <h2 className="text-xl font-bold text-gray-900">
-                                                            {t('Choose a theme')}
-                                                        </h2>
-                                                        <p className="text-sm text-gray-500">
-                                                            {t('Pick a theme that fits your business. You can change it anytime.')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <p className="mb-4 text-xs text-gray-400">
-                                                    {t('Watch the live preview update as you pick a theme.')}
-                                                </p>
-                                                <div className="grid max-h-[28rem] grid-cols-1 gap-4 overflow-y-auto pe-1 sm:grid-cols-2">
-                                                    {themes.map((theme) => (
-                                                        <TemplatePreviewCard
-                                                            key={theme.id}
-                                                            template={{
-                                                                slug: theme.id,
-                                                                name: theme.name,
-                                                                description: theme.description,
-                                                                category: theme.category || 'general',
-                                                                is_free: theme.isFree ?? true,
-                                                                plan_required: 'starter',
-                                                                design_tokens: theme.designTokens,
-                                                                sections: [],
-                                                                layout: { container: 'container mx-auto px-4', spacing: 'normal' },
-                                                            }}
-                                                            demoStoreUrl={demoStoreUrl}
-                                                            isActive={data.theme === theme.id}
-                                                            onSelect={() => setData('theme', theme.id)}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
                                         {stepKey === 'confirm' && (
                                             <div className="py-4">
                                                 {/* Confetti */}
@@ -1275,13 +1222,6 @@ export default function Onboarding({
                                                                 value:
                                                                     currencies.find((c) => c.code === data.currency)?.name ||
                                                                     data.currency,
-                                                            },
-                                                            {
-                                                                icon: Palette,
-                                                                label: t('Theme'),
-                                                                value:
-                                                                    themes.find((th) => th.id === data.theme)?.name ||
-                                                                    data.theme,
                                                             },
                                                             {
                                                                 icon: Globe,

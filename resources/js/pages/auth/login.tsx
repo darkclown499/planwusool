@@ -14,7 +14,6 @@ import SocialButtons from '@/components/auth/SocialButtons';
 import Recaptcha, { executeRecaptcha } from '@/components/recaptcha';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
-import { getStoreThemes } from '@/data/storeThemes';
 
 type LoginForm = {
  email: string;
@@ -118,9 +117,8 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  window.open(url, '_blank');
  };
 
- const getThemeThumbnail = (themeId: string) => {
- const theme = getStoreThemes().find(t => t.id === themeId);
- return theme?.thumbnail || '';
+ const getThemeThumbnail = (_themeId: string) => {
+  return '';
  };
 
  const distinctThemes = demoStores.reduce((acc: DemoStore[], store) => {

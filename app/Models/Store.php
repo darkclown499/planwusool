@@ -14,9 +14,6 @@ class Store extends BaseModel
         'slug',
         'description',
         'theme',
-        'template_slug',
-        'template_overrides',
-        'design_tokens',
         'store_content',
         'user_id',
         'custom_domain',
@@ -45,8 +42,6 @@ class Store extends BaseModel
         'enable_custom_domain' => 'boolean',
         'enable_custom_subdomain' => 'boolean',
         'enable_pwa' => 'boolean',
-        'template_overrides' => 'array',
-        'design_tokens' => 'array',
         'store_content' => 'array',
     ];
 
@@ -338,128 +333,21 @@ class Store extends BaseModel
     }
 
     /**
-     * Map legacy theme ids (used before the template system) to their
-     * closest equivalent template slug so existing stores automatically
-     * render through the new template system.
-     */
-    public const LEGACY_THEME_MAP = [
-        'gadgets' => 'tech',
-        'electronics' => 'tech',
-        'fashion' => 'fashion',
-        'clothing' => 'fashion',
-        'home-decor' => 'furniture',
-        'home-tools' => 'home-tools',
-        'bakery' => 'food',
-        'food' => 'food',
-        'coffee' => 'coffee-shop',
-        'coffee-dates' => 'coffee-shop',
-        'spices' => 'grocery-delivery',
-        'supermarket' => 'supermarket',
-        'car-accessories' => 'auto-parts',
-        'toy' => 'kids',
-        'kids' => 'kids',
-        'perfumes' => 'perfumes',
-        'fragrances' => 'perfumes',
-        'jewelry' => 'luxury-jewelry',
-        'jewelry-gold' => 'luxury-jewelry',
-        'beauty' => 'beauty',
-        'cosmetics' => 'beauty',
-        'pharmacy' => 'pharmacy',
-        'books' => 'books',
-        'stationery' => 'stationery',
-        'stationery-books' => 'books',
-        'sport' => 'sports',
-        'sports' => 'sports',
-        'pets' => 'pet-store',
-        'flowers' => 'flowers-gifts',
-    ];
-
-    /**
-     * Get the active template slug for this store.
+     * Get the fixed template slug for this store.
+     * Template system was removed; all stores render the "basic" design.
      */
     public function getTemplateSlug(): string
     {
-        $slug = $this->template_slug ?? $this->theme ?? 'basic';
-
-        // Legacy theme ids are mapped to their new template equivalent.
-        return self::LEGACY_THEME_MAP[$slug] ?? $slug;
+        return 'basic';
     }
 
     /**
-     * Normalize a theme/template value into a valid template slug.
-     * Maps legacy theme ids and falls back to 'basic' for unknown values.
+     * Normalize a theme/template value into a fixed valid slug.
+     * Template system was removed; always returns 'basic'.
      */
     public static function normalizeThemeSlug(?string $slug): string
     {
-        $slug = trim((string) $slug);
-
-        if ($slug === '') {
-            return 'basic';
-        }
-
-        return self::LEGACY_THEME_MAP[$slug] ?? $slug;
-    }
-
-    /**
-     * Get the active Template model for this store.
-     */
-    public function template()
-    {
-        return Template::where('slug', $this->getTemplateSlug())->where('is_active', true)->first();
-    }
-
-    /**
-     * Get merged design tokens (store overrides + template defaults).
-     */
-    public function getMergedDesignTokens(): array
-    {
-        $template = $this->template();
-        $defaults = $template ? $template->design_tokens : [];
-
-        return array_replace_recursive($defaults, $this->design_tokens ?? []);
-    }
-
-    /**
-     * Get merged template config (store overrides + template config).
-     */
-    public function getMergedTemplateConfig(): array
-    {
-        $template = $this->template();
-        $config = $template ? $template->config : ['sections' => []];
-
-        $overrides = $this->template_overrides ?? [];
-        if (!empty($overrides['sections'])) {
-            $config['sections'] = $overrides['sections'];
-        }
-
-        return $config;
-    }
-
-    /**
-     * Check if store can use a given template slug.
-     */
-    public function canUseTemplate(string $templateSlug): bool
-    {
-        $user = $this->user;
-        if (!$user || !$user->plan) {
-            return false;
-        }
-
-        $template = Template::where('slug', $templateSlug)->where('is_active', true)->first();
-        if (!$template) {
-            return false;
-        }
-
-        return $template->is_free || $user->plan->getAccessibleTemplates()->contains('slug', $templateSlug);
-    }
-
-    /**
-     * Check if store owner has advanced builder access.
-     */
-    public function hasAdvancedBuilder(): bool
-    {
-        $user = $this->user;
-        return $user && $user->plan && $user->plan->hasAdvancedBuilder();
+        return 'basic';
     }
 
     /**

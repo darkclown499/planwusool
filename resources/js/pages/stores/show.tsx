@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Edit, Settings, Palette, Building2, Globe, Users, BarChart } from 'lucide-react';
+import { ArrowLeft, Edit, Settings, Building2, Globe, Users, BarChart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,10 +12,6 @@ import { formatLocalDate } from '@/utils/date-helper';
 export default function StoreView({ store }: any) {
   const { t } = useTranslation();
 
-  const auth = usePage().props.auth as any;
-  const themeEditorEnabled = auth?.user?.type === 'superadmin' || (auth?.user?.plan?.enable_theme_editor ?? 'off') === 'on';
-
-
   const pageActions = [
     {
       label: t('Edit'),
@@ -23,12 +19,6 @@ export default function StoreView({ store }: any) {
       variant: 'outline' as const,
       onClick: () => router.visit(route('stores.edit', store.id))
     },
-    ...(themeEditorEnabled ? [{
-      label: t('Edit Template'),
-      icon: <Palette className="h-4 w-4" />,
-      variant: 'outline' as const,
-      onClick: () => router.visit(route('stores.appearance', store.id))
-    }] : []),
     {
       label: t('Settings'),
       icon: <Settings className="h-4 w-4" />,

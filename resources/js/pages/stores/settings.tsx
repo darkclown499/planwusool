@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
   Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-  BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, ArrowRight, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText,
+  BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -963,31 +963,6 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="space-y-3 pt-5">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5">
-                  <History className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium mb-1 text-start">{t('Custom CSS & JavaScript')}</h4>
-                  <p className="text-sm text-muted-foreground text-start">
-                    {t('Custom code with revision history has moved to its own page.')}
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.visit(route('stores.appearance', store.id))}
-                  className="shrink-0"
-                >
-                  {t('Open Appearance')}
-                  <ArrowRight className="h-4 w-4 ms-2" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="domains" className="space-y-4 mt-0">

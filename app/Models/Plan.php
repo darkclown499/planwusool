@@ -38,15 +38,11 @@ class Plan extends Model
         'is_default',
         'is_recommended',
         'module',
-        'template_config',
-        'enable_advanced_builder',
     ];
     
     protected $casts = [
         'themes' => 'array',
         'module' => 'array', 
-        'template_config' => 'array',
-        'enable_advanced_builder' => 'boolean',
         'is_default' => 'boolean',
         'price' => 'float',
         'yearly_price' => 'float',
@@ -96,65 +92,14 @@ class Plan extends Model
     }
 
     /**
-     * Get available template slugs for this plan.
-     * Returns 'all' if plan allows all templates.
-     */
-    public function getAvailableTemplates(): array
-    {
-        if ($this->template_config && is_array($this->template_config)) {
-            return $this->template_config;
-        }
-
-        // Fallback: free plans get free templates, paid plans get all
-        if ($this->price <= 0 && $this->yearly_price <= 0) {
-            return Template::where('is_free', true)->where('is_active', true)
-                ->pluck('slug')->toArray();
-        }
-
-        return Template::where('is_active', true)->pluck('slug')->toArray();
-    }
-
-    /**
-     * Check if plan has access to advanced builder.
-     */
-    public function hasAdvancedBuilder(): bool
-    {
-        return (bool) ($this->enable_advanced_builder ?? false);
-    }
-
-    /**
      * Get the plan tier key (starter, growth, professional).
      */
     public function getTier(): string
     {
-        if ($this->enable_advanced_builder) {
-            return 'professional';
-        }
-
         if ($this->price <= 0 && $this->yearly_price <= 0) {
             return 'starter';
         }
 
         return 'growth';
-    }
-
-    /**
-     * Get accessible templates as model instances.
-     */
-    public function getAccessibleTemplates()
-    {
-        $slugs = $this->getAvailableTemplates();
-
-        if ($slugs === ['all'] || $this->getTier() === 'professional') {
-            return Template::where('is_active', true)->orderBy('sort_order')->get();
-        }
-
-        return Template::where('is_active', true)
-            ->where(function ($q) use ($slugs) {
-                $q->whereIn('slug', $slugs)
-                    ->orWhere('is_free', true);
-            })
-            ->orderBy('sort_order')
-            ->get();
     }
 }

@@ -211,25 +211,6 @@ Route::post('api/cart/sync', [\App\Http\Controllers\Api\CartController::class, '
 // Abandoned cart tracking API (storefront)
 Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
 
-// Template API (storefront & dashboard)
-Route::prefix('api/templates')->name('api.templates.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Api\TemplateController::class, 'index'])->name('index');
-    Route::get('{slug}', [\App\Http\Controllers\Api\TemplateController::class, 'show'])->name('show');
-    Route::get('{slug}/preview', [\App\Http\Controllers\Api\TemplateController::class, 'preview'])->name('preview');
-});
-
-// Design tokens API (authenticated, store owner only)
-Route::middleware('auth')->prefix('api/stores/{store}/design-tokens')->name('api.design-tokens.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Api\DesignTokenController::class, 'show'])->name('show');
-    Route::put('/', [\App\Http\Controllers\Api\DesignTokenController::class, 'update'])->name('update');
-});
-
-// Store template overrides API
-Route::middleware('auth')->prefix('api/stores/{store}')->name('api.store-template.')->group(function () {
-    Route::put('overrides', [\App\Http\Controllers\Api\DesignTokenController::class, 'updateOverrides'])->name('overrides');
-    Route::put('template', [\App\Http\Controllers\Api\DesignTokenController::class, 'selectTemplate'])->name('select');
-});
-
 // Store content/banners API (authenticated, store owner only)
 Route::middleware('auth')->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\StoreContentController::class, 'show'])->name('show');
@@ -599,8 +580,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
         Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');
-        Route::get('stores/{id}/template-select', [\App\Http\Controllers\StoreTemplateController::class, 'show'])->middleware('permission:settings-stores')->name('stores.template-select');
-        Route::put('stores/{id}/template-select', [\App\Http\Controllers\StoreTemplateController::class, 'update'])->middleware('permission:settings-stores')->name('stores.template-select.update');
         
         // Store custom domains routes
         Route::get('stores/{id}/domains', [\App\Http\Controllers\StoreDomainController::class, 'index'])->middleware('permission:settings-stores')->name('stores.domains');
@@ -609,7 +588,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/domains/{domain}/check-ssl', [\App\Http\Controllers\StoreDomainController::class, 'checkSsl'])->middleware('permission:settings-stores')->name('stores.domains.check-ssl');
         Route::post('stores/{id}/domains/{domain}/make-primary', [\App\Http\Controllers\StoreDomainController::class, 'makePrimary'])->middleware('permission:settings-stores')->name('stores.domains.primary');
         Route::delete('stores/{id}/domains/{domain}', [\App\Http\Controllers\StoreDomainController::class, 'destroy'])->middleware('permission:settings-stores')->name('stores.domains.destroy');
-        Route::get('stores/{id}/appearance', [\App\Http\Controllers\StoreAppearanceController::class, 'show'])->middleware('permission:settings-stores')->name('stores.appearance');
         
         // Product Management routes with permissions
         Route::get('products', [\App\Http\Controllers\ProductController::class, 'index'])->middleware('permission:manage-products')->name('products.index');
@@ -940,12 +918,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Impersonation routes
     Route::middleware('App\Http\Middleware\SuperAdminMiddleware')->group(function () {
         Route::get('impersonate/{userId}', [ImpersonateController::class, 'start'])->name('impersonate.start');
-
-        // Template Editor (super admin only) - allows editing a store's own
-        // overrides/CSS/JS scoped to that store without touching shared templates.
-        Route::get('template-editor', [\App\Http\Controllers\TemplateEditorController::class, 'index'])->name('template-editor.index');
-        Route::get('template-editor/{store}', [\App\Http\Controllers\TemplateEditorController::class, 'show'])->name('template-editor.show');
-        Route::post('template-editor/{store}/save', [\App\Http\Controllers\TemplateEditorController::class, 'save'])->name('template-editor.save');
     });
 
     // Leaving impersonation is requested while still logged in as the

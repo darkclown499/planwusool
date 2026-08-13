@@ -5,10 +5,9 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { useLayout } from '@/contexts/LayoutContext';
 import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
-import { routeIfExists } from '@/utils/route-helpers';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell, Code2 } from 'lucide-react';
+import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -56,17 +55,7 @@ export function AppSidebar() {
             groupLabel: t('Stores'),
             children: [
                 { title: t('Stores'), href: route('stores.index') },
-                ...((auth?.stores as any[]) || []).map((store) => ({
-                    title: `${t('Customize Store')}: ${store.name}`,
-                    href: route('stores.appearance', store.id),
-                })),
             ],
-        },
-        {
-            title: t('Template Editor'),
-            href: route('template-editor.index'),
-            icon: Code2,
-            groupLabel: t('Stores'),
         },
         {
             title: t('Subscription Plans'),
@@ -258,16 +247,8 @@ export function AppSidebar() {
         // ── إعدادات المتجر ──
         const currentStoreId = auth.user?.current_store;
         if (hasPermission('settings-stores') && currentStoreId) {
-            const templateSelectHref = routeIfExists('stores.template-select', currentStoreId);
-            const appearanceHref = routeIfExists('stores.appearance', currentStoreId);
             const storeSettingsChildren: NavItem[] = [
                 { title: t('Store Settings'), href: route('stores.settings', currentStoreId) },
-                ...(templateSelectHref
-                    ? [{ title: t('Choose Template'), href: templateSelectHref }]
-                    : []),
-                ...(appearanceHref
-                    ? [{ title: t('Store Customization'), href: appearanceHref }]
-                    : []),
             ];
             items.push({
                 title: t('Store Settings'),

@@ -7,7 +7,6 @@ import TrustedBySection from './components/TrustedBySection';
 import FeaturesSection from './components/FeaturesSection';
 import ScreenshotsSection from './components/ScreenshotsSection';
 import WhyChooseUs from './components/WhyChooseUs';
-import ThemesSection from './components/ThemesSection';
 import AboutUs from './components/AboutUs';
 import TeamSection from './components/TeamSection';
 import PlansSection from './components/PlansSection';
@@ -186,7 +185,7 @@ export default function LandingPage() {
     return settings.config_sections?.sections?.find(section => section.key === key) || {};
   };
 
-  const compactDefaultSections = ['header', 'hero', 'trusted_by', 'features', 'themes', 'plans', 'faq', 'footer'];
+  const compactDefaultSections = ['header', 'hero', 'trusted_by', 'features', 'plans', 'faq', 'footer'];
 
   // Respect admin visibility settings when provided; otherwise keep the homepage lean by default.
   const isSectionVisible = (key: string) => {
@@ -243,14 +242,7 @@ export default function LandingPage() {
         brandColor={primaryColor}
       />
     ),
-    themes: () => isSectionVisible('themes') && (
-      <ThemesSection
-        settings={settings}
-        sectionData={getSectionData('themes')}
-        brandColor={primaryColor}
-        demoStoreUrl={demoStoreUrl}
-      />
-    ),
+    themes: () => null,
     why_choose_us: () => isSectionVisible('why_choose_us') && (
       <WhyChooseUs
         settings={settings}

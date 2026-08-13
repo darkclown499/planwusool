@@ -9,9 +9,6 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
-import { Check } from 'lucide-react';
-import { getStoreThemes, storeThemeCategories } from '@/data/storeThemes';
-import MediaPicker from '@/components/MediaPicker';
 import InputError from '@/components/input-error';
 
 interface PlanPermissions {
@@ -26,7 +23,7 @@ interface CreateStoreProps {
  serverIp: string;
 }
 
-export default function CreateStore({ availableThemes, planPermissions, serverIp }: CreateStoreProps) {
+export default function CreateStore({ planPermissions, serverIp }: CreateStoreProps) {
  const { errors } = usePage().props as any;
  const { t } = useTranslation();
  const [formData, setFormData] = useState({
@@ -92,12 +89,11 @@ export default function CreateStore({ availableThemes, planPermissions, serverIp
  >
  <form noValidate onSubmit={handleSubmit} className="space-y-6">
  <Tabs defaultValue="info" className="w-full">
- <TabsList className={`grid w-full ${planPermissions?.pwa_business ? 'grid-cols-3' : 'grid-cols-2'}`}>
- <TabsTrigger value="info">{t('Store Information')}</TabsTrigger>
- <TabsTrigger value="theme">{t('Store Theme')}</TabsTrigger>
- {planPermissions?.pwa_business && (
- <TabsTrigger value="pwa">{t('PWA Settings')}</TabsTrigger>
- )}
+ <TabsList className={`grid w-full ${planPermissions?.pwa_business ? 'grid-cols-2' : 'grid-cols-1'}`}>
+  <TabsTrigger value="info">{t('Store Information')}</TabsTrigger>
+  {planPermissions?.pwa_business && (
+  <TabsTrigger value="pwa">{t('PWA Settings')}</TabsTrigger>
+  )}
  </TabsList>
 
  <TabsContent value="info" className="space-y-4 pt-4">
@@ -241,77 +237,8 @@ export default function CreateStore({ availableThemes, planPermissions, serverIp
  </Card>
  </TabsContent>
 
- <TabsContent value="theme" className="space-y-4 pt-4">
- <Card>
- <CardHeader>
- <CardTitle>{t('Store Theme')}</CardTitle>
- </CardHeader>
- <CardContent>
- <p className="text-sm text-muted-foreground mb-4">
- {t('Choose a theme that best fits your store type and brand.')}
- </p>
-
- {availableThemes !== null && (
- <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
- <p className="text-sm text-blue-800">
- <strong>{t('Plan Limitation')}:</strong> {t('Your current plan allows access to {{count}} theme(s).', { count: availableThemes.length })}
- </p>
- </div>
- )}
-
-  <div className="space-y-6">
-  {storeThemeCategories.map((category) => {
-  const categoryThemes = getStoreThemes().filter(theme =>
-  theme.category === category && (availableThemes === null || availableThemes.includes(theme.id))
-  );
-  if (categoryThemes.length === 0) return null;
-  return (
-  <div key={category}>
-  <h3 className="mb-3 font-semibold text-sm text-muted-foreground border-b pb-2">{category}</h3>
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  {categoryThemes.map((theme) => (
-  <div
-  key={theme.id}
-  className={`cursor-pointer rounded-lg border-2 p-1 transition-all duration-200 ${formData.theme === theme.id ? 'border-primary' : 'border-gray-200 hover:border-gray-300'
-  }`}
-  onClick={() => setFormData(prev => ({ ...prev, theme: theme.id }))}
-  >
-  <div className="relative aspect-video overflow-hidden rounded-md theme-preview-container">
-  <img
-  src={theme.thumbnail}
-  alt={theme.name}
-  className="h-full w-full object-cover theme-preview-image"
-  onError={(e) => {
-  (e.target as HTMLImageElement).src = `https://placehold.co/300x180?text=${encodeURIComponent(theme.name)}`;
-  }}
-  />
-  {formData.theme === theme.id && (
-  <div className="absolute inset-0 flex items-center justify-center bg-primary/20">
-  <div className="rounded-full bg-primary p-1">
-  <Check className="h-4 w-4 text-white" />
-  </div>
-  </div>
-  )}
-  </div>
-  <div className="p-2">
-  <h3 className="font-medium text-sm">{theme.name}</h3>
-  <p className="text-xs text-muted-foreground line-clamp-2">
-  {theme.description}
-  </p>
-  </div>
-  </div>
-  ))}
-  </div>
-  </div>
-  );
-  })}
-  </div>
- </CardContent>
- </Card>
- </TabsContent>
-
  {planPermissions?.pwa_business && (
- <TabsContent value="pwa" className="space-y-4 pt-4">
+  <TabsContent value="pwa" className="space-y-4 pt-4">
  <Card>
  <CardHeader>
  <CardTitle>{t('PWA Settings')}</CardTitle>

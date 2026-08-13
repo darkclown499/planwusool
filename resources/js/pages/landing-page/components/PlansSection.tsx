@@ -10,7 +10,6 @@ import {
   Globe,
   Smartphone,
   Bot,
-  Palette,
   Shield,
   Truck,
   MessageCircle,
@@ -206,8 +205,6 @@ const COMPARE_GROUPS: CompareGroup[] = [
     title: 'المتجر والتصميم',
     icon: Layout,
     rows: [
-      { label: 'قوالب احترافية جاهزة', get: (p) => ({ kind: 'text', text: `${(p.themes || []).length} قالباً` }) },
-      { label: 'محرر قوالب متقدم', tooltip: 'تعديل الألوان والخطوط والتنسيقات بالكامل بدون أي كود برمجي.', get: (p) => yesNo(p.enable_theme_editor) },
       { label: 'ربط نطاق مخصص', tooltip: 'ربط دومين خاص بمتجرك مثل store.com بدلاً من النطاق الفرعي.', get: (p) => yesNo(p.enable_custdomain) },
       { label: 'نوع النطاق', tooltip: 'نطاق مخصص (custom) أو نطاق فرعي (subdomain).', get: (p) => ({ kind: 'text', text: p.domain_type === 'custom' ? 'نطاق مخصص' : 'نطاق فرعي' }) },
       { label: 'نطاق فرعي مجاني', get: (p) => yesNo(p.enable_custsubdomain) },
@@ -285,7 +282,6 @@ function getProminentFeatures(plan: Plan): Array<{ icon: IconType; text: string 
   push(isOn(plan.enable_custdomain), Globe, 'ربط نطاق مخصص خاص بك');
   push(isOn(plan.enable_mobile_app), Smartphone, 'تطبيق موبايل + نشر على المتاجر');
   push(isOn(plan.enable_chatgpt), Bot, 'ذكاء اصطناعي لأوصاف وترجمة المنتجات');
-  push(isOn(plan.enable_theme_editor), Palette, 'محرر قوالب احترافي');
   push(isOn(plan.enable_branding), Shield, 'إزالة علامة المنصة (White Label)');
   push(isOn(plan.pwa_business), Smartphone, 'تطبيق ويب PWA قابل للتثبيت');
   push(isOn(plan.enable_sms), MessageSquare, 'إشعارات SMS تلقائية للعملاء');
@@ -295,7 +291,7 @@ function getProminentFeatures(plan: Plan): Array<{ icon: IconType; text: string 
   const core: Array<{ icon: IconType; text: string }> = [
     { icon: MessageCircle, text: 'أتمتة طلبات واتساب بكل تفاصيلها' },
     { icon: CreditCard, text: '20+ بوابة دفع + COD وتحويل بنكي' },
-    { icon: Palette, text: '29 قالباً جاهزاً متعدد الفئات' },
+    { icon: Smartphone, text: 'متجر متجاوب يعمل على جميع الأجهزة' },
   ];
   for (const c of core) {
     if (picks.length < 4) picks.push(c);

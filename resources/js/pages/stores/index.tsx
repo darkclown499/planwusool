@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, Palette } from 'lucide-react';
+import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,9 +28,6 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
   const { auth } = usePage().props as any;
   const [storeToDelete, setStoreToDelete] = useState<number | null>(null);
 
-  const themeEditorEnabled = auth?.user?.type === 'superadmin' || (auth?.user?.plan?.enable_theme_editor ?? 'off') === 'on';
-
-  
   const handleActionClick = (action: string, permission: string, storeId?: number) => {
     if (!checkPermission(permission, auth)) {
       return;
@@ -211,12 +208,6 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                       <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('edit', 'edit-stores', store.id); }}>
                         <Edit className="h-3.5 w-3.5" />
                         {t('Edit')}
-                      </Button>
-                    )}
-                    {hasPermission('settings-stores') && themeEditorEnabled && (
-                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); router.visit(route('stores.appearance', store.id)); }}>
-                        <Palette className="h-3.5 w-3.5" />
-                        {t('Edit Template')}
                       </Button>
                     )}
                     {hasPermission('settings-stores') && (

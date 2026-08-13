@@ -91,18 +91,8 @@ export const defaultLandingPageSections = {
  ]
  },
  {
- key: 'themes',
- title: 'اختر تصميم متجرك',
- subtitle: 'اختر من بين تصاميمنا الاحترافية لتناسب أسلوب عملك',
- selected_themes: ['gadgets', 'fashion', 'bakery'],
- cta_title: 'جاهز لبدء متجرك؟',
- cta_description: 'اختر التصميم المفضل لديك وابدأ في بناء متجرك الإلكتروني اليوم. يمكنك دائماً تغيير التصميم لاحقاً من لوحة التحكم.',
- primary_button_text: 'ابدأ مجاناً',
- secondary_button_text: 'عرض جميع الميزات'
- },
- {
- key: 'about',
- title: 'عن وصول',
+  key: 'about',
+  title: 'عن وصول',
  description: 'نحن شغوفون بتمكين رواد الأعمال من بناء أعمال تجارة إلكترونية ناجحة.',
  story_title: 'نحدث ثورة في التجارة الإلكترونية متعددة المتاجر منذ ٢٠١٩',
  story_content: 'تأسست وصول على يد خبراء في التجارة الإلكترونية ومبتكرين في التكنولوجيا، لحل تحديات إدارة المتاجر الإلكترونية المتعددة.',
@@ -188,12 +178,11 @@ export const defaultLandingPageSections = {
  newsletter_title: 'ابقَ على اطلاع مع وصول',
  newsletter_subtitle: 'اشترك في نشرتنا الإخبارية لنصائح التجارة الإلكترونية والتحديثات',
  links: {
- product: [
- { name: 'الميزات', href: '#features' },
- { name: 'القوالب', href: '#themes' },
- { name: 'الأسعار', href: '#pricing' },
- { name: 'التحليلات', href: '#analytics' }
- ],
+  product: [
+  { name: 'الميزات', href: '#features' },
+  { name: 'الأسعار', href: '#pricing' },
+  { name: 'التحليلات', href: '#analytics' }
+  ],
  company: [
  { name: 'من نحن', href: '#about' },
  { name: 'فريقنا', href: '#team' },
@@ -253,9 +242,8 @@ export const defaultLandingPageSections = {
  hero: true,
  features: true,
  screenshots: false,
- why_choose_us: false,
- themes: false,
- about: false,
+  why_choose_us: false,
+  about: false,
  team: false,
  testimonials: true,
  active_campaigns: false,

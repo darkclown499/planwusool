@@ -6,11 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
-import { storeThemes } from '@/data/storeThemes';
 
 
 interface Plan {
@@ -76,7 +74,7 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
     enable_shipping_method: plan?.enable_shipping_method || 'off',
     enable_mobile_app: plan?.enable_mobile_app || 'off',
     enable_sms: plan?.enable_sms || 'off',
-    themes: plan?.themes || [],
+    themes: ['basic'],
     is_trial: plan?.is_trial || null,
     trial_day: plan?.trial_day || 0,
     is_plan_enable: plan?.is_plan_enable || 'on',
@@ -377,49 +375,6 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   onCheckedChange={(checked) => handleSwitchChange('is_trial', checked)}
                 />
               </div>
-            </div>
-          </div>
-
-          <div className="border rounded-lg p-4 space-y-4">
-            <h3 className="font-medium">{t("Available Themes")}</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {storeThemes.map((theme) => (
-                <div key={theme.id} className="border rounded-lg p-3 hover:border-primary/50 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id={`theme-${theme.id}`}
-                      checked={Array.isArray(formData.themes) ? formData.themes.includes(theme.id) : false}
-                      onCheckedChange={(checked) => {
-                        const currentThemes = Array.isArray(formData.themes) ? formData.themes : [];
-                        if (checked) {
-                          setFormData(prev => ({
-                            ...prev,
-                            themes: [...currentThemes, theme.id]
-                          }));
-                        } else {
-                          setFormData(prev => ({
-                            ...prev,
-                            themes: currentThemes.filter(t => t !== theme.id)
-                          }));
-                        }
-                      }}
-                    />
-                    <div className="flex-1">
-                      <Label htmlFor={`theme-${theme.id}`} className="font-medium cursor-pointer">
-                        {theme.name}
-                      </Label>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {theme.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="text-sm text-muted-foreground">
-              {t("Select which themes will be available for stores using this plan. If no themes are selected, all themes will be available.")}
             </div>
           </div>
 

@@ -372,22 +372,12 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     }
     
     /**
-     * Get available themes based on plan
+     * Get available themes based on plan.
+     * Template system removed: only the fixed "basic" theme exists.
      */
     public function getAvailableThemes()
     {
-        // No plan (e.g. superadmin) means no restriction on theme selection.
-        if (!$this->plan) {
-            return null;
-        }
-        
-        // If plan has specific themes, return only those
-        if (is_array($this->plan->themes) && count($this->plan->themes) > 0) {
-            return $this->plan->themes;
-        }
-        
-        // If no specific themes, return all available themes
-        return null; // null means all themes are available
+        return ['basic'];
     }
 
     /**

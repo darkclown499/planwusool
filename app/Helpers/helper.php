@@ -1832,12 +1832,8 @@ if (!function_exists('enforcePlanLimitations')) {
             }
         }
 
-        // Enforce theme limitations
-        $allowedThemes = $user->getAvailableThemes();
-        if (is_array($allowedThemes) && !empty($allowedThemes)) {
-            $defaultTheme = $allowedThemes[0] ?? 'gadgets';
-            $user->stores()->whereNotIn('theme', $allowedThemes)->update(['theme' => $defaultTheme]);
-        }
+        // Enforce theme limitations (template system removed: fixed basic theme)
+        $user->stores()->update(['theme' => 'basic']);
     }
 }
 

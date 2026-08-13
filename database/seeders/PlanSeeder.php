@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -26,9 +26,7 @@ $plans = [
                 'max_users_per_store' => 1,
                 'max_products_per_store' => 18,
                 'max_warehouses' => 1,
-                'themes' => ['basic', 'single-product', 'fashion', 'tech', 'food', 'beauty', 'digital'],
-                'template_config' => ['basic', 'single-product', 'fashion', 'tech', 'food', 'beauty', 'digital'],
-                'enable_advanced_builder' => false,
+                'themes' => ['basic'],
                 'enable_custdomain' => 'off',
                 'enable_custsubdomain' => 'on',
                 'enable_branding' => 'off',
@@ -59,9 +57,7 @@ $plans = [
                 'max_users_per_store' => 1,
                 'max_products_per_store' => 500,
                 'max_warehouses' => 2,
-                'themes' => ['basic', 'single-product', 'fashion', 'tech', 'food', 'beauty', 'digital', 'furniture', 'auto-parts', 'sports', 'kids', 'supermarket', 'handcrafted', 'electronics-pro', 'pharmacy', 'pet-store', 'books', 'flowers-gifts', 'grocery-delivery', 'coffee-shop', 'home-tools', 'stationery'],
-                'template_config' => ['basic', 'single-product', 'fashion', 'tech', 'food', 'beauty', 'digital', 'furniture', 'auto-parts', 'sports', 'kids', 'supermarket', 'handcrafted', 'electronics-pro', 'pharmacy', 'pet-store', 'books', 'flowers-gifts', 'grocery-delivery', 'coffee-shop', 'home-tools', 'stationery'],
-                'enable_advanced_builder' => false,
+                'themes' => ['basic'],
                 'enable_custdomain' => 'off',
                 'enable_custsubdomain' => 'on',
                 'enable_branding' => 'off',
@@ -92,9 +88,7 @@ $plans = [
                 'max_users_per_store' => 5,
                 'max_products_per_store' => 10000,
                 'max_warehouses' => 3,
-                'themes' => ['basic', 'single-product', 'fashion', 'tech', 'food', 'beauty', 'digital', 'furniture', 'auto-parts', 'sports', 'kids', 'supermarket', 'handcrafted', 'electronics-pro', 'pharmacy', 'pet-store', 'books', 'flowers-gifts', 'grocery-delivery', 'coffee-shop', 'home-tools', 'stationery', 'luxury-jewelry', 'luxury-watches', 'b2b-wholesale', 'perfumes', 'fashion-premium', 'beauty-premium', 'food-premium'],
-                'template_config' => ['basic', 'single-product', 'fashion', 'tech', 'food', 'beauty', 'digital', 'furniture', 'auto-parts', 'sports', 'kids', 'supermarket', 'handcrafted', 'electronics-pro', 'pharmacy', 'pet-store', 'books', 'flowers-gifts', 'grocery-delivery', 'coffee-shop', 'home-tools', 'stationery', 'luxury-jewelry', 'luxury-watches', 'b2b-wholesale', 'perfumes', 'fashion-premium', 'beauty-premium', 'food-premium'],
-                'enable_advanced_builder' => true,
+                'themes' => ['basic'],
                 'enable_custdomain' => 'on',
                 'enable_custsubdomain' => 'on',
                 'enable_branding' => 'on',

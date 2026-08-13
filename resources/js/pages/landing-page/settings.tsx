@@ -24,7 +24,6 @@ import { defaultLandingPageSections } from './templates/default-sections';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { getImageUrl } from '@/utils/image-helper';
-import { getStoreThemes } from '@/data/storeThemes';
 import { type SharedData } from '@/types';
 
 type LandingPageConfig = {
@@ -64,7 +63,7 @@ export default function LandingPageSettings() {
  const { themeColor, customColor } = useBrand();
  const brandColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
  const [activeTab, setActiveTab] = useState<'setup' | 'layout' | 'content' | 'social' | 'engagement'>('setup');
- const [activeSection, setActiveSection] = useState<'general' | 'header' | 'hero' | 'features' | 'screenshots' | 'whychooseus' | 'about' | 'team' | 'testimonials' | 'active_campaigns' | 'plans' | 'faq' | 'newsletter' | 'contact' | 'footer' | 'order' | 'advanced' | 'themes' | 'design'>('general');
+  const [activeSection, setActiveSection] = useState<'general' | 'header' | 'hero' | 'features' | 'screenshots' | 'whychooseus' | 'about' | 'team' | 'testimonials' | 'active_campaigns' | 'plans' | 'faq' | 'newsletter' | 'contact' | 'footer' | 'order' | 'advanced' | 'design'>('general');
  const [isLoading, setIsLoading] = useState(false);
 
  // Helper function for consistent dark mode styling
@@ -252,7 +251,7 @@ export default function LandingPageSettings() {
  {[
  { key: 'setup', label: t('Setup'), sections: ['general', 'order', 'advanced'] },
  { key: 'layout', label: t('Layout'), sections: ['header', 'hero', 'footer'] },
- { key: 'content', label: t('Content'), sections: ['features', 'screenshots', 'themes', 'whychooseus', 'about'] },
+  { key: 'content', label: t('Content'), sections: ['features', 'screenshots', 'whychooseus', 'about'] },
  { key: 'social', label: t('Social'), sections: ['team', 'testimonials', 'plans'] },
  { key: 'engagement', label: t('Engagement'), sections: ['faq', 'newsletter', 'contact'] }
  ].map(tab => (
@@ -282,7 +281,7 @@ export default function LandingPageSettings() {
  const tabSections = {
  setup: [{ key: 'general', label: t('General') }, { key: 'order', label: t('Order') }, { key: 'advanced', label: t('Advanced') }],
  layout: [{ key: 'header', label: t('Header') }, { key: 'hero', label: t('Hero') }, { key: 'footer', label: t('Footer') }],
- content: [{ key: 'features', label: t('Features') }, { key: 'screenshots', label: t('Screenshots') }, { key: 'themes', label: t('Themes') }, { key: 'whychooseus', label: t('Why Us') }, { key: 'about', label: t('About') }],
+  content: [{ key: 'features', label: t('Features') }, { key: 'screenshots', label: t('Screenshots') }, { key: 'whychooseus', label: t('Why Us') }, { key: 'about', label: t('About') }],
  social: [{ key: 'team', label: t('Team') }, { key: 'testimonials', label: t('Reviews') }, { key: 'plans', label: t('Plans') }],
  engagement: [{ key: 'faq', label: t('FAQ') }, { key: 'newsletter', label: t('Newsletter') }, { key: 'contact', label: t('Contact') }]
  };
@@ -1097,155 +1096,7 @@ export default function LandingPageSettings() {
  </div>
  )}
 
- {/* Themes Section */}
- {activeSection === 'themes' && (
- <div className="space-y-6">
- <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
- <div className="flex items-center justify-between mb-6">
- <div className="flex items-center gap-3">
- <div className="p-2 bg-purple-100 rounded-lg">
- <Palette className="h-5 w-5 text-purple-600" />
- </div>
- <div>
- <h3 className="text-lg font-semibold text-gray-900">{t('Themes Section Content')}</h3>
- <p className="text-sm text-gray-500">{t('Configure themes section display')}</p>
- </div>
- </div>
- <div className="flex items-center gap-2">
- <Label className="text-sm">{t('Enable Section')}</Label>
- <Switch
- checked={data.config_sections?.section_visibility?.themes !== false}
- onCheckedChange={(checked) => updateSectionVisibility('themes', checked)}
- />
- </div>
- </div>
-
- <div className="grid grid-cols-1 gap-4">
- <div className="space-y-3">
- <Label htmlFor="themes_title">{t('Section Title')}</Label>
- <Input
- id="themes_title"
- value={getSectionData('themes').title || ''}
- onChange={(e) => updateSectionData('themes', { title: e.target.value })}
- placeholder={t("Choose Your Store Theme")}
- />
- </div>
-
- <div className="space-y-3">
- <Label htmlFor="themes_subtitle">{t('Section Subtitle')}</Label>
- <Textarea
- id="themes_subtitle"
- value={getSectionData('themes').subtitle || ''}
- onChange={(e) => updateSectionData('themes', { subtitle: e.target.value })}
- placeholder={t("Select from our professionally designed themes to match your business style")}
- rows={3}
- />
- </div>
-
- <div className="space-y-3">
- <Label>{t('Select Themes to Display')}</Label>
- <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
- {getStoreThemes().map((theme) => {
- const selectedThemes = getSectionData('themes').selected_themes || ['gadgets', 'fashion', 'bakery'];
- const isSelected = selectedThemes.includes(theme.id);
- return (
- <div
- key={theme.id}
- className={`relative cursor-pointer rounded-lg border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
- }`}
- onClick={() => {
- const currentSelected = getSectionData('themes').selected_themes || ['gadgets', 'fashion', 'bakery'];
- const newSelected = isSelected
- ? currentSelected.filter((id: any) => id !== theme.id)
- : [...currentSelected, theme.id];
- updateSectionData('themes', { selected_themes: newSelected });
- }}
- >
- <div className="p-3">
- <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded mb-2 flex items-center justify-center">
- <img
- src={theme.thumbnail}
- alt={`${theme.name} preview`}
- className="w-full h-full object-cover rounded"
- onError={(e) => {
-  e.currentTarget.style.display = 'none';
-  const sibling = e.currentTarget.nextElementSibling as HTMLElement | null;
-  if (sibling) { sibling.style.display = 'flex'; }
- }}
- />
- <div className="hidden w-full h-full items-center justify-center text-xs text-gray-500">
- {theme.name}
- </div>
- </div>
- <h4 className="font-medium text-sm text-gray-900">{theme.name}</h4>
- <p className="text-xs text-gray-500">{theme.description}</p>
- {isSelected && (
- <div className="absolute top-2 right-2">
- <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
- <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
- <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
- </svg>
- </div>
- </div>
- )}
- </div>
- </div>
- );
- })}
- </div>
- <p className="text-xs text-muted-foreground">
- {t('Click themes to select/deselect. Selected themes will be displayed on the landing page.')}
- </p>
- </div>
-
- <div className="space-y-3">
- <Label htmlFor="themes_cta_title">{t('CTA Title')}</Label>
- <Input
- id="themes_cta_title"
- value={getSectionData('themes').cta_title || ''}
- onChange={(e) => updateSectionData('themes', { cta_title: e.target.value })}
- placeholder={t('Ready to Start Your Store?')}
- />
- </div>
-
- <div className="space-y-3">
- <Label htmlFor="themes_cta_description">{t('CTA Description')}</Label>
- <Textarea
- id="themes_cta_description"
- value={getSectionData('themes').cta_description || ''}
- onChange={(e) => updateSectionData('themes', { cta_description: e.target.value })}
- placeholder={t('Choose your favorite theme and start building your online store today.')}
- rows={3}
- />
- </div>
-
- <div className="grid grid-cols-2 gap-4">
- <div className="space-y-3">
- <Label htmlFor="themes_primary_button_text">{t('Primary Button Text')}</Label>
- <Input
- id="themes_primary_button_text"
- value={getSectionData('themes').primary_button_text || ''}
- onChange={(e) => updateSectionData('themes', { primary_button_text: e.target.value })}
- placeholder={t('Get Started Free')}
- />
- </div>
-
- <div className="space-y-3">
- <Label htmlFor="themes_secondary_button_text">{t('Secondary Button Text')}</Label>
- <Input
- id="themes_secondary_button_text"
- value={getSectionData('themes').secondary_button_text || ''}
- onChange={(e) => updateSectionData('themes', { secondary_button_text: e.target.value })}
- placeholder={t('View All Features')}
- />
- </div>
- </div>
- </div>
- </div>
- </div>
- )}
-
- {/* WhyChooseUs Section */}
+  {/* WhyChooseUs Section */}
  {activeSection === 'whychooseus' && (
  <div className="space-y-6">
  <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -3053,9 +2904,8 @@ export default function LandingPageSettings() {
  hero: t('Hero'),
  features: t('Features'),
  screenshots: t('Screenshots'),
- why_choose_us: t('Why Choose Us'),
- themes: t('Themes'),
- about: t('About'),
+  why_choose_us: t('Why Choose Us'),
+  about: t('About'),
  team: t('Team'),
  testimonials: t('Testimonials'),
 

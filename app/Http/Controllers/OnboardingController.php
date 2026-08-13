@@ -124,8 +124,7 @@ class OnboardingController extends Controller
             $store->slug = $request->store_subdomain;
         }
         $store->name = $request->store_name;
-        $store->theme = $request->theme;
-        $store->template_slug = $request->theme;
+        $store->theme = 'basic';
         $store->save();
 
         $currency = Currency::where('code', $request->currency)->first();
@@ -299,7 +298,6 @@ class OnboardingController extends Controller
             'name' => $user->name,
             'slug' => Store::generateUniqueSlug($user->name),
             'theme' => 'basic',
-            'template_slug' => 'basic',
             'user_id' => $user->id,
             'email' => $user->email,
         ]);

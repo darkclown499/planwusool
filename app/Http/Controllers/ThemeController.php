@@ -96,7 +96,6 @@ class ThemeController extends Controller
             'favicon' => $faviconForPWA,
             'description' => $store->description,
             'theme' => $store->getTemplateSlug(),
-            'template_slug' => $store->getTemplateSlug(),
             'slug' => $store->slug,
             'custom_domain' => $store->custom_domain,
             'custom_subdomain' => $store->custom_subdomain,
@@ -237,20 +236,6 @@ class ThemeController extends Controller
     {
         $store = $this->getStore($storeSlug, $request);
 
-        // Read-only theme/template preview for the demo store only: demo.APP_DOMAIN?theme=food
-        $currentRequest = $request ?? request();
-        if (($store['slug'] ?? null) === \App\Services\DemoStoreService::SLUG && $currentRequest && $currentRequest->has('theme')) {
-            $requestedTheme = $currentRequest->query('theme');
-            if ($requestedTheme) {
-                // Allow previewing both new template slugs and legacy theme pages
-                $isTemplate = \App\Models\Template::where('slug', $requestedTheme)->where('is_active', true)->exists();
-                $isLegacyPage = in_array($requestedTheme, $this->getValidThemePages(), true);
-                if ($isTemplate || $isLegacyPage) {
-                    $store['theme'] = $requestedTheme;
-                }
-            }
-        }
-
         // Get store configuration with settings and currencies
         $storeData = $this->getStoreConfig($store);
 
@@ -342,15 +327,6 @@ class ThemeController extends Controller
 
         $theme = $store['theme'] ?? 'basic';
 
-        // Detect if this is a new dynamic template (from templates table)
-        // vs a legacy hardcoded theme page. Guard against a missing templates
-        // table so stores never break before the migration has been run.
-        try {
-            $template = \App\Models\Template::where('slug', $theme)->where('is_active', true)->first();
-        } catch (\Illuminate\Database\QueryException $e) {
-            $template = null;
-        }
-
         // Get countries for checkout modal (cached for 24h)
         $countries = \Illuminate\Support\Facades\Cache::remember(
             'countries_active',
@@ -388,47 +364,11 @@ class ThemeController extends Controller
             ],
         ]);
 
-        // New template system: render via dynamic template page
-        if ($template) {
+        // All stores render through the fixed "basic" template. The template
+        // system was removed, so we always pass the basic slug.
+        $props['template'] = 'basic';
 
-            // Plan gating on the storefront is based on the STORE OWNER's plan,
-            // not the viewer (who is a customer). Pass the owner's plan tier so
-            // a Professional store renders its professional templates while a
-            // downgraded store still shows the upgrade prompt.
-            $ownerPlan = $storeModel?->user?->plan;
-            $ownerIsSuperAdmin = $storeModel?->user?->type === 'superadmin';
-
-            $props['template'] = $theme;
-            $mergedTemplateConfig = $storeModel ? $storeModel->getMergedTemplateConfig() : ($template->config ?? []);
-            $props['templateConfig'] = array_merge($mergedTemplateConfig, [
-                'slug' => $template->slug,
-                'name' => $template->name,
-                'name_en' => $template->name_en,
-                'is_free' => (bool) $template->is_free,
-                'plan_required' => $template->plan_required,
-                'design_tokens' => $template->design_tokens ?? [],
-            ]);
-            $props['templateOverrides'] = $storeModel ? $storeModel->template_overrides : null;
-            $props['designTokens'] = $storeModel
-                ? $storeModel->getMergedDesignTokens()
-                : $template->design_tokens;
-            $props['isPreview'] = isset($currentRequest) && $currentRequest->has('preview');
-            $props['userPlanName'] = $ownerPlan?->name;
-            $props['userPlanTier'] = $ownerPlan ? $ownerPlan->getTier() : 'starter';
-            $props['isSuperAdmin'] = $ownerIsSuperAdmin;
-            $props['demoStoreUrl'] = app(\App\Services\DemoStoreService::class)->demoStoreUrl();
-
-            return Inertia::render('store/dynamic', array_merge($props, [
-                'action' => $this->resolveAction(),
-                'wishlistCount' => $this->getWishlistCount($store['id']),
-            ], $this->getCommonData()));
-        }
-
-        // Legacy theme page fallback (if template not found in templates table)
-        $legacyPages = $this->getValidThemePages();
-        $themePage = in_array($theme, $legacyPages, true) ? $theme : 'gadgets';
-
-        return Inertia::render('store/' . $themePage, array_merge($props, [
+        return Inertia::render('store/dynamic', array_merge($props, [
             'showResetModal' => $request ? $request->get('showResetModal', false) : false,
             'resetToken' => $request ? $request->get('resetToken') : null,
             'action' => $this->resolveAction(),
@@ -436,22 +376,6 @@ class ThemeController extends Controller
             'payment_status' => session()->pull('payment_status') ?? (request() ? request()->get('payment_status') : null),
             'order_number' => session()->pull('order_number') ?? (request() ? request()->get('order_number') : null),
         ], $this->getCommonData()));
-    }
-
-    /**
-     * List of theme page names that can be previewed via ?theme=
-     */
-    protected function getValidThemePages(): array
-    {
-        $excluded = ['StoreDisabled', 'StoreMaintenance', 'StoreNotFound', 'OrderInvoice', 'order-invoice', 'default'];
-
-        $pages = glob(resource_path('js/pages/store/*.tsx'));
-
-        return array_values(array_filter(array_map(function ($file) {
-            return pathinfo($file, PATHINFO_FILENAME);
-        }, $pages ?: []), function ($name) use ($excluded) {
-            return !in_array($name, $excluded, true);
-        }));
     }
 
     /**
