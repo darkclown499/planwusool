@@ -137,8 +137,8 @@ class StoreController extends Controller
             $themeValidation .= '|in:' . implode(',', $availableThemes);
         }
         
-        // Template system removed: every store renders the fixed "basic" design.
-        $theme = 'basic';
+        // Use the selected theme (validated against the plan's available themes).
+        $theme = \App\Models\Store::normalizeThemeSlug($request->theme ?? 'basic');
         
         $request->validate([
             'name' => 'required|string|max:255',
@@ -285,7 +285,7 @@ class StoreController extends Controller
         $store = resolveStoreQuery($user)->findOrFail($id);
         $user = Auth::user();
 
-        // Template system removed: expose the fixed "basic" theme.
+        // Expose the normalized theme slug to the edit form.
         $store->theme = $store->getTemplateSlug();
         
         // Get available themes based on user's plan
@@ -328,8 +328,8 @@ class StoreController extends Controller
             $themeValidation .= '|in:' . implode(',', $availableThemes);
         }
         
-        // Template system removed: every store renders the fixed "basic" design.
-        $theme = 'basic';
+        // Use the selected theme (validated against the plan's available themes).
+        $theme = \App\Models\Store::normalizeThemeSlug($request->theme ?? 'basic');
         
         $request->validate([
             'name' => 'required|string|max:255',

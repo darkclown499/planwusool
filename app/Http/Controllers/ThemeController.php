@@ -364,9 +364,9 @@ class ThemeController extends Controller
             ],
         ]);
 
-        // All stores render through the fixed "basic" template. The template
-        // system was removed, so we always pass the basic slug.
-        $props['template'] = 'basic';
+        // Pass the store's selected theme slug; the frontend maps it to a
+        // dedicated template page (or falls back to "basic").
+        $props['template'] = $theme;
 
         return Inertia::render('store/dynamic', array_merge($props, [
             'showResetModal' => $request ? $request->get('showResetModal', false) : false,

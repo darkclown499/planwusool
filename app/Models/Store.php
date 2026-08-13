@@ -333,21 +333,24 @@ class Store extends BaseModel
     }
 
     /**
-     * Get the fixed template slug for this store.
-     * Template system was removed; all stores render the "basic" design.
+     * Get the template slug for this store.
+     * Falls back to "basic" when the saved theme is not a known slug.
      */
     public function getTemplateSlug(): string
     {
-        return 'basic';
+        return static::normalizeThemeSlug($this->theme);
     }
 
     /**
-     * Normalize a theme/template value into a fixed valid slug.
-     * Template system was removed; always returns 'basic'.
+     * Normalize a theme/template value into a valid known slug.
      */
     public static function normalizeThemeSlug(?string $slug): string
     {
-        return 'basic';
+        $slug = trim((string) $slug);
+        if ($slug === '') {
+            return 'basic';
+        }
+        return in_array($slug, ['basic', 'arabic-gadgets'], true) ? $slug : 'basic';
     }
 
     /**

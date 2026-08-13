@@ -46,6 +46,44 @@ const rawTemplates: Record<string, TemplateConfig> = {
         },
         advanced_components: [],
     },
+
+    // ===================== ARABIC GADGETS =====================
+    'arabic-gadgets': {
+        slug: 'arabic-gadgets',
+        name: 'الإلكترونيات العربي',
+        name_en: 'Arabic Gadgets',
+        description: 'تصميم عربي فاخر لمتاجر الإلكترونيات والأجهزة الذكية بأسلوب متاجر الأدوات التقنية.',
+        category: 'electronics',
+        is_free: true,
+        plan_required: 'starter',
+        sections: [
+            baseSection('hero', 'hero', 1, { layout: 'centered', show_search: true }),
+            baseSection('categories', 'categories', 2, { style: 'cards', show_all: false }),
+            baseSection('products', 'products', 3, { layout: 'grid', per_page: 16 }),
+            baseSection('banner', 'banner', 4, {}),
+            baseSection('featured', 'featured', 5, {}),
+            baseSection('reviews', 'reviews', 6, {}),
+            baseSection('footer', 'footer', 7, { show_newsletter: true }),
+        ],
+        layout: { container: 'max-w-7xl', spacing: 'normal' },
+        design_tokens: {
+            colors: {
+                'primary-50': '#fff7ed',
+                'primary-100': '#ffedd5',
+                'primary-500': '#f97316',
+                'primary-600': '#ea580c',
+                'primary-700': '#c2410c',
+                'secondary-500': '#06b6d4',
+                background: '#ffffff',
+                surface: '#f8fafc',
+                'text-primary': '#0f172a',
+                'text-muted': '#64748b',
+            },
+            typography: { 'font-family': 'Tajawal', 'heading-weight': '800' },
+            spacing: { section: 'py-12', container: 'px-4' },
+        },
+        advanced_components: [],
+    },
 };
 
 /* =====================================================================

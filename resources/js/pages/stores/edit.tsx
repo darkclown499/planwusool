@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -142,10 +142,38 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
  />
  <InputError message={errors.email} />
  </div>
- </CardContent>
- </Card>
+  </CardContent>
+  </Card>
 
- {/* Domain Configuration */}
+  {/* Theme Selection */}
+  <Card>
+  <CardHeader>
+  <CardTitle>{t('Store Theme')}</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-4">
+  <div className="grid gap-3 sm:grid-cols-2">
+  {[
+  { value: 'basic', name: t('Basic'), desc: t('تصميم بسيط وحديث يناسب جميع المتاجر') },
+  { value: 'arabic-gadgets', name: t('Arabic Gadgets'), desc: t('تصميم عربي فاخر لمتاجر الإلكترونيات والأجهزة الذكية') }
+  ].map((theme) => (
+  <button
+  key={theme.value}
+  type="button"
+  onClick={() => setFormData(prev => ({ ...prev, theme: theme.value }))}
+  className={`rounded-xl border-2 p-4 text-start transition ${formData.theme === theme.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}
+  >
+  <div className="flex items-center justify-between">
+  <span className="font-semibold">{theme.name}</span>
+  {formData.theme === theme.value && <CheckCircle2 className="h-5 w-5 text-primary" />}
+  </div>
+  <p className="mt-1 text-sm text-muted-foreground">{theme.desc}</p>
+  </button>
+  ))}
+  </div>
+  </CardContent>
+  </Card>
+
+  {/* Domain Configuration */}
  <Card>
  <CardHeader>
  <CardTitle>{t('Domain Configuration')}</CardTitle>

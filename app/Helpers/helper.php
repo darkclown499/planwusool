@@ -1832,8 +1832,14 @@ if (!function_exists('enforcePlanLimitations')) {
             }
         }
 
-        // Enforce theme limitations (template system removed: fixed basic theme)
-        $user->stores()->update(['theme' => 'basic']);
+        // Enforce theme limitations: downgrade any store whose theme is no
+        // longer available to the plan back to the default "basic" theme.
+        $availableThemes = $user->getAvailableThemes();
+        if (is_array($availableThemes) && count($availableThemes) > 0) {
+            $user->stores()
+                ->whereNotIn('theme', $availableThemes)
+                ->update(['theme' => 'basic']);
+        }
     }
 }
 

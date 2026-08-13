@@ -1,13 +1,15 @@
 import React from 'react';
 import basic from './basic';
+import arabicGadgets from './arabic-gadgets';
 import type { TemplatePageProps } from './types';
 
 /**
  * Dedicated full-page template implementations.
- * The storefront always renders the "basic" template page.
+ * The storefront renders the template matching the store's theme slug.
  */
 export const TEMPLATE_PAGES: Record<string, React.FC<TemplatePageProps>> = {
     basic,
+    'arabic-gadgets': arabicGadgets,
 };
 
 export function hasDedicatedPage(slug?: string): boolean {

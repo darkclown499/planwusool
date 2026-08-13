@@ -373,11 +373,10 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     
     /**
      * Get available themes based on plan.
-     * Template system removed: only the fixed "basic" theme exists.
      */
     public function getAvailableThemes()
     {
-        return ['basic'];
+        return ['basic', 'arabic-gadgets'];
     }
 
     /**
