@@ -53,7 +53,6 @@ class SitemapController extends Controller
             // Individual products
             $products = Product::where('store_id', $store->id)
                 ->where('is_active', 1)
-                ->where('is_draft', 0)
                 ->get();
 
             foreach ($products as $product) {
