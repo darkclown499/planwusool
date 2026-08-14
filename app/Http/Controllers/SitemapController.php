@@ -56,7 +56,7 @@ class SitemapController extends Controller
                 ->get();
 
             foreach ($products as $product) {
-                $xml .= $this->urlEntry($storeUrl . '/product/' . $product->slug, '0.8', 'daily');
+                $xml .= $this->urlEntry($storeUrl . '/product/' . ($product->slug ?? $product->id), '0.8', 'daily');
             }
         }
 
