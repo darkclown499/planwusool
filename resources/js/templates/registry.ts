@@ -84,6 +84,41 @@ const rawTemplates: Record<string, TemplateConfig> = {
         },
         advanced_components: [],
     },
+    // ===================== WEFAQ SUPERMARKET =====================
+    wefaq: {
+        slug: 'wefaq',
+        name: 'وفاق سوبر ماركت',
+        name_en: 'Wefaq Supermarket',
+        description: 'تصميم سوبر ماركت عربي متكامل: خضروات طازجة، ألبان، لحوم ومونة البيت مع بحث سريع وأقسام جانبية.',
+        category: 'grocery',
+        is_free: true,
+        plan_required: 'starter',
+        sections: [
+            baseSection('hero', 'hero', 1, { layout: 'full', show_search: false }),
+            baseSection('products', 'products', 2, { layout: 'grid', per_page: 20 }),
+            baseSection('banner', 'banner', 3, {}),
+            baseSection('sidebar', 'sidebar', 4, {}),
+            baseSection('footer', 'footer', 5, { show_newsletter: true }),
+        ],
+        layout: { container: 'max-w-[1400px]', spacing: 'normal', sidebar: true },
+        design_tokens: {
+            colors: {
+                'primary-50': '#E8F5E9',
+                'primary-100': '#C8E6C9',
+                'primary-500': '#4CAF50',
+                'primary-600': '#43A047',
+                'primary-700': '#2E7D32',
+                'secondary-500': '#007BFF',
+                background: '#F5F6F8',
+                surface: '#ffffff',
+                'text-primary': '#1F2937',
+                'text-muted': '#6B7280',
+            },
+            typography: { 'font-family': 'Tajawal', 'heading-weight': '800' },
+            spacing: { section: 'py-8', container: 'px-4' },
+        },
+        advanced_components: [],
+    },
 };
 
 /* =====================================================================

@@ -357,7 +357,7 @@ class Store extends BaseModel
         if ($slug === '') {
             return 'basic';
         }
-        return in_array($slug, ['basic', 'arabic-gadgets'], true) ? $slug : 'basic';
+        return in_array($slug, ['basic', 'arabic-gadgets', 'wefaq'], true) ? $slug : 'basic';
     }
 
     /**

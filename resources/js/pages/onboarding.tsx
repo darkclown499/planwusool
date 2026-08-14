@@ -400,6 +400,12 @@ export default function Onboarding({
             name: t('Arabic Gadgets'),
             desc: t('Premium Arabic design for electronics and smart device stores.'),
         },
+        {
+            value: 'wefaq',
+            icon: Store,
+            name: t('Wefaq Supermarket'),
+            desc: t('Complete Arabic supermarket design with side categories and daily offers.'),
+        },
     ];
 
     const featureChips = [

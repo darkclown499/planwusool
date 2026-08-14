@@ -147,7 +147,8 @@ export default function CreateStore({ planPermissions, serverIp }: CreateStorePr
   <div className="grid gap-3 sm:grid-cols-2">
   {[
   { value: 'basic', name: t('Basic'), desc: t('تصميم بسيط وحديث يناسب جميع المتاجر') },
-  { value: 'arabic-gadgets', name: t('Arabic Gadgets'), desc: t('تصميم عربي فاخر لمتاجر الإلكترونيات والأجهزة الذكية') }
+  { value: 'arabic-gadgets', name: t('Arabic Gadgets'), desc: t('تصميم عربي فاخر لمتاجر الإلكترونيات والأجهزة الذكية') },
+  { value: 'wefaq', name: t('Wefaq Supermarket'), desc: t('تصميم سوبر ماركت عربي متكامل بالأقسام الجانبية والعروض اليومية') }
   ].map((theme) => (
   <button
   key={theme.value}

@@ -45,6 +45,13 @@ const THEME_OPTIONS: ThemeOption[] = [
     accent: '#f97316',
     icon: '📱',
   },
+  {
+    value: 'wefaq',
+    name: 'وفاق سوبر ماركت',
+    desc: 'تصميم سوبر ماركت عربي متكامل بالأقسام الجانبية والعروض اليومية.',
+    accent: '#4CAF50',
+    icon: '🛒',
+  },
 ];
 
 const DEFAULT_CONTENT: any = {

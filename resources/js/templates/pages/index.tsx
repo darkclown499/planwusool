@@ -1,6 +1,7 @@
 import React from 'react';
 import basic from './basic';
 import arabicGadgets from './arabic-gadgets';
+import wefaq from './wefaq';
 import type { TemplatePageProps } from './types';
 
 /**
@@ -10,6 +11,7 @@ import type { TemplatePageProps } from './types';
 export const TEMPLATE_PAGES: Record<string, React.FC<TemplatePageProps>> = {
     basic,
     'arabic-gadgets': arabicGadgets,
+    wefaq,
 };
 
 export function hasDedicatedPage(slug?: string): boolean {

@@ -376,7 +376,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      */
     public function getAvailableThemes()
     {
-        return ['basic', 'arabic-gadgets'];
+        return ['basic', 'arabic-gadgets', 'wefaq'];
     }
 
     /**
