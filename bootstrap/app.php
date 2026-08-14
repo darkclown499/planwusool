@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(
-            at: env('TRUSTED_PROXIES', '127.0.0.1,::1'),
+            at: config('trustedproxies.proxies'),
             headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |

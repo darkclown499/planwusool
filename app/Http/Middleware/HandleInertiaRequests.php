@@ -39,13 +39,21 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        // Override OAuth redirect URLs with scheme-aware URLs (fixes Mixed Content behind proxies)
-        $schemeAwareUrl = $request->getSchemeAndHttpHost();
+        // OAuth callback URLs (and the public storage URL) must always use
+        // https in production, otherwise Google/Apple/GitHub reject logins
+        // with "redirect_uri_mismatch". Prefer the request scheme when it is
+        // https, otherwise fall back to APP_URL so the scheme can never
+        // regress to http (e.g. Cloudflare Flexible SSL sends the origin
+        // plain HTTP plus an X-Forwarded-Proto header).
+        $base = $request->getSchemeAndHttpHost();
+        if (app()->isProduction() && ! str_starts_with($base, 'https://')) {
+            $base = rtrim((string) config('app.url'), '/');
+        }
         foreach (['google', 'facebook', 'apple', 'github', 'plankton'] as $provider) {
-            config(["services.{$provider}.redirect" => $schemeAwareUrl . '/auth/callback/' . $provider]);
+            config(["services.{$provider}.redirect" => $base . '/auth/callback/' . $provider]);
         }
         // Also override the public filesystem URL
-        config(['filesystems.disks.public.url' => $schemeAwareUrl . '/storage']);
+        config(['filesystems.disks.public.url' => $base . '/storage']);
 
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
         
