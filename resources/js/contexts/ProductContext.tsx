@@ -82,6 +82,20 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({
     setSelectedProduct(product);
     setShowProductDetail(true);
     setSelectedImageIndex(0);
+
+    // Enrich with the full product (description, custom fields, tax) on demand,
+    // since the page payload only ships the light catalog fields.
+    fetch(`/product/${product.id}`, {
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (!data || !data.product) return;
+        setSelectedProduct(prev => (
+          prev && prev.id === data.product.id ? { ...prev, ...data.product } : prev
+        ));
+      })
+      .catch(() => {});
   };
 
   const handleCloseProductDetail = () => {

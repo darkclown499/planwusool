@@ -24,7 +24,7 @@ class OrderService
 {
     public function createOrder(array $orderData, array $cartItems): Order
     {
-        return DB::transaction(function () use ($orderData, $cartItems) {
+        $order = DB::transaction(function () use ($orderData, $cartItems) {
             // Create the order
             $order = Order::create([
                 'order_number' => Order::generateOrderNumber(),
@@ -128,9 +128,6 @@ class OrderService
             // Clear cart items after order creation
             $this->clearCart($orderData['store_id']);
 
-            // Fire OrderCreated event for notifications
-            event(new \App\Events\OrderCreated($order));
-
             // Dispatch accounting sync job
             try {
                 dispatch(new \App\Jobs\SyncOrderToAccounting($order))->onQueue('accounting');
@@ -143,6 +140,13 @@ class OrderService
 
             return $order;
         });
+
+        // Fire the OrderCreated event AFTER the transaction commits so slow
+        // notification listeners (email/SMS) never hold DB locks or delay the
+        // order confirmation response.
+        event(new \App\Events\OrderCreated($order));
+
+        return $order;
     }
 
     public function processPayment(Order $order, ?string $storeSlug = null): array

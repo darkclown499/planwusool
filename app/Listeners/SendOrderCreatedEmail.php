@@ -32,13 +32,21 @@ class SendOrderCreatedEmail
             '{app_url}' => getSchemeAwareUrl()
         ];
 
-        // Send email only to customer (not owner)
-        $this->emailTemplateService->sendTemplateEmailWithLanguage(
-            'Order Created',
-            $variables,
-            $order->customer_email,
-            $customerName,
-            $language
-        );
+        // Send email only to customer (not owner). Wrapped in try/catch so a slow
+        // or unreachable SMTP server never blocks or fails order placement.
+        try {
+            $this->emailTemplateService->sendTemplateEmailWithLanguage(
+                'Order Created',
+                $variables,
+                $order->customer_email,
+                $customerName,
+                $language
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('Order created email failed, order placement continues', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

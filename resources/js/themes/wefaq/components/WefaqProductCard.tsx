@@ -58,7 +58,7 @@ export const WefaqProductCard: React.FC<WefaqProductCardProps> = ({ product }) =
                     )}
                 </div>
                 {isNew && (
-                    <span className="absolute end-3 top-3 rounded-full bg-[#007BFF] px-2 py-0.5 text-[11px] font-bold text-white shadow">
+                    <span className="absolute end-3 top-3 rounded-full bg-[#4CAF50] px-2 py-0.5 text-[11px] font-bold text-white shadow">
                         جديد
                     </span>
                 )}
@@ -111,7 +111,7 @@ export const WefaqProductCard: React.FC<WefaqProductCardProps> = ({ product }) =
                 <button
                     type="button"
                     onClick={addToCart}
-                    className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#007BFF] py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#0056b3] active:scale-[0.98]"
+                    className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#4CAF50] py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#43A047] active:scale-[0.98]"
                 >
                     <ShoppingCart className="h-4 w-4" />
                     + إضافة إلى السلة

@@ -196,7 +196,7 @@
         @if(!$isLandingRoute && !$isStoreRoute)
             <title inertia>{{ getSetting('titleText', config('app.name', 'Wusool')) }}</title>
         @else
-            <title inertia>{{ $isStoreRoute ? ($store->name ?? config('app.name')) : getSetting('titleText', config('app.name', 'Wusool')) }}</title>
+            <title inertia>{{ $isStoreRoute ? ($storeTitle ?? config('app.name', 'Wusool')) : getSetting('titleText', config('app.name', 'Wusool')) }}</title>
         @endif
 
         {{-- Dynamic Favicon --}}

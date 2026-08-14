@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 
 interface StoreHeadProps {
@@ -9,9 +9,15 @@ interface StoreHeadProps {
 }
 
 export default function StoreHead({ store, defaultTitle, defaultDescription, defaultKeywords }: StoreHeadProps) {
-  const title = store?.seo_title || defaultTitle || store?.name || 'Wusool Store';
+  const title = store?.seo_title || store?.name || defaultTitle || 'Wusool Store';
   const description = store?.seo_description || defaultDescription || store?.description || '';
   const keywords = store?.seo_keywords || defaultKeywords || '';
+
+  useEffect(() => {
+    // Name the browser tab after the store (seo_title, then store name) so tabs
+    // never fall back to the app name or a generic template label.
+    document.title = title;
+  }, [title]);
 
   return (
     <Head title={title}>

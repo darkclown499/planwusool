@@ -190,6 +190,11 @@ class DomainResolver
             $request->merge(['action' => 'products']);
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
         } elseif ($segments[0] === 'product' && isset($segments[1])) {
+            // JSON request from the storefront detail modal: serve the full
+            // product on demand so heavy fields stay out of the page payload.
+            if ($request->wantsJson()) {
+                return app(\App\Http\Controllers\ThemeController::class)->productDetail($store->slug, $segments[1], $request);
+            }
             // Product detail page (single-page storefront: render the homepage)
             $request->merge(['action' => 'product', 'product_id' => $segments[1]]);
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);

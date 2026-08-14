@@ -27,7 +27,7 @@ export const WefaqRecipeBanner: React.FC<WefaqRecipeBannerProps> = ({ onAddRecip
                         className={`flex h-12 items-center gap-2 rounded-full px-7 text-sm font-bold shadow-md transition md:text-base ${
                             added
                                 ? 'bg-[#43A047] text-white'
-                                : 'bg-[#007BFF] text-white hover:bg-[#0056b3] active:scale-[0.98]'
+                                : 'bg-[#4CAF50] text-white hover:bg-[#43A047] active:scale-[0.98]'
                         }`}
                     >
                         {added ? (

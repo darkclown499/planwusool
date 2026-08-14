@@ -37,7 +37,7 @@ export const WefaqHero: React.FC<WefaqHeroProps> = ({ brandName, onShopNow }) =>
                         <button
                             type="button"
                             onClick={onShopNow}
-                            className="flex h-12 items-center gap-2 rounded-full bg-[#007BFF] px-7 text-sm font-bold text-white shadow-xl transition hover:bg-[#0056b3] active:scale-[0.98] md:text-base"
+                            className="flex h-12 items-center gap-2 rounded-full bg-[#4CAF50] px-7 text-sm font-bold text-white shadow-xl transition hover:bg-[#43A047] active:scale-[0.98] md:text-base"
                         >
                             <ShoppingBag className="h-5 w-5" />
                             تسوق الآن

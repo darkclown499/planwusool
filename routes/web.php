@@ -168,6 +168,9 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::get('/yookassa/success/{orderNumber}', [\App\Http\Controllers\Store\YooKassaController::class, 'success'])->name('store.yookassa.success');
     Route::post('/yookassa/callback', [\App\Http\Controllers\Store\YooKassaController::class, 'callback'])->name('store.yookassa.callback');
 
+    // On-demand product details (keeps heavy fields out of the storefront payload)
+    Route::get('/product/{product}', [ThemeController::class, 'productDetail'])->name('store.product-detail');
+
     // Catch-all: any unmatched GET on a store subdomain renders the store homepage
     // (mirrors the previous "unknown route -> home" behaviour for custom domains).
     // IMPORTANT: api/* paths must NOT be swallowed here — the storefront calls

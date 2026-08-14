@@ -258,24 +258,13 @@ class ThemeController extends Controller
                     ->limit(300)
                     ->get()
                     ->map(function ($product) {
-                        return [
-                            'id' => (string) $product->id,
-                            'name' => $product->name,
-                            'price' => $product->sale_price ? (float) $product->sale_price : (float) $product->price,
-                            'originalPrice' => $product->sale_price ? (float) $product->price : null,
-                            'image' => $product->cover_image ? $product->cover_image : asset('public/images/avatar/avatar.png'),
-                            'images' => $product->images ? (is_array($product->images) ? $product->images : (strpos($product->images, ',') !== false ? explode(',', $product->images) : json_decode($product->images, true))) : null,
-                            'categoryId' => (string) $product->category_id,
-                            'category' => $product->category ? $product->category->name : 'Uncategorized',
-                            'availability' => $product->stock > 0 ? 'in_stock' : 'out_of_stock',
-                            'sku' => $product->sku ?: 'SKU-' . $product->id,
-                            'stockQuantity' => (int) $product->stock,
-                            'description' => $product->description,
-                            'variants' => $product->variants ? (is_array($product->variants) ? $product->variants : json_decode($product->variants, true)) : null,
-                            'customFields' => $product->custom_fields ? (is_array($product->custom_fields) ? $product->custom_fields : json_decode($product->custom_fields, true)) : null,
-                            'taxName' => $product->tax_name ?? null,
-                            'taxPercentage' => $product->tax_percentage ?? null,
-                        ];
+                        // The initial payload only carries what the grid/cards
+                        // need for fast first paint. Heavy detail fields
+                        // (description, customFields, tax) are served on demand
+                        // by the store.product-detail endpoint.
+                        $catalog = $this->formatFullProduct($product);
+                        unset($catalog['description'], $catalog['customFields'], $catalog['taxName'], $catalog['taxPercentage']);
+                        return $catalog;
                     })
                     ->values();
             }
@@ -376,6 +365,52 @@ class ThemeController extends Controller
             'payment_status' => session()->pull('payment_status') ?? (request() ? request()->get('payment_status') : null),
             'order_number' => session()->pull('order_number') ?? (request() ? request()->get('order_number') : null),
         ], $this->getCommonData()));
+    }
+
+    /**
+     * Full product shape used by the product detail endpoint and (minus the
+     * heavy detail-only fields) by the storefront catalog payload.
+     */
+    private function formatFullProduct(Product $product): array
+    {
+        return [
+            'id' => (string) $product->id,
+            'name' => $product->name,
+            'price' => $product->sale_price ? (float) $product->sale_price : (float) $product->price,
+            'originalPrice' => $product->sale_price ? (float) $product->price : null,
+            'image' => $product->cover_image ? $product->cover_image : asset('public/images/avatar/avatar.png'),
+            'images' => $product->images ? (is_array($product->images) ? $product->images : (strpos($product->images, ',') !== false ? explode(',', $product->images) : json_decode($product->images, true))) : null,
+            'categoryId' => (string) $product->category_id,
+            'category' => $product->category ? $product->category->name : 'Uncategorized',
+            'availability' => $product->stock > 0 ? 'in_stock' : 'out_of_stock',
+            'sku' => $product->sku ?: 'SKU-' . $product->id,
+            'stockQuantity' => (int) $product->stock,
+            'description' => $product->description,
+            'variants' => $product->variants ? (is_array($product->variants) ? $product->variants : json_decode($product->variants, true)) : null,
+            'customFields' => $product->custom_fields ? (is_array($product->custom_fields) ? $product->custom_fields : json_decode($product->custom_fields, true)) : null,
+            'taxName' => $product->tax_name ?? null,
+            'taxPercentage' => $product->tax_percentage ?? null,
+        ];
+    }
+
+    /**
+     * On-demand product details for the storefront detail modal. Keeps heavy
+     * fields (description, customFields, tax) out of the initial page payload.
+     */
+    public function productDetail($storeSlug, $product, ?Request $request = null)
+    {
+        $store = $this->getStore($storeSlug, $request);
+
+        $productModel = Product::where('store_id', $store['id'])
+            ->where('id', $product)
+            ->with('category')
+            ->first();
+
+        if (!$productModel) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        return response()->json(['product' => $this->formatFullProduct($productModel)]);
     }
 
     /**
