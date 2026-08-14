@@ -44,7 +44,10 @@ php artisan event:cache 2>/dev/null || true
 
 echo "==> [7/8] Creating storage link and fixing permissions"
 [ -L public/storage ] || php artisan storage:link
-sudo chown -R www-data:www-data storage bootstrap/cache public 2>/dev/null || true
+# php-fpm runs as www:www on this VPS (BT panel) — using www-data here
+# silently breaks runtime view compilation (Blade tempnam) and causes 500s.
+WEB_USER="${WEB_USER:-www}"
+sudo chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache public 2>/dev/null || true
 sudo chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
 echo "==> [8/8] Restarting queue worker"
