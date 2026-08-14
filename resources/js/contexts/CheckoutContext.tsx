@@ -455,7 +455,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
 
   const handleApplyCoupon = async (subtotal: number) => {
     if (!couponCode.trim()) {
-      setCouponError('Please enter a coupon code');
+      setCouponError('يرجى إدخال رمز الكوبون');
       return;
     }
 
@@ -484,12 +484,12 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         });
         setCouponError('');
       } else {
-        setCouponError(data.error || 'Invalid coupon code');
+        setCouponError(data.error || 'رمز الكوبون غير صحيح');
         setAppliedCoupon(null);
       }
     } catch (error) {
       console.error('Coupon validation error:', error);
-      setCouponError('Failed to validate coupon. Please try again.');
+      setCouponError('تعذر التحقق من الكوبون. حاول مرة أخرى.');
       setAppliedCoupon(null);
     }
   };
@@ -544,20 +544,20 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     // Validate bank transfer file if payment method is bank
     if (selectedPayment === 'bank') {
       if (!bankTransferFile) {
-        toast.error('Please upload payment receipt/proof for bank transfer');
+        toast.error('يرجى رفع إيصال الدفع للتحويل البنكي');
         return;
       }
 
       // Validate file size (max 5MB)
       if (bankTransferFile.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB');
+        toast.error('حجم الملف يجب أن يكون أقل من 5 ميجابايت');
         return;
       }
 
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
       if (!allowedTypes.includes(bankTransferFile.type)) {
-        toast.error('Only JPG, PNG and PDF files are allowed');
+        toast.error('يُسمح فقط بملفات JPG و PNG و PDF');
         return;
       }
     }
@@ -565,14 +565,14 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     // Validate WhatsApp number if payment method is whatsapp
     if (selectedPayment === 'whatsapp') {
       if (!whatsappNumber.trim()) {
-        toast.error('WhatsApp number is required');
+        toast.error('رقم واتساب مطلوب');
         return;
       }
 
       // Basic phone number validation (digits only, 10-15 characters)
       const phoneRegex = /^[+]?[0-9]{10,15}$/;
       if (!phoneRegex.test(whatsappNumber.replace(/\s+/g, ''))) {
-        toast.error('Please enter a valid WhatsApp number');
+        toast.error('يرجى إدخال رقم واتساب صحيح');
         return;
       }
     }
@@ -626,7 +626,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
       if (selectedPayment === 'cashfree') {
         const result = await handleCashfreePayment(orderData, store);
         if (!result.success) {
-          toast.error(result.error || 'Cashfree payment failed');
+          toast.error(result.error || 'فشل الدفع عبر كاش فري');
           setIsPlacingOrder(false);
         } else {
           setIsPlacingOrder(false);
@@ -665,10 +665,10 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
               order_number: data.order_number,
             });
           } catch (error) {
-            toast.error('Flutterwave payment failed');
+            toast.error('فشل الدفع عبر فلاورويف');
           }
         } else {
-          toast.error(data.message || 'Failed to initialize Flutterwave payment');
+          toast.error(data.message || 'تعذر بدء الدفع عبر فلاورويف');
         }
         setIsPlacingOrder(false);
         return;
@@ -795,11 +795,11 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         if (data.errors) {
           // setPaymentErrors(data.errors);
         }
-        toast.error(data.message || 'Order placement failed');
+        toast.error(data.message || 'فشل إتمام الطلب');
       }
     } catch (error) {
       console.error('Order placement error:', error);
-      toast.error('Failed to place order. Please try again.');
+      toast.error('تعذر إتمام الطلب. حاول مرة أخرى.');
     } finally {
       setIsPlacingOrder(false);
     }

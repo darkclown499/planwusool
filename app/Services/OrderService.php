@@ -228,7 +228,7 @@ class OrderService
 
         return [
             'success' => true,
-            'message' => 'Order placed successfully. Payment will be collected on delivery.',
+            'message' => 'تم إتمام الطلب بنجاح. سيتم تحصيل الدفع عند الاستلام.',
             'order_id' => $order->id,
             'order_number' => $order->order_number,
         ];
@@ -243,7 +243,7 @@ class OrderService
 
         return [
             'success' => true,
-            'message' => 'Order placed successfully. Please transfer the payment to the provided bank details. Your order will be processed after payment verification.',
+            'message' => 'تم إتمام الطلب بنجاح. يرجى تحويل الدفع إلى تفاصيل الحساب البنكي المقدمة. سيتم معالجة طلبك بعد التحقق من الدفع.',
             'order_id' => $order->id,
             'order_number' => $order->order_number,
         ];
@@ -259,7 +259,7 @@ class OrderService
 
         return [
             'success' => true,
-            'message' => 'Order placed successfully. Please complete the payment using the provided instructions. Your order will be processed after payment verification.',
+            'message' => 'تم إتمام الطلب بنجاح. يرجى إكمال الدفع وفقاً للتعليمات المقدمة. سيتم معالجة طلبك بعد التحقق من الدفع.',
             'order_id' => $order->id,
             'order_number' => $order->order_number,
         ];
@@ -286,7 +286,7 @@ class OrderService
         
         return [
             'success' => true,
-            'message' => 'Order placed successfully. You will be contacted via WhatsApp for payment confirmation.',
+            'message' => 'تم إتمام الطلب بنجاح. سيتم التواصل معك عبر واتساب لتأكيد الدفع.',
             'order_id' => $order->id,
             'order_number' => $order->order_number,
             'whatsapp_redirect' => true,
@@ -309,7 +309,7 @@ class OrderService
 
         return [
             'success' => true,
-            'message' => 'Order placed successfully. You will receive a Telegram notification.',
+            'message' => 'تم إتمام الطلب بنجاح. ستصلك رسالة عبر تيليجرام.',
             'order_id' => $order->id,
             'order_number' => $order->order_number,
         ];

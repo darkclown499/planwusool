@@ -72,7 +72,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
       }
     } catch (error) {
       console.error('Failed to load cart:', error);
-      setCartError('Failed to load cart. Please try again.');
+      setCartError('تعذر تحميل السلة. حاول مرة أخرى.');
     }
   };
 
@@ -106,11 +106,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
       }
       
       await loadCart();
-      toast.success(data.message || 'Product added to cart!');
+      toast.success('تمت الإضافة إلى السلة');
       
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      toast.error('Failed to add product to cart. Please try again.');
+      toast.error('تعذرت الإضافة إلى السلة. حاول مرة أخرى.');
     } finally {
       setCartLoading(false);
     }
@@ -148,7 +148,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
     }
     
     if (newQuantity > item.stockQuantity) {
-      toast.error(`Only ${item.stockQuantity} items available in stock`);
+      toast.error(`الكمية المتاحة في المخزون ${item.stockQuantity} فقط`);
       return;
     }
     
@@ -161,7 +161,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
     if (quantity <= 0) return;
     
     if (quantity > item.stockQuantity) {
-      toast.error(`Only ${item.stockQuantity} items available in stock`);
+      toast.error(`الكمية المتاحة في المخزون ${item.stockQuantity} فقط`);
       return;
     }
     
@@ -186,7 +186,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
       await loadCart();
     } catch (error) {
       console.error('Failed to update cart:', error);
-      toast.error('Failed to update quantity. Please try again.');
+      toast.error('تعذر تحديث الكمية. حاول مرة أخرى.');
     } finally {
       setCartLoading(false);
     }

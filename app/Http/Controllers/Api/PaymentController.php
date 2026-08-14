@@ -65,16 +65,16 @@ class PaymentController extends Controller
         if (in_array($method, ['usdt_trc20', 'usdt_erc20', 'usdt_bep20', 'usdt_polygon', 'usdt_solana'])) {
             $lines = [];
             if (!empty($config['wallet_address'])) {
-                $lines[] = 'Wallet Address: ' . $config['wallet_address'];
+                $lines[] = 'عنوان المحفظة: ' . $config['wallet_address'];
             }
             if (!empty($config['network'])) {
-                $lines[] = 'Network: ' . $config['network'];
+                $lines[] = 'الشبكة: ' . $config['network'];
             }
             if (!empty($config['memo'])) {
-                $lines[] = 'Memo / Tag: ' . $config['memo'];
+                $lines[] = 'مذكرة / وسم: ' . $config['memo'];
             }
             if (!empty($config['merchant_name'])) {
-                $lines[] = 'Merchant Name: ' . $config['merchant_name'];
+                $lines[] = 'اسم التاجر: ' . $config['merchant_name'];
             }
             return empty($lines) ? null : implode("\n", $lines);
         }
@@ -84,10 +84,10 @@ class PaymentController extends Controller
             $lines[] = 'Merchant Name: ' . $config['merchant_name'];
         }
         if (!empty($config['phone_number'])) {
-            $lines[] = 'Phone Number: ' . $config['phone_number'];
+            $lines[] = 'رقم الهاتف: ' . $config['phone_number'];
         }
         if (!empty($config['instructions'])) {
-            $lines[] = 'Instructions: ' . $config['instructions'];
+            $lines[] = 'التعليمات: ' . $config['instructions'];
         }
         return empty($lines) ? null : implode("\n", $lines);
     }
@@ -95,9 +95,9 @@ class PaymentController extends Controller
     private function getDisplayName($method)
     {
         $names = [
-            'bank' => 'Bank Transfer',
-            'cod' => 'Cash on Delivery',
-            'stripe' => 'Credit/Debit Card',
+            'bank' => 'تحويل بنكي',
+            'cod' => 'الدفع عند الاستلام',
+            'stripe' => 'بطاقة ائتمان/خصم',
             'paypal' => 'PayPal',
             'razorpay' => 'Razorpay',
             'flutterwave' => 'Flutterwave',
@@ -115,22 +115,22 @@ class PaymentController extends Controller
             'pal_pay' => 'PalPay',
             'zain_cash' => 'Zain Cash',
             'orange_money' => 'Orange Money',
-            'bank_palestine' => 'Bank of Palestine',
-            'al_quds_bank' => 'Al Quds Bank',
-            'arab_islamic_bank' => 'Arab Islamic Bank',
-            'cairo_amman_bank' => 'Cairo Amman Bank',
-            'housing_bank' => 'Housing Bank',
-            'safad_bank' => 'Safad Bank',
+            'bank_palestine' => 'بنك فلسطين',
+            'al_quds_bank' => 'بنك القدس',
+            'arab_islamic_bank' => 'البنك العربي الإسلامي',
+            'cairo_amman_bank' => 'بنك القاهرة عمان',
+            'housing_bank' => 'بنك الإسكان',
+            'safad_bank' => 'بنك صفد',
             'cliq' => 'CLIQ',
-            'zain_cash_jo' => 'Zain Cash (Jordan)',
-            'orange_money_jo' => 'Orange Money (Jordan)',
+            'zain_cash_jo' => 'زين كاش (الأردن)',
+            'orange_money_jo' => 'أورنج موني (الأردن)',
             'etihad_wallet' => 'Etihad Wallet',
             'dinar_pay' => 'DinarPay',
-            'jordan_kuwait_bank' => 'Jordan Kuwait Bank',
-            'arab_bank' => 'Arab Bank',
-            'housing_bank_jo' => 'Housing Bank (Jordan)',
-            'cairo_amman_bank_jo' => 'Cairo Amman Bank (Jordan)',
-            'safad_bank_jo' => 'Safad Bank (Jordan)',
+            'jordan_kuwait_bank' => 'البنك الأردني الكويتي',
+            'arab_bank' => 'البنك العربي',
+            'housing_bank_jo' => 'بنك الإسكان (الأردن)',
+            'cairo_amman_bank_jo' => 'بنك القاهرة عمان (الأردن)',
+            'safad_bank_jo' => 'بنك صفد (الأردن)',
             'usdt_trc20' => 'USDT (TRC20)',
             'usdt_erc20' => 'USDT (ERC20)',
             'usdt_bep20' => 'USDT (BEP20)',
@@ -144,49 +144,49 @@ class PaymentController extends Controller
     private function getDescription($method)
     {
         $descriptions = [
-            'bank' => 'Direct bank transfer payment',
-            'cod' => 'Pay when you receive your order',
-            'stripe' => 'Pay securely with credit or debit card',
-            'paypal' => 'Pay with your PayPal account',
-            'razorpay' => 'Pay with Razorpay',
-            'flutterwave' => 'Pay with Flutterwave',
-            'paystack' => 'Pay with Paystack',
-            'xendit' => 'Pay with Xendit',
-            'toyyibpay' => 'Pay with ToyyibPay (FPX)',
-            'cashfree' => 'Pay with Cashfree',
-            'mercadopago' => 'Pay with Mercado Pago',
-            'paytabs' => 'Pay with PayTabs',
-            'skrill' => 'Pay with Skrill',
-            'coingate' => 'Pay with CoinGate',
-            'midtrans' => 'Pay with Midtrans',
-            'mollie' => 'Pay with Mollie',
-            'benefit' => 'Pay with Benefit',
-            'yookassa' => 'Pay with YooKassa',
-            'jawwal_pay' => 'Pay with Jawwal Pay',
-            'pal_pay' => 'Pay with PalPay',
-            'zain_cash' => 'Pay with Zain Cash',
-            'orange_money' => 'Pay with Orange Money',
-            'bank_palestine' => 'Pay with Bank of Palestine',
-            'al_quds_bank' => 'Pay with Al Quds Bank',
-            'arab_islamic_bank' => 'Pay with Arab Islamic Bank',
-            'cairo_amman_bank' => 'Pay with Cairo Amman Bank',
-            'housing_bank' => 'Pay with Housing Bank',
-            'safad_bank' => 'Pay with Safad Bank',
-            'cliq' => 'Pay with CLIQ',
-            'zain_cash_jo' => 'Pay with Zain Cash (Jordan)',
-            'orange_money_jo' => 'Pay with Orange Money (Jordan)',
-            'etihad_wallet' => 'Pay with Etihad Wallet',
-            'dinar_pay' => 'Pay with DinarPay',
-            'jordan_kuwait_bank' => 'Pay with Jordan Kuwait Bank',
-            'arab_bank' => 'Pay with Arab Bank',
-            'housing_bank_jo' => 'Pay with Housing Bank (Jordan)',
-            'cairo_amman_bank_jo' => 'Pay with Cairo Amman Bank (Jordan)',
-            'safad_bank_jo' => 'Pay with Safad Bank (Jordan)',
-            'usdt_trc20' => 'Pay with USDT (TRC20)',
-            'usdt_erc20' => 'Pay with USDT (ERC20)',
-            'usdt_bep20' => 'Pay with USDT (BEP20)',
-            'usdt_polygon' => 'Pay with USDT (Polygon)',
-            'usdt_solana' => 'Pay with USDT (Solana)',
+            'bank' => 'تحويل بنكي مباشر',
+            'cod' => 'ادفع عند استلام طلبك',
+            'stripe' => 'ادفع بأمان باستخدام بطاقة الائتمان أو الخصم',
+            'paypal' => 'ادفع باستخدام حساب باي بال',
+            'razorpay' => 'ادفع عبر Razorpay',
+            'flutterwave' => 'ادفع عبر Flutterwave',
+            'paystack' => 'ادفع عبر Paystack',
+            'xendit' => 'ادفع عبر Xendit',
+            'toyyibpay' => 'ادفع عبر ToyyibPay (FPX)',
+            'cashfree' => 'ادفع عبر Cashfree',
+            'mercadopago' => 'ادفع عبر Mercado Pago',
+            'paytabs' => 'ادفع عبر PayTabs',
+            'skrill' => 'ادفع عبر Skrill',
+            'coingate' => 'ادفع عبر CoinGate',
+            'midtrans' => 'ادفع عبر Midtrans',
+            'mollie' => 'ادفع عبر Mollie',
+            'benefit' => 'ادفع عبر Benefit',
+            'yookassa' => 'ادفع عبر YooKassa',
+            'jawwal_pay' => 'ادفع عبر جوال باي',
+            'pal_pay' => 'ادفع عبر PalPay',
+            'zain_cash' => 'ادفع عبر زين كاش',
+            'orange_money' => 'ادفع عبر أورنج موني',
+            'bank_palestine' => 'ادفع عبر بنك فلسطين',
+            'al_quds_bank' => 'ادفع عبر بنك القدس',
+            'arab_islamic_bank' => 'ادفع عبر البنك العربي الإسلامي',
+            'cairo_amman_bank' => 'ادفع عبر بنك القاهرة عمان',
+            'housing_bank' => 'ادفع عبر بنك الإسكان',
+            'safad_bank' => 'ادفع عبر بنك صفد',
+            'cliq' => 'ادفع عبر CLIQ',
+            'zain_cash_jo' => 'ادفع عبر زين كاش (الأردن)',
+            'orange_money_jo' => 'ادفع عبر أورنج موني (الأردن)',
+            'etihad_wallet' => 'ادفع عبر محفظة اتحاد',
+            'dinar_pay' => 'ادفع عبر DinarPay',
+            'jordan_kuwait_bank' => 'ادفع عبر البنك الأردني الكويتي',
+            'arab_bank' => 'ادفع عبر البنك العربي',
+            'housing_bank_jo' => 'ادفع عبر بنك الإسكان (الأردن)',
+            'cairo_amman_bank_jo' => 'ادفع عبر بنك القاهرة عمان (الأردن)',
+            'safad_bank_jo' => 'ادفع عبر بنك صفد (الأردن)',
+            'usdt_trc20' => 'ادفع عبر USDT (TRC20)',
+            'usdt_erc20' => 'ادفع عبر USDT (ERC20)',
+            'usdt_bep20' => 'ادفع عبر USDT (BEP20)',
+            'usdt_polygon' => 'ادفع عبر USDT (Polygon)',
+            'usdt_solana' => 'ادفع عبر USDT (Solana)',
         ];
         
         return $descriptions[$method] ?? null;
@@ -231,33 +231,33 @@ class PaymentController extends Controller
     {
         $fields = [
             'bank' => [
-                ['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']
+                ['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']
             ],
-            'jawwal_pay' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'pal_pay' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'zain_cash' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'orange_money' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'bank_palestine' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'al_quds_bank' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'arab_islamic_bank' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'cairo_amman_bank' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'housing_bank' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'safad_bank' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'cliq' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'zain_cash_jo' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'orange_money_jo' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'etihad_wallet' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'dinar_pay' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'jordan_kuwait_bank' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'arab_bank' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'housing_bank_jo' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'cairo_amman_bank_jo' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'safad_bank_jo' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'usdt_trc20' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'usdt_erc20' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'usdt_bep20' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'usdt_polygon' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
-            'usdt_solana' => [['label' => 'Upload Payment Receipt', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'jawwal_pay' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'pal_pay' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'zain_cash' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'orange_money' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'bank_palestine' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'al_quds_bank' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'arab_islamic_bank' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'cairo_amman_bank' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'housing_bank' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'safad_bank' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'cliq' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'zain_cash_jo' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'orange_money_jo' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'etihad_wallet' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'dinar_pay' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'jordan_kuwait_bank' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'arab_bank' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'housing_bank_jo' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'cairo_amman_bank_jo' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'safad_bank_jo' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'usdt_trc20' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'usdt_erc20' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'usdt_bep20' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'usdt_polygon' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
+            'usdt_solana' => [['label' => 'ارفع إيصال الدفع', 'type' => 'file', 'required' => true, 'accept' => 'image/*,.pdf']],
         ];
         
         return isset($fields[$method]) ? $fields[$method] : null;

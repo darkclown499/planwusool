@@ -72,7 +72,7 @@ class OrderController extends Controller
             if ($calculation['items']->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Your cart is empty'
+                    'message' => 'سلة التسوق فارغة'
                 ], 400);
             }
 
@@ -282,7 +282,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to place order: ' . $e->getMessage()
+                'message' => 'تعذر إتمام الطلب: ' . $e->getMessage()
             ], 500);
         }
     }

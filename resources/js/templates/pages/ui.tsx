@@ -122,7 +122,6 @@ export function AddToCartButton({
     const handleAdd = async (e: React.MouseEvent) => {
         e.stopPropagation();
         await cart.addToCart(product);
-        toast.success('تمت الإضافة إلى السلة ✓');
     };
     return (
         <button
@@ -142,7 +141,6 @@ export function QuantityPicker({ product, className = '', compact = false }: { p
     const [qty, setQty] = useState(1);
     const handleAdd = async () => {
         await cart.addToCart({ ...product, quantity: qty });
-        toast.success('تمت الإضافة إلى السلة ✓');
     };
     return (
         <div className={`flex items-center gap-2 ${className}`}>
@@ -254,7 +252,7 @@ export function OverlayCard({ product, className = '' }: { product: ProductLike;
                     type="button"
                     onClick={(e) => {
                         e.stopPropagation();
-                        cart.addToCart(product).then(() => toast.success('تمت الإضافة ✓'));
+                        cart.addToCart(product);
                     }}
                     className="mb-2 flex items-center justify-center gap-1 rounded-full py-2 text-xs font-bold text-white"
                     style={{ background: 'var(--twc-primary-500,#10b77f)' }}

@@ -78,7 +78,7 @@ class OrderController extends Controller
                 'tax' => (float) $order->tax_amount,
                 'currency' => $storeSettings['currency_symbol'] ?? '$',
                 'coupon' => $order->coupon_code,
-                'payment_method' => $order->payment_method === 'cod' ? 'Cash on Delivery' : ucfirst(str_replace('_', ' ', $order->payment_method)),
+                'payment_method' => $order->payment_method === 'cod' ? 'الدفع عند الاستلام' : ucfirst(str_replace('_', ' ', $order->payment_method)),
                 'customer' => [
                     'name' => $order->customer_first_name . ' ' . $order->customer_last_name,
                     'email' => $order->customer_email,

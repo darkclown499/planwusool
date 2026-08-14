@@ -25,21 +25,21 @@ class CouponController extends Controller
             ->first();
 
         if (!$coupon) {
-            return response()->json(['valid' => false, 'error' => 'Invalid coupon code', 'message' => 'Invalid coupon code'], 400);
+            return response()->json(['valid' => false, 'error' => 'رمز الكوبون غير صحيح', 'message' => 'رمز الكوبون غير صحيح'], 400);
         }
 
         $now = Carbon::now();
 
         if ($coupon->start_date && $now->lt($coupon->start_date)) {
-            return response()->json(['valid' => false, 'error' => 'Coupon is not yet active', 'message' => 'Coupon is not yet active'], 400);
+            return response()->json(['valid' => false, 'error' => 'الكوبون غير نشط بعد', 'message' => 'الكوبون غير نشط بعد'], 400);
         }
 
         if ($coupon->expiry_date && $now->gt($coupon->expiry_date)) {
-            return response()->json(['valid' => false, 'error' => 'Coupon has expired', 'message' => 'Coupon has expired'], 400);
+            return response()->json(['valid' => false, 'error' => 'انتهت صلاحية الكوبون', 'message' => 'انتهت صلاحية الكوبون'], 400);
         }
 
         if ($coupon->use_limit_per_coupon && $coupon->used_count >= $coupon->use_limit_per_coupon) {
-            return response()->json(['valid' => false, 'error' => 'Coupon usage limit exceeded', 'message' => 'Coupon usage limit exceeded'], 400);
+            return response()->json(['valid' => false, 'error' => 'تم تجاوز الحد الأقصى لاستخدام الكوبون', 'message' => 'تم تجاوز الحد الأقصى لاستخدام الكوبون'], 400);
         }
 
         if ($coupon->use_limit_per_user && $request->customer_email) {
@@ -48,16 +48,16 @@ class CouponController extends Controller
                 ->where('customer_email', $request->customer_email)
                 ->count();
             if ($userUsage >= $coupon->use_limit_per_user) {
-                return response()->json(['valid' => false, 'error' => 'You have exceeded the usage limit for this coupon', 'message' => 'You have exceeded the usage limit for this coupon'], 400);
+                return response()->json(['valid' => false, 'error' => 'لقد تجاوزت الحد الأقصى لاستخدام هذا الكوبون', 'message' => 'لقد تجاوزت الحد الأقصى لاستخدام هذا الكوبون'], 400);
             }
         }
 
         if ($coupon->minimum_spend && $request->subtotal < $coupon->minimum_spend) {
-            return response()->json(['valid' => false, 'error' => "Minimum spend of {$coupon->minimum_spend} required", 'message' => "Minimum spend of {$coupon->minimum_spend} required"], 400);
+            return response()->json(['valid' => false, 'error' => "الحد الأدنى للإنفاق {$coupon->minimum_spend} مطلوب", 'message' => "الحد الأدنى للإنفاق {$coupon->minimum_spend} مطلوب"], 400);
         }
 
         if ($coupon->maximum_spend && $request->subtotal > $coupon->maximum_spend) {
-            return response()->json(['valid' => false, 'error' => "Maximum spend of {$coupon->maximum_spend} exceeded", 'message' => "Maximum spend of {$coupon->maximum_spend} exceeded"], 400);
+            return response()->json(['valid' => false, 'error' => "تم تجاوز الحد الأقصى للإنفاق {$coupon->maximum_spend}", 'message' => "تم تجاوز الحد الأقصى للإنفاق {$coupon->maximum_spend}"], 400);
         }
 
         $discount = 0;

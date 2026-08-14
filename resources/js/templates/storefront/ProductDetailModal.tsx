@@ -59,13 +59,8 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
     const whatsappUrl = whatsappPhone ? createWhatsAppUrl(whatsappPhone, buildOrderMessage()) : '';
 
     const handleAddToCart = async () => {
-        try {
-            await cart.addToCart({ ...product, quantity, selectedVariants });
-            toast.success('تمت الإضافة إلى السلة');
-            onClose();
-        } catch {
-            toast.error('تعذرت الإضافة إلى السلة');
-        }
+        await cart.addToCart({ ...product, quantity, selectedVariants });
+        onClose();
     };
 
     const handleWishlist = async () => {

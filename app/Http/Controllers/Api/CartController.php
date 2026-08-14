@@ -96,7 +96,7 @@ class CartController extends Controller
                 'price' => $product->sale_price ?? $product->price
             ]);
         }
-        return response()->json(['message' => 'Added to cart', 'item' => $cartItem]);
+        return response()->json(['message' => 'تمت الإضافة إلى السلة', 'item' => $cartItem]);
     }
 
     public function update(UpdateCartRequest $request, $id)
@@ -104,7 +104,7 @@ class CartController extends Controller
         $cartItem = $this->getCartItems($request->store_id, $request)->findOrFail($id);
         $cartItem->update(['quantity' => $request->quantity]);
         
-        return response()->json(['message' => 'Cart updated', 'item' => $cartItem]);
+        return response()->json(['message' => 'تم تحديث السلة', 'item' => $cartItem]);
     }
 
     public function remove($id, CartStoreRequest $request)
@@ -112,7 +112,7 @@ class CartController extends Controller
         $cartItem = $this->getCartItems($request->store_id, $request)->findOrFail($id);
         $cartItem->delete();
         
-        return response()->json(['message' => 'Item removed']);
+        return response()->json(['message' => 'تمت إزالة المنتج']);
     }
 
     public function sync(CartStoreRequest $request)
@@ -128,7 +128,7 @@ class CartController extends Controller
             ->whereNull('customer_id')
             ->update(['customer_id' => Auth::guard('customer')->id()]);
 
-        return response()->json(['message' => 'Cart synced']);
+        return response()->json(['message' => 'تمت مزامنة السلة']);
     }
 
     private function getCartItems($storeId, $request)
