@@ -84,7 +84,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
             <div className="flex-shrink-0">
               <Link href={route('home')} className="flex items-center gap-2.5">
                 {(() => {
-                  const logoUrl = superadminLogoDark || window.appSettings?.logo;
+                  const logoUrl = superadminLogoDark || window.appSettings?.logo || '/images/logos/wusool.png';
                   const displayUrl = logoUrl ? (
                     logoUrl.startsWith('http') ? logoUrl :
                     logoUrl.startsWith('/storage/') ? `${window.appSettings?.baseUrl || window.location.origin}${logoUrl}` :
@@ -94,14 +94,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                   return displayUrl ? (
                     <img src={displayUrl} alt={settings.company_name} className="h-8 w-auto max-w-[180px] object-scale-down" />
                   ) : (
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white" style={{ backgroundColor: brandColor }}>
-                        W
-                      </div>
-                      <span className="text-xl font-bold tracking-tight text-gray-900">
-                        {settings.company_name}
-                      </span>
-                    </div>
+                    <img src="/images/logos/wusool.png" alt={settings.company_name} className="h-8 w-auto max-w-[180px] object-scale-down" />
                   );
                 })()}
               </Link>

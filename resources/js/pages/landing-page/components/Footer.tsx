@@ -153,7 +153,7 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
           <div className="lg:col-span-2">
             <Link href={route('home')} className="inline-flex items-center gap-2.5">
               {(() => {
-                const logoUrl = superadminLogoLight || window.appSettings?.logo;
+                const logoUrl = superadminLogoLight || window.appSettings?.logo || '/images/logos/wusool.png';
                 const displayUrl = logoUrl ? (
                   logoUrl.startsWith('http') ? logoUrl :
                   logoUrl.startsWith('/storage/') ? `${window.appSettings?.baseUrl || window.location.origin}${logoUrl}` :
@@ -163,10 +163,7 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
                 return displayUrl ? (
                   <img src={displayUrl} alt={settings.company_name} className="h-7 w-auto max-w-[140px] object-scale-down" />
                 ) : (
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold text-white" style={{ backgroundColor: brandColor }}>W</div>
-                    <span className="text-lg font-bold tracking-tight text-white">{settings.company_name}</span>
-                  </div>
+                  <img src="/images/logos/wusool.png" alt={settings.company_name} className="h-7 w-auto max-w-[140px] object-scale-down" />
                 );
               })()}
             </Link>

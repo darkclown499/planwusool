@@ -141,16 +141,22 @@ class DashboardController extends Controller
                 'href' => $whatsappSet ? null : route('stores.settings', $store->id) . '?tab=general',
             ],
             [
-                'key' => 'payments',
-                'done' => $hasPayments,
-                'href' => $hasPayments || !$canManageSettings ? null : route('settings'),
-            ],
-            [
                 'key' => 'published',
                 'done' => $storePublished,
                 'href' => $storePublished ? null : route('stores.settings', $store->id) . '?tab=general',
             ],
         ];
+
+        // The payments step only makes sense for users who can manage payment
+        // settings. For everyone else it would be a dead-end link.
+        if ($canManageSettings) {
+            $steps[] = [
+                'key' => 'payments',
+                'done' => $hasPayments,
+                // Deep-link straight to the payment methods section.
+                'href' => $hasPayments ? null : route('settings') . '#payment-settings',
+            ];
+        }
         
         $pendingCount = collect($steps)->where('done', false)->count();
         

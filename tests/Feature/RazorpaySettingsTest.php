@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\PaymentSetting;
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,12 +13,21 @@ class RazorpaySettingsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Permissions and roles are normally seeded for the whole application,
+        // so reproduce that state before exercising permission-gated routes.
+        $this->seed([PermissionSeeder::class, RoleSeeder::class]);
+    }
+
     public function test_razorpay_settings_are_saved_correctly()
     {
         // Create a test user
         $user = User::factory()->create([
             'type' => 'superadmin'
-        ]);
+        ])->assignRole('superadmin');
 
         // Login as the user
         $this->actingAs($user);
@@ -37,7 +48,7 @@ class RazorpaySettingsTest extends TestCase
 
         // Check if the settings were saved correctly
         $settings = PaymentSetting::where('user_id', $user->id)->get();
-        
+
         $this->assertTrue($settings->where('key', 'is_razorpay_enabled')->first()->value == '1');
         $this->assertEquals('rzp_test_123456789', $settings->where('key', 'razorpay_key')->first()->value);
         $this->assertEquals('test_secret_key', $settings->where('key', 'razorpay_secret')->first()->value);

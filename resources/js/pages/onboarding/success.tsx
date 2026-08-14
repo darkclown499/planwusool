@@ -4,9 +4,11 @@ import { useState } from 'react';
 import {
     Check,
     Copy,
+    CreditCard,
     ExternalLink,
     LayoutDashboard,
     MessageCircle,
+    Package,
     Share2,
     Store,
 } from 'lucide-react';
@@ -17,13 +19,21 @@ import { THEME_COLORS } from '@/hooks/use-appearance';
 
 interface SuccessProps {
     storeName: string;
+    storeId: number;
     storeUrl: string;
     publishStore: boolean;
     referralCode: string | null;
     referralUrl: string | null;
 }
 
-export default function OnboardingSuccess({ storeName, storeUrl, publishStore, referralCode, referralUrl }: SuccessProps) {
+export default function OnboardingSuccess({
+    storeName,
+    storeId,
+    storeUrl,
+    publishStore,
+    referralCode,
+    referralUrl,
+}: SuccessProps) {
     const { t } = useTranslation();
     const { themeColor, customColor, titleText } = useBrand();
     const primaryColor =
@@ -134,6 +144,64 @@ export default function OnboardingSuccess({ storeName, storeUrl, publishStore, r
                     </div>
                 </div>
 
+                {/* Next steps */}
+                <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <LayoutDashboard className="h-4 w-4" style={{ color: primaryColor }} />
+                        {t('What next?')}
+                    </div>
+                    <ul className="space-y-2">
+                        {[
+                            {
+                                icon: Package,
+                                href: route('products.create'),
+                                label: t('Add your first products'),
+                                desc: t('Upload photos, set prices and write descriptions.'),
+                            },
+                            {
+                                icon: MessageCircle,
+                                href: `${route('stores.settings', storeId)}?tab=general`,
+                                label: t('Connect your WhatsApp'),
+                                desc: t('Turn on the WhatsApp button so customers can reach you.'),
+                            },
+                            {
+                                icon: CreditCard,
+                                href: `${route('settings')}#payment-settings`,
+                                label: t('Configure payment methods'),
+                                desc: t('Choose how your customers pay you.'),
+                            },
+                            {
+                                icon: Store,
+                                href: storeUrl,
+                                label: t('Visit your store'),
+                                desc: t('See how your store looks to customers.'),
+                                external: true,
+                            },
+                        ].map((step, i) => (
+                            <li key={i}>
+                                <a
+                                    href={step.href}
+                                    target={step.external ? '_blank' : undefined}
+                                    rel={step.external ? 'noopener noreferrer' : undefined}
+                                    className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 transition hover:border-gray-200 hover:bg-gray-100"
+                                >
+                                    <span
+                                        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+                                        style={{ backgroundColor: `${primaryColor}1a` }}
+                                    >
+                                        <step.icon className="h-4 w-4" style={{ color: primaryColor }} />
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block text-sm font-semibold text-gray-900">{step.label}</span>
+                                        <span className="mt-0.5 block text-xs text-gray-500">{step.desc}</span>
+                                    </span>
+                                    <ExternalLink className="ms-auto mt-1 h-4 w-4 shrink-0 text-gray-300" />
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
                 {/* Referral share */}
                 {referralUrl && (
                     <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
@@ -177,10 +245,15 @@ export default function OnboardingSuccess({ storeName, storeUrl, publishStore, r
                     </div>
                 )}
 
-                {/* WhatsApp hint */}
+                {/* Getting started hint */}
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
                     <MessageCircle className="h-3.5 w-3.5" />
-                    {t('Get more ideas on how to get started')}
+                    <a
+                        href={route('dashboard')}
+                        className="font-medium text-gray-500 transition-colors hover:text-gray-700 hover:underline"
+                    >
+                        {t('Get more ideas on how to get started')}
+                    </a>
                 </div>
             </div>
         </div>

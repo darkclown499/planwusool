@@ -343,7 +343,9 @@ class PaymentSetting extends Model
             $query->whereNull('store_id');
         }
         
-        $settings = $query->pluck('value', 'key')->toArray();
+        // Use ->get() so the encrypted value accessor runs; a raw pluck() on
+        // the query builder bypasses it and returns the ciphertext.
+        $settings = $query->get(['key', 'value'])->pluck('value', 'key')->toArray();
         
         return $settings;
     }

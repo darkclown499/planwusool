@@ -96,8 +96,15 @@ class Store extends BaseModel
     public static function generateUniqueSlug($name)
     {
         $slug = \Illuminate\Support\Str::slug($name);
-        $count = static::whereRaw("slug RLIKE ?", ["^{$slug}(-[0-9]+)?$"])->count();
-        
+        // RLIKE is MySQL-only, so pull the candidates with LIKE and match
+        // the "base" or "base-123" pattern in PHP for DB portability.
+        $count = static::where('slug', 'LIKE', $slug . '%')
+            ->pluck('slug')
+            ->filter(function ($existing) use ($slug) {
+                return preg_match('/^' . preg_quote($slug, '/') . '(-\d+)?$/', $existing) === 1;
+            })
+            ->count();
+
         return $count ? "{$slug}-{$count}" : $slug;
     }
     

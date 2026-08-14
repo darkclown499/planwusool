@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Currency;
-use App\Models\Category;
 use App\Models\Order;
 use App\Models\Plan;
-use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Store;
 use App\Models\StoreConfiguration;
@@ -42,37 +40,90 @@ class OnboardingController extends Controller
             ];
         })->values();
 
+        $defaults = [
+            'name' => $user->name,
+            'storeName' => $store->name,
+            'language' => 'ar',
+            'currency' => strtoupper($configuration['default_currency'] ?? 'ils'),
+            'theme' => $store->getTemplateSlug(),
+            // The onboarding wizard always starts clean: detail fields are
+            // NOT pre-filled from previously saved store data so old values
+            // (or test data) never leak back into the form.
+            'storeEmail' => $user->email,
+            'storeDescription' => '',
+            'welcomeMessage' => '',
+            'whatsappEnabled' => false,
+            'whatsappPhone' => '',
+            'address' => '',
+            'city' => '',
+            'country' => '',
+            'logo' => '',
+            'timezone' => (
+                in_array($tz = getSetting('defaultTimezone'), array_keys(config('timezones', [])), true)
+                    ? $tz
+                    : 'Asia/Gaza'
+            ),
+            'publishStore' => true,
+        ];
+
+        // Restore autosaved wizard progress so a user who refreshed mid-way
+        // keeps what they already typed. Only whitelisted keys are merged.
+        $progress = $this->getWizardProgress($store);
+        if (!empty($progress)) {
+            foreach ($defaults as $key => $value) {
+                if (array_key_exists($key, $progress)) {
+                    $defaults[$key] = $progress[$key];
+                }
+            }
+        }
+
+        $progressStep = (int) (StoreConfiguration::getConfiguration($store->id)['onboarding_step'] ?? 0);
+
         return Inertia::render('onboarding', [
             'demoStoreUrl' => $demoStoreUrl,
             'storeDomain' => config('app.store_domain', 'localhost'),
             'currencies' => $currencies,
             'timezones' => config('timezones', []),
-            'defaults' => [
-                'name' => $user->name,
-                'storeName' => $store->name,
-                'language' => 'ar',
-                'currency' => strtoupper($configuration['default_currency'] ?? 'ils'),
-                'theme' => $store->getTemplateSlug(),
-                // The onboarding wizard always starts clean: detail fields are
-                // NOT pre-filled from previously saved store data so old values
-                // (or test data) never leak back into the form.
-                'storeEmail' => $user->email,
-                'storeDescription' => '',
-                'welcomeMessage' => '',
-                'whatsappEnabled' => false,
-                'whatsappPhone' => '',
-                'address' => '',
-                'city' => '',
-                'country' => '',
-                'logo' => '',
-                'timezone' => (
-                    in_array($tz = getSetting('defaultTimezone'), array_keys(config('timezones', [])), true)
-                        ? $tz
-                        : 'Asia/Gaza'
-                ),
-                'publishStore' => true,
-            ],
+            'initialStep' => $progressStep,
+            'defaults' => $defaults,
         ]);
+    }
+
+    /**
+     * Autosave the wizard progress without completing onboarding. The user can
+     * refresh or close the tab and pick up right where they left off.
+     */
+    public function progress(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->onboarded_at) {
+            return response()->json(['saved' => false]);
+        }
+
+        $request->validate([
+            'step' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'data' => ['nullable', 'array'],
+        ]);
+
+        $store = $this->resolveStore($user);
+
+        $allowed = [
+            'name', 'storeName', 'storeSubdomain', 'storeEmail', 'storeDescription',
+            'welcomeMessage', 'whatsappEnabled', 'whatsappPhone', 'address', 'city',
+            'country', 'logo', 'timezone', 'language', 'currency', 'theme', 'publishStore',
+        ];
+
+        $data = $request->input('data', []);
+        if (!is_array($data)) {
+            $data = [];
+        }
+        $data = array_intersect_key($data, array_flip($allowed));
+
+        StoreConfiguration::setConfiguration($store->id, 'onboarding_step', (string) $request->integer('step', 1));
+        StoreConfiguration::setConfiguration($store->id, 'onboarding_progress', json_encode($data, JSON_UNESCAPED_UNICODE));
+
+        return response()->json(['saved' => true]);
     }
 
     /**
@@ -124,7 +175,7 @@ class OnboardingController extends Controller
             $store->slug = $request->store_subdomain;
         }
         $store->name = $request->store_name;
-        $store->theme = 'basic';
+        $store->theme = Store::normalizeThemeSlug($request->theme);
         $store->save();
 
         $currency = Currency::where('code', $request->currency)->first();
@@ -178,7 +229,13 @@ class OnboardingController extends Controller
         );
 
         if ($request->boolean('import_demo_products')) {
-            $this->importDemoData($store);
+            // Demo catalog import is best-effort: a failure here must never
+            // block the merchant from finishing onboarding.
+            try {
+                $this->importDemoData($store, $request->language ?? 'ar');
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
         $user->name = $request->name;
@@ -197,10 +254,14 @@ class OnboardingController extends Controller
         $user->onboarded_at = now();
         $user->save();
 
+        // Onboarding is complete: clear the autosaved wizard progress.
+        StoreConfiguration::resetKeys($store->id, ['onboarding_step', 'onboarding_progress']);
+
         // Show a short "store ready" confirmation page instead of jumping
         // straight into the dashboard.
         return Inertia::render('onboarding/success', [
             'storeName' => $store->name,
+            'storeId' => $store->id,
             'storeUrl' => $store->getStoreUrl(),
             'publishStore' => $request->boolean('publish_store'),
             'referralCode' => $user->referral_code,
@@ -209,53 +270,12 @@ class OnboardingController extends Controller
     }
 
     /**
-     * Clone the demo store categories and products into the new store so a
-     * fresh merchant starts with a real catalog instead of an empty store.
+     * Import a sample catalog into the new store in the merchant's language so
+     * a fresh merchant starts with a real catalog instead of an empty store.
      */
-    private function importDemoData(Store $store): void
+    private function importDemoData(Store $store, string $lang = 'ar'): void
     {
-        $demo = app(DemoStoreService::class)->ensureDemoStore();
-
-        $categoryMap = [];
-
-        Category::where('store_id', $demo->id)
-            ->whereNull('parent_id')
-            ->orderBy('sort_order')
-            ->get()
-            ->each(function ($category) use (&$categoryMap, $store) {
-                $new = Category::create([
-                    'name' => $category->name,
-                    'slug' => Category::generateUniqueSlug($category->name, $store->id),
-                    'description' => $category->description,
-                    'image' => $category->image,
-                    'parent_id' => null,
-                    'store_id' => $store->id,
-                    'sort_order' => $category->sort_order,
-                    'is_active' => true,
-                ]);
-                $categoryMap[$category->id] = $new->id;
-            });
-
-        Product::where('store_id', $demo->id)
-            ->orderBy('id')
-            ->get()
-            ->each(function ($product) use (&$categoryMap, $store) {
-                Product::create([
-                    'name' => $product->name,
-                    'sku' => $product->sku ?: 'SKU-' . $product->id,
-                    'description' => $product->description,
-                    'details' => $product->details,
-                    'price' => $product->price,
-                    'sale_price' => $product->sale_price,
-                    'stock' => $product->stock,
-                    'cover_image' => $product->cover_image,
-                    'images' => $product->images,
-                    'variants' => $product->variants,
-                    'category_id' => $categoryMap[$product->category_id] ?? null,
-                    'store_id' => $store->id,
-                    'is_active' => true,
-                ]);
-            });
+        app(DemoStoreService::class)->importCatalog($store, $lang);
     }
 
     /**
@@ -305,6 +325,21 @@ class OnboardingController extends Controller
         $user->update(['current_store' => $store->id]);
 
         return $store;
+    }
+
+    /**
+     * Read the autosaved wizard progress for a store, if any.
+     */
+    private function getWizardProgress(Store $store): array
+    {
+        $raw = StoreConfiguration::getConfiguration($store->id)['onboarding_progress'] ?? '';
+        if (!is_string($raw) || $raw === '') {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**

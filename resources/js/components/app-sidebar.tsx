@@ -212,9 +212,6 @@ export function AppSidebar() {
         if (hasPermission('manage-tax')) {
             productChildren.push({ title: t('Tax'), href: route('tax.index') });
         }
-        if (hasPermission('manage-stores')) {
-            productChildren.push({ title: t('Stores'), href: route('stores.index') });
-        }
         if (productChildren.length > 0) {
             items.push({
                 title: t('Product Management'),
@@ -244,17 +241,21 @@ export function AppSidebar() {
             });
         }
 
-        // ── إعدادات المتجر ──
+        // ── إدارة المتاجر ──
         const currentStoreId = auth.user?.current_store;
+        const storeChildren: NavItem[] = [];
+        if (hasPermission('manage-stores')) {
+            storeChildren.push({ title: t('Stores'), href: route('stores.index') });
+        }
         if (hasPermission('settings-stores') && currentStoreId) {
-            const storeSettingsChildren: NavItem[] = [
-                { title: t('Store Settings'), href: route('stores.settings', currentStoreId) },
-            ];
+            storeChildren.push({ title: t('Store Settings'), href: route('stores.settings', currentStoreId) });
+        }
+        if (storeChildren.length > 0) {
             items.push({
-                title: t('Store Settings'),
+                title: t('Stores'),
                 icon: Store,
                 groupLabel: t('Store'),
-                children: storeSettingsChildren,
+                children: storeChildren,
             });
         }
 

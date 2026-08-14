@@ -38,10 +38,7 @@ class StripePaymentController extends Controller
             $finalPrice = $basePrice; // Add coupon logic here if needed
             
             // Get Stripe settings
-            $stripeSettings = PaymentSetting::where('user_id', 1)
-                ->whereIn('key', ['stripe_key', 'stripe_secret', 'is_stripe_enabled'])
-                ->pluck('value', 'key')
-                ->toArray();
+            $stripeSettings = PaymentSetting::getUserSettings(1);
             
             if (($stripeSettings['is_stripe_enabled'] ?? '0') !== '1') {
                 return back()->withErrors(['error' => __('Stripe payment is not enabled')]);

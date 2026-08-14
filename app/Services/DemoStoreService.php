@@ -119,6 +119,45 @@ class DemoStoreService
         }
     }
 
+    /**
+     * Import the demo catalog directly into a target store, using the language
+     * the merchant picked during onboarding.
+     */
+    public function importCatalog(Store $store, string $lang = 'ar'): void
+    {
+        $lang = in_array($lang, ['ar', 'en'], true) ? $lang : 'ar';
+
+        $this->writeSvgImages();
+
+        foreach ($this->catalog($lang) as $categorySlug => $category) {
+            $categoryModel = Category::create([
+                'name' => $category['name'],
+                'slug' => Category::generateUniqueSlug($category['name'], $store->id),
+                'description' => '',
+                'image' => '/storage/demo/' . $categorySlug . '.svg',
+                'store_id' => $store->id,
+                'sort_order' => 0,
+                'is_active' => true,
+            ]);
+
+            foreach ($category['products'] as [$imageSlug, $name, $description, $price, $salePrice, $stock]) {
+                Product::create([
+                    'name' => $name,
+                    'sku' => 'DEMO-' . strtoupper($imageSlug),
+                    'description' => $description,
+                    'price' => $price,
+                    'sale_price' => $salePrice,
+                    'stock' => $stock,
+                    'cover_image' => '/storage/demo/' . $imageSlug . '.svg',
+                    'images' => json_encode(['/storage/demo/' . $imageSlug . '.svg']),
+                    'category_id' => $categoryModel->id,
+                    'store_id' => $store->id,
+                    'is_active' => true,
+                ]);
+            }
+        }
+    }
+
     private function buildSvg(string $emoji, string $from, string $to): string
     {
         return '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600">'
@@ -136,7 +175,21 @@ class DemoStoreService
 
     private function seedData(Store $store): void
     {
-        $data = [
+        $this->importCatalog($store, 'ar');
+    }
+
+    /**
+     * Full demo catalog, localizable. Product rows are
+     * [imageSlug, name, description, price, salePrice, stock].
+     */
+    private function catalog(string $lang): array
+    {
+        return $lang === 'en' ? $this->catalogEnglish() : $this->catalogArabic();
+    }
+
+    private function catalogArabic(): array
+    {
+        return [
             'cat-electronics' => [
                 'name' => 'إلكترونيات',
                 'products' => [
@@ -303,33 +356,176 @@ class DemoStoreService
                 ],
             ],
         ];
+    }
 
-        foreach ($data as $categorySlug => $category) {
-            $categoryModel = Category::create([
-                'name' => $category['name'],
-                'slug' => $categorySlug,
-                'description' => '',
-                'image' => '/storage/demo/' . $categorySlug . '.svg',
-                'store_id' => $store->id,
-                'sort_order' => 0,
-                'is_active' => true,
-            ]);
-
-            foreach ($category['products'] as [$imageSlug, $name, $description, $price, $salePrice, $stock]) {
-                Product::create([
-                    'name' => $name,
-                    'sku' => 'DEMO-' . strtoupper($imageSlug),
-                    'description' => $description,
-                    'price' => $price,
-                    'sale_price' => $salePrice,
-                    'stock' => $stock,
-                    'cover_image' => '/storage/demo/' . $imageSlug . '.svg',
-                    'images' => json_encode(['/storage/demo/' . $imageSlug . '.svg']),
-                    'category_id' => $categoryModel->id,
-                    'store_id' => $store->id,
-                    'is_active' => true,
-                ]);
-            }
-        }
+    private function catalogEnglish(): array
+    {
+        return [
+            'cat-electronics' => [
+                'name' => 'Electronics',
+                'products' => [
+                    ['p1', 'Nox X1 Smartphone', 'Smartphone with a 6.7-inch AMOLED display, a 108MP camera and an all-day battery.', 1499, 1799, 25],
+                    ['p2', 'Pro Wireless Earbuds', 'Wireless earbuds with active noise cancellation and crystal-clear sound.', 299, 399, 50],
+                    ['p3', 'Fit T Smartwatch', 'Multi-function smartwatch with fitness and sleep tracking and smart notifications.', 499, 599, 30],
+                ],
+            ],
+            'cat-fashion' => [
+                'name' => 'Fashion',
+                'products' => [
+                    ['p4', 'Elegant Summer Dress', 'Light summer dress with a modern design that suits every occasion.', 199, 249, 15],
+                    ['p5', 'Cotton T-Shirt', '100% cotton t-shirt, comfortable and soft in all sizes and colors.', 89, 119, 80],
+                    ['p6', 'Athletic Sneakers', 'Lightweight, comfortable running shoes, perfect for jogging and daily walks.', 249, 349, 20],
+                ],
+            ],
+            'cat-home' => [
+                'name' => 'Home & Kitchen',
+                'products' => [
+                    ['p7', 'Home Cookware Set', 'Complete scratch-resistant kitchen cookware set suitable for all cooking styles.', 349, 449, 12],
+                    ['p8', 'LED Desk Lamp', 'Desk lamp with adjustable LED lighting and USB charging.', 129, 159, 40],
+                ],
+            ],
+            'cat-beauty' => [
+                'name' => 'Beauty & Care',
+                'products' => [
+                    ['p9', 'Skin Moisturizing Cream', 'Cream rich in natural moisturizers for daily skin care.', 99, 129, 45],
+                    ['p10', 'Luxury Musk Perfume', 'Premium oriental musk perfume with a long-lasting scent.', 159, 199, 35],
+                ],
+            ],
+            'cat-kids' => [
+                'name' => 'Kids',
+                'products' => [
+                    ['p11', 'Smart Educational Toy', 'Interactive educational toy that helps develop your child\'s skills.', 79, 99, 60],
+                    ['p12', 'Comfortable School Bag', 'Comfortable school bag with a modern design and back support.', 119, 149, 28],
+                ],
+            ],
+            'cat-books' => [
+                'name' => 'Books',
+                'products' => [
+                    ['p13', '"Shadow of the Wind" Novel', 'An absorbing literary novel that takes you on an unforgettable journey.', 89, 109, 40],
+                    ['p13', '"The Art of Thinking" Book', 'A practical guide to developing critical thinking and decision-making skills.', 75, 95, 55],
+                    ['p14', 'Illustrated History Encyclopedia', 'An illustrated reference full of rare photos telling the story of civilizations.', 199, 249, 20],
+                ],
+            ],
+            'cat-coffee' => [
+                'name' => 'Coffee & Drinks',
+                'products' => [
+                    ['p15', 'Premium Arabic Coffee', 'Hand-picked beans roasted with care for a rich flavor and perfect foam.', 129, 149, 70],
+                    ['p14', 'Espresso Machine', 'Home espresso machine with 15-bar pressure and professional milk frothing.', 899, 1099, 10],
+                    ['p15', 'Thermal Ceramic Mug', 'A mug that keeps your drink hot for hours with an elegant design.', 49, 69, 90],
+                ],
+            ],
+            'cat-pharmacy' => [
+                'name' => 'Pharmacy',
+                'products' => [
+                    ['p16', 'Vitamin D Supplement', 'A supplement that strengthens immunity and bones with a balanced daily dose.', 59, 79, 120],
+                    ['p16', 'Blood Pressure Monitor', 'Accurate digital device for measuring blood pressure at home.', 149, 199, 35],
+                    ['p17', 'Sensitive Skin Care', 'A gentle set for cleansing and moisturizing sensitive skin.', 99, 129, 45],
+                ],
+            ],
+            'cat-pets' => [
+                'name' => 'Pet Supplies',
+                'products' => [
+                    ['p17', 'Balanced Cat Food', 'Protein- and vitamin-rich dry food for healthy growth.', 119, 149, 80],
+                    ['p18', 'Comfortable Dog Bed', 'Luxurious comfortable design that supports your pet\'s joints.', 169, 219, 30],
+                    ['p18', 'Smart Location Collar', 'A collar with a location tracking chip for your pet.', 89, 119, 50],
+                ],
+            ],
+            'cat-perfumes' => [
+                'name' => 'Perfumes',
+                'products' => [
+                    ['p19', 'Royal Oud Perfume', 'Luxurious oriental perfume with oud and amber that lasts all day.', 249, 329, 25],
+                    ['p19', 'Floral Eau de Parfum', 'Refreshing fragrance with soft floral notes for everyday use.', 159, 199, 60],
+                    ['p20', 'Mini Perfume Collection', 'A selection of 5 mini perfumes to discover your own signature.', 129, 179, 40],
+                ],
+            ],
+            'cat-flowers' => [
+                'name' => 'Flowers & Gifts',
+                'products' => [
+                    ['p21', 'Fresh Flower Bouquet', 'Fresh flowers picked every morning in vibrant colors.', 149, 189, 20],
+                    ['p21', 'Flower Gift Box', 'An elegant box filled with dried flowers and a personal message.', 179, 229, 15],
+                    ['p22', 'Elegant Desk Plant', 'An easy-care houseplant that adds a green touch to your desk.', 59, 79, 70],
+                ],
+            ],
+            'cat-home-tools' => [
+                'name' => 'Home Tools',
+                'products' => [
+                    ['p23', 'Complete Tool Box', 'A complete, durable tool set for all home repairs.', 299, 399, 25],
+                    ['p23', 'Electric Drill', 'Powerful drill with a long-lasting battery and multiple speeds.', 249, 329, 18],
+                    ['p24', 'Laser Distance Meter', 'Precise laser measuring tool for design and decoration.', 129, 169, 30],
+                ],
+            ],
+            'cat-handcrafted' => [
+                'name' => 'Handcrafted',
+                'products' => [
+                    ['p25', 'Woven Bamboo Basket', 'A handcrafted basket made from 100% natural materials.', 99, 129, 35],
+                    ['p25', 'Decorated Pottery Pitcher', 'A handmade pottery piece with traditional patterns.', 139, 179, 20],
+                    ['p26', 'Knitted Wool Shawl', 'A warm, hand-knitted shawl in calm earthy tones.', 189, 239, 15],
+                ],
+            ],
+            'cat-grocery' => [
+                'name' => 'Grocery',
+                'products' => [
+                    ['p27', 'Seasonal Fruit Box', 'Fresh fruits carefully selected from the best farms.', 79, 99, 100],
+                    ['p27', 'Fresh Vegetables Pack', 'Daily fresh vegetables that cover a full week of needs.', 89, 109, 85],
+                    ['p22', 'Extra Virgin Olive Oil', 'Premium extra virgin olive oil from a traditional press.', 149, 189, 60],
+                ],
+            ],
+            'cat-stationery' => [
+                'name' => 'Stationery',
+                'products' => [
+                    ['p13', 'Luxury Notebook', 'Notebook with a leather cover and high-quality paper for smooth writing.', 45, 65, 120],
+                    ['p14', 'Professional Pencil Set', 'Professional pencil set with multiple grades.', 39, 55, 150],
+                    ['p13', 'Professional Watercolors', 'A rich watercolor set suitable for artists and students.', 89, 119, 40],
+                ],
+            ],
+            'cat-electronics-pro' => [
+                'name' => 'Professional Electronics',
+                'products' => [
+                    ['p23', 'Powerful Work Laptop', 'Laptop with a modern processor and plenty of memory for heavy tasks.', 5499, 6499, 8],
+                    ['p23', 'Professional 4K Monitor', '4K resolution monitor with accurate colors, ideal for designers.', 1899, 2299, 12],
+                    ['p24', 'Mirrorless Camera', 'Professional camera with cinematic quality and fast autofocus.', 3499, 3999, 6],
+                ],
+            ],
+            'cat-jewelry' => [
+                'name' => 'Jewelry',
+                'products' => [
+                    ['p1', 'Gemstone Gold Ring', 'A pure gold ring set with sparkling gemstones.', 2499, 2999, 5],
+                    ['p1', 'Elegant Diamond Pendant', 'A refined pendant made of natural diamonds.', 3999, 4599, 3],
+                    ['p2', 'Silver-Plated Bracelet', 'A sterling silver bracelet with handcrafted engraving.', 899, 1099, 15],
+                ],
+            ],
+            'cat-watches' => [
+                'name' => 'Watches',
+                'products' => [
+                    ['p25', 'Chronograph Watch', 'Luxury mechanical watch with precise Swiss movement.', 5999, 6999, 4],
+                    ['p25', 'Classic Leather Watch', 'A timeless classic design with genuine natural leather.', 899, 1199, 10],
+                    ['p26', 'Rugged Sports Watch', 'Water- and shock-resistant watch for endurance athletes.', 649, 799, 20],
+                ],
+            ],
+            'cat-b2b' => [
+                'name' => 'Bulk Supply',
+                'products' => [
+                    ['p26', 'Packaging Cartons Box', 'Bulk durable packaging cartons for stores and companies.', 499, 599, 500],
+                    ['p26', 'Promotional Pens Box', 'Customized pens in bulk for promotional distribution.', 299, 399, 800],
+                    ['p22', 'Office Stapler Bulk', 'Bulk high-quality office staplers for suppliers.', 199, 249, 300],
+                ],
+            ],
+            'cat-sports' => [
+                'name' => 'Sports',
+                'products' => [
+                    ['p27', 'Official Football', 'An approved football for professional use.', 149, 199, 40],
+                    ['p27', 'Adjustable Dumbbell', 'Smart adjustable dumbbell from 2 to 24 kg.', 599, 749, 15],
+                    ['p3', 'Rubber Yoga Mat', 'Anti-slip yoga mat with comfortable thickness.', 129, 169, 35],
+                ],
+            ],
+            'cat-restaurant' => [
+                'name' => 'Main Dishes',
+                'products' => [
+                    ['p20', 'Special Meat Shawarma', 'Charcoal-grilled seasoned meat with garlic sauce and the chef\'s secret mix.', 59, 79, 200],
+                    ['p14', 'Veggie-Filled Mantu', 'Thin pastries stuffed with seasonal vegetables, chef-style.', 45, 65, 150],
+                    ['p21', 'White Sea Salad', 'Fresh seafood with a refreshing citrus dressing.', 79, 99, 90],
+                ],
+            ],
+        ];
     }
 }

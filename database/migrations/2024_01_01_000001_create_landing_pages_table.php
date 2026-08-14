@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
+        Schema::dropIfExists('landing_pages');
         Schema::create('landing_pages', function (Blueprint $table) {
             $table->id();
             $table->string('name')->default('Landing Page');

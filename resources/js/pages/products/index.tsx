@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, Download, Package, Eye, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Download, Package, Eye, Edit, Trash2, AlertTriangle, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { getImageUrl } from '@/utils/image-helper';
@@ -14,9 +19,77 @@ import UpgradeModal from '@/components/UpgradeModal';
 
 export default function Products() {
   const { t } = useTranslation();
-  const { products, stats, auth, planLimits } = usePage().props as any;
+  const { products: paginatedProducts, stats, auth, planLimits, categories, lowStockThreshold, filters } = usePage().props as any;
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  const products: any[] = paginatedProducts?.data ?? [];
+
+  const activeFilter = (filters || {}) as {
+    search: string;
+    category_id?: number | null;
+    status?: string;
+    sort: string;
+    direction: string;
+  };
+
+  const [searchInput, setSearchInput] = useState(activeFilter.search ?? '');
+  useEffect(() => {
+    setSearchInput(activeFilter.search ?? '');
+  }, [activeFilter?.search]);
+
+  const applyFilters = (updates: Record<string, string | number | null> = {}) => {
+    const next: Record<string, string | number | null> = {
+      search: searchInput,
+      category_id: String(activeFilter.category_id ?? '') || 'all',
+      status: activeFilter.status ?? 'all',
+      sort: activeFilter.sort ?? 'created_at',
+      direction: activeFilter.direction ?? 'desc',
+      ...updates,
+    };
+    const params: Record<string, string | number> = {
+      sort: String(next.sort),
+      direction: String(next.direction),
+    };
+    if (next.search) params.search = String(next.search);
+    const cat = String(next.category_id);
+    if (cat && cat !== 'all') params.category_id = Number(cat);
+    const status = String(next.status);
+    if (status && status !== 'all') params.status = status;
+
+    router.get(route('products.index'), params, {
+      preserveState: true,
+      replace: true,
+      preserveScroll: true,
+    });
+  };
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if ((searchInput ?? '') !== (activeFilter.search ?? '')) {
+        applyFilters({ search: searchInput });
+      }
+    }, 400);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  const toggleSort = (field: string) => {
+    const same = activeFilter.sort === field;
+    applyFilters({
+      sort: field,
+      direction: same && activeFilter.direction === 'asc' ? 'desc' : 'asc',
+    });
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    const isActive = activeFilter.sort === column;
+    if (!isActive) return <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />;
+    return activeFilter.direction === 'asc'
+      ? <ArrowUp className="h-3 w-3 text-foreground" />
+      : <ArrowDown className="h-3 w-3 text-foreground" />;
+  };
 
   const handleActionClick = (action: string, permission: string, productId?: number) => {
     if (!checkPermission(permission, auth)) return;
@@ -32,6 +105,7 @@ export default function Products() {
         router.visit(route('products.create'));
         break;
       case 'export': window.open(route('products.export'), '_blank'); break;
+      default: break;
     }
   };
 
@@ -40,6 +114,29 @@ export default function Products() {
       router.delete(route('products.destroy', productToDelete));
       setProductToDelete(null);
     }
+  };
+
+  const handleBulkDelete = () => {
+    if (selected.size === 0) return;
+    if (!checkPermission('delete-products', auth)) return;
+    router.delete(route('products.bulk-destroy'), { data: { ids: Array.from(selected) }, preserveScroll: true });
+    setSelected(new Set());
+  };
+
+  const toggleSelect = (id: number) => {
+    const next = new Set(selected);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelected(next);
+  };
+
+  const toggleSelectAll = () => {
+    if (!products.length) return;
+    if (selected.size === products.length) setSelected(new Set());
+    else setSelected(new Set(products.map((p) => p.id)));
   };
 
   const pageActions = [
@@ -56,6 +153,8 @@ export default function Products() {
       onClick: () => handleActionClick('create', 'create-products'),
     }] : []),
   ];
+
+  const selectedTotal = useMemo(() => selected.size, [selected.size]);
 
   return (
     <PageTemplate
@@ -119,7 +218,7 @@ export default function Products() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.lowStock}</div>
-              <p className="text-xs text-muted-foreground">{t('Need restocking')}</p>
+              <p className="text-xs text-muted-foreground">{t('Below {{threshold}} units', { threshold: lowStockThreshold })}</p>
             </CardContent>
           </Card>
           <Card>
@@ -134,79 +233,233 @@ export default function Products() {
           </Card>
         </div>
 
-        {/* Products List */}
+        {/* Products Table */}
         <Card>
           <CardHeader>
             <CardTitle>{t('Product Catalog')}</CardTitle>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative w-full sm:w-72">
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={t('Search by name or SKU...') }
+                  value={searchInput ?? ''}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="ps-10"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Select
+                  value={String(activeFilter.category_id ?? '') || 'all'}
+                  onValueChange={(value) => applyFilters({ category_id: value === 'all' ? null : value })}
+                >
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder={t('Filter by category')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('All Categories')}</SelectItem>
+                    {(categories || []).map((c: any) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={activeFilter.status ?? 'all'}
+                  onValueChange={(value) => applyFilters({ status: value === 'all' ? null : value })}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder={t('Filter by status')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('All Status')}</SelectItem>
+                    <SelectItem value="active">{t('Active')}</SelectItem>
+                    <SelectItem value="inactive">{t('Inactive')}</SelectItem>
+                    <SelectItem value="low_stock">{t('Low Stock')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {selectedTotal > 0 && hasPermission('delete-products') && (
+                  <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                    <Trash2 className="h-4 w-4 me-2" />
+                    {t('Delete')} ({selectedTotal})
+                  </Button>
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {products.length === 0 ? (
-                <div className="text-center py-8">
-                  <Package className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                  <p className="mt-2 text-muted-foreground">{t('No products found')}</p>
-                  {hasPermission('create-products') && (
-                    <Button variant="outline" className="mt-4" onClick={() => handleActionClick('create', 'create-products')}>
-                      <Plus className="h-4 w-4 me-2" />
-                      {t('Create your first product')}
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                products.map((product: any) => (
-                  <div key={product.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden border">
-                        {product.cover_image ? (
-                          <img src={getImageUrl(product.cover_image)} alt={product.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                            <Package className="h-6 w-6 text-primary" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold">{product.name}</h3>
-                          <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                            {product.is_active ? t('Active') : t('Inactive')}
-                          </Badge>
-                          {product.stock <= 0 && <Badge variant="destructive">{t('Out of Stock')}</Badge>}
-                        </div>
-                        <p className="text-sm text-muted-foreground">{t('SKU: {{sku}}', { sku: product.sku || '-' })}</p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">{formatCurrency(product.sale_price || product.price)}</span>
-                            {product.sale_price && <span className="text-xs line-through text-muted-foreground">{formatCurrency(product.price)}</span>}
-                          </div>
-                          <span className="text-xs text-muted-foreground">{t('Stock: {{stock}}', { stock: product.stock })}</span>
-                          <span className="text-xs text-muted-foreground">{product.category?.name || '-'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {hasPermission('view-products') && (
-                        <Button variant="ghost" size="sm" onClick={() => handleActionClick('view', 'view-products', product.id)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {hasPermission('edit-products') && (
-                        <Button variant="ghost" size="sm" onClick={() => handleActionClick('edit', 'edit-products', product.id)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {hasPermission('delete-products') && (
-                        <Button variant="ghost" size="sm" onClick={() => handleActionClick('delete', 'delete-products', product.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+            {products.length === 0 ? (
+              <div className="text-center py-8">
+                <Package className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                <p className="mt-2 text-muted-foreground">{t('No products found')}</p>
+                {hasPermission('create-products') && !selectedTotal && (
+                  <Button variant="outline" className="mt-4" onClick={() => handleActionClick('create', 'create-products')}>
+                    <Plus className="h-4 w-4 me-2" />
+                    {t('Create your first product')}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-8">
+                          <Checkbox
+                            checked={products.length > 0 && selected.size === products.length}
+                            aria-label={t('Select all')}
+                            onCheckedChange={() => toggleSelectAll()}
+                          />
+                      </TableHead>
+                      <TableHead>{t('Product')}</TableHead>
+                      <TableHead>{t('Category')}</TableHead>
+                      <TableHead>
+                        <button
+                          className="flex items-center gap-1 hover:underline"
+                          onClick={() => toggleSort('price')}
+                          aria-sort={activeFilter.sort === 'price' ? (activeFilter.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                        >
+                          {t('Price')} <SortIcon column="price" />
+                        </button>
+                      </TableHead>
+                      <TableHead>
+                        <button
+                          className="flex items-center gap-1 hover:underline"
+                          onClick={() => toggleSort('stock')}
+                          aria-sort={activeFilter.sort === 'stock' ? (activeFilter.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                        >
+                          {t('Stock')} <SortIcon column="stock" />
+                        </button>
+                      </TableHead>
+                      <TableHead className="w-[150px]">{t('Status')}</TableHead>
+                      <TableHead>
+                        <button
+                          className="flex items-center gap-1 hover:underline"
+                          onClick={() => toggleSort('created_at')}
+                          aria-sort={activeFilter.sort === 'created_at' ? (activeFilter.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
+                        >
+                          {t('Date')} <SortIcon column="created_at" />
+                        </button>
+                      </TableHead>
+                      <TableHead className="w-20 text-right">{t('Actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((product: any) => {
+                      const isLowStock = Number(product.stock) < Number(lowStockThreshold);
+                      const stockColor = product.stock <= 0
+                        ? 'bg-red-100 text-red-800'
+                        : isLowStock
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-emerald-100 text-emerald-800';
+                      return (
+                        <TableRow key={product.id} className={selected.has(product.id) ? 'bg-muted/30' : undefined}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selected.has(product.id)}
+                              aria-label={t('Select product')}
+                              onCheckedChange={() => toggleSelect(product.id)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded border">
+                                {product.cover_image ? (
+                                  <img src={getImageUrl(product.cover_image)} alt={product.name} className="h-full w-full object-cover" />
+                                ) : (
+                                  <Package className="h-5 w-5 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium">{product.name}</div>
+                                <div className="text-xs text-muted-foreground truncate max-w-[180px]">{product.sku || '-'}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{product.category?.name || <span className="text-muted-foreground">{t('Uncategorized')}</span>}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-1">
+                              <span className="ltr-num">{formatCurrency(product.sale_price || product.price)}</span>
+                              {product.sale_price && <span className="text-xs line-through text-muted-foreground ltr-num">{formatCurrency(product.price)}</span>}
+                            </div>
+                          </TableCell>
+                          <TableCell>{product.stock}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                                {product.is_active ? t('Active') : t('Inactive')}
+                              </Badge>
+                              <Badge className={stockColor}>
+                                {product.stock <= 0 ? t('Out of Stock') : isLowStock ? t('Low Stock') : t('In Stock')}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>{product.created_at ? new Date(product.created_at).toLocaleDateString() : '-'}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-end space-x-1">
+                              {hasPermission('view-products') && (
+                                <Button variant="ghost" size="sm" onClick={() => handleActionClick('view', 'view-products', product.id)} title={t('View')}>
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {hasPermission('edit-products') && (
+                                <Button variant="ghost" size="sm" onClick={() => handleActionClick('edit', 'edit-products', product.id)} title={t('Edit')}>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {hasPermission('delete-products') && (
+                                <Button variant="ghost" size="sm" onClick={() => handleActionClick('delete', 'delete-products', product.id)} title={t('Delete')}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {paginatedProducts && paginatedProducts.last_page > 1 && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {t('Showing {{from}}–{{to}} of {{total}} products', {
+                from: paginatedProducts.from,
+                to: paginatedProducts.to,
+                total: paginatedProducts.total,
+              })}
+            </div>
+            <Pagination>
+              <PaginationContent>
+                {paginatedProducts.links.map((link: any, index: number) => {
+                  if (!link.url) {
+                    return (
+                      <PaginationItem key={index}>
+                        <span
+                          className="px-3 py-1.5 text-sm text-muted-foreground"
+                          dangerouslySetInnerHTML={{ __html: link.label }}
+                        />
+                      </PaginationItem>
+                    );
+                  }
+                  return (
+                    <PaginationItem key={index}>
+                      <PaginationLink
+                        isActive={link.active}
+                        href={link.url}
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                      />
+                    </PaginationItem>
+                  );
+                })}
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}

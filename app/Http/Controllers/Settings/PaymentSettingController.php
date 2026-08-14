@@ -183,7 +183,7 @@ class PaymentSettingController extends Controller
         }
         
         try {
-            $validatedData = $request->validate([
+            $rules = [
                 'stripe_key' => 'nullable|string',
                 'stripe_secret' => 'nullable|string',
                 'paypal_client_id' => 'nullable|string',
@@ -441,7 +441,13 @@ class PaymentSettingController extends Controller
                 'usdt_solana_api_key' => 'nullable|string',
                 'usdt_solana_secret_key' => 'nullable|string',
                 'usdt_solana_merchant_id' => 'nullable|string',
-            ]);
+            ];
+
+            $validatedData = $request->validate($rules);
+
+            // Every declared field is optional, so default any key that was not
+            // submitted to null instead of crashing on an undefined array key.
+            $validatedData = array_replace(array_fill_keys(array_keys($rules), null), $validatedData);
 
             $settings = $this->preparePaymentSettings($request, $validatedData);
             $this->validateEnabledPaymentMethods($request, $validatedData);

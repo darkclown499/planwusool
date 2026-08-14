@@ -12,16 +12,19 @@ import {
     Coins,
     Contact,
     CreditCard,
+    ExternalLink,
     Globe,
     Languages,
     Loader2,
     Mail,
     MapPin,
     MessageCircle,
+    Palette,
     PartyPopper,
     Phone,
     ShieldCheck,
     ShoppingBag,
+    Smartphone,
     Sparkles,
     Store,
     User,
@@ -50,6 +53,7 @@ interface OnboardingProps {
     storeDomain: string;
     currencies: Currency[];
     timezones: Record<string, string>;
+    initialStep: number;
     defaults: {
         name: string;
         storeName: string;
@@ -77,6 +81,7 @@ const STEP_META: { key: string; icon: LucideIcon }[] = [
     { key: 'details', icon: Contact },
     { key: 'language', icon: Languages },
     { key: 'currency', icon: Coins },
+    { key: 'theme', icon: Palette },
     { key: 'confirm', icon: CheckCircle2 },
 ];
 
@@ -99,6 +104,7 @@ const FIELD_STEP: Record<string, number> = {
     publish_store: 3,
     language: 4,
     currency: 5,
+    theme: 6,
 };
 
 const CONFETTI_COLORS = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ec4899', '#8b5cf6'];
@@ -123,6 +129,7 @@ export default function Onboarding({
     storeDomain,
     currencies,
     timezones,
+    initialStep,
     defaults,
 }: OnboardingProps) {
     const { t, i18n } = useTranslation();
@@ -151,15 +158,57 @@ export default function Onboarding({
         theme: defaults.theme || 'basic',
     });
 
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(() =>
+        Math.min(Math.max(initialStep || 0, 0), STEP_META.length - 1)
+    );
     const [checking, setChecking] = useState(false);
     const [availability, setAvailability] = useState<{ available: boolean; message: string } | null>(null);
     const [generalError, setGeneralError] = useState<string | null>(null);
 
     const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const autosaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const stepKey = STEP_META[step].key;
     const progress = ((step + 1) / STEP_META.length) * 100;
+
+    // Debounced autosave of the wizard progress so a refresh or a closed tab
+    // never loses what the merchant already typed.
+    useEffect(() => {
+        if (stepKey === 'welcome') return;
+        if (autosaveTimeout.current) clearTimeout(autosaveTimeout.current);
+        autosaveTimeout.current = setTimeout(() => {
+            axios
+                .post(route('onboarding.progress'), {
+                    step: step + 1,
+                    data: {
+                        name: data.name,
+                        storeName: data.store_name,
+                        storeSubdomain: data.store_subdomain,
+                        storeEmail: data.store_email,
+                        storeDescription: data.store_description,
+                        welcomeMessage: data.welcome_message,
+                        whatsappEnabled: data.whatsapp_enabled,
+                        whatsappPhone: data.whatsapp_phone,
+                        address: data.address,
+                        city: data.city,
+                        country: data.country,
+                        logo: data.logo,
+                        timezone: data.timezone,
+                        language: data.language,
+                        currency: data.currency,
+                        theme: data.theme,
+                        publishStore: data.publish_store,
+                    },
+                })
+                .catch(() => {
+                    /* autosave is best-effort; the final submit persists everything */
+                });
+        }, 800);
+        return () => {
+            if (autosaveTimeout.current) clearTimeout(autosaveTimeout.current);
+        };
+         
+    }, [data, step, stepKey]);
 
     const confettiPieces = useMemo(
         () =>
@@ -336,6 +385,21 @@ export default function Onboarding({
     const langOptions = [
         { code: 'ar', name: t('Arabic'), countryCode: 'SA' },
         { code: 'en', name: t('English'), countryCode: 'GB' },
+    ];
+
+    const themeOptions = [
+        {
+            value: 'basic',
+            icon: Store,
+            name: t('Basic'),
+            desc: t('Clean and modern design that suits any store.'),
+        },
+        {
+            value: 'arabic-gadgets',
+            icon: Smartphone,
+            name: t('Arabic Gadgets'),
+            desc: t('Premium Arabic design for electronics and smart device stores.'),
+        },
     ];
 
     const featureChips = [
@@ -580,6 +644,18 @@ export default function Onboarding({
                                                     {t('Start')}
                                                     <ChevronLeft className="h-4 w-4" />
                                                 </Button>
+                                                <div className="mt-4">
+                                                    <a
+                                                        href={demoStoreUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-80"
+                                                        style={{ color: primaryColor }}
+                                                    >
+                                                        <ExternalLink className="h-4 w-4" />
+                                                        {t('See a live demo store')}
+                                                    </a>
+                                                </div>
                                             </div>
                                         )}
 
@@ -1109,6 +1185,64 @@ export default function Onboarding({
                                             </div>
                                         )}
 
+                                        {stepKey === 'theme' && (
+                                            <div className="onboarding-stagger py-4">
+                                                <div className="mb-6 flex items-center gap-3">
+                                                    <div
+                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
+                                                        style={{ backgroundColor: `${primaryColor}1a` }}
+                                                    >
+                                                        <Palette className="h-5 w-5" style={{ color: primaryColor }} />
+                                                    </div>
+                                                    <div>
+                                                        <h2 className="text-xl font-bold text-gray-900">
+                                                            {t('Choose a design')}
+                                                        </h2>
+                                                        <p className="text-sm text-gray-500">
+                                                            {t('Pick the look of your store. You can change it anytime.')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    {themeOptions.map((theme) => (
+                                                        <button
+                                                            key={theme.value}
+                                                            type="button"
+                                                            onClick={() => setData('theme', theme.value)}
+                                                            className={`relative flex items-start gap-4 rounded-2xl border-2 p-5 text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                                                                data.theme === theme.value
+                                                                    ? 'border-primary bg-primary/5'
+                                                                    : 'border-gray-200 hover:border-gray-300'
+                                                            }`}
+                                                        >
+                                                            <span
+                                                                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+                                                                style={{ backgroundColor: `${primaryColor}1a` }}
+                                                            >
+                                                                <theme.icon className="h-6 w-6" style={{ color: primaryColor }} />
+                                                            </span>
+                                                            <span className="min-w-0">
+                                                                <span className="block font-semibold text-gray-900">
+                                                                    {theme.name}
+                                                                </span>
+                                                                <span className="mt-1 block text-sm leading-relaxed text-gray-500">
+                                                                    {theme.desc}
+                                                                </span>
+                                                            </span>
+                                                            {data.theme === theme.value && (
+                                                                <span
+                                                                    className="absolute end-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-white animate-pop"
+                                                                    style={{ backgroundColor: primaryColor }}
+                                                                >
+                                                                    <Check className="h-4 w-4" />
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {stepKey === 'confirm' && (
                                             <div className="py-4">
                                                 {/* Confetti */}
@@ -1222,6 +1356,13 @@ export default function Onboarding({
                                                                 value:
                                                                     currencies.find((c) => c.code === data.currency)?.name ||
                                                                     data.currency,
+                                                            },
+                                                            {
+                                                                icon: Palette,
+                                                                label: t('Design'),
+                                                                value:
+                                                                    themeOptions.find((t) => t.value === data.theme)?.name ||
+                                                                    t('Basic'),
                                                             },
                                                             {
                                                                 icon: Globe,

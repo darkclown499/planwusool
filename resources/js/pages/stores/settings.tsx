@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
-  Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-  BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate,
+   Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
+   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate, Package, Warehouse,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -417,6 +417,34 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                   <p className="text-xs text-muted-foreground text-start">{t('This message will be shown to your visitors during maintenance.')}</p>
                 </div>
               )}
+            </div>
+          </AccordionSection>
+
+          <AccordionSection
+            title={t('Inventory Settings')}
+            icon={<Warehouse className="h-4 w-4" />}
+            subtitle={t('Define the stock level at which products are considered low and need restocking.')}
+            onReset={() => handleResetSection('inventory')}
+            resetDisabled={resettingSection === 'inventory'}
+          >
+            <div className="grid gap-4 md:grid-cols-2 items-end">
+              <div className="space-y-2">
+                <Label htmlFor="low_stock_threshold">{t('Low Stock Threshold')}</Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('Products with stock at or below this number are flagged as low stock.')}
+                </p>
+              </div>
+              <div>
+                <Input
+                  id="low_stock_threshold"
+                  type="number"
+                  min={0}
+                  max={9999}
+                  value={formData.low_stock_threshold ?? ''}
+                  onChange={(e) => updateSetting('low_stock_threshold', e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder={t('e.g. 10')}
+                />
+              </div>
             </div>
           </AccordionSection>
 

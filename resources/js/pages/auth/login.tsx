@@ -14,6 +14,7 @@ import SocialButtons from '@/components/auth/SocialButtons';
 import Recaptcha, { executeRecaptcha } from '@/components/recaptcha';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
+import type { AuthPageProps } from '@/types';
 
 type LoginForm = {
  email: string;
@@ -37,11 +38,10 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword, isDemo = false, demoStores = [] }: LoginProps) {
- const { t } = useTranslation();
- const [recaptchaToken, setRecaptchaToken] = useState<string>('');
- const [showPassword, setShowPassword] = useState(false);
- const { themeColor, customColor } = useBrand();
- const { settings = {}, authProviders = [], rtl } = usePage().props as any;
+    const { t } = useTranslation();
+    const [showPassword, setShowPassword] = useState(false);
+    const { themeColor, customColor } = useBrand();
+    const { settings = {}, authProviders = [], rtl } = usePage<AuthPageProps>().props;
  const recaptchaEnabled = settings.recaptchaEnabled === 'true' || settings.recaptchaEnabled === true || settings.recaptchaEnabled === 1 || settings.recaptchaEnabled === '1';
  const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
 
@@ -72,7 +72,7 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  remember: false
  });
  }
- }, [isDemo]);
+    }, [isDemo, setData]);
 
  // Cooldown timer for resend
  useEffect(() => {
@@ -117,9 +117,9 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  window.open(url, '_blank');
  };
 
- const getThemeThumbnail = (_themeId: string) => {
-  return '';
- };
+    const getThemeThumbnail = (themeId: string) => {
+        return `https://placehold.co/300x600?text=${encodeURIComponent(themeId)}`;
+    };
 
  const distinctThemes = demoStores.reduce((acc: DemoStore[], store) => {
  if (!acc.find(s => s.theme === store.theme)) {
@@ -617,20 +617,17 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
 
  {recaptchaEnabled && (
  <div className="mt-4">
- <Recaptcha
- onVerify={(token) => {
- setRecaptchaToken(token);
- setData('recaptcha_token', token);
- }}
- onExpired={() => {
- setRecaptchaToken('');
- setData('recaptcha_token', '');
- }}
- onError={() => {
- setRecaptchaToken('');
- setData('recaptcha_token', '');
- }}
- />
+    <Recaptcha
+        onVerify={(token) => {
+            setData('recaptcha_token', token);
+        }}
+        onExpired={() => {
+            setData('recaptcha_token', '');
+        }}
+        onError={() => {
+            setData('recaptcha_token', '');
+        }}
+    />
  </div>
  )}
  <InputError message={errors.recaptcha_token} />
@@ -750,7 +747,7 @@ export default function Login({ status, canResetPassword, isDemo = false, demoSt
  {hoveredStore === store.theme && (
  <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 bg-white p-1.5 rounded-lg shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200 w-44 pointer-events-none">
  <div className="rounded overflow-hidden bg-gray-50 aspect-[16/10]">
- <img src={getThemeThumbnail(store.theme)} alt={store.theme} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = `https://placehold.co/300x600?text=${encodeURIComponent(store.theme)}`; }} />
+    <img src={getThemeThumbnail(store.theme)} alt={store.theme} className="w-full h-full object-cover" />
  </div>
  </div>
  )}

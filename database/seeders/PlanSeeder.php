@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Database\Seeders;
 
@@ -116,3 +116,4 @@ $plans = [
         }
     }
 }
+

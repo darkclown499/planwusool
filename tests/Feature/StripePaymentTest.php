@@ -6,17 +6,29 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Plan;
 use App\Models\PaymentSetting;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class StripePaymentTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Permissions and roles are normally seeded for the whole application,
+        // so reproduce that state before exercising permission-gated routes.
+        $this->seed([PermissionSeeder::class, RoleSeeder::class]);
+    }
+
     public function test_stripe_payment_configuration()
     {
         // Create super admin user
-        $superAdmin = User::factory()->create(['type' => 'superadmin']);
-        
+        $superAdmin = User::factory()->create(['type' => 'superadmin'])
+            ->assignRole('superadmin');
+
         // Create payment settings
         PaymentSetting::create([
             'user_id' => $superAdmin->id,
@@ -35,6 +47,8 @@ class StripePaymentTest extends TestCase
             'key' => 'is_stripe_enabled',
             'value' => '1'
         ]);
+
+        $this->actingAs($superAdmin);
 
         // Test payment methods API
         $response = $this->get(route('payment.methods'));
@@ -58,6 +72,7 @@ class StripePaymentTest extends TestCase
         // Test without payment method ID
         $response = $this->post(route('stripe.payment'), [
             'plan_id' => $plan->id,
+            'billing_cycle' => 'monthly',
             'coupon_code' => '',
             'cardholder_name' => 'Test User',
         ]);
@@ -77,6 +92,7 @@ class StripePaymentTest extends TestCase
         $response = $this->post(route('stripe.payment'), [
             'payment_method_id' => 'pm_test_123',
             'plan_id' => $plan->id,
+            'billing_cycle' => 'monthly',
             'coupon_code' => '',
             'cardholder_name' => 'Test User',
         ]);

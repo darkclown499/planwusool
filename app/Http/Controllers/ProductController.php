@@ -13,25 +13,68 @@ class ProductController extends Controller
     /**
      * Display a listing of the products.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
-        
-        // Get products for the current store with category relationship
-        $products = Product::with('category')
-                        ->where('store_id', $currentStoreId)
-                        ->latest()
-                        ->get();
-        
-        // Get statistics
-        $totalProducts = $products->count();
-        $activeProducts = $products->where('is_active', true)->count();
-        $lowStockProducts = $products->where('stock', '<', 10)->count();
-        $totalValue = $products->sum(function ($product) {
-            return $product->price * $product->stock;
-        });
-        
+
+        // Configurable low-stock threshold (falls back to 10 when unset).
+        $lowStockThreshold = (int) getSetting('low_stock_threshold', 10);
+
+        // Statistics are computed from the store-scoped query so they stay
+        // accurate regardless of the active filters/pagination.
+        $statsQuery = Product::where('store_id', $currentStoreId);
+        $totalProducts = $statsQuery->count();
+        $activeProducts = (clone $statsQuery)->where('is_active', true)->count();
+        $lowStockProducts = (clone $statsQuery)->where('stock', '<', $lowStockThreshold)->count();
+        $totalValue = (clone $statsQuery)->sum(\DB::raw('price * stock')) ?: 0;
+
+        // Filtered + paginated list.
+        $query = Product::with('category')
+            ->where('store_id', $currentStoreId);
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        if ($categoryId = $request->input('category_id')) {
+            $query->where('category_id', (int) $categoryId);
+        }
+
+        $status = $request->input('status');
+        if ($status) {
+            if ($status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($status === 'inactive') {
+                $query->where('is_active', false);
+            } elseif ($status === 'low_stock') {
+                $query->where('stock', '<', $lowStockThreshold);
+            }
+        }
+
+        $sortableFields = ['price', 'sale_price', 'stock', 'created_at', 'name', 'sku'];
+        $sortField = in_array($request->input('sort'), $sortableFields)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $query->orderBy($sortField, $direction);
+
+        $perPage = 15;
+        if ($request->filled('per_page')) {
+            $perPage = max(15, min((int) $request->input('per_page'), 100));
+        }
+        $products = $query->paginate($perPage)->withQueryString();
+
+        // Categories for the filter dropdown (active, scoped to the store).
+        $categories = Category::where('store_id', $currentStoreId)
+            ->where('is_active', true)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
         $planLimits = null;
         $plan = $user->getCurrentPlan();
         if ($plan) {
@@ -42,16 +85,26 @@ class ProductController extends Controller
                 'can_create' => $maxProducts <= 0 || $totalProducts < $maxProducts,
             ];
         }
-        
+
         return Inertia::render('products/index', [
             'products' => $products,
+            'categories' => $categories,
             'planLimits' => $planLimits,
+            'lowStockThreshold' => $lowStockThreshold,
+            'filters' => [
+                'search' => (string) $request->input('search', ''),
+                'category_id' => $request->input('category_id') ? (int) $request->input('category_id') : null,
+                'status' => (string) $status,
+                'sort' => $sortField,
+                'direction' => $direction,
+                'per_page' => $perPage,
+            ],
             'stats' => [
                 'total' => $totalProducts,
                 'active' => $activeProducts,
                 'lowStock' => $lowStockProducts,
-                'totalValue' => $totalValue
-            ]
+                'totalValue' => $totalValue,
+            ],
         ]);
     }
 
@@ -308,10 +361,34 @@ class ProductController extends Controller
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
         
-        $product = Product::where('store_id', $currentStoreId)->findOrFail($id);
-        $product->delete();
-        
-        return redirect()->route('products.index')->with('success', __('Product deleted successfully'));
+         $product = Product::where('store_id', $currentStoreId)->findOrFail($id);
+         $product->delete();
+         
+         return redirect()->route('products.index')->with('success', __('Product deleted successfully'));
+    }
+
+    /**
+     * Delete multiple products at once.
+     */
+    public function destroyBulk(Request $request)
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+
+        $ids = array_filter((array) $request->input('ids', []), fn ($id) => is_numeric($id));
+        $ids = array_map('intval', $ids);
+
+        if (empty($ids)) {
+            return back()->with('error', __('No products selected.'));
+        }
+
+        $deleted = Product::where('store_id', $currentStoreId)
+            ->whereIn('id', $ids)
+            ->delete();
+
+        return redirect()
+            ->route('products.index', $request->only(['search', 'category_id', 'status', 'sort', 'direction', 'per_page']))
+            ->with('success', __(':count Product(s) deleted successfully.', ['count' => $deleted]));
     }
     
     /**

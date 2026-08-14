@@ -458,6 +458,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('onboarding', [OnboardingController::class, 'index'])->name('onboarding');
     Route::post('onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+    Route::post('onboarding/progress', [OnboardingController::class, 'progress'])->name('onboarding.progress');
     Route::get('onboarding/check-subdomain', [OnboardingController::class, 'checkSubdomain'])->name('onboarding.check-subdomain');
 });
 
@@ -598,8 +599,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('products', [\App\Http\Controllers\ProductController::class, 'store'])->middleware('permission:create-products')->name('products.store');
         Route::get('products/{id}/edit', [\App\Http\Controllers\ProductController::class, 'edit'])->middleware('permission:edit-products')->name('products.edit');
         Route::put('products/{id}', [\App\Http\Controllers\ProductController::class, 'update'])->middleware('permission:edit-products')->name('products.update');
-        Route::delete('products/{id}', [\App\Http\Controllers\ProductController::class, 'destroy'])->middleware('permission:delete-products')->name('products.destroy');
-        Route::get('products/{id}', [\App\Http\Controllers\ProductController::class, 'show'])->middleware('permission:view-products')->name('products.show');
+         Route::delete('products/{id}', [\App\Http\Controllers\ProductController::class, 'destroy'])->middleware('permission:delete-products')->name('products.destroy');
+         Route::delete('products', [\App\Http\Controllers\ProductController::class, 'destroyBulk'])->middleware('permission:delete-products')->name('products.bulk-destroy');
+         Route::get('products/{id}', [\App\Http\Controllers\ProductController::class, 'show'])->middleware('permission:view-products')->name('products.show');
         
         // Categories Management routes with permissions
         Route::get('categories', [\App\Http\Controllers\CategoryController::class, 'index'])->middleware('permission:manage-categories')->name('categories.index');

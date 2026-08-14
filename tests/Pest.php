@@ -45,3 +45,20 @@ function something()
 {
     // ..
 }
+
+/**
+ * Create a company user that has passed onboarding and holds an active plan,
+ * which is the state the profile settings pages are served under.
+ */
+function onboardedCompanyUser(array $attributes = []): \App\Models\User
+{
+    $plan = \App\Models\Plan::factory()->create();
+
+    return \App\Models\User::factory()->create([
+        'type' => 'company',
+        'plan_id' => $plan->id,
+        'plan_expire_date' => now()->addMonth(),
+        'is_trial' => 0,
+        'onboarded_at' => now(),
+    ] + $attributes);
+}

@@ -126,6 +126,8 @@ class StoreSettingsController extends Controller
             'settings.social_links.*.url' => 'nullable|url|max:500',
             'settings.social_links.*.enabled' => 'nullable|boolean',
             'settings.maintenance_message' => 'nullable|string|max:2000',
+            'settings.low_stock_threshold' => 'nullable|integer|min:0|max:9999',
+            'settings.low_stock_warning' => 'nullable|integer|min:0|max:9999',
         ];
     }
 
@@ -242,6 +244,7 @@ class StoreSettingsController extends Controller
             'exchangeRate' => $settingsToSave['exchangeRate'] ?? null,
             'vat_number' => $settingsToSave['vat_number'] ?? null,
             'tax_registration_number' => $settingsToSave['tax_registration_number'] ?? null,
+            'low_stock_threshold' => array_key_exists('low_stock_threshold', $settingsToSave) ? (int) $settingsToSave['low_stock_threshold'] : null,
         ];
 
         foreach ($regionalKeys as $key => $value) {
@@ -304,13 +307,14 @@ class StoreSettingsController extends Controller
         $store = $this->resolveStore($storeId);
 
         $request->validate([
-            'section' => 'required|string|in:regional,branding,homepage,address,social,seo,tracking,status',
+            'section' => 'required|string|in:regional,inventory,branding,homepage,address,social,seo,tracking,status',
         ]);
 
         $section = $request->input('section');
 
         $sections = [
             'regional' => ['default_currency', 'timezone', 'language'],
+            'inventory' => ['low_stock_threshold'],
             'branding' => ['logo', 'favicon'],
             'homepage' => ['welcome_message', 'store_description', 'copyright_text'],
             'address' => ['address', 'city', 'state', 'country', 'postal_code'],

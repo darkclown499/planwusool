@@ -67,6 +67,7 @@ class StoreConfiguration extends Model
                     'whatsapp_widget_position' => 'right',
                     'whatsapp_widget_show_on_mobile' => 'true',
                     'whatsapp_widget_show_on_desktop' => 'true',
+                    'low_stock_threshold' => '10',
                 ];
 
                 $result = array_merge($defaults, $configs);

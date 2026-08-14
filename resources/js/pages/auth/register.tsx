@@ -1,4 +1,4 @@
-import { useForm, usePage, router } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Mail, Lock, User, Eye, EyeOff, ShieldCheck, ArrowLeft, RefreshCw } from 'lucide-react';
 import { FormEventHandler, useState, useRef, useEffect, useCallback } from 'react';
 
@@ -15,6 +15,7 @@ import Recaptcha, { executeRecaptcha } from '@/components/recaptcha';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { getPasswordScore, passwordScoreColor, passwordScoreLabelKey } from '@/utils/password-strength';
+import type { AuthPageProps } from '@/types';
 
 type RegisterForm = {
  name: string;
@@ -33,12 +34,11 @@ interface RegisterProps {
 }
 
 export default function Register({ referralCode, planId }: RegisterProps) {
- const { t } = useTranslation();
- const [recaptchaToken, setRecaptchaToken] = useState<string>('');
- const [showPassword, setShowPassword] = useState(false);
- const [showConfirmPassword, setShowConfirmPassword] = useState(false);
- const { themeColor, customColor } = useBrand();
- const { settings = {}, authProviders = [], rtl } = usePage().props as any;
+    const { t } = useTranslation();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const { themeColor, customColor } = useBrand();
+    const { settings = {}, authProviders = [], rtl } = usePage<AuthPageProps>().props;
  const recaptchaEnabled = settings.recaptchaEnabled === 'true' || settings.recaptchaEnabled === true || settings.recaptchaEnabled === 1 || settings.recaptchaEnabled === '1';
  const primaryColor = themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS];
 
@@ -52,7 +52,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  const [resendCooldown, setResendCooldown] = useState(0);
  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
- const { data, setData, post, processing, errors, reset, transform } = useForm<RegisterForm>({
+    const { data, setData, processing, errors } = useForm<RegisterForm>({
  name: '',
  email: '',
  password: '',
@@ -74,20 +74,18 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  e.preventDefault();
  setOtpError('');
 
- const sendOtp = async (recaptchaTokenVal?: string) => {
- try {
- const payload: any = {
- name: data.name,
- email: data.email,
- password: data.password,
- password_confirmation: data.password_confirmation,
- terms: data.terms ? '1' : '0',
- plan_id: data.plan_id || '',
- referral_code: data.referral_code || '',
- };
- if (recaptchaTokenVal) {
- payload.recaptcha_token = recaptchaTokenVal;
- }
+    const sendOtp = async (recaptchaTokenVal?: string) => {
+        try {
+            const payload = {
+                name: data.name,
+                email: data.email,
+                password: data.password,
+                password_confirmation: data.password_confirmation,
+                terms: data.terms ? '1' : '0',
+                plan_id: data.plan_id || '',
+                referral_code: data.referral_code || '',
+                recaptcha_token: recaptchaTokenVal,
+            };
 
  const res = await fetch('/otp/send', {
  method: 'POST',
@@ -111,23 +109,22 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  } else {
  const errMsg = json.errors
  ? Object.values(json.errors).flat().join(' ')
- : json.message || 'حدث خطأ أثناء إرسال رمز التحقق.';
+ : json.message || t('An error occurred while sending the verification code.');
  setOtpError(errMsg);
  }
  } catch {
- setOtpError('حدث خطأ في الاتصال بالخادم.');
+ setOtpError(t('Connection error. Please try again.'));
  }
- };
+ }; 
 
  if (recaptchaEnabled) {
  try {
  const token = await executeRecaptcha();
- if (!token) {
- alert(t('Please complete the reCAPTCHA verification'));
- return;
- }
- setRecaptchaToken(token);
- await sendOtp(token);
+        if (!token) {
+            alert(t('Please complete the reCAPTCHA verification'));
+            return;
+        }
+        await sendOtp(token);
  } catch {
  alert(t('reCAPTCHA verification failed. Please try again.'));
  }
@@ -174,7 +171,7 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  const handleOtpSubmit = async () => {
  const code = otpValues.join('');
  if (code.length !== 6) {
- setOtpError('أدخل الرمز المكون من 6 أرقام.');
+ setOtpError(t('Enter the 6-digit code'));
  return;
  }
 
@@ -200,13 +197,13 @@ export default function Register({ referralCode, planId }: RegisterProps) {
   if (res.ok && json.success) {
   window.location.href = json.redirect;
   } else {
-  const errMsg = json.errors
-  ? Object.values(json.errors).flat().join(' ')
-  : json.message || 'رمز التحقق غير صحيح.';
-  setOtpError(errMsg);
-  }
+ const errMsg = json.errors
+ ? Object.values(json.errors).flat().join(' ')
+ : json.message || t('The verification code is incorrect.');
+ setOtpError(errMsg);
+ }
  } catch {
- setOtpError('حدث خطأ في الاتصال بالخادم.');
+ setOtpError(t('Connection error. Please try again.'));
  } finally {
  setOtpProcessing(false);
  }
@@ -238,12 +235,12 @@ export default function Register({ referralCode, planId }: RegisterProps) {
  setOtpValues(['', '', '', '', '', '']);
  otpRefs.current[0]?.focus();
  } else {
- setOtpError(json.message || 'حدث خطأ أثناء إعادة الإرسال.');
+ setOtpError(json.message || t('An error occurred while resending the verification code.'));
  }
  } catch {
- setOtpError('حدث خطأ في الاتصال بالخادم.');
+ setOtpError(t('Connection error. Please try again.'));
  }
- };
+ }; 
 
  const handleBackToForm = () => {
  setStep('form');
@@ -548,20 +545,17 @@ export default function Register({ referralCode, planId }: RegisterProps) {
 
  {recaptchaEnabled && (
  <div className="mt-4">
- <Recaptcha
- onVerify={(token) => {
- setRecaptchaToken(token);
- setData('recaptcha_token', token);
- }}
- onExpired={() => {
- setRecaptchaToken('');
- setData('recaptcha_token', '');
- }}
- onError={() => {
- setRecaptchaToken('');
- setData('recaptcha_token', '');
- }}
- />
+    <Recaptcha
+        onVerify={(token) => {
+            setData('recaptcha_token', token);
+        }}
+        onExpired={() => {
+            setData('recaptcha_token', '');
+        }}
+        onError={() => {
+            setData('recaptcha_token', '');
+        }}
+    />
  </div>
  )}
  <InputError message={errors.recaptcha_token} />

@@ -80,6 +80,12 @@ export interface SharedData extends PageProps {
     title?: string;
 }
 
+export interface AuthPageProps extends PageProps {
+    settings?: Record<string, unknown>;
+    authProviders?: string[];
+    rtl?: boolean;
+}
+
 export interface NavItem {
     title: string;
     href?: string;

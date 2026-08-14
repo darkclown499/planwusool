@@ -14,7 +14,7 @@ import { TourProvider } from './components/tour/tour-context';
 import { TourOverlay } from './components/tour/tour-overlay';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeGlobalSettings } from './utils/globalSettings';
-import './i18n';
+import i18n from './i18n';
 import './utils/axios-config';
 import { setupFlashMessages } from './utils/flash-messages';
 
@@ -42,6 +42,19 @@ createInertiaApp({
             (window as any).page = props.initialPage;
         } catch (e) {
             console.warn('Could not set global page data:', e);
+        }
+
+        // Sync the UI language to the user's saved language so the choice made
+        // during onboarding (and via the language switcher) survives full page
+        // loads. Guests keep the Arabic-first default.
+        try {
+            const auth = props.initialPage.props?.auth as { user?: { lang?: string } } | undefined;
+            const userLang = auth?.user?.lang || '';
+            if (userLang && i18n.language !== userLang) {
+                i18n.changeLanguage(userLang);
+            }
+        } catch {
+            // Ignore
         }
 
         try {
