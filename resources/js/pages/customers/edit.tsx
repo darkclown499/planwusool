@@ -28,7 +28,7 @@ export default function EditCustomer() {
     gender: customer.gender || '',
     notes: customer.notes || '',
     is_active: customer.is_active !== undefined ? customer.is_active : true,
-    preferred_language: customer.preferred_language || 'en',
+    preferred_language: customer.preferred_language || 'ar',
     customer_group: customer.customer_group || 'regular',
     email_marketing: customer.email_marketing !== undefined ? customer.email_marketing : true,
     sms_notifications: customer.sms_notifications !== undefined ? customer.sms_notifications : false,

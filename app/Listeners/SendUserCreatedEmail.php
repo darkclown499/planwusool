@@ -41,7 +41,7 @@ class SendUserCreatedEmail
 
         try {
             // Send welcome email to the newly created user in their language
-            $userLanguage = $user->lang ?? 'en';
+            $userLanguage = $user->lang ?? 'ar';
             $this->emailService->sendTemplateEmailWithLanguage(
                 templateName: 'User Created',
                 variables: $variables,

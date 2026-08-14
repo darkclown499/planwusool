@@ -12,7 +12,7 @@ class HotsmsService
     /**
      * إرسال رسالة SMS بناءً على قالب الإشعارات (نفس منطق Twilio).
      */
-    public static function sendSMS($userId, $storeId, $to, $templateAction, $variables = [], $lang = 'en')
+    public static function sendSMS($userId, $storeId, $to, $templateAction, $variables = [], $lang = 'ar')
     {
         try {
             if (empty($to)) {

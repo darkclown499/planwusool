@@ -32,7 +32,7 @@ class SmsService
     /**
      * إرسال رسالة SMS بناءً على قالب الإشعارات عبر المزوّد النشط.
      */
-    public static function sendSMS($userId, $storeId, $to, $templateAction, $variables = [], $lang = 'en')
+    public static function sendSMS($userId, $storeId, $to, $templateAction, $variables = [], $lang = 'ar')
     {
         if (self::provider($userId, $storeId) === 'hotsms') {
             return HotsmsService::sendSMS($userId, $storeId, $to, $templateAction, $variables, $lang);

@@ -67,7 +67,7 @@ class PayTabsPaymentController extends Controller
                     route('paytabs.success') . '?cart_id=' . $cartId,
                     route('paytabs.callback')
                 )
-                ->sendLanguage('en')
+                ->sendLanguage('ar')
                 ->sendFramed(true)
                 ->create_pay_page();
             

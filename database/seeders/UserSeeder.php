@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'type' => 'superadmin',
-                'lang' => 'en'
+                'lang' => 'ar'
             ]
         );
 
@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'type' => 'company',
-                'lang' => 'en',
+                'lang' => 'ar',
                 'plan_id' => $highestPlan ? $highestPlan->id : ($defaultPlan ? $defaultPlan->id : null),
                 'referral_code' => rand(100000, 999999),
                 'created_by' => $superAdmin->id,
@@ -200,7 +200,7 @@ class UserSeeder extends Seeder
                     'email_verified_at' => $createdAt,
                     'password' => Hash::make('password'),
                     'type' => 'company',
-                    'lang' => 'en',
+                    'lang' => 'ar',
                     'plan_id' => !empty($activePlans) ? $activePlans[array_rand($activePlans)] : ($defaultPlan ? $defaultPlan->id : null),
                     'referral_code' => rand(100000, 999999),
                     'created_by' => $superAdmin->id,

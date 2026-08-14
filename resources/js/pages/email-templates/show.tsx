@@ -43,7 +43,7 @@ export default function EmailTemplateShow({ template, languages, variables }: Pr
   const { t } = useTranslation()
   const { errors } = usePage().props as any
   const [fromName, setFromName] = useState(template.from)
-  const [currentLang, setCurrentLang] = useState(languages[0]?.code || 'en')
+  const [currentLang, setCurrentLang] = useState(languages[0]?.code || 'ar')
   const [templateLangs, setTemplateLangs] = useState(() => {
     const langData = {} as Record<string, { subject: string; content: string }>
     

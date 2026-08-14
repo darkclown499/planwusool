@@ -78,7 +78,7 @@ class EmailTemplateService
     /**
      * Preview email template with sample data
      */
-    public function previewTemplate(string $templateName, string $language = 'en'): array
+    public function previewTemplate(string $templateName, string $language = 'ar'): array
     {
         $template = EmailTemplate::where('name', $templateName)->first();
         if (!$template) {
@@ -156,7 +156,7 @@ class EmailTemplateService
     /**
      * Send template email with language support
      */
-    public function sendTemplateEmailWithLanguage(string $templateName, array $variables, string $toEmail, string $toName = null, string $language = 'en')
+    public function sendTemplateEmailWithLanguage(string $templateName, array $variables, string $toEmail, string $toName = null, string $language = 'ar')
     {
         // Prevent duplicate emails within 10 seconds
         $emailKey = md5($templateName . $toEmail . serialize($variables));
@@ -252,7 +252,7 @@ class EmailTemplateService
     private function getTemplateContent($template, string $language)
     {
         return $template->emailTemplateLangs()->where('lang', $language)->first() 
-            ?: $template->emailTemplateLangs()->where('lang', 'en')->first();
+            ?: $template->emailTemplateLangs()->where('lang', 'ar')->first();
     }
 
     /**

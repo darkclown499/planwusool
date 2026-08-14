@@ -27,7 +27,7 @@ export default function CreateCustomer() {
     gender: '',
     notes: '',
     is_active: true,
-    preferred_language: 'en',
+    preferred_language: 'ar',
     customer_group: 'regular',
     email_marketing: true,
     sms_notifications: false,

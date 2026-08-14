@@ -29,7 +29,7 @@ const glassCardClass =
 export default function StoreDemo() {
   const [layout] = useState(storeLayout);
   const [direction, setDirection] = useState<'ltr' | 'rtl'>('rtl');
-  const [locale, setLocale] = useState('en');
+  const [locale, setLocale] = useState('ar');
 
   useEffect(() => {
     if (typeof window === 'undefined') {

@@ -29,7 +29,7 @@ class SendUniversalNotification
             $order->customer_phone,
             'Order Created',
             $variables,
-            getSetting('defaultLanguage', 'en', $store->user_id, $store->id)
+            getSetting('defaultLanguage', 'ar', $store->user_id, $store->id)
         );
     }
 
@@ -55,7 +55,7 @@ class SendUniversalNotification
             $order->customer_phone,
             'Order Status Updated',
             $variables,
-            getSetting('defaultLanguage', 'en', $store->user_id, $store->id)
+            getSetting('defaultLanguage', 'ar', $store->user_id, $store->id)
         );
     }
 
@@ -79,7 +79,7 @@ class SendUniversalNotification
             $customer->phone,
             'New Customer',
             $variables,
-            getSetting('defaultLanguage', 'en', $store->user_id, $store->id)
+            getSetting('defaultLanguage', 'ar', $store->user_id, $store->id)
         );
     }
 }

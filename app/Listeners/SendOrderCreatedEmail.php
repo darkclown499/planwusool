@@ -21,7 +21,7 @@ class SendOrderCreatedEmail
         
         if (!$store) return;
 
-        $language = getSetting('defaultLanguage', 'en', $store->user_id, $store->id);
+        $language = getSetting('defaultLanguage', 'ar', $store->user_id, $store->id);
         $customerName = $order->customer_first_name . ' ' . $order->customer_last_name;
         
         $variables = [

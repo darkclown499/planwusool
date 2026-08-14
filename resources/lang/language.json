@@ -1,5 +1,11 @@
 [
     {
+        "code": "ar",
+        "name": "العربية",
+        "countryCode": "SA",
+        "rtl": true
+    },
+    {
         "code": "en",
         "name": "English",
         "countryCode": "GB",
@@ -10,12 +16,6 @@
         "name": "Español",
         "countryCode": "ES",
         "rtl": false
-    },
-    {
-        "code": "ar",
-        "name": "العربية",
-        "countryCode": "SA",
-        "rtl": true
     },
     {
         "code": "da",

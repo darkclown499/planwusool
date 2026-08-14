@@ -34,7 +34,7 @@ class SendStoreCreatedEmail
             $variables,
             $owner->email,
             $owner->name,
-            $owner->lang ?? 'en'
+            $owner->lang ?? 'ar'
         );
     }
 }

@@ -43,7 +43,7 @@ export default function NotificationTemplateShow({ notification, languages }: Pr
   const { t } = useTranslation()
   const { errors } = usePage().props as any
   const [status, setStatus] = useState(notification.status)
-  const [currentLang, setCurrentLang] = useState(languages[0]?.code || 'en')
+  const [currentLang, setCurrentLang] = useState(languages[0]?.code || 'ar')
   const [templateLangs, setTemplateLangs] = useState(() => {
     const langData = {} as Record<string, string>
     

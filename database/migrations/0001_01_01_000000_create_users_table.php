@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->rememberToken();
-            $table->string('lang')->default('en')->nullable();
+            $table->string('lang')->default('ar')->nullable();
             $table->unsignedBigInteger('current_store')->nullable();
             $table->string('avatar')->nullable();
             $table->string('type', 20)->default('company');

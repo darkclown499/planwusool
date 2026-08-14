@@ -155,7 +155,7 @@ class EmailTemplateController extends Controller
     public function preview(EmailTemplate $emailTemplate, Request $request)
     {
         try {
-            $language = $request->get('lang', 'en');
+            $language = $request->get('lang', 'ar');
             $service = new EmailTemplateService();
             
             $preview = $service->previewTemplate($emailTemplate->name, $language);

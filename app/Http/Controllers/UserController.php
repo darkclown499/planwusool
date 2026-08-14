@@ -126,7 +126,7 @@ class UserController extends BaseController
         // Set user language same as creator (company)
         $authUser = Auth::user();
         
-        $userLang = ($authUser && $authUser->lang) ? $authUser->lang : 'en';
+        $userLang = ($authUser && $authUser->lang) ? $authUser->lang : 'ar';
         // Check if user can add more users to current store
         $currentStoreId = $authUser->current_store;
         if ($currentStoreId) {

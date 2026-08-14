@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class TwilioService
 {
-    public static function sendSMS($userId, $storeId, $to, $templateAction, $variables = [], $lang = 'en')
+    public static function sendSMS($userId, $storeId, $to, $templateAction, $variables = [], $lang = 'ar')
     {
         try {
             if (empty($to)) {

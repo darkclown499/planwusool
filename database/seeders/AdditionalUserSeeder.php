@@ -74,7 +74,7 @@ class AdditionalUserSeeder extends Seeder
             'email_verified_at' => $createdAt,
             'password' => Hash::make('password'),
             'type' => $userData['role'],
-            'lang' => 'en',
+            'lang' => 'ar',
             'plan_id' => $defaultPlan ? $defaultPlan->id : null,
             'referral_code' => rand(100000, 999999),
             'created_by' => $company->id,

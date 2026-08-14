@@ -35,7 +35,7 @@ export function ChatGptModal({
   const [prompt, setPrompt] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('ar');
   const [creativity, setCreativity] = useState('medium');
   const [numResults, setNumResults] = useState(1);
   const [maxLength, setMaxLength] = useState(150);

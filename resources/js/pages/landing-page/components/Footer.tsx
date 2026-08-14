@@ -33,7 +33,7 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
 
-  const currentLocale = (i18n.language || 'en').split('-')[0];
+  const currentLocale = (i18n.language || 'ar').split('-')[0];
   const isRtl = ['ar', 'he'].includes(currentLocale);
 
   useEffect(() => {

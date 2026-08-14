@@ -58,7 +58,7 @@ i18n
 
 var originalChangeLanguage = i18n.changeLanguage.bind(i18n);
 i18n.changeLanguage = function (lng, callback) {
-    localStorage.setItem('i18nextLng', lng || 'en');
+    localStorage.setItem('i18nextLng', lng || 'ar');
     return originalChangeLanguage(lng, callback);
 };
 

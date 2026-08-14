@@ -39,7 +39,7 @@ class ChatGptController extends Controller
                 };
             }
             
-            $language = $request->input('language', 'en');
+            $language = $request->input('language', 'ar');
             $langText = $language !== 'en' ? "Provide response in " . match($language) {
                 'es' => 'Spanish',
                 'ar' => 'Arabic',

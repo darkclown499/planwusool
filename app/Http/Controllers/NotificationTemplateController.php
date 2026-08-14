@@ -23,7 +23,7 @@ class NotificationTemplateController extends Controller
     {
         $languages = NotificationTemplateLang::distinct()->pluck('lang')->toArray();
         if (empty($languages)) {
-            $languages = ['en']; // fallback
+            $languages = ['ar']; // fallback
         }
         
         return Inertia::render('notification-templates/create', [
@@ -77,7 +77,7 @@ class NotificationTemplateController extends Controller
         $notification = Notification::with('templateLangs')->findOrFail($id);
         $languages = NotificationTemplateLang::distinct()->pluck('lang')->toArray();
         if (empty($languages)) {
-            $languages = ['en']; // fallback
+            $languages = ['ar']; // fallback
         }
         
         // Format languages for the UI

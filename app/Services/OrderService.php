@@ -1067,7 +1067,7 @@ class OrderService
                     request()->ip()
                 )
                 ->sendURLs($successUrl, $callbackUrl)
-                ->sendLanguage('en')
+                ->sendLanguage('ar')
                 ->sendFramed(true)
                 ->create_pay_page();
 

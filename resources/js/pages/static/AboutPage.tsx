@@ -6,7 +6,7 @@ import { Link } from '@inertiajs/react';
 
 export default function AboutPage() {
   const { t, i18n } = useTranslation();
-  const currentLocale = (i18n.language || 'en').split('-')[0];
+  const currentLocale = (i18n.language || 'ar').split('-')[0];
   const isRtl = ['ar', 'he'].includes(currentLocale);
 
   const features = [

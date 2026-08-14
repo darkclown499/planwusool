@@ -15,7 +15,7 @@ class LanguageController extends Controller
         if (\Illuminate\Support\Facades\File::exists($langListPath)) {
             $languages = json_decode(\Illuminate\Support\Facades\File::get($langListPath), true);
         }
-        $defaultLang = 'en';
+        $defaultLang = 'ar';
         $selectedLang = $defaultLang;
         if ($lang && collect($languages)->pluck('code')->contains($lang)) {
             $selectedLang = $lang;
@@ -39,7 +39,7 @@ class LanguageController extends Controller
         if (\Illuminate\Support\Facades\File::exists($langListPath)) {
             $languages = collect(json_decode(\Illuminate\Support\Facades\File::get($langListPath), true));
         }
-        $lang = $request->get('lang', 'en');
+        $lang = $request->get('lang', 'ar');
         if (!$languages->pluck('code')->contains($lang)) {
             return response()->json(['error' => __('Language not found')], 404);
         }

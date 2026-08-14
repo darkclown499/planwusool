@@ -29,7 +29,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
   const langRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation();
 
-  const currentLocale = (i18n.language || 'en').split('-')[0];
+  const currentLocale = (i18n.language || 'ar').split('-')[0];
   const isRtl = ['ar', 'he'].includes(currentLocale);
   const currentLang = languageData.find(l => l.code === currentLocale) || languageData[0];
 

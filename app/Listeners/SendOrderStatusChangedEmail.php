@@ -36,7 +36,7 @@ class SendOrderStatusChangedEmail
             $variables,
             $order->customer_email,
             $order->customer_first_name . ' ' . $order->customer_last_name,
-            getSetting('defaultLanguage', 'en', $store->user_id, $store->id)
+            getSetting('defaultLanguage', 'ar', $store->user_id, $store->id)
         );
     }
 }

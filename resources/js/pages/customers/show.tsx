@@ -220,7 +220,8 @@ export default function ShowCustomer() {
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-muted-foreground">{t('Preferred Language')}</span>
                 <span>
-                  {customer.preferred_language === 'en' ? t('English') : 
+                  {customer.preferred_language === 'ar' ? t('Arabic') : 
+                   customer.preferred_language === 'en' ? t('English') : 
                    customer.preferred_language === 'es' ? t('Spanish') : 
                    customer.preferred_language === 'fr' ? t('French') : 
                    customer.preferred_language === 'de' ? t('German') : customer.preferred_language}

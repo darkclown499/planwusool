@@ -35,7 +35,7 @@ class SmsTemplateService
         if (!$template) {
             $template = NotificationTemplateLang::whereHas('notification', function ($query) use ($templateAction) {
                 $query->where('action', $templateAction);
-            })->where('lang', 'en')->first();
+            })->where('lang', 'ar')->first();
         }
 
         if (!$template) {
