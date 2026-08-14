@@ -231,9 +231,17 @@ class RoleController extends BaseController
         }
         
         $authUser = Auth::user();
-        $roleQuery = $authUser->type === 'company' ? 
-            Role::where('created_by', $authUser->id) : 
-            Role::where('created_by', $authUser->created_by);
+        $roleQuery = Role::query();
+        
+        // Filter roles based on user type (mirrors index)
+        if ($authUser->type === 'company') {
+            $roleQuery->where('created_by', $authUser->id)
+                ->whereNotIn('name', ['superadmin', 'company']);
+        } elseif ($authUser->type !== 'superadmin') {
+            $roleQuery->where('created_by', $authUser->created_by)
+                ->whereNotIn('name', ['superadmin', 'company']);
+        }
+        
         $role = $roleQuery->with(['permissions'])->findOrFail($id);
         
         return Inertia::render('roles/view', [
@@ -251,9 +259,17 @@ class RoleController extends BaseController
         }
         
         $authUser = Auth::user();
-        $roleQuery = $authUser->type === 'company' ? 
-            Role::where('created_by', $authUser->id) : 
-            Role::where('created_by', $authUser->created_by);
+        $roleQuery = Role::query();
+        
+        // Filter roles based on user type (mirrors index)
+        if ($authUser->type === 'company') {
+            $roleQuery->where('created_by', $authUser->id)
+                ->whereNotIn('name', ['superadmin', 'company']);
+        } elseif ($authUser->type !== 'superadmin') {
+            $roleQuery->where('created_by', $authUser->created_by)
+                ->whereNotIn('name', ['superadmin', 'company']);
+        }
+        
         $role = $roleQuery->findOrFail($id);
         
         $permissions = $this->getFilteredPermissions();
