@@ -18,7 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(
-            at: config('trustedproxies.proxies'),
+            // '*' trusts every proxy so that scheme/host/port are resolved
+            // from Cloudflare's X-Forwarded-* headers (otherwise OAuth
+            // callback URLs are generated as http:// and Google/Apple/GitHub
+            // reject them with redirect_uri_mismatch). NOTE: this runs at
+            // bootstrap before the config repository is bound, so a config
+            // value cannot be read here; use env() with a safe default.
+            at: env('TRUSTED_PROXIES', '*'),
             headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
