@@ -1,5 +1,7 @@
 import '../css/app.css';
 
+import i18n from './i18n';
+
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
@@ -14,7 +16,6 @@ import { TourProvider } from './components/tour/tour-context';
 import { TourOverlay } from './components/tour/tour-overlay';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeGlobalSettings } from './utils/globalSettings';
-import i18n from './i18n';
 import './utils/axios-config';
 import { setupFlashMessages } from './utils/flash-messages';
 
