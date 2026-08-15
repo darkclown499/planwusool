@@ -23,6 +23,12 @@ class Kernel extends ConsoleKernel
             ->dailyAt('02:00')
             ->withoutOverlapping()
             ->sendOutputTo(storage_path('logs/expired-trials.log'));
+
+        // Daily backup to S3 at 3 AM
+        $schedule->command('backup:s3 --all --compress --keep=7')
+            ->dailyAt('03:00')
+            ->withoutOverlapping()
+            ->sendOutputTo(storage_path('logs/backup-s3.log'));
     }
 
     /**

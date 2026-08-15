@@ -24,7 +24,7 @@ import { AppDirectionProvider } from './components/app-direction-provider';
 import { TourProvider } from './components/tour/tour-context';
 import { TourOverlay } from './components/tour/tour-overlay';
 import ErrorBoundary from './components/ErrorBoundary';
-import { initializeGlobalSettings } from './utils/globalSettings';
+import { initSentry } from './components/SentryProvider';
 import './utils/axios-config';
 import { setupFlashMessages } from './utils/flash-messages';
 
@@ -88,6 +88,34 @@ createInertiaApp({
             const currentGlobalSettings = appProps.initialPage.props.globalSettings || {};
             const user = appProps.initialPage.props.auth?.user;
 
+            // Initialize Sentry on client side
+            if (typeof window !== 'undefined') {
+                const dsn = import.meta.env.VITE_SENTRY_DSN || '';
+                const environment = import.meta.env.MODE || 'development';
+                const release = import.meta.env.VITE_APP_VERSION || '1.0.0';
+
+                if (dsn) {
+                    const initSentry = async () => {
+                        const Sentry = await import('@sentry/react');
+                        Sentry.default.init({
+                          dsn,
+                          environment,
+                          release,
+                          integrations: [
+                            Sentry.default.browserTracingIntegration(),
+                            Sentry.default.replayIntegration({
+                              maskAllText: true,
+                              blockAllMedia: true,
+                            }),
+                          ],
+                          tracesSampleRate: 0.1,
+                          replaysOnErrorSampleRate: 1.0,
+                          replaysSessionSampleRate: 0.1,
+                        });
+                    };
+                    initSentry();
+                }
+
             return (
                 <ErrorBoundary>
                     <BrandProvider globalSettings={currentGlobalSettings} user={user}>
@@ -150,10 +178,8 @@ createInertiaApp({
                 console.error('Navigation error:', e);
             }
         });
-    },
-    progress: {
-        color: '#4B5563',
-    },
+    }
+    }
 });
 
 setupFlashMessages();

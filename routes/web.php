@@ -957,6 +957,17 @@ require __DIR__ . '/auth.php';
 Route::match(['GET', 'POST'], 'payments/easebuzz/success', [EasebuzzPaymentController::class, 'success'])->name('easebuzz.success');
 Route::post('payments/easebuzz/callback', [EasebuzzPaymentController::class, 'callback'])->name('easebuzz.callback');
 
+// GDPR Routes
+Route::middleware(['auth'])->prefix('gdpr')->name('gdpr.')->group(function () {
+    Route::get('export', [\App\Http\Controllers\GDPR\GdprController::class, 'requestExport'])->name('export.request');
+    Route::get('export/{exportId}', [\App\Http\Controllers\GDPR\GdprController::class, 'downloadExport'])->name('export.download');
+    Route::get('export/status', [\App\Http\Controllers\GDPR\GdprController::class, 'exportStatus'])->name('export.status');
+
+    Route::post('deletion', [\App\Http\Controllers\GDPR\GdprController::class, 'requestDeletion'])->name('deletion.request');
+    Route::get('deletion/status', [\App\Http\Controllers\GDPR\GdprController::class, 'deletionStatus'])->name('deletion.status');
+    Route::post('deletion/{requestId}/cancel', [\App\Http\Controllers\GDPR\GdprController::class, 'cancelDeletion'])->name('deletion.cancel');
+});
+
 // Protected update route (super admin only) - runs pending migrations after deployment
 Route::middleware(['auth', 'App\Http\Middleware\SuperAdminMiddleware'])->group(function () {
     Route::get('update', [\App\Http\Controllers\UpdateController::class, 'show'])->name('update.show');

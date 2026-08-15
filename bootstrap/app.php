@@ -5,6 +5,7 @@ use App\Http\Middleware\ShareGlobalSettings;
 use App\Http\Middleware\ShareStoresData;
 use App\Http\Middleware\CheckInstallation;
 use App\Http\Middleware\DemoModeMiddleware;
+use App\Providers\ServicesServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withProviders([
+        ServicesServiceProvider::class,
+    ])
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(
             // '*' trusts every proxy so that scheme/host/port are resolved
