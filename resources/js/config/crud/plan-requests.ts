@@ -1,6 +1,8 @@
 import { CrudConfig } from '@/types/crud';
 import { columnRenderers } from '@/utils/columnRenderers';
-import { t } from '@/utils/i18n';
+import i18n from 'i18next';
+
+const t = (key: string, options?: any) => i18n.t(key, options);
 import { formatSuperadminCurrency } from '@/utils/currency-helper';
 
 export const planRequestsConfig: CrudConfig = {

@@ -2,6 +2,15 @@ import '../css/app.css';
 
 import i18n from './i18n';
 
+// Global fallback for t() - prevents "t is not defined" crashes
+// This ensures t() always works even before i18n is fully initialized
+if (typeof window !== 'undefined' && !window.t) {
+  window.t = (key: string, options?: any) => {
+    if (i18n.isInitialized) return i18n.t(key, options);
+    return typeof key === 'string' ? key : String(key);
+  };
+}
+
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';

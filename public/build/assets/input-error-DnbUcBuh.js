@@ -1,1 +1,0 @@
-import{j as o}from"./ui-DBDxmXNs.js";import{d as e}from"./app-DKfn0TIp.js";function x({message:r,className:t="",...n}){return r?o.jsx("p",{...n,className:e("text-xs font-medium text-red-600",t),children:r}):null}export{x as I};
