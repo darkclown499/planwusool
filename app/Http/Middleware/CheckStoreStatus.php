@@ -55,7 +55,7 @@ class CheckStoreStatus
             
             // Check if store is disabled
             if (!($config['store_status'] ?? true)) {
-                $reason = ($config['plan_disabled'] ?? false) ? 'Plan limit exceeded' : 'Store disabled by owner';
+                $reason = ($config['plan_disabled'] ?? false) ? 'تم تجاوز حد الاشتراك' : 'تم تعطيل المتجر بواسطة المالك';
                 return Inertia::render('store/StoreDisabled', [
                     'store' => $store,
                     'reason' => $reason

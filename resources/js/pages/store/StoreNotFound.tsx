@@ -9,7 +9,7 @@ interface StoreNotFoundProps {
 export default function StoreNotFound({ requestedSlug }: StoreNotFoundProps) {
     return (
         <>
-            <Head title="Store Not Found" />
+            <Head title="المتجر غير موجود" />
             
             <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-100 flex items-center justify-center px-4 py-8">
                 <div className="max-w-md w-full">
@@ -33,7 +33,7 @@ export default function StoreNotFound({ requestedSlug }: StoreNotFoundProps) {
                         {/* Content */}
                         <div className="relative">
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                                Store Not Found
+                                المتجر غير موجود
                             </h1>
                             
                             <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-100 rounded-xl p-4 mb-6">
@@ -41,12 +41,12 @@ export default function StoreNotFound({ requestedSlug }: StoreNotFoundProps) {
                                     "{requestedSlug}"
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    🔍 Store location not found
+                                    🔍 لم يتم العثور على المتجر
                                 </p>
                             </div>
                             
                             <p className="text-gray-600 text-sm leading-relaxed mb-8">
-                                The store you're looking for might have moved, been renamed, or doesn't exist. Double-check the URL or try searching for it.
+                                ربما تم نقل المتجر الذي تبحث عنه أو إعادة تسميته أو أنه غير موجود. تحقق من الرابط أو جرّب البحث عنه.
                             </p>
                             
                             {/* Action Buttons */}
@@ -56,7 +56,7 @@ export default function StoreNotFound({ requestedSlug }: StoreNotFoundProps) {
                                     className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-gray-600 to-slate-700 text-white font-medium rounded-xl hover:from-gray-700 hover:to-slate-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 >
                                     <Home className="w-4 h-4 me-2" />
-                                    Browse All Stores
+                                    تصفح جميع المتاجر
                                 </Link>
                                 
                                 <button
@@ -64,7 +64,7 @@ export default function StoreNotFound({ requestedSlug }: StoreNotFoundProps) {
                                     className="w-full inline-flex items-center justify-center px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all duration-200"
                                 >
                                     <ArrowLeft className="w-4 h-4 me-2" />
-                                    Go Back
+                                    العودة للخلف
                                 </button>
                             </div>
                         </div>
@@ -72,7 +72,7 @@ export default function StoreNotFound({ requestedSlug }: StoreNotFoundProps) {
                     
                     {/* Footer */}
                     <p className="text-center text-xs text-gray-500 mt-6">
-                        Error 404 • Store location not found
+                        خطأ 404 • لم يتم العثور على المتجر
                     </p>
                 </div>
             </div>

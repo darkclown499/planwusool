@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -30,9 +31,10 @@ interface MediaLibraryButtonProps {
 
 export default function MediaLibraryButton({ 
   onSelect, 
-  buttonText = "Browse Media",
+  buttonText,
   selectedUrl 
 }: MediaLibraryButtonProps) {
+  const { t } = useTranslation();
   const { csrf_token } = usePage().props as any;
   const [isOpen, setIsOpen] = useState(false);
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -58,7 +60,7 @@ export default function MediaLibraryButton({
       setMedia(data);
     } catch (error) {
       console.error('Failed to load media:', error);
-      toast.error('Failed to load media');
+      toast.error(t('Failed to load media'));
     } finally {
       setLoading(false);
     }
@@ -72,7 +74,7 @@ export default function MediaLibraryButton({
   const handleSelect = (url: string) => {
     onSelect(url);
     setIsOpen(false);
-    toast.success('Image selected successfully');
+    toast.success(t('Image selected successfully'));
   };
 
   const filteredMedia = media.filter(item =>
@@ -84,7 +86,7 @@ export default function MediaLibraryButton({
     <>
       <Button type="button" variant="outline" size="sm" onClick={handleOpen}>
         <ImageIcon className="h-4 w-4 me-2" />
-        {buttonText}
+        {buttonText ?? t('Browse Media')}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -92,7 +94,7 @@ export default function MediaLibraryButton({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ImageIcon className="h-5 w-5" />
-              Select Image from Media Library
+              {t('Select Image from Media Library')}
             </DialogTitle>
           </DialogHeader>
           
@@ -101,7 +103,7 @@ export default function MediaLibraryButton({
             <div className="relative">
               <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Search images..."
+                placeholder={t('Search images...')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="ps-10"
@@ -113,13 +115,13 @@ export default function MediaLibraryButton({
               {loading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading media...</p>
+                  <p className="text-muted-foreground">{t('Loading media...')}</p>
                 </div>
               ) : filteredMedia.length === 0 ? (
                 <div className="text-center py-12">
                   <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchTerm ? 'No images found' : 'No media files available'}
+                    {searchTerm ? t('No images found') : t('No media files available')}
                   </p>
                 </div>
               ) : (

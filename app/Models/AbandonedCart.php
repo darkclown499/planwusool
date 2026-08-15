@@ -77,7 +77,7 @@ class AbandonedCart extends Model
             ->whereIn('status', [self::STATUSES['new'], self::STATUSES['reminder_sent']])
             ->whereNotNull('customer_email')
             ->where('last_activity_at', '<=', now()->subHours($hours))
-            ->where(function ($q) {
+            ->where(function ($q) use ($hours) {
                 $q->whereNull('reminder_sent_at')
                     ->orWhere('reminder_sent_at', '<=', now()->subHours($hours));
             });

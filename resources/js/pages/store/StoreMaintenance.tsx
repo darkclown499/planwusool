@@ -20,7 +20,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
     
     return (
         <>
-            <Head title={`Under Maintenance - ${store.name}`} />
+            <Head title={`قيد الصيانة - ${store.name}`} />
             
             <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center px-4 py-8">
                 <div className="max-w-md w-full">
@@ -44,7 +44,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                         {/* Content */}
                         <div className="relative">
                             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                                Under Maintenance{dots}
+                                قيد الصيانة{dots}
                             </h1>
                             
                             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100 rounded-xl p-4 mb-6">
@@ -53,12 +53,12 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                                 </p>
                                 <p className="text-sm text-orange-600 mt-1 flex items-center justify-center">
                                     <RefreshCw className="w-3 h-3 me-1 animate-spin" />
-                                    Getting better for you
+                                    نعمل على تحسين المتجر من أجلك
                                 </p>
                             </div>
                             
                             <p className="text-gray-600 text-sm leading-relaxed mb-8">
-                                We're making some exciting improvements! Our store will be back online shortly with enhanced features and better performance.
+                                نحن نجري بعض التحسينات المميزة! سيعود متجرنا للعمل قريباً بميزات محسّنة وأداء أفضل.
                             </p>
                             
                             {/* Progress Bar */}
@@ -66,7 +66,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                                 <div className="w-full bg-gray-200 rounded-full h-2">
                                     <div className="bg-gradient-to-r from-orange-500 to-yellow-500 h-2 rounded-full animate-pulse" style={{width: '75%'}}></div>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-2">Almost ready...</p>
+                                <p className="text-xs text-gray-500 mt-2">شبه جاهز...</p>
                             </div>
                             
                             {/* Action Buttons */}
@@ -76,7 +76,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                                     className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-medium rounded-xl hover:from-orange-600 hover:to-amber-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 >
                                     <Home className="w-4 h-4 me-2" />
-                                    Visit Homepage
+                                    زيارة الصفحة الرئيسية
                                 </Link>
                                 
                                 <button
@@ -84,7 +84,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                                     className="w-full inline-flex items-center justify-center px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all duration-200"
                                 >
                                     <RefreshCw className="w-4 h-4 me-2" />
-                                    Check Again
+                                    إعادة المحاولة
                                 </button>
                             </div>
                         </div>
@@ -93,7 +93,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                     {/* Footer */}
                     <div className="text-center mt-6">
                         <p className="text-xs text-gray-500 mb-2">
-                            We'll be back shortly
+                            سنعود قريباً
                         </p>
                         <div className="flex items-center justify-center space-x-1">
                             <div className="w-2 h-2 bg-orange-400 rounded-full animate-bounce"></div>

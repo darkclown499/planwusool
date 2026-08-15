@@ -199,7 +199,7 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
 
   const handlePasswordUpdate = (storeSlug: string, onSuccess: () => void) => {
     if (passwords.newPassword !== passwords.confirmPassword) {
-      setErrors({ password_confirmation: ['New passwords do not match'] });
+      setErrors({ password_confirmation: ['كلمتا المرور غير متطابقتين'] });
       return;
     }
     

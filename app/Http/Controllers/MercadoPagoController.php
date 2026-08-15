@@ -64,30 +64,12 @@ class MercadoPagoController extends Controller
             $couponCode = $request->coupon_code ?? $request->coupon ?? null;
 
             $plan = Plan::findOrFail($request->plan_id);
-            $amount = $plan->getPriceForCycle($billingCycle);
-            
-            // Apply coupon if provided
-            if ($couponCode) {
-                $coupon = Coupon::where('code', strtoupper($couponCode))
-                    ->where('is_active', '1')
-                    ->first();
-                    
-                if ($coupon) {
-                    $usedCoupon = $coupon->used_coupon();
-                    if ($usedCoupon < $coupon->limit) {
-                        if ($coupon->type == 'percentage') {
-                            $discount = ($amount / 100) * $coupon->discount;
-                        } else {
-                            $discount = $coupon->discount;
-                        }
-                        
-                        // Check min/max spend
-                        if ($amount >= $coupon->minimum_spend && ($coupon->maximum_spend == 0 || $amount <= $coupon->maximum_spend)) {
-                            $amount = $amount - $discount;
-                        }
-                    }
-                }
-            }
+
+            // Calculate price with the same pricing helper used by success()
+            // and the webhook, so the charged amount always matches the
+            // amount verified when the payment returns.
+            $pricing = calculatePlanPricing($plan, $couponCode, $billingCycle, auth()->id());
+            $amount = $pricing['final_price'];
             
             // Get MercadoPago credentials
             $credentials = $this->getMercadoPagoCredentials();
@@ -209,83 +191,126 @@ class MercadoPagoController extends Controller
     {
         try {
             $paymentId = $request->payment_id;
-            $status = $request->status ?? $flag;
-            $externalReference = $request->external_reference;
-            $preferenceId = $request->preference_id;
-            
-            // Handle plan.mercado.callback route
-            if ($plan_id && $request->routeIs('plan.mercado.callback')) {
-                $planId = $plan_id;
-                $couponCode = $request->query('coupon_id');
-                $status = $request->query('flag') ?? $flag;
+
+            if (!$paymentId) {
+                return redirect()->route('plans.index')->with('error', __('Missing payment ID'));
             }
-            
-            // If we don't have plan_id from the route, try to get it from external reference
-            if (!isset($planId) && $externalReference) {
-                // Parse external reference
-                $parts = explode('_', $externalReference);
-                if (count($parts) < 4) {
-                    return redirect()->route('plans.index')->with('error', __('Invalid payment reference format'));
-                }
-                
-                $planId = (int)$parts[1];
-                $userId = (int)$parts[2];
-                $billingCycle = $parts[3];
-                
-                // Check if coupon was used
-                if (count($parts) > 5 && $parts[4] === 'coupon') {
-                    $couponCode = $parts[5];
-                }
-            } else if (!isset($planId)) {
+
+            // SECURITY: never trust the browser redirect parameters alone. Fetch
+            // the payment from MercadoPago and verify status/amount before
+            // activating the subscription.
+            $settings = getPaymentGatewaySettings();
+            $accessToken = $settings['payment_settings']['mercadopago_access_token'] ?? null;
+
+            if (!$accessToken) {
+                Log::error('MercadoPago success: credentials not found');
+                return redirect()->route('plans.index')->with('error', __('Payment could not be verified. Please contact support.'));
+            }
+
+            $paymentResponse = \Http::withToken($accessToken)
+                ->get('https://api.mercadopago.com/v1/payments/' . $paymentId);
+
+            if (!$paymentResponse->successful()) {
+                Log::error('MercadoPago success: failed to fetch payment', ['payment_id' => $paymentId]);
+                return redirect()->route('plans.index')->with('error', __('Payment could not be verified. Please contact support.'));
+            }
+
+            $payment = $paymentResponse->json();
+
+            if (($payment['status'] ?? null) !== 'approved') {
+                Log::warning('MercadoPago success: payment not approved', [
+                    'payment_id' => $paymentId,
+                    'status' => $payment['status'] ?? null,
+                ]);
+                return redirect()->route('plans.index')->with('error', __('Payment was not completed.'));
+            }
+
+            // Use the external_reference returned by the API (authoritative),
+            // not the one supplied in the browser redirect.
+            $verifiedReference = $payment['external_reference'] ?? null;
+            if (!$verifiedReference) {
+                Log::error('MercadoPago success: external_reference missing', ['payment_id' => $paymentId]);
+                return redirect()->route('plans.index')->with('error', __('Payment could not be verified.'));
+            }
+
+            $parts = explode('_', $verifiedReference);
+            if (count($parts) < 4 || $parts[0] !== 'plan') {
+                Log::error('MercadoPago success: invalid external reference', ['external_reference' => $verifiedReference]);
                 return redirect()->route('plans.index')->with('error', __('Invalid payment reference'));
             }
-            
-            // Set default values if not set
-            $userId = $userId ?? auth()->id();
-            $billingCycle = $billingCycle ?? 'monthly';
-            
-            // Verify user - skip for plan.mercado.callback route which might have a different user ID
-            if ($userId !== auth()->id() && !request()->routeIs('plan.mercado.callback')) {
+
+            $planId = (int)$parts[1];
+            $userId = (int)$parts[2];
+            $billingCycle = $parts[3];
+            $couponCode = (count($parts) > 5 && $parts[4] === 'coupon') ? $parts[5] : null;
+
+            // The reference must belong to the authenticated user
+            if ($userId !== (int)auth()->id()) {
                 return redirect()->route('plans.index')->with('error', __('Unauthorized payment reference'));
             }
-            
+
             // Get plan
             $plan = Plan::find($planId);
             if (!$plan) {
                 return redirect()->route('plans.index')->with('error', __('Plan not found'));
             }
-            
+
+            // Verify amount matches the plan price (with coupon if any)
+            $pricing = calculatePlanPricing($plan, $couponCode, $billingCycle, $userId);
+            $expectedAmount = (float)$pricing['final_price'];
+            $paidAmount = (float)($payment['transaction_amount'] ?? 0);
+
+            if (abs($paidAmount - $expectedAmount) > 0.01) {
+                Log::error('MercadoPago success: amount mismatch', [
+                    'expected' => $expectedAmount,
+                    'paid' => $paidAmount,
+                    'payment_id' => $paymentId,
+                ]);
+                return redirect()->route('plans.index')->with('error', __('Payment amount does not match the plan price.'));
+            }
+
+            // Idempotency guard - do not re-create / re-activate an already processed payment
+            $existingOrder = PlanOrder::where('payment_id', $paymentId)->first();
+            if ($existingOrder && $existingOrder->status === 'completed') {
+                return redirect()->route('plans.index')->with('success', __('Payment successful! Your subscription has been activated.'));
+            }
+
             // Create plan order
             $planOrder = new PlanOrder();
             $planOrder->plan_id = $planId;
             $planOrder->user_id = $userId;
             $planOrder->payment_method = 'mercadopago';
             $planOrder->payment_id = $paymentId;
-            $planOrder->amount = $plan->getPriceForCycle($billingCycle);
             $planOrder->billing_cycle = $billingCycle;
+            $planOrder->coupon_id = $pricing['coupon_id'];
+            $planOrder->coupon_code = $couponCode;
+            $planOrder->original_price = $pricing['original_price'];
+            $planOrder->discount_amount = $pricing['discount_amount'];
+            $planOrder->final_price = $pricing['final_price'];
             $planOrder->status = 'completed';
-            $planOrder->coupon_code = $couponCode ?? null;
             $planOrder->save();
-            
+
             // Activate subscription
             $planOrder->activateSubscription();
-            
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => __('Payment successful! Your subscription has been activated.')
                 ]);
             }
-            
+
             return redirect()->route('plans.index')->with('success', __('Payment successful! Your subscription has been activated.'));
         } catch (\Exception $e) {
+            Log::error('MercadoPago success error: ' . $e->getMessage());
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'error' => __('Failed to process payment: :message',['message' => $e->getMessage()])
                 ], 500);
             }
-            
+
             return redirect()->route('plans.index')->with('error', __('Failed to process payment: :message',['message' => $e->getMessage()]));
         }
     }
@@ -427,20 +452,36 @@ class MercadoPagoController extends Controller
                 if ($paymentStatus === 'approved') {
                     // Check if plan order already exists
                     $existingOrder = PlanOrder::where('payment_id', $paymentId)->first();
-                    
+
                     if (!$existingOrder) {
+                        // Verify amount matches the plan price (with coupon if any)
+                        $pricing = calculatePlanPricing($plan, $couponCode, $billingCycle, $userId);
+                        $paidAmount = (float)($payment['transaction_amount'] ?? 0);
+
+                        if (abs($paidAmount - (float)$pricing['final_price']) > 0.01) {
+                            Log::error('MercadoPago webhook: amount mismatch', [
+                                'expected' => $pricing['final_price'],
+                                'paid' => $paidAmount,
+                                'payment_id' => $paymentId,
+                            ]);
+                            return response()->json(['status' => 'error', 'message' => 'Amount mismatch'], 400);
+                        }
+
                         // Create plan order
                         $planOrder = new PlanOrder();
                         $planOrder->plan_id = $planId;
                         $planOrder->user_id = $userId;
                         $planOrder->payment_method = 'mercadopago';
                         $planOrder->payment_id = $paymentId;
-                        $planOrder->amount = $plan->getPriceForCycle($billingCycle);
                         $planOrder->billing_cycle = $billingCycle;
-                        $planOrder->status = 'completed';
+                        $planOrder->coupon_id = $pricing['coupon_id'];
                         $planOrder->coupon_code = $couponCode;
+                        $planOrder->original_price = $pricing['original_price'];
+                        $planOrder->discount_amount = $pricing['discount_amount'];
+                        $planOrder->final_price = $pricing['final_price'];
+                        $planOrder->status = 'completed';
                         $planOrder->save();
-                        
+
                         // Activate subscription
                         $planOrder->activateSubscription();
                     }

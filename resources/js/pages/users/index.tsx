@@ -633,7 +633,7 @@ export default function Users() {
                           {user.status === 'active' ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>{user.status === 'active' ? "Disable User" : "Enable User"}</TooltipContent>
+                      <TooltipContent>{user.status === 'active' ? t("Disable User") : t("Enable User")}</TooltipContent>
                     </Tooltip>
                   )}
                   {hasPermission(permissions, 'delete-users') && (

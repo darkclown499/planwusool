@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -47,6 +48,7 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
+    const { t } = useTranslation();
     const page = usePage<SharedData>();
     const { auth, stores = [] } = page.props;
     const user = auth.user;
@@ -68,7 +70,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="bg-sidebar flex h-full w-64 flex-col items-stretch justify-between">
-                                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                                <SheetTitle className="sr-only">{t('Navigation Menu')}</SheetTitle>
                                 <SheetHeader className="flex justify-start text-start">
                                     <AppLogoIcon className="h-6 w-6 fill-current text-black" />
                                 </SheetHeader>
@@ -78,7 +80,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             {mainNavItems.map((item) => (
                                                 <Link key={item.title} href={item.href ?? '#'} className="flex items-center space-x-2 font-medium">
                                                     {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                    <span>{item.title}</span>
+                                                    <span>{t(item.title)}</span>
                                                 </Link>
                                             ))}
                                         </div>
@@ -93,7 +95,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                     className="flex items-center space-x-2 font-medium"
                                                 >
                                                     {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                    <span>{item.title}</span>
+                                                    <span>{t(item.title)}</span>
                                                 </a>
                                             ))}
                                         </div>
@@ -135,7 +137,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                             )}
                                         >
                                             {item.icon && <Icon iconNode={item.icon} className="me-2 h-4 w-4" />}
-                                            {item.title}
+                                            {t(item.title)}
                                         </Link>
                                         {page.url === item.href && (
                                             <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black"></div>

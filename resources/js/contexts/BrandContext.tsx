@@ -20,7 +20,7 @@ const DEFAULT_BRAND_SETTINGS: BrandSettings = {
  logoLight: '/images/logos/logo-light.png',
  favicon: '/images/logos/favicon.png',
  titleText: 'Wusool',
- footerText: '© 2024 Wusool. All rights reserved.',
+ footerText: '© 2024 وصول. جميع الحقوق محفوظة.',
  themeColor: 'green',
  customColor: '#10b77f',
  sidebarVariant: 'inset',

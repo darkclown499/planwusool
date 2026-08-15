@@ -55,7 +55,16 @@ class HandleInertiaRequests extends Middleware
         // Also override the public filesystem URL
         config(['filesystems.disks.public.url' => $base . '/storage']);
 
-        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
+        // Arabic-first: the auth pages display an Arabic quote instead of the
+        // English quotes shipped with Laravel's Inspiring helper.
+        $arabicQuotes = [
+            'النجاح ليس غياب الفشل، بل هو الإصرار على المحاولة بعد كل فشل - أحمد الشقيري',
+            'البداية هي أصعب خطوة، لكنها الأهم - وصول',
+            'لا تنتظر الظروف المثالية، ابدأ بما لديك - وصول',
+            'اجعل من متجرك علامة تجارية يتذكرها الناس - وصول',
+            'التخطيط الجيد هو نصف النجاح، والنصف الآخر هو التنفيذ - وصول',
+        ];
+        [$message, $author] = explode('-', $arabicQuotes[array_rand($arabicQuotes)]);
         
         // Skip database queries during installation
         if ($request->is('install*') || $request->is('update*') || $request->is('installer*') || !file_exists(storage_path('installed'))) {

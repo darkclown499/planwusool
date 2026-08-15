@@ -56,7 +56,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-green-600" />
-            {t(`${titleText || 'Wusool'} Platform Overview`)}
+            {t('{{brand}} Platform Overview', { brand: titleText || 'Wusool' })}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             {t('Comprehensive multi-store e-commerce platform with advanced features')}
@@ -175,7 +175,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
               </div>
               <div className="flex-1">
                 <h3 className={`font-semibold text-${themeColorName}-900 mb-1`}>
-                  {t(`${titleText || 'Wusool'} SaaS Platform`)}
+                  {t('{{brand}} SaaS Platform', { brand: titleText || 'Wusool' })}
                 </h3>
                 <p className={`text-sm text-${themeColorName}-700 mb-3`}>
                   {t('Complete multi-tenant e-commerce solution enabling companies to create and manage multiple online stores with advanced subscription management.')}
@@ -334,7 +334,7 @@ export function DashboardOverview({ userType, stats }: DashboardOverviewProps) {
             </div>
             <div className="flex-1">
               <h3 className={`font-semibold text-${themeColorName}-900 mb-1`}>
-                {t(`${titleText || 'Wusool'} Features`)}
+                {t('{{brand}} Features', { brand: titleText || 'Wusool' })}
               </h3>
               <p className={`text-sm text-${themeColorName}-700 mb-3`}>
                 {t('Complete e-commerce solution with powerful store management tools and comprehensive analytics.')}

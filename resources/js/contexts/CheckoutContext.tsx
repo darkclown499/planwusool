@@ -25,7 +25,7 @@ const CountryDropdown: React.FC<{
       }}
       className={className}
     >
-      <option value="">Select Country</option>
+      <option value="">اختر البلد</option>
       {countries.map((country: any) => (
         <option key={country.id} value={country.id}>
           {country.name}
@@ -84,10 +84,10 @@ const StateDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className={`w-full ${focusColors}`}>
-          <SelectValue placeholder="Select Country First" />
+          <SelectValue placeholder="اختر البلد أولاً" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="disabled">Select Country First</SelectItem>
+          <SelectItem value="disabled">اختر البلد أولاً</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -97,10 +97,10 @@ const StateDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className={`w-full ${focusColors}`}>
-          <SelectValue placeholder="Loading states..." />
+          <SelectValue placeholder="جاري تحميل المحافظات..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="loading">Loading states...</SelectItem>
+          <SelectItem value="loading">جاري تحميل المحافظات...</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -118,7 +118,7 @@ const StateDropdown: React.FC<{
       }}
     >
       <SelectTrigger className={`w-full ${focusColors}`}>
-        <SelectValue placeholder="Select State" />
+        <SelectValue placeholder="اختر المحافظة" />
       </SelectTrigger>
       <SelectContent>
         {states.map(state => (
@@ -180,10 +180,10 @@ const CityDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className={`w-full ${focusColors}`}>
-          <SelectValue placeholder="Select State First" />
+          <SelectValue placeholder="اختر المحافظة أولاً" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="disabled">Select State First</SelectItem>
+          <SelectItem value="disabled">اختر المحافظة أولاً</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -193,10 +193,10 @@ const CityDropdown: React.FC<{
     return (
       <Select disabled>
         <SelectTrigger className={`w-full ${focusColors}`}>
-          <SelectValue placeholder="Loading cities..." />
+          <SelectValue placeholder="جاري تحميل المدن..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="loading">Loading cities...</SelectItem>
+          <SelectItem value="loading">جاري تحميل المدن...</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -214,7 +214,7 @@ const CityDropdown: React.FC<{
       }}
     >
       <SelectTrigger className={`w-full ${focusColors}`}>
-        <SelectValue placeholder="Select City" />
+        <SelectValue placeholder="اختر المدينة" />
       </SelectTrigger>
       <SelectContent>
         {cities.map(city => (
@@ -434,12 +434,12 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
       let hasErrors = false;
 
       if (!validateEmail(customerInfo.email)) {
-        setEmailError('Please enter a valid email address');
+        setEmailError('يرجى إدخال بريد إلكتروني صحيح');
         hasErrors = true;
       }
 
       if (!validatePhone(customerInfo.phone)) {
-        setPhoneError('Please enter a valid phone number');
+        setPhoneError('يرجى إدخال رقم هاتف صحيح');
         hasErrors = true;
       }
 

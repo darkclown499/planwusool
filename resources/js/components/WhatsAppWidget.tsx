@@ -83,7 +83,7 @@ export default function WhatsAppWidget({
                 </svg>
               </div>
               <div>
-                <h4 className="text-sm font-medium">WhatsApp Chat</h4>
+                <h4 className="text-sm font-medium">محادثة واتساب</h4>
               </div>
             </div>
             <button 
@@ -99,8 +99,8 @@ export default function WhatsAppWidget({
           {/* Chat Body */}
           <div className="p-4 bg-gray-50 min-h-[100px] sm:min-h-[120px]">
             <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm mb-3">
-              <p className="text-xs sm:text-sm text-gray-700">Hello! How can I help you today?</p>
-              <span className="text-xs text-gray-400">Just now</span>
+              <p className="text-xs sm:text-sm text-gray-700">مرحباً! كيف يمكنني مساعدتك اليوم؟</p>
+              <span className="text-xs text-gray-400">الآن</span>
             </div>
           </div>
           
@@ -111,7 +111,7 @@ export default function WhatsAppWidget({
                 type="text"
                 value={userMessage}
                 onChange={(e) => setUserMessage(e.target.value)}
-                placeholder="Type your message..."
+                placeholder="اكتب رسالتك..."
                 className="flex-1 border border-gray-300 rounded-full px-3 sm:px-4 py-2 text-xs sm:text-sm focus:outline-none focus:border-green-500"
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               />
@@ -132,7 +132,7 @@ export default function WhatsAppWidget({
       <button
         onClick={handleClick}
         className="group bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110"
-        aria-label="Contact us on WhatsApp"
+        aria-label="تواصل معنا عبر واتساب"
       >
         <svg 
           className="w-6 h-6 fill-current" 

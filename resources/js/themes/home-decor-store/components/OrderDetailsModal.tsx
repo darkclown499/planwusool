@@ -208,7 +208,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                             )}
                           </div>
                         </div>
-                        <div className="text-left">
+                        <div className="text-right">
                           <div className="text-2xl font-bold text-amber-900">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</div>
                           <div className="text-sm text-amber-600">إجمالي المنتج</div>
                         </div>

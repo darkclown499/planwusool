@@ -89,440 +89,440 @@ class CustomerSeeder extends Seeder
     {
         return [
             [
-                'first_name' => 'John',
-                'last_name' => 'Smith',
+                'first_name' => 'محمد',
+                'last_name' => 'الخطيب',
                 'email' => 'john.smith@example.com',
                 'phone' => '+1-555-0101',
                 'date_of_birth' => '1985-03-15',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '123 Main Street',
-                    'city' => 'New York',
+                    'address' => 'شارع الرشيد',
+                    'city' => 'نيويورك',
                     'state' => 'NY',
                     'postal_code' => '10001',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '123 Main Street',
-                    'city' => 'New York',
+                    'address' => 'شارع الرشيد',
+                    'city' => 'نيويورك',
                     'state' => 'NY',
                     'postal_code' => '10001',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Sarah',
-                'last_name' => 'Johnson',
+                'first_name' => 'سارة',
+                'last_name' => 'حداد',
                 'email' => 'sarah.johnson@example.com',
                 'phone' => '+1-555-0102',
                 'date_of_birth' => '1990-07-22',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '456 Oak Avenue',
-                    'city' => 'Los Angeles',
+                    'address' => 'شارع الملك فهد',
+                    'city' => 'لوس أنجلوس',
                     'state' => 'CA',
                     'postal_code' => '90210',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '789 Pine Road',
-                    'city' => 'Beverly Hills',
+                    'address' => 'شارع المدينة المنورة',
+                    'city' => 'بيفرلي هيلز',
                     'state' => 'CA',
                     'postal_code' => '90212',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Michael',
-                'last_name' => 'Brown',
+                'first_name' => 'خالد',
+                'last_name' => 'الحاج',
                 'email' => 'michael.brown@example.com',
                 'phone' => '+1-555-0103',
                 'date_of_birth' => '1988-11-08',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '789 Elm Street',
-                    'city' => 'Chicago',
+                    'address' => 'شارع السلام',
+                    'city' => 'شيكاغو',
                     'state' => 'IL',
                     'postal_code' => '60601',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '789 Elm Street',
-                    'city' => 'Chicago',
+                    'address' => 'شارع السلام',
+                    'city' => 'شيكاغو',
                     'state' => 'IL',
                     'postal_code' => '60601',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Emily',
-                'last_name' => 'Davis',
+                'first_name' => 'فاطمة',
+                'last_name' => 'مصطفى',
                 'email' => 'emily.davis@example.com',
                 'phone' => '+1-555-0104',
                 'date_of_birth' => '1992-05-14',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '321 Maple Drive',
-                    'city' => 'Houston',
+                    'address' => 'حي الروضة',
+                    'city' => 'هيوستن',
                     'state' => 'TX',
                     'postal_code' => '77001',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '654 Cedar Lane',
-                    'city' => 'Dallas',
+                    'address' => 'شارع التحرير',
+                    'city' => 'دالاس',
                     'state' => 'TX',
                     'postal_code' => '75201',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'David',
-                'last_name' => 'Wilson',
+                'first_name' => 'يوسف',
+                'last_name' => 'القاسم',
                 'email' => 'david.wilson@example.com',
                 'phone' => '+1-555-0105',
                 'date_of_birth' => '1987-09-30',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '987 Birch Boulevard',
-                    'city' => 'Phoenix',
+                    'address' => 'شارع العليا',
+                    'city' => 'فينيكس',
                     'state' => 'AZ',
                     'postal_code' => '85001',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '987 Birch Boulevard',
-                    'city' => 'Phoenix',
+                    'address' => 'شارع العليا',
+                    'city' => 'فينيكس',
                     'state' => 'AZ',
                     'postal_code' => '85001',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Lisa',
-                'last_name' => 'Anderson',
+                'first_name' => 'نور',
+                'last_name' => 'عبد الله',
                 'email' => 'lisa.anderson@example.com',
                 'phone' => '+1-555-0106',
                 'date_of_birth' => '1991-12-03',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '147 Willow Way',
-                    'city' => 'Philadelphia',
+                    'address' => 'شارع الجامعة',
+                    'city' => 'فيلادلفيا',
                     'state' => 'PA',
                     'postal_code' => '19101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '147 Willow Way',
-                    'city' => 'Philadelphia',
+                    'address' => 'شارع الجامعة',
+                    'city' => 'فيلادلفيا',
                     'state' => 'PA',
                     'postal_code' => '19101',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'James',
-                'last_name' => 'Taylor',
+                'first_name' => 'أحمد',
+                'last_name' => 'الحسن',
                 'email' => 'james.taylor@example.com',
                 'phone' => '+1-555-0107',
                 'date_of_birth' => '1986-04-18',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '258 Spruce Street',
-                    'city' => 'San Antonio',
+                    'address' => 'حي الياسمين',
+                    'city' => 'سان أنطونيو',
                     'state' => 'TX',
                     'postal_code' => '78201',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '258 Spruce Street',
-                    'city' => 'San Antonio',
+                    'address' => 'حي الياسمين',
+                    'city' => 'سان أنطونيو',
                     'state' => 'TX',
                     'postal_code' => '78201',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Jessica',
-                'last_name' => 'Martinez',
+                'first_name' => 'ليلى',
+                'last_name' => 'إبراهيم',
                 'email' => 'jessica.martinez@example.com',
                 'phone' => '+1-555-0108',
                 'date_of_birth' => '1993-08-25',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '369 Poplar Place',
-                    'city' => 'San Diego',
+                    'address' => 'شارع الخليج',
+                    'city' => 'سان دييغو',
                     'state' => 'CA',
                     'postal_code' => '92101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '741 Redwood Road',
-                    'city' => 'San Francisco',
+                    'address' => 'شارع النيل',
+                    'city' => 'سان فرانسيسكو',
                     'state' => 'CA',
                     'postal_code' => '94102',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Robert',
-                'last_name' => 'Garcia',
+                'first_name' => 'عمر',
+                'last_name' => 'السالم',
                 'email' => 'robert.garcia@example.com',
                 'phone' => '+1-555-0109',
                 'date_of_birth' => '1984-06-12',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '852 Hickory Hill',
-                    'city' => 'Denver',
+                    'address' => 'حي المروج',
+                    'city' => 'دنفر',
                     'state' => 'CO',
                     'postal_code' => '80201',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '852 Hickory Hill',
-                    'city' => 'Denver',
+                    'address' => 'حي المروج',
+                    'city' => 'دنفر',
                     'state' => 'CO',
                     'postal_code' => '80201',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Amanda',
-                'last_name' => 'Rodriguez',
+                'first_name' => 'مريم',
+                'last_name' => 'خالد',
                 'email' => 'amanda.rodriguez@example.com',
                 'phone' => '+1-555-0110',
                 'date_of_birth' => '1989-10-07',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '963 Chestnut Circle',
-                    'city' => 'Seattle',
+                    'address' => 'شارع الصحافة',
+                    'city' => 'سياتل',
                     'state' => 'WA',
                     'postal_code' => '98101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '159 Walnut Way',
-                    'city' => 'Portland',
+                    'address' => 'حي النسيم',
+                    'city' => 'بورتلاند',
                     'state' => 'OR',
                     'postal_code' => '97201',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Christopher',
-                'last_name' => 'Lee',
+                'first_name' => 'علي',
+                'last_name' => 'الشمري',
                 'email' => 'christopher.lee@example.com',
                 'phone' => '+1-555-0111',
                 'date_of_birth' => '1991-01-28',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '753 Magnolia Manor',
-                    'city' => 'Boston',
+                    'address' => 'شارع السوق',
+                    'city' => 'بوسطن',
                     'state' => 'MA',
                     'postal_code' => '02101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '753 Magnolia Manor',
-                    'city' => 'Boston',
+                    'address' => 'شارع السوق',
+                    'city' => 'بوسطن',
                     'state' => 'MA',
                     'postal_code' => '02101',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Michelle',
-                'last_name' => 'White',
+                'first_name' => 'هدى',
+                'last_name' => 'منصور',
                 'email' => 'michelle.white@example.com',
                 'phone' => '+1-555-0112',
                 'date_of_birth' => '1994-04-16',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '486 Dogwood Drive',
-                    'city' => 'Atlanta',
+                    'address' => 'حي الواحة',
+                    'city' => 'أتلانتا',
                     'state' => 'GA',
                     'postal_code' => '30301',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '486 Dogwood Drive',
-                    'city' => 'Atlanta',
+                    'address' => 'حي الواحة',
+                    'city' => 'أتلانتا',
                     'state' => 'GA',
                     'postal_code' => '30301',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Daniel',
-                'last_name' => 'Harris',
+                'first_name' => 'محمود',
+                'last_name' => 'عبد الرحمن',
                 'email' => 'daniel.harris@example.com',
                 'phone' => '+1-555-0113',
                 'date_of_birth' => '1983-12-09',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '357 Sycamore Street',
-                    'city' => 'Miami',
+                    'address' => 'شارع النخيل',
+                    'city' => 'ميامي',
                     'state' => 'FL',
                     'postal_code' => '33101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '357 Sycamore Street',
-                    'city' => 'Miami',
+                    'address' => 'شارع النخيل',
+                    'city' => 'ميامي',
                     'state' => 'FL',
                     'postal_code' => '33101',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Ashley',
-                'last_name' => 'Clark',
+                'first_name' => 'ريم',
+                'last_name' => 'العلي',
                 'email' => 'ashley.clark@example.com',
                 'phone' => '+1-555-0114',
                 'date_of_birth' => '1992-08-21',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '159 Beech Boulevard',
-                    'city' => 'Las Vegas',
+                    'address' => 'شارع الملك عبد العزيز',
+                    'city' => 'لاس فيغاس',
                     'state' => 'NV',
                     'postal_code' => '89101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '951 Ash Avenue',
-                    'city' => 'Reno',
+                    'address' => 'حي العليا',
+                    'city' => 'رينو',
                     'state' => 'NV',
                     'postal_code' => '89501',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Matthew',
-                'last_name' => 'Lewis',
+                'first_name' => 'حسن',
+                'last_name' => 'الدوسري',
                 'email' => 'matthew.lewis@example.com',
                 'phone' => '+1-555-0115',
                 'date_of_birth' => '1986-05-03',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '753 Cypress Court',
-                    'city' => 'Nashville',
+                    'address' => 'شارع الجمهورية',
+                    'city' => 'ناشفيل',
                     'state' => 'TN',
                     'postal_code' => '37201',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '753 Cypress Court',
-                    'city' => 'Nashville',
+                    'address' => 'شارع الجمهورية',
+                    'city' => 'ناشفيل',
                     'state' => 'TN',
                     'postal_code' => '37201',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Stephanie',
-                'last_name' => 'Walker',
+                'first_name' => 'آية',
+                'last_name' => 'الزهراني',
                 'email' => 'stephanie.walker@example.com',
                 'phone' => '+1-555-0116',
                 'date_of_birth' => '1990-11-14',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '246 Fir Forest',
-                    'city' => 'Charlotte',
+                    'address' => 'حي الفيحاء',
+                    'city' => 'شارلوت',
                     'state' => 'NC',
                     'postal_code' => '28201',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '246 Fir Forest',
-                    'city' => 'Charlotte',
+                    'address' => 'حي الفيحاء',
+                    'city' => 'شارلوت',
                     'state' => 'NC',
                     'postal_code' => '28201',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Andrew',
-                'last_name' => 'Hall',
+                'first_name' => 'زياد',
+                'last_name' => 'العتيبي',
                 'email' => 'andrew.hall@example.com',
                 'phone' => '+1-555-0117',
                 'date_of_birth' => '1988-02-26',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '864 Juniper Junction',
-                    'city' => 'Detroit',
+                    'address' => 'شارع الثورة',
+                    'city' => 'ديترويت',
                     'state' => 'MI',
                     'postal_code' => '48201',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '864 Juniper Junction',
-                    'city' => 'Detroit',
+                    'address' => 'شارع الثورة',
+                    'city' => 'ديترويت',
                     'state' => 'MI',
                     'postal_code' => '48201',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Nicole',
-                'last_name' => 'Allen',
+                'first_name' => 'دينا',
+                'last_name' => 'حسن',
                 'email' => 'nicole.allen@example.com',
                 'phone' => '+1-555-0118',
                 'date_of_birth' => '1993-07-19',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '135 Laurel Lane',
-                    'city' => 'Portland',
+                    'address' => 'حي الأندلس',
+                    'city' => 'بورتلاند',
                     'state' => 'ME',
                     'postal_code' => '04101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '135 Laurel Lane',
-                    'city' => 'Portland',
+                    'address' => 'حي الأندلس',
+                    'city' => 'بورتلاند',
                     'state' => 'ME',
                     'postal_code' => '04101',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Joshua',
-                'last_name' => 'Young',
+                'first_name' => 'فهد',
+                'last_name' => 'العنزي',
                 'email' => 'joshua.young@example.com',
                 'phone' => '+1-555-0119',
                 'date_of_birth' => '1985-09-11',
                 'gender' => 'male',
                 'billing_address' => [
-                    'address' => '579 Hazel Heights',
-                    'city' => 'Salt Lake City',
+                    'address' => 'شارع المطار',
+                    'city' => 'سولت ليك سيتي',
                     'state' => 'UT',
                     'postal_code' => '84101',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '579 Hazel Heights',
-                    'city' => 'Salt Lake City',
+                    'address' => 'شارع المطار',
+                    'city' => 'سولت ليك سيتي',
                     'state' => 'UT',
                     'postal_code' => '84101',
                     'country' => 'us'
                 ]
             ],
             [
-                'first_name' => 'Samantha',
-                'last_name' => 'King',
+                'first_name' => 'سلمى',
+                'last_name' => 'فاروق',
                 'email' => 'samantha.king@example.com',
                 'phone' => '+1-555-0120',
                 'date_of_birth' => '1991-03-05',
                 'gender' => 'female',
                 'billing_address' => [
-                    'address' => '468 Peach Plaza',
-                    'city' => 'Richmond',
+                    'address' => 'شارع البحر',
+                    'city' => 'ريتشموند',
                     'state' => 'VA',
                     'postal_code' => '23201',
                     'country' => 'us'
                 ],
                 'shipping_address' => [
-                    'address' => '468 Peach Plaza',
-                    'city' => 'Richmond',
+                    'address' => 'شارع البحر',
+                    'city' => 'ريتشموند',
                     'state' => 'VA',
                     'postal_code' => '23201',
                     'country' => 'us'

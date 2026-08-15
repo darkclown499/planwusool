@@ -488,7 +488,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
               className="w-full"
             >
               <Zap className="h-4 w-4 me-2" />
-              {t(`Start ${plan.trial_days} Day Trial`)}
+              {t('Start {{days}} Day Trial', { days: plan.trial_days })}
             </Button>
           )}
           {hasPermission('subscribe-plans') && (
@@ -748,7 +748,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                     text-2xl font-bold mb-2 
                     ${plan.recommended ? 'text-primary' : ''}
                   `}>
-                    {plan.name}
+                    {t(plan.name)}
                   </h3>
                   <div className="flex items-baseline gap-1.5 mb-3">
                     <span className={`
@@ -767,7 +767,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                   {plan.trial_days > 0 && (
                     <div className="flex items-center gap-1.5 text-sm text-primary">
                       <Sparkles className="h-3.5 w-3.5" />
-                      {t(`${plan.trial_days} days free trial`)}
+                      {t('{{days}} days free trial', { days: plan.trial_days })}
                     </div>
                   )}
                 </div>

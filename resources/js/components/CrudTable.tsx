@@ -212,7 +212,7 @@ export function CrudTable({
           value}</span>;
           
       case 'boolean':
-        return <span className="text-sm">{value ? 'Yes' : 'No'}</span>;
+        return <span className="text-sm">{value ? t('Yes') : t('No')}</span>;
         
       case 'link':
         if (!value) return <span>-</span>;

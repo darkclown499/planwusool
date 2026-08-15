@@ -247,7 +247,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         {product.customFields.map((field, index) => (
                           <div key={index} className="flex justify-between py-2 md:py-1.5 px-0 md:px-2 border-b md:border-0 md:bg-gray-50 md:rounded border-gray-200 last:border-0 text-sm">
                             <span className="font-medium text-gray-700">{field.name}:</span>
-                            <span className="text-gray-600 text-left">{field.value}</span>
+                            <span className="text-gray-600 text-right">{field.value}</span>
                           </div>
                         ))}
                       </div>

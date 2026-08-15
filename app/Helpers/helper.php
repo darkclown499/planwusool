@@ -1176,7 +1176,7 @@ if (! function_exists('validatePaymentRequest')) {
     {
         $baseRules = [
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:yearly',
+            'billing_cycle' => 'required|in:monthly,yearly',
             'coupon_code' => 'nullable|string',
         ];
         
@@ -1214,7 +1214,7 @@ if (! function_exists('defaultSettings')) {
             'logoLight' => '/images/logos/logo-light.png',
             'favicon' => '/images/logos/favicon.png',
             'titleText' => 'Wusool',
-            'footerText' => '© 2026 Wusool. All rights reserved.',
+            'footerText' => '© 2026 وصول. جميع الحقوق محفوظة.',
             'themeColor' => 'green',
             'customColor' => '#10b77f',
             'sidebarVariant' => 'inset',

@@ -115,7 +115,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                     </p>
                   </div>
                 </div>
-                <div className="text-right sm:text-left">
+                <div className="text-right sm:text-right">
                   <div className="text-lg md:text-xl font-bold text-purple-600 mb-1">{formatCurrency(order.total, storeSettings, currencies)}</div>
                   <span className={`px-2 md:px-3 py-1 rounded-full text-xs font-bold w-fit ${getStatusColor(order.status)}`}>
                     {order.status.toUpperCase()}
@@ -189,7 +189,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                             <span>{formatCurrency(item.price, storeSettings, currencies)} للقطعة</span>
                           </div>
                         </div>
-                <div className="text-right sm:text-left">
+                <div className="text-right sm:text-right">
                           <div className="font-bold text-purple-800 text-sm md:text-base">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</div>
                           {item.tax_amount > 0 && (
                             <div className="text-xs text-purple-500">شامل الضريبة</div>

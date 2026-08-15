@@ -47,6 +47,20 @@ export function PageCrudWrapper({
   const { entity, table, filters = [], form, hooks } = config;
   const { auth, ...pageProps } = usePage().props as any;
   const permissions = auth?.permissions || [];
+
+  // Human-readable Arabic label for the entity, used inside translated phrases.
+  const ENTITY_LABELS: Record<string, string> = {
+    users: t('User'),
+    coupons: t('Coupon'),
+    categories: t('Category'),
+    currencies: t('Currency'),
+    permissions: t('Permission'),
+    roles: t('Role'),
+    products: t('Product'),
+    'plan-orders': t('Plan Order'),
+    'plan-requests': t('Plan Request'),
+  };
+  const entityLabel = ENTITY_LABELS[entity.name] || entity.name;
   
   // Get data from page props using entity name
   const data = pageProps[entity.name] || { data: [], links: [] };
@@ -276,7 +290,7 @@ export function PageCrudWrapper({
           },
           onError: (errors) => {
             toast.dismiss();
-            toast.error(t(`Failed to create ${entity.name.slice(0, -1)}: ${Object.values(errors).join(', ')}`));
+            toast.error(t('Failed to create {{entity}}: {{errors}}', { entity: entityLabel, errors: Object.values(errors).join(', ') }));
           }
         });
       } else if (formMode === 'edit') {
@@ -293,7 +307,7 @@ export function PageCrudWrapper({
           },
           onError: (errors) => {
             toast.dismiss();
-            toast.error(t(`Failed to update ${entity.name.slice(0, -1)}: ${Object.values(errors).join(', ')}`));
+            toast.error(t('Failed to update {{entity}}: {{errors}}', { entity: entityLabel, errors: Object.values(errors).join(', ') }));
           }
         });
       }
@@ -314,7 +328,7 @@ export function PageCrudWrapper({
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(t(`Failed to create ${entity.name.slice(0, -1)}: ${Object.values(errors).join(', ')}`));
+          toast.error(t('Failed to create {{entity}}: {{errors}}', { entity: entityLabel, errors: Object.values(errors).join(', ') }));
         }
       });
     } else if (formMode === 'edit') {
@@ -331,7 +345,7 @@ export function PageCrudWrapper({
         },
         onError: (errors) => {
           toast.dismiss();
-          toast.error(t(`Failed to update ${entity.name.slice(0, -1)}: ${Object.values(errors).join(', ')}`));
+          toast.error(t('Failed to update {{entity}}: {{errors}}', { entity: entityLabel, errors: Object.values(errors).join(', ') }));
         }
       });
     }
@@ -351,7 +365,7 @@ export function PageCrudWrapper({
       },
       onError: (errors) => {
         toast.dismiss();
-        toast.error(t(`Failed to delete ${entity.name.slice(0, -1)}: ${Object.values(errors).join(', ')}`));
+        toast.error(t('Failed to delete {{entity}}: {{errors}}', { entity: entityLabel, errors: Object.values(errors).join(', ') }));
       }
     });
   };
@@ -394,7 +408,7 @@ export function PageCrudWrapper({
   // Add the default "Add New" button if allowed and user has permission
   if (showAddButton && hasPermission(permissions, entity.permissions.create)) {
     pageActions.push({
-      label: t(`Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`),
+      label: t('Add New {{entity}}', { entity: entityLabel }),
       icon: <PlusIcon className="h-4 w-4" />,
       variant: 'default',
       onClick: () => handleAddNew()
@@ -605,10 +619,10 @@ export function PageCrudWrapper({
         initialData={currentItem}
         title={
           formMode === 'create' 
-            ? t(`Add New ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`) 
+            ? t('Add New {{entity}}', { entity: entityLabel }) 
             : formMode === 'edit' 
-              ? t(`Edit ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`) 
-              : t(`View ${entity.name.slice(0, -1).charAt(0).toUpperCase() + entity.name.slice(0, -1).slice(1)}`)
+              ? t('Edit {{entity}}', { entity: entityLabel }) 
+              : t('View {{entity}}', { entity: entityLabel })
         }
         mode={formMode}
         description={config.description}

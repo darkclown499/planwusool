@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -30,12 +31,13 @@ interface MediaLibraryModalProps {
   multiple?: boolean;
 }
 
-export default function MediaLibraryModal({ 
+export default function MediaLibraryModal({
   isOpen, 
   onClose, 
   onSelect, 
   multiple = false 
 }: MediaLibraryModalProps) {
+  const { t } = useTranslation();
   const { auth, csrf_token } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const canUploadMedia = hasPermission(permissions, 'upload-media');
@@ -76,7 +78,7 @@ export default function MediaLibraryModal({
       setMedia(data);
       setFilteredMedia(data);
     } catch (error) {
-      toast.error('Failed to load media');
+      toast.error(t("Failed to load media"));
     } finally {
       setLoading(false);
     }
@@ -165,7 +167,7 @@ export default function MediaLibraryModal({
         } else if (serverMessage) {
           toast.error(serverMessage, { duration: 6000 });
         } else {
-          toast.error('Failed to upload files');
+          toast.error(t("Failed to upload files"));
         }
       }
     } catch (error) {
@@ -296,7 +298,7 @@ export default function MediaLibraryModal({
           {/* Stats and Selection Info */}
           <div className="flex items-center justify-between text-sm text-muted-foreground bg-muted/30 px-3 py-2 rounded-md">
             <span>
-              {filteredMedia.length} files • Page {currentPage} of {totalPages || 1}
+              {t("{{count}} files", { count: filteredMedia.length })} • {t("Page")} {currentPage} {t("of")} {totalPages || 1}
             </span>
             {multiple && selectedItems.length > 0 && (
               <Badge variant="default" className="text-xs">
@@ -311,7 +313,7 @@ export default function MediaLibraryModal({
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading media...</p>
+                  <p className="text-muted-foreground">{t("Loading media...")}</p>
                 </div>
               </div>
             ) : filteredMedia.length === 0 ? (
@@ -330,14 +332,14 @@ export default function MediaLibraryModal({
                   </div>
                   
                   <div className="space-y-3 mb-6">
-                    <h3 className="text-lg font-semibold">No media files found</h3>
+                    <h3 className="text-lg font-semibold">{t("No media files found")}</h3>
                     {searchTerm && (
                       <p className="text-sm text-muted-foreground">
-                        No results for <span className="font-medium text-foreground">"${searchTerm}"</span>
+                        {t("No results for")} <span className="font-medium text-foreground">"${searchTerm}"</span>
                       </p>
                     )}
                     <p className="text-sm text-muted-foreground">
-                      {searchTerm ? 'Try a different search term or upload new images' : 'Upload images to get started'}
+                      {searchTerm ? t("Try a different search term or upload new images") : t("Upload images to get started")}
                     </p>
                   </div>
                   
@@ -406,7 +408,7 @@ export default function MediaLibraryModal({
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-3 border-t">
               <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredMedia.length)} of {filteredMedia.length} files
+                {t("Showing")} {startIndex + 1} {t("to")} {Math.min(startIndex + itemsPerPage, filteredMedia.length)} {t("of")} {filteredMedia.length} {t("files")}
               </div>
               <div className="flex gap-1">
                 <Button
@@ -466,7 +468,7 @@ export default function MediaLibraryModal({
               )}
               {multiple && selectedItems.length > 0 && (
                 <Button onClick={handleConfirmSelection}>
-                  Select {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''}
+                  {t("Select {{count}} item", { count: selectedItems.length })}
                 </Button>
               )}
             </div>

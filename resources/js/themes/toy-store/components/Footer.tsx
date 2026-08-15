@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Mail } from 'lucide-react';
 
 interface FooterProps {
@@ -78,8 +78,8 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           
           {/* Copyright */}
-          <p className="text-purple-700 text-sm text-center md:text-left">
-            {copyrightText || `© ${currentYear} ${storeName}. جميع الحقوق محفوظة.`}
+          <p className="text-purple-700 text-sm text-center md:text-right">
+            {copyrightText || `Â© ${currentYear} ${storeName}. Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ù‚ÙˆÙ‚ Ù…Ø­ÙÙˆØ¸Ø©.`}
           </p>
         </div>
       </div>

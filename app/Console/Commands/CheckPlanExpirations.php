@@ -21,7 +21,7 @@ class CheckPlanExpirations extends Command
      *
      * @var string
      */
-    protected $description = 'Send merchant notifications for subscriptions expiring soon';
+    protected $description = 'Send plan expiration reminders and lock expired subscriptions';
 
     /**
      * Execute the console command.
@@ -32,8 +32,10 @@ class CheckPlanExpirations extends Command
         $start = now()->startOfDay();
         $end = now()->startOfDay()->addDays($days);
 
+        // Phase 1: remind paid subscribers whose plan expires within the window
         $users = User::whereNotNull('plan_id')
             ->where('plan_is_active', true)
+            ->where('is_trial', false)
             ->whereNotNull('plan_expire_date')
             ->whereBetween('plan_expire_date', [$start, $end])
             ->get();
@@ -56,7 +58,24 @@ class CheckPlanExpirations extends Command
             $created++;
         }
 
-        $this->info("Checked plan expirations. Created {$created} notification(s).");
+        // Phase 2: hard-lock expired paid subscriptions (no auto-downgrade).
+        // Mark the subscription inactive so the record stays consistent and the
+        // user remains blocked (needsPlanSubscription) until they renew.
+        $expired = User::whereNotNull('plan_id')
+            ->where('plan_is_active', true)
+            ->where('is_trial', false)
+            ->whereNotNull('plan_expire_date')
+            ->where('plan_expire_date', '<', now())
+            ->get();
+
+        $locked = 0;
+        foreach ($expired as $user) {
+            $user->update(['plan_is_active' => 0]);
+            MerchantNotificationService::planExpired($user);
+            $locked++;
+        }
+
+        $this->info("Checked plan expirations. Created {$created} reminder(s), locked {$locked} expired subscription(s).");
 
         return self::SUCCESS;
     }

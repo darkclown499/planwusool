@@ -18,7 +18,7 @@ export default function DefaultStore({ store, categories, products, settings }: 
                 <div className="container mx-auto px-4 py-8">
                     <div className="text-center">
                         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                            Welcome to {store?.name}
+                            مرحباً بك في {store?.name}
                         </h1>
                         <p className="text-lg text-gray-600 mb-8">
                             {store?.description}
@@ -39,7 +39,7 @@ export default function DefaultStore({ store, categories, products, settings }: 
                                                 ${product.price}
                                             </span>
                                             <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                                                View Details
+                                                عرض التفاصيل
                                             </button>
                                         </div>
                                     </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -37,8 +38,9 @@ export const ImageColumn: React.FC<ImageColumnProps> = ({
   className = 'h-16 w-20 rounded-md object-cover shadow-sm',
   fallbackSrc = 'https://placehold.co/200x150?text=Image+Not+Found'
 }) => {
+  const { t } = useTranslation();
   if (!src) {
-    return <div className="text-center text-gray-400">No image</div>;
+    return <div className="text-center text-gray-400">{t('No image')}</div>;
   }
   
   const imageSrc = src.startsWith && src.startsWith('http') ? src : `/storage/${src}`;

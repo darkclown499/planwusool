@@ -214,6 +214,33 @@ class MerchantNotificationService
     }
 
     /**
+     * Create a notification for an expired plan.
+     */
+    public static function planExpired(User $user): void
+    {
+        $planName = $user->plan?->name ?? 'خطة';
+
+        self::create([
+            'user_id' => $user->id,
+            'store_id' => $user->current_store,
+            'type' => 'plan_expired',
+            'title' => 'انتهى اشتراكك',
+            'body' => "انتهى اشتراكك في خطة ({$planName}). جدّد اشتراكك لاستعادة الوصول إلى متجرك.",
+            'icon' => 'ShieldAlert',
+            'color' => 'red',
+            'action_url' => route('plans.index', [], false),
+            'related_id' => $user->plan_id,
+            'related_type' => 'plan',
+            'data' => [
+                'plan_id' => $user->plan_id,
+                'plan_name' => $planName,
+                'expire_date' => $user->plan_expire_date?->toDateString(),
+            ],
+            'is_urgent' => true,
+        ]);
+    }
+
+    /**
      * Create a notification for a login from a new device (security alert).
      */
     public static function newDeviceLogin(User $user, string $ip, string $ua, ?int $storeId = null): void

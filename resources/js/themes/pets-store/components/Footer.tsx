@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 interface FooterProps {
   storeName: string;
@@ -29,15 +29,15 @@ export const Footer: React.FC<FooterProps> = ({
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* Copyright */}
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-right">
               <p className="text-orange-200">
-                {copyrightText || `© ${currentYear} ${storeName}. جميع الحقوق محفوظة.`}
+                {copyrightText || `Â© ${currentYear} ${storeName}. Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ù‚ÙˆÙ‚ Ù…Ø­ÙÙˆØ¸Ø©.`}
               </p>
             </div>
 
             {/* Social Media */}
             <div className="flex items-center space-x-4">
-              <span className="text-orange-200 text-sm">تابعنا على:</span>
+              <span className="text-orange-200 text-sm">ØªØ§Ø¨Ø¹Ù†Ø§ Ø¹Ù„Ù‰:</span>
               
               <a href={socialMedia?.facebook || "https://facebook.com"} target="_blank" rel="noopener noreferrer" className="text-orange-200 hover:text-yellow-400 transition-colors">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>

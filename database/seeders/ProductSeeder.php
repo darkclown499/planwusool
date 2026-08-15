@@ -105,217 +105,217 @@ class ProductSeeder extends Seeder
     private function getProductsForCategory($categoryName): array
     {
         $products = [
-            'Mobile Accessories' => [
+            'إكسسوارات الجوال' => [
                 [
-                    'name' => 'iPhone 14 Plus mobile cover',
-                    'description' => 'Premium protective case for iPhone 14 Plus with shock absorption and precise cutouts.',
-                    'specifications' => '<ul><li>Shock-absorbing TPU material</li><li>Precise camera cutouts</li><li>Wireless charging compatible</li><li>Raised edges for screen protection</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Protect your iPhone 14 Plus with this premium mobile cover featuring advanced shock absorption technology and precise cutouts for all ports and cameras.</p>',
+                    'name' => 'غطاء هاتف iPhone 14 Plus',
+                    'description' => 'غلاف حماية فاخر لهاتف iPhone 14 Plus مع امتصاص الصدمات وقصّات دقيقة.',
+                    'specifications' => '<ul><li>مادة TPU ماصة للصدمات</li><li>قصّات دقيقة للكاميرا</li><li>متوافق مع الشحن اللاسلكي</li><li>حواف مرتفعة لحماية الشاشة</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>احمِ هاتفك iPhone 14 Plus بهذا الغلاف الفاخر الذي يتميز بتقنية امتصاص الصدمات المتقدمة وقصّات دقيقة لجميع المنافذ والكاميرات.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-296420?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-304792?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-301766?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-098636?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-666168?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-399742?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'iPhone 14 - Sheath Screen Protector with Applicator Tray',
-                    'description' => 'Tempered glass screen protector with easy installation tray for bubble-free application.',
-                    'specifications' => '<ul><li>9H tempered glass</li><li>Bubble-free installation</li><li>Applicator tray included</li><li>99% transparency</li><li>Oleophobic coating</li></ul>',
-                    'details' => '<p>Premium tempered glass screen protector with innovative applicator tray for perfect, bubble-free installation every time.</p>',
+                    'name' => 'واقي شاشة iPhone 14 مع درج التطبيق',
+                    'description' => 'واقي شاشة من الزجاج المقسّى مع درج تركيب سهل لتطبيق خالٍ من الفقاعات.',
+                    'specifications' => '<ul><li>زجاج مقسّى 9H</li><li>تركيب بدون فقاعات</li><li>يشمل درج التطبيق</li><li>شفافية 99%</li><li>طبقة طاردة للزيوت</li></ul>',
+                    'details' => '<p>واقي شاشة فاخر من الزجاج المقسّى مع درج تطبيق مبتكر لتركيب مثالي وخالٍ من الفقاعات في كل مرة.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-575336?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-338117?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-284770?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-471037?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-997015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303218?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Luxcell B12 10,000mAh 12W Power Bank',
-                    'description' => 'High-capacity portable power bank with fast charging and multiple device support.',
-                    'specifications' => '<ul><li>10,000mAh capacity</li><li>12W fast charging</li><li>Dual USB outputs</li><li>LED power indicator</li><li>Compact design</li></ul>',
-                    'details' => '<p>Keep your devices powered with this high-capacity power bank featuring fast charging technology and support for multiple devices simultaneously.</p>',
+                    'name' => 'باور بانك Luxcell B12 بسعة 10,000mAh وبطاقة 12 واط',
+                    'description' => 'باور بانك محمول عالي السعة مع شحن سريع ودعم لأجهزة متعددة.',
+                    'specifications' => '<ul><li>سعة 10,000mAh</li><li>شحن سريع 12 واط</li><li>منفذا USB</li><li>مؤشر LED للطاقة</li><li>تصميم مضغوط</li></ul>',
+                    'details' => '<p>أبقِ أجهزتك مشحونة مع هذا الباور بانك عالي السعة الذي يتميز بتقنية الشحن السريع ودعم الأجهزة المتعددة في نفس الوقت.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-986581?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-649235?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-317316?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-913913?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-024439?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-768196?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Adjustable & Foldable Desktop Phone Holder Stand',
-                    'description' => 'Ergonomic phone stand with adjustable angles for comfortable viewing and video calls.',
-                    'specifications' => '<ul><li>Adjustable viewing angles</li><li>Foldable design</li><li>Non-slip base</li><li>Universal compatibility</li><li>Aluminum construction</li></ul>',
-                    'details' => '<p>Ergonomic phone stand designed for comfortable viewing, video calls, and hands-free use with adjustable angles and stable aluminum construction.</p>',
+                    'name' => 'حامل هاتف مكتبي قابل للتعديل والطي',
+                    'description' => 'حامل هاتف مريح بزوايا قابلة للتعديل للعرض المريح ومكالمات الفيديو.',
+                    'specifications' => '<ul><li>زوايا عرض قابلة للتعديل</li><li>تصميم قابل للطي</li><li>قاعدة مانعة للانزلاق</li><li>توافق شامل</li><li>هيكل من الألومنيوم</li></ul>',
+                    'details' => '<p>حامل هاتف مريح مصمم للعرض المريح ومكالمات الفيديو والاستخدام بدون استخدام اليدين مع زوايا قابلة للتعديل وهيكل ألومنيوم ثابت.</p>',
                     'price' => 16.99,
                     'cover_image' => 'https://images.unsplash.com/photo-677379?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-022324?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-543250?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-475617?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-131296?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-535831?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fast Charge USB to Lightning Data Sync and Charging Cable',
-                    'description' => 'MFi certified Lightning cable with fast charging and data sync capabilities.',
-                    'specifications' => '<ul><li>MFi certified</li><li>Fast charging support</li><li>Data sync capability</li><li>Durable braided design</li><li>6ft length</li></ul>',
-                    'details' => '<p>Premium MFi certified Lightning cable with fast charging support and durable braided construction for reliable data sync and charging.</p>',
+                    'name' => 'كابل شحن ومزامنة البيانات من USB إلى Lightning سريع الشحن',
+                    'description' => 'كابل Lightning معتمد MFi مع شحن سريع وقدرات مزامنة البيانات.',
+                    'specifications' => '<ul><li>معتمد MFi</li><li>يدعم الشحن السريع</li><li>قدرة مزامنة البيانات</li><li>تصميم مضفّر متين</li><li>طول 6 أقدام</li></ul>',
+                    'details' => '<p>كابل Lightning فاخر معتمد MFi مع دعم الشحن السريع وهيكل مضفّر متين لمزامنة وشحن موثوقين.</p>',
                     'price' => 12.99,
                     'variants' => [
-                        ['name' => 'Length', 'options' => ['3ft', '6ft', '10ft']]
+                        ['name' => 'الطول', 'options' => ['3 أقدام', '6 أقدام', '10 أقدام']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-233258?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-903993?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654422?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-484612?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-712646?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-808658?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'boat Flexcharge 360 3-in-1 Wireless Charger',
-                    'description' => 'Multi-device wireless charging station for phone, earbuds, and smartwatch.',
-                    'specifications' => '<ul><li>3-in-1 charging station</li><li>15W fast wireless charging</li><li>360-degree rotation</li><li>LED charging indicators</li><li>Universal compatibility</li></ul>',
-                    'details' => '<p>Convenient 3-in-1 wireless charging station that can simultaneously charge your phone, earbuds, and smartwatch with fast 15W charging.</p>',
+                    'name' => 'شاحن لاسلكي boat Flexcharge 360 ثلاثي الأجهزة',
+                    'description' => 'محطة شحن لاسلكي لأجهزة متعددة للهاتف وسماعات الأذن والساعة الذكية.',
+                    'specifications' => '<ul><li>محطة شحن ثلاثية الأجهزة</li><li>شحن لاسلكي سريع بقوة 15 واط</li><li>دوران 360 درجة</li><li>مؤشرات LED للشحن</li><li>توافق شامل</li></ul>',
+                    'details' => '<p>محطة شحن لاسلكية مريحة ثلاثية الأجهزة يمكنها شحن هاتفك وسماعات الأذن وساعتك الذكية في نفس الوقت بشحن سريع بقوة 15 واط.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-351169?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-636714?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-705182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-489684?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143712?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-460689?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'WeCool S2-Ultra Selfie Stick Tripod',
-                    'description' => 'Extendable selfie stick with tripod base and Bluetooth remote control.',
-                    'specifications' => '<ul><li>Extendable up to 40 inches</li><li>Tripod base included</li><li>Bluetooth remote control</li><li>360-degree rotation</li><li>Universal phone compatibility</li></ul>',
-                    'details' => '<p>Versatile selfie stick with tripod functionality and Bluetooth remote for perfect photos and videos from any angle or distance.</p>',
+                    'name' => 'عصا سيلفي WeCool S2-Ultra مع حامل ثلاثي',
+                    'description' => 'عصا سيلفي قابلة للتمديد مع قاعدة حامل ثلاثي وجهاز تحكم عن بعد بتقنية البلوتوث.',
+                    'specifications' => '<ul><li>قابلة للتمديد حتى 40 بوصة</li><li>تشمل قاعدة حامل ثلاثي</li><li>جهاز تحكم عن بعد بالبلوتوث</li><li>دوران 360 درجة</li><li>توافق شامل مع الهواتف</li></ul>',
+                    'details' => '<p>عصا سيلفي متعددة الاستخدامات مع وظيفة الحامل الثلاثي وجهاز تحكم عن بعد بالبلوتوث لالتقاط صور وفيديوهات مثالية من أي زاوية أو مسافة.</p>',
                     'price' => 29.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black', 'Red']]
+                        ['name' => 'اللون', 'options' => ['أسود', 'أحمر']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-382519?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-551356?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214522?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-682024?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-410787?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-232643?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'PopSockets Phone Grip with Expanding Kickstand',
-                    'description' => 'Collapsible phone grip and stand for secure holding and hands-free viewing.',
-                    'specifications' => '<ul><li>Collapsible design</li><li>Secure phone grip</li><li>Kickstand functionality</li><li>Reusable adhesive</li><li>Swappable top design</li></ul>',
-                    'details' => '<p>The original PopSocket phone grip that expands for secure holding and collapses flat, with kickstand functionality for hands-free viewing.</p>',
+                    'name' => 'قبضة PopSocket للهاتف مع حامل قابل للتوسيع',
+                    'description' => 'قبضة وحامل هاتف قابل للطي للإمساك الآمن والمشاهدة بدون استخدام اليدين.',
+                    'specifications' => '<ul><li>تصميم قابل للطي</li><li>إمساك آمن للهاتف</li><li>وظيفة الحامل</li><li>لاصق قابل لإعادة الاستخدام</li><li>تصميم علوي قابل للتبديل</li></ul>',
+                    'details' => '<p>قبضة PopSocket الأصلية للهاتف التي تتمدد للإمساك الآمن وتنطوي لتكون مسطحة، مع وظيفة الحامل للمشاهدة بدون استخدام اليدين.</p>',
                     'price' => 14.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Gray', 'Blue', 'Brown']]
+                        ['name' => 'اللون', 'options' => ['رمادي', 'أزرق', 'بني']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-573874?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-987732?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-471160?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-811543?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-385782?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-113267?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Audio Devices' => [
+            'أجهزة الصوت' => [
                 [
-                    'name' => 'Mi Dual Driver Wired Earphones',
-                    'description' => 'Premium wired earphones with dual drivers for superior sound quality and comfort.',
-                    'specifications' => '<ul><li>Dual driver technology</li><li>Superior sound quality</li><li>Comfortable fit</li><li>Tangle-free cable</li><li>In-line microphone</li></ul>',
-                    'details' => '<p>Experience exceptional audio quality with Mi Dual Driver Wired Earphones featuring advanced dual driver technology for crisp highs and deep bass.</p>',
+                    'name' => 'سماعات أذن Mi السلكية بمحركين',
+                    'description' => 'سماعات أذن سلكية فاخرة بمحركين مزدوجين لجودة صوت فائقة وراحة.',
+                    'specifications' => '<ul><li>تقنية المحركين المزدوجين</li><li>جودة صوت فائقة</li><li>ملاءمة مريحة</li><li>كابل غير متشابك</li><li>ميكروفون مدمج في السلك</li></ul>',
+                    'details' => '<p>اختبر جودة صوت استثنائية مع سماعات أذن Mi السلكية بمحركين مزدوجين بتقنية متقدمة لنغمات عالية نقية وصوت جهير عميق.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-780381?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-315840?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-976200?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-763731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-120462?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-835951?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'boAt Airdopes 138 Pro',
-                    'description' => 'True wireless earbuds with active noise cancellation and long battery life.',
-                    'specifications' => '<ul><li>True wireless design</li><li>Active noise cancellation</li><li>32-hour total playback</li><li>IPX4 water resistance</li><li>Touch controls</li></ul>',
-                    'details' => '<p>boAt Airdopes 138 Pro delivers premium wireless audio experience with ANC technology and extended battery life for all-day listening.</p>',
+                    'name' => 'سماعات boAt Airdopes 138 Pro اللاسلكية',
+                    'description' => 'سماعات أذن لاسلكية حقيقية مع عزل ضوضاء نشط وعمر بطارية طويل.',
+                    'specifications' => '<ul><li>تصميم لاسلكي حقيقي</li><li>عزل ضوضاء نشط</li><li>تشغيل إجمالي 32 ساعة</li><li>مقاومة للماء IPX4</li><li>أزرار تحكم باللمس</li></ul>',
+                    'details' => '<p>توفر سماعات boAt Airdopes 138 Pro تجربة صوت لاسلكية فاخرة بتقنية عزل الضوضاء النشط وعمر بطارية ممتد للاستماع طوال اليوم.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
                     'cover_image' => 'https://images.unsplash.com/photo-010633?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-464819?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-563101?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-454748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-750329?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-431205?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'JBL Tune 520BT Wireless On Ear Headphones',
-                    'description' => 'Wireless on-ear headphones with JBL Pure Bass sound and long battery life.',
-                    'specifications' => '<ul><li>JBL Pure Bass sound</li><li>57-hour battery life</li><li>Wireless Bluetooth 5.3</li><li>Lightweight design</li><li>Multi-point connection</li></ul>',
-                    'details' => '<p>JBL Tune 520BT headphones deliver legendary JBL Pure Bass sound with incredible 57-hour battery life and comfortable on-ear design.</p>',
+                    'name' => 'سماعات JBL Tune 520BT اللاسلكية فوق الأذن',
+                    'description' => 'سماعات لاسلكية فوق الأذن بصوت JBL Pure Bass وعمر بطارية طويل.',
+                    'specifications' => '<ul><li>صوت JBL Pure Bass</li><li>عمر بطارية 57 ساعة</li><li>بلوتوث لاسلكي 5.3</li><li>تصميم خفيف الوزن</li><li>اتصال متعدد النقاط</li></ul>',
+                    'details' => '<p>توفر سماعات JBL Tune 520BT صوت JBL Pure Bass الأسطوري مع عمر بطارية مذهل يصل إلى 57 ساعة وتصميم مريح فوق الأذن.</p>',
                     'price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-148358?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-612295?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-495869?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-072026?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-236412?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-582503?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Pro Bass Bluetooth Neckband',
-                    'description' => 'Wireless neckband earphones with enhanced bass and magnetic earbuds.',
-                    'specifications' => '<ul><li>Enhanced bass response</li><li>Magnetic earbuds</li><li>15-hour battery life</li><li>IPX5 sweat resistance</li><li>Quick charge support</li></ul>',
-                    'details' => '<p>Pro Bass Bluetooth Neckband offers powerful bass response and convenient magnetic earbuds with all-day battery life for active lifestyles.</p>',
+                    'name' => 'سماعة رقبة Pro Bass بتقنية البلوتوث',
+                    'description' => 'سماعات رقبة لاسلكية بصوت جهير معزز وسماعات أذن مغناطيسية.',
+                    'specifications' => '<ul><li>استجابة جهير معززة</li><li>سماعات أذن مغناطيسية</li><li>عمر بطارية 15 ساعة</li><li>مقاومة للعرق IPX5</li><li>دعم الشحن السريع</li></ul>',
+                    'details' => '<p>توفر سماعة الرقبة Pro Bass استجابة جهير قوية وسماعات أذن مغناطيسية مريحة مع عمر بطارية طوال اليوم لأسلوب حياة نشط.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-359408?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-301466?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-135338?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-862995?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-894042?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-470794?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => '10W Bluetooth Soundbar Speaker',
-                    'description' => 'Compact Bluetooth soundbar with 10W output for enhanced TV and music audio.',
-                    'specifications' => '<ul><li>10W total output</li><li>Bluetooth 5.0 connectivity</li><li>Multiple input options</li><li>Compact design</li><li>Remote control included</li></ul>',
-                    'details' => '<p>Enhance your TV and music experience with this compact 10W Bluetooth soundbar featuring multiple connectivity options and clear audio output.</p>',
+                    'name' => 'سماعة ساوند بار بلوتوث بقوة 10 واط',
+                    'description' => 'ساوند بار بلوتوث مدمج بقوة إخراج 10 واط لتحسين صوت التلفزيون والموسيقى.',
+                    'specifications' => '<ul><li>قوة إخراج إجمالية 10 واط</li><li>اتصال بلوتوث 5.0</li><li>خيارات إدخال متعددة</li><li>تصميم مدمج</li><li>يشمل جهاز التحكم عن بعد</li></ul>',
+                    'details' => '<p>حسّن تجربة التلفزيون والموسيقى مع هذا الساوند بار المدمج بقوة 10 واط الذي يتميز بخيارات اتصال متعددة وإخراج صوت واضح.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-995688?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-291094?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-745334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126992?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-348714?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-321802?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Zebronics Juke Bar 10000 Soundbar',
-                    'description' => 'Premium soundbar with powerful audio output and multiple connectivity options.',
-                    'specifications' => '<ul><li>Powerful audio output</li><li>Multiple connectivity</li><li>LED display</li><li>Remote control</li><li>Wall mountable</li></ul>',
-                    'details' => '<p>Zebronics Juke Bar 10000 delivers premium sound quality with powerful drivers and versatile connectivity for the ultimate home audio experience.</p>',
+                    'name' => 'ساوند بار Zebronics Juke Bar 10000',
+                    'description' => 'ساوند بار فاخر مع إخراج صوت قوي وخيارات اتصال متعددة.',
+                    'specifications' => '<ul><li>إخراج صوت قوي</li><li>اتصال متعدد</li><li>شاشة LED</li><li>جهاز تحكم عن بعد</li><li>قابل للتثبيت على الحائط</li></ul>',
+                    'details' => '<p>يوفر ساوند بار Zebronics Juke Bar 10000 جودة صوت فاخرة مع محركات قوية واتصال مرن لتجربة صوت منزلية مثالية.</p>',
                     'price' => 129.99,
                     'cover_image' => 'https://images.unsplash.com/photo-763300?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-821106?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-502318?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-848527?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315916?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-716490?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'High-Performance Gaming Headset',
-                    'description' => 'Professional gaming headset with 7.1 surround sound and noise-canceling microphone.',
-                    'specifications' => '<ul><li>7.1 surround sound</li><li>Noise-canceling microphone</li><li>RGB lighting</li><li>Comfortable padding</li><li>Multi-platform compatibility</li></ul>',
-                    'details' => '<p>Professional gaming headset designed for competitive gaming with immersive 7.1 surround sound and crystal-clear communication.</p>',
+                    'name' => 'سماعة ألعاب عالية الأداء',
+                    'description' => 'سماعة ألعاب احترافية مع صوت محيطي 7.1 وميكروفون عازل للضوضاء.',
+                    'specifications' => '<ul><li>صوت محيطي 7.1</li><li>ميكروفون عازل للضوضاء</li><li>إضاءة RGB</li><li>حشوات مريحة</li><li>توافق مع منصات متعددة</li></ul>',
+                    'details' => '<p>سماعة ألعاب احترافية مصممة للألعاب التنافسية مع صوت محيطي 7.1 غامر وتواصل واضح تمامًا.</p>',
                     'price' => 89.99,
                     'sale_price' => 79.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black','White']]
+                        ['name' => 'اللون', 'options' => ['أسود','أبيض']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-656123?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-859178?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-049481?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-922143?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-160497?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-144632?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Shure MV7 USB / XLR Podcast Microphone',
-                    'description' => 'Professional podcast microphone with USB and XLR connectivity for studio-quality recording.',
-                    'specifications' => '<ul><li>USB and XLR outputs</li><li>Studio-quality recording</li><li>Built-in headphone monitoring</li><li>Touch panel controls</li><li>Professional-grade construction</li></ul>',
-                    'details' => '<p>Shure MV7 is the ultimate podcast microphone offering both USB and XLR connectivity with professional studio-quality sound for content creators.</p>',
+                    'name' => 'ميكروفون بث صوتي Shure MV7 مع USB / XLR',
+                    'description' => 'ميكروفون بودكاست احترافي مع اتصال USB و XLR لتسجيل بجودة الاستوديو.',
+                    'specifications' => '<ul><li>مخرجات USB و XLR</li><li>تسجيل بجودة الاستوديو</li><li>مراقبة سماعة مدمجة</li><li>أزرار تحكم بلمسة لمسية</li><li>هيكل بمستوى احترافي</li></ul>',
+                    'details' => '<p>ميكروفون Shure MV7 هو الميكروفون المثالي للبودكاست حيث يوفر اتصال USB و XLR مع صوت احترافي بجودة الاستوديو لصناع المحتوى.</p>',
                     'price' => 279.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black','White']]
+                        ['name' => 'اللون', 'options' => ['أسود','أبيض']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-796258?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-649198?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-583224?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-293285?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-923383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-430979?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Wearable Tech' => [
+            'التقنيات القابلة للارتداء' => [
                 [
-                    'name' => 'Noise Halo 2 - Limited Edition',
-                    'description' => 'Premium limited edition smartwatch with advanced health monitoring and sleek design.',
-                    'specifications' => '<ul><li>Limited edition design</li><li>Advanced health monitoring</li><li>7-day battery life</li><li>Water resistant IP68</li><li>Multiple sport modes</li></ul>',
-                    'details' => '<p>Noise Halo 2 Limited Edition combines premium aesthetics with cutting-edge health technology for the ultimate smartwatch experience.</p>',
+                    'name' => 'Noise Halo 2 - إصدار محدود',
+                    'description' => 'ساعة ذكية فاخرة بإصدار محدود مع مراقبة صحية متقدمة وتصميم أنيق.',
+                    'specifications' => '<ul><li>تصميم بإصدار محدود</li><li>مراقبة صحية متقدمة</li><li>عمر بطارية 7 أيام</li><li>مقاومة للماء IP68</li><li>أوضاع رياضية متعددة</li></ul>',
+                    'details' => '<p>يجمع Noise Halo 2 الإصدار المحدود بين الجماليات الفاخرة وتقنية الصحة المتطورة لتجربة الساعة الذكية المثالية.</p>',
                     'price' => 149.99,
                     'cover_image' => 'https://images.unsplash.com/photo-042563?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-000219?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-910670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-549690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-835036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-022441?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Samsung Galaxy Fit E Smart Band',
-                    'description' => 'Lightweight fitness tracker with heart rate monitoring and sleep tracking.',
-                    'specifications' => '<ul><li>Heart rate monitoring</li><li>Sleep tracking</li><li>Water resistant 5ATM</li><li>Up to 1 week battery</li><li>Lightweight design</li></ul>',
-                    'details' => '<p>Samsung Galaxy Fit E offers essential fitness tracking features in a comfortable, lightweight design perfect for everyday wear.</p>',
+                    'name' => 'سوار Samsung Galaxy Fit E الذكي',
+                    'description' => 'متتبع لياقة خفيف الوزن مع مراقبة معدل ضربات القلب وتتبع النوم.',
+                    'specifications' => '<ul><li>مراقبة معدل ضربات القلب</li><li>تتبع النوم</li><li>مقاومة للماء 5ATM</li><li>بطارية حتى أسبوع</li><li>تصميم خفيف الوزن</li></ul>',
+                    'details' => '<p>يوفر سوار Samsung Galaxy Fit E ميزات تتبع اللياقة الأساسية بتصميم مريح وخفيف الوزن مثالي للارتداء اليومي.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-362133?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-861134?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-953686?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-972119?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-895475?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-619748?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Women\'s Smart Ring NFC Control Heart Rate',
-                    'description' => 'Elegant smart ring with NFC control, heart rate monitoring, and health tracking.',
-                    'specifications' => '<ul><li>NFC control functionality</li><li>Heart rate monitoring</li><li>Health tracking sensors</li><li>Elegant design</li><li>Waterproof construction</li></ul>',
-                    'details' => '<p>Revolutionary smart ring designed for women, combining elegant aesthetics with advanced health monitoring and NFC control capabilities.</p>',
+                    'name' => 'خاتم ذكي نسائي مع تحكم NFC وقياس نبض القلب',
+                    'description' => 'خاتم ذكي أنيق مع تحكم NFC ومراقبة معدل ضربات القلب وتتبع الصحة.',
+                    'specifications' => '<ul><li>وظيفة التحكم NFC</li><li>مراقبة معدل ضربات القلب</li><li>أجهزة استشعار تتبع الصحة</li><li>تصميم أنيق</li><li>هيكل مقاوم للماء</li></ul>',
+                    'details' => '<p>خاتم ذكي ثوري مصمم للنساء، يجمع بين الجماليات الأنيقة والمراقبة الصحية المتقدمة وقدرات التحكم NFC.</p>',
                     'price' => 199.99,
                     'cover_image' => 'https://images.unsplash.com/photo-773439?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-563762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-911587?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-609987?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-919383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-861748?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Pebble Newly Launched Qore Fitness Band',
-                    'description' => 'Advanced fitness band with comprehensive health monitoring and long battery life.',
-                    'specifications' => '<ul><li>Comprehensive health monitoring</li><li>15-day battery life</li><li>SpO2 monitoring</li><li>Multiple workout modes</li><li>Water resistant IP67</li></ul>',
-                    'details' => '<p>Pebble Qore Fitness Band delivers comprehensive health insights with extended battery life and advanced monitoring capabilities for active lifestyles.</p>',
+                    'name' => 'سوار لياقة Pebble Qore الجديد',
+                    'description' => 'سوار لياقة متقدم مع مراقبة صحية شاملة وعمر بطارية طويل.',
+                    'specifications' => '<ul><li>مراقبة صحية شاملة</li><li>عمر بطارية 15 يومًا</li><li>مراقبة SpO2</li><li>أوضاع تمرين متعددة</li><li>مقاومة للماء IP67</li></ul>',
+                    'details' => '<p>يوفر سوار Pebble Qore رؤى صحية شاملة مع عمر بطارية ممتد وقدرات مراقبة متقدمة لأسلوب حياة نشط.</p>',
                     'price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-753240?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-477697?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-601676?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-033861?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-738709?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-494572?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Noise Champ 2 Smartwatch',
-                    'description' => 'Feature-rich smartwatch with Bluetooth calling and health monitoring.',
-                    'specifications' => '<ul><li>Bluetooth calling</li><li>Health monitoring suite</li><li>1.39-inch AMOLED display</li><li>7-day battery life</li><li>100+ watch faces</li></ul>',
-                    'details' => '<p>Noise Champ 2 Smartwatch offers premium features including Bluetooth calling and comprehensive health monitoring in a stylish package.</p>',
+                    'name' => 'ساعة Noise Champ 2 الذكية',
+                    'description' => 'ساعة ذكية غنية بالميزات مع إمكانية إجراء المكالمات عبر البلوتوث ومراقبة الصحة.',
+                    'specifications' => '<ul><li>مكالمات عبر البلوتوث</li><li>مجموعة مراقبة صحية</li><li>شاشة AMOLED بحجم 1.39 بوصة</li><li>عمر بطارية 7 أيام</li><li>أكثر من 100 وجه ساعة</li></ul>',
+                    'details' => '<p>توفر ساعة Noise Champ 2 الذكية ميزات فاخرة تشمل المكالمات عبر البلوتوث ومراقبة صحية شاملة في تصميم أنيق.</p>',
                     'price' => 129.99,
                     'sale_price' => 109.99,
                     'cover_image' => 'https://images.unsplash.com/photo-276707?w=800&h=800&fit=crop&crop=center',
@@ -323,407 +323,407 @@ class ProductSeeder extends Seeder
                 ],
                 [
                     'name' => 'Apple Vision Pro',
-                    'description' => 'Revolutionary spatial computer with advanced mixed reality capabilities.',
-                    'specifications' => '<ul><li>Spatial computing</li><li>Mixed reality experience</li><li>Eye tracking technology</li><li>Hand gesture control</li><li>Ultra-high resolution displays</li></ul>',
-                    'details' => '<p>Apple Vision Pro represents the future of computing with groundbreaking spatial technology and immersive mixed reality experiences.</p>',
+                    'description' => 'كمبيوتر مكاني ثوري بقدرات متقدمة للواقع المختلط.',
+                    'specifications' => '<ul><li>حوسبة مكانية</li><li>تجربة واقع مختلط</li><li>تقنية تتبع العين</li><li>التحكم بإيماءات اليد</li><li>شاشات فائقة الدقة</li></ul>',
+                    'details' => '<p>يمثل Apple Vision Pro مستقبل الحوسبة بتقنية مكانية رائدة وتجارب واقع مختلط غامرة.</p>',
                     'price' => 3499.99,
                     'cover_image' => 'https://images.unsplash.com/photo-895032?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-268498?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-452993?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-945909?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-373813?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-373795?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Bluetooth TAG & Item Finder for Keys',
-                    'description' => 'Smart Bluetooth tracker for keys and valuables with precision finding.',
-                    'specifications' => '<ul><li>Precision finding</li><li>Bluetooth 5.0</li><li>Replaceable battery</li><li>Water resistant</li><li>Mobile app integration</li></ul>',
-                    'details' => '<p>Never lose your keys again with this smart Bluetooth tracker featuring precision finding technology and seamless mobile app integration.</p>',
+                    'name' => 'ملاحق بلوتوث للعثور على المفاتيح والأغراض',
+                    'description' => 'متتبع بلوتوث ذكي للمفاتيح والأشياء الثمينة مع تحديد دقيق.',
+                    'specifications' => '<ul><li>تحديد دقيق</li><li>بلوتوث 5.0</li><li>بطارية قابلة للاستبدال</li><li>مقاوم للماء</li><li>تكامل مع تطبيق الجوال</li></ul>',
+                    'details' => '<p>لا تفقد مفاتيحك مرة أخرى مع هذا المتتبع الذكي بتقنية البلوتوث التي تتميز بتقنية تحديد دقيقة وتكامل سلس مع تطبيق الجوال.</p>',
                     'price' => 24.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black', 'Green', 'White']],
+                        ['name' => 'اللون', 'options' => ['أسود', 'أخضر', 'أبيض']],
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-324359?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-515283?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404442?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-197459?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-403469?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-980928?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Headband Smart Brainwave Sensor Wearable Headband',
-                    'description' => 'Advanced brainwave monitoring headband for meditation and cognitive training.',
-                    'specifications' => '<ul><li>EEG brainwave monitoring</li><li>Meditation guidance</li><li>Cognitive training</li><li>Comfortable headband design</li><li>Mobile app connectivity</li></ul>',
-                    'details' => '<p>Revolutionary brainwave sensor headband that monitors your mental state and provides guided meditation and cognitive training experiences.</p>',
+                    'name' => 'عصابة رأس ذكية لاستشعار الموجات الدماغية',
+                    'description' => 'عصابة رأس متقدمة لمراقبة الموجات الدماغية للتأمل والتدريب المعرفي.',
+                    'specifications' => '<ul><li>مراقبة الموجات الدماغية EEG</li><li>إرشادات التأمل</li><li>تدريب معرفي</li><li>تصميم عصابة رأس مريح</li><li>اتصال بتطبيق الجوال</li></ul>',
+                    'details' => '<p>عصابة رأس ثورية بجهاز استشعار الموجات الدماغية تراقب حالتك العقلية وتوفر تجارب تأمل موجه وتدريب معرفي.</p>',
                     'price' => 299.99,
                     'sale_price' => 249.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Blue', 'Black']],
+                        ['name' => 'اللون', 'options' => ['أبيض', 'أزرق', 'أسود']],
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-108528?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-018787?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-444982?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-426395?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-106620?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-242551?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Power & Charging' => [
+            'الطاقة والشحن' => [
                 [
-                    'name' => 'Samsung 10000 mAh Power Bank',
-                    'description' => 'High-capacity portable power bank with fast charging and multiple device support.',
-                    'specifications' => '<ul><li>10000 mAh capacity</li><li>Fast charging support</li><li>Dual USB outputs</li><li>LED power indicator</li><li>Compact design</li></ul>',
-                    'details' => '<p>Samsung 10000 mAh Power Bank provides reliable portable charging with fast charging technology and support for multiple devices simultaneously.</p>',
+                    'name' => 'باور بانك سامسونج بسعة 10000mAh',
+                    'description' => 'باور بانك محمول عالي السعة مع شحن سريع ودعم لأجهزة متعددة.',
+                    'specifications' => '<ul><li>سعة 10000mAh</li><li>دعم الشحن السريع</li><li>منفذا USB</li><li>مؤشر LED للطاقة</li><li>تصميم مضغوط</li></ul>',
+                    'details' => '<p>يوفر باور بانك سامسونج بسعة 10000mAh شحنًا محمولاً موثوقًا مع تقنية الشحن السريع ودعم الأجهزة المتعددة في نفس الوقت.</p>',
                     'price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-474522?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-986820?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-425240?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-799065?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-289367?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-794894?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Noise Power Series Gan 30W GaN Charger',
-                    'description' => 'Compact GaN charger with 30W fast charging for smartphones and tablets.',
-                    'specifications' => '<ul><li>30W GaN technology</li><li>Compact design</li><li>Fast charging support</li><li>Universal compatibility</li><li>Overcharge protection</li></ul>',
-                    'details' => '<p>Noise Power Series GaN 30W charger delivers efficient fast charging in a compact form factor using advanced GaN technology.</p>',
+                    'name' => 'شاحن Noise Power Series GaN بقوة 30 واط',
+                    'description' => 'شاحن GaN مدمج بشحن سريع بقوة 30 واط للهواتف الذكية والأجهزة اللوحية.',
+                    'specifications' => '<ul><li>تقنية GaN بقوة 30 واط</li><li>تصميم مدمج</li><li>دعم الشحن السريع</li><li>توافق شامل</li><li>حماية من الشحن الزائد</li></ul>',
+                    'details' => '<p>يوفر شاحن Noise Power Series GaN بقوة 30 واط شحنًا سريعًا فعالاً في تصميم مضغوط باستخدام تقنية GaN المتقدمة.</p>',
                     'price' => 29.99,
                     'sale_price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-069716?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-539874?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-398353?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-644793?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-032252?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-094380?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Socket Extension Board with Surge Protector',
-                    'description' => 'Multi-socket extension board with built-in surge protection and safety features.',
-                    'specifications' => '<ul><li>6 universal sockets</li><li>Surge protection</li><li>Overload protection</li><li>LED power indicator</li><li>6-foot power cord</li></ul>',
-                    'details' => '<p>Professional extension board with surge protection to safeguard your devices from power fluctuations and electrical surges.</p>',
+                    'name' => 'لوحة تمديد مقابس مع واقي التيار الكهربائي',
+                    'description' => 'لوحة تمديد متعددة المقابس مع حماية مدمجة من ارتفاع التيار وميزات أمان.',
+                    'specifications' => '<ul><li>6 مقابس عالمية</li><li>حماية من ارتفاع التيار</li><li>حماية من الحمل الزائد</li><li>مؤشر LED للطاقة</li><li>كابل طاقة بطول 6 أقدام</li></ul>',
+                    'details' => '<p>لوحة تمديد احترافية مع حماية من ارتفاع التيار لحماية أجهزتك من تقلبات التيار الكهربائي والارتفاعات المفاجئة.</p>',
                     'price' => 39.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Black']],
-                        ['name' => 'Sockets', 'options' => ['4 Socket', '6 Socket', '8 Socket']]
+                        ['name' => 'اللون', 'options' => ['أبيض', 'أسود']],
+                        ['name' => 'المقابس', 'options' => ['4 مقابس', '6 مقابس', '8 مقابس']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-488726?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-747789?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-302677?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-409954?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-590281?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-109674?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Belkin USB Cable USB-C To USB-A Braided',
-                    'description' => 'Durable braided USB-C to USB-A cable for charging and data transfer.',
-                    'specifications' => '<ul><li>USB-C to USB-A</li><li>Braided construction</li><li>Fast charging support</li><li>Data sync capability</li><li>6ft length</li></ul>',
-                    'details' => '<p>Belkin braided USB cable with durable construction for reliable charging and data transfer between USB-C and USB-A devices.</p>',
+                    'name' => 'كابل Belkin مضفر من USB-C إلى USB-A',
+                    'description' => 'كابل مضفر متين من USB-C إلى USB-A للشحن ونقل البيانات.',
+                    'specifications' => '<ul><li>من USB-C إلى USB-A</li><li>هيكل مضفر</li><li>دعم الشحن السريع</li><li>قدرة مزامنة البيانات</li><li>طول 6 أقدام</li></ul>',
+                    'details' => '<p>كابل USB مضفر من Belkin بهيكل متين للشحن ونقل البيانات بشكل موثوق بين أجهزة USB-C و USB-A.</p>',
                     'price' => 19.99,
                     'variants' => [
-                        ['name' => 'Length', 'options' => ['3ft', '6ft', '10ft']]
+                        ['name' => 'الطول', 'options' => ['3 أقدام', '6 أقدام', '10 أقدام']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-280195?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-649095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-669208?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-872246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-868265?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959572?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'POP 67W Triple Port GaN5 Adapter',
-                    'description' => 'High-power GaN5 adapter with three ports for simultaneous device charging.',
-                    'specifications' => '<ul><li>67W total output</li><li>GaN5 technology</li><li>Triple port design</li><li>USB-C and USB-A ports</li><li>Compact form factor</li></ul>',
-                    'details' => '<p>POP 67W Triple Port GaN5 Adapter delivers powerful charging for multiple devices simultaneously using advanced GaN5 technology.</p>',
+                    'name' => 'محول POP GaN5 ثلاثي المنافذ بقوة 67 واط',
+                    'description' => 'محول GaN5 عالي الطاقة بثلاثة منافذ للشحن المتزامن للأجهزة.',
+                    'specifications' => '<ul><li>قوة إخراج إجمالية 67 واط</li><li>تقنية GaN5</li><li>تصميم ثلاثي المنافذ</li><li>منافذ USB-C و USB-A</li><li>شكل مضغوط</li></ul>',
+                    'details' => '<p>يوفر محول POP 67W ثلاثي المنافذ GaN5 شحنًا قويًا للأجهزة المتعددة في نفس الوقت باستخدام تقنية GaN5 المتقدمة.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-884432?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-943087?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461449?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-832004?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-843045?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708362?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Power 30 Dual Output Fast Car Charger',
-                    'description' => 'Dual-port car charger with 30W fast charging for on-the-go power.',
-                    'specifications' => '<ul><li>30W fast charging</li><li>Dual USB outputs</li><li>LED power indicator</li><li>Universal compatibility</li><li>Compact design</li></ul>',
-                    'details' => '<p>Car Power 30 provides reliable fast charging for two devices simultaneously while driving, with universal compatibility and safety features.</p>',
+                    'name' => 'شاحن سيارة سريع مزدوج الإخراج بقوة 30 واط',
+                    'description' => 'شاحن سيارة بمنفذين مع شحن سريع بقوة 30 واط للطاقة أثناء التنقل.',
+                    'specifications' => '<ul><li>شحن سريع بقوة 30 واط</li><li>منفذا USB</li><li>مؤشر LED للطاقة</li><li>توافق شامل</li><li>تصميم مدمج</li></ul>',
+                    'details' => '<p>يوفر شاحن السيارة Car Power 30 شحنًا سريعًا موثوقًا لجهازين في نفس الوقت أثناء القيادة، مع توافق شامل وميزات أمان.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-362752?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-441222?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-164579?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-050368?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-272625?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-881582?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Portronics Power Plate 7 Extension Board',
-                    'description' => 'Smart extension board with 7 sockets and advanced safety features.',
-                    'specifications' => '<ul><li>7 universal sockets</li><li>Smart power management</li><li>Overload protection</li><li>Child safety shutters</li><li>8-foot heavy duty cord</li></ul>',
-                    'details' => '<p>Portronics Power Plate 7 offers smart power management with 7 sockets and comprehensive safety features for home and office use.</p>',
+                    'name' => 'لوحة تمديد Portronics Power Plate 7',
+                    'description' => 'لوحة تمديد ذكية مع 7 مقابس وميزات أمان متقدمة.',
+                    'specifications' => '<ul><li>7 مقابس عالمية</li><li>إدارة ذكية للطاقة</li><li>حماية من الحمل الزائد</li><li>ستائر أمان للأطفال</li><li>كابل متين بطول 8 أقدام</li></ul>',
+                    'details' => '<p>توفر لوحة Portronics Power Plate 7 إدارة ذكية للطاقة مع 7 مقابس وميزات أمان شاملة للاستخدام المنزلي والمكتبي.</p>',
                     'price' => 44.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Black']],
+                        ['name' => 'اللون', 'options' => ['أبيض', 'أسود']],
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-691524?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-207024?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708487?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-513557?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654030?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-302259?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => '67W Ultra Fast Type-C Charger',
-                    'description' => 'Ultra-fast 67W USB-C charger for laptops, tablets, and smartphones.',
-                    'specifications' => '<ul><li>67W ultra-fast charging</li><li>USB-C PD support</li><li>Universal compatibility</li><li>Compact design</li><li>Safety certifications</li></ul>',
-                    'details' => '<p>67W Ultra Fast Type-C Charger delivers maximum charging speed for USB-C devices including laptops, tablets, and smartphones with safety certifications.</p>',
+                    'name' => 'شاحن Type-C فائق السرعة بقوة 67 واط',
+                    'description' => 'شاحن USB-C فائق السرعة بقوة 67 واط لأجهزة الكمبيوتر المحمولة والأجهزة اللوحية والهواتف الذكية.',
+                    'specifications' => '<ul><li>شحن فائق السرعة بقوة 67 واط</li><li>دعم USB-C PD</li><li>توافق شامل</li><li>تصميم مدمج</li><li>شهادات أمان</li></ul>',
+                    'details' => '<p>يوفر شاحن Type-C فائق السرعة بقوة 67 واط أقصى سرعة شحن لأجهزة USB-C بما في ذلك أجهزة الكمبيوتر المحمولة والأجهزة اللوحية والهواتف الذكية مع شهادات أمان.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-938078?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-243082?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-487855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-664199?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-044823?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-783394?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Computer Accessories' => [
+            'إكسسوارات الكمبيوتر' => [
                 [
-                    'name' => 'ZEBRONICS Charm Rechargeable Wireless Mouse',
-                    'description' => 'Ergonomic rechargeable wireless mouse with precision tracking and long battery life.',
-                    'specifications' => '<ul><li>Rechargeable battery</li><li>Wireless connectivity</li><li>Ergonomic design</li><li>Precision optical sensor</li><li>USB-C charging</li></ul>',
-                    'details' => '<p>ZEBRONICS Charm wireless mouse offers comfortable ergonomic design with rechargeable battery and precise optical tracking for productivity and gaming.</p>',
+                    'name' => 'فأرة لاسلكية ZEBRONICS Charm قابلة لإعادة الشحن',
+                    'description' => 'فأرة لاسلكية مريحة قابلة لإعادة الشحن مع تتبع دقيق وعمر بطارية طويل.',
+                    'specifications' => '<ul><li>بطارية قابلة لإعادة الشحن</li><li>اتصال لاسلكي</li><li>تصميم مريح</li><li>مستشعر بصري دقيق</li><li>شحن USB-C</li></ul>',
+                    'details' => '<p>توفر فأرة ZEBRONICS Charm اللاسلكية تصميمًا مريحًا مع بطارية قابلة لإعادة الشحن وتتبعًا بصريًا دقيقًا للإنتاجية والألعاب.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-431006?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-693512?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-049015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-112626?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-906844?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-584161?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Wired Keyboard Water-Resistant Silent Typing',
-                    'description' => 'Water-resistant wired keyboard with silent keys for comfortable typing experience.',
-                    'specifications' => '<ul><li>Water-resistant design</li><li>Silent key switches</li><li>Full-size layout</li><li>Durable construction</li><li>USB connectivity</li></ul>',
-                    'details' => '<p>Professional wired keyboard featuring water-resistant design and silent key switches for comfortable and quiet typing in any environment.</p>',
+                    'name' => 'لوحة مفاتيح سلكية مقاومة للماء بمفاتيح صامتة',
+                    'description' => 'لوحة مفاتيح سلكية مقاومة للماء بمفاتيح صامتة لتجربة كتابة مريحة.',
+                    'specifications' => '<ul><li>تصميم مقاوم للماء</li><li>مفاتيح صامتة</li><li>تخطيط بالحجم الكامل</li><li>هيكل متين</li><li>اتصال USB</li></ul>',
+                    'details' => '<p>لوحة مفاتيح سلكية احترافية تتميز بتصميم مقاوم للماء ومفاتيح صامتة للكتابة المريحة والهادئة في أي بيئة.</p>',
                     'price' => 34.99,
                     'sale_price' => 29.99,
                     'cover_image' => 'https://images.unsplash.com/photo-836552?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-718250?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-944115?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-258861?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-652441?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-824684?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Wireless Keyboard and Mouse Combo',
-                    'description' => 'Complete wireless keyboard and mouse combo set for desktop productivity.',
-                    'specifications' => '<ul><li>Wireless keyboard and mouse</li><li>2.4GHz connectivity</li><li>Long battery life</li><li>Compact design</li><li>USB receiver included</li></ul>',
-                    'details' => '<p>Complete wireless combo set featuring full-size keyboard and optical mouse with reliable 2.4GHz connectivity and extended battery life.</p>',
+                    'name' => 'طقم لوحة مفاتيح وفأرة لاسلكية',
+                    'description' => 'طقم لوحة مفاتيح وفأرة لاسلكية متكامل لإنتاجية المكتب.',
+                    'specifications' => '<ul><li>لوحة مفاتيح وفأرة لاسلكية</li><li>اتصال 2.4GHz</li><li>عمر بطارية طويل</li><li>تصميم مدمج</li><li>يشمل مستقبل USB</li></ul>',
+                    'details' => '<p>طقم لاسلكي متكامل يضم لوحة مفاتيح بالحجم الكامل وفأرة بصرية مع اتصال موثوق 2.4GHz وعمر بطارية ممتد.</p>',
                     'price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-901190?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-780106?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005786?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-670852?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-517117?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-179129?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Premium Adjustable Laptop Stand',
-                    'description' => 'Ergonomic adjustable laptop stand with multiple height and angle settings.',
-                    'specifications' => '<ul><li>Multiple height settings</li><li>Adjustable viewing angles</li><li>Aluminum construction</li><li>Heat dissipation design</li><li>Portable and foldable</li></ul>',
-                    'details' => '<p>Premium aluminum laptop stand with multiple adjustment options for ergonomic positioning and improved airflow for better laptop cooling.</p>',
+                    'name' => 'حامل كمبيوتر محمول قابل للتعديل فاخر',
+                    'description' => 'حامل كمبيوتر محمول مريح قابل للتعديل مع إعدادات متعددة للارتفاع والزاوية.',
+                    'specifications' => '<ul><li>إعدادات ارتفاع متعددة</li><li>زوايا عرض قابلة للتعديل</li><li>هيكل من الألومنيوم</li><li>تصميم لتبديد الحرارة</li><li>محمول وقابل للطي</li></ul>',
+                    'details' => '<p>حامل كمبيوتر محمول من الألومنيوم الفاخر مع خيارات تعديل متعددة لوضعية مريحة وتحسين تدفق الهواء لتبريد أفضل للكمبيوتر المحمول.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-716833?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-697479?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-354821?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-168030?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-580120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-769047?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Zebronics ZEB-NC3300 USB Powered Laptop Cooling Pad',
-                    'description' => 'USB-powered laptop cooling pad with multiple fans for optimal temperature control.',
-                    'specifications' => '<ul><li>USB powered operation</li><li>Multiple cooling fans</li><li>Adjustable height</li><li>LED indicators</li><li>Universal laptop compatibility</li></ul>',
-                    'details' => '<p>Zebronics ZEB-NC3300 cooling pad features multiple fans and adjustable height to keep your laptop cool during intensive tasks.</p>',
+                    'name' => 'مبرد كمبيوتر محمول Zebronics ZEB-NC3300 بطاقة USB',
+                    'description' => 'مبرد كمبيوتر محمول يعمل بالطاقة USB مع مراوح متعددة للتحكم الأمثل في الحرارة.',
+                    'specifications' => '<ul><li>يعمل بالطاقة USB</li><li>مراوح تبريد متعددة</li><li>ارتفاع قابل للتعديل</li><li>مؤشرات LED</li><li>توافق شامل مع أجهزة الكمبيوتر المحمولة</li></ul>',
+                    'details' => '<p>يتميز مبرد Zebronics ZEB-NC3300 بمراوح متعددة وارتفاع قابل للتعديل للحفاظ على برودة الكمبيوتر المحمول أثناء المهام المكثفة.</p>',
                     'price' => 29.99,
                     'sale_price' => 24.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Up to 15.6"', 'Up to 17"']]
+                        ['name' => 'الحجم', 'options' => ['حتى 15.6 بوصة', 'حتى 17 بوصة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-912774?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-004779?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333910?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-185555?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-268171?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214439?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Zebronics 200HB USB Hub',
-                    'description' => 'Multi-port USB hub for expanding connectivity options with high-speed data transfer.',
-                    'specifications' => '<ul><li>Multiple USB ports</li><li>High-speed data transfer</li><li>Plug and play</li><li>Compact design</li><li>LED power indicator</li></ul>',
-                    'details' => '<p>Zebronics 200HB USB Hub expands your connectivity with multiple high-speed USB ports in a compact, plug-and-play design.</p>',
+                    'name' => 'موزع USB Zebronics 200HB',
+                    'description' => 'موزع USB متعدد المنافذ لتوسيع خيارات الاتصال مع نقل بيانات عالي السرعة.',
+                    'specifications' => '<ul><li>منافذ USB متعددة</li><li>نقل بيانات عالي السرعة</li><li>تشغيل فوري</li><li>تصميم مدمج</li><li>مؤشر LED للطاقة</li></ul>',
+                    'details' => '<p>يوسع موزع Zebronics 200HB اتصالك بمنافذ USB متعددة عالية السرعة في تصميم مدمج يعمل فورًا.</p>',
                     'price' => 19.99,
                     'variants' => [
-                        ['name' => 'Ports', 'options' => ['4 Port', '7 Port']]
+                        ['name' => 'المنافذ', 'options' => ['4 منافذ', '7 منافذ']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-909834?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-318563?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-663985?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-771965?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-094490?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-913876?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Zebronics Live Pro Webcam',
-                    'description' => 'HD webcam with auto-focus and built-in microphone for video calls and streaming.',
-                    'specifications' => '<ul><li>1080p HD video</li><li>Auto-focus technology</li><li>Built-in microphone</li><li>USB plug and play</li><li>Wide-angle lens</li></ul>',
-                    'details' => '<p>Zebronics Live Pro Webcam delivers crystal-clear 1080p video with auto-focus and built-in microphone for professional video calls and streaming.</p>',
+                    'name' => 'كاميرا ويب Zebronics Live Pro',
+                    'description' => 'كاميرا ويب عالية الدقة مع تركيز تلقائي وميكروفون مدمج لمكالمات الفيديو والبث.',
+                    'specifications' => '<ul><li>فيديو HD بدقة 1080p</li><li>تقنية التركيز التلقائي</li><li>ميكروفون مدمج</li><li>تشغيل فوري عبر USB</li><li>عدسة واسعة الزاوية</li></ul>',
+                    'details' => '<p>توفر كاميرا Zebronics Live Pro فيديو واضحًا بدقة 1080p مع تركيز تلقائي وميكروفون مدمج لمكالمات فيديو وبث احترافي.</p>',
                     'price' => 44.99,
                     'sale_price' => 39.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black', 'White']]
+                        ['name' => 'اللون', 'options' => ['أسود', 'أبيض']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-479324?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-326205?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-642534?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-152297?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777478?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-670329?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'UnionSine External Hard Disk Drive 500GB Portable',
-                    'description' => 'Portable external hard drive with 500GB storage capacity and USB 3.0 connectivity.',
-                    'specifications' => '<ul><li>500GB storage capacity</li><li>USB 3.0 connectivity</li><li>Portable design</li><li>Plug and play</li><li>Compatible with multiple OS</li></ul>',
-                    'details' => '<p>UnionSine 500GB portable external hard drive offers reliable storage expansion with fast USB 3.0 connectivity and cross-platform compatibility.</p>',
+                    'name' => 'قرص صلب خارجي UnionSine محمول بسعة 500GB',
+                    'description' => 'قرص صلب خارجي محمول بسعة تخزين 500GB واتصال USB 3.0.',
+                    'specifications' => '<ul><li>سعة تخزين 500GB</li><li>اتصال USB 3.0</li><li>تصميم محمول</li><li>تشغيل فوري</li><li>متوافق مع أنظمة تشغيل متعددة</li></ul>',
+                    'details' => '<p>يوفر القرص الصلب الخارجي المحمول UnionSine بسعة 500GB توسيع تخزين موثوقًا مع اتصال USB 3.0 سريع وتوافق عبر المنصات.</p>',
                     'price' => 59.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black', 'Blue']]
+                        ['name' => 'اللون', 'options' => ['أسود', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-296647?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-525472?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-836137?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-113397?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-660080?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129174?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Men\'s Fashion' => [
+            'أزياء الرجال' => [
                 [
-                    'name' => 'H&M Men\'s Regular Fit T-shirt',
-                    'description' => 'Comfortable regular fit t-shirt made from soft cotton blend fabric.',
-                    'specifications' => '<ul><li>100% Cotton</li><li>Regular fit</li><li>Crew neck</li><li>Short sleeves</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Classic regular fit t-shirt perfect for everyday wear. Made from soft cotton blend for comfort and durability.</p>',
+                    'name' => 'تيشيرت H&M رجالي بقصّة عادية',
+                    'description' => 'تيشيرت مريح بقصّة عادية مصنوع من قماش قطن مخلوط ناعم.',
+                    'specifications' => '<ul><li>قطن 100%</li><li>قصّة عادية</li><li>ياقة دائرية</li><li>أكمام قصيرة</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>تيشيرت كلاسيكي بقصّة عادية مثالي للارتداء اليومي. مصنوع من قطن مخلوط ناعم للراحة والمتانة.</p>',
                     'price' => 12.99,
                     'cover_image' => 'https://images.unsplash.com/photo-456247?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-363562?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-451867?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-805385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-314472?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026809?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Highlander Men\'s Solid Casual Shirt',
-                    'description' => 'Stylish solid casual shirt with modern fit and premium fabric.',
-                    'specifications' => '<ul><li>Cotton blend fabric</li><li>Modern fit</li><li>Button-down collar</li><li>Long sleeves</li><li>Easy care</li></ul>',
-                    'details' => '<p>Premium casual shirt with modern fit and solid colors. Perfect for both casual and semi-formal occasions.</p>',
+                    'name' => 'قميص Highlander رجالي كاجوال سادة',
+                    'description' => 'قميص كاجوال أنيق بلون سادة مع قصّة عصرية وقماش فاخر.',
+                    'specifications' => '<ul><li>قماش قطن مخلوط</li><li>قصّة عصرية</li><li>ياقة بأزرار</li><li>أكمام طويلة</li><li>سهل العناية</li></ul>',
+                    'details' => '<p>قميص كاجوال فاخر بقصّة عصرية وألوان سادة. مثالي للمناسبات الكاجوال وشبه الرسمية.</p>',
                     'price' => 29.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['S', 'M', 'L', 'XL', 'XXL']]
+                        ['name' => 'المقاس', 'options' => ['S', 'M', 'L', 'XL', 'XXL']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-749990?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-817346?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-597680?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-346874?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143402?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-030362?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Levi\'s Men\'s 511 Slim Fit Jeans',
-                    'description' => 'Classic slim fit jeans with authentic Levi\'s styling and comfort.',
-                    'specifications' => '<ul><li>99% Cotton, 1% Elastane</li><li>Slim fit</li><li>Five-pocket styling</li><li>Button fly</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Iconic Levi\'s 511 slim fit jeans with classic styling and modern comfort. Perfect fit for everyday wear.</p>',
+                    'name' => 'جينز Levi\'s 511 رجالي بقصّة نحيفة',
+                    'description' => 'جينز كلاسيكي بقصّة نحيفة مع لمسة Levi\'s الأصيلة والراحة.',
+                    'specifications' => '<ul><li>قطن 99%، إيلاستان 1%</li><li>قصّة نحيفة</li><li>تصميم بخمسة جيوب</li><li>إغلاق بأزرار</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>جينز Levi\'s 511 الأيقوني بقصّة نحيفة مع تصميم كلاسيكي وراحة عصرية. قصّة مثالية للارتداء اليومي.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['30', '32', '34', '36', '38', '40']]
+                        ['name' => 'المقاس', 'options' => ['30', '32', '34', '36', '38', '40']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-998197?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-835718?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-517342?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-869095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-203811?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-162683?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Campus Sutra Men\'s Solid Tailored Trousers',
-                    'description' => 'Formal tailored trousers with slim fit and premium fabric.',
-                    'specifications' => '<ul><li>Polyester blend</li><li>Tailored fit</li><li>Flat front</li><li>Belt loops</li><li>Dry clean recommended</li></ul>',
-                    'details' => '<p>Professional tailored trousers perfect for office wear and formal occasions. Premium fabric with comfortable fit.</p>',
+                    'name' => 'بنطال Campus Sutra رجالي رسمي بقصّة مفصّلة',
+                    'description' => 'بنطال رسمي بقصّة مفصّلة وتصميم نحيف وقماش فاخر.',
+                    'specifications' => '<ul><li>خليط البوليستر</li><li>قصّة مفصّلة</li><li>أمامي مسطح</li><li>حلقات للحزام</li><li>ينصح بالتنظيف الجاف</li></ul>',
+                    'details' => '<p>بنطال رسمي مفصّل مثالي للارتداء في المكتب والمناسبات الرسمية. قماش فاخر مع قصّة مريحة.</p>',
                     'price' => 39.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['30', '32', '34', '36', '38', '40']]
+                        ['name' => 'المقاس', 'options' => ['30', '32', '34', '36', '38', '40']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-932220?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-624927?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-711208?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777343?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-090316?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-700208?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Lymio Jackets | Jacket for men',
-                    'description' => 'Stylish casual jacket with modern design and comfortable fit.',
-                    'specifications' => '<ul><li>Polyester outer shell</li><li>Zip closure</li><li>Side pockets</li><li>Regular fit</li><li>Water resistant</li></ul>',
-                    'details' => '<p>Modern casual jacket perfect for layering. Water-resistant fabric with comfortable fit for everyday wear.</p>',
+                    'name' => 'جاكيت Lymio رجالي',
+                    'description' => 'جاكيت كاجوال أنيق بتصميم عصري وقصّة مريحة.',
+                    'specifications' => '<ul><li>طبقة خارجية من البوليستر</li><li>إغلاق بسحاب</li><li>جيوب جانبية</li><li>قصّة عادية</li><li>مقاوم للماء</li></ul>',
+                    'details' => '<p>جاكيت كاجوال عصري مثالي للطبقات. قماش مقاوم للماء مع قصّة مريحة للارتداء اليومي.</p>',
                     'price' => 59.99,
                     'sale_price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-815661?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-491411?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-585533?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-756068?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-328120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-499345?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Nobero Oversized Hoodie',
-                    'description' => 'Comfortable oversized hoodie with soft fleece lining and modern style.',
-                    'specifications' => '<ul><li>Cotton-polyester blend</li><li>Oversized fit</li><li>Fleece lining</li><li>Kangaroo pocket</li><li>Adjustable hood</li></ul>',
-                    'details' => '<p>Trendy oversized hoodie with soft fleece lining for maximum comfort. Perfect for casual wear and streetwear style.</p>',
+                    'name' => 'هودي Nobero بقصّة واسعة',
+                    'description' => 'هودي مريح بقصّة واسعة مع بطانة صوفية ناعمة وأسلوب عصري.',
+                    'specifications' => '<ul><li>خليط القطن والبوليستر</li><li>قصّة واسعة</li><li>بطانة صوفية</li><li>جيب كنغارو</li><li>قلنسوة قابلة للتعديل</li></ul>',
+                    'details' => '<p>هودي عصري بقصّة واسعة مع بطانة صوفية ناعمة لأقصى راحة. مثالي للارتداء الكاجوال وأسلوب الشارع.</p>',
                     'price' => 44.99,
                     'cover_image' => 'https://images.unsplash.com/photo-681903?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-206454?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-702983?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005492?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-148962?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462524?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cruiser Mens Casual Sneakers',
-                    'description' => 'Comfortable casual sneakers with modern design and cushioned sole.',
-                    'specifications' => '<ul><li>Synthetic upper</li><li>Cushioned sole</li><li>Lace-up closure</li><li>Breathable lining</li><li>Rubber outsole</li></ul>',
-                    'details' => '<p>Stylish casual sneakers perfect for everyday wear. Comfortable cushioned sole with modern design and durable construction.</p>',
+                    'name' => 'حذاء Cruiser رياضي كاجوال رجالي',
+                    'description' => 'حذاء رياضي كاجوال مريح بتصميم عصري ونعل مبطن.',
+                    'specifications' => '<ul><li>جزء علوي صناعي</li><li>نعل مبطن</li><li>إغلاق بأربطة</li><li>بطانة قابلة للتنفس</li><li>نعل خارجي مطاطي</li></ul>',
+                    'details' => '<p>حذاء رياضي كاجوال أنيق مثالي للارتداء اليومي. نعل مبطن مريح مع تصميم عصري وهيكل متين.</p>',
                     'price' => 34.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['7', '8', '9', '10', '11', '12']],
-                        ['name' => 'Color', 'options' => ['Black', 'Green', 'Blue']]
+                        ['name' => 'المقاس', 'options' => ['7', '8', '9', '10', '11', '12']],
+                        ['name' => 'اللون', 'options' => ['أسود', 'أخضر', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-605445?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-708855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-292696?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-051961?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-477625?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-881592?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fastrack-Tees Hype Adventure Quartz Analog Watch',
-                    'description' => 'Sporty analog watch with adventure-inspired design and reliable quartz movement.',
-                    'specifications' => '<ul><li>Quartz movement</li><li>Analog display</li><li>Water resistant</li><li>Durable strap</li><li>Adventure design</li></ul>',
-                    'details' => '<p>Adventure-inspired analog watch with reliable quartz movement. Perfect for active lifestyle with sporty design and water resistance.</p>',
+                    'name' => 'ساعة Fastrack-Tees Hype Adventure الكوارتز التناظرية',
+                    'description' => 'ساعة تناظرية رياضية بتصميم مستوحى من المغامرة وحركة كوارتز موثوقة.',
+                    'specifications' => '<ul><li>حركة كوارتز</li><li>عرض تناظري</li><li>مقاومة للماء</li><li>سوار متين</li><li>تصميم مغامرات</li></ul>',
+                    'details' => '<p>ساعة تناظرية مستوحاة من المغامرة مع حركة كوارتز موثوقة. مثالية لأسلوب الحياة النشط بتصميم رياضي ومقاومة للماء.</p>',
                     'price' => 49.99,
                     'sale_price' => 39.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Teal', 'Brown', 'Cream', 'White']]
+                        ['name' => 'اللون', 'options' => ['تركوازي', 'بني', 'كريمي', 'أبيض']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-360234?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-356399?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-873215?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-690933?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-429159?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-162255?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Women\'s Fashion' => [
+            'أزياء النساء' => [
                 [
-                    'name' => 'Pure Cotton Smocked Mexi Dress',
-                    'description' => 'Comfortable pure cotton dress with smocked detailing and Mexican-inspired design.',
-                    'specifications' => '<ul><li>100% Pure cotton</li><li>Smocked bodice</li><li>Mexican-inspired print</li><li>Midi length</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Beautiful pure cotton dress featuring traditional smocked detailing and vibrant Mexican-inspired patterns. Perfect for casual and semi-formal occasions.</p>',
+                    'name' => 'فستان Mexi من القطن الخالص بقصّة مجمّعة',
+                    'description' => 'فستان مريح من القطن الخالص مع تفاصيل مجمّعة وتصميم مستوحى من المكسيك.',
+                    'specifications' => '<ul><li>قطن خالص 100%</li><li>صدرية مجمّعة</li><li>طباعة مستوحاة من المكسيك</li><li>طول متوسط</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>فستان جميل من القطن الخالص يتميز بتفاصيل مجمّعة تقليدية وأنماط نابضة مستوحاة من المكسيك. مثالي للمناسبات الكاجوال وشبه الرسمية.</p>',
                     'price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-275144?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-918818?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-577440?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-591925?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-264563?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-643146?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Stretchable Panelled Peplum Top',
-                    'description' => 'Stylish peplum top with panelled design and stretchable fabric for comfort.',
-                    'specifications' => '<ul><li>Stretchable fabric blend</li><li>Panelled design</li><li>Peplum silhouette</li><li>Round neck</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Trendy peplum top with flattering panelled design and comfortable stretchable fabric. Perfect for office wear and casual outings.</p>',
+                    'name' => 'بلوزة Peplum قابلة للتمدد بتصميم مقسّم',
+                    'description' => 'بلوزة Peplum أنيقة بتصميم مقسّم وقماش قابل للتمدد للراحة.',
+                    'specifications' => '<ul><li>خليط قماش قابل للتمدد</li><li>تصميم مقسّم</li><li>صورة ظلية Peplum</li><li>رقبة دائرية</li><li>قابلة للغسل في الغسالة</li></ul>',
+                    'details' => '<p>بلوزة Peplum عصرية بتصميم مقسّم جذاب وقماش مريح قابل للتمدد. مثالية لملابس المكتب والخروجات الكاجوال.</p>',
                     'price' => 34.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['XS', 'S', 'M', 'L', 'XL']]
+                        ['name' => 'المقاس', 'options' => ['XS', 'S', 'M', 'L', 'XL']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-911325?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-619150?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-529704?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-398662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-125508?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-020740?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Floral Print Straight Kurtis',
-                    'description' => 'Elegant straight kurti with beautiful floral print and comfortable fit.',
-                    'specifications' => '<ul><li>Cotton blend fabric</li><li>Floral print design</li><li>Straight cut</li><li>Three-quarter sleeves</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Beautiful straight kurti featuring elegant floral prints. Perfect for ethnic wear and casual occasions with comfortable cotton blend fabric.</p>',
+                    'name' => 'كورتي مستقيم بطباعة الأزهار',
+                    'description' => 'كورتي أنيق بقصّة مستقيمة مع طباعة أزهار جميلة وقصّة مريحة.',
+                    'specifications' => '<ul><li>قماش قطن مخلوط</li><li>تصميم بطباعة الأزهار</li><li>قصّة مستقيمة</li><li>أكمام ثلاثة أرباع</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>كورتي مستقيم جميل يتميز بطباعات زهرية أنيقة. مثالي للملابس التقليدية والمناسبات الكاجوال مع قماش قطن مخلوط مريح.</p>',
                     'price' => 29.99,
                     'sale_price' => 24.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['XS', 'S', 'M', 'L', 'XL', 'XXL']]
+                        ['name' => 'المقاس', 'options' => ['XS', 'S', 'M', 'L', 'XL', 'XXL']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-968381?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-730786?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-649153?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-060604?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-372958?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-501360?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Light Washed Straight Fit Jeans',
-                    'description' => 'Classic straight fit jeans in light wash with comfortable stretch.',
-                    'specifications' => '<ul><li>98% Cotton, 2% Elastane</li><li>Light wash finish</li><li>Straight fit</li><li>Five-pocket styling</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Classic straight fit jeans in trendy light wash. Comfortable stretch fabric with timeless styling perfect for everyday wear.</p>',
+                    'name' => 'جينز بقصّة مستقيمة بلون غسيل فاتح',
+                    'description' => 'جينز كلاسيكي بقصّة مستقيمة بلون غسيل فاتح مع قماش مطاطي مريح.',
+                    'specifications' => '<ul><li>قطن 98%، إيلاستان 2%</li><li>لمسة غسيل فاتح</li><li>قصّة مستقيمة</li><li>تصميم بخمسة جيوب</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>جينز كلاسيكي بقصّة مستقيمة بلون غسيل فاتح عصري. قماش مطاطي مريح مع تصميم خالد مثالي للارتداء اليومي.</p>',
                     'price' => 59.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['24', '26', '28', '30', '32', '34']]
+                        ['name' => 'المقاس', 'options' => ['24', '26', '28', '30', '32', '34']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-196364?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-313328?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-484762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-086383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-221554?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Pure Cotton Box Pleated Midi Skirt',
-                    'description' => 'Elegant midi skirt with box pleats made from pure cotton fabric.',
-                    'specifications' => '<ul><li>100% Pure cotton</li><li>Box pleated design</li><li>Midi length</li><li>Side zip closure</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Sophisticated midi skirt featuring classic box pleats in pure cotton. Perfect for office wear and formal occasions with timeless elegance.</p>',
+                    'name' => 'تنورة متوسطة من القطن الخالص بثنيات صندوقية',
+                    'description' => 'تنورة متوسطة أنيقة بثنيات صندوقية مصنوعة من قماش القطن الخالص.',
+                    'specifications' => '<ul><li>قطن خالص 100%</li><li>تصميم بثنيات صندوقية</li><li>طول متوسط</li><li>إغلاق بسحاب جانبي</li><li>قابلة للغسل في الغسالة</li></ul>',
+                    'details' => '<p>تنورة متوسطة راقية تتميز بثنيات صندوقية كلاسيكية من القطن الخالص. مثالية لملابس المكتب والمناسبات الرسمية بأناقة خالدة.</p>',
                     'price' => 44.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['XS', 'S', 'M', 'L', 'XL']]
+                        ['name' => 'المقاس', 'options' => ['XS', 'S', 'M', 'L', 'XL']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-415854?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-676491?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-200169?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-906652?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-534782?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-952346?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Clarice Pleated Shoulder Bag',
-                    'description' => 'Stylish shoulder bag with pleated design and premium quality materials.',
-                    'specifications' => '<ul><li>Premium synthetic leather</li><li>Pleated design</li><li>Adjustable shoulder strap</li><li>Multiple compartments</li><li>Magnetic closure</li></ul>',
-                    'details' => '<p>Elegant shoulder bag featuring sophisticated pleated design. Multiple compartments and adjustable strap make it perfect for daily use.</p>',
+                    'name' => 'حقيبة كتف Clarice مجعّدة',
+                    'description' => 'حقيبة كتف أنيقة بتصميم مجعّد وخامات عالية الجودة.',
+                    'specifications' => '<ul><li>جلد صناعي فاخر</li><li>تصميم مجعّد</li><li>حزام كتف قابل للتعديل</li><li>أقسام متعددة</li><li>إغلاق مغناطيسي</li></ul>',
+                    'details' => '<p>حقيبة كتف أنيقة تتميز بتصميم مجعّد راقٍ. الأقسام المتعددة والحزام القابل للتعديل يجعلانها مثالية للاستخدام اليومي.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
                     'cover_image' => 'https://images.unsplash.com/photo-436231?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-250524?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-291600?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-833493?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404808?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-052606?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Ankle Loop Wedges Heels',
-                    'description' => 'Comfortable wedge heels with ankle loop design for secure fit.',
-                    'specifications' => '<ul><li>Wedge heel design</li><li>Ankle loop closure</li><li>Cushioned footbed</li><li>Non-slip sole</li><li>3-inch heel height</li></ul>',
-                    'details' => '<p>Stylish wedge heels with secure ankle loop design. Cushioned footbed and non-slip sole provide comfort and stability for all-day wear.</p>',
+                    'name' => 'حذاء كعب إسفيني بحلقة كاحل',
+                    'description' => 'حذاء كعب إسفيني مريح مع تصميم حلقة كاحل لثبات آمن.',
+                    'specifications' => '<ul><li>تصميم كعب إسفيني</li><li>إغلاق بحلقة الكاحل</li><li>نعل داخلي مبطن</li><li>نعل مانع للانزلاق</li><li>ارتفاع الكعب 3 بوصات</li></ul>',
+                    'details' => '<p>حذاء كعب إسفيني أنيق مع تصميم حلقة كاحل آمنة. نعل داخلي مبطن ونعل مانع للانزلاق يوفران الراحة والثبات للارتداء طوال اليوم.</p>',
                     'price' => 54.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
-                        ['name' => 'Color', 'options' => ['Green', 'Blue']]
+                        ['name' => 'المقاس', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
+                        ['name' => 'اللون', 'options' => ['أخضر', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-069737?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-369331?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303376?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-823641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-270283?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-568579?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Elowen Vine Lab-Grown Diamond Pendant',
-                    'description' => 'Elegant pendant featuring lab-grown diamonds in vine-inspired design.',
-                    'specifications' => '<ul><li>Lab-grown diamonds</li><li>Sterling silver chain</li><li>Vine-inspired design</li><li>Hypoallergenic</li><li>Gift box included</li></ul>',
-                    'details' => '<p>Exquisite pendant featuring ethically sourced lab-grown diamonds in a beautiful vine-inspired design. Perfect for special occasions and everyday elegance.</p>',
+                    'name' => 'قلادة Elowen Vine بألماس مخبري',
+                    'description' => 'قلادة أنيقة بماسات مخبرية بتصميم مستوحى من الكرمة.',
+                    'specifications' => '<ul><li>ألماس مخبري</li><li>سلسلة من الفضة الإسترليني</li><li>تصميم مستوحى من الكرمة</li><li>مضاد للحساسية</li><li>تشمل علبة هدية</li></ul>',
+                    'details' => '<p>قلادة فاخرة بماسات مخبرية مصدرها أخلاقي بتصميم جميل مستوحى من الكرمة. مثالية للمناسبات الخاصة والأناقة اليومية.</p>',
                     'price' => 199.99,
                     'sale_price' => 179.99,
                     'cover_image' => 'https://images.unsplash.com/photo-364777?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-463464?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-798356?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-833284?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249408?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-939352?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Kid\'s Fashion' => [
+            'أزياء الأطفال' => [
                 [
-                    'name' => 'Boy\'s Cotton Regular Fit T-Shirt',
-                    'description' => 'Comfortable cotton t-shirt with regular fit, perfect for everyday wear.',
-                    'specifications' => '<ul><li>100% Cotton fabric</li><li>Regular fit design</li><li>Crew neck style</li><li>Machine washable</li><li>Soft and breathable</li></ul>',
-                    'details' => '<p>Classic cotton t-shirt designed for boys with regular fit for comfort and style. Made from soft, breathable cotton that\'s perfect for active kids.</p>',
+                    'name' => 'تيشيرت أولاد قطني بقصّة عادية',
+                    'description' => 'تيشيرت قطني مريح بقصّة عادية، مثالي للارتداء اليومي.',
+                    'specifications' => '<ul><li>قماش قطني 100%</li><li>تصميم بقصّة عادية</li><li>ياقة دائرية</li><li>قابل للغسل في الغسالة</li><li>ناعم وقابل للتنفس</li></ul>',
+                    'details' => '<p>تيشيرت قطني كلاسيكي مصمم للأولاد بقصّة عادية للراحة والأناقة. مصنوع من قطن ناعم قابل للتنفس مثالي للأطفال النشطين.</p>',
                     'price' => 12.99,
                     'variants' => [
                         ['name' => 'Size', 'options' => ['3-6M']]
@@ -732,10 +732,10 @@ class ProductSeeder extends Seeder
                     'images' => 'https://images.unsplash.com/photo-589925?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-310457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-410968?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-323706?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-413447?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Girls Cotton Casual Dress',
-                    'description' => 'Adorable cotton dress for girls with comfortable fit and playful design.',
-                    'specifications' => '<ul><li>100% Cotton material</li><li>Casual style design</li><li>Comfortable fit</li><li>Easy care fabric</li><li>Colorful patterns</li></ul>',
-                    'details' => '<p>Beautiful cotton dress perfect for casual occasions. Features comfortable fit and playful designs that girls love, made from soft cotton for all-day comfort.</p>',
+                    'name' => 'فستان قطني كاجوال للبنات',
+                    'description' => 'فستان قطني لطيف للبنات بقصّة مريحة وتصميم مرح.',
+                    'specifications' => '<ul><li>خامة قطنية 100%</li><li>تصميم بأسلوب كاجوال</li><li>قصّة مريحة</li><li>قماش سهل العناية</li><li>أنماط ملونة</li></ul>',
+                    'details' => '<p>فستان قطني جميل مثالي للمناسبات الكاجوال. يتميز بقصّة مريحة وتصميمات مرحة تحبها البنات، مصنوع من قطن ناعم للراحة طوال اليوم.</p>',
                     'price' => 24.99,
                     'variants' => [
                         ['name' => 'Size', 'options' => ['3-6M']]
@@ -744,2233 +744,2233 @@ class ProductSeeder extends Seeder
                     'images' => 'https://images.unsplash.com/photo-537623?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-003962?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-509073?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-427162?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-231764?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Kid\'s Running Shorts',
-                    'description' => 'Lightweight running shorts designed for active kids with moisture-wicking fabric.',
-                    'specifications' => '<ul><li>Moisture-wicking fabric</li><li>Lightweight design</li><li>Elastic waistband</li><li>Side pockets</li><li>Quick-dry material</li></ul>',
-                    'details' => '<p>Perfect running shorts for active kids featuring moisture-wicking fabric and lightweight design. Elastic waistband and side pockets provide comfort and functionality.</p>',
+                    'name' => 'شورت جري للأطفال',
+                    'description' => 'شورت جري خفيف الوزن مصمم للأطفال النشطين بقماش يمتص العرق.',
+                    'specifications' => '<ul><li>قماش يمتص العرق</li><li>تصميم خفيف الوزن</li><li>حزام خصر مطاطي</li><li>جيوب جانبية</li><li>خامة سريعة الجفاف</li></ul>',
+                    'details' => '<p>شورت جري مثالي للأطفال النشطين بقماش يمتص العرق وتصميم خفيف الوزن. حزام الخصر المطاطي والجيوب الجانبية يوفران الراحة والوظائف.</p>',
                     'price' => 16.99,
                     'cover_image' => 'https://images.unsplash.com/photo-888542?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-110975?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-549864?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-893722?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-132236?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-486588?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Sports Walking Shoes for Kids',
-                    'description' => 'Comfortable sports shoes designed for walking and everyday activities.',
-                    'specifications' => '<ul><li>Cushioned sole</li><li>Breathable mesh upper</li><li>Non-slip outsole</li><li>Velcro closure</li><li>Lightweight construction</li></ul>',
-                    'details' => '<p>Comfortable sports walking shoes perfect for active kids. Features cushioned sole, breathable mesh upper, and easy velcro closure for convenience.</p>',
+                    'name' => 'حذاء مشي رياضي للأطفال',
+                    'description' => 'حذاء رياضي مريح مصمم للمشي والأنشطة اليومية.',
+                    'specifications' => '<ul><li>نعل مبطن</li><li>جزء علوي من شبكة قابلة للتنفس</li><li>نعل خارجي مانع للانزلاق</li><li>إغلاق بفيلكرو</li><li>هيكل خفيف الوزن</li></ul>',
+                    'details' => '<p>حذاء مشي رياضي مريح مثالي للأطفال النشطين. يتميز بنعل مبطن وجزء علوي شبكي قابل للتنفس وإغلاق سهل بفيلكرو للراحة.</p>',
                     'price' => 34.99,
                     'sale_price' => 29.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['4-4.5 Years']]
+                        ['name' => 'المقاس', 'options' => ['4-4.5 سنوات']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-938206?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-734465?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-988532?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-883127?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-961271?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-235478?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Kid\'s Official Characters Sweatshirt',
-                    'description' => 'Cozy sweatshirt featuring popular cartoon characters, perfect for casual wear.',
-                    'specifications' => '<ul><li>Cotton blend fabric</li><li>Official character designs</li><li>Pullover style</li><li>Ribbed cuffs and hem</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Fun and cozy sweatshirt featuring official cartoon characters that kids love. Made from soft cotton blend with ribbed cuffs for comfort and durability.</p>',
+                    'name' => 'سويت شيرت أطفال بشخصيات رسمية',
+                    'description' => 'سويت شيرت دافئ بشخصيات كرتونية مشهورة، مثالي للارتداء الكاجوال.',
+                    'specifications' => '<ul><li>قماش قطن مخلوط</li><li>تصميمات شخصيات رسمية</li><li>أسلوب باللبس فوق الرأس</li><li>أصفاد وحافة مضلّعة</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>سويت شيرت ممتع ودافئ بشخصيات كرتونية رسمية يحبها الأطفال. مصنوع من قطن مخلوط ناعم مع أصفاد مضلّعة للراحة والمتانة.</p>',
                     'price' => 28.99,
                     'cover_image' => 'https://images.unsplash.com/photo-110342?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-013304?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-522853?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-515625?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-760068?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-796778?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Toddler/Preschoolers Backpack for Kids',
-                    'description' => 'Colorful and functional backpack designed specifically for toddlers and preschoolers.',
-                    'specifications' => '<ul><li>Toddler-friendly size</li><li>Padded shoulder straps</li><li>Multiple compartments</li><li>Water-resistant material</li><li>Fun cartoon designs</li></ul>',
-                    'details' => '<p>Perfect backpack for toddlers and preschoolers with age-appropriate size and fun designs. Features padded straps and multiple compartments for organization.</p>',
+                    'name' => 'حقيبة ظهر للأطفال الصغار ومرحلة ما قبل المدرسة',
+                    'description' => 'حقيبة ظهر ملونة وعملية مصممة خصيصًا للأطفال الصغار ومرحلة ما قبل المدرسة.',
+                    'specifications' => '<ul><li>حجم مناسب للأطفال الصغار</li><li>أحزمة كتف مبطنة</li><li>أقسام متعددة</li><li>خامة مقاومة للماء</li><li>تصميمات كرتونية مرحة</li></ul>',
+                    'details' => '<p>حقيبة ظهر مثالية للأطفال الصغار ومرحلة ما قبل المدرسة بحجم مناسب للعمر وتصميمات ممتعة. تتميز بأحزمة مبطنة وأقسام متعددة للتنظيم.</p>',
                     'price' => 22.99,
                     'cover_image' => 'https://images.unsplash.com/photo-105206?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-787422?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-323717?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-485206?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-907644?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-087648?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Classic Little Sports Cap for Active Kids',
-                    'description' => 'Classic sports cap designed for active kids with adjustable fit and sun protection.',
-                    'specifications' => '<ul><li>Adjustable strap</li><li>UV protection</li><li>Breathable fabric</li><li>Classic sports design</li><li>One size fits most</li></ul>',
-                    'details' => '<p>Classic sports cap perfect for active kids featuring adjustable fit and UV protection. Breathable fabric keeps kids comfortable during outdoor activities.</p>',
+                    'name' => 'قبعة رياضية كلاسيكية صغيرة للأطفال النشطين',
+                    'description' => 'قبعة رياضية كلاسيكية مصممة للأطفال النشطين بمقاس قابل للتعديل وحماية من الشمس.',
+                    'specifications' => '<ul><li>حزام قابل للتعديل</li><li>حماية من الأشعة فوق البنفسجية</li><li>قماش قابل للتنفس</li><li>تصميم رياضي كلاسيكي</li><li>مقاس واحد يناسب معظم الأطفال</li></ul>',
+                    'details' => '<p>قبعة رياضية كلاسيكية مثالية للأطفال النشطين بمقاس قابل للتعديل وحماية من الأشعة فوق البنفسجية. القماش القابل للتنفس يحافظ على راحة الأطفال أثناء الأنشطة الخارجية.</p>',
                     'price' => 14.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Yellow', 'Pink', 'Blue']]
+                        ['name' => 'اللون', 'options' => ['أصفر', 'وردي', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-044689?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-111629?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-952748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-863191?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249869?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-076092?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Pure Cotton Full Sleeve Night Suit for Kids',
-                    'description' => 'Comfortable pure cotton night suit with full sleeves for cozy sleep.',
-                    'specifications' => '<ul><li>100% Pure cotton</li><li>Full sleeve design</li><li>Comfortable fit</li><li>Soft and breathable</li><li>Easy care fabric</li></ul>',
-                    'details' => '<p>Cozy night suit made from pure cotton for comfortable sleep. Features full sleeves and soft fabric that\'s gentle on kids\' sensitive skin.</p>',
+                    'name' => 'بيجامة أطفال قطنية خالصة بأكمام طويلة',
+                    'description' => 'بيجامة مريحة من القطن الخالص بأكمام طويلة لنوم مريح.',
+                    'specifications' => '<ul><li>قطن خالص 100%</li><li>تصميم بأكمام طويلة</li><li>قصّة مريحة</li><li>ناعمة وقابلة للتنفس</li><li>قماش سهل العناية</li></ul>',
+                    'details' => '<p>بيجامة مريحة مصنوعة من القطن الخالص لنوم مريح. تتميز بأكمام طويلة وقماش ناعم لطيف على بشرة الأطفال الحساسة.</p>',
                     'price' => 26.99,
                     'sale_price' => 22.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['3-6M']],
-                        ['name' => 'Color', 'options' => ['Blue', 'Gray', 'Pink']]
+                        ['name' => 'المقاس', 'options' => ['3-6M']],
+                        ['name' => 'اللون', 'options' => ['أزرق', 'رمادي', 'وردي']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-844771?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-941559?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-384425?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143701?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-445494?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-577024?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Footwear' => [
+            'الأحذية' => [
                 [
-                    'name' => 'Nike Men\'s Court Vision Low Next Nature Sneakers',
-                    'description' => 'Classic Nike sneakers with sustainable materials and timeless basketball-inspired design.',
-                    'specifications' => '<ul><li>Sustainable materials</li><li>Basketball-inspired design</li><li>Rubber outsole</li><li>Padded collar</li><li>Lace-up closure</li></ul>',
-                    'details' => '<p>Nike Court Vision Low Next Nature sneakers combine classic basketball style with sustainable materials. Perfect for everyday wear with comfort and iconic Nike design.</p>',
+                    'name' => 'حذاء Nike Court Vision Low Next Nature رجالي',
+                    'description' => 'حذاء Nike كلاسيكي بخامات مستدامة وتصميم خالد مستوحى من كرة السلة.',
+                    'specifications' => '<ul><li>خامات مستدامة</li><li>تصميم مستوحى من كرة السلة</li><li>نعل خارجي مطاطي</li><li>ياقة مبطنة</li><li>إغلاق بأربطة</li></ul>',
+                    'details' => '<p>يجمع حذاء Nike Court Vision Low Next Nature بين أسلوب كرة السلة الكلاسيكي والخامات المستدامة. مثالي للارتداء اليومي براحة وتصميم Nike الأيقوني.</p>',
                     'price' => 89.99,
                     'cover_image' => 'https://images.unsplash.com/photo-359926?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-714945?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-466207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-614160?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-888564?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709404?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'ANNIE Grey Women\'s Walking Shoes',
-                    'description' => 'Comfortable grey walking shoes designed for all-day comfort and support.',
-                    'specifications' => '<ul><li>Cushioned insole</li><li>Breathable mesh upper</li><li>Lightweight design</li><li>Non-slip outsole</li><li>Arch support</li></ul>',
-                    'details' => '<p>ANNIE Grey walking shoes provide exceptional comfort for daily walks and activities. Features cushioned insole and breathable design for all-day wear.</p>',
+                    'name' => 'حذاء مشي نسائي ANNIE رمادي',
+                    'description' => 'حذاء مشي رمادي مريح مصمم للراحة والدعم طوال اليوم.',
+                    'specifications' => '<ul><li>نعل داخلي مبطن</li><li>جزء علوي شبكي قابل للتنفس</li><li>تصميم خفيف الوزن</li><li>نعل خارجي مانع للانزلاق</li><li>دعم لقوس القدم</li></ul>',
+                    'details' => '<p>توفر أحذية ANNIE الرمادية للمشي راحة استثنائية للمشي والأنشطة اليومية. تتميز بنعل داخلي مبطن وتصميم قابل للتنفس للارتداء طوال اليوم.</p>',
                     'price' => 64.99,
                     'sale_price' => 54.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']]
+                        ['name' => 'المقاس', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-500027?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-932959?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-514017?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-100358?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-797953?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-547410?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Men\'s Loafer Formal Shoes',
-                    'description' => 'Classic formal loafers perfect for business and formal occasions.',
-                    'specifications' => '<ul><li>Genuine leather upper</li><li>Slip-on design</li><li>Cushioned footbed</li><li>Formal styling</li><li>Durable construction</li></ul>',
-                    'details' => '<p>Elegant formal loafers crafted from genuine leather with classic styling. Perfect for business meetings, formal events, and professional settings.</p>',
+                    'name' => 'حذاء لوفار رسمي رجالي',
+                    'description' => 'لوفار رسمي كلاسيكي مثالي للأعمال والمناسبات الرسمية.',
+                    'specifications' => '<ul><li>جزء علوي من الجلد الطبيعي</li><li>تصميم بدون أربطة</li><li>نعل داخلي مبطن</li><li>تصميم رسمي</li><li>هيكل متين</li></ul>',
+                    'details' => '<p>لوفار رسمي أنيق مصنوع من الجلد الطبيعي بتصميم كلاسيكي. مثالي لاجتماعات العمل والمناسبات الرسمية والأماكن المهنية.</p>',
                     'price' => 119.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12']]
+                        ['name' => 'المقاس', 'options' => ['7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-990733?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-654551?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-700208?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-198145?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-500126?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-866045?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Beige Casual Women Sandals',
-                    'description' => 'Stylish beige sandals perfect for casual summer wear and everyday comfort.',
-                    'specifications' => '<ul><li>Beige color design</li><li>Adjustable straps</li><li>Cushioned sole</li><li>Casual style</li><li>Comfortable fit</li></ul>',
-                    'details' => '<p>Comfortable beige sandals designed for casual wear. Features adjustable straps and cushioned sole for all-day comfort during summer activities.</p>',
+                    'name' => 'صندل نسائي كاجوال بيج',
+                    'description' => 'صندل بيج أنيق مثالي لارتداء الصيف الكاجوال والراحة اليومية.',
+                    'specifications' => '<ul><li>تصميم بلون بيج</li><li>أشرطة قابلة للتعديل</li><li>نعل مبطن</li><li>أسلوب كاجوال</li><li>قصّة مريحة</li></ul>',
+                    'details' => '<p>صندل بيج مريح مصمم للارتداء الكاجوال. يتميز بأشرطة قابلة للتعديل ونعل مبطن للراحة طوال اليوم أثناء الأنشطة الصيفية.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-860948?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-482518?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-080706?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315981?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-075682?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-058993?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Women\'s Pastel Blue Strappy Block Heels',
-                    'description' => 'Elegant pastel blue block heels with strappy design for special occasions.',
-                    'specifications' => '<ul><li>Pastel blue color</li><li>Strappy design</li><li>Block heel style</li><li>Ankle strap closure</li><li>3-inch heel height</li></ul>',
-                    'details' => '<p>Beautiful pastel blue block heels featuring elegant strappy design. Perfect for parties, dates, and special occasions with comfortable block heel construction.</p>',
+                    'name' => 'كعب نسائي بلوك أزرق باستيل بأشرطة',
+                    'description' => 'كعب بلوك أزرق باستيل أنيق بتصميم شرائط للمناسبات الخاصة.',
+                    'specifications' => '<ul><li>لون أزرق باستيل</li><li>تصميم بشرائط</li><li>أسلوب كعب بلوك</li><li>إغلاق بحزام كاحل</li><li>ارتفاع الكعب 3 بوصات</li></ul>',
+                    'details' => '<p>كعب بلوك أزرق باستيل جميل بتصميم شرائط أنيق. مثالي للحفلات والمواعيد والمناسبات الخاصة مع بناء كعب بلوك مريح.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']]
+                        ['name' => 'المقاس', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-368843?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-391104?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-218580?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462637?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-412805?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-025133?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Men Solid Open Toe Synthetic Leather Flats',
-                    'description' => 'Comfortable open toe flats made from synthetic leather for casual wear.',
-                    'specifications' => '<ul><li>Synthetic leather material</li><li>Open toe design</li><li>Flat sole construction</li><li>Slip-on style</li><li>Casual comfort</li></ul>',
-                    'details' => '<p>Comfortable men\'s open toe flats crafted from synthetic leather. Perfect for casual summer wear with easy slip-on design and breathable open toe construction.</p>',
+                    'name' => 'حذاء رجالي مسطح مفتوح الأصابع من الجلد الصناعي',
+                    'description' => 'حذاء مسطح مفتوح الأصابع مريح مصنوع من الجلد الصناعي للارتداء الكاجوال.',
+                    'specifications' => '<ul><li>خامة جلد صناعي</li><li>تصميم مفتوح الأصابع</li><li>نعل مسطح</li><li>أسلوب بدون أربطة</li><li>راحة كاجوال</li></ul>',
+                    'details' => '<p>حذاء مسطح مفتوح الأصابع مريح للرجال مصنوع من الجلد الصناعي. مثالي لارتداء الصيف الكاجوال بتصميم سهل بدون أربطة وهيكل مفتوح قابل للتنفس.</p>',
                     'price' => 49.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12']]
+                        ['name' => 'المقاس', 'options' => ['7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-618065?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-003888?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-674442?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-345644?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-488447?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-998922?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Genuine Leather Women Chelsea Boots',
-                    'description' => 'Classic Chelsea boots made from genuine leather with elastic side panels.',
-                    'specifications' => '<ul><li>Genuine leather construction</li><li>Elastic side panels</li><li>Pull-on design</li><li>Low heel</li><li>Ankle height</li></ul>',
-                    'details' => '<p>Timeless Chelsea boots crafted from genuine leather with classic elastic side panels. Perfect for both casual and semi-formal occasions with versatile styling.</p>',
+                    'name' => 'حذاء شيلسي نسائي من الجلد الطبيعي',
+                    'description' => 'حذاء شيلسي كلاسيكي مصنوع من الجلد الطبيعي مع جوانب مرنة.',
+                    'specifications' => '<ul><li>هيكل من الجلد الطبيعي</li><li>جوانب مرنة</li><li>تصميم باللبس</li><li>كعب منخفض</li><li>ارتفاع الكاحل</li></ul>',
+                    'details' => '<p>حذاء شيلسي خالد مصنوع من الجلد الطبيعي مع جوانب مرنة كلاسيكية. مثالي للمناسبات الكاجوال وشبه الرسمية بتصميم متعدد الاستخدامات.</p>',
                     'price' => 149.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
-                        ['name' => 'Color', 'options' => ['Black', 'Brown']]
+                        ['name' => 'المقاس', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
+                        ['name' => 'اللون', 'options' => ['أسود', 'بني']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-184672?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-725951?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-096420?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-951041?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-664690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-740118?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Women Thong Strap Flip Flops',
-                    'description' => 'Comfortable flip flops with thong strap design perfect for beach and casual wear.',
-                    'specifications' => '<ul><li>Thong strap design</li><li>Cushioned footbed</li><li>Non-slip sole</li><li>Lightweight construction</li><li>Beach-ready style</li></ul>',
-                    'details' => '<p>Comfortable flip flops featuring classic thong strap design with cushioned footbed. Perfect for beach days, pool parties, and casual summer activities.</p>',
+                    'name' => 'صنادل إصبع نسائية',
+                    'description' => 'صنادل إصبع مريحة بتصميم الشريط الفاصل مثالية للشاطئ والارتداء الكاجوال.',
+                    'specifications' => '<ul><li>تصميم شريط فاصل</li><li>نعل داخلي مبطن</li><li>نعل مانع للانزلاق</li><li>هيكل خفيف الوزن</li><li>أسلوب جاهز للشاطئ</li></ul>',
+                    'details' => '<p>صنادل إصبع مريحة بتصميم الشريط الفاصل الكلاسيكي ونعل داخلي مبطن. مثالية لأيام الشاطئ وحفلات المسبح والأنشطة الصيفية الكاجوال.</p>',
                     'price' => 24.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
-                        ['name' => 'Color', 'options' => ['Yellow', 'White', 'Pink']]
+                        ['name' => 'المقاس', 'options' => ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10']],
+                        ['name' => 'اللون', 'options' => ['أصفر', 'أبيض', 'وردي']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-174353?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-578220?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-719772?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-329119?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-768105?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-521006?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Accessories' => [
+            'الإكسسوارات' => [
                 [
-                    'name' => 'Tissot PRX Men Watch',
-                    'description' => 'Premium Swiss-made Tissot PRX watch with stainless steel construction and precision movement.',
-                    'specifications' => '<ul><li>Swiss quartz movement</li><li>Stainless steel case</li><li>Sapphire crystal glass</li><li>Water resistant 100m</li><li>Integrated bracelet</li></ul>',
-                    'details' => '<p>The iconic Tissot PRX combines retro aesthetics with modern Swiss precision. Features integrated bracelet design and premium materials for sophisticated timekeeping.</p>',
+                    'name' => 'ساعة Tissot PRX رجالية',
+                    'description' => 'ساعة Tissot PRX فاخرة صنعت في سويسرا بهيكل من الفولاذ المقاوم للصدأ وحركة دقيقة.',
+                    'specifications' => '<ul><li>حركة كوارتز سويسرية</li><li>هيكل من الفولاذ المقاوم للصدأ</li><li>زجاج كريستال الياقوت</li><li>مقاومة للماء حتى 100 متر</li><li>سوار مدمج</li></ul>',
+                    'details' => '<p>تجمع ساعة Tissot PRX الأيقونية بين الجماليات الرجعية والدقة السويسرية الحديثة. تتميز بتصميم سوار مدمج وخامات فاخرة لضبط وقت متطور.</p>',
                     'price' => 349.99,
                     'cover_image' => 'https://images.unsplash.com/photo-690326?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-502224?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-789997?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-326161?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461537?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-934467?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'IFLASH Octagonal Polarized Sunglasses',
-                    'description' => 'Stylish octagonal sunglasses with polarized lenses and UV protection.',
-                    'specifications' => '<ul><li>Polarized lenses</li><li>UV400 protection</li><li>Octagonal frame design</li><li>Lightweight construction</li><li>Anti-glare coating</li></ul>',
-                    'details' => '<p>IFLASH octagonal sunglasses offer unique geometric styling with superior polarized lenses for optimal eye protection and visual clarity.</p>',
+                    'name' => 'نظارات IFLASH شمسية مثمّنة بعدسات مستقطبة',
+                    'description' => 'نظارات شمسية مثمّنة أنيقة بعدسات مستقطبة وحماية من الأشعة فوق البنفسجية.',
+                    'specifications' => '<ul><li>عدسات مستقطبة</li><li>حماية UV400</li><li>تصميم إطار مثمّن</li><li>هيكل خفيف الوزن</li><li>طبقة مضادة للوهج</li></ul>',
+                    'details' => '<p>توفر نظارات IFLASH المثمّنة تصميمًا هندسيًا فريدًا مع عدسات مستقطبة فائقة لحماية مثالية للعين ووضوح بصري.</p>',
                     'price' => 79.99,
                     'sale_price' => 64.99,
                     'cover_image' => 'https://images.unsplash.com/photo-317280?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-702470?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-487171?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-207121?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-914256?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-160416?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Men Casual Evening Black Nylon Fabric Belt',
-                    'description' => 'Versatile black nylon fabric belt perfect for casual and evening wear.',
-                    'specifications' => '<ul><li>Durable nylon fabric</li><li>Metal buckle</li><li>Adjustable length</li><li>Casual to evening wear</li><li>Easy care material</li></ul>',
-                    'details' => '<p>Stylish black nylon fabric belt that transitions seamlessly from casual day wear to evening occasions. Durable construction with comfortable fit.</p>',
+                    'name' => 'حزام رجالي كاجوال أسود من قماش النايلون',
+                    'description' => 'حزام متعدد الاستخدامات من قماش النايلون الأسود مثالي للارتداء الكاجوال والمسائي.',
+                    'specifications' => '<ul><li>قماش نايلون متين</li><li>إبزيم معدني</li><li>طول قابل للتعديل</li><li>من الكاجوال إلى المسائي</li><li>خامة سهلة العناية</li></ul>',
+                    'details' => '<p>حزام أنيق من قماش النايلون الأسود ينتقل بسلاسة من الارتداء الكاجوال النهاري إلى المناسبات المسائية. هيكل متين مع قصّة مريحة.</p>',
                     'price' => 29.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['32', '34', '36', '38', '40', '42', '44']]
+                        ['name' => 'المقاس', 'options' => ['32', '34', '36', '38', '40', '42', '44']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-090967?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-192999?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-626859?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-405336?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-494856?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-965662?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Storite Compact Leather Wallet',
-                    'description' => 'Compact genuine leather wallet with multiple card slots and bill compartment.',
-                    'specifications' => '<ul><li>Genuine leather construction</li><li>Multiple card slots</li><li>Bill compartment</li><li>Compact design</li><li>RFID blocking technology</li></ul>',
-                    'details' => '<p>Storite compact leather wallet combines functionality with style. Features RFID blocking technology and organized compartments in a sleek, compact design.</p>',
+                    'name' => 'محفظة جلدية مدمجة Storite',
+                    'description' => 'محفظة جلدية طبيعية مدمجة مع فتحات بطاقات متعددة وحجرة للنقود.',
+                    'specifications' => '<ul><li>هيكل من الجلد الطبيعي</li><li>فتحات بطاقات متعددة</li><li>حجرة للنقود</li><li>تصميم مدمج</li><li>تقنية حجب RFID</li></ul>',
+                    'details' => '<p>تجمع محفظة Storite الجلدية المدمجة بين الوظائف والأناقة. تتميز بتقنية حجب RFID وحجرات منظمة في تصميم أنيق ومدمج.</p>',
                     'price' => 49.99,
                     'sale_price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-453359?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-643645?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-351030?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-446171?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-021657?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-317145?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Casual Cap for Women',
-                    'description' => 'Stylish casual cap designed for women with adjustable fit and comfortable wear.',
-                    'specifications' => '<ul><li>Cotton blend fabric</li><li>Adjustable back strap</li><li>Curved brim design</li><li>Breathable material</li><li>One size fits most</li></ul>',
-                    'details' => '<p>Fashionable casual cap perfect for everyday wear. Features comfortable cotton blend fabric and adjustable fit for all-day comfort and style.</p>',
+                    'name' => 'قبعة كاجوال للنساء',
+                    'description' => 'قبعة كاجوال أنيقة مصممة للنساء بمقاس قابل للتعديل وارتداء مريح.',
+                    'specifications' => '<ul><li>قماش قطن مخلوط</li><li>حزام خلفي قابل للتعديل</li><li>تصميم بحافة منحنية</li><li>خامة قابلة للتنفس</li><li>مقاس واحد يناسب معظم النساء</li></ul>',
+                    'details' => '<p>قبعة كاجوال عصرية مثالية للارتداء اليومي. تتميز بقماش قطن مخلوط مريح ومقاس قابل للتعديل للراحة والأناقة طوال اليوم.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-239052?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-384922?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-020852?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-790979?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-532667?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-284595?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cotton Scarf for Women',
-                    'description' => 'Soft cotton scarf with elegant patterns, perfect for all seasons.',
-                    'specifications' => '<ul><li>100% Cotton material</li><li>Lightweight design</li><li>Elegant patterns</li><li>Versatile styling</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Beautiful cotton scarf featuring elegant patterns and soft texture. Perfect for adding style to any outfit while providing comfort in all seasons.</p>',
+                    'name' => 'وشاح قطني للنساء',
+                    'description' => 'وشاح قطني ناعم بأنماط أنيقة، مثالي لجميع الفصول.',
+                    'specifications' => '<ul><li>خامة قطنية 100%</li><li>تصميم خفيف الوزن</li><li>أنماط أنيقة</li><li>تنسيق متعدد الاستخدامات</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>وشاح قطني جميل يتميز بأنماط أنيقة وملمس ناعم. مثالي لإضافة لمسة أناقة لأي زي مع توفير الراحة في جميع الفصول.</p>',
                     'price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-535271?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-061055?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-040547?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-100939?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-842094?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548718?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fancy Teardrop Motif Pendant',
-                    'description' => 'Elegant teardrop-shaped pendant with intricate motif design and chain.',
-                    'specifications' => '<ul><li>Teardrop motif design</li><li>Sterling silver plated</li><li>Intricate detailing</li><li>Adjustable chain</li><li>Gift box included</li></ul>',
-                    'details' => '<p>Exquisite teardrop motif pendant featuring intricate design work and sterling silver plating. Perfect for special occasions and everyday elegance.</p>',
+                    'name' => 'قلادة فاخرة بشكل دمعة',
+                    'description' => 'قلادة أنيقة بشكل دمعة بتصميم زخرفي معقد وسلسلة.',
+                    'specifications' => '<ul><li>تصميم زخرفي بشكل دمعة</li><li>مطلي بالفضة الإسترليني</li><li>تفاصيل معقدة</li><li>سلسلة قابلة للتعديل</li><li>تشمل علبة هدية</li></ul>',
+                    'details' => '<p>قلادة فاخرة بشكل دمعة تتميز بتصميم معقد ومطلي بالفضة الإسترليني. مثالية للمناسبات الخاصة والأناقة اليومية.</p>',
                     'price' => 59.99,
                     'variants' => [
-                        ['name' => 'Chain Length', 'options' => ['16 inch', '18 inch', '20 inch']],
-                        ['name' => 'Color', 'options' => ['Silver', 'Gold Plated', 'Rose Gold']]
+                        ['name' => 'طول السلسلة', 'options' => ['16 بوصة', '18 بوصة', '20 بوصة']],
+                        ['name' => 'اللون', 'options' => ['فضي', 'مطلي بالذهب', 'ذهب وردي']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-929454?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-062391?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-787223?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665800?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-102743?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-530869?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Monogram Embossed Sling Bag',
-                    'description' => 'Stylish sling bag with monogram embossed design and adjustable strap.',
-                    'specifications' => '<ul><li>Monogram embossed design</li><li>Adjustable shoulder strap</li><li>Multiple compartments</li><li>Zip closure</li><li>Compact size</li></ul>',
-                    'details' => '<p>Fashionable sling bag featuring elegant monogram embossed design. Perfect for daily use with organized compartments and comfortable adjustable strap.</p>',
+                    'name' => 'حقيبة كتف بنقش الحروف البارزة',
+                    'description' => 'حقيبة كتف أنيقة بتصميم نقش الحروف البارزة وحزام قابل للتعديل.',
+                    'specifications' => '<ul><li>تصميم نقش الحروف البارزة</li><li>حزام كتف قابل للتعديل</li><li>أقسام متعددة</li><li>إغلاق بسحاب</li><li>حجم مدمج</li></ul>',
+                    'details' => '<p>حقيبة كتف عصرية تتميز بتصميم نقش حروف أنيق. مثالية للاستخدام اليومي مع حجرات منظمة وحزام مريح قابل للتعديل.</p>',
                     'price' => 69.99,
                     'sale_price' => 59.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Brown', 'Sky Blue']]
+                        ['name' => 'اللون', 'options' => ['أبيض', 'بني', 'أزرق سماوي']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-643812?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-792078?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-109374?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-145384?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558906?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-628939?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Wall Decor' => [
+            'ديكور الجدران' => [
                 [
-                    'name' => 'Astro Starry Night Wall Art',
-                    'description' => 'Beautiful starry night themed wall art perfect for modern home decor.',
-                    'specifications' => '<ul><li>Premium canvas print</li><li>Fade-resistant inks</li><li>Ready to hang</li><li>Modern design</li><li>High-quality frame</li></ul>',
-                    'details' => '<p>Transform your space with this stunning Astro Starry Night wall art featuring celestial themes and modern artistic design.</p>',
+                    'name' => 'لوحة جدارية Astro ليلة النجوم',
+                    'description' => 'لوحة جدارية جميلة بموضوع الليلة المرصعة بالنجوم مثالية لديكور المنزل الحديث.',
+                    'specifications' => '<ul><li>طباعة كانفاس فاخرة</li><li>أحبار مقاومة للبهتان</li><li>جاهزة للتعليق</li><li>تصميم عصري</li><li>إطار عالي الجودة</li></ul>',
+                    'details' => '<p>حوّل مساحتك مع هذه اللوحة الجدارية الرائعة Astro ليلة النجوم التي تتميز بمواضيع سماوية وتصميم فني عصري.</p>',
                     'price' => 89.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['12x16 inch', '16x20 inch', '20x24 inch']]
+                        ['name' => 'الحجم', 'options' => ['12x16 بوصة', '16x20 بوصة', '20x24 بوصة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-481055?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-698814?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-496797?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-898289?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-776178?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-119800?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Divine Krishna Canvas Painting',
-                    'description' => 'Spiritual Krishna canvas painting with vibrant colors and divine imagery.',
-                    'specifications' => '<ul><li>Canvas material</li><li>Vibrant colors</li><li>Spiritual artwork</li><li>Wooden frame</li><li>UV protected</li></ul>',
-                    'details' => '<p>Beautiful Divine Krishna canvas painting featuring traditional spiritual art with vibrant colors and premium quality materials.</p>',
+                    'name' => 'لوحة كانفاس كريشنا الإلهية',
+                    'description' => 'لوحة كانفاس كريشنا روحانية بألوان نابضة وصور إلهية.',
+                    'specifications' => '<ul><li>خامة الكانفاس</li><li>ألوان نابضة</li><li>أعمال فنية روحانية</li><li>إطار خشبي</li><li>محمية من الأشعة فوق البنفسجية</li></ul>',
+                    'details' => '<p>لوحة كانفاس كريشنا الإلهية الجميلة التي تتميز بالفن الروحاني التقليدي بألوان نابضة وخامات عالية الجودة.</p>',
                     'price' => 129.99,
                     'sale_price' => 109.99,
                     'cover_image' => 'https://images.unsplash.com/photo-356324?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-459234?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-877515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-920296?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-551760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-861144?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'FNP Playful Anime Hanging Photo Frame',
-                    'description' => 'Cute anime-themed hanging photo frame perfect for displaying memories.',
-                    'specifications' => '<ul><li>Anime design</li><li>Hanging style</li><li>Multiple photo slots</li><li>Durable material</li><li>Easy to hang</li></ul>',
-                    'details' => '<p>Adorable FNP Playful Anime hanging photo frame with cute designs perfect for displaying your favorite memories in style.</p>',
+                    'name' => 'إطار صور معلّق FNP بنمط الأنمي',
+                    'description' => 'إطار صور معلّق لطيف بنمط الأنمي مثالي لعرض الذكريات.',
+                    'specifications' => '<ul><li>تصميم أنمي</li><li>أسلوب معلّق</li><li>فتحات صور متعددة</li><li>خامة متينة</li><li>سهل التعليق</li></ul>',
+                    'details' => '<p>إطار صور معلّق FNP أنمي مرح لطيف بتصميمات جميلة مثالي لعرض ذكرياتك المفضلة بأناقة.</p>',
                     'price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-194702?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-202261?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-203095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-403892?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871605?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-690188?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Nautica Modern Wall Clock',
-                    'description' => 'Sleek modern wall clock with nautical design elements.',
-                    'specifications' => '<ul><li>Modern design</li><li>Nautical theme</li><li>Silent movement</li><li>Easy to read</li><li>Battery operated</li></ul>',
-                    'details' => '<p>Stylish Nautica Modern wall clock combining contemporary design with nautical elements for a sophisticated look.</p>',
+                    'name' => 'ساعة حائط Nautica عصرية',
+                    'description' => 'ساعة حائط عصرية أنيقة مع عناصر تصميم بحرية.',
+                    'specifications' => '<ul><li>تصميم عصري</li><li>موضوع بحري</li><li>حركة صامتة</li><li>سهلة القراءة</li><li>تعمل بالبطارية</li></ul>',
+                    'details' => '<p>ساعة حائط Nautica عصرية أنيقة تجمع بين التصميم المعاصر والعناصر البحرية لإطلالة راقية.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
                     'cover_image' => 'https://images.unsplash.com/photo-438988?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-519309?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-545700?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-138674?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-829984?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-622570?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Plantex Frameless Mirror',
-                    'description' => 'Contemporary frameless mirror perfect for modern interiors.',
-                    'specifications' => '<ul><li>Frameless design</li><li>High-quality glass</li><li>Easy installation</li><li>Modern style</li><li>Beveled edges</li></ul>',
-                    'details' => '<p>Elegant Plantex frameless mirror with beveled edges and high-quality glass, perfect for creating a modern and spacious feel.</p>',
+                    'name' => 'مرآة Plantex بدون إطار',
+                    'description' => 'مرآة عصرية بدون إطار مثالية للديكورات الداخلية الحديثة.',
+                    'specifications' => '<ul><li>تصميم بدون إطار</li><li>زجاج عالي الجودة</li><li>تركيب سهل</li><li>أسلوب عصري</li><li>حواف مشطوفة</li></ul>',
+                    'details' => '<p>مرآة Plantex الأنيقة بدون إطار بحواف مشطوفة وزجاج عالي الجودة، مثالية لخلق إحساس عصري وفسيح.</p>',
                     'price' => 149.99,
                     'cover_image' => 'https://images.unsplash.com/photo-548029?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-060154?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777932?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-777567?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-686918?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-523032?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Sheesham Solid Wood Floating Shelf',
-                    'description' => 'Premium sheesham wood floating shelf for stylish storage and display.',
-                    'specifications' => '<ul><li>Solid sheesham wood</li><li>Floating design</li><li>Hidden brackets</li><li>Natural finish</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Beautiful Sheesham solid wood floating shelf with natural finish and hidden brackets for a clean, modern look.</p>',
+                    'name' => 'رف عائم من خشب شيشام الصلب',
+                    'description' => 'رف عائم فاخر من خشب الشيشام للتخزين والعرض الأنيق.',
+                    'specifications' => '<ul><li>خشب شيشام صلب</li><li>تصميم عائم</li><li>أقواس مخفية</li><li>لمسة نهائية طبيعية</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>رف عائم جميل من خشب الشيشام الصلب بلمسة نهائية طبيعية وأقواس مخفية لمظهر نظيف وعصري.</p>',
                     'price' => 89.99,
                     'cover_image' => 'https://images.unsplash.com/photo-099391?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-659515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-399102?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-405584?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-167555?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-596637?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Metal Organizer with Hooks for Entryway',
-                    'description' => 'Functional metal organizer with multiple hooks designed for entryway organization.',
-                    'specifications' => '<ul><li>Metal construction</li><li>Multiple hooks</li><li>Entryway design</li><li>Wall-mounted</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Practical metal organizer with hooks perfect for entryway organization, providing convenient storage for coats, bags, keys, and accessories.</p>',
+                    'name' => 'منظم معدني بخطافات للمدخل',
+                    'description' => 'منظم معدني عملي بخطافات متعددة مصمم لتنظيم المدخل.',
+                    'specifications' => '<ul><li>هيكل معدني</li><li>خطافات متعددة</li><li>تصميم للمدخل</li><li>مثبّت على الحائط</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>منظم معدني عملي بخطافات مثالي لتنظيم المدخل، يوفر تخزينًا مريحًا للمعاطف والحقائب والمفاتيح والإكسسوارات.</p>',
                     'price' => 89.99,
                     'sale_price' => 79.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Bronze', 'Silver', 'Gold']],
-                        ['name' => 'Hooks', 'options' => ['4 Hooks', '6 Hooks', '8 Hooks']]
+                        ['name' => 'اللون', 'options' => ['برونزي', 'فضي', 'ذهبي']],
+                        ['name' => 'الخطافات', 'options' => ['4 خطافات', '6 خطافات', '8 خطافات']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-515581?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-032638?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-706457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-771811?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-221665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-583897?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Merlion Singapore Metal Statue',
-                    'description' => 'Decorative Merlion Singapore metal statue for unique home decor.',
-                    'specifications' => '<ul><li>Metal construction</li><li>Singapore Merlion design</li><li>Decorative piece</li><li>Antique finish</li><li>Collectible item</li></ul>',
-                    'details' => '<p>Unique Merlion Singapore metal statue featuring detailed craftsmanship and antique finish, perfect for collectors and Singapore enthusiasts.</p>',
+                    'name' => 'تمثال ميرليون سنغافورة المعدني',
+                    'description' => 'تمثال ميرليون سنغافورة المعدني المزخرف لديكور منزلي فريد.',
+                    'specifications' => '<ul><li>هيكل معدني</li><li>تصميم ميرليون سنغافورة</li><li>قطعة ديكورية</li><li>لمسة عتيقة</li><li>قطعة قابلة للجمع</li></ul>',
+                    'details' => '<p>تمثال ميرليون سنغافورة المعدني الفريد بتصميم مفصل وبتشطيب عتيق، مثالي لهواة الجمع وعشاق سنغافورة.</p>',
                     'price' => 199.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black', 'Gold']],
+                        ['name' => 'اللون', 'options' => ['أسود', 'ذهبي']],
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-263517?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-257315?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-913184?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-200662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-789817?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-091745?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Lighting & Lamps' => [
+            'الإضاءة والمصابيح' => [
                 [
-                    'name' => 'Cumberland Beige Shade Table Lamp',
-                    'description' => 'Elegant table lamp with beige fabric shade and classic design.',
-                    'specifications' => '<ul><li>Beige fabric shade</li><li>Classic design</li><li>Metal base</li><li>E27 bulb socket</li><li>Easy assembly</li></ul>',
-                    'details' => '<p>Beautiful Cumberland table lamp with beige shade that provides warm, ambient lighting perfect for reading and relaxation.</p>',
+                    'name' => 'مصباح طاولة Cumberland بظل بيج',
+                    'description' => 'مصباح طاولة أنيق بظل قماشي بيج وتصميم كلاسيكي.',
+                    'specifications' => '<ul><li>ظل قماشي بيج</li><li>تصميم كلاسيكي</li><li>قاعدة معدنية</li><li>مقبس لمبة E27</li><li>تجميع سهل</li></ul>',
+                    'details' => '<p>مصباح طاولة Cumberland الجميل بظل بيج يوفر إضاءة دافئة ومحيطة مثالية للقراءة والاسترخاء.</p>',
                     'price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-070207?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-778206?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-785881?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-268861?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548016?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-146847?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Tripod Floor Lamp With Metal Base',
-                    'description' => 'Modern tripod floor lamp with adjustable metal base and stylish design.',
-                    'specifications' => '<ul><li>Tripod metal base</li><li>Adjustable height</li><li>Modern design</li><li>Fabric shade</li><li>Stable construction</li></ul>',
-                    'details' => '<p>Contemporary tripod floor lamp with metal base offering adjustable height and modern styling for any living space.</p>',
+                    'name' => 'مصباح أرضي حامل ثلاثي بقاعدة معدنية',
+                    'description' => 'مصباح أرضي حامل ثلاثي عصري بقاعدة معدنية قابلة للتعديل وتصميم أنيق.',
+                    'specifications' => '<ul><li>قاعدة معدنية ثلاثية</li><li>ارتفاع قابل للتعديل</li><li>تصميم عصري</li><li>ظل قماشي</li><li>هيكل ثابت</li></ul>',
+                    'details' => '<p>مصباح أرضي حامل ثلاثي معاصر بقاعدة معدنية يوفر ارتفاعًا قابلاً للتعديل وتصميمًا عصريًا لأي مساحة معيشة.</p>',
                     'price' => 149.99,
                     'sale_price' => 129.99,
                     'cover_image' => 'https://images.unsplash.com/photo-451523?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-814398?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-920440?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-217758?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-117202?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-138396?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Bedside Golden Wall Light Lamp with Glass Shade',
-                    'description' => 'Elegant bedside wall light with golden finish and glass shade.',
-                    'specifications' => '<ul><li>Golden finish</li><li>Glass shade</li><li>Wall mounted</li><li>Bedside design</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Sophisticated bedside wall light with golden finish and glass shade, perfect for creating ambient lighting in bedrooms.</p>',
+                    'name' => 'مصباح جدار ليلي ذهبي بظل زجاجي',
+                    'description' => 'مصباح جدار ليلي أنيق بلمسة ذهبية وظل زجاجي.',
+                    'specifications' => '<ul><li>لمسة ذهبية</li><li>ظل زجاجي</li><li>مثبّت على الحائط</li><li>تصميم ليلي</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>مصباح جدار ليلي متطور بلمسة ذهبية وظل زجاجي، مثالي لخلق إضاءة محيطة في غرف النوم.</p>',
                     'price' => 89.99,
                     'cover_image' => 'https://images.unsplash.com/photo-210243?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-363100?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-725457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-544661?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-953243?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-332966?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Lights Cluster Chandelier Pendant Light',
-                    'description' => 'Modern cluster chandelier with multiple pendant lights for dramatic effect.',
-                    'specifications' => '<ul><li>Cluster design</li><li>Multiple pendants</li><li>Modern style</li><li>Adjustable height</li><li>Statement piece</li></ul>',
-                    'details' => '<p>Stunning cluster chandelier featuring multiple pendant lights that create a dramatic focal point for dining rooms and living spaces.</p>',
+                    'name' => 'ثريا معلقة بمجموعة مصابيح',
+                    'description' => 'ثريا مجموعة عصرية مع مصابيح معلقة متعددة لتأثير درامي.',
+                    'specifications' => '<ul><li>تصميم مجموعة</li><li>معلقات متعددة</li><li>أسلوب عصري</li><li>ارتفاع قابل للتعديل</li><li>قطعة مميزة</li></ul>',
+                    'details' => '<p>ثريا مجموعة مذهلة تضم مصابيح معلقة متعددة تخلق نقطة محورية درامية لغرف الطعام ومساحات المعيشة.</p>',
                     'price' => 299.99,
                     'sale_price' => 259.99,
                     'cover_image' => 'https://images.unsplash.com/photo-876940?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-935588?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-107593?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-012083?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-947246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-194768?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'White Glass Ceiling Flush Mount',
-                    'description' => 'Clean white glass ceiling flush mount light for modern interiors.',
-                    'specifications' => '<ul><li>White glass shade</li><li>Flush mount design</li><li>Modern style</li><li>Easy installation</li><li>Energy efficient</li></ul>',
-                    'details' => '<p>Sleek white glass ceiling flush mount providing clean, even lighting perfect for modern homes and low ceiling spaces.</p>',
+                    'name' => 'مصباح سقفي أبيض زجاجي ملاصق',
+                    'description' => 'مصباح سقف ملاصق نظيف من الزجاج الأبيض للديكورات الداخلية الحديثة.',
+                    'specifications' => '<ul><li>ظل زجاجي أبيض</li><li>تصميم ملاصق</li><li>أسلوب عصري</li><li>تركيب سهل</li><li>موفر للطاقة</li></ul>',
+                    'details' => '<p>مصباح سقف ملاصق أنيق من الزجاج الأبيض يوفر إضاءة نظيفة ومتساوية مثالية للمنازل الحديثة والمساحات ذات الأسقف المنخفضة.</p>',
                     'price' => 69.99,
                     'cover_image' => 'https://images.unsplash.com/photo-878487?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-204207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-621221?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-015313?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-758432?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-370516?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => '4 Watts E27 Holder LED Bulb',
-                    'description' => 'Energy-efficient 4W LED bulb with E27 base for standard fixtures.',
-                    'specifications' => '<ul><li>4 watts power</li><li>E27 base</li><li>LED technology</li><li>Energy efficient</li><li>Long lifespan</li></ul>',
-                    'details' => '<p>High-quality 4W LED bulb with E27 base offering energy efficiency and long lifespan for all your lighting needs.</p>',
+                    'name' => 'لمبة LED بقاعدة E27 بقوة 4 واط',
+                    'description' => 'لمبة LED موفرة للطاقة بقوة 4 واط بقاعدة E27 للتجهيزات القياسية.',
+                    'specifications' => '<ul><li>قوة 4 واط</li><li>قاعدة E27</li><li>تقنية LED</li><li>موفرة للطاقة</li><li>عمر افتراضي طويل</li></ul>',
+                    'details' => '<p>لمبة LED عالية الجودة بقوة 4 واط بقاعدة E27 توفر كفاءة في الطاقة وعمرًا افتراضيًا طويلاً لجميع احتياجات الإضاءة.</p>',
                     'price' => 12.99,
                     'sale_price' => 9.99,
                     'cover_image' => 'https://images.unsplash.com/photo-691623?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-315800?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-739929?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-061101?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-679867?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-526412?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Love Reaction Double, Gold, Decorative lights',
-                    'description' => 'Romantic gold decorative lights with love-themed design for special occasions.',
-                    'specifications' => '<ul><li>Gold finish</li><li>Love theme design</li><li>Decorative lighting</li><li>Double feature</li><li>Special occasions</li></ul>',
-                    'details' => '<p>Beautiful Love Reaction decorative lights in gold finish, perfect for romantic settings and special celebrations.</p>',
+                    'name' => 'أضواء زخرفية ذهبية Love Reaction',
+                    'description' => 'أضواء زخرفية ذهبية رومانسية بتصميم مستوحى من الحب للمناسبات الخاصة.',
+                    'specifications' => '<ul><li>لمسة ذهبية</li><li>تصميم بموضوع الحب</li><li>إضاءة زخرفية</li><li>ميزة مزدوجة</li><li>مناسبات خاصة</li></ul>',
+                    'details' => '<p>أضواء زخرفية Love Reaction الجميلة بلمسة ذهبية، مثالية للأجواء الرومانسية والاحتفالات الخاصة.</p>',
                     'price' => 45.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Gold', 'Black', 'Blue']]
+                        ['name' => 'اللون', 'options' => ['ذهبي', 'أسود', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-912422?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-290431?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-465620?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-358107?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-727205?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-177863?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Venice Shade Night Lamp',
-                    'description' => 'Elegant Venice-style night lamp with decorative shade for bedside use.',
-                    'specifications' => '<ul><li>Venice style design</li><li>Decorative shade</li><li>Night lamp function</li><li>Soft lighting</li><li>Bedside suitable</li></ul>',
-                    'details' => '<p>Charming Venice shade night lamp providing soft, gentle lighting perfect for bedrooms and creating a cozy atmosphere.</p>',
+                    'name' => 'مصباح ليلي بظل فينيسيا',
+                    'description' => 'مصباح ليلي أنيق بأسلوب فينيسيا مع ظل زخرفي للاستخدام بجانب السرير.',
+                    'specifications' => '<ul><li>تصميم بأسلوب فينيسيا</li><li>ظل زخرفي</li><li>وظيفة مصباح ليلي</li><li>إضاءة ناعمة</li><li>مناسب بجانب السرير</li></ul>',
+                    'details' => '<p>مصباح ليلي ساحر بظل فينيسيا يوفر إضاءة ناعمة ولطيفة مثالية لغرف النوم وخلق أجواء مريحة.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Green', 'Blue', 'Beige']]
+                        ['name' => 'اللون', 'options' => ['أخضر', 'أزرق', 'بيج']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-773477?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-053400?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-371351?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-291748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-607314?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-242861?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Home Furnishings' => [
+            'مفروشات المنزل' => [
                 [
-                    'name' => 'Microfiber Soft Cushion',
-                    'description' => 'Ultra-soft microfiber cushion with premium filling for maximum comfort.',
-                    'specifications' => '<ul><li>Microfiber fabric</li><li>Premium filling</li><li>Ultra-soft texture</li><li>Machine washable</li><li>Hypoallergenic</li></ul>',
-                    'details' => '<p>Luxurious microfiber soft cushion designed for ultimate comfort with premium filling and hypoallergenic properties.</p>',
+                    'name' => 'وسادة ناعمة من المايكروفايبر',
+                    'description' => 'وسادة فائقة النعومة من المايكروفايبر بحشوة فاخرة لأقصى راحة.',
+                    'specifications' => '<ul><li>قماش مايكروفايبر</li><li>حشوة فاخرة</li><li>ملمس فائق النعومة</li><li>قابلة للغسل في الغسالة</li><li>مضادة للحساسية</li></ul>',
+                    'details' => '<p>وسادة فاخرة من المايكروفايبر الناعم مصممة للراحة القصوى بحشوة فاخرة وخصائص مضادة للحساسية.</p>',
                     'price' => 29.99,
                     'cover_image' => 'https://images.unsplash.com/photo-968318?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-708365?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-527236?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-882117?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-574795?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-165007?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cotton Throw Bedcover Super Soft & Breathable',
-                    'description' => 'Premium cotton throw bedcover that is super soft and breathable for year-round comfort.',
-                    'specifications' => '<ul><li>100% cotton material</li><li>Super soft texture</li><li>Breathable fabric</li><li>Machine washable</li><li>Lightweight design</li></ul>',
-                    'details' => '<p>Beautiful cotton throw bedcover offering superior softness and breathability, perfect for layering and comfort in any season.</p>',
+                    'name' => 'غطاء سرير قطني ناعم جدًا وقابل للتنفس',
+                    'description' => 'غطاء سرير قطني فاخر ناعم جدًا وقابل للتنفس للراحة طوال العام.',
+                    'specifications' => '<ul><li>خامة قطنية 100%</li><li>ملمس فائق النعومة</li><li>قماش قابل للتنفس</li><li>قابل للغسل في الغسالة</li><li>تصميم خفيف الوزن</li></ul>',
+                    'details' => '<p>غطاء سرير قطني جميل يوفر نعومة وقابلية تنفس فائقة، مثالي للطبقات والراحة في أي موسم.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
                     'cover_image' => 'https://images.unsplash.com/photo-624652?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-995022?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-930985?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333413?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-450635?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-523359?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Elegant Solid Semi-Sheer Curtains for Window',
-                    'description' => 'Elegant solid color semi-sheer curtains that provide privacy while allowing natural light.',
-                    'specifications' => '<ul><li>Semi-sheer fabric</li><li>Solid color design</li><li>Light filtering</li><li>Rod pocket style</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Sophisticated semi-sheer curtains in solid colors that beautifully filter light while maintaining privacy and elegance.</p>',
+                    'name' => 'ستائر شفافة أنيقة بلون سادة للنوافذ',
+                    'description' => 'ستائر شفافة أنيقة بلون سادة توفر الخصوصية مع السماح بدخول الضوء الطبيعي.',
+                    'specifications' => '<ul><li>قماش شبه شفاف</li><li>تصميم بلون سادة</li><li>تصفية الضوء</li><li>أسلوب جيب القضيب</li><li>قابلة للغسل في الغسالة</li></ul>',
+                    'details' => '<p>ستائر شبه شفافة راقية بألوان سادة تصفّي الضوء بشكل جميل مع الحفاظ على الخصوصية والأناقة.</p>',
                     'price' => 49.99,
                     'variants' => [
-                        ['name' => 'Length', 'options' => ['84 inch', '96 inch', '108 inch']]
+                        ['name' => 'الطول', 'options' => ['84 بوصة', '96 بوصة', '108 بوصة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-280890?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-251040?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-764059?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-837468?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-568285?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-736390?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'home Premium Modern Runner Rug',
-                    'description' => 'Premium modern runner rug with contemporary design for hallways and entryways.',
-                    'specifications' => '<ul><li>Modern design</li><li>Premium quality</li><li>Non-slip backing</li><li>Easy to clean</li><li>Durable construction</li></ul>',
-                    'details' => '<p>Stylish premium modern runner rug featuring contemporary patterns, perfect for adding elegance to hallways and high-traffic areas.</p>',
+                    'name' => 'سجادة ممر عصرية فاخرة للمنزل',
+                    'description' => 'سجادة ممر عصرية فاخرة بتصميم معاصر للممرات والمداخل.',
+                    'specifications' => '<ul><li>تصميم عصري</li><li>جودة فاخرة</li><li>ظهر مانع للانزلاق</li><li>سهلة التنظيف</li><li>هيكل متين</li></ul>',
+                    'details' => '<p>سجادة ممر عصرية فاخرة أنيقة تتميز بأنماط معاصرة، مثالية لإضافة الأناقة للممرات والمناطق عالية الحركة.</p>',
                     'price' => 89.99,
                     'sale_price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-778424?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-166947?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593937?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-821149?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646530?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-084161?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => '100% Cotton Solid King Size Quilted Bed Cover',
-                    'description' => 'Premium 100% cotton quilted bed cover in king size with solid color design.',
-                    'specifications' => '<ul><li>100% cotton fabric</li><li>King size</li><li>Quilted design</li><li>Solid color</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Luxurious 100% cotton quilted bed cover in king size featuring solid colors and premium quilting for comfort and style.</p>',
+                    'name' => 'غطاء سرير مبطن مقاس كينغ من القطن الخالص 100%',
+                    'description' => 'غطاء سرير مبطن فاخر من القطن الخالص 100% بمقاس كينغ وتصميم بلون سادة.',
+                    'specifications' => '<ul><li>قماش قطني 100%</li><li>مقاس كينغ</li><li>تصميم مبطن</li><li>لون سادة</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>غطاء سرير مبطن فاخر من القطن الخالص 100% بمقاس كينغ يتميز بألوان سادة وخياطة فاخرة للراحة والأناقة.</p>',
                     'price' => 129.99,
                     'cover_image' => 'https://images.unsplash.com/photo-709629?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-720341?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-611606?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-838431?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-927641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-060121?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Super Soft Anti-Skid Super Absorbent Mats',
-                    'description' => 'Ultra-soft anti-skid mats with superior absorbent properties for bathroom and kitchen use.',
-                    'specifications' => '<ul><li>Super soft texture</li><li>Anti-skid backing</li><li>Super absorbent</li><li>Quick dry</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Premium super soft mats with anti-skid backing and superior absorbent properties, perfect for bathrooms and kitchen areas.</p>',
+                    'name' => 'سجادات فائقة النعومة مانعة للانزلاق وشديدة الامتصاص',
+                    'description' => 'سجادات فائقة النعومة مانعة للانزلاق بخصائص امتصاص فائقة للحمام والمطبخ.',
+                    'specifications' => '<ul><li>ملمس فائق النعومة</li><li>ظهر مانع للانزلاق</li><li>شديدة الامتصاص</li><li>سريعة الجفاف</li><li>قابلة للغسل في الغسالة</li></ul>',
+                    'details' => '<p>سجادات فاخرة فائقة النعومة بظهر مانع للانزلاق وخصائص امتصاص فائقة، مثالية للحمامات ومناطق المطبخ.</p>',
                     'price' => 24.99,
                     'sale_price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-449915?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-826368?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-115017?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-970999?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-127621?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-901735?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Rose Printed Center Table Cover',
-                    'description' => 'Beautiful rose printed center table cover for elegant dining and living room decor.',
-                    'specifications' => '<ul><li>Rose print design</li><li>Premium fabric</li><li>Center table size</li><li>Easy to clean</li><li>Decorative border</li></ul>',
-                    'details' => '<p>Elegant rose printed center table cover featuring beautiful floral patterns and decorative borders for sophisticated table styling.</p>',
+                    'name' => 'مفرش طاولة مركزية بطباعة الورد',
+                    'description' => 'مفرش طاولة مركزية جميل بطباعة الورد لديكور طعام ومعيشة أنيق.',
+                    'specifications' => '<ul><li>تصميم بطباعة الورد</li><li>قماش فاخر</li><li>حجم الطاولة المركزية</li><li>سهل التنظيف</li><li>حدود زخرفية</li></ul>',
+                    'details' => '<p>مفرش طاولة مركزية أنيق بطباعة الورد يتميز بأنماط زهرية جميلة وحدود زخرفية لتنسيق طاولة متطور.</p>',
                     'price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-417378?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-621771?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-787105?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-236265?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-407923?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-780186?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Corduroy Lace Sofa Cover',
-                    'description' => 'Stylish corduroy sofa cover with lace detailing for furniture protection and decoration.',
-                    'specifications' => '<ul><li>Corduroy fabric</li><li>Lace detailing</li><li>Furniture protection</li><li>Easy installation</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Premium corduroy sofa cover with elegant lace detailing that protects furniture while adding sophisticated style to your living space.</p>',
+                    'name' => 'غطاء أريكة قماشي مخمل مع تفاصيل دانتيل',
+                    'description' => 'غطاء أريكة أنيق من قماش الكوردوروي مع تفاصيل دانتيل لحماية الأثاث والديكور.',
+                    'specifications' => '<ul><li>قماش كوردوروي</li><li>تفاصيل دانتيل</li><li>حماية الأثاث</li><li>تركيب سهل</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>غطاء أريكة فاخر من الكوردوروي مع تفاصيل دانتيل أنيقة يحمي الأثاث مع إضافة لمسة راقية لمساحة معيشتك.</p>',
                     'price' => 69.99,
                     'sale_price' => 59.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Blue', 'Green', 'Pink']]
+                        ['name' => 'اللون', 'options' => ['أزرق', 'أخضر', 'وردي']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-109788?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-639805?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-311309?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-736905?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-091443?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-393295?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Decorative Accents' => [
+            'اللمسات الديكورية' => [
                 [
-                    'name' => 'Skyblue Hand-Glazed Ceramic Vase',
-                    'description' => 'Beautiful sky blue hand-glazed ceramic vase with artistic finish and elegant design.',
-                    'specifications' => '<ul><li>Hand-glazed ceramic</li><li>Sky blue color</li><li>Artistic finish</li><li>Elegant design</li><li>Waterproof interior</li></ul>',
-                    'details' => '<p>Stunning sky blue hand-glazed ceramic vase featuring artistic craftsmanship and elegant design, perfect for fresh or dried flowers.</p>',
+                    'name' => 'مزهرية سيراميك مصنوعة يدويًا بلون أزرق سماوي',
+                    'description' => 'مزهرية سيراميك جميلة بلون أزرق سماوي بلمسة فنية نهائية وتصميم أنيق.',
+                    'specifications' => '<ul><li>سيراميك مطلي يدويًا</li><li>لون أزرق سماوي</li><li>لمسة فنية</li><li>تصميم أنيق</li><li>داخل مقاوم للماء</li></ul>',
+                    'details' => '<p>مزهرية سيراميك رائعة بلون أزرق سماوي مصنوعة يدويًا تتميز بحرفية فنية وتصميم أنيق، مثالية للزهور الطازجة أو المجففة.</p>',
                     'price' => 89.99,
                     'cover_image' => 'https://images.unsplash.com/photo-010478?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-284100?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-673251?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-172306?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-089143?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404385?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Decorative Ceramic Showpiece',
-                    'description' => 'Elegant decorative ceramic showpiece with intricate details for home decoration.',
-                    'specifications' => '<ul><li>Premium ceramic</li><li>Intricate details</li><li>Decorative design</li><li>Handcrafted quality</li><li>Durable finish</li></ul>',
-                    'details' => '<p>Beautiful decorative ceramic showpiece featuring intricate craftsmanship and elegant design, perfect for enhancing any living space.</p>',
+                    'name' => 'قطعة سيراميك ديكورية',
+                    'description' => 'قطعة سيراميك ديكورية أنيقة بتفاصيل معقدة لديكور المنزل.',
+                    'specifications' => '<ul><li>سيراميك فاخر</li><li>تفاصيل معقدة</li><li>تصميم ديكوري</li><li>جودة مصنوعة يدويًا</li><li>لمسة متينة</li></ul>',
+                    'details' => '<p>قطعة سيراميك ديكورية جميلة تتميز بحرفية معقدة وتصميم أنيق، مثالية لتحسين أي مساحة معيشة.</p>',
                     'price' => 69.99,
                     'sale_price' => 59.99,
                     'cover_image' => 'https://images.unsplash.com/photo-997730?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-812207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-848935?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-734588?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-300683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-415749?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Elegant Resin Girl Figurine with Apple',
-                    'description' => 'Charming resin figurine of a girl with apple, perfect for home decoration and gifting.',
-                    'specifications' => '<ul><li>High-quality resin</li><li>Girl with apple design</li><li>Elegant finish</li><li>Detailed craftsmanship</li><li>Perfect gift item</li></ul>',
-                    'details' => '<p>Charming elegant resin figurine featuring a girl with apple, showcasing detailed craftsmanship and perfect for home decor or as a thoughtful gift.</p>',
+                    'name' => 'تمثال فتاة راتنجي أنيق مع تفاحة',
+                    'description' => 'تمثال راتنجي ساحر لفتاة مع تفاحة، مثالي لديكور المنزل والهدايا.',
+                    'specifications' => '<ul><li>راتنج عالي الجودة</li><li>تصميم فتاة مع تفاحة</li><li>لمسة أنيقة</li><li>حرفية مفصّلة</li><li>قطعة هدية مثالية</li></ul>',
+                    'details' => '<p>تمثال راتنجي أنيق وساحر لفتاة مع تفاحة، يعرض حرفية مفصّلة ومثالي لديكور المنزل أو كهدية مدروسة.</p>',
                     'price' => 45.99,
                     'cover_image' => 'https://images.unsplash.com/photo-595089?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-893765?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-235973?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-800350?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-530092?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-616354?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Home Centre Claire Unscented Pillar Candle',
-                    'description' => 'Premium unscented pillar candle from Home Centre Claire collection for elegant ambiance.',
-                    'specifications' => '<ul><li>Unscented formula</li><li>Pillar design</li><li>Long burning time</li><li>Premium wax</li><li>Elegant appearance</li></ul>',
-                    'details' => '<p>Premium Home Centre Claire unscented pillar candle offering long burning time and elegant ambiance without overpowering fragrances.</p>',
+                    'name' => 'شمعة عمودية Claire بدون عطر من هوم سنتر',
+                    'description' => 'شمعة عمودية فاخرة بدون عطر من مجموعة Claire في هوم سنتر لأجواء أنيقة.',
+                    'specifications' => '<ul><li>تركيبة بدون عطر</li><li>تصميم عمودي</li><li>وقت احتراق طويل</li><li>شمع فاخر</li><li>مظهر أنيق</li></ul>',
+                    'details' => '<p>شمعة عمودية فاخرة بدون عطر من هوم سنتر Claire توفر وقت احتراق طويل وأجواء أنيقة بدون روائح طاغية.</p>',
                     'price' => 24.99,
                     'sale_price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-054969?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-469396?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-051731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-435735?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303352?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-938503?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Decorative Fancy Candle Holder',
-                    'description' => 'Ornate decorative candle holder with fancy design for elegant candle display.',
-                    'specifications' => '<ul><li>Fancy decorative design</li><li>Premium materials</li><li>Stable base</li><li>Elegant finish</li><li>Universal candle fit</li></ul>',
-                    'details' => '<p>Beautiful decorative fancy candle holder featuring ornate design and premium materials, perfect for creating elegant candle displays.</p>',
+                    'name' => 'حامل شموع ديكوري فاخر',
+                    'description' => 'حامل شموع ديكوري مزخرف بتصميم فاخر لعرض أنيق للشموع.',
+                    'specifications' => '<ul><li>تصميم ديكوري فاخر</li><li>خامات فاخرة</li><li>قاعدة ثابتة</li><li>لمسة أنيقة</li><li>مناسب لجميع الشموع</li></ul>',
+                    'details' => '<p>حامل شموع ديكوري جميل وفاخر يتميز بتصميم مزخرف وخامات فاخرة، مثالي لخلق عروض شموع أنيقة.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-652064?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-859680?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-652918?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-832801?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-912903?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129466?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Wooden Square Tray with Inlay Work',
-                    'description' => 'Handcrafted wooden square tray featuring beautiful inlay work and traditional craftsmanship.',
-                    'specifications' => '<ul><li>Solid wood construction</li><li>Inlay work design</li><li>Square shape</li><li>Handcrafted quality</li><li>Smooth finish</li></ul>',
-                    'details' => '<p>Exquisite handcrafted wooden square tray with beautiful inlay work, showcasing traditional craftsmanship and perfect for serving or decoration.</p>',
+                    'name' => 'صينية خشبية مربعة بتطعيمات',
+                    'description' => 'صينية خشبية مربعة مصنوعة يدويًا بتطعيمات جميلة وحرفية تقليدية.',
+                    'specifications' => '<ul><li>هيكل خشب صلب</li><li>تصميم بتطعيمات</li><li>شكل مربع</li><li>جودة مصنوعة يدويًا</li><li>لمسة ناعمة</li></ul>',
+                    'details' => '<p>صينية خشبية مربعة فاخرة مصنوعة يدويًا بتطعيمات جميلة، تعرض حرفية تقليدية ومثالية للتقديم أو الديكور.</p>',
                     'price' => 79.99,
                     'sale_price' => 69.99,
                     'cover_image' => 'https://images.unsplash.com/photo-529575?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-646477?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-048234?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-536378?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-181322?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-065194?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Royal Gold Ceramic Decorative Bowl',
-                    'description' => 'Luxurious royal gold ceramic decorative bowl with elegant design and premium finish.',
-                    'specifications' => '<ul><li>Premium ceramic</li><li>Royal gold finish</li><li>Decorative design</li><li>Elegant appearance</li><li>Handcrafted quality</li></ul>',
-                    'details' => '<p>Luxurious royal gold ceramic decorative bowl featuring premium finish and elegant design, perfect for sophisticated home decoration.</p>',
+                    'name' => 'وعاء سيراميك ديكوري ذهبي ملكي',
+                    'description' => 'وعاء سيراميك ديكوري فاخر بلون ذهبي ملكي بتصميم أنيق ولمسة نهائية فاخرة.',
+                    'specifications' => '<ul><li>سيراميك فاخر</li><li>لمسة ذهبية ملكية</li><li>تصميم ديكوري</li><li>مظهر أنيق</li><li>جودة مصنوعة يدويًا</li></ul>',
+                    'details' => '<p>وعاء سيراميك ديكوري فاخر بلون ذهبي ملكي يتميز بلمسة نهائية فاخرة وتصميم أنيق، مثالي لديكور المنزل المتطور.</p>',
                     'price' => 129.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Gold', 'Pink']]
+                        ['name' => 'اللون', 'options' => ['أبيض', 'ذهبي', 'وردي']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-111826?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-920049?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-847120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-286868?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-197372?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-089903?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Garden Decor Modern Sculptures',
-                    'description' => 'Contemporary modern sculptures designed for garden and outdoor decoration.',
-                    'specifications' => '<ul><li>Modern design</li><li>Weather resistant</li><li>Garden suitable</li><li>Contemporary style</li><li>Durable materials</li></ul>',
-                    'details' => '<p>Striking modern sculptures perfect for garden and outdoor spaces, featuring contemporary design and weather-resistant materials for lasting beauty.</p>',
+                    'name' => 'منحوتات حديقة عصرية للديكور الخارجي',
+                    'description' => 'منحوتات عصرية حديثة مصممة لديكور الحديقة والمناطق الخارجية.',
+                    'specifications' => '<ul><li>تصميم عصري</li><li>مقاومة للطقس</li><li>مناسبة للحديقة</li><li>أسلوب معاصر</li><li>خامات متينة</li></ul>',
+                    'details' => '<p>منحوتات عصرية لافتة مثالية للحديقة والمساحات الخارجية، بتصميم معاصر وخامات مقاومة للطقس لجمال يدوم.</p>',
                     'price' => 199.99,
                     'sale_price' => 179.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Black', 'Gold', 'Blue']]
+                        ['name' => 'اللون', 'options' => ['أسود', 'ذهبي', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-082351?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-217688?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-797270?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-155561?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665409?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-131637?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Storage & Organizers' => [
+            'التخزين والتنظيم' => [
                 [
-                    'name' => 'Homestrap Storage Boxes',
-                    'description' => 'Versatile storage boxes from Homestrap for organizing household items efficiently.',
-                    'specifications' => '<ul><li>Durable construction</li><li>Stackable design</li><li>Easy access lid</li><li>Multiple sizes</li><li>Space-saving</li></ul>',
-                    'details' => '<p>Practical Homestrap storage boxes designed for efficient organization with stackable design and durable construction for long-lasting use.</p>',
+                    'name' => 'صناديق تخزين Homestrap',
+                    'description' => 'صناديق تخزين متعددة الاستخدامات من Homestrap لتنظيم الأغراض المنزلية بكفاءة.',
+                    'specifications' => '<ul><li>هيكل متين</li><li>تصميم قابل للتكديس</li><li>غطاء سهل الوصول</li><li>مقاسات متعددة</li><li>موفر للمساحة</li></ul>',
+                    'details' => '<p>صناديق تخزين Homestrap عملية مصممة للتنظيم الفعال بتصميم قابل للتكديس وهيكل متين للاستخدام طويل الأمد.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-760084?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-596324?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-724010?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-326681?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-366924?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-814243?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Storage Boxes and Drawers',
-                    'description' => 'Complete storage solution with boxes and drawers for comprehensive organization.',
-                    'specifications' => '<ul><li>Combined box and drawer system</li><li>Modular design</li><li>Easy assembly</li><li>Smooth sliding drawers</li><li>Versatile storage</li></ul>',
-                    'details' => '<p>Comprehensive storage solution combining boxes and drawers in a modular system for maximum organization flexibility and space utilization.</p>',
+                    'name' => 'صناديق تخزين وأدراج',
+                    'description' => 'حل تخزين كامل بالصناديق والأدراج لتنظيم شامل.',
+                    'specifications' => '<ul><li>نظام صندوق ودرج مدمج</li><li>تصميم وحداتي</li><li>تجميع سهل</li><li>أدراج منزلقة بسلاسة</li><li>تخزين متعدد الاستخدامات</li></ul>',
+                    'details' => '<p>حل تخزين شامل يجمع بين الصناديق والأدراج في نظام وحداتي لأقصى مرونة في التنظيم واستغلال المساحة.</p>',
                     'price' => 89.99,
                     'sale_price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-527158?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-735174?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-501837?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-061175?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-424109?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-717562?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Metal Storage Shelf',
-                    'description' => 'Heavy-duty metal storage shelf with multiple tiers for industrial-strength organization.',
-                    'specifications' => '<ul><li>Heavy-duty metal construction</li><li>Multiple tiers</li><li>Adjustable shelves</li><li>High weight capacity</li><li>Easy assembly</li></ul>',
-                    'details' => '<p>Robust metal storage shelf featuring heavy-duty construction and adjustable shelves, perfect for garage, warehouse, or heavy-duty storage needs.</p>',
+                    'name' => 'رف تخزين معدني',
+                    'description' => 'رف تخزين معدني ثقيل الطراز بطبقات متعددة لتنظيم بقوة صناعية.',
+                    'specifications' => '<ul><li>هيكل معدني ثقيل</li><li>طبقات متعددة</li><li>أرفف قابلة للتعديل</li><li>سعة وزن عالية</li><li>تجميع سهل</li></ul>',
+                    'details' => '<p>رف تخزين معدني قوي بهيكل ثقيل وأرفف قابلة للتعديل، مثالي للمرآب أو المستودع أو احتياجات التخزين الثقيلة.</p>',
                     'price' => 149.99,
                     'cover_image' => 'https://images.unsplash.com/photo-051275?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-433792?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-267961?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-159510?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-245704?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220479?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Flyngo Foldable Drawer Organizer',
-                    'description' => 'Innovative foldable drawer organizer from Flyngo for flexible storage solutions.',
-                    'specifications' => '<ul><li>Foldable design</li><li>Drawer organization</li><li>Flexible compartments</li><li>Space-efficient</li><li>Easy storage when not in use</li></ul>',
-                    'details' => '<p>Smart Flyngo foldable drawer organizer offering flexible compartments and space-efficient design that folds flat when not needed.</p>',
+                    'name' => 'منظم أدراج Flyngo قابل للطي',
+                    'description' => 'منظم أدراج مبتكر قابل للطي من Flyngo لحلول تخزين مرنة.',
+                    'specifications' => '<ul><li>تصميم قابل للطي</li><li>تنظيم الأدراج</li><li>حجرات مرنة</li><li>موفر للمساحة</li><li>سهل التخزين عند عدم الاستخدام</li></ul>',
+                    'details' => '<p>منظم أدراج ذكي من Flyngo قابل للطي يوفر حجرات مرنة وتصميمًا موفرًا للمساحة يُطوى بشكل مسطح عند الحاجة.</p>',
                     'price' => 24.99,
                     'sale_price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-863145?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-173113?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-550086?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-364657?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-034979?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-165916?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Heavy Duty Garage Storage Hooks for Wall',
-                    'description' => 'Industrial-strength wall-mounted storage hooks designed for heavy-duty garage organization.',
-                    'specifications' => '<ul><li>Heavy-duty construction</li><li>Wall-mounted design</li><li>High weight capacity</li><li>Garage suitable</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Professional heavy-duty garage storage hooks designed for wall mounting with high weight capacity for tools, equipment, and heavy items.</p>',
+                    'name' => 'خطافات تخزين مرآب ثقيلة للجدران',
+                    'description' => 'خطافات تخزين مثبتة على الحائط بقوة صناعية مصممة لتنظيم المرآب الثقيل.',
+                    'specifications' => '<ul><li>هيكل ثقيل الطراز</li><li>تصميم مثبت على الحائط</li><li>سعة وزن عالية</li><li>مناسب للمرآب</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>خطافات تخزين مرآب احترافية ثقيلة مصممة للتثبيت على الحائط بسعة وزن عالية للأدوات والمعدات والأغراض الثقيلة.</p>',
                     'price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-145545?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-204098?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005188?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-744956?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-492066?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-104100?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => '4-Tier Multipurpose Storage Rack',
-                    'description' => 'Versatile 4-tier storage rack suitable for multiple purposes and various room settings.',
-                    'specifications' => '<ul><li>4-tier design</li><li>Multipurpose use</li><li>Sturdy construction</li><li>Easy assembly</li><li>Versatile placement</li></ul>',
-                    'details' => '<p>Practical 4-tier multipurpose storage rack offering versatile storage solutions for kitchen, bathroom, office, or any room requiring organized storage.</p>',
+                    'name' => 'رف تخزين متعدد الاستخدامات بأربع طبقات',
+                    'description' => 'رف تخزين متعدد الاستخدامات بأربع طبقات مناسب لأغراض متعددة وغرف مختلفة.',
+                    'specifications' => '<ul><li>تصميم بأربع طبقات</li><li>استخدامات متعددة</li><li>هيكل متين</li><li>تجميع سهل</li><li>وضع مرن</li></ul>',
+                    'details' => '<p>رف تخزين عملي متعدد الاستخدامات بأربع طبقات يوفر حلول تخزين مرنة للمطبخ أو الحمام أو المكتب أو أي غرفة تحتاج تنظيمًا.</p>',
                     'price' => 69.99,
                     'sale_price' => 59.99,
                     'cover_image' => 'https://images.unsplash.com/photo-952485?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-357893?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-746971?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315112?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247628?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126010?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Durable 3 Tray Set',
-                    'description' => 'Set of 3 durable trays for organizing and storing various items efficiently.',
-                    'specifications' => '<ul><li>Set of 3 trays</li><li>Durable construction</li><li>Stackable design</li><li>Easy to clean</li><li>Versatile use</li></ul>',
-                    'details' => '<p>Practical set of 3 durable trays with stackable design, perfect for organizing office supplies, craft materials, or household items.</p>',
+                    'name' => 'طقم 3 صواني متينة',
+                    'description' => 'طقم من 3 صواني متينة لتنظيم وتخزين الأغراض المختلفة بكفاءة.',
+                    'specifications' => '<ul><li>طقم من 3 صواني</li><li>هيكل متين</li><li>تصميم قابل للتكديس</li><li>سهل التنظيف</li><li>استخدامات متعددة</li></ul>',
+                    'details' => '<p>طقم عملي من 3 صواني متينة بتصميم قابل للتكديس، مثالي لتنظيم اللوازم المكتبية أو مواد الحرف أو الأغراض المنزلية.</p>',
                     'price' => 29.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Brown', 'White', 'Black']]
+                        ['name' => 'اللون', 'options' => ['بني', 'أبيض', 'أسود']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-036040?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-162101?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-676153?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-005258?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-376873?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Evaro Cabinets In Wenge Brown Finish',
-                    'description' => 'Premium Evaro storage cabinets with elegant wenge brown finish for sophisticated organization.',
-                    'specifications' => '<ul><li>Wenge brown finish</li><li>Premium cabinet design</li><li>Multiple compartments</li><li>Elegant appearance</li><li>Durable construction</li></ul>',
-                    'details' => '<p>Sophisticated Evaro cabinets featuring elegant wenge brown finish and premium construction, perfect for stylish storage in any modern home.</p>',
+                    'name' => 'خزائن Evaro بلمسة بنية ونجيه',
+                    'description' => 'خزائن تخزين Evaro فاخرة بلمسة بنية ونجيه أنيقة لتنظيم متطور.',
+                    'specifications' => '<ul><li>لمسة بنية ونجيه</li><li>تصميم خزانة فاخر</li><li>حجرات متعددة</li><li>مظهر أنيق</li><li>هيكل متين</li></ul>',
+                    'details' => '<p>خزائن Evaro متطورة بلمسة بنية ونجيه أنيقة وهيكل فاخر، مثالية للتخزين الأنيق في أي منزل حديث.</p>',
                     'price' => 299.99,
                     'sale_price' => 269.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['Brown', 'Green', 'Blue']]
+                        ['name' => 'اللون', 'options' => ['بني', 'أخضر', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-031298?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-762907?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-328995?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-139739?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-801327?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-732281?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Cakes' => [
+            'الكيك' => [
                 [
-                    'name' => 'Pastel Floral Birthday Cake',
-                    'description' => 'Beautiful pastel-colored birthday cake decorated with delicate floral designs.',
-                    'specifications' => '<ul><li>Pastel floral decoration</li><li>Vanilla sponge layers</li><li>Buttercream frosting</li><li>Fresh flower accents</li><li>Custom message available</li></ul>',
-                    'details' => '<p>Elegant pastel floral birthday cake featuring soft colors and delicate flower decorations, perfect for celebrating special birthdays in style.</p>',
+                    'name' => 'كيكة عيد ميلاد باستيل بالزهور',
+                    'description' => 'كيكة عيد ميلاد جميلة بألوان باستيل مزينة بتصميمات زهرية رقيقة.',
+                    'specifications' => '<ul><li>زخرفة زهرية باستيل</li><li>طبقات إسفنجية بالفانيليا</li><li>كريمة الزبدة</li><li>لمسات زهور طازجة</li><li>إمكانية إضافة رسالة مخصصة</li></ul>',
+                    'details' => '<p>كيكة عيد ميلاد أنيقة بألوان باستيل وزخارف زهرية رقيقة، مثالية للاحتفال بأعياد الميلاد الخاصة بأناقة.</p>',
                     'price' => 49.99,
                     'variants' => [
-                        ['name' => 'Weight', 'options' => ['1 Kg', '1.5 Kg', '2 Kg']]
+                        ['name' => 'الوزن', 'options' => ['1 كجم', '1.5 كجم', '2 كجم']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-729208?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-076197?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-889430?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-609135?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-280457?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-933736?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Strawberry Wedding Cake',
-                    'description' => 'Elegant multi-tier wedding cake with fresh strawberries and cream.',
-                    'specifications' => '<ul><li>Multi-tier design</li><li>Fresh strawberries</li><li>Whipped cream layers</li><li>Wedding decoration</li><li>Serves 50-60 people</li></ul>',
-                    'details' => '<p>Stunning strawberry wedding cake with multiple tiers, fresh strawberries, and elegant decorations perfect for your special wedding day.</p>',
+                    'name' => 'كيكة زفاف بالفراولة',
+                    'description' => 'كيكة زفاف أنيقة متعددة الطبقات مع فراولة طازجة وكريمة.',
+                    'specifications' => '<ul><li>تصميم متعدد الطبقات</li><li>فراولة طازجة</li><li>طبقات كريمة مخفوقة</li><li>زخرفة زفاف</li><li>تكفي 50-60 شخصًا</li></ul>',
+                    'details' => '<p>كيكة زفاف رائعة بالفراولة متعددة الطبقات مع فراولة طازجة وزخارف أنيقة مثالية ليوم زفافك الخاص.</p>',
                     'price' => 299.99,
                     'sale_price' => 279.99,
                     'cover_image' => 'https://images.unsplash.com/photo-048810?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-724659?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026487?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-557951?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-054046?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-617896?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Yummy Premium Chocolate Cake',
-                    'description' => 'Rich and decadent premium chocolate cake with multiple chocolate layers.',
-                    'specifications' => '<ul><li>Premium chocolate</li><li>Multiple layers</li><li>Rich chocolate ganache</li><li>Moist sponge</li><li>Chocolate shavings</li></ul>',
-                    'details' => '<p>Indulgent Yummy Premium chocolate cake featuring rich chocolate layers, smooth ganache, and premium cocoa for the ultimate chocolate experience.</p>',
+                    'name' => 'كيكة شوكولاتة فاخرة لذيذة',
+                    'description' => 'كيكة شوكولاتة فاخرة غنية وفاخرة بطبقات شوكولاتة متعددة.',
+                    'specifications' => '<ul><li>شوكولاتة فاخرة</li><li>طبقات متعددة</li><li>جاناش شوكولاتة غني</li><li>إسفنجية رطبة</li><li>رقائق شوكولاتة</li></ul>',
+                    'details' => '<p>كيكة شوكولاتة فاخرة لذيذة تتميز بطبقات شوكولاتة غنية وجاناش ناعم وكاكاو فاخر لتجربة شوكولاتة مثالية.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-505017?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-201580?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-261119?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-769359?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-015520?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Just Bake Mixed Fruit Gateaux Half KG',
-                    'description' => 'Delicious mixed fruit gateaux cake with seasonal fruits and cream layers.',
-                    'specifications' => '<ul><li>Mixed seasonal fruits</li><li>Cream layers</li><li>Half KG size</li><li>Fresh fruit topping</li><li>Light sponge base</li></ul>',
-                    'details' => '<p>Fresh and fruity Just Bake mixed fruit gateaux featuring seasonal fruits, light cream layers, and a soft sponge base in convenient half KG size.</p>',
+                    'name' => 'كيكة قاتو فواكه مشكلة نصف كجم من Just Bake',
+                    'description' => 'كيكة قاتو لذيذة بالفواكه المشكلة مع فواكه موسمية وطبقات كريمة.',
+                    'specifications' => '<ul><li>فواكه موسمية مشكلة</li><li>طبقات كريمة</li><li>حجم نصف كجم</li><li>طبقة فواكه طازجة</li><li>قاعدة إسفنجية خفيفة</li></ul>',
+                    'details' => '<p>كيكة قاتو طازجة بالفواكه المشكلة من Just Bake تتميز بفواكه موسمية وطبقات كريمة خفيفة وقاعدة إسفنجية ناعمة بحجم نصف كجم مريح.</p>',
                     'price' => 24.99,
                     'sale_price' => 21.99,
                     'cover_image' => 'https://images.unsplash.com/photo-731730?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-324894?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-358302?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593935?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-196744?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-846664?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Ivory Rose Elegance Cake',
-                    'description' => 'Sophisticated ivory-colored cake decorated with elegant rose designs.',
-                    'specifications' => '<ul><li>Ivory color theme</li><li>Rose decorations</li><li>Elegant design</li><li>Premium frosting</li><li>Special occasions</li></ul>',
-                    'details' => '<p>Sophisticated Ivory Rose Elegance cake featuring beautiful ivory colors and delicate rose decorations, perfect for elegant celebrations and special occasions.</p>',
+                    'name' => 'كيكة Ivory Rose أناقة',
+                    'description' => 'كيكة متطورة بلون عاجي مزينة بتصميمات ورد أنيقة.',
+                    'specifications' => '<ul><li>موضوع اللون العاجي</li><li>زخارف ورد</li><li>تصميم أنيق</li><li>طبقة زينة فاخرة</li><li>مناسبات خاصة</li></ul>',
+                    'details' => '<p>كيكة Ivory Rose للأناقة المتطورة تتميز بألوان عاجية جميلة وزخارف ورد رقيقة، مثالية للاحتفالات الأنيقة والمناسبات الخاصة.</p>',
                     'price' => 69.99,
                     'variants' => [
-                        ['name' => 'Weight', 'options' => ['1 Kg', '1.5 Kg', '2 Kg']]
+                        ['name' => 'الوزن', 'options' => ['1 كجم', '1.5 كجم', '2 كجم']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-068348?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-365291?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-737452?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-979020?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-723549?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-204620?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'FNP Designer Eggless Half KG',
-                    'description' => 'Designer eggless cake from FNP with artistic decorations and premium ingredients.',
-                    'specifications' => '<ul><li>Eggless recipe</li><li>Designer decorations</li><li>Half KG size</li><li>Premium ingredients</li><li>Artistic design</li></ul>',
-                    'details' => '<p>Beautiful FNP Designer eggless cake featuring artistic decorations and premium eggless recipe, perfect for those preferring egg-free desserts.</p>',
+                    'name' => 'كيكة FNP مصممة بدون بيض نصف كجم',
+                    'description' => 'كيكة مصممة بدون بيض من FNP بزخارف فنية ومكونات فاخرة.',
+                    'specifications' => '<ul><li>وصفة بدون بيض</li><li>زخارف مصممة</li><li>حجم نصف كجم</li><li>مكونات فاخرة</li><li>تصميم فني</li></ul>',
+                    'details' => '<p>كيكة FNP الجميلة المصممة بدون بيض تتميز بزخارف فنية ووصفة فاخرة بدون بيض، مثالية لمن يفضلون الحلويات الخالية من البيض.</p>',
                     'price' => 34.99,
                     'sale_price' => 29.99,
                     'cover_image' => 'https://images.unsplash.com/photo-173859?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-216226?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-802545?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-943422?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-505268?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-714425?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => '6 Pcs Cupcake Folding Box',
-                    'description' => 'Set of 6 assorted cupcakes presented in an elegant folding gift box.',
-                    'specifications' => '<ul><li>6 assorted cupcakes</li><li>Folding gift box</li><li>Mixed flavors</li><li>Individual decoration</li><li>Perfect for gifting</li></ul>',
-                    'details' => '<p>Delightful set of 6 cupcakes with assorted flavors and decorations, beautifully presented in an elegant folding box perfect for gifts and parties.</p>',
+                    'name' => 'علبة 6 كب كيك قابلة للطي',
+                    'description' => 'طقم من 6 كب كيك مشكلة في علبة هدايا أنيقة قابلة للطي.',
+                    'specifications' => '<ul><li>6 كب كيك مشكلة</li><li>علبة هدايا قابلة للطي</li><li>نكهات متنوعة</li><li>زخرفة فردية</li><li>مثالية للهدايا</li></ul>',
+                    'details' => '<p>طقم لذيذ من 6 كب كيك بنكهات وزخارف متنوعة، معروضة بشكل جميل في علبة أنيقة قابلة للطي مثالية للهدايا والحفلات.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-895272?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-128461?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-586426?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559318?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-973075?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-039371?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Pearl & Rose Cake 7.0 Kg',
-                    'description' => 'Grand pearl and rose themed cake weighing 7.0 kg, perfect for large celebrations.',
-                    'specifications' => '<ul><li>7.0 Kg weight</li><li>Pearl decorations</li><li>Rose theme design</li><li>Large celebration size</li><li>Serves 70-80 people</li></ul>',
-                    'details' => '<p>Magnificent Pearl & Rose cake weighing 7.0 kg, featuring elegant pearl decorations and rose themes, perfect for grand celebrations and large gatherings.</p>',
+                    'name' => 'كيكة اللؤلؤ والورد 7.0 كجم',
+                    'description' => 'كيكة كبيرة بموضوع اللؤلؤ والورد بوزن 7.0 كجم، مثالية للاحتفالات الكبيرة.',
+                    'specifications' => '<ul><li>وزن 7.0 كجم</li><li>زخارف لؤلؤ</li><li>تصميم بموضوع الورد</li><li>حجم للاحتفالات الكبيرة</li><li>تكفي 70-80 شخصًا</li></ul>',
+                    'details' => '<p>كيكة اللؤلؤ والورد الرائعة بوزن 7.0 كجم، تتميز بزخارف لؤلؤية أنيقة وموضوع ورد، مثالية للاحتفالات الكبرى والتجمعات الكبيرة.</p>',
                     'price' => 399.99,
                     'sale_price' => 369.99,
                     'cover_image' => 'https://images.unsplash.com/photo-147693?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-448059?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-856724?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-747615?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-529637?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-116512?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Pastries' => [
+            'المعجنات' => [
                 [
-                    'name' => 'Rich Chocolate Pastries',
-                    'description' => 'Decadent chocolate pastries with rich cocoa and smooth chocolate filling.',
-                    'specifications' => '<ul><li>Rich cocoa base</li><li>Smooth chocolate filling</li><li>Premium chocolate</li><li>Moist texture</li><li>Individual portions</li></ul>',
-                    'details' => '<p>Indulgent rich chocolate pastries made with premium cocoa and filled with smooth chocolate cream for the ultimate chocolate experience.</p>',
+                    'name' => 'معجنات الشوكولاتة الغنية',
+                    'description' => 'معجنات شوكولاتة فاخرة بالكاكاو الغني وحشوة شوكولاتة ناعمة.',
+                    'specifications' => '<ul><li>قاعدة كاكاو غنية</li><li>حشوة شوكولاتة ناعمة</li><li>شوكولاتة فاخرة</li><li>قوام رطب</li><li>حصص فردية</li></ul>',
+                    'details' => '<p>معجنات شوكولاتة غنية فاخرة مصنوعة من كاكاو ممتاز ومحشوة بكريمة شوكولاتة ناعمة لتجربة شوكولاتة مثالية.</p>',
                     'price' => 18.99,
                     'variants' => [
-                        ['name' => 'Quantity', 'options' => ['4 Pieces', '6 Pieces', '8 Pieces']]
+                        ['name' => 'الكمية', 'options' => ['4 قطع', '6 قطع', '8 قطع']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-188418?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-458759?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-506641?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-017966?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-618742?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129775?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Fruit Pastries Topped',
-                    'description' => 'Light pastries topped with fresh seasonal fruits and cream.',
-                    'specifications' => '<ul><li>Fresh seasonal fruits</li><li>Light pastry base</li><li>Cream topping</li><li>Colorful presentation</li><li>Natural flavors</li></ul>',
-                    'details' => '<p>Beautiful fresh fruit pastries featuring seasonal fruits on light pastry base with cream topping for a refreshing and colorful treat.</p>',
+                    'name' => 'معجنات الفواكه الطازجة المغطاة',
+                    'description' => 'معجنات خفيفة مغطاة بالفواكه الموسمية الطازجة والكريمة.',
+                    'specifications' => '<ul><li>فواكه موسمية طازجة</li><li>قاعدة معجنات خفيفة</li><li>طبقة كريمة</li><li>عرض ملون</li><li>نكهات طبيعية</li></ul>',
+                    'details' => '<p>معجنات فواكه طازجة جميلة تتميز بفواكه موسمية على قاعدة معجنات خفيفة مع طبقة كريمة لتقديم منعش وملون.</p>',
                     'price' => 16.99,
                     'sale_price' => 14.99,
                     'cover_image' => 'https://images.unsplash.com/photo-586268?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-040996?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-380721?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-271184?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-350728?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-533662?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Classic Cream Pastries with Silky Whipped Cream',
-                    'description' => 'Traditional cream pastries filled with silky smooth whipped cream.',
-                    'specifications' => '<ul><li>Traditional pastry shells</li><li>Silky whipped cream</li><li>Classic recipe</li><li>Light and airy</li><li>Perfect texture</li></ul>',
-                    'details' => '<p>Classic cream pastries made with traditional methods and filled with silky smooth whipped cream for a timeless and elegant treat.</p>',
+                    'name' => 'معجنات الكريمة الكلاسيكية بالكريمة المخفوقة الناعمة',
+                    'description' => 'معجنات كريمة تقليدية محشوة بكريمة مخفوقة ناعمة وحريرية.',
+                    'specifications' => '<ul><li>قشرة معجنات تقليدية</li><li>كريمة مخفوقة حريرية</li><li>وصفة كلاسيكية</li><li>خفيفة وهوائية</li><li>قوام مثالي</li></ul>',
+                    'details' => '<p>معجنات كريمة كلاسيكية مصنوعة بطرق تقليدية ومحشوة بكريمة مخفوقة ناعمة وحريرية لتقديم خالدة وأنيقة.</p>',
                     'price' => 15.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Regular', 'Large']]
+                        ['name' => 'المقاس', 'options' => ['عادي', 'كبير']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-535487?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-405370?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-347792?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-158263?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709658?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-173133?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Premium Creamy Cheesecake Slices',
-                    'description' => 'Premium cheesecake slices with rich cream cheese and graham crust.',
-                    'specifications' => '<ul><li>Premium cream cheese</li><li>Graham cracker crust</li><li>Rich and creamy</li><li>Individual slices</li><li>New York style</li></ul>',
-                    'details' => '<p>Premium creamy cheesecake slices made with the finest cream cheese and graham cracker crust, offering rich New York-style flavor.</p>',
+                    'name' => 'شرائح تشيز كيك كريمية فاخرة',
+                    'description' => 'شرائح تشيز كيك فاخرة بجبنة كريمية غنية وقاعدة بسكويت.',
+                    'specifications' => '<ul><li>جبنة كريمية فاخرة</li><li>قاعدة بسكويت</li><li>غنية وكريمية</li><li>شرائح فردية</li><li>بنمط نيويورك</li></ul>',
+                    'details' => '<p>شرائح تشيز كيك كريمية فاخرة مصنوعة من أفضل جبنة كريمية وقاعدة بسكويت، بنكهة غنية على نمط نيويورك.</p>',
                     'price' => 22.99,
                     'sale_price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-200309?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-387460?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-751645?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-356448?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-057615?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-860921?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Light and Airy Mousse Pastries',
-                    'description' => 'Delicate mousse pastries with light, airy texture and smooth finish.',
-                    'specifications' => '<ul><li>Light mousse texture</li><li>Airy consistency</li><li>Smooth finish</li><li>Delicate flavor</li><li>Elegant presentation</li></ul>',
-                    'details' => '<p>Exquisite light and airy mousse pastries with delicate texture and smooth finish, perfect for those who appreciate refined desserts.</p>',
+                    'name' => 'معجنات الموس الخفيفة والهوائية',
+                    'description' => 'معجنات موس رقيقة بقوام خفيف وهوائي ولمسة نهائية ناعمة.',
+                    'specifications' => '<ul><li>قوام موس خفيف</li><li>اتساق هوائي</li><li>لمسة نهائية ناعمة</li><li>نكهة رقيقة</li><li>عرض أنيق</li></ul>',
+                    'details' => '<p>معجنات موس رائعة خفيفة وهوائية بقوام رقيق ولمسة ناعمة، مثالية لمن يقدرون الحلويات الراقية.</p>',
                     'price' => 20.99,
                     'cover_image' => 'https://images.unsplash.com/photo-142076?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-731213?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-442971?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593558?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-432684?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-401492?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Assorted Mini Pastries with Bite-Sized Portions',
-                    'description' => 'Variety pack of mini pastries in bite-sized portions with different flavors.',
-                    'specifications' => '<ul><li>Bite-sized portions</li><li>Assorted flavors</li><li>Mini pastries</li><li>Variety pack</li><li>Perfect for sharing</li></ul>',
-                    'details' => '<p>Delightful assorted mini pastries in bite-sized portions featuring various flavors and styles, perfect for parties and sharing.</p>',
+                    'name' => 'معجنات مصغرة مشكلة بحصص صغيرة',
+                    'description' => 'علبة متنوعة من المعجنات المصغرة بحصص صغيرة بنكهات مختلفة.',
+                    'specifications' => '<ul><li>حصص صغيرة بحجم القضمة</li><li>نكهات مشكلة</li><li>معجنات مصغرة</li><li>علبة متنوعة</li><li>مثالية للمشاركة</li></ul>',
+                    'details' => '<p>معجنات مصغرة مشكلة لذيذة بحصص صغيرة تتميز بنكهات وأنماط متنوعة، مثالية للحفلات والمشاركة.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-155595?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-794890?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-095470?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-491212?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-530445?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-446329?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Elegant Layered Pastries with Multiple Cream',
-                    'description' => 'Sophisticated layered pastries with multiple cream layers and elegant design.',
-                    'specifications' => '<ul><li>Multiple cream layers</li><li>Elegant design</li><li>Sophisticated presentation</li><li>Complex flavors</li><li>Premium ingredients</li></ul>',
-                    'details' => '<p>Sophisticated elegant layered pastries featuring multiple cream layers and complex flavors with premium ingredients and beautiful presentation.</p>',
+                    'name' => 'معجنات طبقات أنيقة بكريمة متعددة',
+                    'description' => 'معجنات طبقات متطورة بطبقات كريمة متعددة وتصميم أنيق.',
+                    'specifications' => '<ul><li>طبقات كريمة متعددة</li><li>تصميم أنيق</li><li>عرض متطور</li><li>نكهات معقدة</li><li>مكونات فاخرة</li></ul>',
+                    'details' => '<p>معجنات طبقات أنيقة متطورة تتميز بطبقات كريمة متعددة ونكهات معقدة بمكونات فاخرة وتقديم جميل.</p>',
                     'price' => 28.99,
                     'sale_price' => 25.99,
                     'cover_image' => 'https://images.unsplash.com/photo-643855?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-522453?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-092448?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-008546?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-189563?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-730980?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Signature Special Pastries with Luxurious Design',
-                    'description' => 'Exclusive signature pastries with luxurious design and premium craftsmanship.',
-                    'specifications' => '<ul><li>Signature recipe</li><li>Luxurious design</li><li>Premium craftsmanship</li><li>Exclusive creation</li><li>Artistic presentation</li></ul>',
-                    'details' => '<p>Exclusive signature special pastries featuring luxurious design and premium craftsmanship, representing the pinnacle of pastry artistry.</p>',
+                    'name' => 'معجنات خاصة مميزة بتصميم فاخر',
+                    'description' => 'معجنات حصرية مميزة بتصميم فاخر وصناعة يدوية رفيعة.',
+                    'specifications' => '<ul><li>وصفة مميزة</li><li>تصميم فاخر</li><li>صناعة رفيعة</li><li>إبداع حصري</li><li>عرض فني</li></ul>',
+                    'details' => '<p>معجنات حصرية مميزة بتصميم فاخر وصناعة رفيعة، تمثل قمة الفن في صناعة المعجنات.</p>',
                     'price' => 35.99,
                     'sale_price' => 32.99,
                     'cover_image' => 'https://images.unsplash.com/photo-210824?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-742535?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-875753?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-286338?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-657543?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-671762?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Breads & Loaves' => [
+            'الخبز والأرغفة' => [
                 [
-                    'name' => 'Freshly Baked Sliced Premium White Bread',
-                    'description' => 'Premium quality white bread with soft texture and fresh taste, sliced for convenience.',
-                    'specifications' => '<ul><li>Premium white flour</li><li>Soft texture</li><li>Pre-sliced convenience</li><li>Fresh daily baking</li><li>Perfect for sandwiches</li></ul>',
-                    'details' => '<p>Freshly baked premium white bread with exceptionally soft texture and delicious taste, conveniently pre-sliced for your daily needs.</p>',
+                    'name' => 'خبز أبيض فاخر طازج مقطع شرائح',
+                    'description' => 'خبز أبيض بجودة فاخرة بقوام ناعم وطعم طازج، مقطع شرائح للراحة.',
+                    'specifications' => '<ul><li>دقيق أبيض فاخر</li><li>قوام ناعم</li><li>مقطع شرائح مسبقًا</li><li>خبز طازج يوميًا</li><li>مثالي للساندويتشات</li></ul>',
+                    'details' => '<p>خبز أبيض فاخر مخبوز طازجًا بقوام ناعم استثنائي وطعم لذيذ، مقطع شرائح مسبقًا لاحتياجاتك اليومية.</p>',
                     'price' => 4.99,
                     'cover_image' => 'https://images.unsplash.com/photo-180379?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-879399?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-826098?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-624813?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-748944?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-202560?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Brown Bread with Goodness Of Wheat',
-                    'description' => 'Nutritious brown bread enriched with the natural goodness of wheat for healthy living.',
-                    'specifications' => '<ul><li>Wheat enriched</li><li>Natural goodness</li><li>High fiber content</li><li>Nutritious ingredients</li><li>Healthy choice</li></ul>',
-                    'details' => '<p>Wholesome brown bread packed with the natural goodness of wheat, providing essential nutrients and fiber for a healthy lifestyle.</p>',
+                    'name' => 'خبز أسمر بفوائد القمح',
+                    'description' => 'خبز أسمر مغذي مدعّم بالفوائد الطبيعية للقمح لحياة صحية.',
+                    'specifications' => '<ul><li>مدعّم بالقمح</li><li>فوائد طبيعية</li><li>نسبة ألياف عالية</li><li>مكونات مغذية</li><li>اختيار صحي</li></ul>',
+                    'details' => '<p>خبز أسمر صحي غني بالفوائد الطبيعية للقمح، يوفر العناصر الغذائية الأساسية والألياف لنمط حياة صحي.</p>',
                     'price' => 5.49,
                     'variants' => [
-                        ['name' => 'Slice Type', 'options' => ['Regular Slice', 'Thick Slice']],
-                        ['name' => 'Slices', 'options' => ['1', '2', '3']]
+                        ['name' => 'نوع الشرائح', 'options' => ['شريحة عادية', 'شريحة سميكة']],
+                        ['name' => 'الشرائح', 'options' => ['1', '2', '3']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-691053?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-822312?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-395895?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-916977?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-144751?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-033679?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Factory Zero Maida Multigrain Bread',
-                    'description' => 'Healthy multigrain bread made without maida, packed with multiple grains and seeds.',
-                    'specifications' => '<ul><li>Zero maida formula</li><li>Multiple grains blend</li><li>Seed enriched</li><li>Healthy alternative</li><li>Natural ingredients</li></ul>',
-                    'details' => '<p>Revolutionary multigrain bread made without maida, featuring a blend of healthy grains and seeds for maximum nutrition and taste.</p>',
+                    'name' => 'خبز متعدد الحبوب بدون ميدا من Factory',
+                    'description' => 'خبز متعدد الحبوب صحي مصنوع بدون ميدا، غني بالحبوب والبذور المتعددة.',
+                    'specifications' => '<ul><li>صيغة خالية من الميدا</li><li>مزيج حبوب متعددة</li><li>غني بالبذور</li><li>بديل صحي</li><li>مكونات طبيعية</li></ul>',
+                    'details' => '<p>خبز متعدد الحبوب مبتكر مصنوع بدون ميدا، يتميز بمزيج من الحبوب والبذور الصحية لأقصى تغذية وطعم.</p>',
                     'price' => 6.99,
                     'sale_price' => 5.99,
                     'cover_image' => 'https://images.unsplash.com/photo-309329?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-699453?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-730832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-399928?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-351278?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573189?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Great Garlic Bread',
-                    'description' => 'Aromatic garlic bread with rich garlic flavor and herbs, perfect as a side or snack.',
-                    'specifications' => '<ul><li>Rich garlic flavor</li><li>Herb seasoning</li><li>Aromatic taste</li><li>Ready to serve</li><li>Perfect side dish</li></ul>',
-                    'details' => '<p>Deliciously aromatic garlic bread infused with rich garlic flavor and herbs, making it the perfect accompaniment to any meal.</p>',
+                    'name' => 'خبز الثوم الرائع',
+                    'description' => 'خبز ثوم عطري بنكهة ثوم غنية وأعشاب، مثالي كطبق جانبي أو وجبة خفيفة.',
+                    'specifications' => '<ul><li>نكهة ثوم غنية</li><li>توابل أعشاب</li><li>طعم عطري</li><li>جاهز للتقديم</li><li>طبق جانبي مثالي</li></ul>',
+                    'details' => '<p>خبز ثوم لذيذ وعطري منقوع بنكهة الثوم الغنية والأعشاب، مما يجعله المرافق المثالي لأي وجبة.</p>',
                     'price' => 7.99,
                     'cover_image' => 'https://images.unsplash.com/photo-912968?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-185056?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-385981?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-144760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-456260?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-076247?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Factory Zero Maida Sourdough Classic Bread',
-                    'description' => 'Traditional sourdough bread made without maida, featuring classic tangy flavor and texture.',
-                    'specifications' => '<ul><li>Zero maida recipe</li><li>Classic sourdough</li><li>Tangy flavor</li><li>Traditional fermentation</li><li>Artisan quality</li></ul>',
-                    'details' => '<p>Classic sourdough bread crafted without maida using traditional fermentation methods, delivering authentic tangy flavor and perfect texture.</p>',
+                    'name' => 'خبز الصودا الكلاسيكي بدون ميدا من Factory',
+                    'description' => 'خبز صودا تقليدي مصنوع بدون ميدا، يتميز بنكهة حمضية كلاسيكية وقوام مميز.',
+                    'specifications' => '<ul><li>وصفة خالية من الميدا</li><li>صودا كلاسيكي</li><li>نكهة حمضية</li><li>تخمير تقليدي</li><li>جودة حرفية</li></ul>',
+                    'details' => '<p>خبز صودا كلاسيكي مصنوع بدون ميدا بطرق تخمير تقليدية، يقدم نكهة حمضية أصيلة وقوامًا مثاليًا.</p>',
                     'price' => 8.99,
                     'sale_price' => 7.99,
                     'variants' => [
-                        ['name' => 'Peices', 'options' => ['1', '2', '3']]
+                        ['name' => 'القطع', 'options' => ['1', '2', '3']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-942190?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-337926?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-688789?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249581?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-554942?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-872838?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Oven-Baked Italian Flatbread Focaccia',
-                    'description' => 'Authentic Italian focaccia flatbread, oven-baked with herbs and olive oil.',
-                    'specifications' => '<ul><li>Authentic Italian recipe</li><li>Oven-baked perfection</li><li>Herb infused</li><li>Olive oil drizzled</li><li>Flatbread style</li></ul>',
-                    'details' => '<p>Traditional Italian focaccia flatbread baked to perfection in the oven, infused with aromatic herbs and drizzled with premium olive oil.</p>',
+                    'name' => 'خبز فوكاتشيا إيطالي مسطح مخبوز بالفرن',
+                    'description' => 'فوكاتشيا إيطالية أصيلة مسطحة، مخبوزة في الفرن مع الأعشاب وزيت الزيتون.',
+                    'specifications' => '<ul><li>وصفة إيطالية أصيلة</li><li>خبز مثالي في الفرن</li><li>منقوع بالأعشاب</li><li>متبل بزيت الزيتون</li><li>نمط الخبز المسطح</li></ul>',
+                    'details' => '<p>فوكاتشيا إيطالية تقليدية مسطحة مخبوزة بإتقان في الفرن، منقوعة بالأعشاب العطرية ومتبلة بزيت الزيتون الفاخر.</p>',
                     'price' => 9.99,
                     'variants' => [
-                        ['name' => 'Topping', 'options' => ['Classic Herbs', 'Rosemary', 'Tomato & Basil', 'Olive']]
+                        ['name' => 'الإضافات', 'options' => ['أعشاب كلاسيكية', 'إكليل الجبل', 'طماطم وريحان', 'زيتون']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-309552?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-416964?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-736634?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-079914?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-561655?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-250650?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Freshly Baked Soft Dinner Rolls',
-                    'description' => 'Soft and fluffy dinner rolls, freshly baked daily for the perfect meal accompaniment.',
-                    'specifications' => '<ul><li>Soft and fluffy</li><li>Fresh daily baking</li><li>Perfect dinner size</li><li>Golden brown finish</li><li>Pack of 6 rolls</li></ul>',
-                    'details' => '<p>Perfectly soft and fluffy dinner rolls baked fresh daily, featuring a golden brown finish and ideal size for any meal occasion.</p>',
+                    'name' => 'لفات عشاء ناعمة مخبوزة طازجة',
+                    'description' => 'لفات عشاء ناعمة وهشة، مخبوزة طازجة يوميًا لمرافقة الوجبات بشكل مثالي.',
+                    'specifications' => '<ul><li>ناعمة وهشة</li><li>خبز طازج يوميًا</li><li>حجم عشاء مثالي</li><li>لمسة بنية ذهبية</li><li>علبة من 6 لفات</li></ul>',
+                    'details' => '<p>لفات عشاء ناعمة وهشة تمامًا مخبوزة طازجة يوميًا، تتميز بلمسة بنية ذهبية وحجم مثالي لأي مناسبة طعام.</p>',
                     'price' => 5.99,
                     'variants' => [
-                        ['name' => 'Pack Size', 'options' => ['6 Rolls', '12 Rolls', '18 Rolls']]
+                        ['name' => 'حجم العبوة', 'options' => ['6 لفات', '12 لفة', '18 لفة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-138547?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-104870?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-290449?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-749241?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-956692?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Premium Soft Burger Buns with Smooth Bites',
-                    'description' => 'Premium quality burger buns with exceptionally soft texture and smooth bite experience.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Exceptionally soft</li><li>Smooth bite texture</li><li>Perfect burger size</li><li>Pack of 4 buns</li></ul>',
-                    'details' => '<p>Premium soft burger buns designed for the ultimate burger experience, featuring smooth bite texture and perfect size for gourmet burgers.</p>',
+                    'name' => 'خبز برجر فاخر ناعم بقضمة سلسة',
+                    'description' => 'خبز برجر بجودة فاخرة بقوام ناعم استثنائي وتجربة قضمة سلسة.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>نعومة استثنائية</li><li>قوام قضمة سلس</li><li>حجم برجر مثالي</li><li>علبة من 4 أرغفة</li></ul>',
+                    'details' => '<p>خبز برجر ناعم فاخر مصمم لتجربة برجر مثالية، يتميز بقوام قضمة سلس وحجم مثالي للبرجر الفاخر.</p>',
                     'price' => 6.99,
                     'cover_image' => 'https://images.unsplash.com/photo-031062?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-167096?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-623240?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-603334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-455762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-790536?w=800&h=800&fit=crop&crop=center'
                 ],
             ],
-            'Cookies & Biscuits' => [
+            'البسكويت والكوكيز' => [
                 [
-                    'name' => 'Double Chocochip Cookies',
-                    'description' => 'Rich double chocolate chip cookies with premium cocoa and chocolate chunks.',
-                    'specifications' => '<ul><li>Double chocolate recipe</li><li>Premium cocoa base</li><li>Chocolate chunks</li><li>Rich and indulgent</li><li>Pack of 12 cookies</li></ul>',
-                    'details' => '<p>Indulgent double chocolate chip cookies made with premium cocoa and loaded with chocolate chunks for the ultimate chocolate experience.</p>',
+                    'name' => 'كوكيز الشوكولاتة المزدوجة',
+                    'description' => 'كوكيز شوكولاتة مزدوجة غنية بالكاكاو الفاخر وقطع الشوكولاتة.',
+                    'specifications' => '<ul><li>وصفة شوكولاتة مزدوجة</li><li>قاعدة كاكاو فاخرة</li><li>قطع شوكولاتة</li><li>غني وفاخر</li><li>علبة من 12 كوكيز</li></ul>',
+                    'details' => '<p>كوكيز شوكولاتة مزدوجة فاخرة مصنوعة من كاكاو ممتاز ومحملة بقطع الشوكولاتة لتجربة شوكولاتة مثالية.</p>',
                     'price' => 18.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Regular', 'Large', 'Mini Pack']]
+                        ['name' => 'المقاس', 'options' => ['عادي', 'كبير', 'علبة صغيرة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-248725?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-361753?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-273905?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-732877?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-730203?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-191448?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Classic Golden Butter Cookies',
-                    'description' => 'Traditional golden butter cookies with rich, buttery flavor and crisp texture.',
-                    'specifications' => '<ul><li>Classic butter recipe</li><li>Golden color</li><li>Rich buttery flavor</li><li>Crisp texture</li><li>Traditional baking</li></ul>',
-                    'details' => '<p>Classic golden butter cookies made with traditional recipe featuring rich, buttery flavor and perfect crisp texture for timeless enjoyment.</p>',
+                    'name' => 'كوكيز الزبدة الذهبية الكلاسيكية',
+                    'description' => 'كوكيز زبدة ذهبية تقليدية بنكهة زبدة غنية وقوام مقرمش.',
+                    'specifications' => '<ul><li>وصفة زبدة كلاسيكية</li><li>لون ذهبي</li><li>نكهة زبدة غنية</li><li>قوام مقرمش</li><li>خبز تقليدي</li></ul>',
+                    'details' => '<p>كوكيز زبدة ذهبية كلاسيكي مصنوع بوصفة تقليدية بنكهة زبدة غنية وقوام مقرمش مثالي لمتعة خالدة.</p>',
                     'price' => 14.99,
                     'variants' => [
-                        ['name' => 'Pack Size', 'options' => ['8 Pieces', '12 Pieces', '16 Pieces']]
+                        ['name' => 'حجم العبوة', 'options' => ['8 قطع', '12 قطعة', '16 قطعة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-944923?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-505436?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-205626?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-056773?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-587238?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-480645?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Wholesome Oven-Baked Oatmeal Cookies',
-                    'description' => 'Nutritious oven-baked oatmeal cookies with wholesome ingredients and hearty texture.',
-                    'specifications' => '<ul><li>Wholesome oats</li><li>Oven-baked fresh</li><li>Nutritious ingredients</li><li>Hearty texture</li><li>Natural sweetness</li></ul>',
-                    'details' => '<p>Wholesome oven-baked oatmeal cookies made with nutritious ingredients and hearty oats for a healthy and satisfying treat.</p>',
+                    'name' => 'كوكيز الشوفان الصحي المخبوز بالفرن',
+                    'description' => 'كوكيز شوفان مغذية مخبوزة بالفرن بمكونات صحية وقوام مشبع.',
+                    'specifications' => '<ul><li>شوفان صحي</li><li>مخبوز طازجًا في الفرن</li><li>مكونات مغذية</li><li>قوام مشبع</li><li>حلاوة طبيعية</li></ul>',
+                    'details' => '<p>كوكيز شوفان صحي مخبوز بالفرن مصنوع من مكونات مغذية وشوفان مشبع لتقديم صحي ومرضٍ.</p>',
                     'price' => 16.99,
                     'sale_price' => 14.99,
                     'cover_image' => 'https://images.unsplash.com/photo-921271?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-816424?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871425?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-918155?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-041242?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-054652?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Premium Almond Cookies Crafted',
-                    'description' => 'Premium crafted almond cookies with rich almond flavor and delicate texture.',
-                    'specifications' => '<ul><li>Premium almonds</li><li>Crafted recipe</li><li>Rich almond flavor</li><li>Delicate texture</li><li>Artisan quality</li></ul>',
-                    'details' => '<p>Premium almond cookies carefully crafted with the finest almonds, delivering rich almond flavor and delicate texture in every bite.</p>',
+                    'name' => 'كوكيز اللوز الفاخر المصنوع بعناية',
+                    'description' => 'كوكيز لوز فاخر بنكهة لوز غنية وقوام رقيق.',
+                    'specifications' => '<ul><li>لوز فاخر</li><li>وصفة مصنوعة بعناية</li><li>نكهة لوز غنية</li><li>قوام رقيق</li><li>جودة حرفية</li></ul>',
+                    'details' => '<p>كوكيز لوز فاخر مصنوع بعناية من أفضل أنواع اللوز، يقدم نكهة لوز غنية وقوامًا رقيقًا في كل قضمة.</p>',
                     'price' => 22.99,
                     'cover_image' => 'https://images.unsplash.com/photo-166228?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-776629?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-958655?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-621399?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-198734?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-677979?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Classic Scottish-Style Shortbread Biscuits',
-                    'description' => 'Traditional Scottish-style shortbread biscuits with authentic buttery taste.',
-                    'specifications' => '<ul><li>Scottish-style recipe</li><li>Authentic butter taste</li><li>Traditional method</li><li>Crumbly texture</li><li>Classic shape</li></ul>',
-                    'details' => '<p>Authentic Scottish-style shortbread biscuits made with traditional methods and premium butter for the classic crumbly texture and rich taste.</p>',
+                    'name' => 'بسكويت الشورتبرد الكلاسيكي على الطريقة الاسكتلندية',
+                    'description' => 'بسكويت شورتبرد تقليدي على الطريقة الاسكتلندية بطعم زبدة أصيل.',
+                    'specifications' => '<ul><li>وصفة على الطريقة الاسكتلندية</li><li>طعم زبدة أصيل</li><li>طريقة تقليدية</li><li>قوام متفتت</li><li>شكل كلاسيكي</li></ul>',
+                    'details' => '<p>بسكويت شورتبرد أصيل على الطريقة الاسكتلندية مصنوع بطرق تقليدية وزبدة فاخرة للقوام المتفتت الكلاسيكي والطعم الغني.</p>',
                     'price' => 19.99,
                     'sale_price' => 17.99,
                     'cover_image' => 'https://images.unsplash.com/photo-554157?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-941122?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-725730?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-518681?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646186?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-277170?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Deluxe Cream-Filled Biscuits',
-                    'description' => 'Luxurious cream-filled biscuits with smooth cream center and crispy exterior.',
-                    'specifications' => '<ul><li>Deluxe quality</li><li>Smooth cream filling</li><li>Crispy exterior</li><li>Premium ingredients</li><li>Perfect sandwich</li></ul>',
-                    'details' => '<p>Deluxe cream-filled biscuits featuring smooth, rich cream filling sandwiched between crispy biscuits made with premium ingredients.</p>',
+                    'name' => 'بسكويت محشو بالكريمة الفاخر',
+                    'description' => 'بسكويت فاخر محشو بالكريمة بمركز كريمي ناعم وقشرة مقرمشة.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>حشوة كريمة ناعمة</li><li>قشرة مقرمشة</li><li>مكونات فاخرة</li><li>ساندويتش مثالي</li></ul>',
+                    'details' => '<p>بسكويت فاخر محشو بالكريمة يتميز بحشوة كريمة غنية وناعمة بين قطعتين مقرمشتين مصنوعتين بمكونات فاخرة.</p>',
                     'price' => 24.99,
                     'variants' => [
-                        ['name' => 'Cream Flavor', 'options' => ['Vanilla', 'Chocolate', 'Strawberry', 'Orange']]
+                        ['name' => 'نكهة الكريمة', 'options' => ['فانيليا', 'شوكولاتة', 'فراولة', 'برتقال']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-723902?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-718281?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-764629?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573500?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-107950?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-712086?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Traditional Bakery-Style Dry',
-                    'description' => 'Traditional bakery-style dry with authentic taste and perfect crunch.',
-                    'specifications' => '<ul><li>Traditional bakery recipe</li><li>Dry biscuit style</li><li>Authentic taste</li><li>Perfect crunch</li><li>Long shelf life</li></ul>',
-                    'details' => '<p>Traditional bakery-style dry made with authentic recipes, offering perfect crunch and classic taste that pairs well with tea or coffee.</p>',
+                    'name' => 'بسكويت جاف تقليدي بنمط المخابز',
+                    'description' => 'بسكويت جاف تقليدي بنمط المخابز بطعم أصيل ومقرمشة مثالية.',
+                    'specifications' => '<ul><li>وصفة مخابز تقليدية</li><li>نمط البسكويت الجاف</li><li>طعم أصيل</li><li>مقرمشة مثالية</li><li>مدة صلاحية طويلة</li></ul>',
+                    'details' => '<p>بسكويت جاف تقليدي بنمط المخابز مصنوع بوصفات أصيلة، يقدم مقرمشة مثالية وطعمًا كلاسيكيًا يتناسب مع الشاي أو القهوة.</p>',
                     'price' => 12.99,
                     'cover_image' => 'https://images.unsplash.com/photo-427239?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-588407?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-417977?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-970495?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-779228?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-235922?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Luxury Assorted Cookie Gift Boxes',
-                    'description' => 'Elegant gift boxes containing luxury assorted cookies in premium packaging.',
-                    'specifications' => '<ul><li>Luxury assortment</li><li>Premium gift packaging</li><li>Multiple cookie varieties</li><li>Elegant presentation</li><li>Perfect for gifting</li></ul>',
-                    'details' => '<p>Luxury assorted cookie gift boxes featuring multiple premium cookie varieties in elegant packaging, perfect for special occasions and gifting.</p>',
+                    'name' => 'علب هدايا الكوكيز المشكل الفاخرة',
+                    'description' => 'علب هدايا أنيقة تحتوي على كوكيز مشكل فاخر بتغليف مميز.',
+                    'specifications' => '<ul><li>تشكيلة فاخرة</li><li>تغليف هدايا مميز</li><li>أصناف كوكيز متعددة</li><li>عرض أنيق</li><li>مثالية للهدايا</li></ul>',
+                    'details' => '<p>علب هدايا كوكيز مشكل فاخرة تتميز بأنواع كوكيز متعددة بتغليف أنيق، مثالية للمناسبات الخاصة والهدايا.</p>',
                     'price' => 39.99,
                     'sale_price' => 34.99,
                     'variants' => [
-                        ['name' => 'Box Size', 'options' => ['Small (12 pieces)', 'Medium (24 pieces)', 'Large (36 pieces)']],
+                        ['name' => 'حجم العلبة', 'options' => ['صغير (12 قطعة)', 'متوسط (24 قطعة)', 'كبير (36 قطعة)']],
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-834694?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-309957?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-581373?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-413760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-762802?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214473?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Savory Bakes' => [
+            'المخبوزات المالحة' => [
                 [
-                    'name' => 'Chinese Puff - Crunchy, Zesty, and Full of Flavor',
-                    'description' => 'Crispy Chinese puff pastry with zesty filling and bold flavors.',
-                    'specifications' => '<ul><li>Crunchy pastry shell</li><li>Zesty filling</li><li>Bold flavors</li><li>Chinese-style preparation</li><li>Fresh baked daily</li></ul>',
-                    'details' => '<p>Delicious Chinese puff featuring crunchy pastry shell filled with zesty ingredients and bold flavors for an authentic taste experience.</p>',
+                    'name' => 'نفخة صينية - مقرمشة ومنعشة ومليئة بالنكهة',
+                    'description' => 'معجنات نفخة صينية مقرمشة بحشوة منعشة ونكهات جريئة.',
+                    'specifications' => '<ul><li>قشرة معجنات مقرمشة</li><li>حشوة منعشة</li><li>نكهات جريئة</li><li>تحضير على الطريقة الصينية</li><li>مخبوز طازج يوميًا</li></ul>',
+                    'details' => '<p>نفخة صينية لذيذة تتميز بقشرة مقرمشة محشوة بمكونات منعشة ونكهات جريئة لتجربة طعم أصيلة.</p>',
                     'price' => 8.99,
                     'cover_image' => 'https://images.unsplash.com/photo-015497?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-134179?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-114169?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-039081?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-663230?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-859227?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Lakeview Milkbar Butter Croissants',
-                    'description' => 'Premium butter croissants from Lakeview Milkbar with flaky layers and rich taste.',
-                    'specifications' => '<ul><li>Premium butter</li><li>Flaky layers</li><li>Rich taste</li><li>Lakeview Milkbar quality</li><li>French technique</li></ul>',
-                    'details' => '<p>Authentic Lakeview Milkbar butter croissants made with premium butter and French technique for perfect flaky layers and rich taste.</p>',
+                    'name' => 'كرواسون الزبدة من Lakeview Milkbar',
+                    'description' => 'كرواسون زبدة فاخر من Lakeview Milkbar بطبقات رقيقة وطعم غني.',
+                    'specifications' => '<ul><li>زبدة فاخرة</li><li>طبقات رقيقة</li><li>طعم غني</li><li>جودة Lakeview Milkbar</li><li>تقنية فرنسية</li></ul>',
+                    'details' => '<p>كرواسون زبدة أصيل من Lakeview Milkbar مصنوع بزبدة فاخرة وتقنية فرنسية لطبقات رقيقة مثالية وطعم غني.</p>',
                     'price' => 12.99,
                     'sale_price' => 10.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Regular', 'Large', 'Mini Pack']]
+                        ['name' => 'المقاس', 'options' => ['عادي', 'كبير', 'علبة صغيرة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-664708?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-941953?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369920?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-153421?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-635468?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-249252?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Double Decker Sandwich',
-                    'description' => 'Multi-layered double decker sandwich with fresh ingredients and premium fillings.',
-                    'specifications' => '<ul><li>Multi-layered design</li><li>Fresh ingredients</li><li>Premium fillings</li><li>Double decker style</li><li>Hearty portion</li></ul>',
-                    'details' => '<p>Hearty double decker sandwich featuring multiple layers of fresh ingredients and premium fillings for a satisfying meal experience.</p>',
+                    'name' => 'ساندويتش مزدوج الطبقات',
+                    'description' => 'ساندويتش مزدوج الطبقات متعدد الطبقات بمكونات طازجة وحشوات فاخرة.',
+                    'specifications' => '<ul><li>تصميم متعدد الطبقات</li><li>مكونات طازجة</li><li>حشوات فاخرة</li><li>نمط مزدوج الطبقات</li><li>حصة مشبعة</li></ul>',
+                    'details' => '<p>ساندويتش مزدوج الطبقات مشبع يتميز بطبقات متعددة من المكونات الطازجة والحشوات الفاخرة لتجربة وجبة مرضية.</p>',
                     'price' => 15.99,
                     'cover_image' => 'https://images.unsplash.com/photo-630683?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-201015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-044550?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-879484?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665865?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-052125?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Veg Mini Quiches',
-                    'description' => 'Bite-sized vegetarian quiches with fresh vegetables and creamy egg custard.',
-                    'specifications' => '<ul><li>Bite-sized portions</li><li>Fresh vegetables</li><li>Creamy egg custard</li><li>Vegetarian recipe</li><li>Perfect for parties</li></ul>',
-                    'details' => '<p>Delightful vegetarian mini quiches featuring fresh vegetables in creamy egg custard, perfect for parties and light meals.</p>',
+                    'name' => 'كيش نباتي مصغر',
+                    'description' => 'كيش نباتي بحجم القضمة مع خضروات طازجة وكاسترد بيض كريمي.',
+                    'specifications' => '<ul><li>حصص بحجم القضمة</li><li>خضروات طازجة</li><li>كاسترد بيض كريمي</li><li>وصفة نباتية</li><li>مثالي للحفلات</li></ul>',
+                    'details' => '<p>كيش مصغر نباتي لذيذ يتميز بخضروات طازجة في كاسترد بيض كريمي، مثالي للحفلات والوجبات الخفيفة.</p>',
                     'price' => 18.99,
                     'variants' => [
-                        ['name' => 'Pack Size', 'options' => ['6 Pieces', '12 Pieces', '18 Pieces']]
+                        ['name' => 'حجم العبوة', 'options' => ['6 قطع', '12 قطعة', '18 قطعة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-092385?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-281363?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-011306?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-596716?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-076418?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-661712?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Spelled Pizza Slice with Vegetables',
-                    'description' => 'Healthy spelled flour pizza slice topped with fresh vegetables and cheese.',
-                    'specifications' => '<ul><li>Spelled flour base</li><li>Fresh vegetables</li><li>Quality cheese</li><li>Healthy option</li><li>Single slice serving</li></ul>',
-                    'details' => '<p>Nutritious spelled flour pizza slice topped with fresh vegetables and quality cheese for a healthy and delicious meal option.</p>',
+                    'name' => 'شريحة بيتزا بدقيق الحنطة مع الخضروات',
+                    'description' => 'شريحة بيتزا صحية بدقيق الحنطة مغطاة بخضروات طازجة وجبن.',
+                    'specifications' => '<ul><li>قاعدة دقيق حنطة</li><li>خضروات طازجة</li><li>جبن عالي الجودة</li><li>خيار صحي</li><li>حصة شريحة واحدة</li></ul>',
+                    'details' => '<p>شريحة بيتزا مغذية بدقيق الحنطة مغطاة بخضروات طازجة وجبن عالي الجودة لخيار وجبة صحي ولذيذ.</p>',
                     'price' => 9.99,
                     'sale_price' => 8.99,
                     'cover_image' => 'https://images.unsplash.com/photo-965639?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-167069?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-676748?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-629321?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-465367?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-122097?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Frozen Sliced Soft Deli Bread Rolls',
-                    'description' => 'Convenient frozen soft deli bread rolls, pre-sliced for easy use.',
-                    'specifications' => '<ul><li>Frozen for freshness</li><li>Pre-sliced convenience</li><li>Soft texture</li><li>Deli quality</li><li>Easy to thaw</li></ul>',
-                    'details' => '<p>Convenient frozen soft deli bread rolls that are pre-sliced for easy use, maintaining freshness and soft texture when thawed.</p>',
+                    'name' => 'لفات خبز دلي ناعمة مجمدة ومقطعة',
+                    'description' => 'لفات خبز دلي ناعمة مجمدة ومريحة، مقطعة شرائح مسبقًا لسهولة الاستخدام.',
+                    'specifications' => '<ul><li>مجمد للحفاظ على النضارة</li><li>مقطعة شرائح مسبقًا</li><li>قوام ناعم</li><li>جودة دلي</li><li>سهلة التذويب</li></ul>',
+                    'details' => '<p>لفات خبز دلي ناعمة مجمدة ومريحة مقطعة شرائح مسبقًا لسهولة الاستخدام، تحافظ على النضارة والقوام الناعم عند التذويب.</p>',
                     'price' => 6.99,
                     'cover_image' => 'https://images.unsplash.com/photo-774789?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-892207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-286331?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-104747?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-665729?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-598771?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cheese Stuffed Korean Bun',
-                    'description' => 'Soft Korean-style bun stuffed with melted cheese and traditional flavors.',
-                    'specifications' => '<ul><li>Korean-style bun</li><li>Melted cheese filling</li><li>Soft texture</li><li>Traditional flavors</li><li>Authentic recipe</li></ul>',
-                    'details' => '<p>Authentic Korean-style bun with soft texture and melted cheese filling, prepared with traditional flavors for an authentic taste experience.</p>',
+                    'name' => 'خبز كوري محشو بالجبن',
+                    'description' => 'خبز ناعم على الطريقة الكورية محشو بالجبن الذائب ونكهات تقليدية.',
+                    'specifications' => '<ul><li>خبز على الطريقة الكورية</li><li>حشوة جبن ذائب</li><li>قوام ناعم</li><li>نكهات تقليدية</li><li>وصفة أصيلة</li></ul>',
+                    'details' => '<p>خبز أصيل على الطريقة الكورية بقوام ناعم وحشوة جبن ذائب، محضر بنكهات تقليدية لتجربة طعم أصيلة.</p>',
                     'price' => 11.99,
                     'cover_image' => 'https://images.unsplash.com/photo-105458?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-058515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-731637?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-750343?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-327450?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-147227?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Spinach Corn & Cheese Hand Pie Single Piece',
-                    'description' => 'Individual hand pie filled with spinach, corn, and cheese in flaky pastry.',
-                    'specifications' => '<ul><li>Individual serving</li><li>Spinach and corn filling</li><li>Cheese blend</li><li>Flaky pastry</li><li>Hand-held convenience</li></ul>',
-                    'details' => '<p>Delicious individual hand pie featuring spinach, corn, and cheese filling wrapped in flaky pastry for convenient hand-held enjoyment.</p>',
+                    'name' => 'فطيرة يدوية بالسبانخ والذرة والجبن - قطعة واحدة',
+                    'description' => 'فطيرة يدوية فردية محشوة بالسبانخ والذرة والجبن في معجنات رقيقة.',
+                    'specifications' => '<ul><li>حصة فردية</li><li>حشوة سبانخ وذرة</li><li>مزيج جبن</li><li>معجنات رقيقة</li><li>سهولة الحمل باليد</li></ul>',
+                    'details' => '<p>فطيرة يدوية فردية لذيذة تتميز بحشوة السبانخ والذرة والجبن ملفوفة في معجنات رقيقة للاستمتاع بها بسهولة باليد.</p>',
                     'price' => 7.99,
                     'cover_image' => 'https://images.unsplash.com/photo-117720?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-804567?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-531987?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-722705?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-518947?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-337716?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Fruits & Vegetables' => [
+            'الفواكه والخضروات' => [
                 [
-                    'name' => 'Best Quality Hybrid Strawberry',
-                    'description' => 'Premium hybrid strawberries with exceptional sweetness and flavor.',
-                    'specifications' => '<ul><li>Hybrid variety</li><li>Exceptional sweetness</li><li>Rich in vitamin C</li><li>1 lb container</li><li>Farm fresh</li></ul>',
-                    'details' => '<p>Best quality hybrid strawberries with exceptional sweetness and vibrant flavor. Rich in vitamin C and antioxidants, perfect for snacking or desserts.</p>',
+                    'name' => 'فراولة هجينة بأفضل جودة',
+                    'description' => 'فراولة هجينة فاخرة بحلاوة ونكهة استثنائية.',
+                    'specifications' => '<ul><li>صنف هجين</li><li>حلاوة استثنائية</li><li>غنية بفيتامين C</li><li>عبوة رطل واحد</li><li>طازجة من المزرعة</li></ul>',
+                    'details' => '<p>فراولة هجينة بأفضل جودة بحلاوة استثنائية ونكهة نابضة. غنية بفيتامين C ومضادات الأكسدة، مثالية كوجبة خفيفة أو للحلويات.</p>',
                     'price' => 5.99,
                     'sale_price' => 4.99,
                     'cover_image' => 'https://images.unsplash.com/photo-374266?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-707297?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461709?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-205517?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-155649?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-093174?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Organic Palak Spinach',
-                    'description' => 'Fresh organic palak spinach leaves, rich in iron and nutrients.',
-                    'specifications' => '<ul><li>Certified organic</li><li>Rich in iron</li><li>Fresh palak variety</li><li>500g bundle</li><li>Pesticide-free</li></ul>',
-                    'details' => '<p>Fresh organic palak spinach with tender leaves rich in iron and essential nutrients. Pesticide-free and perfect for healthy cooking.</p>',
+                    'name' => 'سبانخ بلق عضوية',
+                    'description' => 'أوراق سبانخ بلق عضوية طازجة، غنية بالحديد والعناصر الغذائية.',
+                    'specifications' => '<ul><li>عضوية معتمدة</li><li>غنية بالحديد</li><li>صنف بلق طازج</li><li>حزمة 500 جم</li><li>خالية من المبيدات</li></ul>',
+                    'details' => '<p>سبانخ بلق عضوية طازجة بأوراق طرية غنية بالحديد والعناصر الغذائية الأساسية. خالية من المبيدات ومثالية للطهي الصحي.</p>',
                     'price' => 3.99,
                     'cover_image' => 'https://images.unsplash.com/photo-483904?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-443333?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-415749?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-389307?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-391692?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-975023?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Farm Fresh Carrot',
-                    'description' => 'Crisp and sweet farm fresh carrots, perfect for cooking and snacking.',
-                    'specifications' => '<ul><li>Farm fresh</li><li>Crisp and sweet</li><li>Rich in beta-carotene</li><li>1 kg pack</li><li>Locally sourced</li></ul>',
-                    'details' => '<p>Crisp and sweet farm fresh carrots with vibrant orange color. Rich in beta-carotene and perfect for cooking, juicing, or snacking.</p>',
+                    'name' => 'جزر طازج من المزرعة',
+                    'description' => 'جزر طازج من المزرعة مقرمش وحلو، مثالي للطهي والوجبات الخفيفة.',
+                    'specifications' => '<ul><li>طازج من المزرعة</li><li>مقرمش وحلو</li><li>غني بالبيتا كاروتين</li><li>عبوة 1 كجم</li><li>من مصادر محلية</li></ul>',
+                    'details' => '<p>جزر طازج من المزرعة مقرمش وحلو بلون برتقالي نابض. غني بالبيتا كاروتين ومثالي للطهي أو العصير أو الوجبات الخفيفة.</p>',
                     'price' => 2.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large']]
+                        ['name' => 'المقاس', 'options' => ['صغير', 'متوسط', 'كبير']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-111414?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-911819?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-056741?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-769901?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-053036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-058497?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Harvest Organic Apple',
-                    'description' => 'Crisp organic apples freshly harvested with natural sweetness.',
-                    'specifications' => '<ul><li>Certified organic</li><li>Fresh harvest</li><li>Natural sweetness</li><li>1 kg pack</li><li>Crisp texture</li></ul>',
-                    'details' => '<p>Fresh harvest organic apples with crisp texture and natural sweetness. Certified organic and perfect for healthy snacking or cooking.</p>',
+                    'name' => 'تفاح عضوي محصود طازجًا',
+                    'description' => 'تفاح عضوي مقرمش محصود طازجًا بحلاوة طبيعية.',
+                    'specifications' => '<ul><li>عضوي معتمد</li><li>حصاد طازج</li><li>حلاوة طبيعية</li><li>عبوة 1 كجم</li><li>قوام مقرمش</li></ul>',
+                    'details' => '<p>تفاح عضوي محصود طازجًا بقوام مقرمش وحلاوة طبيعية. عضوي معتمد ومثالي للوجبات الخفيفة الصحية أو الطهي.</p>',
                     'price' => 4.49,
                     'sale_price' => 3.99,
                     'variants' => [
-                        ['name' => 'Variety', 'options' => ['Red Delicious', 'Green Apple', 'Gala']]
+                        ['name' => 'الصنف', 'options' => ['ريد ديليشس', 'تفاح أخضر', 'جالا']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-931172?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-191890?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-273349?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-763474?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-700194?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-630375?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Cut Mixed Vegetables',
-                    'description' => 'Ready-to-cook mixed vegetables, freshly cut and cleaned.',
-                    'specifications' => '<ul><li>Ready-to-cook</li><li>Freshly cut</li><li>Mixed varieties</li><li>500g pack</li><li>Pre-washed</li></ul>',
-                    'details' => '<p>Convenient fresh cut mixed vegetables that are ready-to-cook. Pre-washed and cleaned for quick meal preparation.</p>',
+                    'name' => 'خضروات مشكلة مقطعة طازجة',
+                    'description' => 'خضروات مشكلة جاهزة للطهي، مقطعة ومنظفة حديثًا.',
+                    'specifications' => '<ul><li>جاهزة للطهي</li><li>مقطعة حديثًا</li><li>أصناف مشكلة</li><li>عبوة 500 جم</li><li>مغسولة مسبقًا</li></ul>',
+                    'details' => '<p>خضروات مشكلة مقطعة طازجة ومريحة جاهزة للطهي. مغسولة ومنظفة مسبقًا لتحضير الوجبات بسرعة.</p>',
                     'price' => 3.49,
                     'cover_image' => 'https://images.unsplash.com/photo-043397?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-755627?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-336846?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-494850?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-692824?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-938602?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Handpicked Exotic Dragon Fruit',
-                    'description' => 'Premium handpicked dragon fruit with unique flavor and texture.',
-                    'specifications' => '<ul><li>Handpicked quality</li><li>Exotic variety</li><li>Unique flavor</li><li>Per piece</li><li>Rich in antioxidants</li></ul>',
-                    'details' => '<p>Premium handpicked exotic dragon fruit with unique sweet flavor and distinctive appearance. Rich in antioxidants and vitamins.</p>',
+                    'name' => 'فاكهة التنين الغريبة المنتقاة يدويًا',
+                    'description' => 'فاكهة تنين فاخرة منتقاة يدويًا بنكهة وقوام فريدين.',
+                    'specifications' => '<ul><li>جودة منتقاة يدويًا</li><li>صنف غريب</li><li>نكهة فريدة</li><li>لكل قطعة</li><li>غنية بمضادات الأكسدة</li></ul>',
+                    'details' => '<p>فاكهة تنين غريبة فاخرة منتقاة يدويًا بنكهة حلوة فريدة ومظهر مميز. غنية بمضادات الأكسدة والفيتامينات.</p>',
                     'price' => 8.99,
                     'variants' => [
-                        ['name' => 'Type', 'options' => ['White Flesh', 'Red Flesh']]
+                        ['name' => 'النوع', 'options' => ['لب أبيض', 'لب أحمر']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-312211?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-996488?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-946939?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-300832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-063841?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-587921?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Luxury Seasonal Fruits Hamper',
-                    'description' => 'Premium hamper with assorted luxury seasonal fruits.',
-                    'specifications' => '<ul><li>Luxury selection</li><li>Seasonal varieties</li><li>Premium quality</li><li>Gift hamper</li><li>Mixed fruits</li></ul>',
-                    'details' => '<p>Luxury seasonal fruits hamper featuring premium quality assorted fruits. Perfect for gifting or special occasions.</p>',
+                    'name' => 'سلة فواكه موسمية فاخرة',
+                    'description' => 'سلة فاخرة تحتوي على تشكيلة فواكه موسمية راقية.',
+                    'specifications' => '<ul><li>تشكيلة فاخرة</li><li>أصناف موسمية</li><li>جودة فاخرة</li><li>سلة هدايا</li><li>فواكه مشكلة</li></ul>',
+                    'details' => '<p>سلة فواكه موسمية فاخرة تتميز بفواكه مشكلة عالية الجودة. مثالية للهدايا أو المناسبات الخاصة.</p>',
                     'price' => 24.99,
                     'sale_price' => 21.99,
                     'cover_image' => 'https://images.unsplash.com/photo-532360?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-292668?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-686837?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-553683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-406648?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-937558?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Mint / Pudina Plant',
-                    'description' => 'Live fresh mint plant for home gardening and cooking.',
-                    'specifications' => '<ul><li>Live plant</li><li>Fresh mint variety</li><li>Home gardening</li><li>Potted plant</li><li>Aromatic leaves</li></ul>',
-                    'details' => '<p>Live fresh mint plant perfect for home gardening. Aromatic leaves ideal for cooking, teas, and natural remedies.</p>',
+                    'name' => 'نبتة نعناع طازجة',
+                    'description' => 'نبتة نعناع طازجة حية للزراعة المنزلية والطبخ.',
+                    'specifications' => '<ul><li>نبتة حية</li><li>صنف نعناع طازج</li><li>زراعة منزلية</li><li>نبتة في أصيص</li><li>أوراق عطرية</li></ul>',
+                    'details' => '<p>نبتة نعناع طازجة حية مثالية للزراعة المنزلية. أوراق عطرية مثالية للطبخ والشاي والعلاجات الطبيعية.</p>',
                     'price' => 6.99,
                     'cover_image' => 'https://images.unsplash.com/photo-851854?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-081548?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-477056?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-328791?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-492143?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871401?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Mushroom',
-                    'description' => 'Premium fresh mushrooms with earthy flavor and meaty texture.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Earthy flavor</li><li>Meaty texture</li><li>250g pack</li><li>Rich in protein</li></ul>',
-                    'details' => '<p>Premium fresh mushrooms with rich earthy flavor and meaty texture. High in protein and perfect for cooking, salads, and gourmet dishes.</p>',
+                    'name' => 'فطر طازج',
+                    'description' => 'فطر طازج فاخر بنكهة ترابية وقوام لحمي.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>نكهة ترابية</li><li>قوام لحمي</li><li>عبوة 250 جم</li><li>غني بالبروتين</li></ul>',
+                    'details' => '<p>فطر طازج فاخر بنكهة ترابية غنية وقوام لحمي. عالي البروتين ومثالي للطهي والسلطات والأطباق الفاخرة.</p>',
                     'price' => 4.99,
                     'cover_image' => 'https://images.unsplash.com/photo-151316?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-812341?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-289246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559981?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-108897?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-213160?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Broccoli',
-                    'description' => 'Crisp fresh broccoli florets rich in vitamins and nutrients.',
-                    'specifications' => '<ul><li>Fresh florets</li><li>Rich in vitamins</li><li>High fiber content</li><li>500g pack</li><li>Organic grown</li></ul>',
-                    'details' => '<p>Crisp fresh broccoli florets packed with vitamins C and K, fiber, and essential nutrients. Organic grown and perfect for healthy cooking.</p>',
+                    'name' => 'بروكلي طازج',
+                    'description' => 'زهرات بروكلي طازجة مقرمشة غنية بالفيتامينات والعناصر الغذائية.',
+                    'specifications' => '<ul><li>زهرات طازجة</li><li>غني بالفيتامينات</li><li>نسبة ألياف عالية</li><li>عبوة 500 جم</li><li>مزروع عضويًا</li></ul>',
+                    'details' => '<p>زهرات بروكلي طازجة مقرمشة مليئة بفيتاميني C وK والألياف والعناصر الغذائية الأساسية. مزروعة عضويًا ومثالية للطهي الصحي.</p>',
                     'price' => 3.49,
                     'cover_image' => 'https://images.unsplash.com/photo-874299?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-162432?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-043591?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-771737?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-975579?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-164487?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Dairy & Eggs' => [
+            'الألبان والبيض' => [
                 [
-                    'name' => 'Aurora Cream Milk',
-                    'description' => 'Premium Aurora cream milk with rich, creamy texture and natural taste.',
-                    'specifications' => '<ul><li>Premium cream milk</li><li>Rich and creamy</li><li>Natural taste</li><li>1 liter pack</li><li>Fresh daily</li></ul>',
-                    'details' => '<p>Aurora Cream Milk offers premium quality with rich, creamy texture and natural taste. Perfect for drinking, cooking, and baking needs.</p>',
+                    'name' => 'حليب Aurora الكريمي',
+                    'description' => 'حليب Aurora الكريمي الفاخر بقوام غني وكريمي وطعم طبيعي.',
+                    'specifications' => '<ul><li>حليب كريمي فاخر</li><li>غني وكريمي</li><li>طعم طبيعي</li><li>عبوة 1 لتر</li><li>طازج يوميًا</li></ul>',
+                    'details' => '<p>حليب Aurora الكريمي يقدم جودة فاخرة بقوام غني وكريمي وطعم طبيعي. مثالي للشرب والطبخ واحتياجات الخبز.</p>',
                     'price' => 3.99,
                     'cover_image' => 'https://images.unsplash.com/photo-561205?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-928320?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-608594?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-592248?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-754989?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-136315?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Finest Salted Butter',
-                    'description' => 'Premium finest salted butter made from fresh cream with perfect salt balance.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Made from fresh cream</li><li>Perfect salt balance</li><li>500g pack</li><li>Rich flavor</li></ul>',
-                    'details' => '<p>Finest Salted Butter crafted from fresh cream with perfect salt balance for rich flavor. Ideal for cooking, baking, and spreading.</p>',
+                    'name' => 'زبدة مملحة فاخرة',
+                    'description' => 'زبدة مملحة فاخرة من الدرجة الأولى مصنوعة من كريمة طازجة بتوازن ملح مثالي.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>مصنوعة من كريمة طازجة</li><li>توازن ملح مثالي</li><li>عبوة 500 جم</li><li>نكهة غنية</li></ul>',
+                    'details' => '<p>زبدة مملحة فاخرة مصنوعة من كريمة طازجة بتوازن ملح مثالي لنكهة غنية. مثالية للطهي والخبز والدهن.</p>',
                     'price' => 6.99,
                     'sale_price' => 5.99,
                     'cover_image' => 'https://images.unsplash.com/photo-473817?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-491090?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-225505?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-588650?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-668560?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-755138?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Aurora Cheese',
-                    'description' => 'Premium Aurora Cheese with rich flavor and smooth texture.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Rich flavor</li><li>Smooth texture</li><li>200g pack</li><li>Natural ingredients</li></ul>',
-                    'details' => '<p>Aurora Cheese offers premium quality with rich flavor and smooth texture. Made from natural ingredients for authentic taste.</p>',
+                    'name' => 'جبن Aurora',
+                    'description' => 'جبن Aurora الفاخر بنكهة غنية وقوام ناعم.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>نكهة غنية</li><li>قوام ناعم</li><li>عبوة 200 جم</li><li>مكونات طبيعية</li></ul>',
+                    'details' => '<p>جبن Aurora يقدم جودة فاخرة بنكهة غنية وقوام ناعم. مصنوع من مكونات طبيعية لطعم أصيل.</p>',
                     'price' => 8.99,
                     'cover_image' => 'https://images.unsplash.com/photo-925324?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-871529?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-264680?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-274361?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-371794?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573945?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Honey Flavor Yogurt',
-                    'description' => 'Creamy yogurt with natural honey flavor and live active cultures.',
-                    'specifications' => '<ul><li>Natural honey flavor</li><li>Live active cultures</li><li>Creamy texture</li><li>400g container</li><li>Probiotic benefits</li></ul>',
-                    'details' => '<p>Honey Flavor Yogurt combines creamy texture with natural honey sweetness and beneficial live cultures for healthy digestion.</p>',
+                    'name' => 'زبادي بنكهة العسل',
+                    'description' => 'زبادي كريمي بنكهة عسل طبيعية ومزارع نشطة حية.',
+                    'specifications' => '<ul><li>نكهة عسل طبيعية</li><li>مزارع نشطة حية</li><li>قوام كريمي</li><li>عبوة 400 جم</li><li>فوائد بروبيوتيك</li></ul>',
+                    'details' => '<p>زبادي بنكهة العسل يجمع بين القوام الكريمي وحلاوة العسل الطبيعية والمزارع الحية المفيدة لهضم صحي.</p>',
                     'price' => 4.49,
                     'cover_image' => 'https://images.unsplash.com/photo-396247?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-161772?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-395688?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247743?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-127495?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-565190?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Creamvia Fresh Cream',
-                    'description' => 'Premium Creamvia fresh cream with rich consistency for cooking and desserts.',
-                    'specifications' => '<ul><li>Premium fresh cream</li><li>Rich consistency</li><li>Perfect for cooking</li><li>250ml pack</li><li>High fat content</li></ul>',
-                    'details' => '<p>Creamvia Fresh Cream provides premium quality with rich consistency, perfect for cooking, baking, and making delicious desserts.</p>',
+                    'name' => 'كريمة طازجة من Creamvia',
+                    'description' => 'كريمة طازجة فاخرة من Creamvia بقوام غني للطهي والحلويات.',
+                    'specifications' => '<ul><li>كريمة طازجة فاخرة</li><li>قوام غني</li><li>مثالية للطهي</li><li>عبوة 250 مل</li><li>نسبة دهون عالية</li></ul>',
+                    'details' => '<p>كريمة طازجة من Creamvia توفر جودة فاخرة بقوام غني، مثالية للطهي والخبز وصنع الحلويات اللذيذة.</p>',
                     'price' => 5.49,
                     'sale_price' => 4.99,
                     'variants' => [
-                        ['name' => 'Quantity', 'options' => ['200ml', '250ml', '500ml']]
+                        ['name' => 'الكمية', 'options' => ['200 مل', '250 مل', '500 مل']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-131677?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-267279?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026321?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-351639?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333240?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-333829?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Lactobloom Paneer',
-                    'description' => 'Fresh Lactobloom paneer with soft texture and authentic taste.',
-                    'specifications' => '<ul><li>Fresh paneer</li><li>Soft texture</li><li>Authentic taste</li><li>200g pack</li><li>High protein</li></ul>',
-                    'details' => '<p>Lactobloom Paneer offers fresh, soft texture with authentic taste. High in protein and perfect for Indian cooking and healthy meals.</p>',
+                    'name' => 'بانير من Lactobloom',
+                    'description' => 'بانير طازج من Lactobloom بقوام ناعم وطعم أصيل.',
+                    'specifications' => '<ul><li>بانير طازج</li><li>قوام ناعم</li><li>طعم أصيل</li><li>عبوة 200 جم</li><li>عالي البروتين</li></ul>',
+                    'details' => '<p>بانير من Lactobloom يقدم قوامًا طازجًا وناعمًا بطعم أصيل. عالي البروتين ومثالي للطبخ الهندي والوجبات الصحية.</p>',
                     'price' => 7.99,
                     'cover_image' => 'https://images.unsplash.com/photo-570282?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-240013?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-012228?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-179584?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-848874?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-046230?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Large Fresh Eggs from Free-Roaming Hens',
-                    'description' => 'Premium large fresh eggs from free-roaming hens with rich golden yolks.',
-                    'specifications' => '<ul><li>Free-roaming hens</li><li>Large size</li><li>Rich golden yolks</li><li>Dozen pack</li><li>Farm fresh</li></ul>',
-                    'details' => '<p>Large Fresh Eggs from Free-Roaming Hens provide premium quality with rich golden yolks and superior flavor from ethically raised hens.</p>',
+                    'name' => 'بيض طازج كبير من دجاج يربى بحرية',
+                    'description' => 'بيض طازج كبير فاخر من دجاج يربى بحرية بصفار ذهبي غني.',
+                    'specifications' => '<ul><li>دجاج يربى بحرية</li><li>حجم كبير</li><li>صفار ذهبي غني</li><li>عبوة دستة</li><li>طازج من المزرعة</li></ul>',
+                    'details' => '<p>بيض طازج كبير من دجاج يربى بحرية يوفر جودة فاخرة بصفار ذهبي غني ونكهة متفوقة من دجاج مربى أخلاقيًا.</p>',
                     'price' => 6.99,
                     'sale_price' => 5.99,
                     'variants' => [
-                        ['name' => 'Pack Size', 'options' => ['6 Eggs', '12 Eggs', '18 Eggs']]
+                        ['name' => 'حجم العبوة', 'options' => ['6 بيضات', '12 بيضة', '18 بيضة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-272397?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-076823?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-567664?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-097348?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-907458?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-340080?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Frothy Yogurt Drink',
-                    'description' => 'Refreshing frothy yogurt drink with smooth texture and natural taste.',
-                    'specifications' => '<ul><li>Frothy texture</li><li>Smooth consistency</li><li>Natural taste</li><li>250ml bottle</li><li>Refreshing drink</li></ul>',
-                    'details' => '<p>Frothy Yogurt Drink offers refreshing taste with smooth, frothy texture. Perfect for on-the-go refreshment and healthy hydration.</p>',
+                    'name' => 'مشروب زبادي رغوي',
+                    'description' => 'مشروب زبادي رغوي منعش بقوام ناعم وطعم طبيعي.',
+                    'specifications' => '<ul><li>قوام رغوي</li><li>اتساق ناعم</li><li>طعم طبيعي</li><li>زجاجة 250 مل</li><li>مشروب منعش</li></ul>',
+                    'details' => '<p>مشروب زبادي رغوي يقدم طعمًا منعشًا بقوام ناعم ورغوي. مثالي للانتعاش أثناء التنقل والترطيب الصحي.</p>',
                     'price' => 3.49,
                     'cover_image' => 'https://images.unsplash.com/photo-766831?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-448561?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-233090?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-682025?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-697580?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-181903?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Chocolate Flavoured Milk',
-                    'description' => 'Rich and creamy chocolate flavoured milk with premium cocoa.',
-                    'specifications' => '<ul><li>Premium cocoa</li><li>Rich chocolate flavor</li><li>Creamy texture</li><li>500ml bottle</li><li>No artificial colors</li></ul>',
-                    'details' => '<p>Rich and creamy chocolate flavoured milk made with premium cocoa for authentic chocolate taste. Perfect for kids and chocolate lovers.</p>',
+                    'name' => 'حليب بنكهة الشوكولاتة',
+                    'description' => 'حليب بنكهة الشوكولاتة غني وكريمي بالكاكاو الفاخر.',
+                    'specifications' => '<ul><li>كاكاو فاخر</li><li>نكهة شوكولاتة غنية</li><li>قوام كريمي</li><li>زجاجة 500 مل</li><li>بدون ألوان صناعية</li></ul>',
+                    'details' => '<p>حليب بنكهة الشوكولاتة غني وكريمي مصنوع بالكاكاو الفاخر لطعم شوكولاتة أصيل. مثالي للأطفال ومحبي الشوكولاتة.</p>',
                     'price' => 2.99,
                     'cover_image' => 'https://images.unsplash.com/photo-570119?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-926668?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-720348?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-383866?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-759007?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-184891?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Strawberry Milkshake',
-                    'description' => 'Delicious strawberry milkshake with real fruit pieces and creamy milk.',
-                    'specifications' => '<ul><li>Real strawberry pieces</li><li>Creamy milk base</li><li>Natural fruit flavor</li><li>400ml bottle</li><li>Rich in calcium</li></ul>',
-                    'details' => '<p>Delicious strawberry milkshake made with real fruit pieces and creamy milk. Natural fruit flavor and rich in calcium for a healthy treat.</p>',
+                    'name' => 'ميلك شيك الفراولة',
+                    'description' => 'ميلك شيك فراولة لذيذ بقطع فاكهة حقيقية وحليب كريمي.',
+                    'specifications' => '<ul><li>قطع فراولة حقيقية</li><li>قاعدة حليب كريمية</li><li>نكهة فاكهة طبيعية</li><li>زجاجة 400 مل</li><li>غني بالكالسيوم</li></ul>',
+                    'details' => '<p>ميلك شيك فراولة لذيذ مصنوع بقطع فاكهة حقيقية وحليب كريمي. نكهة فاكهة طبيعية وغني بالكالسيوم لتقديم صحي.</p>',
                     'price' => 3.49,
                     'cover_image' => 'https://images.unsplash.com/photo-023218?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-170705?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-723589?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-072592?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-425803?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-536207?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Grocery & Staples' => [
+            'المواد الغذائية الأساسية' => [
                 [
-                    'name' => 'Golden Harvest Basmati Rice',
-                    'description' => 'Premium Golden Harvest basmati rice with long grains and aromatic fragrance.',
-                    'specifications' => '<ul><li>Premium basmati variety</li><li>Long grain</li><li>Aromatic fragrance</li><li>5kg pack</li><li>Aged for flavor</li></ul>',
-                    'details' => '<p>Golden Harvest Basmati Rice offers premium quality with distinctive aromatic fragrance and fluffy texture. Aged for enhanced flavor and perfect for biryanis and pulao.</p>',
+                    'name' => 'أرز بسمتي الحصاد الذهبي',
+                    'description' => 'أرز بسمتي فاخر من Golden Harvest بحبوب طويلة ورائحة عطرية.',
+                    'specifications' => '<ul><li>صنف بسمتي فاخر</li><li>حبة طويلة</li><li>رائحة عطرية</li><li>عبوة 5 كجم</li><li>معتق لتحسين النكهة</li></ul>',
+                    'details' => '<p>أرز بسمتي الحصاد الذهبي يقدم جودة فاخرة برائحة عطرية مميزة وقوام هش. معتق لتعزيز النكهة ومثالي للبرياني والبيلاو.</p>',
                     'price' => 15.99,
                     'sale_price' => 13.99,
                     'cover_image' => 'https://images.unsplash.com/photo-789893?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-165120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-760095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-497665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708357?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-644023?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Khapli Whole Wheat Flour',
-                    'description' => 'Nutritious Khapli whole wheat flour with high fiber and protein content.',
-                    'specifications' => '<ul><li>Khapli wheat variety</li><li>Stone ground</li><li>High fiber content</li><li>2kg pack</li><li>Chemical-free</li></ul>',
-                    'details' => '<p>Khapli Whole Wheat Flour is made from ancient wheat variety, stone ground to preserve nutrients. High in fiber and protein, perfect for healthy rotis and bread.</p>',
+                    'name' => 'دقيق قمح كامل خلبي',
+                    'description' => 'دقيق قمح كامل خلبي مغذي بنسبة ألياف وبروتين عالية.',
+                    'specifications' => '<ul><li>صنف قمح خلبي</li><li>مطحون بالحجر</li><li>نسبة ألياف عالية</li><li>عبوة 2 كجم</li><li>خالٍ من المواد الكيميائية</li></ul>',
+                    'details' => '<p>دقيق قمح كامل خلبي مصنوع من صنف قمح قديم، مطحون بالحجر للحفاظ على العناصر الغذائية. عالي الألياف والبروتين، مثالي للخبز الصحي.</p>',
                     'price' => 8.99,
                     'variants' => [
-                        ['name' => 'Pack Size', 'options' => ['1kg', '2kg', '5kg']]
+                        ['name' => 'حجم العبوة', 'options' => ['1 كجم', '2 كجم', '5 كجم']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-766001?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-111933?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-914820?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-992281?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-973175?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-151643?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Masoor Dal and Moong Dal Pulses',
-                    'description' => 'Premium quality masoor dal and moong dal pulses rich in protein.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Rich in protein</li><li>Easy to cook</li><li>1kg pack each</li><li>Machine cleaned</li></ul>',
-                    'details' => '<p>Premium Masoor Dal and Moong Dal Pulses offer excellent protein content and easy cooking. Machine cleaned and sorted for quality assurance.</p>',
+                    'name' => 'عدس ماسور ومونج بقوليات',
+                    'description' => 'عدس ماسور ومونج بقوليات بجودة فاخرة غنية بالبروتين.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>غني بالبروتين</li><li>سهل الطهي</li><li>عبوة 1 كجم لكل منهما</li><li>منظف آليًا</li></ul>',
+                    'details' => '<p>عدس ماسور ومونج بقوليات فاخر يوفر محتوى بروتين ممتاز وسهولة في الطهي. منظف ومرتب آليًا لضمان الجودة.</p>',
                     'price' => 12.99,
                     'sale_price' => 10.99,
                     'cover_image' => 'https://images.unsplash.com/photo-187090?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-555214?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-149124?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-729941?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-607128?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-584160?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Premium Brown Lentils',
-                    'description' => 'Premium brown lentils with rich flavor and high nutritional value.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Rich flavor</li><li>High nutrition</li><li>500g pack</li><li>Organic certified</li></ul>',
-                    'details' => '<p>Premium Brown Lentils offer rich flavor and high nutritional value. Organic certified and perfect for healthy soups, curries, and salads.</p>',
+                    'name' => 'عدس بني فاخر',
+                    'description' => 'عدس بني فاخر بنكهة غنية وقيمة غذائية عالية.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>نكهة غنية</li><li>تغذية عالية</li><li>عبوة 500 جم</li><li>عضوي معتمد</li></ul>',
+                    'details' => '<p>عدس بني فاخر يقدم نكهة غنية وقيمة غذائية عالية. عضوي معتمد ومثالي للشوربات والكاري والسلطات الصحية.</p>',
                     'price' => 6.99,
                     'cover_image' => 'https://images.unsplash.com/photo-027718?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-569522?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247887?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-026766?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-561319?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-140724?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fortune Cooking Oils',
-                    'description' => 'Fortune brand premium cooking oils for healthy cooking and frying.',
-                    'specifications' => '<ul><li>Fortune brand</li><li>Premium quality</li><li>Healthy cooking</li><li>1L bottle</li><li>Multiple varieties</li></ul>',
-                    'details' => '<p>Fortune Cooking Oils provide premium quality for healthy cooking and frying. Available in multiple varieties including sunflower, mustard, and refined oil.</p>',
+                    'name' => 'زيوت الطبخ Fortune',
+                    'description' => 'زيوت طبخ فاخرة من ماركة Fortune للطبخ والقلي الصحي.',
+                    'specifications' => '<ul><li>ماركة Fortune</li><li>جودة فاخرة</li><li>طبخ صحي</li><li>زجاجة 1 لتر</li><li>أنواع متعددة</li></ul>',
+                    'details' => '<p>زيوت الطبخ Fortune توفر جودة فاخرة للطبخ والقلي الصحي. متوفرة بأنواع متعددة تشمل زيت عباد الشمس والخردل والزيت المكرر.</p>',
                     'price' => 9.99,
                     'sale_price' => 8.49,
                     'cover_image' => 'https://images.unsplash.com/photo-937854?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-896024?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-404182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-598958?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559293?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-130904?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Sugar & Salt',
-                    'description' => 'Premium quality sugar and salt combo pack for daily cooking needs.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Refined sugar</li><li>Iodized salt</li><li>Combo pack</li><li>Daily essentials</li></ul>',
-                    'details' => '<p>Premium Sugar & Salt combo pack includes refined sugar and iodized salt for daily cooking needs. Essential ingredients for every kitchen.</p>',
+                    'name' => 'سكر وملح',
+                    'description' => 'عبوة مشتركة فاخرة من السكر والملح لاحتياجات الطبخ اليومية.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>سكر مكرر</li><li>ملح مدعم باليود</li><li>عبوة مشتركة</li><li>أساسيات يومية</li></ul>',
+                    'details' => '<p>عبوة مشتركة فاخرة من السكر والملح تشمل السكر المكرر والملح المدعم باليود لاحتياجات الطبخ اليومية. مكونات أساسية لكل مطبخ.</p>',
                     'price' => 4.99,
                     'cover_image' => 'https://images.unsplash.com/photo-863446?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-169006?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709560?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-297262?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-492383?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-827429?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Outino Spices',
-                    'description' => 'Outino brand premium spices collection for authentic flavors.',
-                    'specifications' => '<ul><li>Outino brand</li><li>Premium spices</li><li>Authentic flavors</li><li>Variety pack</li><li>Fresh ground</li></ul>',
-                    'details' => '<p>Outino Spices offer premium quality spice collection with authentic flavors. Fresh ground spices perfect for Indian cooking and international cuisines.</p>',
+                    'name' => 'توابل Outino',
+                    'description' => 'تشكيلة توابل فاخرة من ماركة Outino لنكهات أصيلة.',
+                    'specifications' => '<ul><li>ماركة Outino</li><li>توابل فاخرة</li><li>نكهات أصيلة</li><li>علبة متنوعة</li><li>مطحونة طازجًا</li></ul>',
+                    'details' => '<p>توابل Outino تقدم تشكيلة توابل بجودة فاخرة ونكهات أصيلة. توابل مطحونة طازجًا مثالية للطبخ الهندي والمطابخ العالمية.</p>',
                     'price' => 11.99,
                     'sale_price' => 9.99,
                     'cover_image' => 'https://images.unsplash.com/photo-780721?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-092773?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-987559?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-709064?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-058349?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-809600?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Healthy Ready Mixes',
-                    'description' => 'Healthy ready-to-cook mixes for quick and nutritious meals.',
-                    'specifications' => '<ul><li>Ready-to-cook</li><li>Healthy ingredients</li><li>Quick preparation</li><li>200g pack</li><li>Preservative-free</li></ul>',
-                    'details' => '<p>Healthy Ready Mixes provide convenient ready-to-cook options with healthy ingredients. Quick preparation for nutritious meals without preservatives.</p>',
+                    'name' => 'خلطات جاهزة صحية',
+                    'description' => 'خلطات صحية جاهزة للطهي لوجبات سريعة ومغذية.',
+                    'specifications' => '<ul><li>جاهزة للطهي</li><li>مكونات صحية</li><li>تحضير سريع</li><li>عبوة 200 جم</li><li>خالية من المواد الحافظة</li></ul>',
+                    'details' => '<p>خلطات جاهزة صحية توفر خيارات مريحة جاهزة للطهي بمكونات صحية. تحضير سريع لوجبات مغذية بدون مواد حافظة.</p>',
                     'price' => 7.49,
                     'variants' => [
-                        ['name' => 'Mix Type', 'options' => ['Idli Mix', 'Dosa Mix', 'Upma Mix', 'Pancake Mix']]
+                        ['name' => 'نوع الخلطة', 'options' => ['خلطة إدلي', 'خلطة دوسا', 'خلطة أبما', 'خلطة بان كيك']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-110497?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-870831?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-552390?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-947998?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-772182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-908808?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Royal Almonds',
-                    'description' => 'Premium quality royal almonds with rich flavor and natural goodness.',
-                    'specifications' => '<ul><li>Premium quality</li><li>Rich in protein</li><li>Natural goodness</li><li>500g pack</li><li>Raw almonds</li></ul>',
-                    'details' => '<p>Premium Royal Almonds with rich flavor and natural goodness. High in protein and healthy fats, perfect for snacking and cooking.</p>',
+                    'name' => 'لوز ملكي',
+                    'description' => 'لوز ملكي فاخر بنكهة غنية وفوائد طبيعية.',
+                    'specifications' => '<ul><li>جودة فاخرة</li><li>غني بالبروتين</li><li>فوائد طبيعية</li><li>عبوة 500 جم</li><li>لوز خام</li></ul>',
+                    'details' => '<p>لوز ملكي فاخر بنكهة غنية وفوائد طبيعية. عالي البروتين والدهون الصحية، مثالي للوجبات الخفيفة والطهي.</p>',
                     'price' => 18.99,
                     'cover_image' => 'https://images.unsplash.com/photo-485904?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-853871?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-860011?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-746942?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-037470?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-627221?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Nutrios Breakfast Cereals',
-                    'description' => 'Nutritious breakfast cereals with whole grains and essential vitamins.',
-                    'specifications' => '<ul><li>Whole grain cereals</li><li>Essential vitamins</li><li>High fiber content</li><li>400g box</li><li>Fortified with minerals</li></ul>',
-                    'details' => '<p>Nutrios Breakfast Cereals provide nutritious start to your day with whole grains and essential vitamins. High fiber content and fortified with minerals.</p>',
+                    'name' => 'حبوب الإفطار Nutrios',
+                    'description' => 'حبوب إفطار مغذية بالحبوب الكاملة والفيتامينات الأساسية.',
+                    'specifications' => '<ul><li>حبوب كاملة</li><li>فيتامينات أساسية</li><li>نسبة ألياف عالية</li><li>علبة 400 جم</li><li>مدعمة بالمعادن</li></ul>',
+                    'details' => '<p>حبوب إفطار Nutrios توفر بداية مغذية ليومك بالحبوب الكاملة والفيتامينات الأساسية. نسبة ألياف عالية ومدعمة بالمعادن.</p>',
                     'price' => 8.99,
                     'cover_image' => 'https://images.unsplash.com/photo-260887?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-067672?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-661923?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-618620?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-874269?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-797266?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Snacks & Beverages' => [
+            'الوجبات الخفيفة والمشروبات' => [
                 [
-                    'name' => 'Lays Chips',
-                    'description' => 'Crispy Lays potato chips with classic flavor and perfect crunch.',
-                    'specifications' => '<ul><li>Crispy potato chips</li><li>Classic flavor</li><li>Perfect crunch</li><li>50g pack</li><li>No artificial colors</li></ul>',
-                    'details' => '<p>Lays Chips offer the perfect combination of crispy texture and classic flavor. Made from quality potatoes for the ultimate snacking experience.</p>',
+                    'name' => 'رقائق Lays',
+                    'description' => 'رقائق بطاطس Lays مقرمشة بنكهة كلاسيكية ومقرمشة مثالية.',
+                    'specifications' => '<ul><li>رقائق بطاطس مقرمشة</li><li>نكهة كلاسيكية</li><li>مقرمشة مثالية</li><li>عبوة 50 جم</li><li>بدون ألوان صناعية</li></ul>',
+                    'details' => '<p>رقائق Lays تقدم المزيج المثالي من القوام المقرمش والنكهة الكلاسيكية. مصنوعة من بطاطس عالية الجودة لتجربة وجبات خفيفة مثالية.</p>',
                     'price' => 2.99,
                     'cover_image' => 'https://images.unsplash.com/photo-679762?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-258116?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-803124?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-569017?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-557486?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-136580?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Hide & Seek Biscuits',
-                    'description' => 'Delicious Hide & Seek chocolate chip biscuits with rich chocolate flavor.',
-                    'specifications' => '<ul><li>Chocolate chip biscuits</li><li>Rich chocolate flavor</li><li>Crunchy texture</li><li>100g pack</li><li>Premium ingredients</li></ul>',
-                    'details' => '<p>Hide & Seek Biscuits feature delicious chocolate chips in every bite with rich chocolate flavor and perfect crunchy texture.</p>',
+                    'name' => 'بسكويت Hide & Seek',
+                    'description' => 'بسكويت Hide & Seek اللذيذ بقطع الشوكولاتة ونكهة شوكولاتة غنية.',
+                    'specifications' => '<ul><li>بسكويت بقطع الشوكولاتة</li><li>نكهة شوكولاتة غنية</li><li>قوام مقرمش</li><li>عبوة 100 جم</li><li>مكونات فاخرة</li></ul>',
+                    'details' => '<p>بسكويت Hide & Seek يتميز بقطع شوكولاتة لذيذة في كل قضمة بنكهة شوكولاتة غنية وقوام مقرمش مثالي.</p>',
                     'price' => 3.49,
                     'sale_price' => 2.99,
                     'cover_image' => 'https://images.unsplash.com/photo-546973?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-817453?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-281338?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-918147?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462043?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-675069?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Indya Amul Chocomini Chocolate',
-                    'description' => 'Premium Indya Amul Chocomini chocolates with rich cocoa and smooth texture.',
-                    'specifications' => '<ul><li>Premium chocolate</li><li>Rich cocoa content</li><li>Smooth texture</li><li>Mini size</li><li>Amul quality</li></ul>',
-                    'details' => '<p>Indya Amul Chocomini Chocolate offers premium quality with rich cocoa content and smooth texture in convenient mini size portions.</p>',
+                    'name' => 'شوكولاتة Indya Amul Chocomini',
+                    'description' => 'شوكولاتة Indya Amul Chocomini فاخرة بكاكاو غني وقوام ناعم.',
+                    'specifications' => '<ul><li>شوكولاتة فاخرة</li><li>محتوى كاكاو غني</li><li>قوام ناعم</li><li>حجم مصغر</li><li>جودة Amul</li></ul>',
+                    'details' => '<p>شوكولاتة Indya Amul Chocomini تقدم جودة فاخرة بمحتوى كاكاو غني وقوام ناعم بحصص مصغرة مريحة.</p>',
                     'price' => 4.99,
                     'cover_image' => 'https://images.unsplash.com/photo-574479?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-912328?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-214967?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-732808?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-331551?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-542644?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cranbery Flavoured Soft Drink',
-                    'description' => 'Refreshing cranberry flavored soft drink with natural fruit essence.',
-                    'specifications' => '<ul><li>Cranberry flavor</li><li>Natural fruit essence</li><li>Refreshing taste</li><li>330ml bottle</li><li>Carbonated drink</li></ul>',
-                    'details' => '<p>Cranbery Flavoured Soft Drink provides refreshing taste with natural fruit essence and perfect carbonation for ultimate refreshment.</p>',
+                    'name' => 'مشروب غازي بنكهة التوت البري',
+                    'description' => 'مشروب غازي منعش بنكهة التوت البري بجوهر فاكهة طبيعي.',
+                    'specifications' => '<ul><li>نكهة التوت البري</li><li>جوهر فاكهة طبيعي</li><li>طعم منعش</li><li>زجاجة 330 مل</li><li>مشروب غازي</li></ul>',
+                    'details' => '<p>مشروب غازي بنكهة التوت البري يقدم طعمًا منعشًا بجوهر فاكهة طبيعي وكربنة مثالية لانتعاش مثالي.</p>',
                     'price' => 1.99,
                     'sale_price' => 1.79,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['330ml', '500ml', '1L']]
+                        ['name' => 'المقاس', 'options' => ['330 مل', '500 مل', '1 لتر']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-786209?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-059532?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-164836?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-126522?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-066908?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-628678?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Organic Juice',
-                    'description' => 'Premium fresh organic juice made from 100% organic fruits.',
-                    'specifications' => '<ul><li>100% organic fruits</li><li>Fresh pressed</li><li>No preservatives</li><li>250ml bottle</li><li>Natural vitamins</li></ul>',
-                    'details' => '<p>Fresh Organic Juice made from 100% organic fruits with no preservatives. Rich in natural vitamins and fresh pressed for maximum nutrition.</p>',
+                    'name' => 'عصير عضوي طازج',
+                    'description' => 'عصير عضوي طازج فاخر مصنوع من فواكه عضوية 100%.',
+                    'specifications' => '<ul><li>فواكه عضوية 100%</li><li>معصور طازجًا</li><li>بدون مواد حافظة</li><li>زجاجة 250 مل</li><li>فيتامينات طبيعية</li></ul>',
+                    'details' => '<p>عصير عضوي طازج مصنوع من فواكه عضوية 100% بدون مواد حافظة. غني بالفيتامينات الطبيعية ومعصور طازجًا لأقصى تغذية.</p>',
                     'price' => 3.99,
                     'cover_image' => 'https://images.unsplash.com/photo-140905?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-098306?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-240150?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-045217?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-426914?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-039819?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Artisan Grey Tea',
-                    'description' => 'Premium artisan grey tea with bergamot oil and natural flavors.',
-                    'specifications' => '<ul><li>Premium tea leaves</li><li>Bergamot oil</li><li>Natural flavors</li><li>25 tea bags</li><li>Artisan quality</li></ul>',
-                    'details' => '<p>Artisan Grey Tea features premium tea leaves infused with bergamot oil and natural flavors for an authentic and refined tea experience.</p>',
+                    'name' => 'شاي رمادي حرفي',
+                    'description' => 'شاي رمادي فاخر مصنوع يدويًا بزيت البرغموت ونكهات طبيعية.',
+                    'specifications' => '<ul><li>أوراق شاي فاخرة</li><li>زيت البرغموت</li><li>نكهات طبيعية</li><li>25 كيس شاي</li><li>جودة حرفية</li></ul>',
+                    'details' => '<p>شاي رمادي حرفي يتميز بأوراق شاي فاخرة منقوعة بزيت البرغموت ونكهات طبيعية لتجربة شاي أصيلة وراقية.</p>',
                     'price' => 6.99,
                     'sale_price' => 5.99,
                     'cover_image' => 'https://images.unsplash.com/photo-241762?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-440924?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-615499?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-854725?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959040?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-153920?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Nitro Boost Energy Drinks',
-                    'description' => 'High-energy Nitro Boost drinks with caffeine and natural ingredients.',
-                    'specifications' => '<ul><li>High caffeine content</li><li>Natural ingredients</li><li>Energy boost formula</li><li>250ml can</li><li>Sugar-free option</li></ul>',
-                    'details' => '<p>Nitro Boost Energy Drinks provide powerful energy boost with high caffeine content and natural ingredients for sustained energy and focus.</p>',
+                    'name' => 'مشروبات الطاقة Nitro Boost',
+                    'description' => 'مشروبات Nitro Boost عالية الطاقة بالكافيين والمكونات الطبيعية.',
+                    'specifications' => '<ul><li>محتوى كافيين عالي</li><li>مكونات طبيعية</li><li>صيغة تعزيز الطاقة</li><li>علبة 250 مل</li><li>خيار بدون سكر</li></ul>',
+                    'details' => '<p>مشروبات الطاقة Nitro Boost توفر تعزيز طاقة قوي بمحتوى كافيين عالٍ ومكونات طبيعية لطاقة وتركيز مستمرين.</p>',
                     'price' => 2.49,
                     'variants' => [
-                        ['name' => 'Flavor', 'options' => ['Original', 'Berry Blast', 'Citrus Rush', 'Sugar-Free']]
+                        ['name' => 'النكهة', 'options' => ['الأصلية', 'انفجار التوت', 'اندفاع الحمضيات', 'بدون سكر']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-815841?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-040548?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-198552?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-579677?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-410295?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-359340?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Savory Mix Namkeen',
-                    'description' => 'Traditional savory mix namkeen with spices and crunchy ingredients.',
-                    'specifications' => '<ul><li>Traditional recipe</li><li>Spicy flavor</li><li>Crunchy texture</li><li>200g pack</li><li>Mixed ingredients</li></ul>',
-                    'details' => '<p>Savory Mix Namkeen offers traditional Indian snacking experience with perfect blend of spices and crunchy ingredients for authentic taste.</p>',
+                    'name' => 'نامكين مالح مشكل',
+                    'description' => 'نامكين مالح تقليدي مشكل بالتوابل والمكونات المقرمشة.',
+                    'specifications' => '<ul><li>وصفة تقليدية</li><li>نكهة حارة</li><li>قوام مقرمش</li><li>عبوة 200 جم</li><li>مكونات مشكلة</li></ul>',
+                    'details' => '<p>نامكين مالح مشكل يقدم تجربة وجبات خفيفة هندية تقليدية بمزيج مثالي من التوابل والمكونات المقرمشة لطعم أصيل.</p>',
                     'price' => 3.99,
                     'cover_image' => 'https://images.unsplash.com/photo-528459?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-481414?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-456277?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-246015?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-856886?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-894275?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Noodle King Instant Noodles',
-                    'description' => 'Quick and delicious instant noodles with rich flavor and perfect texture.',
-                    'specifications' => '<ul><li>Quick 3-minute cooking</li><li>Rich flavor packet</li><li>Perfect texture</li><li>70g pack</li><li>No preservatives</li></ul>',
-                    'details' => '<p>Noodle King Instant Noodles provide quick and satisfying meal with rich flavor and perfect texture. Ready in just 3 minutes with no preservatives.</p>',
+                    'name' => 'نودلز Noodle King سريعة التحضير',
+                    'description' => 'نودلز فورية سريعة ولذيذة بنكهة غنية وقوام مثالي.',
+                    'specifications' => '<ul><li>طهي سريع في 3 دقائق</li><li>كيس نكهة غني</li><li>قوام مثالي</li><li>عبوة 70 جم</li><li>بدون مواد حافظة</li></ul>',
+                    'details' => '<p>نودلز Noodle King الفورية توفر وجبة سريعة ومرضية بنكهة غنية وقوام مثالي. جاهزة في 3 دقائق فقط بدون مواد حافظة.</p>',
                     'price' => 1.99,
                     'cover_image' => 'https://images.unsplash.com/photo-909009?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-902056?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654182?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-332472?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-158372?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-701549?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Nutri-Core Energy Bars',
-                    'description' => 'Nutritious energy bars packed with protein and natural ingredients.',
-                    'specifications' => '<ul><li>High protein content</li><li>Natural ingredients</li><li>Energy boost formula</li><li>40g bar</li><li>No artificial flavors</li></ul>',
-                    'details' => '<p>Nutri-Core Energy Bars provide sustained energy with high protein content and natural ingredients. Perfect for pre-workout or healthy snacking.</p>',
+                    'name' => 'ألواح الطاقة Nutri-Core',
+                    'description' => 'ألواح طاقة مغذية مليئة بالبروتين والمكونات الطبيعية.',
+                    'specifications' => '<ul><li>محتوى بروتين عالي</li><li>مكونات طبيعية</li><li>صيغة تعزيز الطاقة</li><li>لوح 40 جم</li><li>بدون نكهات صناعية</li></ul>',
+                    'details' => '<p>ألواح الطاقة Nutri-Core توفر طاقة مستمرة بمحتوى بروتين عالٍ ومكونات طبيعية. مثالية قبل التمرين أو كوجبة خفيفة صحية.</p>',
                     'price' => 2.49,
                     'cover_image' => 'https://images.unsplash.com/photo-734345?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-478812?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-154271?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-533053?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-738168?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-421291?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Household & Personal Care' => [
+            'المنزل والعناية الشخصية' => [
                 [
-                    'name' => 'Spin Mop with Wheels and Deluxe Wringer System',
-                    'description' => 'Advanced spin mop with wheels and deluxe wringer system for effortless cleaning.',
-                    'specifications' => '<ul><li>360-degree spin technology</li><li>Wheels for easy mobility</li><li>Deluxe wringer system</li><li>Microfiber mop head</li><li>Adjustable handle</li></ul>',
-                    'details' => '<p>Revolutionary spin mop with wheels and deluxe wringer system for effortless floor cleaning. Features 360-degree spin technology and microfiber head for superior cleaning performance.</p>',
+                    'name' => 'ممسحة دوارة بعجلات ونظام عصر فاخر',
+                    'description' => 'ممسحة دوارة متطورة بعجلات ونظام عصر فاخر لتنظيف سهل.',
+                    'specifications' => '<ul><li>تقنية دوران 360 درجة</li><li>عجلات لسهولة الحركة</li><li>نظام عصر فاخر</li><li>رأس ممسحة من الألياف الدقيقة</li><li>مقبض قابل للتعديل</li></ul>',
+                    'details' => '<p>ممسحة دوارة مبتكرة بعجلات ونظام عصر فاخر لتنظيف الأرضيات بسهولة. تتميز بتقنية دوران 360 درجة ورأس من الألياف الدقيقة لأداء تنظيف فائق.</p>',
                     'price' => 49.99,
                     'sale_price' => 44.99,
                     'cover_image' => 'https://images.unsplash.com/photo-101674?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-678650?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-550842?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-491095?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-675316?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-386683?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fresh Liquid Detergent',
-                    'description' => 'Premium fresh liquid detergent for powerful cleaning and fresh fragrance.',
-                    'specifications' => '<ul><li>Concentrated formula</li><li>Fresh fragrance</li><li>Stain removal power</li><li>1L bottle</li><li>Eco-friendly ingredients</li></ul>',
-                    'details' => '<p>Fresh Liquid Detergent provides powerful cleaning action with concentrated formula and fresh fragrance. Eco-friendly ingredients for effective stain removal.</p>',
+                    'name' => 'منظف سائل طازج',
+                    'description' => 'منظف سائل طازج فاخر لتنظيف قوي ورائحة منعشة.',
+                    'specifications' => '<ul><li>صيغة مركزة</li><li>رائحة منعشة</li><li>قوة إزالة البقع</li><li>زجاجة 1 لتر</li><li>مكونات صديقة للبيئة</li></ul>',
+                    'details' => '<p>منظف سائل طازج يوفر تنظيفًا قويًا بصيغة مركزة ورائحة منعشة. مكونات صديقة للبيئة لإزالة البقع بفعالية.</p>',
                     'price' => 8.99,
                     'cover_image' => 'https://images.unsplash.com/photo-668691?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-640120?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-512774?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-169731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-019776?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-298017?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Ecowash Drop Liquid Lemon Dishwash',
-                    'description' => 'Eco-friendly lemon dishwash liquid with natural cleaning power.',
-                    'specifications' => '<ul><li>Eco-friendly formula</li><li>Natural lemon extract</li><li>Grease cutting power</li><li>500ml bottle</li><li>Gentle on hands</li></ul>',
-                    'details' => '<p>Ecowash Drop Liquid Lemon Dishwash combines eco-friendly formula with natural lemon extract for powerful grease cutting while being gentle on hands.</p>',
+                    'name' => 'سائل غسيل الأطباق بالليمون Ecowash',
+                    'description' => 'سائل غسيل أطباق بالليمون صديق للبيئة بقوة تنظيف طبيعية.',
+                    'specifications' => '<ul><li>صيغة صديقة للبيئة</li><li>مستخلص ليمون طبيعي</li><li>قوة إزالة الدهون</li><li>زجاجة 500 مل</li><li>لطيف على اليدين</li></ul>',
+                    'details' => '<p>سائل غسيل الأطباق بالليمون Ecowash يجمع بين صيغة صديقة للبيئة ومستخلص ليمون طبيعي لقوة إزالة الدهون مع اللطف على اليدين.</p>',
                     'price' => 4.99,
                     'sale_price' => 4.49,
                     'cover_image' => 'https://images.unsplash.com/photo-043836?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-352604?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-078136?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-423771?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-364624?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-679412?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Elemental Soap with Nutrient Serum',
-                    'description' => 'Premium elemental soap enriched with nutrient serum for skin nourishment.',
-                    'specifications' => '<ul><li>Nutrient serum enriched</li><li>Natural ingredients</li><li>Moisturizing formula</li><li>100g bar</li><li>Suitable for all skin types</li></ul>',
-                    'details' => '<p>Elemental Soap with Nutrient Serum provides premium skincare with natural ingredients and moisturizing formula. Enriched with nutrients for healthy, nourished skin.</p>',
+                    'name' => 'صابون عنصري بمصل مغذٍ',
+                    'description' => 'صابون عنصري فاخر غني بمصل مغذٍ لتغذية البشرة.',
+                    'specifications' => '<ul><li>غني بمصل مغذٍ</li><li>مكونات طبيعية</li><li>صيغة مرطبة</li><li>قطعة 100 جم</li><li>مناسب لجميع أنواع البشرة</li></ul>',
+                    'details' => '<p>صابون عنصري بمصل مغذٍ يوفر عناية فاخرة بالبشرة بمكونات طبيعية وصيغة مرطبة. غني بالمغذيات لبشرة صحية ومغذية.</p>',
                     'price' => 6.99,
                     'variants' => [
-                        ['name' => 'Variant', 'options' => ['Aloe Vera', 'Honey & Oats', 'Charcoal', 'Rose']]
+                        ['name' => 'النوع', 'options' => ['ألوفيرا', 'عسل وشوفان', 'فحم', 'ورد']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-507633?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-017660?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-405837?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-461645?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-339000?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-619955?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Daily Care Herbal Shampoo',
-                    'description' => 'Gentle herbal shampoo for daily hair care with natural ingredients.',
-                    'specifications' => '<ul><li>Herbal formula</li><li>Natural ingredients</li><li>Daily use suitable</li><li>300ml bottle</li><li>Sulfate-free</li></ul>',
-                    'details' => '<p>Daily Care Herbal Shampoo provides gentle cleansing with natural herbal ingredients. Sulfate-free formula suitable for daily use and all hair types.</p>',
+                    'name' => 'شامبو أعشاب للعناية اليومية',
+                    'description' => 'شامبو أعشاب لطيف للعناية اليومية بالشعر بمكونات طبيعية.',
+                    'specifications' => '<ul><li>صيغة أعشاب</li><li>مكونات طبيعية</li><li>مناسب للاستخدام اليومي</li><li>زجاجة 300 مل</li><li>خالٍ من الكبريتات</li></ul>',
+                    'details' => '<p>شامبو أعشاب للعناية اليومية يوفر تنظيفًا لطيفًا بمكونات أعشاب طبيعية. صيغة خالية من الكبريتات مناسبة للاستخدام اليومي وجميع أنواع الشعر.</p>',
                     'price' => 7.99,
                     'sale_price' => 6.99,
                     'cover_image' => 'https://images.unsplash.com/photo-584900?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-556368?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-257166?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-009862?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-159310?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-382287?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Denawhite Toothpaste',
-                    'description' => 'Advanced whitening toothpaste for bright, healthy teeth and fresh breath.',
-                    'specifications' => '<ul><li>Whitening formula</li><li>Fluoride protection</li><li>Fresh mint flavor</li><li>100g tube</li><li>Enamel safe</li></ul>',
-                    'details' => '<p>Denawhite Toothpaste features advanced whitening formula with fluoride protection for bright, healthy teeth. Fresh mint flavor and enamel-safe ingredients.</p>',
+                    'name' => 'معجون أسنان Denawhite',
+                    'description' => 'معجون أسنان متطور للتبييض لأسنان مشرقة وصحية ونفس منعش.',
+                    'specifications' => '<ul><li>صيغة تبييض</li><li>حماية بالفلورايد</li><li>نكهة نعناع طازج</li><li>أنبوب 100 جم</li><li>آمن للمينا</li></ul>',
+                    'details' => '<p>معجون أسنان Denawhite يتميز بصيغة تبييض متطورة مع حماية بالفلورايد لأسنان مشرقة وصحية. نكهة نعناع طازج ومكونات آمنة للمينا.</p>',
                     'price' => 3.99,
                     'variants' => [
-                        ['name' => 'Flavor', 'options' => ['Fresh Mint', 'Cool Mint', 'Herbal', 'Sensitive']]
+                        ['name' => 'النكهة', 'options' => ['نعناع طازج', 'نعناع منعش', 'أعشاب', 'للأسنان الحساسة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-460953?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-916520?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-335166?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-085330?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-854391?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-959830?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Disposable Paper Products',
-                    'description' => 'High-quality disposable paper products for convenient household use.',
-                    'specifications' => '<ul><li>High-quality paper</li><li>Disposable convenience</li><li>Multi-purpose use</li><li>Pack of 100 pieces</li><li>Eco-friendly material</li></ul>',
-                    'details' => '<p>Disposable Paper Products offer convenient household solutions with high-quality paper and eco-friendly materials. Perfect for various cleaning and serving needs.</p>',
+                    'name' => 'منتجات ورقية للاستخدام الواحد',
+                    'description' => 'منتجات ورقية عالية الجودة للاستخدام الواحد للاستخدامات المنزلية المريحة.',
+                    'specifications' => '<ul><li>ورق عالي الجودة</li><li>راحة الاستخدام الواحد</li><li>استخدامات متعددة</li><li>علبة من 100 قطعة</li><li>مادة صديقة للبيئة</li></ul>',
+                    'details' => '<p>منتجات ورقية للاستخدام الواحد توفر حلولًا منزلية مريحة بورق عالي الجودة ومواد صديقة للبيئة. مثالية لاحتياجات التنظيف والتقديم المختلفة.</p>',
                     'price' => 5.99,
                     'cover_image' => 'https://images.unsplash.com/photo-568773?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-724881?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-270944?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-073121?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247158?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-601159?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Aromist Air Freshener',
-                    'description' => 'Premium Aromist air freshener for long-lasting fragrance and freshness.',
-                    'specifications' => '<ul><li>Long-lasting fragrance</li><li>Premium quality</li><li>Instant freshness</li><li>300ml spray</li><li>Multiple scents available</li></ul>',
-                    'details' => '<p>Aromist Air Freshener provides premium quality fragrance with long-lasting freshness. Instant room transformation with multiple delightful scents to choose from.</p>',
+                    'name' => 'معطر جو Aromist',
+                    'description' => 'معطر جو فاخر من Aromist لرائحة ونضارة تدوم طويلاً.',
+                    'specifications' => '<ul><li>رائحة تدوم طويلاً</li><li>جودة فاخرة</li><li>نضارة فورية</li><li>بخاخ 300 مل</li><li>عدة عطور متاحة</li></ul>',
+                    'details' => '<p>معطر جو Aromist يوفر رائحة بجودة فاخرة بنضارة تدوم طويلاً. تحول فوري للغرفة مع عدة عطور ممتعة للاختيار منها.</p>',
                     'price' => 6.49,
                     'sale_price' => 5.99,
                     'cover_image' => 'https://images.unsplash.com/photo-558799?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-704384?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-391738?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220857?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369583?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-158325?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Sparkler Floor Cleaner',
-                    'description' => 'Powerful floor cleaner that removes tough stains and leaves floors sparkling clean.',
-                    'specifications' => '<ul><li>Powerful cleaning formula</li><li>Removes tough stains</li><li>Sparkling clean finish</li><li>1L bottle</li><li>Pleasant fragrance</li></ul>',
-                    'details' => '<p>Sparkler Floor Cleaner provides powerful cleaning action that removes tough stains and dirt, leaving your floors sparkling clean with a pleasant fragrance.</p>',
+                    'name' => 'منظف الأرضيات Sparkler',
+                    'description' => 'منظف أرضيات قوي يزيل البقع الصعبة ويترك الأرضيات لامعة ونظيفة.',
+                    'specifications' => '<ul><li>صيغة تنظيف قوية</li><li>يزيل البقع الصعبة</li><li>لمسة نهائية لامعة</li><li>زجاجة 1 لتر</li><li>رائحة لطيفة</li></ul>',
+                    'details' => '<p>منظف الأرضيات Sparkler يوفر تنظيفًا قويًا يزيل البقع والأوساخ الصعبة، تاركًا أرضياتك نظيفة ولامعة برائحة لطيفة.</p>',
                     'price' => 7.99,
                     'cover_image' => 'https://images.unsplash.com/photo-602956?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-317670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-982385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-957039?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-508980?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-251185?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Aura Clean Hand Wash',
-                    'description' => 'Gentle antibacterial hand wash with moisturizing formula for soft, clean hands.',
-                    'specifications' => '<ul><li>Antibacterial formula</li><li>Moisturizing ingredients</li><li>Gentle on skin</li><li>250ml pump bottle</li><li>Fresh fragrance</li></ul>',
-                    'details' => '<p>Aura Clean Hand Wash provides effective antibacterial protection while moisturizing your hands. Gentle formula keeps hands soft and clean with fresh fragrance.</p>',
+                    'name' => 'غسول اليدين Aura Clean',
+                    'description' => 'غسول يدين لطيف مضاد للبكتيريا بصيغة مرطبة لأيدٍ ناعمة ونظيفة.',
+                    'specifications' => '<ul><li>صيغة مضادة للبكتيريا</li><li>مكونات مرطبة</li><li>لطيف على البشرة</li><li>زجاجة بمضخة 250 مل</li><li>رائحة منعشة</li></ul>',
+                    'details' => '<p>غسول اليدين Aura Clean يوفر حماية فعالة ضد البكتيريا مع ترطيب يديك. صيغة لطيفة تبقي اليدين ناعمتين ونظيفتين برائحة منعشة.</p>',
                     'price' => 4.99,
                     'cover_image' => 'https://images.unsplash.com/photo-909660?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-345174?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-129067?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-491438?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-551437?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-705912?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Interior Accessories' => [
+            'إكسسوارات داخلية' => [
                 [
-                    'name' => 'Premium Car Seat Covers',
-                    'description' => 'High-quality premium seat covers for enhanced comfort and protection.',
-                    'specifications' => '<ul><li>Premium materials</li><li>Universal fit</li><li>Easy installation</li><li>Machine washable</li><li>Breathable fabric</li></ul>',
-                    'details' => '<p>Premium car seat covers made from high-quality materials for enhanced comfort and protection. Universal fit design with easy installation and machine washable fabric.</p>',
+                    'name' => 'أغطية مقاعد سيارة فاخرة',
+                    'description' => 'أغطية مقاعد فاخرة عالية الجودة لراحة وحماية معززين.',
+                    'specifications' => '<ul><li>مواد فاخرة</li><li>تناسب عام</li><li>تركيب سهل</li><li>قابلة للغسل في الغسالة</li><li>قماش قابل للتنفس</li></ul>',
+                    'details' => '<p>أغطية مقاعد سيارات فاخرة مصنوعة من مواد عالية الجودة لراحة وحماية معززين. تصميم يناسب جميع السيارات مع تركيب سهل وقماش قابل للغسل في الغسالة.</p>',
                     'price' => 89.99,
                     'variants' => [
-                        ['name' => 'Material', 'options' => ['Leather', 'Fabric', 'Neoprene']]
+                        ['name' => 'الخامة', 'options' => ['جلد', 'قماش', 'نيوبرين']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-838836?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-513385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-212663?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-424639?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-302771?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-285665?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Steering Wheel Cover',
-                    'description' => 'Comfortable steering wheel cover with enhanced grip and style.',
-                    'specifications' => '<ul><li>Enhanced grip</li><li>Comfortable feel</li><li>Easy installation</li><li>Universal size</li><li>Durable material</li></ul>',
-                    'details' => '<p>Comfortable steering wheel cover designed for enhanced grip and driving comfort. Easy installation with universal sizing for most vehicles.</p>',
+                    'name' => 'غطاء مقود السيارة',
+                    'description' => 'غطاء مقود مريح بثبات محسن وأناقة.',
+                    'specifications' => '<ul><li>ثبات محسن</li><li>ملمس مريح</li><li>تركيب سهل</li><li>مقاس عام</li><li>مادة متينة</li></ul>',
+                    'details' => '<p>غطاء مقود مريح مصمم لثبات محسن وراحة قيادة. تركيب سهل بمقاس يناسب معظم السيارات.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-055209?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-853052?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-619499?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-557002?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-498078?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-586056?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Luxury Floor Mats for Cars',
-                    'description' => 'Luxury all-weather floor mats for superior protection and style.',
-                    'specifications' => '<ul><li>All-weather protection</li><li>Luxury design</li><li>Custom fit</li><li>Easy to clean</li><li>Anti-slip backing</li></ul>',
-                    'details' => '<p>Luxury floor mats providing superior protection against dirt and moisture. Custom fit design with anti-slip backing for safety and style.</p>',
+                    'name' => 'فرش أرضية فاخرة للسيارات',
+                    'description' => 'فرش أرضية فاخرة لجميع الفصول لحماية وأسلوب فائقين.',
+                    'specifications' => '<ul><li>حماية لجميع الفصول</li><li>تصميم فاخر</li><li>تناسب مخصص</li><li>سهل التنظيف</li><li>خلفية مانعة للانزلاق</li></ul>',
+                    'details' => '<p>فرش أرضية فاخر يوفر حماية فائقة من الأوساخ والرطوبة. تصميم بمقاس مخصص مع خلفية مانعة للانزلاق للسلامة والأناقة.</p>',
                     'price' => 129.99,
                     'cover_image' => 'https://images.unsplash.com/photo-301456?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-709660?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-265564?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-613635?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-752654?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-029794?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Elegant Car Dashboard Cover',
-                    'description' => 'Elegant dashboard cover for UV protection and enhanced interior aesthetics.',
-                    'specifications' => '<ul><li>UV protection</li><li>Elegant design</li><li>Custom fit</li><li>Heat resistant</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Elegant dashboard cover providing UV protection while enhancing interior aesthetics. Custom fit design with heat resistant materials.</p>',
+                    'name' => 'غطاء لوحة قيادة السيارة الأنيق',
+                    'description' => 'غطاء لوحة قيادة أنيق للحماية من الأشعة فوق البنفسجية وتحسين المظهر الداخلي.',
+                    'specifications' => '<ul><li>حماية من الأشعة فوق البنفسجية</li><li>تصميم أنيق</li><li>تناسب مخصص</li><li>مقاوم للحرارة</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>غطاء لوحة قيادة أنيق يوفر حماية من الأشعة فوق البنفسجية مع تحسين المظهر الداخلي. تصميم بمقاس مخصص بمواد مقاومة للحرارة.</p>',
                     'price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-194996?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-623401?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-567141?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-064409?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-828674?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-729208?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'ComfortDrive Armrest Cushion',
-                    'description' => 'Ergonomic armrest cushion for enhanced driving comfort during long trips.',
-                    'specifications' => '<ul><li>Ergonomic design</li><li>Memory foam</li><li>Universal fit</li><li>Easy attachment</li><li>Breathable cover</li></ul>',
-                    'details' => '<p>ComfortDrive armrest cushion with ergonomic design and memory foam for enhanced comfort during long drives. Universal fit with easy attachment.</p>',
+                    'name' => 'وسادة مسند ذراع ComfortDrive',
+                    'description' => 'وسادة مسند ذراع مريحة وبيئة العمل لراحة قيادة محسنة أثناء الرحلات الطويلة.',
+                    'specifications' => '<ul><li>تصميم مريح وبيئة عمل</li><li>رغوة ذاكرة</li><li>تناسب عام</li><li>تركيب سهل</li><li>غطاء قابل للتنفس</li></ul>',
+                    'details' => '<p>وسادة مسند ذراع ComfortDrive بتصميم مريح ورغوة ذاكرة لراحة محسنة أثناء القيادة الطويلة. تناسب عام مع تركيب سهل.</p>',
                     'price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-612355?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-137863?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-708601?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-719855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-411149?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-542472?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'AutoShade Window Sunshade',
-                    'description' => 'Premium window sunshade for UV protection and temperature control.',
-                    'specifications' => '<ul><li>UV protection</li><li>Temperature control</li><li>Easy installation</li><li>Foldable design</li><li>Universal fit</li></ul>',
-                    'details' => '<p>AutoShade window sunshade providing excellent UV protection and temperature control. Foldable design with easy installation for all vehicles.</p>',
+                    'name' => 'واقي نافذة السيارة AutoShade',
+                    'description' => 'واقي نافذة فاخر للحماية من الأشعة فوق البنفسجية والتحكم في درجة الحرارة.',
+                    'specifications' => '<ul><li>حماية من الأشعة فوق البنفسجية</li><li>التحكم في درجة الحرارة</li><li>تركيب سهل</li><li>تصميم قابل للطي</li><li>تناسب عام</li></ul>',
+                    'details' => '<p>واقي نافذة AutoShade يوفر حماية ممتازة من الأشعة فوق البنفسجية والتحكم في درجة الحرارة. تصميم قابل للطي مع تركيب سهل لجميع السيارات.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-646084?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-049643?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-227690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-748807?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-639179?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-092355?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'SmartStore Car Organizer',
-                    'description' => 'Multi-compartment car organizer for efficient storage and organization.',
-                    'specifications' => '<ul><li>Multi-compartment design</li><li>Durable materials</li><li>Easy installation</li><li>Adjustable straps</li><li>Compact size</li></ul>',
-                    'details' => '<p>SmartStore car organizer with multi-compartment design for efficient storage. Durable materials with adjustable straps for secure installation.</p>',
+                    'name' => 'منظم السيارة SmartStore',
+                    'description' => 'منظم سيارة متعدد الحجرات لتخزين وتنظيم فعال.',
+                    'specifications' => '<ul><li>تصميم متعدد الحجرات</li><li>مواد متينة</li><li>تركيب سهل</li><li>أحزمة قابلة للتعديل</li><li>حجم مضغوط</li></ul>',
+                    'details' => '<p>منظم سيارة SmartStore بتصميم متعدد الحجرات لتخزين فعال. مواد متينة مع أحزمة قابلة للتعديل لتركيب آمن.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-111547?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-051044?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-210743?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-396136?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-812323?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-206467?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'SmartGlow Ambient Lighting',
-                    'description' => 'LED ambient lighting system for enhanced interior atmosphere.',
-                    'specifications' => '<ul><li>LED technology</li><li>Multiple colors</li><li>Remote control</li><li>Easy installation</li><li>Low power consumption</li></ul>',
-                    'details' => '<p>SmartGlow ambient lighting system with LED technology and multiple color options. Remote control operation with easy installation and low power consumption.</p>',
+                    'name' => 'إضاءة محيطية ذكية SmartGlow',
+                    'description' => 'نظام إضاءة محيطية LED لتحسين أجواء المقصورة الداخلية.',
+                    'specifications' => '<ul><li>تقنية LED</li><li>ألوان متعددة</li><li>تحكم عن بعد</li><li>تركيب سهل</li><li>استهلاك طاقة منخفض</li></ul>',
+                    'details' => '<p>نظام إضاءة محيطية SmartGlow بتقنية LED وخيارات ألوان متعددة. تشغيل بالتحكم عن بعد مع تركيب سهل واستهلاك طاقة منخفض.</p>',
                     'price' => 59.99,
                     'variants' => [
-                        ['name' => 'Length', 'options' => ['2 meters', '3 meters', '5 meters']]
+                        ['name' => 'الطول', 'options' => ['2 متر', '3 أمتار', '5 أمتار']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-308117?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-694270?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-564205?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-417530?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-573520?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-727843?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Dual Grip Cleaning Tool',
-                    'description' => 'Versatile dual-grip cleaning tool for interior detailing and maintenance.',
-                    'specifications' => '<ul><li>Dual-grip design</li><li>Microfiber attachments</li><li>Ergonomic handle</li><li>Washable pads</li><li>Multi-surface use</li></ul>',
-                    'details' => '<p>Dual Grip cleaning tool with versatile design for interior detailing. Includes microfiber attachments and ergonomic handle for effective cleaning.</p>',
+                    'name' => 'أداة تنظيف بقبضة مزدوجة',
+                    'description' => 'أداة تنظيف متعددة الاستخدامات بقبضة مزدوجة للعناية الداخلية والصيانة.',
+                    'specifications' => '<ul><li>تصميم بقبضة مزدوجة</li><li>ملحقات من الألياف الدقيقة</li><li>مقبض مريح</li><li>وسادات قابلة للغسل</li><li>استخدام على أسطح متعددة</li></ul>',
+                    'details' => '<p>أداة تنظيف بقبضة مزدوجة بتصميم متعدد الاستخدامات للعناية الداخلية. تشمل ملحقات من الألياف الدقيقة ومقبضًا مريحًا لتنظيف فعال.</p>',
                     'price' => 29.99,
                     'cover_image' => 'https://images.unsplash.com/photo-959292?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-642486?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-350999?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-845906?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-755314?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-085568?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Seat Neck Support Pillow',
-                    'description' => 'Ergonomic neck support pillow for comfortable driving and passenger experience.',
-                    'specifications' => '<ul><li>Ergonomic design</li><li>Memory foam core</li><li>Adjustable strap</li><li>Breathable cover</li><li>Universal fit</li></ul>',
-                    'details' => '<p>Car Seat Neck Support Pillow with ergonomic design and memory foam core for optimal comfort. Adjustable strap with breathable cover for all vehicles.</p>',
+                    'name' => 'وسادة دعم الرقبة لمقعد السيارة',
+                    'description' => 'وسادة دعم رقبة مريحة وبيئة العمل لتجربة قيادة وركوب مريحة.',
+                    'specifications' => '<ul><li>تصميم مريح وبيئة عمل</li><li>قلب رغوة ذاكرة</li><li>حزام قابل للتعديل</li><li>غطاء قابل للتنفس</li><li>تناسب عام</li></ul>',
+                    'details' => '<p>وسادة دعم الرقبة لمقعد السيارة بتصميم مريح وقلب رغوة ذاكرة لراحة مثالية. حزام قابل للتعديل بغطاء قابل للتنفس لجميع السيارات.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-203647?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-911908?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-299821?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-393927?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-584955?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-798967?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Exterior Accessories' => [
+            'إكسسوارات خارجية' => [
                 [
-                    'name' => 'Waterproof Car Cover',
-                    'description' => 'Premium waterproof car cover for all-weather protection.',
-                    'specifications' => '<ul><li>Waterproof material</li><li>UV protection</li><li>Breathable fabric</li><li>Elastic hem</li><li>Storage bag included</li></ul>',
-                    'details' => '<p>Premium waterproof car cover providing complete protection from rain, snow, UV rays, and dust. Breathable fabric prevents moisture buildup.</p>',
+                    'name' => 'غطاء سيارة مقاوم للماء',
+                    'description' => 'غطاء سيارة فاخر مقاوم للماء لحماية لجميع الفصول.',
+                    'specifications' => '<ul><li>مادة مقاومة للماء</li><li>حماية من الأشعة فوق البنفسجية</li><li>قماش قابل للتنفس</li><li>حاشية مطاطية</li><li>تشمل حقيبة تخزين</li></ul>',
+                    'details' => '<p>غطاء سيارة فاخر مقاوم للماء يوفر حماية كاملة من المطر والثلج والأشعة فوق البنفسجية والغبار. قماش قابل للتنفس يمنع تراكم الرطوبة.</p>',
                     'price' => 89.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large', 'XL']]
+                        ['name' => 'المقاس', 'options' => ['صغير', 'متوسط', 'كبير', 'كبير جدًا']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-474644?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-040253?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-115777?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-464246?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-073293?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-260908?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Unbreakable Door Visor',
-                    'description' => 'Durable door visor for rain protection and ventilation.',
-                    'specifications' => '<ul><li>Unbreakable material</li><li>Rain protection</li><li>Easy installation</li><li>Aerodynamic design</li><li>Set of 4 pieces</li></ul>',
-                    'details' => '<p>Unbreakable door visor made from high-quality materials for rain protection while allowing fresh air circulation. Easy installation with aerodynamic design.</p>',
+                    'name' => 'واقي باب السيارة غير القابل للكسر',
+                    'description' => 'واقي باب متين للحماية من المطر والتهوية.',
+                    'specifications' => '<ul><li>مادة غير قابلة للكسر</li><li>حماية من المطر</li><li>تركيب سهل</li><li>تصميم انسيابي</li><li>طقم من 4 قطع</li></ul>',
+                    'details' => '<p>واقي باب غير قابل للكسر مصنوع من مواد عالية الجودة للحماية من المطر مع السماح بتدوير الهواء النقي. تركيب سهل بتصميم انسيابي.</p>',
                     'price' => 45.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Black', 'Gray']]
+                        ['name' => 'اللون', 'options' => ['أبيض', 'أسود', 'رمادي']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-972776?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-687621?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-170485?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-947016?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-659969?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-185684?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Mud Flap Automotive Wheels Car Mudguard',
-                    'description' => 'Heavy-duty mud flaps for wheel protection and cleanliness.',
-                    'specifications' => '<ul><li>Heavy-duty construction</li><li>Flexible material</li><li>Easy installation</li><li>Universal fit</li><li>Set of 4 pieces</li></ul>',
-                    'details' => '<p>Heavy-duty mud flaps designed to protect your vehicle and other cars from mud, rocks, and debris. Flexible material with universal fit for all vehicles.</p>',
+                    'name' => 'واقيات الطين لعجلات السيارة',
+                    'description' => 'واقيات طين شديدة التحمل لحماية العجلات ونظافتها.',
+                    'specifications' => '<ul><li>بناء شديد التحمل</li><li>مادة مرنة</li><li>تركيب سهل</li><li>تناسب عام</li><li>طقم من 4 قطع</li></ul>',
+                    'details' => '<p>واقيات طين شديدة التحمل مصممة لحماية سيارتك والسيارات الأخرى من الطين والصخور والحطام. مادة مرنة بتصميم يناسب جميع السيارات.</p>',
                     'price' => 35.99,
                     'cover_image' => 'https://images.unsplash.com/photo-868621?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-755105?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-751394?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-382085?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-940790?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-115619?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Chrome Trim Strip',
-                    'description' => 'Decorative chrome trim strip for enhanced vehicle styling.',
-                    'specifications' => '<ul><li>Chrome finish</li><li>Flexible design</li><li>Self-adhesive</li><li>Weather resistant</li><li>Multiple lengths available</li></ul>',
-                    'details' => '<p>Decorative chrome trim strip for enhancing vehicle styling. Self-adhesive installation with flexible design and weather-resistant chrome finish.</p>',
+                    'name' => 'شريط كروم زخرفي للسيارة',
+                    'description' => 'شريط كروم زخرفي لتحسين مظهر السيارة.',
+                    'specifications' => '<ul><li>لمسة كروم</li><li>تصميم مرن</li><li>ذاتي اللصق</li><li>مقاوم للعوامل الجوية</li><li>أطوال متعددة متاحة</li></ul>',
+                    'details' => '<p>شريط كروم زخرفي لتحسين مظهر السيارة. تركيب ذاتي اللصق بتصميم مرن ولفة كروم مقاومة للعوامل الجوية.</p>',
                     'price' => 25.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Red', 'Blue']]
+                        ['name' => 'اللون', 'options' => ['أبيض', 'أحمر', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-170007?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-420444?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-976972?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-902998?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-717676?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-400330?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cars Side Graphics Stickers',
-                    'description' => 'Premium vinyl graphics stickers for vehicle customization.',
-                    'specifications' => '<ul><li>Premium vinyl material</li><li>Weather resistant</li><li>Easy application</li><li>Multiple designs</li><li>Pair included</li></ul>',
-                    'details' => '<p>Premium vinyl graphics stickers for vehicle customization. Weather-resistant material with easy application and multiple design options available.</p>',
+                    'name' => 'ملصقات رسومات جانبية للسيارات',
+                    'description' => 'ملصقات جرافيك فاخرة من الفينيل لتخصيص السيارة.',
+                    'specifications' => '<ul><li>مادة فينيل فاخرة</li><li>مقاومة للعوامل الجوية</li><li>تطبيق سهل</li><li>تصاميم متعددة</li><li>تشمل زوجًا</li></ul>',
+                    'details' => '<p>ملصقات جرافيك فاخرة من الفينيل لتخصيص السيارة. مادة مقاومة للعوامل الجوية مع تطبيق سهل وخيارات تصميم متعددة متاحة.</p>',
                     'price' => 39.99,
                     'variants' => [
-                        ['name' => 'Color', 'options' => ['White', 'Yellow', 'Black', 'Blue']]
+                        ['name' => 'اللون', 'options' => ['أبيض', 'أصفر', 'أسود', 'أزرق']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-236813?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-994325?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-803670?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-303430?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-048876?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-989480?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Roof Rails Black Suitable For All Cars',
-                    'description' => 'Universal black roof rails for cargo carrying capacity.',
-                    'specifications' => '<ul><li>Universal fit</li><li>Black finish</li><li>High load capacity</li><li>Easy installation</li><li>Aerodynamic design</li></ul>',
-                    'details' => '<p>Universal black roof rails designed for all cars to increase cargo carrying capacity. Aerodynamic design with high load capacity and easy installation.</p>',
+                    'name' => 'قضبان سقف سوداء تناسب جميع السيارات',
+                    'description' => 'قضبان سقف سوداء عامة لزيادة قدرة حمل الأمتعة.',
+                    'specifications' => '<ul><li>تناسب عام</li><li>لمسة سوداء</li><li>سعة تحميل عالية</li><li>تركيب سهل</li><li>تصميم انسيابي</li></ul>',
+                    'details' => '<p>قضبان سقف سوداء عامة مصممة لجميع السيارات لزيادة قدرة حمل الأمتعة. تصميم انسيابي بسعة تحميل عالية وتركيب سهل.</p>',
                     'price' => 129.99,
                     'cover_image' => 'https://images.unsplash.com/photo-542974?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-177762?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-059864?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-462892?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646778?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-868280?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Stainless Steel License Plate Frames',
-                    'description' => 'Premium stainless steel license plate frames for durability.',
-                    'specifications' => '<ul><li>Stainless steel construction</li><li>Rust resistant</li><li>Easy installation</li><li>Universal fit</li><li>Set of 2 frames</li></ul>',
-                    'details' => '<p>Premium stainless steel license plate frames offering superior durability and rust resistance. Universal fit with easy installation for front and rear plates.</p>',
+                    'name' => 'إطارات لوحة أرقام من الفولاذ المقاوم للصدأ',
+                    'description' => 'إطارات لوحة أرقام فاخرة من الفولاذ المقاوم للصدأ للمتانة.',
+                    'specifications' => '<ul><li>بناء من الفولاذ المقاوم للصدأ</li><li>مقاوم للصدأ</li><li>تركيب سهل</li><li>تناسب عام</li><li>طقم من إطارين</li></ul>',
+                    'details' => '<p>إطارات لوحة أرقام فاخرة من الفولاذ المقاوم للصدأ توفر متانة فائقة ومقاومة للصدأ. تناسب عام مع تركيب سهل للوحات الأمامية والخلفية.</p>',
                     'price' => 29.99,
                     'cover_image' => 'https://images.unsplash.com/photo-987688?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-444455?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-274467?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-080702?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-882849?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-489151?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Economical Wiper Blade',
-                    'description' => 'Cost-effective wiper blade for clear visibility in all weather.',
-                    'specifications' => '<ul><li>Economical design</li><li>All-weather performance</li><li>Easy installation</li><li>Multiple sizes</li><li>Durable rubber</li></ul>',
-                    'details' => '<p>Economical wiper blade providing reliable performance in all weather conditions. Durable rubber construction with easy installation and multiple size options.</p>',
+                    'name' => 'شفرة مساحات اقتصادية',
+                    'description' => 'شفرة مساحات فعالة من حيث التكلفة لرؤية واضحة في جميع الأحوال الجوية.',
+                    'specifications' => '<ul><li>تصميم اقتصادي</li><li>أداء لجميع الفصول</li><li>تركيب سهل</li><li>مقاسات متعددة</li><li>مطاط متين</li></ul>',
+                    'details' => '<p>شفرة مساحات اقتصادية توفر أداءً موثوقًا في جميع الظروف الجوية. بناء مطاطي متين مع تركيب سهل وخيارات مقاسات متعددة.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-811106?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-148688?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-869464?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-253825?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-868759?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-763870?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Mini Spoiler Wing For All Cars',
-                    'description' => 'Universal mini spoiler wing for enhanced aerodynamics and style.',
-                    'specifications' => '<ul><li>Universal fit</li><li>Aerodynamic design</li><li>Lightweight construction</li><li>Easy installation</li><li>Multiple colors</li></ul>',
-                    'details' => '<p>Universal mini spoiler wing designed for all cars to enhance aerodynamics and styling. Lightweight construction with easy installation and multiple color options.</p>',
+                    'name' => 'جناح سبويلر صغير للسيارات لجميع السيارات',
+                    'description' => 'جناح سبويلر صغير عام لتحسين الديناميكا الهوائية والأناقة.',
+                    'specifications' => '<ul><li>تناسب عام</li><li>تصميم انسيابي</li><li>بناء خفيف الوزن</li><li>تركيب سهل</li><li>ألوان متعددة</li></ul>',
+                    'details' => '<p>جناح سبويلر صغير عام مصمم لجميع السيارات لتحسين الديناميكا الهوائية والمظهر. بناء خفيف الوزن مع تركيب سهل وخيارات ألوان متعددة.</p>',
                     'price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-969067?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-249930?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-799832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-625353?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-171541?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-835500?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Front Fog Lamp Cover',
-                    'description' => 'Protective fog lamp cover for enhanced durability and style.',
-                    'specifications' => '<ul><li>Protective design</li><li>Enhanced durability</li><li>Easy installation</li><li>Perfect fit</li><li>Pair included</li></ul>',
-                    'details' => '<p>Protective front fog lamp cover designed to enhance durability and style. Perfect fit with easy installation and pair included for complete protection.</p>',
+                    'name' => 'غطاء مصباح الضباب الأمامي',
+                    'description' => 'غطاء مصباح ضباب وقائي لمتانة وأناقة معززتين.',
+                    'specifications' => '<ul><li>تصميم وقائي</li><li>متانة معززة</li><li>تركيب سهل</li><li>تناسب مثالي</li><li>تشمل زوجًا</li></ul>',
+                    'details' => '<p>غطاء مصباح ضباب أمامي وقائي مصمم لتعزيز المتانة والأناقة. تناسب مثالي مع تركيب سهل ويشمل زوجًا لحماية كاملة.</p>',
                     'price' => 55.99,
                     'cover_image' => 'https://images.unsplash.com/photo-082980?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-906334?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-199878?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-079612?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-986826?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-122061?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Car Electronics' => [
+            'إلكترونيات السيارة' => [
                 [
-                    'name' => 'Voltmax 85W Car Charger Mobile',
-                    'description' => 'High-power 85W car charger for fast mobile device charging.',
-                    'specifications' => '<ul><li>85W fast charging</li><li>Multiple USB ports</li><li>LED indicator</li><li>Overcharge protection</li><li>Universal compatibility</li></ul>',
-                    'details' => '<p>Voltmax 85W car charger providing fast charging for mobile devices with multiple USB ports and safety protection features.</p>',
+                    'name' => 'شاحن سيارة Voltmax بقدرة 85 واط',
+                    'description' => 'شاحن سيارة عالي الطاقة بقدرة 85 واط لشحن سريع للجوال.',
+                    'specifications' => '<ul><li>شحن سريع 85 واط</li><li>منافذ USB متعددة</li><li>مؤشر LED</li><li>حماية من الشحن الزائد</li><li>توافق عام</li></ul>',
+                    'details' => '<p>شاحن سيارة Voltmax بقدرة 85 واط يوفر شحنًا سريعًا للأجهزة المحمولة بمنافذ USB متعددة وميزات حماية السلامة.</p>',
                     'price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-559994?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-748810?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-930236?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-798091?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-372451?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-966050?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Garmin Dash Cam Mini 3',
-                    'description' => 'Compact dash cam with high-quality video recording and smart features.',
-                    'specifications' => '<ul><li>1080p HD recording</li><li>140° field of view</li><li>Night vision</li><li>G-sensor</li><li>Loop recording</li></ul>',
-                    'details' => '<p>Garmin Dash Cam Mini 3 with compact design, 1080p HD recording, and smart features for comprehensive driving protection.</p>',
+                    'name' => 'كاميرا داش كام مصغرة Garmin Mini 3',
+                    'description' => 'كاميرا داش كام مدمجة بتسجيل فيديو عالي الجودة وميزات ذكية.',
+                    'specifications' => '<ul><li>تسجيل عالي الدقة 1080p</li><li>مجال رؤية 140 درجة</li><li>رؤية ليلية</li><li>مستشعر G</li><li>تسجيل حلقي</li></ul>',
+                    'details' => '<p>كاميرا داش كام Garmin Mini 3 بتصميم مدمج، وتسجيل عالي الدقة 1080p، وميزات ذكية لحماية قيادة شاملة.</p>',
                     'price' => 199.99,
                     'cover_image' => 'https://images.unsplash.com/photo-561665?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-609023?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-869781?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-506348?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-690109?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-036113?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Reversing Parking Sensor System',
-                    'description' => 'Advanced parking sensor system for safe reversing and parking assistance.',
-                    'specifications' => '<ul><li>4 ultrasonic sensors</li><li>Audio alerts</li><li>LED display</li><li>Weather resistant</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Advanced reversing parking sensor system with 4 ultrasonic sensors providing audio alerts and LED display for safe parking assistance.</p>',
+                    'name' => 'نظام حساسات ركن للركن العكسي',
+                    'description' => 'نظام حساسات ركن متطور لمساعدة آمنة عند الرجوع والركن.',
+                    'specifications' => '<ul><li>4 حساسات فوق صوتية</li><li>تنبيهات صوتية</li><li>شاشة LED</li><li>مقاوم للعوامل الجوية</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>نظام حساسات ركن عكسي متطور بأربعة حساسات فوق صوتية توفر تنبيهات صوتية وشاشة LED لمساعدة آمنة عند الركن.</p>',
                     'price' => 89.99,
                     'variants' => [
-                        ['name' => 'Sensor Count', 'options' => ['4 Sensors', '6 Sensors', '8 Sensors']]
+                        ['name' => 'عدد الحساسات', 'options' => ['4 حساسات', '6 حساسات', '8 حساسات']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-239730?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-922481?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-245659?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-523395?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315598?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-479105?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Backup Rear View Reverse Parking',
-                    'description' => 'High-definition backup camera for clear rear view visibility.',
-                    'specifications' => '<ul><li>HD resolution</li><li>Night vision</li><li>Waterproof design</li><li>Wide angle view</li><li>Easy installation</li></ul>',
-                    'details' => '<p>High-definition backup camera providing clear rear view visibility with night vision and waterproof design for all weather conditions.</p>',
+                    'name' => 'كاميرا خلفية للركن والرجوع للسيارة',
+                    'description' => 'كاميرا خلفية عالية الدقة لرؤية خلفية واضحة.',
+                    'specifications' => '<ul><li>دقة عالية</li><li>رؤية ليلية</li><li>تصميم مقاوم للماء</li><li>زاوية رؤية واسعة</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>كاميرا خلفية عالية الدقة توفر رؤية خلفية واضحة مع رؤية ليلية وتصميم مقاوم للماء لجميع الظروف الجوية.</p>',
                     'price' => 129.99,
                     'cover_image' => 'https://images.unsplash.com/photo-178226?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-662036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-533909?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-728551?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-478919?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-966088?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => '7 Inch GPS Navigation for Car',
-                    'description' => 'Large 7-inch GPS navigation system with real-time traffic updates.',
-                    'specifications' => '<ul><li>7-inch touchscreen</li><li>Real-time traffic</li><li>Voice guidance</li><li>Lifetime map updates</li><li>Bluetooth connectivity</li></ul>',
-                    'details' => '<p>7-inch GPS navigation system with large touchscreen, real-time traffic updates, voice guidance, and lifetime map updates for convenient navigation.</p>',
+                    'name' => 'ملاحة GPS بقياس 7 بوصة للسيارة',
+                    'description' => 'نظام ملاحة GPS كبير بقياس 7 بوصة مع تحديثات حركة المرور اللحظية.',
+                    'specifications' => '<ul><li>شاشة لمس 7 بوصة</li><li>حركة مرور لحظية</li><li>إرشاد صوتي</li><li>تحديثات خرائط مدى الحياة</li><li>اتصال بلوتوث</li></ul>',
+                    'details' => '<p>نظام ملاحة GPS بقياس 7 بوصة بشاشة لمس كبيرة وتحديثات مرور لحظية وإرشاد صوتي وتحديثات خرائط مدى الحياة لملاحة مريحة.</p>',
                     'price' => 179.99,
                     'cover_image' => 'https://images.unsplash.com/photo-162486?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-340216?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-991327?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871597?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-887734?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-170919?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Dual Knob Car Android Player',
-                    'description' => 'Advanced Android car stereo with dual knob control and smart features.',
-                    'specifications' => '<ul><li>Android OS</li><li>Dual knob control</li><li>Bluetooth connectivity</li><li>USB/AUX input</li><li>Touchscreen display</li></ul>',
-                    'details' => '<p>Advanced Android car stereo with dual knob control, touchscreen display, and comprehensive connectivity options for enhanced driving experience.</p>',
+                    'name' => 'مشغل أندرويد للسيارة بمقبضين',
+                    'description' => 'ستيريو سيارة متطور بنظام أندرويد مع تحكم بمقبضين وميزات ذكية.',
+                    'specifications' => '<ul><li>نظام تشغيل أندرويد</li><li>تحكم بمقبضين</li><li>اتصال بلوتوث</li><li>مدخل USB/AUX</li><li>شاشة لمس</li></ul>',
+                    'details' => '<p>ستيريو سيارة متطور بنظام أندرويد مع تحكم بمقبضين وشاشة لمس وخيارات اتصال شاملة لتجربة قيادة محسنة.</p>',
                     'price' => 299.99,
                     'variants' => [
-                        ['name' => 'Screen Size', 'options' => ['7 inch', '9 inch', '10 inch']]
+                        ['name' => 'حجم الشاشة', 'options' => ['7 بوصة', '9 بوصة', '10 بوصة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-852533?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-802444?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-932548?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-948103?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-559983?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-013160?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Wireless Bluetooth Transmitter & Receiver Adapter',
-                    'description' => 'Versatile Bluetooth adapter for wireless audio transmission and reception.',
-                    'specifications' => '<ul><li>Bluetooth 5.0</li><li>Transmitter & receiver modes</li><li>Long battery life</li><li>3.5mm audio jack</li><li>Low latency</li></ul>',
-                    'details' => '<p>Versatile Bluetooth adapter with transmitter and receiver modes, Bluetooth 5.0 technology, and long battery life for wireless audio solutions.</p>',
+                    'name' => 'محول بلوتوث لاسلكي للإرسال والاستقبال',
+                    'description' => 'محول بلوتوث متعدد الاستخدامات للإرسال والاستقبال اللاسلكي للصوت.',
+                    'specifications' => '<ul><li>بلوتوث 5.0</li><li>أوضاع الإرسال والاستقبال</li><li>عمر بطارية طويل</li><li>مقبس صوت 3.5 ملم</li><li>زمن استجابة منخفض</li></ul>',
+                    'details' => '<p>محول بلوتوث متعدد الاستخدامات بأوضاع إرسال واستقبال، وتقنية بلوتوث 5.0، وعمر بطارية طويل لحلول صوت لاسلكية.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-573663?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-436763?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-170662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-425856?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-923019?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-589985?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'TPMS Tyre Pressure Monitoring System',
-                    'description' => 'Advanced tire pressure monitoring system for safety and fuel efficiency.',
-                    'specifications' => '<ul><li>Real-time monitoring</li><li>Wireless sensors</li><li>LCD display</li><li>Temperature monitoring</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Advanced TPMS system providing real-time tire pressure and temperature monitoring with wireless sensors and LCD display for enhanced safety.</p>',
+                    'name' => 'نظام مراقبة ضغط الإطارات TPMS',
+                    'description' => 'نظام متطور لمراقبة ضغط الإطارات للسلامة وكفاءة الوقود.',
+                    'specifications' => '<ul><li>مراقبة لحظية</li><li>حساسات لاسلكية</li><li>شاشة LCD</li><li>مراقبة درجة الحرارة</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>نظام TPMS متطور يوفر مراقبة لحظية لضغط الإطارات ودرجة الحرارة بحساسات لاسلكية وشاشة LCD لتعزيز السلامة.</p>',
                     'price' => 159.99,
                     'cover_image' => 'https://images.unsplash.com/photo-009104?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-474499?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-811626?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-668721?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-307683?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-020100?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Handheld Vacuum Cleaner',
-                    'description' => 'Portable handheld vacuum cleaner for car interior cleaning.',
-                    'specifications' => '<ul><li>Cordless design</li><li>Strong suction power</li><li>Multiple attachments</li><li>Rechargeable battery</li><li>Compact size</li></ul>',
-                    'details' => '<p>Portable handheld vacuum cleaner with cordless design, strong suction power, and multiple attachments for thorough car interior cleaning.</p>',
+                    'name' => 'مكنسة كهربائية محمولة باليد',
+                    'description' => 'مكنسة كهربائية محمولة باليد لتنظيف داخل السيارة.',
+                    'specifications' => '<ul><li>تصميم بدون أسلاك</li><li>قوة شفط قوية</li><li>ملحقات متعددة</li><li>بطارية قابلة للشحن</li><li>حجم مضغوط</li></ul>',
+                    'details' => '<p>مكنسة كهربائية محمولة باليد بتصميم بدون أسلاك وقوة شفط قوية وملحقات متعددة لتنظيف شامل لداخل السيارة.</p>',
                     'price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-738587?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-478781?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-840560?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-543611?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-829654?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-196264?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Smart Car HUD Speed Display',
-                    'description' => 'Head-up display showing speed and driving information on windshield.',
-                    'specifications' => '<ul><li>HUD projection</li><li>Speed display</li><li>OBD2 connection</li><li>Auto brightness</li><li>Multiple display modes</li></ul>',
-                    'details' => '<p>Smart car HUD displaying speed and driving information directly on windshield with OBD2 connection and automatic brightness adjustment.</p>',
+                    'name' => 'شاشة عرض ذكية للسرعة HUD للسيارة',
+                    'description' => 'شاشة عرض أمامية تعرض السرعة ومعلومات القيادة على الزجاج الأمامي.',
+                    'specifications' => '<ul><li>عرض HUD</li><li>عرض السرعة</li><li>اتصال OBD2</li><li>سطوع تلقائي</li><li>أوضاع عرض متعددة</li></ul>',
+                    'details' => '<p>شاشة HUD ذكية للسيارة تعرض السرعة ومعلومات القيادة مباشرة على الزجاج الأمامي مع اتصال OBD2 وضبط سطوع تلقائي.</p>',
                     'price' => 119.99,
                     'cover_image' => 'https://images.unsplash.com/photo-286477?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-655963?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-795006?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-894869?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-929310?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-497431?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Safety & Security' => [
+            'السلامة والأمان' => [
                 [
-                    'name' => 'Sentinel X Car Security Alarm',
-                    'description' => 'Advanced car security alarm system with remote control and smartphone connectivity.',
-                    'specifications' => '<ul><li>Remote control</li><li>Smartphone connectivity</li><li>Shock sensor</li><li>Siren alarm</li><li>LED indicator</li></ul>',
-                    'details' => '<p>Sentinel X advanced car security alarm system with remote control, smartphone connectivity, and multiple sensors for comprehensive vehicle protection.</p>',
+                    'name' => 'إنذار أمان السيارة Sentinel X',
+                    'description' => 'نظام إنذار أمان متطور للسيارة مع تحكم عن بعد واتصال بالهاتف الذكي.',
+                    'specifications' => '<ul><li>تحكم عن بعد</li><li>اتصال بالهاتف الذكي</li><li>مستشعر صدمات</li><li>إنذار صفارة</li><li>مؤشر LED</li></ul>',
+                    'details' => '<p>نظام إنذار أمان متطور للسيارة Sentinel X مع تحكم عن بعد واتصال بالهاتف الذكي وحساسات متعددة لحماية شاملة للمركبة.</p>',
                     'price' => 199.99,
                     'variants' => [
-                        ['name' => 'Range', 'options' => ['500m', '1km', '2km']],
-                        ['name' => 'Features', 'options' => ['Basic', 'Premium', 'Pro']]
+                        ['name' => 'المدى', 'options' => ['500م', '1كم', '2كم']],
+                        ['name' => 'الميزات', 'options' => ['أساسية', 'فاخرة', 'احترافية']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-465111?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-757160?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-621158?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-316557?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220261?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-220903?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Heavy Duty Car Steering Wheel Lock',
-                    'description' => 'Heavy-duty steering wheel lock for maximum vehicle security.',
-                    'specifications' => '<ul><li>Heavy-duty steel</li><li>Universal fit</li><li>Visible deterrent</li><li>Easy installation</li><li>Anti-theft protection</li></ul>',
-                    'details' => '<p>Heavy-duty steering wheel lock made from reinforced steel providing maximum security and visible deterrent against vehicle theft.</p>',
+                    'name' => 'قفل مقود سيارة شديد التحمل',
+                    'description' => 'قفل مقود شديد التحمل لأقصى أمان للمركبة.',
+                    'specifications' => '<ul><li>فولاذ شديد التحمل</li><li>تناسب عام</li><li>رادع مرئي</li><li>تركيب سهل</li><li>حماية من السرقة</li></ul>',
+                    'details' => '<p>قفل مقود شديد التحمل مصنوع من فولاذ معزز يوفر أقصى أمان ورادعًا مرئيًا ضد سرقة المركبات.</p>',
                     'price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-346638?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-382681?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-110397?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-561751?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-090667?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-887373?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Heavy Duty Car Lock Anti Theft Wheel Lock',
-                    'description' => 'Heavy-duty wheel lock for comprehensive anti-theft protection.',
-                    'specifications' => '<ul><li>Heavy-duty construction</li><li>Wheel clamp design</li><li>Weather resistant</li><li>High-security lock</li><li>Bright yellow color</li></ul>',
-                    'details' => '<p>Heavy-duty wheel lock with clamp design providing comprehensive anti-theft protection. Weather-resistant construction with high-security locking mechanism.</p>',
+                    'name' => 'قفل عجلة سيارة شديد التحمل مضاد للسرقة',
+                    'description' => 'قفل عجلة شديد التحمل لحماية شاملة مضادة للسرقة.',
+                    'specifications' => '<ul><li>بناء شديد التحمل</li><li>تصميم مشبك عجلة</li><li>مقاوم للعوامل الجوية</li><li>قفل عالي الأمان</li><li>لون أصفر فاقع</li></ul>',
+                    'details' => '<p>قفل عجلة شديد التحمل بتصميم مشبك يوفر حماية شاملة مضادة للسرقة. بناء مقاوم للعوامل الجوية بآلية قفل عالية الأمان.</p>',
                     'price' => 149.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Small', 'Medium', 'Large']]
+                        ['name' => 'المقاس', 'options' => ['صغير', 'متوسط', 'كبير']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-915717?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-007353?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-107087?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-490460?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-368509?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-630592?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Fire Extinguisher ABC Dry Powder',
-                    'description' => 'ABC dry powder fire extinguisher for comprehensive fire protection.',
-                    'specifications' => '<ul><li>ABC dry powder</li><li>Multi-class protection</li><li>Pressure gauge</li><li>Wall bracket included</li><li>Certified safety</li></ul>',
-                    'details' => '<p>ABC dry powder fire extinguisher providing multi-class fire protection for vehicles. Includes pressure gauge and wall mounting bracket for easy access.</p>',
+                    'name' => 'طفاية حريق بمسحوق جاف ABC',
+                    'description' => 'طفاية حريق بمسحوق جاف ABC لحماية شاملة من الحرائق.',
+                    'specifications' => '<ul><li>مسحوق جاف ABC</li><li>حماية متعددة الفئات</li><li>مقياس ضغط</li><li>تشمل حامل حائط</li><li>سلامة معتمدة</li></ul>',
+                    'details' => '<p>طفاية حريق بمسحوق جاف ABC توفر حماية متعددة الفئات للمركبات. تشمل مقياس ضغط وحامل حائط للوصول السهل.</p>',
                     'price' => 59.99,
                     'cover_image' => 'https://images.unsplash.com/photo-913223?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-771738?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-014582?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-546515?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-945991?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-691814?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Emergency Health Kit',
-                    'description' => 'Comprehensive emergency health kit for roadside medical situations.',
-                    'specifications' => '<ul><li>Comprehensive supplies</li><li>Compact design</li><li>Emergency medications</li><li>Instruction manual</li><li>Durable case</li></ul>',
-                    'details' => '<p>Comprehensive emergency health kit containing essential medical supplies for roadside emergencies. Compact design with durable carrying case.</p>',
+                    'name' => 'حقيبة صحية للطوارئ',
+                    'description' => 'حقيبة صحية شاملة للطوارئ للمواقف الطبية على جانب الطريق.',
+                    'specifications' => '<ul><li>لوازم شاملة</li><li>تصميم مضغوط</li><li>أدوية طارئة</li><li>دليل تعليمات</li><li>حقيبة متينة</li></ul>',
+                    'details' => '<p>حقيبة صحية شاملة للطوارئ تحتوي على اللوازم الطبية الأساسية لحالات الطوارئ على جانب الطريق. تصميم مضغوط بحقيبة حمل متينة.</p>',
                     'price' => 89.99,
                     'cover_image' => 'https://images.unsplash.com/photo-778966?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-733395?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-065146?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-358193?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-459530?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-431309?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Waterproof First Aid Kit',
-                    'description' => 'Waterproof first aid kit for all-weather emergency preparedness.',
-                    'specifications' => '<ul><li>Waterproof case</li><li>Complete first aid supplies</li><li>Organized compartments</li><li>Emergency guide</li><li>Compact size</li></ul>',
-                    'details' => '<p>Waterproof first aid kit with complete medical supplies in organized compartments. Includes emergency guide and compact waterproof case for all conditions.</p>',
+                    'name' => 'حقيبة إسعافات أولية مقاومة للماء',
+                    'description' => 'حقيبة إسعافات أولية مقاومة للماء للاستعداد للطوارئ في جميع الأحوال الجوية.',
+                    'specifications' => '<ul><li>حقيبة مقاومة للماء</li><li>لوازم إسعافات أولية كاملة</li><li>حجرات منظمة</li><li>دليل طوارئ</li><li>حجم مضغوط</li></ul>',
+                    'details' => '<p>حقيبة إسعافات أولية مقاومة للماء مع لوازم طبية كاملة في حجرات منظمة. تشمل دليل طوارئ وحقيبة مقاومة للماء مضغوطة لجميع الظروف.</p>',
                     'price' => 69.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Compact', 'Standard', 'Large']]
+                        ['name' => 'المقاس', 'options' => ['مضغوط', 'قياسي', 'كبير']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-058378?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-182539?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-568284?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-698253?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-593761?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-551480?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Multipurpose Reflective Triangles Emergency',
-                    'description' => 'Reflective emergency triangles for roadside safety and visibility.',
-                    'specifications' => '<ul><li>High visibility</li><li>Reflective material</li><li>Foldable design</li><li>Stable base</li><li>Set of 3 triangles</li></ul>',
-                    'details' => '<p>Multipurpose reflective emergency triangles providing high visibility for roadside safety. Foldable design with stable base, set of 3 triangles included.</p>',
+                    'name' => 'مثلثات تحذيرية عاكسة للطوارئ متعددة الاستخدامات',
+                    'description' => 'مثلثات تحذيرية عاكسة للطوارئ لسلامة ورؤية على جانب الطريق.',
+                    'specifications' => '<ul><li>رؤية عالية</li><li>مادة عاكسة</li><li>تصميم قابل للطي</li><li>قاعدة ثابتة</li><li>طقم من 3 مثلثات</li></ul>',
+                    'details' => '<p>مثلثات تحذيرية عاكسة متعددة الاستخدامات توفر رؤية عالية للسلامة على جانب الطريق. تصميم قابل للطي بقاعدة ثابتة، طقم من 3 مثلثات.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-903094?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-479871?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-917304?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-127002?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-635138?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-973330?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Car Seat Belt Extensions Straps',
-                    'description' => 'Adjustable seat belt extension straps for enhanced comfort and safety.',
-                    'specifications' => '<ul><li>Adjustable length</li><li>Safety certified</li><li>Universal compatibility</li><li>Durable materials</li><li>Easy installation</li></ul>',
-                    'details' => '<p>Adjustable seat belt extension straps providing enhanced comfort and safety. Safety certified with universal compatibility and durable construction.</p>',
+                    'name' => 'أحزمة تمديد حزام أمان السيارة',
+                    'description' => 'أحزمة تمديد حزام أمان قابلة للتعديل لراحة وأمان معززين.',
+                    'specifications' => '<ul><li>طول قابل للتعديل</li><li>معتمد للسلامة</li><li>توافق عام</li><li>مواد متينة</li><li>تركيب سهل</li></ul>',
+                    'details' => '<p>أحزمة تمديد حزام أمان قابلة للتعديل توفر راحة وأمانًا معززين. معتمدة للسلامة بتوافق عام وبناء متين.</p>',
                     'price' => 29.99,
                     'cover_image' => 'https://images.unsplash.com/photo-235500?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-409840?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-143090?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-018572?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-407828?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-958519?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Galaxy Tyre Air Pump',
-                    'description' => 'Portable tire air pump with digital display and auto shut-off.',
-                    'specifications' => '<ul><li>Digital display</li><li>Auto shut-off</li><li>Portable design</li><li>12V power</li><li>Multiple attachments</li></ul>',
-                    'details' => '<p>Galaxy portable tire air pump with digital display and auto shut-off feature. 12V power operation with multiple attachments for various inflation needs.</p>',
+                    'name' => 'مضخة هواء إطارات Galaxy',
+                    'description' => 'مضخة هواء إطارات محمولة بشاشة رقمية وإيقاف تلقائي.',
+                    'specifications' => '<ul><li>شاشة رقمية</li><li>إيقاف تلقائي</li><li>تصميم محمول</li><li>طاقة 12 فولت</li><li>ملحقات متعددة</li></ul>',
+                    'details' => '<p>مضخة هواء إطارات محمولة من Galaxy بشاشة رقمية وميزة إيقاف تلقائي. تعمل بطاقة 12 فولت مع ملحقات متعددة لاحتياجات النفخ المختلفة.</p>',
                     'price' => 79.99,
                     'cover_image' => 'https://images.unsplash.com/photo-787538?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-384731?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-775624?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-474864?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-597790?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-655505?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Smart Battery Jump Starter and Tyre Inflator',
-                    'description' => 'Multi-function device combining jump starter and tire inflator capabilities.',
-                    'specifications' => '<ul><li>Jump starter function</li><li>Tire inflator</li><li>USB charging ports</li><li>LED flashlight</li><li>Safety protection</li></ul>',
-                    'details' => '<p>Smart multi-function device combining battery jump starter and tire inflator with USB charging ports, LED flashlight, and comprehensive safety protection.</p>',
+                    'name' => 'جهاز تشغيل بطارية ذكي ونافخ إطارات',
+                    'description' => 'جهاز متعدد الوظائف يجمع بين قدرات تشغيل البطارية ونفخ الإطارات.',
+                    'specifications' => '<ul><li>وظيفة تشغيل البطارية</li><li>نافخ إطارات</li><li>منافذ شحن USB</li><li>مصباح LED</li><li>حماية أمان</li></ul>',
+                    'details' => '<p>جهاز ذكي متعدد الوظائف يجمع بين تشغيل البطارية ونفخ الإطارات مع منافذ شحن USB ومصباح LED وحماية أمان شاملة.</p>',
                     'price' => 199.99,
                     'cover_image' => 'https://images.unsplash.com/photo-165630?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-503679?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-131720?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-402722?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-636752?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-140652?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Cleaning & Maintenance' => [
+            'التنظيف والصيانة' => [
                 [
-                    'name' => 'Foam Car Wash Shampoo',
-                    'description' => 'Premium foam car wash shampoo for deep cleaning and shine.',
-                    'specifications' => '<ul><li>Rich foam formula</li><li>pH balanced</li><li>Safe for all finishes</li><li>Concentrated formula</li><li>Biodegradable</li></ul>',
-                    'details' => '<p>Premium foam car wash shampoo with rich foam formula providing deep cleaning while being safe for all paint finishes. Concentrated and biodegradable.</p>',
+                    'name' => 'شامبو غسيل سيارة رغوي',
+                    'description' => 'شامبو غسيل سيارة رغوي فاخر لتنظيف عميق ولمعان.',
+                    'specifications' => '<ul><li>صيغة رغوة غنية</li><li>متوازن الأس الهيدروجيني</li><li>آمن لجميع الدهانات</li><li>صيغة مركزة</li><li>قابل للتحلل</li></ul>',
+                    'details' => '<p>شامبو غسيل سيارة رغوي فاخر بصيغة رغوة غنية يوفر تنظيفًا عميقًا مع كونه آمنًا لجميع الدهانات. مركز وقابل للتحلل.</p>',
                     'price' => 24.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['500ml', '1L', '2L']],
-                        ['name' => 'Type', 'options' => ['Regular', 'Wax Enhanced', 'Ceramic Safe']]
+                        ['name' => 'الحجم', 'options' => ['500 مل', '1 لتر', '2 لتر']],
+                        ['name' => 'النوع', 'options' => ['عادي', 'معزز بالشمع', 'آمن للسيراميك']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-141342?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-225576?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-646750?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-605331?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-396036?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-035220?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Microfiber Car Cleaning Cloth',
-                    'description' => 'Ultra-soft microfiber cleaning cloth for scratch-free car care.',
-                    'specifications' => '<ul><li>Ultra-soft microfiber</li><li>Scratch-free cleaning</li><li>Highly absorbent</li><li>Machine washable</li><li>Lint-free</li></ul>',
-                    'details' => '<p>Ultra-soft microfiber cleaning cloth designed for scratch-free car care. Highly absorbent and machine washable for long-lasting use.</p>',
+                    'name' => 'قماش تنظيف السيارة من الألياف الدقيقة',
+                    'description' => 'قماش تنظيف فائق النعومة من الألياف الدقيقة لعناية بالسيارة بدون خدوش.',
+                    'specifications' => '<ul><li>ألياف دقيقة فائقة النعومة</li><li>تنظيف بدون خدوش</li><li>عالي الامتصاص</li><li>قابل للغسل في الغسالة</li><li>بدون وبر</li></ul>',
+                    'details' => '<p>قماش تنظيف فائق النعومة من الألياف الدقيقة مصمم للعناية بالسيارة بدون خدوش. عالي الامتصاص وقابل للغسل في الغسالة لاستخدام طويل.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-188837?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-259908?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-766349?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-864877?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-191809?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-134362?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cordless Vacuum Cleaner for Car',
-                    'description' => 'Powerful cordless vacuum cleaner designed specifically for car interiors.',
-                    'specifications' => '<ul><li>Cordless operation</li><li>Strong suction power</li><li>Multiple attachments</li><li>Rechargeable battery</li><li>Compact design</li></ul>',
-                    'details' => '<p>Powerful cordless vacuum cleaner with strong suction power and multiple attachments for thorough car interior cleaning. Compact and rechargeable.</p>',
+                    'name' => 'مكنسة كهربائية بدون أسلاك للسيارة',
+                    'description' => 'مكنسة كهربائية قوية بدون أسلاك مصممة خصيصًا لداخل السيارة.',
+                    'specifications' => '<ul><li>تشغيل بدون أسلاك</li><li>قوة شفط قوية</li><li>ملحقات متعددة</li><li>بطارية قابلة للشحن</li><li>تصميم مضغوط</li></ul>',
+                    'details' => '<p>مكنسة كهربائية قوية بدون أسلاك بقوة شفط عالية وملحقات متعددة لتنظيف شامل لداخل السيارة. مضغوطة وقابلة لإعادة الشحن.</p>',
                     'price' => 129.99,
                     'variants' => [
-                        ['name' => 'Power', 'options' => ['120W', '150W', '180W']]
+                        ['name' => 'القوة', 'options' => ['120 واط', '150 واط', '180 واط']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-729969?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-891760?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-445131?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-029460?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-946662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-560793?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Hybrid Solutions Ceramic Polish & Wax',
-                    'description' => 'Advanced ceramic polish and wax for superior protection and shine.',
-                    'specifications' => '<ul><li>Ceramic technology</li><li>Long-lasting protection</li><li>High gloss finish</li><li>UV protection</li><li>Easy application</li></ul>',
-                    'details' => '<p>Advanced hybrid ceramic polish and wax providing superior protection and high gloss finish. Long-lasting formula with UV protection and easy application.</p>',
+                    'name' => 'ملمع وشمع سيراميك Hybrid Solutions',
+                    'description' => 'ملمع وشمع سيراميك متقدم لحماية ولمعان فائقين.',
+                    'specifications' => '<ul><li>تقنية سيراميك</li><li>حماية تدوم طويلاً</li><li>لمسة لمعان عالية</li><li>حماية من الأشعة فوق البنفسجية</li><li>تطبيق سهل</li></ul>',
+                    'details' => '<p>ملمع وشمع سيراميك هجين متقدم يوفر حماية فائقة ولفة لمعان عالية. صيغة تدوم طويلاً مع حماية من الأشعة فوق البنفسجية وتطبيق سهل.</p>',
                     'price' => 49.99,
                     'cover_image' => 'https://images.unsplash.com/photo-398942?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-321940?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-161512?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-966521?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-120766?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-457892?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Wheel and Tyre Cleaner Concentrate',
-                    'description' => 'Concentrated wheel and tire cleaner for deep cleaning and restoration.',
-                    'specifications' => '<ul><li>Concentrated formula</li><li>Deep cleaning action</li><li>Safe for all wheels</li><li>Removes brake dust</li><li>Biodegradable</li></ul>',
-                    'details' => '<p>Concentrated wheel and tire cleaner with deep cleaning action safe for all wheel types. Effectively removes brake dust and grime while being biodegradable.</p>',
+                    'name' => 'منظف مركز للعجلات والإطارات',
+                    'description' => 'منظف مركز للعجلات والإطارات لتنظيف عميق وترميم.',
+                    'specifications' => '<ul><li>صيغة مركزة</li><li>تنظيف عميق</li><li>آمن لجميع العجلات</li><li>يزيل غبار الفرامل</li><li>قابل للتحلل</li></ul>',
+                    'details' => '<p>منظف مركز للعجلات والإطارات بفعل تنظيف عميق آمن لجميع أنواع العجلات. يزيل غبار الفرامل والأوساخ بفعالية مع كونه قابلًا للتحلل.</p>',
                     'price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-523359?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-395385?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-916751?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-049808?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-282526?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-921508?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Lemongrass Air Freshener for Car',
-                    'description' => 'Natural lemongrass air freshener for long-lasting car fragrance.',
-                    'specifications' => '<ul><li>Natural lemongrass scent</li><li>Long-lasting fragrance</li><li>Non-toxic formula</li><li>Easy installation</li><li>Adjustable intensity</li></ul>',
-                    'details' => '<p>Natural lemongrass air freshener providing long-lasting fragrance with non-toxic formula. Easy installation with adjustable intensity control.</p>',
+                    'name' => 'معطر جو ليمون جراس للسيارة',
+                    'description' => 'معطر جو طبيعي برائحة الليمون جراس لعطر سيارات يدوم طويلاً.',
+                    'specifications' => '<ul><li>رائحة ليمون جراس طبيعية</li><li>عطر يدوم طويلاً</li><li>صيغة غير سامة</li><li>تركيب سهل</li><li>شدة قابلة للتعديل</li></ul>',
+                    'details' => '<p>معطر جو طبيعي برائحة الليمون جراس يوفر عطرًا يدوم طويلاً بصيغة غير سامة. تركيب سهل مع تحكم في الشدة قابل للتعديل.</p>',
                     'price' => 14.99,
                     'cover_image' => 'https://images.unsplash.com/photo-439708?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-422879?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-088278?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-228769?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-100300?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-685364?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Essential Car Care Kit',
-                    'description' => 'Complete car care kit with essential cleaning and maintenance products.',
-                    'specifications' => '<ul><li>Complete care kit</li><li>Multiple products included</li><li>Professional quality</li><li>Storage case</li><li>Instruction guide</li></ul>',
-                    'details' => '<p>Complete essential car care kit containing multiple professional-quality cleaning and maintenance products with storage case and instruction guide.</p>',
+                    'name' => 'طقم العناية الأساسي بالسيارة',
+                    'description' => 'طقم عناية كامل بالسيارة مع منتجات تنظيف وصيانة أساسية.',
+                    'specifications' => '<ul><li>طقم عناية كامل</li><li>منتجات متعددة</li><li>جودة احترافية</li><li>علبة تخزين</li><li>دليل إرشادي</li></ul>',
+                    'details' => '<p>طقم عناية أساسي كامل بالسيارة يحتوي على منتجات تنظيف وصيانة متعددة بجودة احترافية مع علبة تخزين ودليل إرشادي.</p>',
                     'price' => 89.99,
                     'cover_image' => 'https://images.unsplash.com/photo-974304?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-130782?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-263855?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-278282?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-964136?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-903272?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Vehicle Scratch Repair',
-                    'description' => 'Professional scratch repair solution for vehicle paint restoration.',
-                    'specifications' => '<ul><li>Professional formula</li><li>Easy application</li><li>Color matching</li><li>Permanent repair</li><li>Clear coat safe</li></ul>',
-                    'details' => '<p>Professional vehicle scratch repair solution with easy application and color matching technology for permanent paint restoration. Safe for clear coats.</p>',
+                    'name' => 'إصلاح خدوش السيارة',
+                    'description' => 'محلول احترافي لإصلاح الخدوش لترميم طلاء السيارة.',
+                    'specifications' => '<ul><li>صيغة احترافية</li><li>تطبيق سهل</li><li>مطابقة الألوان</li><li>إصلاح دائم</li><li>آمن للطبقة الشفافة</li></ul>',
+                    'details' => '<p>محلول احترافي لإصلاح خدوش السيارة بتطبيق سهل وتقنية مطابقة الألوان لإصلاح دائم للطلاء. آمن للطبقات الشفافة.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-674404?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-131037?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-315725?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-958544?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-168906?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558517?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Windshield Washer Fluid Concentrate',
-                    'description' => 'Concentrated windshield washer fluid for crystal clear visibility.',
-                    'specifications' => '<ul><li>Concentrated formula</li><li>All-season protection</li><li>Streak-free cleaning</li><li>Anti-freeze properties</li><li>Biodegradable</li></ul>',
-                    'details' => '<p>Concentrated windshield washer fluid providing all-season protection with streak-free cleaning and anti-freeze properties. Biodegradable formula.</p>',
+                    'name' => 'مركز سائل غسيل الزجاج الأمامي',
+                    'description' => 'سائل غسيل زجاج مركّز لرؤية واضحة تمامًا.',
+                    'specifications' => '<ul><li>صيغة مركزة</li><li>حماية لجميع الفصول</li><li>تنظيف بدون خطوط</li><li>خصائص مضادة للتجمد</li><li>قابل للتحلل</li></ul>',
+                    'details' => '<p>سائل غسيل زجاج مركّز يوفر حماية لجميع الفصول مع تنظيف بدون خطوط وخصائص مضادة للتجمد. صيغة قابلة للتحلل.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-748380?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-065696?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-948454?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-756691?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-274636?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-003235?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Microfiber Car Cleaning Cloth and Wash Kit',
-                    'description' => 'Complete microfiber cleaning cloth and wash kit for comprehensive car care.',
-                    'specifications' => '<ul><li>Multiple microfiber cloths</li><li>Wash mitt included</li><li>Different cloth types</li><li>Machine washable</li><li>Storage bag</li></ul>',
-                    'details' => '<p>Complete microfiber cleaning cloth and wash kit with multiple cloth types and wash mitt for comprehensive car care. Includes storage bag and machine washable.</p>',
+                    'name' => 'قماش تنظيف الألياف الدقيقة وطقم غسيل للسيارة',
+                    'description' => 'طقم كامل من قماش التنظيف من الألياف الدقيقة وطقم الغسيل لعناية شاملة بالسيارة.',
+                    'specifications' => '<ul><li>أقمشة ألياف دقيقة متعددة</li><li>قفاز غسيل مرفق</li><li>أنواع مختلفة من الأقمشة</li><li>قابل للغسل في الغسالة</li><li>حقيبة تخزين</li></ul>',
+                    'details' => '<p>طقم كامل من قماش التنظيف من الألياف الدقيقة وطقم غسيل بأنواع أقمشة متعددة وقفاز غسيل لعناية شاملة بالسيارة. يشمل حقيبة تخزين وقابل للغسل في الغسالة.</p>',
                     'price' => 44.99,
                     'cover_image' => 'https://images.unsplash.com/photo-300452?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-474690?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-327662?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-727704?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-663082?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-357651?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Soft Toys & Plush' => [
+            'الدمى القطيفة' => [
                 [
-                    'name' => 'Teddy Bear Soft Toy Brown Extra-Large',
-                    'description' => 'Extra-large brown teddy bear soft toy perfect for cuddling and comfort.',
-                    'specifications' => '<ul><li>Extra-large size</li><li>Brown plush material</li><li>Soft and cuddly</li><li>Safe for all ages</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Extra-large brown teddy bear made from premium plush material. Perfect companion for children providing comfort and security with machine washable design.</p>',
+                    'name' => 'دبدوب بني كبير جدًا قطيفة',
+                    'description' => 'دبدوب بني قطيفة كبير جدًا مثالي للعناق والراحة.',
+                    'specifications' => '<ul><li>حجم كبير جدًا</li><li>مادة قطيفة بنية</li><li>ناعم ودافئ</li><li>آمن لجميع الأعمار</li><li>قابل للغسل في الغسالة</li></ul>',
+                    'details' => '<p>دبدوب بني كبير جدًا مصنوع من مادة قطيفة فاخرة. رفيق مثالي للأطفال يوفر الراحة والأمان بتصميم قابل للغسل في الغسالة.</p>',
                     'price' => 89.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Large (36 inch)', 'Extra-Large (48 inch)', 'Giant (60 inch)']]
+                        ['name' => 'المقاس', 'options' => ['كبير (36 بوصة)', 'كبير جدًا (48 بوصة)', 'عملاق (60 بوصة)']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-432840?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-780084?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-681684?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-061490?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-672269?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-997243?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Babique Elephant Sitting Plush Soft Toy',
-                    'description' => 'Adorable sitting elephant plush toy with realistic details and soft texture.',
-                    'specifications' => '<ul><li>Sitting position design</li><li>Realistic elephant features</li><li>Super soft plush</li><li>Safe materials</li><li>Ages 0+ years</li></ul>',
-                    'details' => '<p>Babique elephant plush toy in sitting position with realistic features and super soft texture. Made from safe materials perfect for children of all ages.</p>',
+                    'name' => 'لعبة فيل قطيفة جالس من Babique',
+                    'description' => 'لعبة فيل قطيفة جالس لطيفة بتفاصيل واقعية وملمس ناعم.',
+                    'specifications' => '<ul><li>تصميم بوضعية الجلوس</li><li>ملامح فيل واقعية</li><li>قطيفة فائقة النعومة</li><li>مواد آمنة</li><li>منذ الولادة فما فوق</li></ul>',
+                    'details' => '<p>لعبة فيل قطيفة من Babique بوضعية الجلوس بملامح واقعية وملمس فائق النعومة. مصنوعة من مواد آمنة مثالية للأطفال من جميع الأعمار.</p>',
                     'price' => 45.99,
                     'cover_image' => 'https://images.unsplash.com/photo-405212?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-302366?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-689270?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-911962?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-284922?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-247022?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Brown Cat Soft Toy for Kids',
-                    'description' => 'Cute brown cat soft toy with realistic features and cuddly design.',
-                    'specifications' => '<ul><li>Realistic cat design</li><li>Brown plush fur</li><li>Soft and cuddly</li><li>Child-safe materials</li><li>Ages 3+ years</li></ul>',
-                    'details' => '<p>Adorable brown cat soft toy with realistic features and cuddly design. Made from child-safe materials with soft plush fur for comfortable play.</p>',
+                    'name' => 'لعبة قطة بنية ناعمة للأطفال',
+                    'description' => 'لعبة قطة بنية لطيفة بملامح واقعية وتصميم دافئ.',
+                    'specifications' => '<ul><li>تصميم قطة واقعي</li><li>فرو قطيفة بني</li><li>ناعمة ودافئة</li><li>مواد آمنة للأطفال</li><li>من 3 سنوات فما فوق</li></ul>',
+                    'details' => '<p>لعبة قطة بنية لطيفة بملامح واقعية وتصميم دافئ. مصنوعة من مواد آمنة للأطفال مع فرو قطيفة ناعم للعب مريح.</p>',
                     'price' => 29.99,
                     'cover_image' => 'https://images.unsplash.com/photo-128129?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-482886?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-190846?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-558070?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-276968?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-431534?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Cute Plush Pillow Stuffed Soft Toy',
-                    'description' => 'Multi-functional plush pillow that doubles as a soft toy for comfort.',
-                    'specifications' => '<ul><li>Dual-purpose design</li><li>Pillow and toy function</li><li>Ultra-soft material</li><li>Hypoallergenic filling</li><li>Machine washable</li></ul>',
-                    'details' => '<p>Cute plush pillow that serves as both a comfortable pillow and adorable soft toy. Ultra-soft material with hypoallergenic filling and machine washable.</p>',
+                    'name' => 'وسادة قطيفة محشوة لعبة ناعمة لطيفة',
+                    'description' => 'وسادة قطيفة متعددة الوظائف تعمل أيضًا كلعبة ناعمة للراحة.',
+                    'specifications' => '<ul><li>تصميم ثنائي الغرض</li><li>وظيفة وسادة ولعبة</li><li>مادة فائقة النعومة</li><li>حشوة مضادة للحساسية</li><li>قابلة للغسل في الغسالة</li></ul>',
+                    'details' => '<p>وسادة قطيفة لطيفة تعمل كوسادة مريحة ولعبة ناعمة رائعة. مادة فائقة النعومة بحشوة مضادة للحساسية وقابلة للغسل في الغسالة.</p>',
                     'price' => 39.99,
                     'cover_image' => 'https://images.unsplash.com/photo-975672?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-714955?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-195180?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369665?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-436130?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-524923?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Musical Toy-Plush Teddy Bear',
-                    'description' => 'Interactive musical teddy bear that plays soothing melodies and sounds.',
-                    'specifications' => '<ul><li>Built-in music box</li><li>Soothing melodies</li><li>Soft plush material</li><li>Battery operated</li><li>Ages 0+ years</li></ul>',
-                    'details' => '<p>Musical plush teddy bear with built-in music box playing soothing melodies. Soft plush material with battery-operated musical features for comfort and entertainment.</p>',
+                    'name' => 'دبدوب قطيفة موسيقي لعبة',
+                    'description' => 'دبدوب موسيقي تفاعلي يعزف ألحانًا وأصواتًا مهدئة.',
+                    'specifications' => '<ul><li>صندوق موسيقى مدمج</li><li>ألحان مهدئة</li><li>مادة قطيفة ناعمة</li><li>يعمل بالبطارية</li><li>منذ الولادة فما فوق</li></ul>',
+                    'details' => '<p>دبدوب قطيفة موسيقي بصندوق موسيقى مدمج يعزف ألحانًا مهدئة. مادة قطيفة ناعمة مع ميزات موسيقية تعمل بالبطارية للراحة والترفيه.</p>',
                     'price' => 59.99,
                     'variants' => [
-                        ['name' => 'Size', 'options' => ['Large (36 inch)', 'Extra-Large (48 inch)', 'Giant (60 inch)']]
+                        ['name' => 'المقاس', 'options' => ['كبير (36 بوصة)', 'كبير جدًا (48 بوصة)', 'عملاق (60 بوصة)']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-329556?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-381794?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-432740?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-746262?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-036069?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-782285?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Monkey Super Cute Plushie Soft Toys',
-                    'description' => 'Super cute monkey plushie with adorable features and soft texture.',
-                    'specifications' => '<ul><li>Adorable monkey design</li><li>Super soft plush</li><li>Cute facial features</li><li>Safe for children</li><li>Ages 0+ years</li></ul>',
-                    'details' => '<p>Super cute monkey plushie with adorable features and incredibly soft texture. Safe for children with cute facial features and premium plush material.</p>',
+                    'name' => 'قرد قطيفة لطيف جدًا لعبة ناعمة',
+                    'description' => 'قرد قطيفة لطيف جدًا بملامح رائعة وملمس ناعم.',
+                    'specifications' => '<ul><li>تصميم قرد لطيف</li><li>قطيفة فائقة النعومة</li><li>ملامح وجه لطيفة</li><li>آمن للأطفال</li><li>منذ الولادة فما فوق</li></ul>',
+                    'details' => '<p>قرد قطيفة لطيف جدًا بملامح رائعة وملمس ناعم بشكل لا يصدق. آمن للأطفال بملامح وجه لطيفة ومادة قطيفة فاخرة.</p>',
                     'price' => 34.99,
                     'cover_image' => 'https://images.unsplash.com/photo-587540?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-461832?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-337261?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-548604?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-465781?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-595734?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Stuffed Toys for Kids Set of 3 Mini Teddy Toys',
-                    'description' => 'Set of 3 mini teddy bear toys perfect for collection and play.',
-                    'specifications' => '<ul><li>Set of 3 mini teddies</li><li>Different colors</li><li>Compact size</li><li>Soft plush material</li><li>Ages 3+ years</li></ul>',
-                    'details' => '<p>Adorable set of 3 mini teddy bear toys in different colors. Compact size perfect for collection, travel, and imaginative play with soft plush material.</p>',
+                    'name' => 'ألعاب محشوة للأطفال طقم من 3 دبدوبات مصغرة',
+                    'description' => 'طقم من 3 ألعاب دبدوب مصغرة مثالية للجمع واللعب.',
+                    'specifications' => '<ul><li>طقم من 3 دبدوبات مصغرة</li><li>ألوان مختلفة</li><li>حجم مضغوط</li><li>مادة قطيفة ناعمة</li><li>من 3 سنوات فما فوق</li></ul>',
+                    'details' => '<p>طقم لطيف من 3 ألعاب دبدوب مصغرة بألوان مختلفة. حجم مضغوط مثالي للجمع والسفر واللعب الخيالي بمادة قطيفة ناعمة.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-561985?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-151723?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-243619?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-960831?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-634892?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-962060?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Giant Teddy Bears Big Cute Plush Teddy Bear',
-                    'description' => 'Giant-sized cute plush teddy bear for ultimate cuddling experience.',
-                    'specifications' => '<ul><li>Giant size</li><li>Ultra-soft plush</li><li>Cute design</li><li>Premium quality</li><li>Ages 0+ years</li></ul>',
-                    'details' => '<p>Giant-sized cute plush teddy bear providing the ultimate cuddling experience. Ultra-soft plush material with premium quality construction and adorable design.</p>',
+                    'name' => 'دبدوب عملاق كبير لطيف قطيفة',
+                    'description' => 'دبدوب قطيفة عملاق الحجم لطيف لتجربة عناق فائقة.',
+                    'specifications' => '<ul><li>حجم عملاق</li><li>قطيفة فائقة النعومة</li><li>تصميم لطيف</li><li>جودة فاخرة</li><li>منذ الولادة فما فوق</li></ul>',
+                    'details' => '<p>دبدوب قطيفة لطيف بحجم عملاق يوفر تجربة عناق فائقة. مادة قطيفة فائقة النعومة بجودة فاخرة وتصميم رائع.</p>',
                     'price' => 149.99,
                     'cover_image' => 'https://images.unsplash.com/photo-001944?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-557167?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-787365?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-932838?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-654607?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-651251?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Plush Stuffed Animal Toy',
-                    'description' => 'Versatile plush stuffed animal toy available in various animal designs.',
-                    'specifications' => '<ul><li>Various animal options</li><li>Soft stuffed design</li><li>High-quality plush</li><li>Safe materials</li><li>Ages 0+ years</li></ul>',
-                    'details' => '<p>Versatile plush stuffed animal toy available in various cute animal designs. High-quality plush material with safe construction for children of all ages.</p>',
+                    'name' => 'لعبة حيوان محشو قطيفة',
+                    'description' => 'لعبة حيوان محشو قطيفة متعددة الاستخدامات متوفرة بتصاميم حيوانات متنوعة.',
+                    'specifications' => '<ul><li>خيارات حيوانات متنوعة</li><li>تصميم محشو ناعم</li><li>قطيفة عالية الجودة</li><li>مواد آمنة</li><li>منذ الولادة فما فوق</li></ul>',
+                    'details' => '<p>لعبة حيوان محشو قطيفة متعددة الاستخدامات متوفرة بتصاميم حيوانات لطيفة متنوعة. مادة قطيفة عالية الجودة ببناء آمن للأطفال من جميع الأعمار.</p>',
                     'price' => 42.99,
                     'cover_image' => 'https://images.unsplash.com/photo-173373?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-705286?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-455158?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-297695?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-685599?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-871843?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Puppets Tommy Glove Puppet',
-                    'description' => 'Interactive Tommy glove puppet for storytelling and imaginative play.',
-                    'specifications' => '<ul><li>Glove puppet design</li><li>Interactive play</li><li>Soft fabric construction</li><li>Easy to use</li><li>Ages 3+ years</li></ul>',
-                    'details' => '<p>Interactive Tommy glove puppet perfect for storytelling and imaginative play. Soft fabric construction with easy-to-use design for engaging puppet shows.</p>',
+                    'name' => 'دمية قفاز Tommy للعرائس',
+                    'description' => 'دمية قفاز Tommy تفاعلية لسرد القصص واللعب الخيالي.',
+                    'specifications' => '<ul><li>تصميم دمية قفاز</li><li>لعب تفاعلي</li><li>بناء قماشي ناعم</li><li>سهلة الاستخدام</li><li>من 3 سنوات فما فوق</li></ul>',
+                    'details' => '<p>دمية قفاز Tommy تفاعلية مثالية لسرد القصص واللعب الخيالي. بناء قماشي ناعم بتصميم سهل الاستخدام لعروض دمى مشوقة.</p>',
                     'price' => 19.99,
                     'cover_image' => 'https://images.unsplash.com/photo-956566?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-655194?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-631369?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-111207?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-414057?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-529443?w=800&h=800&fit=crop&crop=center'
                 ]
             ],
-            'Educational Toys' => [
+            'الألعاب التعليمية' => [
                 [
-                    'name' => 'Sterling Learning Blocks Multicolor',
-                    'description' => 'Colorful learning blocks for building, stacking, and educational play.',
-                    'specifications' => '<ul><li>Multicolor design</li><li>Safe plastic material</li><li>Various shapes and sizes</li><li>Educational letters and numbers</li><li>Ages 2+ years</li></ul>',
-                    'details' => '<p>Sterling learning blocks in vibrant multicolors designed for building, stacking, and educational play. Features letters and numbers for early learning development.</p>',
+                    'name' => 'مكعبات تعلم متعددة الألوان من Sterling',
+                    'description' => 'مكعبات تعلم ملونة للبناء والتراص واللعب التعليمي.',
+                    'specifications' => '<ul><li>تصميم متعدد الألوان</li><li>مادة بلاستيك آمنة</li><li>أشكال وأحجام متنوعة</li><li>حروف وأرقام تعليمية</li><li>من سنتين فما فوق</li></ul>',
+                    'details' => '<p>مكعبات تعلم من Sterling بألوان زاهية متعددة مصممة للبناء والتراص واللعب التعليمي. تتميز بحروف وأرقام لتطوير التعلم المبكر.</p>',
                     'price' => 34.99,
                     'variants' => [
-                        ['name' => 'Set Size', 'options' => ['50 pieces', '100 pieces', '150 pieces']]
+                        ['name' => 'حجم الطقم', 'options' => ['50 قطعة', '100 قطعة', '150 قطعة']]
                     ],
                     'cover_image' => 'https://images.unsplash.com/photo-224418?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-652827?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-813780?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-822609?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-550099?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-419987?w=800&h=800&fit=crop&crop=center'
                 ],
                 [
-                    'name' => 'Plastic Alphabet Number Puzzle Toy',
-                    'description' => 'Interactive plastic puzzle featuring alphabet letters and numbers for learning.',
-                    'specifications' => '<ul><li>Alphabet and number pieces</li><li>Durable plastic construction</li><li>Bright colors</li><li>Easy-grip pieces</li><li>Ages 3+ years</li></ul>',
-                    'details' => '<p>Interactive plastic puzzle toy combining alphabet letters and numbers for comprehensive early learning. Durable construction with bright colors and easy-grip pieces.</p>',
+                    'name' => 'لعبة أحجية بلاستيكية للأبجدية والأرقام',
+                    'description' => 'أحجية بلاستيكية تفاعلية تضم حروف الأبجدية والأرقام للتعلم.',
+                    'specifications' => '<ul><li>قطع حروف وأرقام</li><li>بناء بلاستيكي متين</li><li>ألوان زاهية</li><li>قطع سهلة الإمساك</li><li>من 3 سنوات فما فوق</li></ul>',
+                    'details' => '<p>لعبة أحجية بلاستيكية تفاعلية تجمع حروف الأبجدية والأرقام لتعلم مبكر شامل. بناء متين بألوان زاهية وقطع سهلة الإمساك.</p>',
                     'price' => 24.99,
                     'cover_image' => 'https://images.unsplash.com/photo-148842?w=800&h=800&fit=crop&crop=center',
                     'images' => 'https://images.unsplash.com/photo-842262?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-757276?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-369053?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-742947?w=800&h=800&fit=crop&crop=center,https://images.unsplash.com/photo-563311?w=800&h=800&fit=crop&crop=center'

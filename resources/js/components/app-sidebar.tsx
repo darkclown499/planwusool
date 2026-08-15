@@ -497,13 +497,13 @@ export function AppSidebar() {
                                             <Building2 className="h-4 w-4 me-2" />
                                             <span className="truncate">{business.name}</span>
                                             {business.id === auth.user?.current_store && (
-                                                <span className="ms-auto text-xs text-muted-foreground">Current</span>
+                                                <span className="ms-auto text-xs text-muted-foreground">{t('Current')}</span>
                                             )}
                                         </DropdownMenuItem>
                                     ))
                                 ) : (
                                     <DropdownMenuItem disabled>
-                                        <span className="text-muted-foreground">No businesses found</span>
+                                        <span className="text-muted-foreground">{t('No businesses found')}</span>
                                     </DropdownMenuItem>
                                 )}
                             </DropdownMenuContent>

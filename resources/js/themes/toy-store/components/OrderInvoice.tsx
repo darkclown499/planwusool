@@ -191,7 +191,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                           )}
                         </div>
                       </div>
-                      <div className="text-right sm:text-left">
+                      <div className="text-right sm:text-right">
                         <div className="font-bold text-gray-900 text-sm md:text-base">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</div>
                       </div>
                     </div>

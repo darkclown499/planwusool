@@ -78,6 +78,26 @@ return Application::configure(basePath: dirname(__DIR__))
             'payments/benefit/callback',
             'payments/paytabs/callback',
 
+            // Plan subscription payment callbacks and webhooks - these are
+            // server-to-server POSTs from payment gateways (no CSRF token).
+            'mercadopago/webhook',
+            'payments/coingate/callback',
+            'payments/skrill/callback',
+            'payments/mollie/callback',
+            'payments/toyyibpay/callback',
+            'payments/iyzipay/callback',
+            'payments/ozow/callback',
+            'payments/payhere/callback',
+            'payments/cinetpay/callback',
+            'payments/paiement/callback',
+            'payments/midtrans/callback',
+            'payments/fedapay/callback',
+            'payments/payfast/callback',
+            'payments/xendit/callback',
+            'payments/paytr/callback',
+            'payments/nepalste/callback',
+            'payments/yookassa/callback',
+
             // Store subdomain callback/webhook routes (payment gateways POST
             // without a CSRF token).
             'store-cashfree/webhook',

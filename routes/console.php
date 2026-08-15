@@ -14,8 +14,14 @@ Schedule::command('app:check-abandoned-carts --hours=24')
     ->withoutOverlapping()
     ->sendOutputTo(storage_path('logs/abandoned-carts.log'));
 
-// Notify merchants about expiring subscriptions once a day
+// Check for expired trials and downgrade to Starter plan daily at 2 AM
+Schedule::command('app:check-expired-trials')
+    ->dailyAt('02:00')
+    ->withoutOverlapping()
+    ->sendOutputTo(storage_path('logs/expired-trials.log'));
+
+// Send plan-expiration reminders and lock expired subscriptions daily
 Schedule::command('app:check-plan-expirations --days=7')
-    ->dailyAt('08:00')
+    ->dailyAt('02:15')
     ->withoutOverlapping()
     ->sendOutputTo(storage_path('logs/plan-expirations.log'));

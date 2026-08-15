@@ -1,9 +1,11 @@
+"use client"
+
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { useModalStack } from "@/contexts/ModalStackContext"
 
 const Dialog = DialogPrimitive.Root
 
@@ -15,94 +17,41 @@ const DialogClose = DialogPrimitive.Close
 
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & { modalId?: string }
->(({ className, modalId, ...props }, ref) => {
-  const { getZIndex, modalStack } = useModalStack();
-  const zIndex = modalId ? getZIndex(modalId) : 50;
-  const modalIndex = modalStack.indexOf(modalId || '');
-  const isFirstModal = modalIndex <= 0;
-
-  return (
-    <DialogPrimitive.Overlay
-      ref={ref}
-      className={cn(
-        "fixed inset-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        isFirstModal ? "bg-black/30" : "bg-black/25",
-        className
-      )}
-      style={{ zIndex }}
-      onPointerDown={(e) => {
-        // Allow clicks on elements with higher z-index (like FloatingChatGpt)
-        const target = e.target as HTMLElement;
-        const targetZIndex = parseInt(window.getComputedStyle(target).zIndex) || 0;
-        if (targetZIndex > zIndex) {
-          return;
-        }
-        // Allow ChatGPT button clicks
-        if (target.closest('[data-chatgpt-button]')) {
-          e.stopPropagation();
-          return;
-        }
-      }}
-      {...props}
-    />
-  );
-})
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    )}
+    {...props}
+  />
+))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { modalId?: string }
->(({ className, children, modalId, ...props }, ref) => {
-  const { registerModal, unregisterModal, getZIndex, modalStack } = useModalStack();
-  const [currentModalId] = React.useState(() => modalId || `modal-${Date.now()}-${Math.random()}`);
-
-  React.useEffect(() => {
-    registerModal(currentModalId);
-    return () => unregisterModal(currentModalId);
-  }, [currentModalId, registerModal, unregisterModal]);
-
-  const zIndex = getZIndex(currentModalId);
-
-  return (
-    <DialogPortal>
-      <DialogOverlay modalId={currentModalId} />
-      <DialogPrimitive.Content
-        ref={ref}
-        className={cn(
-          "fixed left-[50%] top-[50%] grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg pointer-events-auto",
-          className
-        )}
-        style={{ zIndex: zIndex + 1 }}
-        onPointerDownOutside={(e) => {
-          const target = e.target as Element;
-          if (target.closest('[data-chatgpt-button]') || target.closest('[data-chatgpt-modal]')) {
-            // Allow clicking ChatGPT elements even if this modal is active
-            return;
-          }
-          // Prevent closing when clicking outside the modal
-          e.preventDefault();
-        }}
-        onInteractOutside={(e) => {
-          // Prevent closing when clicking outside the modal
-          e.preventDefault();
-        }}
-        onEscapeKeyDown={(e) => {
-          // By calling stopPropagation, we ensure that only the top-most Radix layer 
-          // (which receives the event first) handles this Escape press.
-          e.stopPropagation();
-        }}
-        {...props}
-      >
-        {children}
-        <DialogPrimitive.Close className="cursor-pointer absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
-      </DialogPrimitive.Content>
-    </DialogPortal>
-  );
-})
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <X className="h-4 w-4" />
+        <span className="sr-only">{t("Close")}</span>
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPortal>
+))
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({
@@ -111,7 +60,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-start pb-4 border-b mb-4",
+      "flex flex-col space-y-1.5 text-center sm:text-right",
       className
     )}
     {...props}

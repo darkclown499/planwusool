@@ -41,8 +41,9 @@ class CheckPlanAccess
                 // Not in middleware to avoid side effects
             } elseif ($user->isPlanExpired()) {
                 $message = __('Your plan has expired. Please renew your subscription.');
-                // Note: Plan expiration downgrade is handled by scheduled command (CheckPlanExpirations)
-                // Not in middleware to avoid side effects
+                // Note: Expired paid subscriptions are hard-locked (no auto-downgrade).
+                // The scheduled command (CheckPlanExpirations) marks them inactive and
+                // notifies the merchant; access stays blocked until renewal.
             }
             
             return redirect()->route('plans.index')->with('error', $message);

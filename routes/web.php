@@ -413,6 +413,9 @@ Route::post('payments/payfast/callback', [PayfastPaymentController::class, 'call
 // CoinGate callback (public route)
 Route::match(['GET', 'POST'], 'payments/coingate/callback', [CoinGatePaymentController::class, 'callback'])->name('coingate.callback');
 
+// MercadoPago webhook (public route - called by MercadoPago servers)
+Route::post('mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopago.webhook');
+
 // Xendit payment routes (public routes)
 Route::get('payments/xendit/success', [XenditPaymentController::class, 'success'])->name('xendit.success');
 Route::post('payments/xendit/callback', [XenditPaymentController::class, 'callback'])->name('xendit.callback');
@@ -474,6 +477,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Payment routes - accessible without plan check
     Route::post('payments/stripe', [StripePaymentController::class, 'processPayment'])->name('stripe.payment');
+    Route::match(['GET', 'POST'], 'payments/stripe/return', [StripePaymentController::class, 'paymentReturn'])->name('stripe.return');
     Route::post('payments/paypal', [PayPalPaymentController::class, 'processPayment'])->name('paypal.payment');
     Route::post('payments/bank', [BankPaymentController::class, 'processPayment'])->name('bank.payment');
     Route::post('payments/paystack', [PaystackPaymentController::class, 'processPayment'])->name('paystack.payment');
@@ -550,7 +554,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('mercadopago/success', [MercadoPagoController::class, 'success'])->name('mercadopago.success');
     Route::get('mercadopago/failure', [MercadoPagoController::class, 'failure'])->name('mercadopago.failure');
     Route::get('mercadopago/pending', [MercadoPagoController::class, 'pending'])->name('mercadopago.pending');
-    Route::post('mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopago.webhook');
     
     // Store-side MercadoPago webhook (webhooks stay on the base domain)
     Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->name('store.mercadopago.webhook');

@@ -31,68 +31,70 @@ class PayPalPaymentController extends Controller
         try {
             $plan = Plan::findOrFail($request->plan_id);
             $user = auth()->user();
-            
-            // Calculate pricing
-            $basePrice = $request->billing_cycle === 'yearly' ? $plan->yearly_price : $plan->price;
-            $finalPrice = $basePrice;
-            
+
+            // Calculate pricing (applies coupon if provided)
+            $pricing = calculatePlanPricing($plan, $request->coupon_code, $request->billing_cycle, $user->id);
+            $finalPrice = $pricing['final_price'];
+
             // Get PayPal settings from superadmin
             $paypalSettings = PaymentSetting::where('user_id', 1)
-                ->whereIn('key', ['paypal_client_id', 'paypal_secret_key', 'is_paypal_enabled'])
+                ->whereIn('key', ['paypal_client_id', 'paypal_secret_key', 'paypal_mode', 'is_paypal_enabled'])
                 ->pluck('value', 'key')
                 ->toArray();
-            
+
             if (($paypalSettings['is_paypal_enabled'] ?? '0') !== '1') {
                 return back()->withErrors(['error' => __('PayPal payment is not enabled')]);
             }
-            
+
             // Verify PayPal payment via API
-            $baseUrl = $paypalSettings['paypal_mode'] === 'live' 
-                ? 'https://api.paypal.com' 
+            $baseUrl = ($paypalSettings['paypal_mode'] ?? 'sandbox') === 'live'
+                ? 'https://api.paypal.com'
                 : 'https://api.sandbox.paypal.com';
-            
+
             // Get access token
             $tokenResponse = Http::withBasicAuth(
-                $paypalSettings['paypal_client_id'], 
+                $paypalSettings['paypal_client_id'],
                 $paypalSettings['paypal_secret_key']
             )->asForm()->post($baseUrl . '/v1/oauth2/token', [
                 'grant_type' => 'client_credentials'
             ]);
-            
+
             if (!$tokenResponse->successful()) {
                 return back()->withErrors(['error' => __('PayPal authentication failed')]);
             }
-            
+
             $accessToken = $tokenResponse->json()['access_token'];
-            
+
             // Capture PayPal order
             $captureResponse = Http::withToken($accessToken)
                 ->post($baseUrl . "/v2/checkout/orders/{$request->order_id}/capture");
-            
+
             if (!$captureResponse->successful()) {
                 return back()->withErrors(['error' => 'PayPal payment capture failed: ' . $captureResponse->body()]);
             }
-            
+
             $captureData = $captureResponse->json();
             $captureStatus = $captureData['status'] ?? '';
-            
+
             if ($captureStatus !== 'COMPLETED') {
                 return back()->withErrors(['error' => 'PayPal payment not completed: ' . $captureStatus]);
             }
-            
-            // Verify the captured amount matches expected price
+
+            // Verify the captured amount matches expected price - reject on mismatch
             $capturedAmount = $captureData['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? 0;
-            if ((float)$capturedAmount !== (float)$finalPrice) {
-                \Log::warning("PayPal amount mismatch: expected {$finalPrice}, captured {$capturedAmount}");
-                // Still process but log warning
+            if (abs((float)$capturedAmount - (float)$finalPrice) > 0.01) {
+                \Log::error("PayPal amount mismatch: expected {$finalPrice}, captured {$capturedAmount}");
+                return back()->withErrors(['error' => 'PayPal payment amount does not match the plan price. Please contact support.']);
             }
-            
+
             // Create plan order with approved status AFTER verification
             $planOrder = PlanOrder::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
-                'original_price' => $finalPrice,
-                'final_price' => $finalPrice,
+                'coupon_id' => $pricing['coupon_id'],
+                'original_price' => $pricing['original_price'],
+                'discount_amount' => $pricing['discount_amount'],
+                'final_price' => $pricing['final_price'],
                 'billing_cycle' => $request->billing_cycle,
                 'payment_method' => 'paypal',
                 'payment_id' => $request->payment_id,
@@ -103,15 +105,9 @@ class PayPalPaymentController extends Controller
                 'processed_at' => now(),
             ]);
 
-            // Update user plan
-            $user->update([
-                'plan_id' => $plan->id,
-                'plan_expire_date' => $request->billing_cycle === 'yearly' 
-                    ? now()->addYear() 
-                    : now()->addMonth(),
-                'plan_is_active' => 1,
-                'is_trial' => 0,
-            ]);
+            // Assign plan to user (handles referral record, plan upgrade,
+            // resource reactivation, plan limitations - all in a transaction)
+            $planOrder->activateSubscription();
 
             return back()->with('success', __('Payment successful! Your plan has been activated.'));
 

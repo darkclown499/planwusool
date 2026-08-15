@@ -133,7 +133,7 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                     <span className="font-medium">التاريخ:</span> {new Date(order.date).toLocaleDateString('ar')}
                   </div>
                 </div>
-                <div className="text-left">
+                <div className="text-right">
                   <p className="text-sm text-gray-600">رقم الطلب</p>
                   <p className="font-bold text-gray-900">{order.id}</p>
                 </div>
@@ -255,9 +255,9 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                   <tr className="border-b-2 border-orange-100">
                     <th className="text-right py-4 px-2 font-semibold text-gray-900">المنتج</th>
                     <th className="text-center py-4 px-2 font-semibold text-gray-900">الكمية</th>
-                    <th className="text-left py-4 px-2 font-semibold text-gray-900">السعر</th>
-                    <th className="text-left py-4 px-2 font-semibold text-gray-900">الضريبة</th>
-                    <th className="text-left py-4 px-2 font-semibold text-gray-900">الإجمالي</th>
+                    <th className="text-right py-4 px-2 font-semibold text-gray-900">السعر</th>
+                    <th className="text-right py-4 px-2 font-semibold text-gray-900">الضريبة</th>
+                    <th className="text-right py-4 px-2 font-semibold text-gray-900">الإجمالي</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -286,14 +286,14 @@ export const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order }
                           })()}
                         </td>
                         <td className="py-4 px-2 text-center text-gray-600">{item.quantity}</td>
-                        <td className="py-4 px-2 text-left text-gray-600">{formatCurrency(item.price, storeSettings, currencies)}</td>
-                        <td className="py-4 px-2 text-left text-gray-600">
+                        <td className="py-4 px-2 text-right text-gray-600">{formatCurrency(item.price, storeSettings, currencies)}</td>
+                        <td className="py-4 px-2 text-right text-gray-600">
                           <div>{formatCurrency(item.tax_amount || 0, storeSettings, currencies)}</div>
                           {item.tax_percentage && (
                             <div className="text-xs text-gray-500">({item.tax_percentage}%)</div>
                           )}
                         </td>
-                        <td className="py-4 px-2 text-left font-semibold text-gray-900">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</td>
+                        <td className="py-4 px-2 text-right font-semibold text-gray-900">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</td>
                       </tr>
                     );
                   })}

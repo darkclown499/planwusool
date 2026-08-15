@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { ThemeProvider } from '../../contexts/ThemeProvider';
@@ -213,7 +213,7 @@ const SportStoreContent: React.FC = () => {
           {categories.map((category) => (
             <div key={category.id} id={`category-${category.id}`} className="mb-6 md:mb-16">
               <div className="sticky top-32 bg-gray-50 px-4 py-3 border-b border-gray-200 md:static md:bg-white md:border-0 md:px-8 md:py-8">
-                <h2 className="text-lg font-semibold text-gray-900 md:text-3xl md:text-left md:border-b md:border-gray-200 md:pb-4">
+                <h2 className="text-lg font-semibold text-gray-900 md:text-3xl md:text-right md:border-b md:border-gray-200 md:pb-4">
                   {category.name}
                 </h2>
               </div>
@@ -314,7 +314,7 @@ const SportStoreContent: React.FC = () => {
             setShowCheckout(false);
             setShowCart(false);
             handleCloseCart();
-            toast.success('تم إتمام الطلب بنجاح!');
+            toast.success('ØªÙ… Ø¥ØªÙ…Ø§Ù… Ø§Ù„Ø·Ù„Ø¨ Ø¨Ù†Ø¬Ø§Ø­!');
           }}
           showOrderSuccess={showOrderSuccess}
           setShowOrderSuccess={setShowOrderSuccess}
@@ -389,7 +389,7 @@ const SportStoreContent: React.FC = () => {
       {/* WhatsApp Widget */}
       <WhatsAppWidget
         phone={config.whatsapp_widget_phone || ''}
-        message={config.whatsapp_widget_message || 'مرحباً! أحتاج مساعدة في...'}
+        message={config.whatsapp_widget_message || 'Ù…Ø±Ø­Ø¨Ø§Ù‹! Ø£Ø­ØªØ§Ø¬ Ù…Ø³Ø§Ø¹Ø¯Ø© ÙÙŠ...'}
         position={config.whatsapp_widget_position || 'right'}
         showOnMobile={config.whatsapp_widget_show_on_mobile !== false}
         showOnDesktop={config.whatsapp_widget_show_on_desktop !== false}

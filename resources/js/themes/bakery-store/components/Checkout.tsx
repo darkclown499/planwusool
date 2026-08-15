@@ -654,7 +654,7 @@ const CheckoutContent: React.FC<Omit<CheckoutProps, 'userProfile' | 'isLoggedIn'
                 )}
               </div>
               <div className="flex items-center gap-6">
-                <div className="text-left">
+                <div className="text-right">
                   <p className="text-sm text-stone-600 font-medium">الإجمالي</p>
                   <p className="text-2xl font-bold text-stone-800">{formatCurrency(total, storeSettings, currencies)}</p>
                 </div>

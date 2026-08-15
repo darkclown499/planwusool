@@ -119,7 +119,7 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
   return (
     <div className="grid grid-cols-3 gap-4">
       <div>
-        <Label>Country {required && '*'}</Label>
+        <Label>{t("Country")} {required && '*'}</Label>
         <Select
           value={countryValue}
           onValueChange={onCountryChange}
@@ -139,7 +139,7 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
       </div>
 
       <div>
-        <Label>State/Province {required && '*'}</Label>
+        <Label>{t("State/Province")} {required && '*'}</Label>
         <Select
           value={stateValue}
           onValueChange={onStateChange}
@@ -163,7 +163,7 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
       </div>
 
       <div>
-        <Label>City {required && '*'}</Label>
+        <Label>{t("City")} {required && '*'}</Label>
         <Select
           value={cityValue}
           onValueChange={onCityChange}

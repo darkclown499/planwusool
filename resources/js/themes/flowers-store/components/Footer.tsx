@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { getImageUrl } from '../../../utils/image-helper';
 
 interface FooterProps {
@@ -38,13 +38,13 @@ export const Footer: React.FC<FooterProps> = ({
             )}
             {email && (
               <p className="text-gray-600">
-                <span className="inline">📧 {email}</span>
+                <span className="inline">ðŸ“§ {email}</span>
               </p>
             )}
           </div>
           
           {/* Left side - Social and Copyright */}
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-right">
             {/* Social Media */}
             {socialMedia && (
               <div className="flex justify-center md:justify-start gap-3 mb-2">
@@ -127,7 +127,7 @@ export const Footer: React.FC<FooterProps> = ({
             )}
             
             <p className="text-gray-500 text-sm">
-              {copyrightText || `© ${currentYear} ${storeName}. جميع الحقوق محفوظة.`}
+              {copyrightText || `Â© ${currentYear} ${storeName}. Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ù‚ÙˆÙ‚ Ù…Ø­ÙÙˆØ¸Ø©.`}
             </p>
           </div>
         </div>

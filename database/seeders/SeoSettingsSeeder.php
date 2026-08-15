@@ -42,8 +42,8 @@ class SeoSettingsSeeder extends Seeder
     private function getSeoSettings(): array
     {
         return [
-            'metaKeywords' => 'ecommerce, online store, shopping, multi-store, saas platform, Wusool',
-            'metaDescription' => 'Wusool - A powerful SaaS platform for creating and managing multiple online stores with professional themes and complete e-commerce features.',
+            'metaKeywords' => 'متجر الكتروني, متجر على واتساب, منصة متاجر, تجارة الكترونية, متجر متعدد, وصول',
+            'metaDescription' => 'وصول - منصة قوية لإنشاء وإدارة متاجر إلكترونية متعددة مع قوالب احترافية وميزات تجارة إلكترونية متكاملة.',
             'metaImage' => '/images/logos/wusool.png',
             'titleText' => 'Wusool',
             'timeFormat' => 'H:i',

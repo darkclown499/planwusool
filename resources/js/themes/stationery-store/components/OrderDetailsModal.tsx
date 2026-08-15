@@ -117,9 +117,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                     <tr className="border-b border-gray-200">
                       <th className="text-right py-2 px-2 font-semibold text-gray-900 text-sm">المنتج</th>
                       <th className="text-center py-2 px-2 font-semibold text-gray-900 text-sm">الكمية</th>
-                      <th className="text-left py-2 px-2 font-semibold text-gray-900 text-sm">السعر</th>
-                      <th className="text-left py-2 px-2 font-semibold text-gray-900 text-sm">الضريبة</th>
-                      <th className="text-left py-2 px-2 font-semibold text-gray-900 text-sm">الإجمالي</th>
+                      <th className="text-right py-2 px-2 font-semibold text-gray-900 text-sm">السعر</th>
+                      <th className="text-right py-2 px-2 font-semibold text-gray-900 text-sm">الضريبة</th>
+                      <th className="text-right py-2 px-2 font-semibold text-gray-900 text-sm">الإجمالي</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -148,12 +148,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ onClose, o
                             })()}
                           </td>
                           <td className="py-3 px-2 text-center text-gray-600 text-sm">{item.quantity}</td>
-                          <td className="py-3 px-2 text-left text-gray-600 text-sm">{formatCurrency(item.price, storeSettings, currencies)}</td>
-                          <td className="py-3 px-2 text-left text-gray-600 text-sm">
+                          <td className="py-3 px-2 text-right text-gray-600 text-sm">{formatCurrency(item.price, storeSettings, currencies)}</td>
+                          <td className="py-3 px-2 text-right text-gray-600 text-sm">
                             <div>{formatCurrency(item.tax_amount || 0, storeSettings, currencies)}</div>
                             <div className="text-xs text-gray-500">{item.tax_name || 'الضريبة'} {item.tax_percentage ? `(${item.tax_percentage}%)` : ''}</div>
                           </td>
-                          <td className="py-3 px-2 text-left font-semibold text-gray-900 text-sm">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</td>
+                          <td className="py-3 px-2 text-right font-semibold text-gray-900 text-sm">{formatCurrency(itemTotalWithTax, storeSettings, currencies)}</td>
                         </tr>
                       );
                     })}
