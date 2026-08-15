@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import axios from 'axios';
@@ -42,6 +43,7 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
   disabled = false,
   required = false
 }) => {
+  const { t } = useTranslation();
   const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);

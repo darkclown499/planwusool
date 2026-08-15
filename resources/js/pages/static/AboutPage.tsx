@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import StaticPageLayout from './StaticPageLayout';
 import { useTranslation } from 'react-i18next';
 import { Eye, Target, ShieldCheck, Sparkles, HeadphonesIcon, Globe, Zap, ArrowLeft } from 'lucide-react';

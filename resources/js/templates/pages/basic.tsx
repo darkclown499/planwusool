@@ -1,6 +1,7 @@
 import { AccountButton, CartButton, useStorefrontCore } from '@/templates/storefront';
 import { Search } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { TemplatePageProps } from './types';
 import { storeIdentity } from './types';
 import { ClassicCard, NewsletterForm, ProductGrid, PromoStrip, SectionHeading, TestimonialsSection, TrustBar, getVar } from './ui';
@@ -10,6 +11,7 @@ import { ClassicCard, NewsletterForm, ProductGrid, PromoStrip, SectionHeading, T
  * Centered hero with search, chip category filter, classic product grid.
  */
 const BasicPage: React.FC<TemplatePageProps> = ({ storeData }) => {
+    const { t } = useTranslation();
     const { product, config: ctxConfig } = useStorefrontCore();
     const cfg = ctxConfig || storeData?.config || {};
     const identity = storeIdentity(cfg, storeData);

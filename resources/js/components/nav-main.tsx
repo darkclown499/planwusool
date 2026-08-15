@@ -2,6 +2,7 @@ import { SidebarGroup, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarM
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
 
@@ -10,6 +11,7 @@ const STORAGE_KEY = 'nav_expanded_items';
 const ACTIVE_GREEN = '#047857';
 
 export function NavMain({ items = [], position }: { items: NavItem[]; position: 'left' | 'right' }) {
+    const { t } = useTranslation();
     const page = usePage();
     const { state } = useSidebar();
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});

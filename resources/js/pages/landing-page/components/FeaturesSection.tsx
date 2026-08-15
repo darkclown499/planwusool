@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from '@inertiajs/react';
 import {
   Store,
@@ -164,6 +165,7 @@ export default function FeaturesSection({
   brandColor = '#10b77f',
   sectionData,
 }: FeaturesSectionProps) {
+  const { t } = useTranslation();
   const { ref, isVisible } = useScrollAnimation();
 
   const rawFeatures =

@@ -11,7 +11,11 @@ interface StaticPageLayoutProps {
   brandColor?: string;
 }
 
-export default function StaticPageLayout({ title, children, brandColor = '#10b77f' }: StaticPageLayoutProps) {
+export default function StaticPageLayout({
+  title,
+  children,
+  brandColor = '#10b77f'
+}: StaticPageLayoutProps) {
   const { t, i18n } = useTranslation();
   const currentLocale = (i18n.language || 'ar').split('-')[0];
   const isRtl = ['ar', 'he'].includes(currentLocale);

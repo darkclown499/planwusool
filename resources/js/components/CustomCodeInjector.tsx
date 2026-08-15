@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface CustomCodeInjectorProps {
   customCss?: string;
@@ -9,6 +10,7 @@ export const CustomCodeInjector: React.FC<CustomCodeInjectorProps> = ({
   customCss,
   customJavascript
 }) => {
+  const { t } = useTranslation();
   // Helper function to decode HTML entities
   const decodeHtmlEntities = (text: string): string => {
     const textarea = document.createElement('textarea');

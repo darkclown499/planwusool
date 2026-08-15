@@ -119,6 +119,7 @@ interface PageProps extends SharedData {
 }
 
 export default function LandingPage() {
+  const { t } = useTranslation();
   const { plans, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight, demoStoreUrl = '' } = usePage<PageProps>().props;
   const { i18n } = useTranslation();
 

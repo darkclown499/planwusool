@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useScrollAnimation } from '../../../hooks/useScrollAnimation';
 
 interface TrustedBySectionProps {
@@ -71,6 +72,7 @@ export default function TrustedBySection({
   brandColor = '#10b77f',
   sectionData,
 }: TrustedBySectionProps) {
+  const { t } = useTranslation();
   const { ref, isVisible } = useScrollAnimation();
 
   return (

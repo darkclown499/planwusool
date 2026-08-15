@@ -8,6 +8,7 @@ import { useStore } from '@/contexts/StoreContext';
 import { useUI } from '@/contexts/UIContext';
 import { router } from '@inertiajs/react';
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TemplateAuthForm, TemplateAuthGate } from './AuthModal';
 import { TemplateCartDrawer } from './CartDrawer';
 import { TemplateCheckout } from './CheckoutModal';
@@ -21,6 +22,7 @@ import { TemplateProductDetailModal } from './ProductDetailModal';
  * customer login/register, product details, orders and profile).
  */
 export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { t } = useTranslation();
     const { store } = useStore();
     const cart = useCart();
     const auth = useAuth();

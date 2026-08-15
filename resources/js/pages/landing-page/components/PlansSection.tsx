@@ -349,6 +349,7 @@ export default function PlansSection({
   sectionData,
   brandColor = '#10b77f',
 }: PlansSectionProps) {
+  const { t } = useTranslation();
   const { ref, isVisible } = useScrollAnimation();
 
   const encryptPlanId = useCallback(async (planId: number): Promise<string> => {

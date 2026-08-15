@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   ArrowRight,
@@ -74,6 +75,7 @@ export default function HeroComputerDemo({
   brandColor = '#10b77f',
   appName = 'وصول',
 }: HeroComputerDemoProps) {
+  const { t } = useTranslation();
   const [stage, setStage] = useState<Stage>('idle');
   const [storeIndex, setStoreIndex] = useState(0);
   const [biosLine, setBiosLine] = useState(0);

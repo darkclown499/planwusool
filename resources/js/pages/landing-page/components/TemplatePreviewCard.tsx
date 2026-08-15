@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 // Simple template data for Storego
@@ -27,7 +28,7 @@ export default function TemplatePreviewCard({
   onClick,
   previewButtonText = 'Preview Template'
 }: TemplatePreviewCardProps) {
-  const templateData = getBusinessTemplate(template.name);
+  const { t } = useTranslation();
 
 
   // Format template name for display

@@ -11,6 +11,9 @@ import {
     Laptop,
     Linkedin,
     MessageCircle,
+    Laptop,
+    Linkedin,
+    MessageCircle,
     MonitorSmartphone,
     Play,
     Search,
@@ -23,6 +26,7 @@ import {
     Zap,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { TemplatePageProps } from './types';
 import { storeIdentity } from './types';
 
@@ -299,6 +303,7 @@ function GadgetProductCard({ product, config, index }: { product: any; config: a
 /* ------------------------------ Page ------------------------------ */
 
 const ArabicGadgetsPage: React.FC<TemplatePageProps> = ({ storeData }) => {
+    const { t } = useTranslation();
     const { product, config: ctxConfig, auth } = useStorefrontCore();
     const cfg = ctxConfig || storeData?.config || {};
     const identity = storeIdentity(cfg, storeData);

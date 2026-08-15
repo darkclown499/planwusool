@@ -3,6 +3,7 @@ import { usePage } from '@inertiajs/react';
 import { Bell, CheckCheck, ShoppingCart, Package, XCircle, Boxes, AlertTriangle, Star, Timer, FileText, CheckCircle, DollarSign, ShoppingBag, ArrowLeft, ArrowRight, type LucideIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
 interface MerchantNotificationItem {
@@ -81,6 +82,7 @@ const getCsrfToken = () => {
 };
 
 export function MerchantNotificationBell() {
+    const { t } = useTranslation();
     const { props } = usePage();
     const auth = (props as { auth?: { user?: { current_store?: number | null } } }).auth;
     const storeId = auth?.user?.current_store || undefined;

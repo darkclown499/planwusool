@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import PWAInstallPopup from './PWAInstallPopup';
 import PWAMetaTags from './PWAMetaTags';
@@ -23,6 +24,7 @@ interface PWAProviderProps {
 }
 
 export default function PWAProvider({ children, store }: PWAProviderProps) {
+  const { t } = useTranslation();
   const { canInstall, install } = usePWAInstall();
   const [showInstallPopup, setShowInstallPopup] = useState(false);
   const [hasShownPopup, setHasShownPopup] = useState(false);

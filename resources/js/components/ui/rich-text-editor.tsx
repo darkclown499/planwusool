@@ -23,6 +23,7 @@ import {
   Unlink
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 import React, { forwardRef, useImperativeHandle } from 'react'
 
 interface RichTextEditorProps {
