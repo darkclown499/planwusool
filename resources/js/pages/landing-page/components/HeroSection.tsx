@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Megaphone, RefreshCw, Zap } from 'lucide-react';
-import HeroComputerDemo from './HeroComputerDemo';
+
+// HeroComputerDemo is a heavy demo component (1800+ lines) - only load in development
+const HeroComputerDemo = import.meta.env.DEV 
+  ? (await import('./HeroComputerDemo')).default 
+  : () => null;
 
 interface HeroSectionProps {
   brandColor?: string;

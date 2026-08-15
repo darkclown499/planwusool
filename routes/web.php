@@ -205,60 +205,61 @@ Route::get('/terms', [LandingPageController::class, 'terms'])->name('page.terms'
 Route::get('/privacy', [LandingPageController::class, 'privacy'])->name('page.privacy');
 
 // Cart API routes
-Route::get('api/cart', [\App\Http\Controllers\Api\CartController::class, 'index'])->name('api.cart.index');
-Route::post('api/cart/add', [\App\Http\Controllers\Api\CartController::class, 'add'])->name('api.cart.add');
-Route::put('api/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'update'])->name('api.cart.update');
-Route::delete('api/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'remove'])->name('api.cart.remove');
-Route::post('api/cart/sync', [\App\Http\Controllers\Api\CartController::class, 'sync'])->name('api.cart.sync');
-
-// Abandoned cart tracking API (storefront)
-Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
-
-// Store content/banners API (authenticated, store owner only)
-Route::middleware('auth')->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Api\StoreContentController::class, 'show'])->name('show');
-    Route::put('/', [\App\Http\Controllers\Api\StoreContentController::class, 'update'])->name('update');
-});
-
-// Product reviews API (storefront)
-Route::prefix('api/reviews')->name('api.reviews.')->group(function () {
-    Route::get('product/{productId}', [ProductReviewController::class, 'productReviews'])->name('product');
-    Route::post('/', [ProductReviewController::class, 'store'])->name('store');
-});
-
-// Loyalty points API (storefront)
-Route::prefix('api/loyalty')->name('api.loyalty.')->group(function () {
-    Route::get('balance', [LoyaltyController::class, 'getBalance'])->name('balance');
-    Route::get('history', [LoyaltyController::class, 'history'])->name('history');
-});
-
-// Digital downloads API (storefront)
-Route::prefix('api/digital-downloads')->name('api.digital-downloads.')->group(function () {
-    Route::get('/', [DigitalDownloadController::class, 'customerDownloads'])->name('index');
-    Route::get('order/{orderNumber}', [DigitalDownloadController::class, 'orderDownloads'])->name('order');
-    Route::get('download/{token}', [DigitalDownloadController::class, 'download'])->name('download');
-});
-
-// Customer notifications API (storefront)
-Route::prefix('api/notifications')->name('api.notifications.')->group(function () {
-    Route::get('/', [NotificationController::class, 'indexApi'])->name('index');
-    Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
-    Route::post('{id}/read', [NotificationController::class, 'markRead'])->name('mark-read');
-    Route::post('read-all', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
-    Route::post('{id}/click', [NotificationController::class, 'markClicked'])->name('mark-clicked');
-    Route::delete('{id}', [NotificationController::class, 'destroyApi'])->name('destroy');
-    Route::get('preferences', [NotificationController::class, 'getPreferences'])->name('preferences');
-    Route::put('preferences', [NotificationController::class, 'updatePreferences'])->name('preferences.update');
-    Route::post('unsubscribe-all', [NotificationController::class, 'unsubscribeAll'])->name('unsubscribe-all');
-});
-
-// Web Push subscription API (storefront)
-Route::prefix('api/push-subscriptions')->name('api.push-subscriptions.')->group(function () {
-    Route::post('subscribe', [PushSubscriptionController::class, 'subscribe'])->name('subscribe');
-    Route::post('unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
-    Route::get('status', [PushSubscriptionController::class, 'status'])->name('status');
-    Route::get('vapid-public-key', [PushSubscriptionController::class, 'vapidPublicKey'])->name('vapid-public-key');
-});
+Route::middleware('api.throttle')->group(function () {
+    Route::get('api/cart', [\App\Http\Controllers\Api\CartController::class, 'index'])->name('api.cart.index');
+    Route::post('api/cart/add', [\App\Http\Controllers\Api\CartController::class, 'add'])->name('api.cart.add');
+    Route::put('api/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'update'])->name('api.cart.update');
+    Route::delete('api/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'remove'])->name('api.cart.remove');
+    Route::post('api/cart/sync', [\App\Http\Controllers\Api\CartController::class, 'sync'])->name('api.cart.sync');
+    
+    // Abandoned cart tracking API (storefront)
+    Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
+    
+    // Store content/banners API (authenticated, store owner only)
+    Route::middleware('auth')->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreContentController::class, 'show'])->name('show');
+        Route::put('/', [\App\Http\Controllers\Api\StoreContentController::class, 'update'])->name('update');
+    });
+    
+    // Product reviews API (storefront)
+    Route::prefix('api/reviews')->name('api.reviews.')->group(function () {
+        Route::get('product/{productId}', [ProductReviewController::class, 'productReviews'])->name('product');
+        Route::post('/', [ProductReviewController::class, 'store'])->name('store');
+    });
+    
+    // Loyalty points API (storefront)
+    Route::prefix('api/loyalty')->name('api.loyalty.')->group(function () {
+        Route::get('balance', [LoyaltyController::class, 'getBalance'])->name('balance');
+        Route::get('history', [LoyaltyController::class, 'history'])->name('history');
+    });
+    
+    // Digital downloads API (storefront)
+    Route::prefix('api/digital-downloads')->name('api.digital-downloads.')->group(function () {
+        Route::get('/', [DigitalDownloadController::class, 'customerDownloads'])->name('index');
+        Route::get('order/{orderNumber}', [DigitalDownloadController::class, 'orderDownloads'])->name('order');
+        Route::get('download/{token}', [DigitalDownloadController::class, 'download'])->name('download');
+    });
+    
+    // Customer notifications API (storefront)
+    Route::prefix('api/notifications')->name('api.notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'indexApi'])->name('index');
+        Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::post('{id}/read', [NotificationController::class, 'markRead'])->name('mark-read');
+        Route::post('read-all', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+        Route::post('{id}/click', [NotificationController::class, 'markClicked'])->name('mark-clicked');
+        Route::delete('{id}', [NotificationController::class, 'destroyApi'])->name('destroy');
+        Route::get('preferences', [NotificationController::class, 'getPreferences'])->name('preferences');
+        Route::put('preferences', [NotificationController::class, 'updatePreferences'])->name('preferences.update');
+        Route::post('unsubscribe-all', [NotificationController::class, 'unsubscribeAll'])->name('unsubscribe-all');
+    });
+    
+    // Web Push subscription API (storefront)
+    Route::prefix('api/push-subscriptions')->name('api.push-subscriptions.')->group(function () {
+        Route::post('subscribe', [PushSubscriptionController::class, 'subscribe'])->name('subscribe');
+        Route::post('unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
+        Route::get('status', [PushSubscriptionController::class, 'status'])->name('status');
+        Route::get('vapid-public-key', [PushSubscriptionController::class, 'vapidPublicKey'])->name('vapid-public-key');
+    });
 
 // Merchant notifications API (admin panel)
 Route::middleware('auth')->prefix('api/merchant-notifications')->name('api.merchant-notifications.')->group(function () {

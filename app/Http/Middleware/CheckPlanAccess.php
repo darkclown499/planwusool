@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use App\Models\Plan;
 use App\Models\User;
+use App\Models\StoreConfiguration;
+use App\Models\StoreConfiguration;
 
 class CheckPlanAccess
 {
@@ -24,7 +26,9 @@ class CheckPlanAccess
 
         // Only company users need plan checks
         if ($user->type !== 'company') {
-            $company = User::find($user->created_by);
+            // Eager load company to avoid N+1
+            $user->loadMissing('creator');
+            $company = $user->creator;
             if ($company && $company->type === 'company' && $company->isPlanExpired()) {
                 auth()->logout();
                 return redirect()->route('login')->with('error', __('Access denied. Only company users can access this area.'));
@@ -37,13 +41,8 @@ class CheckPlanAccess
             
             if ($user->isTrialExpired()) {
                 $message = __('Your trial period has expired. Please subscribe to a plan to continue.');
-                // Note: Trial expiration downgrade is handled by scheduled command (CheckExpiredTrials)
-                // Not in middleware to avoid side effects
             } elseif ($user->isPlanExpired()) {
                 $message = __('Your plan has expired. Please renew your subscription.');
-                // Note: Expired paid subscriptions are hard-locked (no auto-downgrade).
-                // The scheduled command (CheckPlanExpirations) marks them inactive and
-                // notifies the merchant; access stays blocked until renewal.
             }
             
             return redirect()->route('plans.index')->with('error', $message);
@@ -183,10 +182,13 @@ class CheckPlanAccess
         switch ($type) {
             case 'store':
                 $maxStores = $plan->max_stores ?? 0;
+                // Use cached configurations to avoid N+1
                 $activeStores = 0;
-                foreach ($user->stores as $store) {
-                    $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
-                    if ($config['store_status'] ?? true) {
+                $storeIds = $user->stores()->pluck('id')->toArray();
+                $configs = StoreConfiguration::whereIn('store_id', $storeIds)->pluck('store_status', 'store_id');
+                
+                foreach ($storeIds as $storeId) {
+                    if ($configs[$storeId] ?? true) {
                         $activeStores++;
                     }
                 }

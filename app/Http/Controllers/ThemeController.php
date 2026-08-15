@@ -38,16 +38,8 @@ class ThemeController extends Controller
             return $this->formatStoreData($store);
         }
         
-        // Priority 3: Fallback for demo - return a default store with the actual slug
-        return [
-            'id' => 1, // Default store ID
-            'name' => 'Demo Store',
-            'email' => 'demo@example.com',
-            'logo' => '/storage/media/logo.png',
-            'description' => 'Demo store description',
-            'theme' => 'basic',
-            'slug' => $storeSlug
-        ];
+        // No store found - abort with 404
+        abort(404);
     }
     
 

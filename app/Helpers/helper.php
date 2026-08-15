@@ -129,52 +129,47 @@ if (! function_exists('getSetting')) {
             return $defaultSettings[$key] ?? $default;
         }
 
-        // For store-specific settings, use new method
+        // For store-specific settings, use cached getUserSettings
         if ($store_id !== null) {
-            return \App\Models\Setting::getSetting($key, $user_id, $store_id, $default);
+            $settings = \App\Models\Setting::getUserSettings($user_id, $store_id);
+            return $settings[$key] ?? $default;
         }
         
+        // Determine current store for company users
+        $currentStoreId = null;
         $user = User::find($user_id);
-        $settings = [];
         
-        // For company users, check current store settings first
         if ($user && $user->type === 'company') {
             $currentStoreId = getCurrentStoreId($user);
-            if ($currentStoreId) {
-                // Special handling for favicon - check store_configuration first
-                if ($key === 'favicon') {
-                    $storeConfig = \App\Models\StoreConfiguration::getConfiguration($currentStoreId);
-                    if (!empty($storeConfig['favicon'])) {
-                        return $storeConfig['favicon'];
-                    }
+        }
+        
+        // Get store-specific settings (cached)
+        if ($currentStoreId) {
+            // Special handling for favicon - check store_configuration first
+            if ($key === 'favicon') {
+                $storeConfig = \App\Models\StoreConfiguration::getConfiguration($currentStoreId);
+                if (!empty($storeConfig['favicon'])) {
+                    return $storeConfig['favicon'];
                 }
-                
-                $settings = Setting::where('user_id', $user_id)
-                                  ->where('store_id', $currentStoreId)
-                                  ->pluck('value', 'key')
-                                  ->toArray();
+            }
+            
+            $storeSettings = \App\Models\Setting::getUserSettings($user_id, $currentStoreId);
+            if (isset($storeSettings[$key])) {
+                return $storeSettings[$key];
             }
         }
         
-        // If not found, check global settings for this user
-        if (!isset($settings[$key])) {
-            $globalSettings = Setting::where('user_id', $user_id)
-                                    ->whereNull('store_id')
-                                    ->pluck('value', 'key')
-                                    ->toArray();
-            if (isset($globalSettings[$key])) {
-                return $globalSettings[$key];
-            }
+        // Get global settings for this user (cached)
+        $globalSettings = \App\Models\Setting::getUserSettings($user_id, null);
+        if (isset($globalSettings[$key])) {
+            return $globalSettings[$key];
         }
         
-        // If still not found and user is company, try superadmin settings
-        if (!isset($settings[$key]) && $user && $user->type === 'company') {
+        // If still not found and user is company, try superadmin settings (cached)
+        if ($user && $user->type === 'company') {
             $superAdmin = User::where('type', 'superadmin')->first();
             if ($superAdmin) {
-                $superAdminSettings = Setting::where('user_id', $superAdmin->id)
-                                            ->whereNull('store_id')
-                                            ->pluck('value', 'key')
-                                            ->toArray();
+                $superAdminSettings = \App\Models\Setting::getUserSettings($superAdmin->id, null);
                 if (isset($superAdminSettings[$key])) {
                     return $superAdminSettings[$key];
                 }
@@ -182,12 +177,12 @@ if (! function_exists('getSetting')) {
         }
         
         // If no value found and no default provided, try to get from defaultSettings
-        if (!isset($settings[$key]) && $default === null) {
+        if ($default === null) {
             $defaultSettings = defaultSettings();
             $default = $defaultSettings[$key] ?? null;
         }
         
-        return $settings[$key] ?? $default;
+        return $default;
     }
 }
 

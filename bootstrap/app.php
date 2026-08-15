@@ -59,6 +59,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'store.status' => \App\Http\Middleware\CheckStoreStatus::class,
             'onboarded' => \App\Http\Middleware\EnsureOnboarding::class,
             'webhook.signature' => \App\Http\Middleware\VerifyWebhookSignature::class,
+            'api.throttle' => \App\Http\Middleware\ApiRateLimiter::class,
+            'security.headers' => \App\Http\Middleware\SecurityHeadersMiddleware::class,
         ]);
 
         $middleware->validateCsrfTokens(

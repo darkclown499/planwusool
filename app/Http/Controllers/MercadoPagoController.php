@@ -391,11 +391,26 @@ class MercadoPagoController extends Controller
         return redirect()->route('plans.index')->with('info', __('Your payment is pending. We will notify you once it is confirmed.'));
     }
     
+    use App\Jobs\MercadoPagoWebhookJob;
+
     /**
      * Handle MercadoPago webhook notifications
      * Handles both plan subscriptions and store order payments
+     * Dispatched to queue for async processing
      */
     public function webhook(Request $request)
+    {
+        // Dispatch to queue for async processing
+        MercadoPagoWebhookJob::dispatch($request->all(), 'mercadopago');
+
+        // Immediately return 200 OK to acknowledge receipt
+        return response()->json(['status' => 'queued']);
+    }
+
+    /**
+     * Synchronous fallback for testing/debugging
+     */
+    public function webhookSync(Request $request)
     {        
         try {
             $data = $request->all();
