@@ -41,6 +41,7 @@ export function PageTemplate({
   stickyHeader = false
 }: PageTemplateProps) {
   const { t } = useTranslation();
+  console.log("Fix build hash force");
   // Default breadcrumbs if none provided
   const pageBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
     {
