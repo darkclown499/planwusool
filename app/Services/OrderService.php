@@ -336,9 +336,10 @@ class OrderService
             
             Stripe::setApiKey($stripeConfig['secret']);
             
-            // Always use /store/{slug} format - works on all domains
-            $successUrl = $storeModel->route('stripe/success/' . $order->order_number);
-            $cancelUrl = $storeModel->route('checkout');
+            // Use store's actual URL (custom domain, subdomain, or default)
+            $storeBaseUrl = rtrim($storeModel->getStoreUrl(request()), '/');
+            $successUrl = $storeBaseUrl . '/stripe/success/' . $order->order_number;
+            $cancelUrl = $storeBaseUrl . '/checkout';
             
             // Create checkout session
             $checkoutSession = Session::create([

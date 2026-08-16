@@ -9,9 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use MercadoPago\SDK;
 use MercadoPago\Payment;
+use App\Traits\HandlesWebhookIdempotency;
 
 class MercadoPagoController extends Controller
 {
+    use HandlesWebhookIdempotency;
     /**
      * Handle successful MercadoPago payment for store orders
      * 
@@ -144,57 +146,58 @@ class MercadoPagoController extends Controller
      */
     public function webhook(Request $request)
     {
-        try {
-            $data = $request->all();
-            
-            // Check if this is a payment notification
-            if (isset($data['action']) && $data['action'] === 'payment.created') {
-                $paymentId = $data['data']['id'] ?? null;
+        return $this->processWebhookIdempotently($request, 'mercadopago', function (Request $req) {
+            try {
+                $data = $req->all();
                 
-                if (!$paymentId) {
-                    return response()->json(['status' => 'error', 'message' => 'Payment ID not found'], 400);
-                }
-                
-                // Find order by payment_id or external_reference
-                $order = Order::where('payment_transaction_id', $paymentId)
-                    ->orWhere(function($query) use ($data) {
-                        if (isset($data['external_reference'])) {
-                            $query->whereJsonContains('payment_details->mercadopago_preference_id', $data['external_reference']);
-                        }
-                    })
-                    ->first();
-                
-                if (!$order || !$order->store) {
-                    return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
-                }
-                
-                // Get store owner's MercadoPago settings
-                $mercadopagoConfig = getPaymentMethodConfig('mercadopago', $order->store->user->id, $order->store_id);
-                
-                if (!$mercadopagoConfig['enabled'] || !$mercadopagoConfig['access_token']) {
-                    return response()->json(['status' => 'error', 'message' => 'MercadoPago not configured'], 500);
-                }
-                
-                // Initialize MercadoPago SDK
-                SDK::setAccessToken($mercadopagoConfig['access_token']);
-                
-                // Get payment details
-                $payment = Payment::find_by_id($paymentId);
-                
-                if (!$payment) {
-                    return response()->json(['status' => 'error', 'message' => 'Payment not found'], 404);
-                }
-                
-                // Update order based on payment status
-                switch ($payment->status) {
-                    case 'approved':
-                        $order->update([
-                            'status' => 'confirmed',
-                            'payment_status' => 'paid',
-                            'payment_transaction_id' => $paymentId,
-                            'payment_details' => array_merge($order->payment_details ?? [], [
-                                'payment_id' => $paymentId,
-                                'payment_method' => $payment->payment_method_id,
+                // Check if this is a payment notification
+                if (isset($data['action']) && $data['action'] === 'payment.created') {
+                    $paymentId = $data['data']['id'] ?? null;
+                    
+                    if (!$paymentId) {
+                        return response()->json(['status' => 'error', 'message' => 'Payment ID not found'], 400);
+                    }
+                    
+                    // Find order by payment_id or external_reference
+                    $order = Order::where('payment_transaction_id', $paymentId)
+                        ->orWhere(function($query) use ($data) {
+                            if (isset($data['external_reference'])) {
+                                $query->whereJsonContains('payment_details->mercadopago_preference_id', $data['external_reference']);
+                            }
+                        })
+                        ->first();
+                    
+                    if (!$order || !$order->store) {
+                        return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+                    }
+                    
+                    // Get store owner's MercadoPago settings
+                    $mercadopagoConfig = getPaymentMethodConfig('mercadopago', $order->store->user->id, $order->store_id);
+                    
+                    if (!$mercadopagoConfig['enabled'] || !$mercadopagoConfig['access_token']) {
+                        return response()->json(['status' => 'error', 'message' => 'MercadoPago not configured'], 500);
+                    }
+                    
+                    // Initialize MercadoPago SDK
+                    SDK::setAccessToken($mercadopagoConfig['access_token']);
+                    
+                    // Get payment details
+                    $payment = Payment::find_by_id($paymentId);
+                    
+                    if (!$payment) {
+                        return response()->json(['status' => 'error', 'message' => 'Payment not found'], 404);
+                    }
+                    
+                    // Update order based on payment status
+                    switch ($payment->status) {
+                        case 'approved':
+                            $order->update([
+                                'status' => 'confirmed',
+                                'payment_status' => 'paid',
+                                'payment_transaction_id' => $paymentId,
+                                'payment_details' => array_merge($order->payment_details ?? [], [
+                                    'payment_id' => $paymentId,
+                                    'payment_method' => $payment->payment_method_id,
                                 'transaction_amount' => $payment->transaction_amount,
                                 'status' => $payment->status,
                                 'status_detail' => $payment->status_detail,
@@ -233,12 +236,13 @@ class MercadoPagoController extends Controller
                 }
             }
             
-            return response()->json(['status' => 'success']);
-            
+return response()->json(['status' => 'success']);
+             
         } catch (\Exception $e) {
             Log::error('MercadoPago store webhook error: ' . $e->getMessage());
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
+    });
     }
     
     /**

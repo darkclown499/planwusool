@@ -110,40 +110,44 @@ class Store extends BaseModel
     
     /**
      * Get the store URL based on domain configuration
+     * 
+     * @param \Illuminate\Http\Request|null $request Optional request for port detection
      */
-    public function getStoreUrl()
+    public function getStoreUrl($request = null)
     {
         // Priority 1: Verified custom domain from the store_domains table
         $verifiedDomain = $this->getVerifiedDomain();
         if ($verifiedDomain) {
-            return $this->getProtocol() . $verifiedDomain->domain_name;
+            return $this->getProtocol($request) . $verifiedDomain->domain_name;
         }
 
         // Priority 2: Legacy custom domain column
         if ($this->enable_custom_domain && !empty($this->custom_domain)) {
-            return $this->getProtocol() . $this->custom_domain;
+            return $this->getProtocol($request) . $this->custom_domain;
         }
         
         // Priority 3: Legacy custom subdomain column
         if ($this->enable_custom_subdomain && !empty($this->custom_subdomain)) {
-            $baseDomain = $this->getBaseDomain();
+            $baseDomain = $this->getBaseDomain($request);
             if ($baseDomain) {
-                return $this->getProtocol() . $this->custom_subdomain . '.' . $baseDomain;
+                return $this->getProtocol($request) . $this->custom_subdomain . '.' . $baseDomain;
             }
         }
         
         // Default: every store is served on its own subdomain, e.g. techvibe.wusool.ps
-        return $this->getStoreSubdomainUrl();
+        return $this->getStoreSubdomainUrl($request);
     }
     
     /**
      * Get the default store subdomain URL, e.g. http://techvibe.localhost:8000
+     * 
+     * @param \Illuminate\Http\Request|null $request Optional request for port detection
      */
-    public function getStoreSubdomainUrl(): string
+    public function getStoreSubdomainUrl($request = null): string
     {
-        $port = request()->getPort();
+        $port = $request ? $request->getPort() : null;
         $port = in_array($port, [80, 443]) || $port === null ? '' : ':' . $port;
-        return $this->getProtocol() . $this->slug . '.' . config('app.store_domain') . $port;
+        return $this->getProtocol($request) . $this->slug . '.' . config('app.store_domain') . $port;
     }
     
     /**
@@ -187,9 +191,9 @@ class Store extends BaseModel
     /**
      * Generate store route with custom domain support
      */
-    public function route($path = '', $parameters = [])
+    public function route($path = '', $parameters = [], $request = null)
     {
-        $baseUrl = $this->getStoreUrl();
+        $baseUrl = $this->getStoreUrl($request);
         
         if ($path) {
             $url = rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
@@ -228,18 +232,26 @@ class Store extends BaseModel
     
     /**
      * Get protocol for URL generation
+     * 
+     * @param \Illuminate\Http\Request|null $request
      */
-    private function getProtocol(): string
+    private function getProtocol($request = null): string
     {
-        return request()->isSecure() ? 'https://' : 'http://';
+        if ($request) {
+            return $request->isSecure() ? 'https://' : 'http://';
+        }
+        // Fallback for CLI/queue contexts - use config
+        return config('app.url') ? (str_starts_with(config('app.url'), 'https') ? 'https://' : 'http://') : 'https://';
     }
     
     /**
      * Get base domain for subdomain generation
+     * 
+     * @param \Illuminate\Http\Request|null $request
      */
-    private function getBaseDomain(): string
+    private function getBaseDomain($request = null): string
     {
-        $host = request()->getHost();
+        $host = $request ? $request->getHost() : config('app.store_domain', 'localhost');
         $parts = explode('.', $host);
         
         // Return last two parts for base domain (e.g., example.com from sub.example.com)

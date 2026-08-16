@@ -8,9 +8,12 @@ use App\Models\PaymentSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use App\Traits\HandlesWebhookIdempotency;
 
 class CashfreeController extends Controller
 {
+    use HandlesWebhookIdempotency;
+
     /**
      * Get Cashfree API credentials and configuration
      * 
@@ -241,45 +244,47 @@ class CashfreeController extends Controller
      */
     public function webhook(Request $request)
     {
-        try {
-            $credentials = $this->getCashfreeCredentials();
-            
-            // Verify webhook signature
-            $signature = $request->header('x-webhook-signature');
-            $timestamp = $request->header('x-webhook-timestamp');
-            $rawBody = $request->getContent();
-            
-            $expectedSignature = base64_encode(hash_hmac('sha256', $timestamp . $rawBody, $credentials['secret_key'], true));
-            
-            if (!hash_equals($expectedSignature, $signature)) {
-                return response()->json(['error' => 'Invalid signature'], 400);
-            }
-            
-            $data = $request->json()->all();
-            
-            if (($data['type'] ?? '') === 'PAYMENT_SUCCESS_WEBHOOK') {
-                $paymentData = $data['data']['payment'] ?? [];
-                $orderData = $data['data']['order'] ?? [];
+        return $this->processWebhookIdempotently($request, 'cashfree', function (Request $req) {
+            try {
+                $credentials = $this->getCashfreeCredentials();
                 
-                // Extract plan and user info from order tags
-                $orderTags = $orderData['order_tags'] ?? [];
+                // Verify webhook signature
+                $signature = $req->header('x-webhook-signature');
+                $timestamp = $req->header('x-webhook-timestamp');
+                $rawBody = $req->getContent();
                 
-                if (isset($orderTags['plan_id']) && isset($orderTags['user_id'])) {
-                    processPaymentSuccess([
-                        'user_id' => $orderTags['user_id'],
-                        'plan_id' => $orderTags['plan_id'],
-                        'billing_cycle' => $orderTags['billing_cycle'] ?? 'monthly',
-                        'payment_method' => 'cashfree',
-                        'payment_id' => $paymentData['cf_payment_id'] ?? null,
-                    ]);
+                $expectedSignature = base64_encode(hash_hmac('sha256', $timestamp . $rawBody, $credentials['secret_key'], true));
+                
+                if (!hash_equals($expectedSignature, $signature)) {
+                    return response()->json(['error' => 'Invalid signature'], 400);
                 }
+                
+                $data = $req->json()->all();
+                
+                if (($data['type'] ?? '') === 'PAYMENT_SUCCESS_WEBHOOK') {
+                    $paymentData = $data['data']['payment'] ?? [];
+                    $orderData = $data['data']['order'] ?? [];
+                    
+                    // Extract plan and user info from order tags
+                    $orderTags = $orderData['order_tags'] ?? [];
+                    
+                    if (isset($orderTags['plan_id']) && isset($orderTags['user_id'])) {
+                        processPaymentSuccess([
+                            'user_id' => $orderTags['user_id'],
+                            'plan_id' => $orderTags['plan_id'],
+                            'billing_cycle' => $orderTags['billing_cycle'] ?? 'monthly',
+                            'payment_method' => 'cashfree',
+                            'payment_id' => $paymentData['cf_payment_id'] ?? null,
+                        ]);
+                    }
+                }
+                
+                return response()->json(['status' => 'success']);
+                
+            } catch (\Exception $e) {
+                Log::error('Cashfree Webhook Failed: ' . $e->getMessage());
+                return response()->json(['error' => __('Webhook processing failed')], 500);
             }
-            
-            return response()->json(['status' => 'success']);
-            
-        } catch (\Exception $e) {
-            Log::error('Cashfree Webhook Failed: ' . $e->getMessage());
-            return response()->json(['error' => __('Webhook processing failed')], 500);
-        }
+        });
     }
 }

@@ -235,10 +235,15 @@ class ThemeController extends Controller
         
         // Cache the serialized product catalog for 5 minutes. This avoids
         // re-hydrating + re-serializing every product on every page view.
+        // Cache key includes theme, locale, and active status for proper isolation.
         // Invalidated automatically when a product is saved/deleted (see
         // Product model boot()).
+        $theme = $store['theme'] ?? 'basic';
+        $locale = $storeData['config']['locale'] ?? 'ar';
+        $cacheKey = "store_catalog.{$store['id']}.theme_{$theme}.locale_{$locale}.active_1";
+        
         $products = \Illuminate\Support\Facades\Cache::remember(
-            'store_catalog.' . $store['id'],
+            $cacheKey,
             300,
             function () use ($store) {
                 return Product::where('store_id', $store['id'])
@@ -264,7 +269,7 @@ class ThemeController extends Controller
         
         // Get categories for the store
         $categories = \Illuminate\Support\Facades\Cache::remember(
-            'store_categories.' . $store['id'],
+            "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
             300,
             function () use ($store) {
                 return Category::where('store_id', $store['id'])

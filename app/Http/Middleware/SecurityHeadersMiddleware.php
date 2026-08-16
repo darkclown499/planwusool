@@ -57,7 +57,15 @@ class SecurityHeadersMiddleware
         if ($headers['csp']['enabled']
             && ! empty($headers['csp']['policy'])
             && (app()->isProduction() || $cspForced)) {
-            $response->headers->set('Content-Security-Policy', $headers['csp']['policy']);
+            $policy = $headers['csp']['policy'];
+            
+            // Replace nonce placeholder with actual nonce from CspNonceMiddleware
+            $nonce = $request->attributes->get('csp_nonce');
+            if ($nonce) {
+                $policy = str_replace('{csp_nonce}', $nonce, $policy);
+            }
+            
+            $response->headers->set('Content-Security-Policy', $policy);
         }
 
         return $response;

@@ -36,31 +36,48 @@ class ServicesServiceProvider extends ServiceProvider
         // Store Service
         $this->app->singleton(\App\Services\Store\StoreService::class, function () {
             return new \App\Services\Store\StoreService();
-        }
+        });
 
         // Domain Service
         $this->app->singleton(\App\Services\Domain\DomainService::class, function () {
             return new \App\Services\Domain\DomainService();
-        }
+        });
 
         // Utility Service
         $this->app->singleton(\App\Services\Utility\UtilityService::class, function () {
             return new \App\Services\Utility\UtilityService();
-        }
+        });
 
         // PWA Service
         $this->app->singleton(\App\Services\PWA\PWAService::class, function () {
             return new \App\Services\PWA\PWAService();
-        }
+        });
 
         // Sensitive Data Service
         $this->app->singleton(\App\Services\SensitiveData\SensitiveDataService::class, function () {
             return new \App\Services\SensitiveData\SensitiveDataService();
-        }
+        });
 
-        // Plan Pricing Service
-        $this->app->singleton(\App\Services\Plan\Pricing\PlanPricingService::class, function () {
-            return new \App\Services\Plan\Pricing\PlanPricingService();
+        // Advanced Coupon Service
+        $this->app->singleton(\App\Services\AdvancedCouponService::class, function () {
+            return new \App\Services\AdvancedCouponService();
+        });
+
+        // Unified Coupon Service
+        $this->app->singleton(\App\Services\CouponService::class, function ($app) {
+            return new \App\Services\CouponService(
+                $app->make(\App\Services\AdvancedCouponService::class)
+            );
+        });
+
+        // Order Service
+        $this->app->singleton(\App\Services\OrderService::class, function () {
+            return new \App\Services\OrderService();
+        });
+
+        // Cart Calculation Service
+        $this->app->singleton(\App\Services\CartCalculationService::class, function () {
+            return new \App\Services\CartCalculationService();
         });
     }
 

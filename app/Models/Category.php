@@ -80,13 +80,17 @@ class Category extends Model
         parent::boot();
 
         static::saved(function ($category) {
-            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $category->store_id);
-            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $category->store_id);
+            $storeId = $category->store_id;
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
+            \Illuminate\Support\Facades\Cache::flush();
         });
 
         static::deleted(function ($category) {
-            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $category->store_id);
-            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $category->store_id);
+            $storeId = $category->store_id;
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
+            \Illuminate\Support\Facades\Cache::flush();
         });
     }
 }

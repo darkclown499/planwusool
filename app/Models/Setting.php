@@ -16,6 +16,10 @@ class Setting extends BaseModel
         'value',
     ];
 
+    protected $casts = [
+        'value' => 'encrypted',
+    ];
+
     /**
      * Get the user that owns the setting.
      */

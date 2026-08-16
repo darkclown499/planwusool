@@ -92,7 +92,7 @@ class GdprController extends Controller
             'password' => 'required|current_password',
             'confirmation' => 'required|accepted',
             'reason' => 'nullable|string|max:1000',
-        });
+        ]);
 
         $user = Auth::user();
 
@@ -322,7 +322,7 @@ class GdprDataExportJob
                 'items' => $order->items->map(function ($item) {
                     return $item->toArray();
                 })->toArray(),
-            ]);
+            ];
         })->toArray();
 
         $zip->addFromString('orders/orders.json', json_encode($ordersData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

@@ -54,7 +54,8 @@ return [
     'csp' => [
         'enabled' => env('SECURITY_CSP_ENABLED', true),
         'force_in_local' => env('SECURITY_CSP_FORCE_LOCAL', false),
-        'policy' => env('SECURITY_CSP', "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' https:; connect-src 'self' https: wss: ws:; frame-src 'self' https:; form-action 'self' https:"),
+        // Use nonce placeholders that CspNonceMiddleware will replace with actual nonces
+        'policy' => env('SECURITY_CSP', "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'nonce-{csp_nonce}' https:; script-src 'self' 'nonce-{csp_nonce}' https:; connect-src 'self' https: wss: ws:; frame-src 'self' https:; form-action 'self' https:"),
     ],
 
 ];

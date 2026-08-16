@@ -128,9 +128,9 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::get('/cashfree/success/{orderNumber}', [\App\Http\Controllers\Store\CashfreeController::class, 'success'])->name('store.cashfree.success');
     Route::match(['GET', 'POST'], '/flutterwave/success/{orderNumber}', [\App\Http\Controllers\Store\FlutterwaveController::class, 'success'])->name('store.flutterwave.success');
     Route::get('/paytabs/success/{orderNumber}', [\App\Http\Controllers\Store\PayTabsController::class, 'success'])->name('store.paytabs.success');
-    Route::match(['GET', 'POST'], '/paytabs/callback/{orderNumber}', [\App\Http\Controllers\Store\PayTabsController::class, 'callback'])->name('store.paytabs.callback');
+    Route::match(['GET', 'POST'], '/paytabs/callback/{orderNumber}', [\App\Http\Controllers\Store\PayTabsController::class, 'callback'])->middleware('webhook.signature:paytabs')->name('store.paytabs.callback');
     Route::post('/cashfree/verify-payment', [\App\Http\Controllers\Store\CashfreeController::class, 'verifyPayment'])->name('store.cashfree.verify-payment');
-    Route::post('store-cashfree/webhook', [\App\Http\Controllers\Store\CashfreeController::class, 'webhook'])->name('store.cashfree.webhook');
+    Route::post('store-cashfree/webhook', [\App\Http\Controllers\Store\CashfreeController::class, 'webhook'])->middleware('webhook.signature:cashfree')->name('store.cashfree.webhook');
     Route::post('/razorpay/verify-payment', [\App\Http\Controllers\Store\RazorpayController::class, 'verifyPayment'])->name('store.razorpay.verify-payment');
 
     // Store-side Paystack routes
@@ -146,27 +146,27 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
 
     // Skrill
     Route::get('/skrill/success/{orderNumber}', [\App\Http\Controllers\Store\SkrillController::class, 'success'])->name('store.skrill.success');
-    Route::post('/skrill/callback', [\App\Http\Controllers\Store\SkrillController::class, 'callback'])->name('store.skrill.callback');
+    Route::post('/skrill/callback', [\App\Http\Controllers\Store\SkrillController::class, 'callback'])->middleware('webhook.signature:skrill')->name('store.skrill.callback');
 
     // CoinGate
     Route::get('/coingate/success/{orderNumber}', [\App\Http\Controllers\Store\CoinGateController::class, 'success'])->name('store.coingate.success');
-    Route::post('/coingate/callback', [\App\Http\Controllers\Store\CoinGateController::class, 'callback'])->name('store.coingate.callback');
+    Route::post('/coingate/callback', [\App\Http\Controllers\Store\CoinGateController::class, 'callback'])->middleware('webhook.signature:coingate')->name('store.coingate.callback');
 
     // Midtrans
     Route::get('/midtrans/success/{orderNumber}', [\App\Http\Controllers\Store\MidtransController::class, 'success'])->name('store.midtrans.success');
-    Route::post('/midtrans/callback', [\App\Http\Controllers\Store\MidtransController::class, 'callback'])->name('store.midtrans.callback');
+    Route::post('/midtrans/callback', [\App\Http\Controllers\Store\MidtransController::class, 'callback'])->middleware('webhook.signature:midtrans')->name('store.midtrans.callback');
 
     // Mollie
     Route::get('/mollie/success/{orderNumber}', [\App\Http\Controllers\Store\MollieController::class, 'success'])->name('store.mollie.success');
-    Route::post('/mollie/callback', [\App\Http\Controllers\Store\MollieController::class, 'callback'])->name('store.mollie.callback');
+    Route::post('/mollie/callback', [\App\Http\Controllers\Store\MollieController::class, 'callback'])->middleware('webhook.signature:mollie')->name('store.mollie.callback');
 
     // Benefit
     Route::get('/benefit/success/{orderNumber}', [\App\Http\Controllers\Store\BenefitController::class, 'success'])->name('store.benefit.success');
-    Route::post('/benefit/callback', [\App\Http\Controllers\Store\BenefitController::class, 'callback'])->name('store.benefit.callback');
+    Route::post('/benefit/callback', [\App\Http\Controllers\Store\BenefitController::class, 'callback'])->middleware('webhook.signature:benefit')->name('store.benefit.callback');
 
     // YooKassa
     Route::get('/yookassa/success/{orderNumber}', [\App\Http\Controllers\Store\YooKassaController::class, 'success'])->name('store.yookassa.success');
-    Route::post('/yookassa/callback', [\App\Http\Controllers\Store\YooKassaController::class, 'callback'])->name('store.yookassa.callback');
+    Route::post('/yookassa/callback', [\App\Http\Controllers\Store\YooKassaController::class, 'callback'])->middleware('webhook.signature:yookassa')->name('store.yookassa.callback');
 
     // On-demand product details (keeps heavy fields out of the storefront payload)
     Route::get('/product/{product}', [ThemeController::class, 'productDetail'])->name('store.product-detail');
@@ -174,9 +174,10 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // Catch-all: any unmatched GET on a store subdomain renders the store homepage
     // (mirrors the previous "unknown route -> home" behaviour for custom domains).
     // IMPORTANT: api/* paths must NOT be swallowed here — the storefront calls
-    // GET /api/cart, /api/wishlist, /api/orders, /api/shipping-methods, etc. and
-    // those routes are registered below outside the subdomain group.
-    Route::get('{any}', [ThemeController::class, 'home'])->where('any', '^(?!api(?:/|$)).*');
+    // GET /api/cart, /api/wishlist, /api/orders, /api/shipping-methods, etc. as
+    // well as the versioned /api/v1/* endpoints. Both are registered outside the
+    // subdomain group, so they must never hit this fallback.
+    Route::get('{any}', [ThemeController::class, 'home'])->where('any', '^(?!api(?:/|$|/v1/)).*');
 });
 
 // Legacy redirects: keep old /store/{slug} links working after the move to subdomains
@@ -257,10 +258,12 @@ Route::middleware('api.throttle')->group(function () {
     Route::prefix('api/push-subscriptions')->name('api.push-subscriptions.')->group(function () {
         Route::post('subscribe', [PushSubscriptionController::class, 'subscribe'])->name('subscribe');
         Route::post('unsubscribe', [PushSubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
-        Route::get('status', [PushSubscriptionController::class, 'status'])->name('status');
+Route::get('status', [PushSubscriptionController::class, 'status'])->name('status');
         Route::get('vapid-public-key', [PushSubscriptionController::class, 'vapidPublicKey'])->name('vapid-public-key');
     });
+});
 
+ 
 // Merchant notifications API (admin panel)
 Route::middleware('auth')->prefix('api/merchant-notifications')->name('api.merchant-notifications.')->group(function () {
     Route::get('/', [MerchantNotificationController::class, 'apiIndex'])->name('index');
@@ -368,58 +371,58 @@ Route::get('/demo-order/{orderNumber}', function($orderNumber) {
 
 
 // Cashfree webhook (public route)
-Route::post('cashfree/webhook', [CashfreeController::class, 'webhook'])->name('cashfree.webhook');
+Route::post('cashfree/webhook', [CashfreeController::class, 'webhook'])->middleware('webhook.signature:cashfree')->name('cashfree.webhook');
 
 // Accounting integration webhook (public route - secured via API key in request)
 Route::post('webhook/accounting/{store}', [\App\Http\Controllers\AccountingWebhookController::class, 'handle'])->name('accounting.webhook');
 
 // Benefit webhook (public route)
-Route::post('benefit/webhook', [BenefitPaymentController::class, 'webhook'])->name('benefit.webhook');
+Route::post('benefit/webhook', [BenefitPaymentController::class, 'webhook'])->middleware('webhook.signature:benefit')->name('benefit.webhook');
 Route::get('payments/benefit/success', [BenefitPaymentController::class, 'success'])->name('benefit.success');
-Route::post('payments/benefit/callback', [BenefitPaymentController::class, 'callback'])->name('benefit.callback');
+Route::post('payments/benefit/callback', [BenefitPaymentController::class, 'callback'])->middleware('webhook.signature:benefit')->name('benefit.callback');
 
 // FedaPay callback (public route)
-Route::match(['GET', 'POST'], 'payments/fedapay/callback', [FedaPayPaymentController::class, 'callback'])->name('fedapay.callback');
+Route::match(['GET', 'POST'], 'payments/fedapay/callback', [FedaPayPaymentController::class, 'callback'])->middleware('webhook.signature:fedapay')->name('fedapay.callback');
 
 // YooKassa success/callback (public routes)
 Route::get('payments/yookassa/success', [YooKassaPaymentController::class, 'success'])->name('yookassa.success');
-Route::post('payments/yookassa/callback', [YooKassaPaymentController::class, 'callback'])->name('yookassa.callback');
+Route::post('payments/yookassa/callback', [YooKassaPaymentController::class, 'callback'])->middleware('webhook.signature:yookassa')->name('yookassa.callback');
 
 // Nepalste success/callback (public routes)
 Route::get('payments/nepalste/success', [NepalstePaymentController::class, 'success'])->name('nepalste.success');
-Route::post('payments/nepalste/callback', [NepalstePaymentController::class, 'callback'])->name('nepalste.callback');
+Route::post('payments/nepalste/callback', [NepalstePaymentController::class, 'callback'])->middleware('webhook.signature:nepalste')->name('nepalste.callback');
 
 
 
 // PayTR callback (public route)
-Route::post('payments/paytr/callback', [PayTRPaymentController::class, 'callback'])->name('paytr.callback');
+Route::post('payments/paytr/callback', [PayTRPaymentController::class, 'callback'])->middleware('webhook.signature:paytr')->name('paytr.callback');
 
 // PayTabs callback (public route)
-Route::match(['GET', 'POST'], 'payments/paytabs/callback', [PayTabsPaymentController::class, 'callback'])->name('paytabs.callback');
+Route::match(['GET', 'POST'], 'payments/paytabs/callback', [PayTabsPaymentController::class, 'callback'])->middleware('webhook.signature:paytabs')->name('paytabs.callback');
 Route::get('payments/paytabs/success', [PayTabsPaymentController::class, 'success'])->name('paytabs.success');
 
 // Tap payment routes (public routes)
 Route::get('payments/tap/success', [TapPaymentController::class, 'success'])->name('tap.success');
-Route::post('payments/tap/callback', [TapPaymentController::class, 'callback'])->name('tap.callback');
+Route::post('payments/tap/callback', [TapPaymentController::class, 'callback'])->middleware('webhook.signature:tap')->name('tap.callback');
 
 // Aamarpay payment routes (public routes)
 Route::match(['GET', 'POST'], 'payments/aamarpay/success', [AamarpayPaymentController::class, 'success'])->name('aamarpay.success');
-Route::post('payments/aamarpay/callback', [AamarpayPaymentController::class, 'callback'])->name('aamarpay.callback');
+Route::post('payments/aamarpay/callback', [AamarpayPaymentController::class, 'callback'])->middleware('webhook.signature:aamarpay')->name('aamarpay.callback');
 
 
 // PayFast payment routes (public routes)
 Route::get('payments/payfast/success', [PayfastPaymentController::class, 'success'])->name('payfast.success');
-Route::post('payments/payfast/callback', [PayfastPaymentController::class, 'callback'])->name('payfast.callback');
+Route::post('payments/payfast/callback', [PayfastPaymentController::class, 'callback'])->middleware('webhook.signature:payfast')->name('payfast.callback');
 
 // CoinGate callback (public route)
-Route::match(['GET', 'POST'], 'payments/coingate/callback', [CoinGatePaymentController::class, 'callback'])->name('coingate.callback');
+Route::match(['GET', 'POST'], 'payments/coingate/callback', [CoinGatePaymentController::class, 'callback'])->middleware('webhook.signature:coingate')->name('coingate.callback');
 
 // MercadoPago webhook (public route - called by MercadoPago servers)
-Route::post('mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->name('mercadopago.webhook');
+Route::post('mercadopago/webhook', [MercadoPagoController::class, 'webhook'])->middleware('webhook.signature:mercadopago')->name('mercadopago.webhook');
 
 // Xendit payment routes (public routes)
 Route::get('payments/xendit/success', [XenditPaymentController::class, 'success'])->name('xendit.success');
-Route::post('payments/xendit/callback', [XenditPaymentController::class, 'callback'])->name('xendit.callback');
+Route::post('payments/xendit/callback', [XenditPaymentController::class, 'callback'])->middleware('webhook.signature:xendit')->name('xendit.callback');
 
 
 
@@ -484,7 +487,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('payments/paystack', [PaystackPaymentController::class, 'processPayment'])->name('paystack.payment');
     
     // Store-side Paystack webhook (webhooks stay on the base domain)
-    Route::post('store/paystack/webhook', [StorePaystackController::class, 'webhook'])->name('store.paystack.webhook');
+    Route::post('store/paystack/webhook', [StorePaystackController::class, 'webhook'])->middleware('webhook.signature:paystack')->name('store.paystack.webhook');
     Route::post('payments/flutterwave', [FlutterwavePaymentController::class, 'processPayment'])->name('flutterwave.payment');
     Route::post('payments/paytabs', [PayTabsPaymentController::class, 'processPayment'])->name('paytabs.payment');
     Route::post('payments/skrill', [SkrillPaymentController::class, 'processPayment'])->name('skrill.payment');
@@ -535,29 +538,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('midtrans/create-payment', [MidtransPaymentController::class, 'createPayment'])->name('midtrans.create-payment');
     
     // Payment success/callback routes
-    Route::post('payments/skrill/callback', [SkrillPaymentController::class, 'callback'])->name('skrill.callback');
+    Route::post('payments/skrill/callback', [SkrillPaymentController::class, 'callback'])->middleware('webhook.signature:skrill')->name('skrill.callback');
     Route::get('payments/paytr/success', [PayTRPaymentController::class, 'success'])->name('paytr.success');
     Route::get('payments/paytr/failure', [PayTRPaymentController::class, 'failure'])->name('paytr.failure');
     Route::get('payments/mollie/success', [MolliePaymentController::class, 'success'])->name('mollie.success');
-    Route::post('payments/mollie/callback', [MolliePaymentController::class, 'callback'])->name('mollie.callback');
+    Route::post('payments/mollie/callback', [MolliePaymentController::class, 'callback'])->middleware('webhook.signature:mollie')->name('mollie.callback');
     Route::match(['GET', 'POST'], 'payments/toyyibpay/success', [ToyyibPayPaymentController::class, 'success'])->name('toyyibpay.success');
-    Route::post('payments/toyyibpay/callback', [ToyyibPayPaymentController::class, 'callback'])->name('toyyibpay.callback');
-    Route::post('payments/iyzipay/callback', [IyzipayPaymentController::class, 'callback'])->name('iyzipay.callback');
+    Route::post('payments/toyyibpay/callback', [ToyyibPayPaymentController::class, 'callback'])->middleware('webhook.signature:toyyibpay')->name('toyyibpay.callback');
+    Route::post('payments/iyzipay/callback', [IyzipayPaymentController::class, 'callback'])->middleware('webhook.signature:iyzipay')->name('iyzipay.callback');
     Route::get('payments/ozow/success', [OzowPaymentController::class, 'success'])->name('ozow.success');
-    Route::post('payments/ozow/callback', [OzowPaymentController::class, 'callback'])->name('ozow.callback');
+    Route::post('payments/ozow/callback', [OzowPaymentController::class, 'callback'])->middleware('webhook.signature:ozow')->name('ozow.callback');
     Route::get('payments/payhere/success', [PayHerePaymentController::class, 'success'])->name('payhere.success');
-    Route::post('payments/payhere/callback', [PayHerePaymentController::class, 'callback'])->name('payhere.callback');
+    Route::post('payments/payhere/callback', [PayHerePaymentController::class, 'callback'])->middleware('webhook.signature:payhere')->name('payhere.callback');
     Route::get('payments/cinetpay/success', [CinetPayPaymentController::class, 'success'])->name('cinetpay.success');
-    Route::post('payments/cinetpay/callback', [CinetPayPaymentController::class, 'callback'])->name('cinetpay.callback');
+    Route::post('payments/cinetpay/callback', [CinetPayPaymentController::class, 'callback'])->middleware('webhook.signature:cinetpay')->name('cinetpay.callback');
     Route::get('payments/paiement/success', [PaiementPaymentController::class, 'success'])->name('paiement.success');
-    Route::post('payments/paiement/callback', [PaiementPaymentController::class, 'callback'])->name('paiement.callback');
-    Route::post('payments/midtrans/callback', [MidtransPaymentController::class, 'callback'])->name('midtrans.callback');
+    Route::post('payments/paiement/callback', [PaiementPaymentController::class, 'callback'])->middleware('webhook.signature:paiement')->name('paiement.callback');
+    Route::post('payments/midtrans/callback', [MidtransPaymentController::class, 'callback'])->middleware('webhook.signature:midtrans')->name('midtrans.callback');
     Route::get('mercadopago/success', [MercadoPagoController::class, 'success'])->name('mercadopago.success');
     Route::get('mercadopago/failure', [MercadoPagoController::class, 'failure'])->name('mercadopago.failure');
     Route::get('mercadopago/pending', [MercadoPagoController::class, 'pending'])->name('mercadopago.pending');
     
     // Store-side MercadoPago webhook (webhooks stay on the base domain)
-    Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->name('store.mercadopago.webhook');
+    Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->middleware('webhook.signature:mercadopago')->name('store.mercadopago.webhook');
     Route::post('authorizenet/test-connection', [AuthorizeNetPaymentController::class, 'testConnection'])->name('authorizenet.test-connection');
 
     
@@ -955,7 +958,7 @@ require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 
 Route::match(['GET', 'POST'], 'payments/easebuzz/success', [EasebuzzPaymentController::class, 'success'])->name('easebuzz.success');
-Route::post('payments/easebuzz/callback', [EasebuzzPaymentController::class, 'callback'])->name('easebuzz.callback');
+Route::post('payments/easebuzz/callback', [EasebuzzPaymentController::class, 'callback'])->middleware('webhook.signature:easebuzz')->name('easebuzz.callback');
 
 // GDPR Routes
 Route::middleware(['auth'])->prefix('gdpr')->name('gdpr.')->group(function () {

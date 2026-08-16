@@ -233,6 +233,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error'   => $request->session()->get('error'),
             ],
+            'cspNonce' => $request->attributes->get('csp_nonce'),
             'globalSettings' => $globalSettings,
             // Filter sensitive keys (API secrets, passwords, etc.) before sharing with frontend
             'superadminSettings' => filterSensitiveSettings(settings(getSuperadminId())),

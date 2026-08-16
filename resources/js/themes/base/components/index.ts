@@ -1,3 +1,7 @@
+// Base shared component library — single source of truth for all store themes.
+// Themes compose these base components and override styling via props/className.
+
+export { BaseComponent, withTheme } from './BaseComponent';
 export { BaseHeader } from './Header';
 export { BaseFooter } from './Footer';
 export { BaseCartDrawer } from './CartDrawer';
@@ -5,30 +9,12 @@ export { BaseCategoryTabs } from './CategoryTabs';
 export { BaseHeroSection } from './HeroSection';
 export { BaseProductGrid } from './ProductGrid';
 export { BaseProductDetailModal } from './ProductDetailModal';
-export { BaseCartDrawer } from './CartDrawer';
 export { BaseCheckout } from './Checkout';
 export { BaseAuthModal } from './AuthModal';
 export { BaseLoginModal } from './LoginModal';
-export { BaseAuthModal } from './AuthModal';
-export { BaseOrderDetailsModal } from './OrderDetailsModal';
-export { BaseOrderInvoice } from './OrderInvoice';
-export { BaseOrderSuccessModal } from './OrderSuccessModal';
-export { BaseProductDetailModal } from './ProductDetailModal';
-export { BaseProductGrid } from './ProductGrid';
 export { BaseProfileModal } from './ProfileModal';
 export { BaseResetPasswordModal } from './ResetPasswordModal';
-export { BaseCartDrawer } from './CartDrawer';
-export { BaseCategoryTabs } from './CategoryTabs';
-export { BaseCheckout } from './Checkout';
-export { BaseFooter } from './Footer';
-export { BaseHeader } from './Header';
-export { BaseHeroSection } from './HeroSection';
-export { BaseLoginModal } from './LoginModal';
+export { BaseOrderSuccessModal } from './OrderSuccessModal';
 export { BaseMyOrdersModal } from './MyOrdersModal';
 export { BaseOrderDetailsModal } from './OrderDetailsModal';
 export { BaseOrderInvoice } from './OrderInvoice';
-export { BaseOrderSuccessModal } from './OrderSuccessModal';
-export { BaseProductDetailModal } from './ProductDetailModal';
-export { BaseProductGrid } from './ProductGrid';
-export { BaseProfileModal } from './ProfileModal';
-export { BaseResetPasswordModal } from './ResetPasswordModal';

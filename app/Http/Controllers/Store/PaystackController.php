@@ -7,9 +7,11 @@ use App\Models\Order;
 use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Traits\HandlesWebhookIdempotency;
 
 class PaystackController extends Controller
 {
+    use HandlesWebhookIdempotency;
     /**
      * Handle successful Paystack payment for store orders
      */
@@ -123,68 +125,69 @@ class PaystackController extends Controller
      */
     public function webhook(Request $request)
     {
-        try {
-            $payload = $request->all();
-            
-            // Verify event type
-            if (!isset($payload['event']) || $payload['event'] !== 'charge.success') {
-                return response()->json(['status' => 'ignored', 'message' => 'Not a charge success event']);
-            }
-            
-            // Get reference
-            $reference = $payload['data']['reference'] ?? null;
-            
-            if (!$reference) {
-                return response()->json(['status' => 'error', 'message' => 'Reference not found'], 400);
-            }
-            
-            // Find order by reference
-            $order = Order::whereJsonContains('payment_details->payment_reference', $reference)
-                ->orWhere('payment_transaction_id', $reference)
-                ->first();
-            
-            if (!$order) {
-                return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
-            }
-            
-            // Get store owner's Paystack settings
-            $store = $order->store;
-            if (!$store || !$store->user) {
-                return response()->json(['status' => 'error', 'message' => 'Store configuration error'], 500);
-            }
-            
-            $paystackConfig = getPaymentMethodConfig('paystack', $store->user->id, $order->store_id);
-            
-            if (!$paystackConfig['enabled'] || !$paystackConfig['secret_key']) {
-                return response()->json(['status' => 'error', 'message' => 'Paystack not configured'], 500);
-            }
-            
-            // Verify payment with Paystack API
-            $curl = curl_init();
-            curl_setopt_array($curl, [
-                CURLOPT_URL => "https://api.paystack.co/transaction/verify/" . $reference,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HTTPHEADER => [
-                    "Authorization: Bearer " . $paystackConfig['secret_key'],
-                    "Cache-Control: no-cache",
-                ],
-            ]);
-            
-            $response = curl_exec($curl);
-            curl_close($curl);
-            
-            $result = json_decode($response, true);
-            
-            if ($result && $result['status'] && $result['data']['status'] === 'success') {
-                $order->update([
-                    'status' => 'confirmed',
-                    'payment_status' => 'paid',
-                    'payment_transaction_id' => $reference,
-                    'payment_details' => array_merge($order->payment_details ?? [], [
-                        'payment_reference' => $reference,
-                        'payment_method' => 'paystack',
-                        'transaction_amount' => $result['data']['amount'] / 100,
-                        'status' => $result['data']['status'],
+        return $this->processWebhookIdempotently($request, 'paystack', function (Request $req) {
+            try {
+                $payload = $req->all();
+                
+                // Verify event type
+                if (!isset($payload['event']) || $payload['event'] !== 'charge.success') {
+                    return response()->json(['status' => 'ignored', 'message' => 'Not a charge success event']);
+                }
+                
+                // Get reference
+                $reference = $payload['data']['reference'] ?? null;
+                
+                if (!$reference) {
+                    return response()->json(['status' => 'error', 'message' => 'Reference not found'], 400);
+                }
+                
+                // Find order by reference
+                $order = Order::whereJsonContains('payment_details->payment_reference', $reference)
+                    ->orWhere('payment_transaction_id', $reference)
+                    ->first();
+                
+                if (!$order) {
+                    return response()->json(['status' => 'error', 'message' => 'Order not found'], 404);
+                }
+                
+                // Get store owner's Paystack settings
+                $store = $order->store;
+                if (!$store || !$store->user) {
+                    return response()->json(['status' => 'error', 'message' => 'Store configuration error'], 500);
+                }
+                
+                $paystackConfig = getPaymentMethodConfig('paystack', $store->user->id, $order->store_id);
+                
+                if (!$paystackConfig['enabled'] || !$paystackConfig['secret_key']) {
+                    return response()->json(['status' => 'error', 'message' => 'Paystack not configured'], 500);
+                }
+                
+                // Verify payment with Paystack API
+                $curl = curl_init();
+                curl_setopt_array($curl, [
+                    CURLOPT_URL => "https://api.paystack.co/transaction/verify/" . $reference,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_HTTPHEADER => [
+                        "Authorization: Bearer " . $paystackConfig['secret_key'],
+                        "Cache-Control: no-cache",
+                    ],
+                ]);
+                
+                $response = curl_exec($curl);
+                curl_close($curl);
+                
+                $result = json_decode($response, true);
+                
+                if ($result && $result['status'] && $result['data']['status'] === 'success') {
+                    $order->update([
+                        'status' => 'confirmed',
+                        'payment_status' => 'paid',
+                        'payment_transaction_id' => $reference,
+                        'payment_details' => array_merge($order->payment_details ?? [], [
+                            'payment_reference' => $reference,
+                            'payment_method' => 'paystack',
+                            'transaction_amount' => $result['data']['amount'] / 100,
+                            'status' => $result['data']['status'],
                     ]),
                 ]);
                 
@@ -192,12 +195,13 @@ class PaystackController extends Controller
                 event(new \App\Events\OrderCreated($order));
             }
             
-            return response()->json(['status' => 'success']);
-            
+return response()->json(['status' => 'success']);
+             
         } catch (\Exception $e) {
             Log::error('Paystack store webhook error: ' . $e->getMessage());
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
+    });
     }
     
     /**

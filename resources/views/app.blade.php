@@ -1,3 +1,7 @@
+@php
+    $cspNonce = $page['props']['cspNonce'] ?? '';
+    $nonceAttr = $cspNonce ? ' nonce="' . $cspNonce . '"' : '';
+@endphp
 <!DOCTYPE html>
 @php
     $appUrl = getSchemeAwareUrl();
@@ -37,13 +41,13 @@
              are loaded over http:// inside an https:// page). --}}
         <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
-        <style>
+        <style{{ $nonceAttr }}>
             html {
                 background-color: oklch(1 0 0);
             }
         </style>
 
-        <script>
+        <script{{ $nonceAttr }}>
             // Arabic-first design: the document must ALWAYS be right-to-left.
             // This inline guard runs before any bundled JS so no cached module,
             // browser extension, saved setting or component can flip it to LTR.
@@ -215,7 +219,7 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&family=tajawal:400,500,700,800,900&family=cairo:400,500,600,700,800,900&family=ibm-plex-sans-arabic:400,500,600,700" rel="stylesheet" />
         <script src="{{ asset('js/jquery.min.js') }}"></script>
 
-        <script>
+        <script{{ $nonceAttr }}>
             window.appConfig = {
                 url: '{{ $appUrl }}'
             };
@@ -230,7 +234,7 @@
         </script>
         
         @routes('web', $appUrl)
-        <script>
+        <script{{ $nonceAttr }}>
             if (typeof window.Ziggy !== 'undefined') {
                 window.Ziggy.url = window.location.origin;
                 window.Ziggy.port = window.location.port ? parseInt(window.location.port) : undefined;
@@ -239,7 +243,7 @@
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @inertiaHead
-        <script>
+        <script{{ $nonceAttr }}>
             // Mark the page when embedded inside a preview iframe (e.g. onboarding
             // device previews) so CSS can remove scrollbars and chrome.
             try {

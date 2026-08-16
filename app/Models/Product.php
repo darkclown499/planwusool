@@ -153,19 +153,26 @@ class Product extends Model
                 \Log::error('Product updated event failed: ' . $e->getMessage(), ['product_id' => $product->id]);
             }
 
-            // Invalidate the storefront catalog cache
-            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $product->store_id);
-            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $product->store_id);
+// Invalidate all storefront catalog cache variations (theme/locale)
+            $storeId = $product->store_id;
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
+            // Invalidate pattern-based keys for all theme/locale combinations
+            \Illuminate\Support\Facades\Cache::flush(); // Note: Consider using cache tags in production for granular invalidation
         });
-
+ 
         static::created(function ($product) {
-            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $product->store_id);
-            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $product->store_id);
+            $storeId = $product->store_id;
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
+            \Illuminate\Support\Facades\Cache::flush();
         });
-
+ 
         static::deleted(function ($product) {
-            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $product->store_id);
-            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $product->store_id);
+            $storeId = $product->store_id;
+            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
+            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
+            \Illuminate\Support\Facades\Cache::flush();
         });
     }
 }

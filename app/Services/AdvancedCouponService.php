@@ -12,6 +12,35 @@ use Illuminate\Support\Facades\Log;
 class AdvancedCouponService
 {
     /**
+     * Return a normalized, admin-friendly description of an advanced coupon.
+     */
+    public function describe(AdvancedCoupon $coupon): array
+    {
+        return [
+            'name' => $coupon->name,
+            'description' => $coupon->description,
+            'code' => $coupon->code,
+            'code_type' => $coupon->code_type,
+            'discount_type' => $coupon->discount_type,
+            'discount_value' => (float) $coupon->discount_value,
+            'max_discount_amount' => $coupon->max_discount_amount !== null ? (float) $coupon->max_discount_amount : null,
+            'bogo_product_id' => $coupon->bogo_product_id,
+            'bogo_quantity' => (int) $coupon->bogo_quantity,
+            'bogo_free_quantity' => (int) $coupon->bogo_free_quantity,
+            'minimum_order_amount' => (float) $coupon->minimum_order_amount,
+            'usage_limit' => $coupon->usage_limit,
+            'per_customer_limit' => $coupon->per_customer_limit,
+            'used_count' => (int) $coupon->used_count,
+            'exclude_on_sale_items' => (bool) $coupon->exclude_on_sale_items,
+            'first_order_only' => (bool) $coupon->first_order_only,
+            'starts_at' => $coupon->starts_at,
+            'expires_at' => $coupon->expires_at,
+            'status' => (bool) $coupon->status,
+            'store_id' => $coupon->store_id,
+        ];
+    }
+
+    /**
      * Validate an advanced coupon for use in a given context.
      *
      * @param string      $code         Coupon code

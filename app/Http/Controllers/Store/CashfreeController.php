@@ -8,9 +8,11 @@ use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use App\Traits\HandlesWebhookIdempotency;
 
 class CashfreeController extends Controller
 {
+    use HandlesWebhookIdempotency;
     /**
      * Get Cashfree API configuration for a specific store
      */
@@ -144,65 +146,67 @@ class CashfreeController extends Controller
      */
     public function webhook(Request $request, $storeSlug)
     {
-        try {            
-            $signature = $request->header('x-webhook-signature');
-            $timestamp = $request->header('x-webhook-timestamp');
-            $rawBody = $request->getContent();
-            
-            if (!$signature || !$timestamp) {
-                return response()->json(['error' => 'Missing signature'], 400);
+        return $this->processWebhookIdempotently($request, 'cashfree', function (Request $req) use ($storeSlug) {
+            try {            
+                $signature = $req->header('x-webhook-signature');
+                $timestamp = $req->header('x-webhook-timestamp');
+                $rawBody = $req->getContent();
+                
+                if (!$signature || !$timestamp) {
+                    return response()->json(['error' => 'Missing signature'], 400);
+                }
+                
+                $data = $req->json()->all();
+                
+                if (($data['type'] ?? '') !== 'PAYMENT_SUCCESS_WEBHOOK') {
+                    return response()->json(['status' => 'ignored']);
+                }
+                
+                $orderData = $data['data']['order'] ?? [];
+                $orderTags = $orderData['order_tags'] ?? [];
+                
+                if (!isset($orderTags['store_order_id'])) {
+                    return response()->json(['error' => 'Store order ID missing'], 400);
+                }
+                
+                $order = Order::find($orderTags['store_order_id']);
+                if (!$order) {
+                    return response()->json(['error' => 'Order not found'], 404);
+                }
+                
+                $config = $this->getCashfreeConfig($order->store_id);
+                if (!$config) {
+                    return response()->json(['error' => 'Config not found'], 400);
+                }
+                
+                // Verify signature
+                $expectedSignature = base64_encode(hash_hmac('sha256', $timestamp . $rawBody, $config['secret_key'], true));
+                if (!hash_equals($expectedSignature, $signature)) {
+                    return response()->json(['error' => 'Invalid signature'], 400);
+                }
+                
+                $paymentData = $data['data']['payment'] ?? [];
+                
+                // Update order status
+                if ($order->payment_status !== 'paid') {
+                    $order->update([
+                        'status' => 'confirmed',
+                        'payment_status' => 'paid',
+                        'payment_details' => array_merge($order->payment_details ?? [], [
+                            'cashfree_payment_id' => $paymentData['cf_payment_id'] ?? null,
+                            'payment_amount' => $paymentData['payment_amount'] ?? null,
+                            'webhook_received_at' => now(),
+                        ]),
+                    ]);
             }
             
-            $data = $request->json()->all();
-            
-            if (($data['type'] ?? '') !== 'PAYMENT_SUCCESS_WEBHOOK') {
-                return response()->json(['status' => 'ignored']);
-            }
-            
-            $orderData = $data['data']['order'] ?? [];
-            $orderTags = $orderData['order_tags'] ?? [];
-            
-            if (!isset($orderTags['store_order_id'])) {
-                return response()->json(['error' => 'Store order ID missing'], 400);
-            }
-            
-            $order = Order::find($orderTags['store_order_id']);
-            if (!$order) {
-                return response()->json(['error' => 'Order not found'], 404);
-            }
-            
-            $config = $this->getCashfreeConfig($order->store_id);
-            if (!$config) {
-                return response()->json(['error' => 'Config not found'], 400);
-            }
-            
-            // Verify signature
-            $expectedSignature = base64_encode(hash_hmac('sha256', $timestamp . $rawBody, $config['secret_key'], true));
-            if (!hash_equals($expectedSignature, $signature)) {
-                return response()->json(['error' => 'Invalid signature'], 400);
-            }
-            
-            $paymentData = $data['data']['payment'] ?? [];
-            
-            // Update order status
-            if ($order->payment_status !== 'paid') {
-                $order->update([
-                    'status' => 'confirmed',
-                    'payment_status' => 'paid',
-                    'payment_details' => array_merge($order->payment_details ?? [], [
-                        'cashfree_payment_id' => $paymentData['cf_payment_id'] ?? null,
-                        'payment_amount' => $paymentData['payment_amount'] ?? null,
-                        'webhook_received_at' => now(),
-                    ]),
-                ]);
-            }
-            
-            return response()->json(['status' => 'success']);
-            
+return response()->json(['status' => 'success']);
+             
         } catch (\Exception $e) {
             Log::error('Store Cashfree Webhook Error: ' . $e->getMessage());
             return response()->json(['error' => 'Webhook processing failed'], 500);
         }
+    });
     }
 
     /**

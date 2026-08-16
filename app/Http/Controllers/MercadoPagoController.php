@@ -14,9 +14,12 @@ use MercadoPago\SDK;
 use MercadoPago\Preference;
 use MercadoPago\Item;
 use MercadoPago\Payment;
+use App\Jobs\MercadoPagoWebhookJob;
+use App\Traits\HandlesWebhookIdempotency;
 
 class MercadoPagoController extends Controller
 {
+    use HandlesWebhookIdempotency;
     /**
      * Get MercadoPago API credentials
      * 
@@ -391,8 +394,6 @@ class MercadoPagoController extends Controller
         return redirect()->route('plans.index')->with('info', __('Your payment is pending. We will notify you once it is confirmed.'));
     }
     
-    use App\Jobs\MercadoPagoWebhookJob;
-
     /**
      * Handle MercadoPago webhook notifications
      * Handles both plan subscriptions and store order payments
@@ -400,47 +401,50 @@ class MercadoPagoController extends Controller
      */
     public function webhook(Request $request)
     {
-        // Dispatch to queue for async processing
-        MercadoPagoWebhookJob::dispatch($request->all(), 'mercadopago');
+        return $this->processWebhookIdempotently($request, 'mercadopago', function (Request $req) {
+            // Dispatch to queue for async processing
+            MercadoPagoWebhookJob::dispatch($req->all(), 'mercadopago');
 
-        // Immediately return 200 OK to acknowledge receipt
-        return response()->json(['status' => 'queued']);
+            // Immediately return 200 OK to acknowledge receipt
+            return response()->json(['status' => 'queued']);
+        });
     }
 
     /**
      * Synchronous fallback for testing/debugging
      */
     public function webhookSync(Request $request)
-    {        
-        try {
-            $data = $request->all();
-            
-            // Get payment ID from webhook data
-            $paymentId = $data['id'] ?? null;
-            $topic = $data['topic'] ?? null;
-            
-            if (!$paymentId) {
-                return response()->json(['status' => 'error', 'message' => 'Payment ID not found'], 400);
-            }
-            
-            // Fetch payment details from MercadoPago
-            $settings = getPaymentGatewaySettings();
-            $accessToken = $settings['payment_settings']['mercadopago_access_token'] ?? null;
-            
-            if (!$accessToken) {
-                return response()->json(['status' => 'error', 'message' => 'MercadoPago credentials not found'], 500);
-            }
-            
-            $paymentResponse = \Http::withToken($accessToken)
-                ->get('https://api.mercadopago.com/v1/payments/' . $paymentId);
-            
-            if (!$paymentResponse->successful()) {
-                return response()->json(['status' => 'error', 'message' => 'Failed to fetch payment details'], 500);
-            }
-            
-            $payment = $paymentResponse->json();
-            $externalReference = $payment['external_reference'] ?? null;
-            $paymentStatus = $payment['status'] ?? null;
+    {
+        return $this->processWebhookIdempotently($request, 'mercadopago', function (Request $req) {
+            try {
+                $data = $req->all();
+                
+                // Get payment ID from webhook data
+                $paymentId = $data['id'] ?? null;
+                $topic = $data['topic'] ?? null;
+                
+                if (!$paymentId) {
+                    return response()->json(['status' => 'error', 'message' => 'Payment ID not found'], 400);
+                }
+                
+                // Fetch payment details from MercadoPago
+                $settings = getPaymentGatewaySettings();
+                $accessToken = $settings['payment_settings']['mercadopago_access_token'] ?? null;
+                
+                if (!$accessToken) {
+                    return response()->json(['status' => 'error', 'message' => 'MercadoPago credentials not found'], 500);
+                }
+                
+                $paymentResponse = \Http::withToken($accessToken)
+                    ->get('https://api.mercadopago.com/v1/payments/' . $paymentId);
+                
+                if (!$paymentResponse->successful()) {
+                    return response()->json(['status' => 'error', 'message' => 'Failed to fetch payment details'], 500);
+                }
+                
+                $payment = $paymentResponse->json();
+                $externalReference = $payment['external_reference'] ?? null;
+                $paymentStatus = $payment['status'] ?? null;
             
             if (!$externalReference) {
                 return response()->json(['status' => 'error', 'message' => 'External reference not found'], 400);
@@ -529,12 +533,13 @@ class MercadoPagoController extends Controller
             }
             
             // Acknowledge receipt of the webhook
-            return response()->json(['status' => 'success']);
-            
+return response()->json(['status' => 'success']);
+             
         } catch (\Exception $e) {
             Log::error('MercadoPago webhook error: ' . $e->getMessage());
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
+    });
     }
     
     /**

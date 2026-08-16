@@ -27,9 +27,9 @@ class StoreService
     /**
      * Get store URL based on domain configuration
      */
-    public function getStoreUrl(Store $store): string
+    public function getStoreUrl(Store $store, $request = null): string
     {
-        return $store->getStoreUrl();
+        return $store->getStoreUrl($request);
     }
 
     /**
@@ -111,23 +111,5 @@ class StoreService
         }
 
         return $icons;
-    }
-
-    /**
-     * Check if store can use custom domain
-     */
-    public function canUseCustomDomain($store): bool
-    {
-        $plan = $store->user->getCurrentPlan();
-        return $plan && $plan->enable_custdomain === 'on';
-    }
-
-    /**
-     * Check if store can use custom subdomain
-     */
-    public function canUseCustomSubdomain($store): bool
-    {
-        $plan = $store->user->getCurrentPlan();
-        return $plan && $plan->enable_custsubdomain === 'on';
     }
 }

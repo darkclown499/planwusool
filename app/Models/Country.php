@@ -17,6 +17,17 @@ class Country extends Model
         'status' => 'boolean'
     ];
 
+    protected static function booted()
+    {
+        static::saved(function ($country) {
+            \Illuminate\Support\Facades\Cache::forget('countries_active');
+        });
+
+        static::deleted(function ($country) {
+            \Illuminate\Support\Facades\Cache::forget('countries_active');
+        });
+    }
+
     public function states(): HasMany
     {
         return $this->hasMany(State::class);

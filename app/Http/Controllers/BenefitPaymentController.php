@@ -9,9 +9,11 @@ use App\Models\PlanOrder;
 use App\Models\PaymentSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Traits\HandlesWebhookIdempotency;
 
 class BenefitPaymentController extends Controller
 {
+    use HandlesWebhookIdempotency;
     public function processPayment(Request $request)
     {
         $validated = validatePaymentRequest($request, [
@@ -213,52 +215,54 @@ class BenefitPaymentController extends Controller
 
     public function webhook(Request $request)
     {
-        try {
-            $payload = $request->all();
-            $settings = getPaymentGatewaySettings();
-            
-            // Verify webhook signature
-            if (!$this->verifyBenefitWebhook($payload, $request->header('X-Benefit-Signature'), $settings['payment_settings'])) {
-                return response()->json(['error' => 'Invalid signature'], 400);
-            }
-
-            $paymentId = $payload['payment_id'] ?? null;
-            $status = $payload['status'] ?? null;
-            $transactionId = $payload['transaction_id'] ?? null;
-
-            if ($paymentId && $status === 'completed' && $transactionId) {
-                // Process successful payment
-                $parts = explode('_', $transactionId);
+        return $this->processWebhookIdempotently($request, 'benefit', function (Request $req) {
+            try {
+                $payload = $req->all();
+                $settings = getPaymentGatewaySettings();
                 
-                if (count($parts) >= 3) {
-                    $planId = $parts[1];
-                    $userId = $parts[2];
+                // Verify webhook signature
+                if (!$this->verifyBenefitWebhook($payload, $req->header('X-Benefit-Signature'), $settings['payment_settings'])) {
+                    return response()->json(['error' => 'Invalid signature'], 400);
+                }
+
+                $paymentId = $payload['payment_id'] ?? null;
+                $status = $payload['status'] ?? null;
+                $transactionId = $payload['transaction_id'] ?? null;
+
+                if ($paymentId && $status === 'completed' && $transactionId) {
+                    // Process successful payment
+                    $parts = explode('_', $transactionId);
                     
-                    $plan = Plan::find($planId);
-                    $user = User::find($userId);
-                    
-                    if ($plan && $user) {
-                        // Check if payment already processed
-                        $existingOrder = PlanOrder::where('payment_id', $paymentId)->first();
+                    if (count($parts) >= 3) {
+                        $planId = $parts[1];
+                        $userId = $parts[2];
                         
-                        if (!$existingOrder) {
-                            processPaymentSuccess([
-                                'user_id' => $user->id,
-                                'plan_id' => $plan->id,
-                                'billing_cycle' => 'monthly',
-                                'payment_method' => 'benefit',
-                                'payment_id' => $paymentId,
-                            ]);
+                        $plan = Plan::find($planId);
+                        $user = User::find($userId);
+                        
+                        if ($plan && $user) {
+                            // Check if payment already processed
+                            $existingOrder = PlanOrder::where('payment_id', $paymentId)->first();
+                            
+                            if (!$existingOrder) {
+                                processPaymentSuccess([
+                                    'user_id' => $user->id,
+                                    'plan_id' => $plan->id,
+                                    'billing_cycle' => 'monthly',
+                                    'payment_method' => 'benefit',
+                                    'payment_id' => $paymentId,
+                                ]);
+                            }
                         }
                     }
                 }
+
+                return response()->json(['status' => 'success']);
+
+            } catch (\Exception $e) {
+                return response()->json(['error' => __('Webhook processing failed')], 500);
             }
-
-            return response()->json(['status' => 'success']);
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => __('Webhook processing failed')], 500);
-        }
+        });
     }
 
     private function verifyBenefitPayment($paymentId, $transactionId, $settings)
