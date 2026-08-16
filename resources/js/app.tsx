@@ -19,6 +19,7 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import { BrandProvider } from './contexts/BrandContext';
 import { ModalStackProvider } from './contexts/ModalStackContext';
 import { initializeTheme } from './hooks/use-appearance';
+import { initializeGlobalSettings } from './utils/globalSettings';
 import { CustomToast } from './components/custom-toast';
 import { AppDirectionProvider } from './components/app-direction-provider';
 import { TourProvider } from './components/tour/tour-context';

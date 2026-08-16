@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <script type="text/javascript">
+    <script type="text/javascript" nonce="{{ request()->attributes->get('csp_nonce') }}">
         function closethisasap() { 
             document.forms["redirectpost"].submit(); 
         }

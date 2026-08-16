@@ -40,13 +40,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             CheckInstallation::class,
+            // MUST run before HandleInertiaRequests so the generated nonce is
+            // available when cspNonce is shared to the frontend (otherwise the
+            // inline <script>/<style> tags render without a nonce and the
+            // strict CSP blocks them all, causing a blank page).
+            CspNonceMiddleware::class,
             \App\Http\Middleware\DomainResolver::class,
             ShareGlobalSettings::class,
             ShareStoresData::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
             DemoModeMiddleware::class,
-            CspNonceMiddleware::class,
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
         ]);
         
