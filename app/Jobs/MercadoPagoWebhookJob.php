@@ -6,7 +6,6 @@ use App\Models\Plan;
 use App\Models\PlanOrder;
 use App\Models\Order;
 use App\Models\User;
-use App\Models\Plan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 

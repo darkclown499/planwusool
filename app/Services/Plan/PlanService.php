@@ -216,20 +216,4 @@ class PlanService
                 ->update(['theme' => 'basic']);
         }
     }
-
-    /**
-     * Check if new plan is an upgrade from old plan
-     */
-    public function isPlanUpgrade($oldPlan, $newPlan): bool
-    {
-        if (!$oldPlan || !$newPlan) {
-            return false;
-        }
-
-        return (
-            ($newPlan->max_stores ?? 0) > ($oldPlan->max_stores ?? 0) ||
-            ($newPlan->max_users_per_store ?? 0) > ($oldPlan->max_users_per_store ?? 0) ||
-            ($newPlan->max_products_per_store ?? 0) > ($oldPlan->max_products_per_store ?? 0)
-        );
-    }
 }

@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\Plan;
 use App\Models\User;
 use App\Models\StoreConfiguration;
-use App\Models\StoreConfiguration;
 
 class CheckPlanAccess
 {
