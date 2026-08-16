@@ -9,7 +9,7 @@ class Store extends BaseModel
 {
     use HasFactory;
 
-    protected $fillable = [
+protected $fillable = [
         'name',
         'slug',
         'description',
@@ -21,6 +21,7 @@ class Store extends BaseModel
         'enable_custom_domain',
         'enable_custom_subdomain',
         'email',
+        'user_id',
         // SEO Settings
         'seo_title',
         'seo_description',
@@ -33,7 +34,6 @@ class Store extends BaseModel
         'pwa_description',
         'pwa_theme_color',
         'pwa_background_color',
-
         'pwa_display',
         'pwa_orientation',
     ];
@@ -48,7 +48,6 @@ class Store extends BaseModel
      */
     protected $guarded = [
         'id',
-        'user_id',
         'store_content',
     ];
     
