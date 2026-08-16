@@ -41,16 +41,19 @@ class UserObserver
         if ($user->type === 'superadmin') {
             createDefaultSettings($user->id);
         } elseif ($user->type === 'company') {
-            // Create default store if current_store is null and not during seeding
+// Create default store if current_store is null and not during seeding
             if (is_null($user->current_store) && $user->email !== 'company@example.com' && !app()->runningInConsole()) {
                 $store = \App\Models\Store::create([
                     'name' => $user->name,
                     'slug' => \App\Models\Store::generateUniqueSlug($user->name),
                     'theme' => 'core-minimal',
-                    'user_id' => $user->id,
                     'email' => $user->email,
                 ]);
-                
+
+                // user_id is guarded (not mass-assignable), set explicitly
+                $store->user_id = $user->id;
+                $store->save();
+
                 $user->update(['current_store' => $store->id]);
             }
 
