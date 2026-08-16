@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\User;
 use App\Models\Plan;
+use Illuminate\Support\Facades\DB;
 
 class UserObserver
 {
@@ -24,6 +25,7 @@ class UserObserver
     
     /**
      * Handle the User "created" event.
+     * Use afterCommit to ensure the user is fully persisted before creating related records.
      */
     public function created(User $user): void
     {
@@ -37,27 +39,30 @@ class UserObserver
             $user->save();
         }
         
-        // Create default settings for new users
-        if ($user->type === 'superadmin') {
-            createDefaultSettings($user->id);
-        } elseif ($user->type === 'company') {
-// Create default store if current_store is null and not during seeding
-            if (is_null($user->current_store) && $user->email !== 'company@example.com' && !app()->runningInConsole()) {
-                $store = \App\Models\Store::create([
-                    'name' => $user->name,
-                    'slug' => \App\Models\Store::generateUniqueSlug($user->name),
-                    'theme' => 'core-minimal',
-                    'email' => $user->email,
-                ]);
+        // Use afterCommit to ensure the user is fully persisted before creating related records
+        DB::afterCommit(function () use ($user) {
+            // Create default settings for new users
+            if ($user->type === 'superadmin') {
+                createDefaultSettings($user->id);
+            } elseif ($user->type === 'company') {
+                // Create default store if current_store is null and not during seeding
+                if (is_null($user->current_store) && $user->email !== 'company@example.com' && !app()->runningInConsole()) {
+                    $store = \App\Models\Store::create([
+                        'name' => $user->name,
+                        'slug' => \App\Models\Store::generateUniqueSlug($user->name),
+                        'theme' => 'core-minimal',
+                        'email' => $user->email,
+                    ]);
 
-                // user_id is guarded (not mass-assignable), set explicitly
-                $store->user_id = $user->id;
-                $store->save();
+                    // user_id is guarded (not mass-assignable), set explicitly
+                    $store->user_id = $user->id;
+                    $store->save();
 
-                $user->update(['current_store' => $store->id]);
+                    $user->update(['current_store' => $store->id]);
+                }
+
+                copySettingsFromSuperAdmin($user->id, $user->current_store);
             }
-
-            copySettingsFromSuperAdmin($user->id, $user->current_store);
-        }
+        });
     }
 }
