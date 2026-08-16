@@ -2,22 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\EncryptsSensitiveSettings;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class Setting extends BaseModel
 {
     use HasFactory;
+    use EncryptsSensitiveSettings;
 
     protected $fillable = [
         'user_id',
         'store_id',
         'key',
         'value',
-    ];
-
-    protected $casts = [
-        'value' => 'encrypted',
     ];
 
     /**
@@ -49,10 +46,22 @@ class Setting extends BaseModel
             'user_settings.' . $userId . '.' . ($storeId ?? 'global'),
             300,
             function () use ($userId, $storeId) {
-                return self::where('user_id', $userId)
-                          ->where('store_id', $storeId)
-                          ->pluck('value', 'key')
-                          ->toArray();
+                // Use ->get() before ->pluck() so the getValueAttribute accessor
+                // runs and encrypted values are decrypted. A raw query-builder
+                // pluck bypasses the model accessor and returns ciphertext.
+                $query = self::where('user_id', $userId);
+
+                if ($storeId !== null) {
+                    $query->where('store_id', $storeId);
+                } else {
+                    // Global settings are stored with store_id = NULL; a plain
+                    // ->where('store_id', null) never matches in SQL.
+                    $query->whereNull('store_id');
+                }
+
+                return $query->get(['key', 'value'])
+                            ->pluck('value', 'key')
+                            ->toArray();
             }
         );
     }

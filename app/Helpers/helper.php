@@ -1263,19 +1263,17 @@ if (! function_exists('createDefaultSettings')) {
         }
         
         $defaults = defaultSettings();
-        $settingsData = [];
         
+        // Use per-row updateOrCreate so the Setting model's accessors run and
+        // sensitive values are encrypted at rest. A bulk ->insert() bypasses
+        // the setValueAttribute accessor and would store credentials as
+        // plaintext, causing DecryptException on later reads.
         foreach ($defaults as $key => $value) {
-            $settingsData[] = [
-                'user_id' => $userId,
-                'key' => $key,
-                'value' => is_bool($value) ? ($value ? '1' : '0') : (string)$value,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+            Setting::updateOrCreate(
+                ['user_id' => $userId, 'key' => $key, 'store_id' => null],
+                ['value' => $value]
+            );
         }
-        
-        Setting::insert($settingsData);
     }
 }
 

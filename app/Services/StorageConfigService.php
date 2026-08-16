@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class StorageConfigService
 {
@@ -107,29 +106,24 @@ class StorageConfigService
                 $settingsUserId = $user->created_by;
             }
             
-            $settings = DB::table('settings')
-                ->where('user_id', $settingsUserId) 
-                ->whereIn('key', [
-                    'storage_type',
-                    'storage_file_types', 
-                    'storage_max_upload_size',
-                    'aws_access_key_id',
-                    'aws_secret_access_key',
-                    'aws_default_region',
-                    'aws_bucket',
-                    'aws_url',
-                    'aws_endpoint',
-                    'wasabi_access_key',
-                    'wasabi_secret_key',
-                    'wasabi_region',
-                    'wasabi_bucket',
-                    'wasabi_url',
-                    'wasabi_root'
-                ])
-                ->pluck('value', 'key')
-                ->toArray();
+            // Read through the Setting model so the getValueAttribute accessor
+            // runs: sensitive storage credentials are decrypted (and legacy
+            // plaintext values degrade gracefully via the trait's try/catch).
+            // A raw DB::table() pluck would bypass the accessor and return
+            // ciphertext for encrypted aws/wasabi secrets.
+            $settings = \App\Models\Setting::getUserSettings($settingsUserId);
+
+            $storageKeys = [
+                'storage_type', 'storage_file_types', 'storage_max_upload_size',
+                'aws_access_key_id', 'aws_secret_access_key', 'aws_default_region',
+                'aws_bucket', 'aws_url', 'aws_endpoint',
+                'wasabi_access_key', 'wasabi_secret_key', 'wasabi_region',
+                'wasabi_bucket', 'wasabi_url', 'wasabi_root',
+            ];
+            $settings = array_intersect_key($settings, array_flip($storageKeys));
+
             // If no storage settings found, return default
-            if (empty($settings)) {
+            if (empty($settings) || empty($settings['storage_type'])) {
                 return self::getDefaultConfig();
             }
             
