@@ -58,16 +58,44 @@ class SecurityHeadersMiddleware
             && ! empty($headers['csp']['policy'])
             && (app()->isProduction() || $cspForced)) {
             $policy = $headers['csp']['policy'];
-            
+
             // Replace nonce placeholder with actual nonce from CspNonceMiddleware
             $nonce = $request->attributes->get('csp_nonce');
             if ($nonce) {
                 $policy = str_replace('{csp_nonce}', $nonce, $policy);
             }
-            
+
+            // The React SPA sets inline <style> attributes at runtime, which
+            // a nonce (or a nonce+'unsafe-inline' mix) simply cannot allow.
+            // Normalize style-src to always permit inline styles so the UI
+            // renders regardless of the configured policy.
+            $policy = $this->normalizeStyleSrc($policy);
+
             $response->headers->set('Content-Security-Policy', $policy);
         }
 
         return $response;
+    }
+
+    /**
+     * Make style-src React-compatible: drop any nonces from the directive and
+     * guarantee 'unsafe-inline' is present. CSP3 ignores 'unsafe-inline' when
+     * a nonce is present in the same directive, so a leftover nonce would
+     * still block every inline style attribute the framework applies.
+     */
+    protected function normalizeStyleSrc(string $policy): string
+    {
+        if (! preg_match('/style-src\s+[^;]*/', $policy, $match)) {
+            return $policy;
+        }
+
+        $sources = preg_replace("/'nonce-[^']+'/", '', $match[0]);
+        $sources = trim((string) preg_replace('/\s+/', ' ', $sources));
+
+        if (! str_contains($sources, "'unsafe-inline'")) {
+            $sources .= " 'unsafe-inline'";
+        }
+
+        return str_replace($match[0], $sources, $policy);
     }
 }
