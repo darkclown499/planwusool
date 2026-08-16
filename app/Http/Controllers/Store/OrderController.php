@@ -21,6 +21,22 @@ class OrderController extends Controller
     public function placeOrder(Request $request, $storeSlug)
     {
         try {
+            // SECURITY: store owner can require login before checkout.
+            $storeModel = \App\Models\Store::find($request->store_id);
+            if ($storeModel) {
+                $config = \App\Models\StoreConfiguration::getConfiguration($storeModel->id);
+                if (($config['require_login_checkout'] ?? false) && !Auth::guard('customer')->check()) {
+                    if ($request->expectsJson() || $request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => __('Please log in to your account to complete your order.'),
+                            'requires_login' => true,
+                        ], 401);
+                    }
+                    return redirect()->back()->withErrors(['login' => __('Please log in to your account to complete your order.')]);
+                }
+            }
+
             $validationRules = [
                 'store_id' => 'required|exists:stores,id',
                 'customer_first_name' => 'required|string|max:255',

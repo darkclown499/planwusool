@@ -25,6 +25,11 @@ class AuthController extends Controller
         if (!$store) {
             abort(404, 'Store not found');
         }
+
+        // SECURITY: store owner can disable customer login entirely.
+        if (!$this->behavior($store)['enable_customer_login']) {
+            abort(403, 'Customer login is disabled for this store.');
+        }
         
         if ($request->isMethod('post')) {
             $request->validate([
@@ -100,6 +105,11 @@ class AuthController extends Controller
         
         if (!$store) {
             abort(404, 'Store not found');
+        }
+
+        // SECURITY: store owner can disable customer registration.
+        if (!$this->behavior($store)['enable_customer_registration']) {
+            abort(403, 'Customer registration is disabled for this store.');
         }
         
         if ($request->isMethod('post')) {
@@ -342,5 +352,19 @@ class AuthController extends Controller
         
         // Otherwise use default route
         return route('store.home', $store->slug);
+    }
+
+    /**
+     * Read storefront behavior toggles for this store.
+     */
+    private function behavior(Store $store): array
+    {
+        $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
+
+        return [
+            'enable_customer_login' => (bool) ($config['enable_customer_login'] ?? true),
+            'enable_customer_registration' => (bool) ($config['enable_customer_registration'] ?? true),
+            'require_login_checkout' => (bool) ($config['require_login_checkout'] ?? false),
+        ];
     }
 }

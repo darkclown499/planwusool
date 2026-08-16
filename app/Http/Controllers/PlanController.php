@@ -133,6 +133,10 @@ class PlanController extends Controller
             'enable_chatgpt' => 'nullable|in:on,off',
             'enable_shipping_method' => 'nullable|in:on,off',
             'enable_mobile_app' => 'nullable|in:on,off',
+            'enable_branding' => 'nullable|in:on,off',
+            'enable_theme_editor' => 'nullable|in:on,off',
+            'enable_accounting_integration' => 'nullable|in:on,off',
+            'template_editor_level' => 'nullable|in:none,limited,full',
             'themes' => 'nullable|array',
             'is_trial' => 'nullable|in:on,off',
             'trial_day' => 'nullable|integer|min:0',
@@ -148,6 +152,10 @@ class PlanController extends Controller
         $validated['enable_chatgpt'] = $validated['enable_chatgpt'] ?? 'off';
         $validated['enable_shipping_method'] = $validated['enable_shipping_method'] ?? 'off';
         $validated['enable_mobile_app'] = $validated['enable_mobile_app'] ?? 'off';
+        $validated['enable_branding'] = $validated['enable_branding'] ?? 'off';
+        $validated['enable_theme_editor'] = $validated['enable_theme_editor'] ?? 'off';
+        $validated['enable_accounting_integration'] = $validated['enable_accounting_integration'] ?? 'off';
+        $validated['template_editor_level'] = $validated['template_editor_level'] ?? 'none';
         $validated['is_trial'] = $validated['is_trial'] ?? null;
         $validated['is_plan_enable'] = $validated['is_plan_enable'] ?? 'on';
         $validated['is_default'] = $validated['is_default'] ?? false;
@@ -218,6 +226,10 @@ class PlanController extends Controller
             'enable_chatgpt' => 'nullable|in:on,off',
             'enable_shipping_method' => 'nullable|in:on,off',
             'enable_mobile_app' => 'nullable|in:on,off',
+            'enable_branding' => 'nullable|in:on,off',
+            'enable_theme_editor' => 'nullable|in:on,off',
+            'enable_accounting_integration' => 'nullable|in:on,off',
+            'template_editor_level' => 'nullable|in:none,limited,full',
             'themes' => 'nullable|array',
             'is_trial' => 'nullable|in:on,off',
             'trial_day' => 'nullable|integer|min:0',
@@ -233,6 +245,10 @@ class PlanController extends Controller
         $validated['enable_chatgpt'] = $validated['enable_chatgpt'] ?? 'off';
         $validated['enable_shipping_method'] = $validated['enable_shipping_method'] ?? 'off';
         $validated['enable_mobile_app'] = $validated['enable_mobile_app'] ?? 'off';
+        $validated['enable_branding'] = $validated['enable_branding'] ?? 'off';
+        $validated['enable_theme_editor'] = $validated['enable_theme_editor'] ?? 'off';
+        $validated['enable_accounting_integration'] = $validated['enable_accounting_integration'] ?? 'off';
+        $validated['template_editor_level'] = $validated['template_editor_level'] ?? 'none';
         $validated['is_trial'] = $validated['is_trial'] ?? null;
         $validated['is_plan_enable'] = $validated['is_plan_enable'] ?? 'on';
         $validated['is_default'] = $validated['is_default'] ?? false;

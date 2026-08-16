@@ -38,7 +38,7 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
  name: store?.name || '',
  description: store?.description || '',
  email: store?.email || '',
- theme: store?.theme || 'basic',
+ theme: store?.theme || 'core-minimal',
  enable_custom_domain: store?.enable_custom_domain || false,
  enable_custom_subdomain: store?.enable_custom_subdomain || false,
  custom_domain: store?.custom_domain || '',
@@ -153,9 +153,13 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
   <CardContent className="space-y-4">
   <div className="grid gap-3 sm:grid-cols-2">
   {[
-  { value: 'basic', name: t('Basic'), desc: t('تصميم بسيط وحديث يناسب جميع المتاجر') },
-  { value: 'arabic-gadgets', name: t('Arabic Gadgets'), desc: t('تصميم عربي فاخر لمتاجر الإلكترونيات والأجهزة الذكية') },
-  { value: 'wefaq', name: t('Wefaq Supermarket'), desc: t('تصميم سوبر ماركت عربي متكامل بالأقسام الجانبية والعروض اليومية') }
+  { value: 'core-minimal', name: t('Core Minimal'), desc: t('تصميم بسيط وحديث يناسب جميع المتاجر') },
+  { value: 'core-bold', name: t('Core Bold'), desc: t('شبكة منتجات كثيفة مع بانر بعرض كامل') },
+  { value: 'core-sidebar', name: t('Core Sidebar'), desc: t('تخطيط جانبي مع تنقل جانبي ثابت') },
+  { value: 'core-dark', name: t('Core Dark'), desc: t('ثيم داكن تقني حديث') },
+  { value: 'core-bazaar', name: t('Core Bazaar'), desc: t('تصميم ملون مثالي للسوبرماركت') },
+  { value: 'core-elegant', name: t('Core Elegant'), desc: t('ثيم راقٍ هادئ للعلامات الفاخرة') },
+  { value: 'core-showcase', name: t('Core Showcase'), desc: t('هيرو كبير بفيديو وعروض مميزة') }
   ].map((theme) => (
   <button
   key={theme.value}

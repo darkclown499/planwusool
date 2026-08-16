@@ -155,7 +155,7 @@ export default function Onboarding({
         import_demo_products: true,
         language: defaults.language || 'ar',
         currency: defaults.currency || 'ILS',
-        theme: defaults.theme || 'basic',
+        theme: defaults.theme || 'core-minimal',
     });
 
     const [step, setStep] = useState(() =>
@@ -388,24 +388,13 @@ export default function Onboarding({
     ];
 
     const themeOptions = [
-        {
-            value: 'basic',
-            icon: Store,
-            name: t('Basic'),
-            desc: t('Clean and modern design that suits any store.'),
-        },
-        {
-            value: 'arabic-gadgets',
-            icon: Smartphone,
-            name: t('Arabic Gadgets'),
-            desc: t('Premium Arabic design for electronics and smart device stores.'),
-        },
-        {
-            value: 'wefaq',
-            icon: Store,
-            name: t('Wefaq Supermarket'),
-            desc: t('Complete Arabic supermarket design with side categories and daily offers.'),
-        },
+        { value: 'core-minimal', icon: Store, name: t('Core Minimal'), desc: t('Clean and modern design that suits any store.') },
+        { value: 'core-bold', icon: Store, name: t('Core Bold'), desc: t('Dense product grid with a full-width banner.') },
+        { value: 'core-sidebar', icon: Store, name: t('Core Sidebar'), desc: t('Sidebar navigation layout.') },
+        { value: 'core-dark', icon: Smartphone, name: t('Core Dark'), desc: t('Modern dark theme.') },
+        { value: 'core-bazaar', icon: Store, name: t('Core Bazaar'), desc: t('Colorful layout for grocery/market stores.') },
+        { value: 'core-elegant', icon: Store, name: t('Core Elegant'), desc: t('Quiet elegant theme for premium brands.') },
+        { value: 'core-showcase', icon: Smartphone, name: t('Core Showcase'), desc: t('Big hero with video and featured carousel.') },
     ];
 
     const featureChips = [

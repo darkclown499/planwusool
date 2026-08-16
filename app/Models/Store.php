@@ -14,6 +14,8 @@ class Store extends BaseModel
         'slug',
         'description',
         'theme',
+        'design_tokens',
+        'template_overrides',
         'custom_domain',
         'custom_subdomain',
         'enable_custom_domain',
@@ -55,6 +57,21 @@ class Store extends BaseModel
         'enable_custom_subdomain' => 'boolean',
         'enable_pwa' => 'boolean',
         'store_content' => 'array',
+        'design_tokens' => 'array',
+        'template_overrides' => 'array',
+    ];
+
+    /**
+     * Storefront behavior toggles stored in store_configurations.
+     */
+    public const BEHAVIOR_KEYS = [
+        'enable_customer_login',
+        'enable_customer_registration',
+        'require_login_checkout',
+        'show_whatsapp_order_button',
+        'show_search',
+        'show_cart',
+        'show_auth_button',
     ];
 
     /**
@@ -71,6 +88,22 @@ class Store extends BaseModel
     public function configurations()
     {
         return $this->hasMany(StoreConfiguration::class);
+    }
+
+    /**
+     * Custom pages belonging to the store.
+     */
+    public function pages()
+    {
+        return $this->hasMany(StorePage::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Promo/offer cards belonging to the store.
+     */
+    public function offers()
+    {
+        return $this->hasMany(StoreOffer::class)->orderBy('sort_order');
     }
 
     /**
@@ -373,15 +406,59 @@ class Store extends BaseModel
     }
 
     /**
+     * The 29-template catalog. One core design system branching into seven
+     * free variations, plus premium "ready-made" layouts for Growth (7 more)
+     * and Professional (all 29).
+     */
+    public const FREE_TEMPLATES = [
+        'core-minimal', 'core-bold', 'core-sidebar', 'core-dark',
+        'core-bazaar', 'core-elegant', 'core-showcase',
+    ];
+
+    public const GROWTH_TEMPLATES = [
+        'growth-electronics', 'growth-fashion', 'growth-food',
+        'growth-cosmetics', 'growth-supermarket', 'growth-home-decor',
+        'growth-pharmacy',
+    ];
+
+    public const PRO_TEMPLATES = [
+        'pro-tech', 'pro-beauty', 'pro-books', 'pro-sport', 'pro-pets',
+        'pro-flowers', 'pro-coffee', 'pro-stationery', 'pro-spices',
+        'pro-clothing', 'pro-fragrances', 'pro-home-tools', 'pro-kids',
+        'pro-sports', 'pro-boutique',
+    ];
+
+    public const ALL_TEMPLATES = [
+        ...self::FREE_TEMPLATES,
+        ...self::GROWTH_TEMPLATES,
+        ...self::PRO_TEMPLATES,
+    ];
+
+    /** Legacy slugs → canonical core template mapping for one-time migration. */
+    public const LEGACY_TEMPLATE_MAP = [
+        'basic' => 'core-minimal',
+        'gadgets' => 'core-bold',
+        'arabic-gadgets' => 'core-bold',
+        'home-decor' => 'core-elegant',
+        'bakery' => 'core-bazaar',
+        'supermarket' => 'core-bazaar',
+        'wefaq' => 'core-sidebar',
+    ];
+
+    /**
      * Normalize a theme/template value into a valid known slug.
+     * Unknown/legacy values map to a canonical core template.
      */
     public static function normalizeThemeSlug(?string $slug): string
     {
         $slug = trim((string) $slug);
         if ($slug === '') {
-            return 'basic';
+            return 'core-minimal';
         }
-        return in_array($slug, ['basic', 'arabic-gadgets', 'wefaq'], true) ? $slug : 'basic';
+        if (in_array($slug, self::ALL_TEMPLATES, true)) {
+            return $slug;
+        }
+        return self::LEGACY_TEMPLATE_MAP[$slug] ?? 'core-minimal';
     }
 
     /**
@@ -408,6 +485,23 @@ class Store extends BaseModel
             'button_link' => '#template-products',
             'image' => '',
             'background' => '',
+        ],
+        'hero' => [
+            'enabled' => true,
+            'title' => '',
+            'subtitle' => '',
+            'badge' => '',
+            'image' => '',
+            'video' => '',
+            'button_text' => 'تسوّق الآن',
+            'button_link' => '#template-products',
+        ],
+        'video' => [
+            'enabled' => false,
+            'type' => 'hero', // hero | section
+            'title' => '',
+            'video_url' => '',
+            'poster' => '',
         ],
     ];
 

@@ -104,6 +104,36 @@ class ThemeController extends Controller
     }
 
     /**
+     * Read storefront behavior toggles (login/checkout/buttons) for the store.
+     */
+    protected function getStoreBehavior(Store $store = null): array
+    {
+        if (!$store) {
+            return [
+                'enable_customer_login' => true,
+                'enable_customer_registration' => true,
+                'require_login_checkout' => false,
+                'show_whatsapp_order_button' => true,
+                'show_search' => true,
+                'show_cart' => true,
+                'show_auth_button' => true,
+            ];
+        }
+
+        $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
+
+        return [
+            'enable_customer_login' => (bool) ($config['enable_customer_login'] ?? true),
+            'enable_customer_registration' => (bool) ($config['enable_customer_registration'] ?? true),
+            'require_login_checkout' => (bool) ($config['require_login_checkout'] ?? false),
+            'show_whatsapp_order_button' => (bool) ($config['show_whatsapp_order_button'] ?? true),
+            'show_search' => (bool) ($config['show_search'] ?? true),
+            'show_cart' => (bool) ($config['show_cart'] ?? true),
+            'show_auth_button' => (bool) ($config['show_auth_button'] ?? true),
+        ];
+    }
+
+    /**
      * Get common data for all store pages
      */
     protected function getCommonData()
@@ -238,7 +268,7 @@ class ThemeController extends Controller
         // Cache key includes theme, locale, and active status for proper isolation.
         // Invalidated automatically when a product is saved/deleted (see
         // Product model boot()).
-        $theme = $store['theme'] ?? 'basic';
+        $theme = $store['theme'] ?? 'core-minimal';
         $locale = $storeData['config']['locale'] ?? 'ar';
         $cacheKey = "store_catalog.{$store['id']}.theme_{$theme}.locale_{$locale}.active_1";
         
@@ -311,7 +341,7 @@ class ThemeController extends Controller
             );
         }
 
-        $theme = $store['theme'] ?? 'basic';
+        $theme = $store['theme'] ?? 'core-minimal';
 
         // Get countries for checkout modal (cached for 24h)
         $countries = \Illuminate\Support\Facades\Cache::remember(
@@ -338,6 +368,33 @@ class ThemeController extends Controller
             'storeContent' => $storeModel && $storeModel->exists
                 ? $storeModel->getMergedStoreContent()
                 : [],
+            'designTokens' => $storeModel && $storeModel->design_tokens ? $storeModel->design_tokens : [],
+            'templateOverrides' => $storeModel && $storeModel->template_overrides ? $storeModel->template_overrides : [],
+            'offers' => $storeModel && $storeModel->exists
+                ? $storeModel->offers()->where('is_active', true)->get()->map(function ($offer) {
+                    return [
+                        'id' => $offer->id,
+                        'title' => $offer->title,
+                        'subtitle' => $offer->subtitle,
+                        'image' => $offer->image,
+                        'product_id' => $offer->product_id,
+                        'link' => $offer->link,
+                        'discount_percent' => $offer->discount_percent,
+                        'product' => $offer->product ? [
+                            'id' => (string) $offer->product->id,
+                            'name' => $offer->product->name,
+                            'price' => $offer->product->sale_price ? (float) $offer->product->sale_price : (float) $offer->product->price,
+                            'original_price' => $offer->product->sale_price ? (float) $offer->product->price : null,
+                        ] : null,
+                    ];
+                })->values()->all()
+                : [],
+            'storePages' => $storeModel && $storeModel->exists
+                ? $storeModel->pages()->where('is_active', true)->get(['id', 'slug', 'title'])->map(function ($page) {
+                    return ['id' => $page->id, 'slug' => $page->slug, 'title' => $page->title];
+                })->values()->all()
+                : [],
+            'behavior' => $this->getStoreBehavior($storeModel),
             'currencies' => $currencies,
             'countries' => $countries,
             'secondaryCurrency' => $storeData['config']['secondaryCurrency'],
@@ -351,8 +408,14 @@ class ThemeController extends Controller
         ]);
 
         // Pass the store's selected theme slug; the frontend maps it to a
-        // dedicated template page (or falls back to "basic").
+        // dedicated template page (or falls back to the core template).
         $props['template'] = $theme;
+
+        // Storefront template gating uses the OWNER's plan tier (the viewer is
+        // usually anonymous), so premium templates render when the owner has
+        // Growth/Pro instead of showing an upgrade prompt.
+        $ownerPlan = $storeModel && $storeModel->user ? $storeModel->user->plan : null;
+        $props['userPlanName'] = $ownerPlan ? $ownerPlan->name : null;
 
         return Inertia::render('store/dynamic', array_merge($props, [
             'showResetModal' => $request ? $request->get('showResetModal', false) : false,
@@ -408,6 +471,57 @@ class ThemeController extends Controller
         }
 
         return response()->json(['product' => $this->formatFullProduct($productModel)]);
+    }
+
+    /**
+     * Render a custom store page (Professional plan feature).
+     * Pages render through the same template chrome as the homepage so the
+     * header/footer/theme stay consistent.
+     */
+    public function page($storeSlug, $slug, ?Request $request = null)
+    {
+        $store = $this->getStore($storeSlug, $request);
+
+        $storeModel = Store::find($store['id']);
+
+        $page = $storeModel && $storeModel->exists
+            ? $storeModel->pages()->where('slug', $slug)->where('is_active', true)->first()
+            : null;
+
+        if (!$page) {
+            abort(404);
+        }
+
+        $storeData = $this->getStoreConfig($store);
+        $theme = $store['theme'] ?? 'core-minimal';
+
+        $props = [
+            'config' => $storeData['config'],
+            'store' => $store,
+            'theme' => $theme,
+            'storeSettings' => $storeData['storeSettings'],
+            'storeContent' => $storeModel->getMergedStoreContent(),
+            'designTokens' => $storeModel->design_tokens ?? [],
+            'templateOverrides' => $storeModel->template_overrides ?? [],
+            'offers' => [],
+            'storePages' => $storeModel->pages()->where('is_active', true)->get(['id', 'slug', 'title'])->map(fn ($p) => ['id' => $p->id, 'slug' => $p->slug, 'title' => $p->title])->values()->all(),
+            'behavior' => $this->getStoreBehavior($storeModel),
+            'page' => [
+                'title' => $page->title,
+                'content' => $page->content,
+                'image' => $page->image,
+                'meta_title' => $page->meta_title,
+                'meta_description' => $page->meta_description,
+            ],
+            'locale' => $storeData['config']['locale'],
+        ];
+
+        $props['template'] = $theme;
+
+        $ownerPlan = $storeModel->user ? $storeModel->user->plan : null;
+        $props['userPlanName'] = $ownerPlan ? $ownerPlan->name : null;
+
+        return Inertia::render('store/dynamic', array_merge($props, $this->getCommonData()));
     }
 
     /**

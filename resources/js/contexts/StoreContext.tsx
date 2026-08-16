@@ -57,6 +57,15 @@ interface StoreContextType {
     config: StoreConfig;
     store: Store;
     content?: any;
+    behavior?: {
+        enable_customer_login?: boolean;
+        enable_customer_registration?: boolean;
+        require_login_checkout?: boolean;
+        show_whatsapp_order_button?: boolean;
+        show_search?: boolean;
+        show_cart?: boolean;
+        show_auth_button?: boolean;
+    };
 }
 
 export const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -66,9 +75,10 @@ interface StoreProviderProps {
     config: StoreConfig;
     store: Store;
     content?: any;
+    behavior?: StoreContextType['behavior'];
 }
 
-export const StoreProvider: React.FC<StoreProviderProps> = ({ children, config, store, content }) => {
+export const StoreProvider: React.FC<StoreProviderProps> = ({ children, config, store, content, behavior }) => {
     // Set dynamic favicon once on mount
     useEffect(() => {
         if (config.favicon) {
@@ -155,6 +165,7 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children, config, 
         config,
         store,
         content,
+        behavior,
     };
 
     return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

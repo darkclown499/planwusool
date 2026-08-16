@@ -18,6 +18,10 @@ interface DynamicStoreProps {
     config?: any;
     storeSettings?: any;
     storeContent?: any;
+    offers?: any[];
+    storePages?: any[];
+    behavior?: any;
+    page?: any;
     isPreview?: boolean;
     userPlanName?: string | null;
     userPlanTier?: 'starter' | 'growth' | 'professional';
@@ -47,6 +51,10 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     config,
     storeSettings,
     storeContent,
+    offers = [],
+    storePages = [],
+    behavior = {},
+    page = null,
     isPreview = false,
     userPlanName = null,
     userPlanTier = 'starter',
@@ -61,7 +69,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
         if (templateConfig) {
             return templateConfig;
         }
-        return getTemplateConfig(template) || getTemplateConfig('basic');
+        return getTemplateConfig(template) || getTemplateConfig('core-minimal');
     }, [template, templateConfig]);
 
     const storeData = useMemo(
@@ -72,8 +80,11 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             config,
             storeSettings,
             content: storeContent,
+            offers,
+            pages: storePages,
+            behavior,
         }),
-        [store, categories, products, config, storeSettings, storeContent],
+        [store, categories, products, config, storeSettings, storeContent, offers, storePages, behavior],
     );
 
     // Plan gating on the storefront is based on the store owner's plan (passed
@@ -97,21 +108,38 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 customer={customer}
                 customerAddress={customer_address}
                 action={action}
+                behavior={behavior}
             >
                 <StoreBoundary>
                     <TemplateStorefront>
                         <div className="pb-24 md:pb-16" style={{ background: 'var(--twc-background, #ffffff)' }}>
-                            <TemplateRenderer
-                                template={resolvedTemplate}
-                                storeData={storeData}
-                                designTokens={designTokens}
-                                overrides={templateOverrides}
-                                isPreview={isPreview}
-                                userPlanName={userPlanName}
-                                userPlanTier={userPlanTier}
-                                isSuperAdmin={effectiveSuperAdmin}
-                                demoStoreUrl={demoStoreUrl}
-                            />
+                            {page ? (
+                                <TemplateRenderer
+                                    template={resolvedTemplate}
+                                    storeData={storeData}
+                                    designTokens={designTokens}
+                                    overrides={templateOverrides}
+                                    isPreview={isPreview}
+                                    userPlanName={userPlanName}
+                                    userPlanTier={userPlanTier}
+                                    isSuperAdmin={effectiveSuperAdmin}
+                                    demoStoreUrl={demoStoreUrl}
+                                    mode="page"
+                                    page={page}
+                                />
+                            ) : (
+                                <TemplateRenderer
+                                    template={resolvedTemplate}
+                                    storeData={storeData}
+                                    designTokens={designTokens}
+                                    overrides={templateOverrides}
+                                    isPreview={isPreview}
+                                    userPlanName={userPlanName}
+                                    userPlanTier={userPlanTier}
+                                    isSuperAdmin={effectiveSuperAdmin}
+                                    demoStoreUrl={demoStoreUrl}
+                                />
+                            )}
                         </div>
                     </TemplateStorefront>
                 </StoreBoundary>

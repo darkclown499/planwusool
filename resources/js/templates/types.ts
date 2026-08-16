@@ -9,6 +9,9 @@ export type TemplateSectionType =
   | 'footer'
   | 'featured'
   | 'banner'
+  | 'banners'
+  | 'offers'
+  | 'video'
   | 'reviews'
   | 'sidebar';
 

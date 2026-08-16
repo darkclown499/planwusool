@@ -33,6 +33,8 @@ interface Plan {
   enable_shipping_method: string;
   enable_mobile_app: string;
   enable_sms: string;
+  enable_theme_editor: string;
+  template_editor_level: 'none' | 'limited' | 'full';
   themes: string[] | null;
   is_trial: string | null;
   trial_day: number;
@@ -74,7 +76,9 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
     enable_shipping_method: plan?.enable_shipping_method || 'off',
     enable_mobile_app: plan?.enable_mobile_app || 'off',
     enable_sms: plan?.enable_sms || 'off',
-    themes: ['basic'],
+    enable_theme_editor: plan?.enable_theme_editor || 'off',
+    template_editor_level: plan?.template_editor_level || 'none',
+    themes: plan?.themes?.length ? plan.themes : ['core-minimal'],
     is_trial: plan?.is_trial || null,
     trial_day: plan?.trial_day || 0,
     is_plan_enable: plan?.is_plan_enable || 'on',
@@ -365,6 +369,21 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   checked={formData.enable_sms === 'on'}
                   onCheckedChange={(checked) => handleSwitchChange('enable_sms', checked)}
                 />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="template_editor_level">{t("Template Editor")}</Label>
+                <select
+                  id="template_editor_level"
+                  name="template_editor_level"
+                  value={formData.template_editor_level || 'none'}
+                  onChange={handleChange}
+                  className="rounded-md border bg-background px-2 py-1.5 text-sm"
+                >
+                  <option value="none">{t("None (colors + logo)")}</option>
+                  <option value="limited">{t("Limited (banners + offers)")}</option>
+                  <option value="full">{t("Full (Professional)")}</option>
+                </select>
               </div>
               
               <div className="flex items-center justify-between">

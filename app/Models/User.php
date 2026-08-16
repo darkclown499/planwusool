@@ -368,11 +368,26 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     }
     
     /**
-     * Get available themes based on plan.
+     * Get available themes based on the user's plan tier.
+     *
+     * The plan stores the exact 29-slug catalog, distributed by tier
+     * (Free=7, Growth=14, Professional=29). Superadmin can use all of them.
      */
     public function getAvailableThemes()
     {
-        return ['basic', 'arabic-gadgets', 'wefaq'];
+        if ($this->isSuperAdmin() || $this->isAdmin()) {
+            return \App\Models\Store::ALL_TEMPLATES;
+        }
+
+        $plan = $this->plan;
+
+        if (!$plan || empty($plan->themes)) {
+            $plan = Plan::getDefaultPlan();
+        }
+
+        $themes = is_array($plan->themes) ? $plan->themes : [];
+
+        return count($themes) > 0 ? $themes : \App\Models\Store::FREE_TEMPLATES;
     }
 
     /**

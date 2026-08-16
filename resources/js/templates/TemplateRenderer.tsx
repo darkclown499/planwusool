@@ -1,6 +1,6 @@
-import { UpgradePrompt } from '@/templates/PlanGuard';
+import { PageSection } from '@/templates/sections';
 import { SECTION_COMPONENTS } from '@/templates/sections';
-import { hasDedicatedPage, TEMPLATE_PAGES } from '@/templates/pages';
+import { UpgradePrompt } from '@/templates/PlanGuard';
 import type { DesignTokens, TemplateConfig, TemplateSectionConfig } from '@/templates/types';
 import { useTemplateAccess } from '@/templates/useTemplateAccess';
 import { applyDesignTokensToCSS, mergeDesignTokens, tokensToCssVars } from '@/utils/designTokens';
@@ -17,11 +17,15 @@ interface TemplateRendererProps {
     isPreview?: boolean;
     loading?: boolean;
     demoStoreUrl?: string;
+    mode?: 'home' | 'page';
+    page?: any;
 }
 
 /**
  * TemplateRenderer - renders a store using a template's JSON config.
- * Enforces plan access via guards and applies design tokens as CSS variables.
+ * All 29 templates are data-driven (one core design system): this component
+ * renders the section list, applies design tokens as CSS variables and gates
+ * premium templates with the upgrade prompt.
  */
 export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     template,
@@ -34,6 +38,8 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
     isPreview = false,
     loading = false,
     demoStoreUrl = '',
+    mode = 'home',
+    page = null,
 }) => {
     const { canActivate, filterSections } = useTemplateAccess({
         templateSlug: template?.slug,
@@ -64,7 +70,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         );
     }
 
-    // Locked template - show upgrade prompt but render preview-like skeleton
+    // Locked (premium) template for a viewer without access.
     if (!canActivate) {
         return (
             <div className="min-h-screen bg-gray-50 p-8">
@@ -80,25 +86,25 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
         );
     }
 
-    // Dedicated hand-crafted page for this template (structurally unique
-    // design). Falls back to the generic JSON-section renderer below.
-    if (hasDedicatedPage(template.slug)) {
-        const Page = TEMPLATE_PAGES[template.slug];
+    // Custom store "page" mode: render a simple page within the theme chrome.
+    if (mode === 'page' && page) {
         return (
             <div
                 className={`min-h-screen overflow-x-hidden ${template.layout.dark_mode ? 'dark' : ''}`}
-                style={{ ...tokensToCssVars(mergedTokens) }}
+                style={{
+                    background: 'var(--twc-background, #ffffff)',
+                    color: 'var(--twc-text-primary, #111827)',
+                    ...tokensToCssVars(mergedTokens),
+                }}
                 dir="rtl"
             >
-                <Page
-                    template={template}
+                <PageSection
+                    section={{ id: '__page__', type: 'custom', enabled: true, order: 0, props: {} }}
                     storeData={storeData}
                     designTokens={mergedTokens}
                     isPreview={isPreview}
-                    userPlanName={userPlanName}
-                    userPlanTier={userPlanTier}
-                    isSuperAdmin={isSuperAdmin}
-                    demoStoreUrl={demoStoreUrl}
+                    layout={template.layout}
+                    page={page}
                 />
             </div>
         );
@@ -109,8 +115,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
 
     const enabledSections = filterSections(sections.filter((s) => s.enabled));
 
-    // Sidebar templates (e.g. supermarket) keep their sidebar sections in a
-    // sticky aside on desktop; on mobile they collapse back into the flow.
+    // Sidebar templates keep sidebar sections in a sticky aside on desktop.
     const sidebarSections = enabledSections.filter((s) => s.id === 'sidebar' || s.type === 'sidebar');
     const mainSections = enabledSections.filter((s) => s.id !== 'sidebar' && s.type !== 'sidebar');
     const hasSidebar = template.layout.sidebar === true && sidebarSections.length > 0;
@@ -132,6 +137,7 @@ export const TemplateRenderer: React.FC<TemplateRendererProps> = ({
                 designTokens={mergedTokens}
                 isPreview={isPreview}
                 layout={template.layout}
+                mode={mode}
             />
         );
     };

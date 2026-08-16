@@ -1831,7 +1831,7 @@ if (!function_exists('enforcePlanLimitations')) {
         if (is_array($availableThemes) && count($availableThemes) > 0) {
             $user->stores()
                 ->whereNotIn('theme', $availableThemes)
-                ->update(['theme' => 'basic']);
+                ->update(['theme' => 'core-minimal']);
         }
     }
 }
@@ -2331,5 +2331,56 @@ if (! function_exists('getMaskedSettings')) {
         }
 
         return $settings;
+    }
+}
+
+if (! function_exists('getTemplateEditorLevel')) {
+    /**
+     * Template editing tier for a user's plan.
+     *   none      → Free (colors + logo only)
+     *   limited   → Growth (+ banners, offers, WhatsApp/button toggles)
+     *   full      → Professional (everything, incl. hero/video/cart/pages)
+     */
+    function getTemplateEditorLevel($user = null): string
+    {
+        $user = $user ?? auth()->user();
+
+        if (!$user) {
+            return 'none';
+        }
+
+        if ($user->isSuperAdmin() || $user->isAdmin()) {
+            return 'full';
+        }
+
+        $level = $user->plan->template_editor_level ?? 'none';
+
+        return in_array($level, ['none', 'limited', 'full'], true) ? $level : 'none';
+    }
+}
+
+if (! function_exists('getTemplateCapabilities')) {
+    /**
+     * Per-feature editing capabilities for the current user's tier.
+     * The frontend editor hides/disables controls by these flags; the backend
+     * endpoints ALSO enforce them (defence in depth).
+     */
+    function getTemplateCapabilities($user = null): array
+    {
+        $level = getTemplateEditorLevel($user);
+
+        return [
+            'level' => $level,
+            'colors' => in_array($level, ['none', 'limited', 'full'], true), // all tiers
+            'logo' => true,
+            'banners' => $level !== 'none',
+            'offers' => $level !== 'none',
+            'hero' => $level === 'full',
+            'video' => $level === 'full',
+            'cart' => $level === 'full',
+            'pages' => $level === 'full',
+            'advanced' => $level === 'full',
+            'behavior' => $level === 'full',
+        ];
     }
 }

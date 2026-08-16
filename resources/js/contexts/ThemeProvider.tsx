@@ -107,6 +107,7 @@ interface ThemeProviderProps {
     categories: Category[];
     products: Product[];
     content?: any;
+    behavior?: any;
     isLoggedIn?: boolean;
     customer?: Customer | null;
     customerAddress?: CustomerAddress[];
@@ -124,6 +125,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     categories,
     products,
     content,
+    behavior,
     isLoggedIn = false,
     customer = null,
     customerAddress = [],
@@ -135,7 +137,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 }) => {
     return (
         <StorefrontLocaleProvider defaultLocale={config.locale}>
-            <StoreProvider config={config} store={store} content={content}>
+            <StoreProvider config={config} store={store} content={content} behavior={behavior}>
                 <AuthProvider isLoggedIn={isLoggedIn} customer={customer} customerAddress={customerAddress}>
                     <WishlistProvider storeId={store.id} isLoggedIn={isLoggedIn}>
                         <CartProvider storeId={store.id}>

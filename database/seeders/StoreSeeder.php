@@ -198,7 +198,7 @@ class StoreSeeder extends Seeder
                 'name' => $storeData['name'],
                 'slug' => $slug,
                 'description' => $storeData['description'],
-                'theme' => 'basic',
+                'theme' => 'core-minimal',
                 'user_id' => $user->id,
                 'email' => $storeData['email'],
             ]);

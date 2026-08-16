@@ -23,7 +23,7 @@ import { TemplateProductDetailModal } from './ProductDetailModal';
  */
 export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { t } = useTranslation();
-    const { store } = useStore();
+    const { store, behavior } = useStore();
     const cart = useCart();
     const auth = useAuth();
     const ui = useUI();
@@ -31,6 +31,9 @@ export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ ch
     const order = useOrder();
 
     const storeSlug = store?.slug;
+
+    const loginEnabled = behavior?.enable_customer_login !== false;
+    const requireLogin = behavior?.require_login_checkout === true;
 
     // Payment redirects (Paystack, Skrill, Flutterwave...) return to the store
     // with payment_status + order_number in the URL -> show the success modal.
@@ -48,6 +51,13 @@ export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ ch
     const handleCheckoutClick = () => {
         ui.setShowCart(false);
         if (auth.isLoggedIn) {
+            ui.setShowCheckout(true);
+        } else if (requireLogin) {
+            // Login required: send straight to the login form (no guest option).
+            ui.setShowAuthModal(false);
+            auth.setShowLoginModal(true);
+        } else if (!loginEnabled) {
+            // Login disabled: go straight to checkout as guest.
             ui.setShowCheckout(true);
         } else {
             ui.setShowAuthModal(true);

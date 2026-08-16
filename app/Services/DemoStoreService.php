@@ -85,7 +85,7 @@ class DemoStoreService
             'name' => __('Demo Store'),
             'slug' => self::SLUG,
             'description' => __('A fully working demo store showing the capabilities of Wusool.'),
-            'theme' => 'basic',
+            'theme' => 'core-minimal',
             'user_id' => $owner?->id,
             'email' => 'demo@wusool.ps',
             'enable_custom_domain' => false,

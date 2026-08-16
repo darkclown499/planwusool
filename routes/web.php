@@ -171,6 +171,9 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // On-demand product details (keeps heavy fields out of the storefront payload)
     Route::get('/product/{product}', [ThemeController::class, 'productDetail'])->name('store.product-detail');
 
+    // Custom store pages (Professional plan feature): /page/{slug}
+    Route::get('/page/{slug}', [ThemeController::class, 'page'])->name('store.page');
+
     // Catch-all: any unmatched GET on a store subdomain renders the store homepage
     // (mirrors the previous "unknown route -> home" behaviour for custom domains).
     // IMPORTANT: api/* paths must NOT be swallowed here — the storefront calls
@@ -220,6 +223,30 @@ Route::middleware('api.throttle')->group(function () {
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StoreContentController::class, 'show'])->name('show');
         Route::put('/', [\App\Http\Controllers\Api\StoreContentController::class, 'update'])->name('update');
+    });
+
+    // Store template state API (theme, design tokens, overrides, content, behavior)
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/template')->name('api.store-template.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\TemplateEditorController::class, 'show'])->name('show');
+        Route::put('/', [\App\Http\Controllers\Api\TemplateEditorController::class, 'update'])->name('update');
+    });
+
+    // Store offers API
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/offers')->name('api.store-offers.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreOfferController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\StoreOfferController::class, 'store'])->name('store');
+        Route::post('reorder', [\App\Http\Controllers\Api\StoreOfferController::class, 'reorder'])->name('reorder');
+        Route::put('{offer}', [\App\Http\Controllers\Api\StoreOfferController::class, 'update'])->name('update');
+        Route::delete('{offer}', [\App\Http\Controllers\Api\StoreOfferController::class, 'destroy'])->name('destroy');
+    });
+
+    // Store pages API
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/pages')->name('api.store-pages.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StorePageController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\StorePageController::class, 'store'])->name('store');
+        Route::post('reorder', [\App\Http\Controllers\Api\StorePageController::class, 'reorder'])->name('reorder');
+        Route::put('{page}', [\App\Http\Controllers\Api\StorePageController::class, 'update'])->name('update');
+        Route::delete('{page}', [\App\Http\Controllers\Api\StorePageController::class, 'destroy'])->name('destroy');
     });
     
     // Product reviews API (storefront)

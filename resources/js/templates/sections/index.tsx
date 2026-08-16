@@ -54,6 +54,15 @@ export const HeaderSection: React.FC<SectionProps> = ({ section, storeData }) =>
     const storeName = config?.storeName || storeData?.name || 'متجري';
     const logo = config?.logo || storeData?.logo;
 
+    // Per-store behavior toggles (server-driven).
+    const behavior = storeData?.behavior || {};
+    const showSearch = props.show_search !== false && behavior.show_search !== false;
+    const showCart = props.show_cart !== false && behavior.show_cart !== false;
+    const showAuth = props.show_auth !== false && behavior.show_auth_button !== false;
+    const showWhatsapp = props.show_whatsapp !== false && behavior.show_whatsapp_order_button !== false;
+
+    const pages = (storeData?.pages || []) as { slug: string; title: string }[];
+
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         product.handleSearch(searchQuery);
@@ -80,8 +89,24 @@ export const HeaderSection: React.FC<SectionProps> = ({ section, storeData }) =>
                         </span>
                     </a>
 
+                    {/* Nav links to custom pages */}
+                    {pages.length > 0 && (
+                        <nav className="hidden items-center gap-4 lg:flex">
+                            {pages.map((pageItem) => (
+                                <a
+                                    key={pageItem.slug}
+                                    href={`/page/${pageItem.slug}`}
+                                    className="text-sm font-medium transition-colors hover:opacity-80"
+                                    style={{ color: 'var(--twc-text-muted, #6b7280)' }}
+                                >
+                                    {pageItem.title}
+                                </a>
+                            ))}
+                        </nav>
+                    )}
+
                     {/* Search (desktop) */}
-                    {props.show_search !== false && (
+                    {showSearch && (
                         <form onSubmit={handleSearch} className="hidden flex-1 justify-center px-4 lg:flex">
                             <div className="relative w-full max-w-md">
                                 <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -107,9 +132,9 @@ export const HeaderSection: React.FC<SectionProps> = ({ section, storeData }) =>
 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
-                        {props.show_whatsapp !== false && <WhatsAppButton className="hidden lg:flex" />}
-                        {props.show_cart !== false && <CartButton />}
-                        {props.show_auth !== false && <AccountButton />}
+                        {showWhatsapp && <WhatsAppButton className="hidden lg:flex" />}
+                        {showCart && <CartButton />}
+                        {showAuth && <AccountButton />}
                     </div>
                 </div>
             </header>
@@ -965,6 +990,225 @@ export const ContentSection: React.FC<SectionProps> = ({ section, storeData }) =
     return <CustomSection section={section} storeData={storeData} />;
 };
 
+/* ============================== OFFERS ============================== */
+
+export const OffersSection: React.FC<SectionProps> = ({ section, storeData }) => {
+    const offers = (storeData?.offers || []) as any[];
+    if (offers.length === 0) return null;
+
+    const max = Number(section.props?.per_page ?? 6);
+    const visible = offers.slice(0, max);
+
+    return (
+        <section className={section.classes?.section || 'w-full py-10 sm:py-12'}>
+            <div className={section.classes?.container || 'mx-auto px-4'}>
+                <h2 className="mb-6 text-center text-2xl font-bold sm:text-3xl" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                    {section.props?.title || 'عروضنا الحصرية'}
+                </h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {visible.map((offer: any) => (
+                        <OfferCard key={offer.id} offer={offer} />
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+export const OfferCard: React.FC<{ offer: any }> = ({ offer }) => {
+    const target = offer.product_id
+        ? `#product-${offer.product_id}`
+        : offer.link || '#template-products';
+
+    return (
+        <a
+            href={target}
+            className="group relative flex flex-col overflow-hidden rounded-2xl border shadow-sm transition-shadow hover:shadow-lg"
+            style={{
+                background: 'var(--twc-surface, #ffffff)',
+                borderColor: 'var(--twc-border, #e5e7eb)',
+            }}
+        >
+            {offer.image ? (
+                <div className="aspect-[16/9] w-full overflow-hidden">
+                    <img src={getImageUrl(offer.image)} alt={offer.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                </div>
+            ) : (
+                <div className="flex aspect-[16/9] w-full items-center justify-center" style={{ background: 'var(--twc-primary-100, #dff3e9)' }}>
+                    <span className="text-4xl">🏷️</span>
+                </div>
+            )}
+            <div className="flex flex-1 flex-col p-4">
+                <h3 className="text-base font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                    {offer.title}
+                </h3>
+                {offer.subtitle && (
+                    <p className="mt-1 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
+                        {offer.subtitle}
+                    </p>
+                )}
+                {typeof offer.discount_percent === 'number' && offer.discount_percent > 0 && (
+                    <span
+                        className="mt-3 inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-bold text-white"
+                        style={{ background: 'var(--twc-primary-600, #059669)' }}
+                    >
+                        خصم {offer.discount_percent}%
+                    </span>
+                )}
+            </div>
+        </a>
+    );
+};
+
+/* ============================== BANNERS (CAROUSEL) ============================== */
+
+export const BannersSection: React.FC<SectionProps> = ({ section, storeData }) => {
+    const content = storeData?.content || {};
+    const slides = (content?.banners || []) as any[];
+    const single = content?.banner;
+
+    if (!slides.length && !(single && single.enabled !== false)) return null;
+
+    return (
+        <section className={section.classes?.section || 'w-full py-8'}>
+            <div className={section.classes?.container || 'mx-auto px-4'}>
+                {slides.length > 0 ? <BannerCarousel slides={slides} /> : <SingleBanner banner={single} />}
+            </div>
+        </section>
+    );
+};
+
+const BannerCarousel: React.FC<{ slides: any[] }> = ({ slides }) => {
+    const [index, setIndex] = useState(0);
+    const count = slides.length;
+    const current = slides[index % count];
+
+    if (!current) return null;
+
+    return (
+        <div className="relative overflow-hidden rounded-2xl" style={{ background: 'var(--twc-primary-100, #dff3e9)' }}>
+            <div className="flex aspect-[21/9] w-full flex-col items-center justify-center p-6 text-center sm:p-10">
+                <h3 className="text-2xl font-bold sm:text-3xl" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                    {current.title}
+                </h3>
+                {current.subtitle && (
+                    <p className="mt-2 text-sm sm:text-base" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
+                        {current.subtitle}
+                    </p>
+                )}
+                {current.button_text && (
+                    <a
+                        href={current.button_link || '#template-products'}
+                        className="mt-4 inline-flex items-center rounded-full px-6 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                        style={{ background: 'var(--twc-primary-600, #059669)' }}
+                    >
+                        {current.button_text}
+                    </a>
+                )}
+            </div>
+            {count > 1 && (
+                <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2">
+                    {slides.map((s, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setIndex(i)}
+                            aria-label={`slide ${i + 1}`}
+                            className={`h-2 rounded-full transition-all ${i === index % count ? 'w-6' : 'w-2'} bg-white/80`}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const SingleBanner: React.FC<{ banner: any }> = ({ banner }) => (
+    <div
+        className="flex items-center justify-between gap-6 rounded-2xl p-6 sm:p-10"
+        style={{
+            background: banner.background || 'var(--twc-primary-600, #059669)',
+            backgroundImage: banner.image ? `url(${getImageUrl(banner.image)})` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+        }}
+    >
+        <div>
+            <h3 className="text-2xl font-bold text-white sm:text-3xl">{banner.title}</h3>
+            {banner.subtitle && <p className="mt-2 text-sm text-white/90 sm:text-base">{banner.subtitle}</p>}
+            {banner.button_text && (
+                <a
+                    href={banner.button_link || '#template-products'}
+                    className="mt-4 inline-flex items-center rounded-full bg-white px-6 py-2.5 text-sm font-bold"
+                    style={{ color: 'var(--twc-primary-700, #047857)' }}
+                >
+                    {banner.button_text}
+                </a>
+            )}
+        </div>
+    </div>
+);
+
+/* ============================== VIDEO ============================== */
+
+export const VideoSection: React.FC<SectionProps> = ({ section, storeData }) => {
+    const content = storeData?.content || {};
+    const video = content?.video;
+    if (!video || video.enabled === false || !video.video_url) return null;
+
+    const url = video.video_url;
+
+    return (
+        <section className={section.classes?.section || 'w-full py-10 sm:py-12'}>
+            <div className={section.classes?.container || 'mx-auto max-w-4xl px-4'}>
+                {video.title && (
+                    <h2 className="mb-6 text-center text-2xl font-bold sm:text-3xl" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                        {video.title}
+                    </h2>
+                )}
+                <div className="aspect-video w-full overflow-hidden rounded-2xl">
+                    {url.includes('youtube.com') || url.includes('youtu.be') ? (
+                        <iframe
+                            src={url.replace('/watch?v=', '/embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                            title={video.title || 'video'}
+                            className="h-full w-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        />
+                    ) : (
+                        <video className="h-full w-full object-cover" controls poster={video.poster ? getImageUrl(video.poster) : undefined}>
+                            <source src={url} />
+                        </video>
+                    )}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+/* ============================== CUSTOM PAGE ============================== */
+
+export const PageSection: React.FC<SectionProps & { page?: any }> = ({ page }) => {
+    if (!page) return null;
+
+    return (
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+            {page.image && (
+                <img src={getImageUrl(page.image)} alt={page.title} className="mb-6 w-full rounded-2xl object-cover" />
+            )}
+            <h1 className="text-3xl font-bold sm:text-4xl" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                {page.title}
+            </h1>
+            {page.content && (
+                <div
+                    className="prose prose-lg mt-6 max-w-none"
+                    style={{ color: 'var(--twc-text-primary, #111827)' }}
+                    dangerouslySetInnerHTML={{ __html: page.content }}
+                />
+            )}
+        </div>
+    );
+};
+
 /* ============================== MAP ============================== */
 
 export const SECTION_COMPONENTS: Record<string, React.FC<SectionProps>> = {
@@ -977,5 +1221,8 @@ export const SECTION_COMPONENTS: Record<string, React.FC<SectionProps>> = {
     custom: ContentSection,
     featured: ContentSection,
     banner: AnnouncementSection,
+    banners: BannersSection,
+    offers: OffersSection,
+    video: VideoSection,
     sidebar: CustomSection,
 };

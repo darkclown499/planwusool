@@ -35,9 +35,29 @@ class StoreContentController extends Controller
             'content' => 'required|array',
         ]);
 
-        $store->update([
-            'store_content' => $request->content,
-        ]);
+        // store_content is $guarded (never mass-assignable) — set explicitly.
+        // Tier-aware: only allow sections the owner's plan may edit.
+        $capabilities = getTemplateCapabilities($request->user());
+        $allowed = ['announcement', 'features', 'testimonials', 'faqs', 'trust_bar', 'newsletter'];
+        if ($capabilities['banners']) {
+            $allowed[] = 'banner';
+        }
+        if ($capabilities['hero']) {
+            $allowed[] = 'hero';
+        }
+        if ($capabilities['video']) {
+            $allowed[] = 'video';
+        }
+
+        $current = $store->getMergedStoreContent();
+        foreach ($request->content as $section => $value) {
+            if (in_array($section, $allowed, true)) {
+                $current[$section] = $value;
+            }
+        }
+
+        $store->store_content = $current;
+        $store->save();
 
         return response()->json([
             'success' => true,
