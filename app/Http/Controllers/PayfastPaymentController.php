@@ -186,40 +186,10 @@ class PayfastPaymentController extends Controller
 
     public function success(Request $request)
     {
-        // Try different parameter names PayFast might use
-        $paymentId = $request->get('m_payment_id') ?? $request->get('pf_payment_id') ?? $request->get('payment_id');
-        
-        if (!$paymentId && auth()->check()) {
-            // If no payment ID, find the most recent pending order for this user
-            $planOrder = PlanOrder::where('user_id', auth()->id())
-                ->where('payment_method', 'payfast')
-                ->where('status', 'pending')
-                ->orderBy('created_at', 'desc')
-                ->first();
-        } else {
-            $planOrder = PlanOrder::where('payment_id', $paymentId)->first();
-        }
-        
-        if ($planOrder) {
-            // Always process the payment on success return
-            $planOrder->update([
-                'status' => 'approved',
-                'processed_at' => now()
-            ]);
-            
-            // Assign plan to user
-            $user = $planOrder->user;
-            $plan = $planOrder->plan;
-            $expiresAt = $planOrder->billing_cycle === 'yearly' ? now()->addYear() : now()->addMonth();
-            
-            $user->update([
-                'plan_id' => $plan->id,
-                'plan_expires_at' => $expiresAt,
-            ]);
-            
-            return redirect()->route('plans.index')->with('success', __('Payment completed and plan activated!'));
-        }
-        
-        return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+        // SECURITY: never approve an order from the public return URL.
+        // PayFast ITN (callback) performs signature + IP + amount
+        // verification server-side before a plan is activated.
+        return redirect()->route('plans.index')
+            ->with('info', __('Payment confirmation is pending verification. Your plan will activate once PayFast confirms it.'));
     }
 }

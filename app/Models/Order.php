@@ -8,11 +8,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    protected $fillable = [
+    /**
+     * Ownership/identity fields (store_id, customer_id, session_id,
+     * order_number) are never mass-assignable — they are only set by the
+     * server-side OrderService so a request can never re-point an order at
+     * another tenant or fabricate an order number.
+     *
+     * @var list<string>
+     */
+    protected $guarded = [
+        'id',
         'order_number',
         'store_id',
         'customer_id',
         'session_id',
+    ];
+
+    protected $fillable = [
         'status',
         'payment_status',
         'customer_email',

@@ -309,7 +309,8 @@ class OnboardingController extends Controller
         $store = $user->stores()->first();
 
         if ($store) {
-            $user->update(['current_store' => $store->id]);
+            $user->current_store = $store->id;
+            $user->save();
 
             return $store;
         }
@@ -318,11 +319,15 @@ class OnboardingController extends Controller
             'name' => $user->name,
             'slug' => Store::generateUniqueSlug($user->name),
             'theme' => 'basic',
-            'user_id' => $user->id,
             'email' => $user->email,
         ]);
 
-        $user->update(['current_store' => $store->id]);
+        // user_id is guarded against mass assignment; assign explicitly.
+        $store->user_id = $user->id;
+        $store->save();
+
+        $user->current_store = $store->id;
+        $user->save();
 
         return $store;
     }

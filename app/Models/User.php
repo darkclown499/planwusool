@@ -31,7 +31,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'type',
         'avatar',
         'lang',
-        'current_store',
         'delete_status',
         'plan_id',
         'plan_duration',
@@ -46,17 +45,10 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'used_referral_code',
         'google2fa_enable',
         'google2fa_secret',
-        'status',
-        'is_trial',
-        'trial_day',
-        'trial_expire_date',
         'active_module',
-        'commission_amount',
         'terms_accepted_at',
         'onboarded_at',
         'last_login_at',
-        'last_login_ip',
-        'last_login_ua',
     ];
 
     /**
@@ -80,6 +72,10 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'used_referral_code',
         'password',
         'remember_token',
+        'current_store',
+        'commission_amount',
+        'last_login_ip',
+        'last_login_ua',
     ];
 
     /**

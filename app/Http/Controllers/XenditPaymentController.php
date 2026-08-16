@@ -91,9 +91,7 @@ class XenditPaymentController extends Controller
                         'payment_id' => $request->input('external_id', 'xendit_' . time()),
                     ]);
                     
-                    if (!auth()->check()) {
-                        auth()->login($user);
-                    }
+                    // SECURITY: never log a user in from a public return URL.
                     
                     return redirect()->route('plans.index')->with('success', __('Payment completed successfully and plan activated'));
                 }

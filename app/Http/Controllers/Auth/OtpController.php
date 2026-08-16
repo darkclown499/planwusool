@@ -120,6 +120,11 @@ class OtpController extends Controller
             ], 422);
         }
 
+        // Prove to the backend that this email passed OTP verification so the
+        // fallback registration route (RegisteredUserController::store) cannot
+        // create accounts without an OTP.
+        $request->session()->put('otp_verified_' . strtolower($validated['email']), true);
+
         // Expire the OTP verification rate limiter on success
         cache()->forget($key);
 
@@ -205,6 +210,7 @@ class OtpController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
         $request->session()->forget('pending_registration');
+        $request->session()->forget('otp_verified_' . strtolower($validated['email']));
 
         $redirectUrl = $pending['plan_id']
             ? route('plans.index', ['selected' => $pending['plan_id']])

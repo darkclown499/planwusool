@@ -82,6 +82,6 @@ trait AutoApplyPermissionCheck
         }
         
         // If user doesn't have any relevant permissions, return no results
-        return $query;
+        return $query->whereRaw('1 = 0');
     }
 }

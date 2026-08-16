@@ -101,10 +101,7 @@ class TapPaymentController extends Controller
                             'payment_id' => $chargeId,
                         ]);
                         
-                        // Log the user in if not already authenticated
-                        if (!auth()->check()) {
-                            auth()->login($user);
-                        }
+                        // SECURITY: never log a user in from a public return URL.
                         
                         return redirect()->route('plans.index')->with('success', __('Payment completed successfully and plan activated'));
                     } else {

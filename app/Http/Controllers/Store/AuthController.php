@@ -39,6 +39,9 @@ class AuthController extends Controller
 
             if ($customer && Hash::check($request->password, $customer->password)) {
                 Auth::guard('customer')->login($customer, $request->boolean('remember'));
+
+                // Prevent session fixation on customer login.
+                $request->session()->regenerate();
                 
                 // Clear any intended URL that might contain /store/{slug} for custom domains
                 if ($store->isCurrentDomain()) {
@@ -129,6 +132,9 @@ class AuthController extends Controller
             ]);
 
             Auth::guard('customer')->login($customer);
+
+            // Prevent session fixation on customer registration.
+            $request->session()->regenerate();
 
             // Clear any intended URL that might contain /store/{slug} for custom domains
             if ($store->isCurrentDomain()) {

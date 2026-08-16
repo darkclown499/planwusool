@@ -14,8 +14,6 @@ class Store extends BaseModel
         'slug',
         'description',
         'theme',
-        'store_content',
-        'user_id',
         'custom_domain',
         'custom_subdomain',
         'enable_custom_domain',
@@ -36,6 +34,20 @@ class Store extends BaseModel
 
         'pwa_display',
         'pwa_orientation',
+    ];
+
+    /**
+     * user_id (ownership) and store_content (raw HTML rendered on the
+     * storefront) are never mass assignable — they are set explicitly by the
+     * owning controllers/services to prevent cross-tenant ownership changes
+     * and stored-XSS via a mass-assigned content blob.
+     *
+     * @var list<string>
+     */
+    protected $guarded = [
+        'id',
+        'user_id',
+        'store_content',
     ];
     
     protected $casts = [

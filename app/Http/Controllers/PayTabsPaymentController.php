@@ -94,6 +94,12 @@ class PayTabsPaymentController extends Controller
     public function callback(Request $request)
     {
         try {
+            // SECURITY: verify the PayTabs HMAC signature before trusting the
+            // response status. Fail closed when the signature is missing or bad.
+            if (!$this->verifySignature($request)) {
+                return response('Invalid signature', 401);
+            }
+
             $cartId = $request->input('cartId') ?? $request->input('cart_id');
             $respStatus = $request->input('respStatus') ?? $request->input('resp_status');
             $tranRef = $request->input('tranRef') ?? $request->input('tran_ref');
@@ -136,33 +142,45 @@ class PayTabsPaymentController extends Controller
     }
     
     public function success(Request $request)
-    { 
-        // Try different parameter names PayTabs might use
-        $cartId = $request->input('cart_id') 
-               ?? $request->input('cartId') 
-               ?? $request->input('merchant_reference')
-               ?? $request->input('reference')
-               ?? $request->input('order_id');      
-        if ($cartId) {
-            $planOrder = PlanOrder::where('payment_id', $cartId)->first();
-            
-            if ($planOrder) {
-                if ($planOrder->status === 'pending') {
-                    $planOrder->update(['status' => 'approved']);
-                    
-                    $user = User::find($planOrder->user_id);
-                    $plan = Plan::find($planOrder->plan_id);
-                    
-                    if ($user && $plan) {
-                        assignPlanToUser($user, $plan, $planOrder->billing_cycle);
-                    }
-                }
-                
-                return redirect()->route('plans.index')->with('success', __('Payment completed successfully!'));
-            }
+    {
+        // SECURITY: never activate a plan from the public return URL. Plan
+        // activation only happens in callback(), which verifies the PayTabs
+        // request signature server-side first.
+        return redirect()->route('plans.index')
+            ->with('info', __('Payment confirmation is pending verification. Your plan will activate once PayTabs confirms it.'));
+    }
+
+    /**
+     * Verify the PayTabs callback HMAC signature (v2 algorithm):
+     * all submitted parameters except "signature", sorted by key,
+     * lowercased, joined as key=value&..., HMAC-SHA256 with the server key.
+     */
+    private function verifySignature(Request $request): bool
+    {
+        $superAdmin = User::where('type', 'superadmin')->first();
+        $settings = $superAdmin ? getPaymentMethodConfig('paytabs', $superAdmin->id) : [];
+        $serverKey = $settings['server_key'] ?? null;
+
+        $received = $request->input('signature');
+
+        if (!$serverKey || !is_string($received) || $received === '') {
+            return false;
         }
-        
-        // No fallback - only assign plan with proper payment verification
-        return redirect()->route('plans.index')->with('error', __('Payment verification failed.'));
+
+        $payload = $request->except('signature');
+        ksort($payload);
+
+        $pairs = [];
+        foreach ($payload as $key => $value) {
+            if (is_array($value) || $value === null) {
+                continue;
+            }
+            $pairs[] = $key . '=' . (string) $value;
+        }
+
+        $signatureString = strtolower(implode('&', $pairs));
+        $expected = base64_encode(hash_hmac('sha256', $signatureString, $serverKey, true));
+
+        return hash_equals($expected, $received);
     }
 }

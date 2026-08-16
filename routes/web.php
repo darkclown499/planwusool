@@ -217,7 +217,7 @@ Route::middleware('api.throttle')->group(function () {
     Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
     
     // Store content/banners API (authenticated, store owner only)
-    Route::middleware('auth')->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StoreContentController::class, 'show'])->name('show');
         Route::put('/', [\App\Http\Controllers\Api\StoreContentController::class, 'update'])->name('update');
     });

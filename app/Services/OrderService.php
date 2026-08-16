@@ -26,7 +26,7 @@ class OrderService
     {
         $order = DB::transaction(function () use ($orderData, $cartItems) {
             // Create the order
-            $order = Order::create([
+            $order = Order::forceCreate([
                 'order_number' => Order::generateOrderNumber(),
                 'store_id' => $orderData['store_id'],
                 'customer_id' => Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null,

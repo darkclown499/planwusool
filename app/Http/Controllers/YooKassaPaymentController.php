@@ -123,8 +123,31 @@ class YooKassaPaymentController extends Controller
             $paymentId = $request->input('object.id');
             $status = $request->input('object.status');
             $metadata = $request->input('object.metadata');
-            
+
             if ($paymentId && $status === 'succeeded' && $metadata) {
+                // SECURITY: never trust the callback body alone. Fetch the
+                // payment from YooKassa server-side and confirm it really is
+                // succeeded before activating the plan.
+                $settings = getPaymentGatewaySettings();
+                $shopId = $settings['payment_settings']['yookassa_shop_id'] ?? null;
+                $secretKey = $settings['payment_settings']['yookassa_secret_key'] ?? null;
+
+                $verified = false;
+                if ($shopId && $secretKey) {
+                    try {
+                        $client = new Client();
+                        $client->setAuth((int) $shopId, $secretKey);
+                        $payment = $client->getPaymentInfo($paymentId);
+                        $verified = $payment && $payment->getStatus() === 'succeeded';
+                    } catch (\Throwable $e) {
+                        $verified = false;
+                    }
+                }
+
+                if (!$verified) {
+                    return response()->json(['error' => 'Invalid payment or verification failed'], 403);
+                }
+
                 $planId = $metadata['plan_id'];
                 $userId = $metadata['user_id'];
                 
@@ -132,19 +155,18 @@ class YooKassaPaymentController extends Controller
                 $user = \App\Models\User::find($userId);
                 
                 if ($plan && $user) {
-                    // Assign plan to user
-                    $user->plan_id = $plan->id;
-                    $user->plan_expire_date = $metadata['billing_cycle'] === 'yearly' ? now()->addYear() : now()->addMonth();
-                    $user->save();
-                    
-                    processPaymentSuccess([
-                        'user_id' => $user->id,
-                        'plan_id' => $plan->id,
-                        'billing_cycle' => $metadata['billing_cycle'] ?? 'monthly',
-                        'payment_method' => 'yookassa',
-                        'coupon_code' => $metadata['coupon_code'] ?? null,
-                        'payment_id' => $paymentId,
-                    ]);
+                    // Idempotency: don't double-activate the same payment id.
+                    $existing = \App\Models\PlanOrder::where('payment_id', $paymentId)->first();
+                    if (!$existing) {
+                        processPaymentSuccess([
+                            'user_id' => $user->id,
+                            'plan_id' => $plan->id,
+                            'billing_cycle' => $metadata['billing_cycle'] ?? 'monthly',
+                            'payment_method' => 'yookassa',
+                            'coupon_code' => $metadata['coupon_code'] ?? null,
+                            'payment_id' => $paymentId,
+                        ]);
+                    }
                 }
             }
             return response()->json(['status' => 'success']);

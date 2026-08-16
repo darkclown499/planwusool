@@ -109,6 +109,14 @@ class HandleInertiaRequests extends Middleware
             // Get store-specific currency settings for authenticated users
             $storeCurrency = $this->getStoreCurrencySettings($request);
         }
+
+        // SECURITY: strip secrets (payment credentials, S3/Wasabi, SMTP,
+        // reCAPTCHA, AI keys, messaging tokens) before globalSettings reaches
+        // the browser — including on unauthenticated pages that fall back to
+        // the superadmin's settings.
+        if (isset($globalSettings) && is_array($globalSettings)) {
+            $globalSettings = filterSensitiveSettings($globalSettings);
+        }
         
         return [
              ...parent::share($request),

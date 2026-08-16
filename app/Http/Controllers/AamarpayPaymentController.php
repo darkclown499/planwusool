@@ -4,43 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\User;
+use App\Models\PlanOrder;
 use Illuminate\Http\Request;
 
 class AamarpayPaymentController extends Controller
 {
     public function processPayment(Request $request)
     {
-        $validated = validatePaymentRequest($request, [
-            'pay_status' => 'required|string',
-            'mer_txnid' => 'required|string',
-        ]);
-
-        try {
-            $plan = Plan::findOrFail($validated['plan_id']);
-            $settings = getPaymentGatewaySettings();
-            
-            if (!isset($settings['payment_settings']['aamarpay_store_id'])) {
-                return back()->withErrors(['error' => __('Aamarpay not configured')]);
-            }
-
-            if ($validated['pay_status'] === 'Successful') {
-                processPaymentSuccess([
-                    'user_id' => auth()->id(),
-                    'plan_id' => $plan->id,
-                    'billing_cycle' => $validated['billing_cycle'],
-                    'payment_method' => 'aamarpay',
-                    'coupon_code' => $validated['coupon_code'] ?? null,
-                    'payment_id' => $validated['mer_txnid'],
-                ]);
-
-                return back()->with('success', __('Payment successful and plan activated'));
-            }
-
-            return back()->withErrors(['error' => __('Payment failed or cancelled')]);
-
-        } catch (\Exception $e) {
-            return handlePaymentError($e, 'aamarpay');
-        }
+        // SECURITY: never trust the client-supplied pay_status. Plan activation
+        // only happens after the gateway transaction has been verified
+        // server-side in success()/callback() via the Aamarpay query API.
+        return back()->with('info', __('Payment is being verified by Aamarpay. Your plan will activate once payment is confirmed.'));
     }
 
     public function createPayment(Request $request)
@@ -139,36 +113,48 @@ class AamarpayPaymentController extends Controller
         try {
             $response = $request->input('response');
             $planId = $request->input('plan_id');
-            $userId = $request->input('user_id');
             $coupon = $request->input('coupon');
             $billingCycle = $request->input('billing_cycle', 'monthly');
             $orderId = $request->input('order_id');
-            
-            if ($response === 'success' && $planId && $userId) {
-                $plan = Plan::find($planId);
-                $user = User::find($userId);
-                
-                if ($plan && $user) {
-                    processPaymentSuccess([
-                        'user_id' => $user->id,
-                        'plan_id' => $plan->id,
-                        'billing_cycle' => $billingCycle,
-                        'payment_method' => 'aamarpay',
-                        'coupon_code' => $coupon,
-                        'payment_id' => $orderId,
-                    ]);
-                    
-                    // Log the user in if not already authenticated
-                    if (!auth()->check()) {
-                        auth()->login($user);
+
+            // SECURITY: activate only when the payment is confirmed by the
+            // Aamarpay server (transaction query API), the caller owns the
+            // plan (no auto-login), and the captured amount matches the price.
+            if ($response === 'success' && $orderId && auth()->check()) {
+                $settings = getPaymentGatewaySettings();
+                $verified = $this->verifyAamarpayTransaction($orderId, $settings['payment_settings'] ?? []);
+
+                if ($verified && strtolower($verified['PAY_STATUS'] ?? '') === 'successful') {
+                    $plan = Plan::find($planId);
+                    $user = auth()->user();
+
+                    if ($plan && $user && (int) $orderId !== 0) {
+                        $pricing = calculatePlanPricing($plan, $coupon ?: null, $billingCycle);
+                        $paidAmount = (float) ($verified['AMOUNT'] ?? 0);
+
+                        if (abs($paidAmount - (float) $pricing['final_price']) < 0.01) {
+                            $existing = PlanOrder::where('payment_id', $orderId)->first();
+
+                            if (!$existing) {
+                                processPaymentSuccess([
+                                    'user_id' => $user->id,
+                                    'plan_id' => $plan->id,
+                                    'billing_cycle' => $billingCycle,
+                                    'payment_method' => 'aamarpay',
+                                    'coupon_code' => $coupon,
+                                    'payment_id' => $orderId,
+                                ]);
+                            }
+
+                            return redirect()->route('plans.index')->with('success', __('Payment completed successfully and plan activated'));
+                        }
                     }
-                    
-                    return redirect()->route('plans.index')->with('success', __('Payment completed successfully and plan activated'));
                 }
             }
-            
-            return redirect()->route('plans.index')->with('error', __('Payment failed or cancelled'));
-            
+
+            return redirect()->route('plans.index')
+                ->with('info', __('Payment is pending server verification. Your plan will activate once confirmed.'));
+
         } catch (\Exception $e) {
             return redirect()->route('plans.index')->with('error', __('Payment processing failed'));
         }
@@ -178,27 +164,24 @@ class AamarpayPaymentController extends Controller
     {
         try {
             $transactionId = $request->input('mer_txnid');
-            $status = $request->input('pay_status');
-            
-            if ($transactionId && $status === 'Successful') {
-                $parts = explode('_', $transactionId);
-                
-                if (count($parts) >= 3) {
-                    $planId = $parts[1];
-                    $userId = $parts[2];
-                    
-                    $plan = Plan::find($planId);
-                    $user = User::find($userId);
-                    
-                    if ($plan && $user) {
-                        processPaymentSuccess([
-                            'user_id' => $user->id,
-                            'plan_id' => $plan->id,
-                            'billing_cycle' => 'monthly',
-                            'payment_method' => 'aamarpay',
-                            'payment_id' => $request->input('pg_txnid'),
-                        ]);
-                    }
+
+            if (!$transactionId) {
+                return response()->json(['status' => 'error', 'error' => 'Missing transaction id'], 400);
+            }
+
+            // SECURITY: never trust the posted pay_status. Confirm the
+            // transaction against the Aamarpay query API before approving.
+            $settings = getPaymentGatewaySettings();
+            $verified = $this->verifyAamarpayTransaction($transactionId, $settings['payment_settings'] ?? []);
+
+            if ($verified && strtolower($verified['PAY_STATUS'] ?? '') === 'successful') {
+                $planOrder = PlanOrder::where('payment_id', $transactionId)
+                    ->where('status', 'pending')
+                    ->first();
+
+                if ($planOrder) {
+                    $planOrder->update(['status' => 'approved', 'processed_at' => now()]);
+                    assignPlanToUser($planOrder->user, $planOrder->plan, $planOrder->billing_cycle);
                 }
             }
 
@@ -206,6 +189,45 @@ class AamarpayPaymentController extends Controller
 
         } catch (\Exception $e) {
             return response()->json(['error' => __('Callback processing failed')], 500);
+        }
+    }
+
+    /**
+     * Query the Aamarpay transaction-check API for the given merchant
+     * transaction id. Returns the gateway response array, or null when the
+     * request fails so callers fail closed.
+     */
+    private function verifyAamarpayTransaction(string $tranId, array $settings): ?array
+    {
+        $storeId = $settings['aamarpay_store_id'] ?? null;
+        $signatureKey = $settings['aamarpay_signature'] ?? null;
+
+        if (!$storeId || !$signatureKey) {
+            return null;
+        }
+
+        $isSandbox = $storeId === 'aamarpaytest';
+        $endpoint = $isSandbox
+            ? 'https://sandbox.aamarpay.com/api/v1/trxcheck/request.php'
+            : 'https://secure.aamarpay.com/api/v1/trxcheck/request.php';
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::asForm()->post($endpoint, [
+                'store_id' => $storeId,
+                'signature_key' => $signatureKey,
+                'type' => 'json',
+                'tran_id' => $tranId,
+            ]);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $data = $response->json();
+            return is_array($data) ? $data : null;
+
+        } catch (\Throwable $e) {
+            return null;
         }
     }
 }

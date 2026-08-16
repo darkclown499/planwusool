@@ -72,6 +72,15 @@ class RegisteredUserController extends Controller
         }
         
         $validated = $request->validate($rules);
+
+        // SECURITY: backend OTP enforcement. The session marker is only set by
+        // OtpController::verify after a successful email OTP verification, so
+        // this route cannot be used to register without proving the email.
+        if ($request->session()->get('otp_verified_' . strtolower($validated['email'])) !== true) {
+            return back()
+                ->withErrors(['email' => __('Email OTP verification is required before registration.')])
+                ->withInput();
+        }
         
         // Validate reCAPTCHA if enabled
         if ($recaptchaEnabled === 'true' || $recaptchaEnabled === true || $recaptchaEnabled === 1 || $recaptchaEnabled === '1') {
@@ -120,6 +129,8 @@ class RegisteredUserController extends Controller
         defaultRoleAndSetting($user);
         
         Auth::login($user);
+        $request->session()->regenerate();
+        $request->session()->forget('otp_verified_' . strtolower($validated['email']));
         
         // Check if email verification is enabled
         $emailVerificationEnabled = getSetting('emailVerification', false);

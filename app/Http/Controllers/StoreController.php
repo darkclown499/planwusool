@@ -21,12 +21,28 @@ class StoreController extends Controller
         // Superadmin sees all stores; company users see their own stores
         $stores = resolveStoreQuery($user)->get();
         
+        // Batch-load store configurations in ONE query (instead of one
+        // StoreConfiguration::getConfiguration() per store) to eliminate the
+        // N+1 in this listing endpoint.
+        $storeIds = $stores->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        $configMap = [];
+        if ($storeIds) {
+            $configMap = \App\Models\StoreConfiguration::whereIn('store_id', $storeIds)
+                ->get()
+                ->groupBy('store_id')
+                ->map(function ($rows) {
+                    return $rows->pluck('value', 'key')->toArray();
+                })
+                ->toArray();
+        }
+        
         // Add store configuration status like StoreGo
-        $stores = $stores->map(function ($store) {
+        $stores = $stores->map(function ($store) use ($configMap) {
             // Get store configuration for status
-            $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
-            $store->config_status = $config['store_status'] ?? true;
-            $store->maintenance_mode = $config['maintenance_mode'] ?? false;
+            $config = $configMap[(int) $store->id] ?? [];
+            $store->config_status = ($config['store_status'] ?? 'true') !== 'false';
+            $store->maintenance_mode = ($config['maintenance_mode'] ?? 'false') === 'true';
             
             // Add status information
             $store->status_reason = null;

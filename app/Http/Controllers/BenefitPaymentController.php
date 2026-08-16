@@ -176,41 +176,11 @@ class BenefitPaymentController extends Controller
 
     public function success(Request $request)
     {
-        try {
-            $planId = $request->input('plan_id');
-            $userId = $request->input('user_id');
-            $amount = $request->input('amount');
-            $coupon = $request->input('coupon');
-            $billingCycle = $request->input('billing_cycle', 'monthly');
-            
-            if ($planId && $userId) {
-                $plan = Plan::find($planId);
-                $user = User::find($userId);
-                
-                if ($plan && $user) {
-                    processPaymentSuccess([
-                        'user_id' => $user->id,
-                        'plan_id' => $plan->id,
-                        'billing_cycle' => $billingCycle,
-                        'payment_method' => 'benefit',
-                        'coupon_code' => $coupon,
-                        'payment_id' => $request->input('tap_id', 'benefit_' . time()),
-                    ]);
-                    
-                    // Log the user in if not already authenticated
-                    if (!auth()->check()) {
-                        auth()->login($user);
-                    }
-                    
-                    return redirect()->route('plans.index')->with('success', __('Payment completed successfully and plan activated'));
-                }
-            }
-            
-            return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
-            
-        } catch (\Exception $e) {
-            return redirect()->route('plans.index')->with('error', __('Payment processing failed'));
-        }
+        // SECURITY: this public return URL must NEVER activate a plan or log a
+        // user in. Plan activation only happens after server-side verification
+        // in callback() (gateway query API) or webhook() (signed payload).
+        return redirect()->route('plans.index')
+            ->with('info', __('Payment confirmation is pending verification. Your plan will be activated once the payment is verified.'));
     }
 
     public function webhook(Request $request)

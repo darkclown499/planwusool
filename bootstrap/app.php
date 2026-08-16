@@ -23,14 +23,25 @@ return Application::configure(basePath: dirname(__DIR__))
         ServicesServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        // Restrict trusted proxies to specific IPs (comma-separated in the
+        // TRUSTED_PROXIES env var) instead of trusting '*' — otherwise any
+        // client can spoof X-Forwarded-* headers (scheme/host/port) and
+        // generate malicious redirect URLs or poison chains.
+        //
+        // Default '127.0.0.1' covers the common aaPanel/nginx single-server
+        // deployment where php-fpm only ever receives requests from the local
+        // nginx reverse proxy, while still letting nginx's X-Forwarded-Proto
+        // (set from Cloudflare or the real client) produce https: URLs.
+        //
+        // NOTE: this runs at bootstrap before the config repository is bound,
+        // so a config value cannot be read here; use env() with a safe default.
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '127.0.0.1'))
+        )));
+
         $middleware->trustProxies(
-            // '*' trusts every proxy so that scheme/host/port are resolved
-            // from Cloudflare's X-Forwarded-* headers (otherwise OAuth
-            // callback URLs are generated as http:// and Google/Apple/GitHub
-            // reject them with redirect_uri_mismatch). NOTE: this runs at
-            // bootstrap before the config repository is bound, so a config
-            // value cannot be read here; use env() with a safe default.
-            at: env('TRUSTED_PROXIES', '*'),
+            at: $trustedProxies,
             headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
                      \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
@@ -68,6 +79,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'plan.access' => \App\Http\Middleware\CheckPlanAccess::class,
             'feature.access' => \App\Http\Middleware\CheckFeatureAccess::class,
             'store.status' => \App\Http\Middleware\CheckStoreStatus::class,
+            'store.owner' => \App\Http\Middleware\EnsureStoreOwner::class,
             'onboarded' => \App\Http\Middleware\EnsureOnboarding::class,
             'webhook.signature' => \App\Http\Middleware\VerifyWebhookSignature::class,
             'api.throttle' => \App\Http\Middleware\ApiRateLimiter::class,

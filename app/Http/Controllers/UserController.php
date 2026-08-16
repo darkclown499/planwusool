@@ -148,8 +148,13 @@ class UserController extends BaseController
             'password'   => Hash::make($request->password),
             'created_by' => $created_by,
             'lang'       => $userLang,
-            'current_store' => $authUser->current_store,
         ]);
+
+        // current_store is guarded against mass assignment; assign explicitly.
+        if ($authUser->current_store) {
+            $user->current_store = $authUser->current_store;
+            $user->save();
+        }
 
         if ($user && $request->roles) {
             // Convert role names to IDs for syncing - validate role access
