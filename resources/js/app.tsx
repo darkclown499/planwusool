@@ -116,6 +116,7 @@ createInertiaApp({
                     };
                     initSentry();
                 }
+            }
 
             return (
                 <ErrorBoundary>
@@ -179,7 +180,6 @@ createInertiaApp({
                 console.error('Navigation error:', e);
             }
         });
-    }
     }
 });
 

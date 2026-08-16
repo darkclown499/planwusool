@@ -126,7 +126,7 @@
             {{-- JSON-LD Organization --}}
             <script type="application/ld+json">
             {!! json_encode([
-                '@context' => 'https://schema.org',
+                '@' . 'context' => 'https://schema.org',
                 '@type' => 'Organization',
                 'name' => config('app.name', 'Wusool'),
                 'url' => $appUrl,
@@ -181,7 +181,7 @@
             @if($store)
             <script type="application/ld+json">
             {!! json_encode([
-                '@context' => 'https://schema.org',
+                '@' . 'context' => 'https://schema.org',
                 '@type' => 'Store',
                 'name' => $store->name,
                 'description' => $store->description ?? $storeDesc,
