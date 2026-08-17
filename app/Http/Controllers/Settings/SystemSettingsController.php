@@ -228,9 +228,12 @@ class SystemSettingsController extends Controller
         try {
             $validated = $request->validate([
                 'metaTitle' => 'nullable|string|max:60',
-                'metaKeywords' => 'required|string|max:255',
-                'metaDescription' => 'required|string|max:160',
-                'metaImage' => 'required|string',
+                'metaKeywords' => 'nullable|string|max:255',
+                'metaDescription' => 'nullable|string|max:160',
+                'metaImage' => 'nullable|string',
+                'googleVerification' => 'nullable|string|max:255',
+                'bingVerification' => 'nullable|string|max:255',
+                'googleAnalyticsId' => 'nullable|string|max:64',
             ]);
             
             foreach ($validated as $key => $value) {

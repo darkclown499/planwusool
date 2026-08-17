@@ -36,6 +36,26 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        @php
+            $googleVerification = getSetting('googleVerification', '');
+            $bingVerification = getSetting('bingVerification', '');
+            $gTag = getSetting('googleAnalyticsId', '');
+        @endphp
+        @if($googleVerification)
+            <meta name="google-site-verification" content="{{ $googleVerification }}">
+        @endif
+        @if($bingVerification)
+            <meta name="msvalidate.01" content="{{ $bingVerification }}">
+        @endif
+        @if($gTag && !config('app.is_demo'))
+            <script{!! $nonceAttr !!} async src="https://www.googletagmanager.com/gtag/js?id={{ $gTag }}"></script>
+            <script{!! $nonceAttr !!}>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '{{ $gTag }}');
+            </script>
+        @endif
         {{-- Force the browser to upgrade any HTTP resource to HTTPS and stop
              Mixed-Content blocking (fixes unresponsive buttons when assets
              are loaded over http:// inside an https:// page). --}}
@@ -92,7 +112,11 @@
                 $seoDesc = getSetting('metaDescription', '');
                 $seoKeywords = getSetting('metaKeywords', '');
                 $seoImage = getSetting('metaImage', '');
+                if ($seoImage && !str_starts_with($seoImage, 'http')) {
+                    $seoImage = rtrim($appUrl, '/') . '/' . ltrim($seoImage, '/');
+                }
                 $canonicalUrl = url()->current();
+                $orgLogo = $seoImage ?: $appUrl . '/images/logos/wusool.png';
             @endphp
             <title>{{ $seoTitle }}</title>
             <meta name="description" content="{{ $seoDesc }}">
@@ -123,16 +147,33 @@
             @if($seoImage)
                 <meta name="twitter:image" content="{{ $seoImage }}">
             @endif
-            {{-- JSON-LD Organization --}}
+            {{-- JSON-LD Organization + WebSite --}}
             <script type="application/ld+json">
             {!! json_encode([
                 '@' . 'context' => 'https://schema.org',
                 '@type' => 'Organization',
                 'name' => config('app.name', 'Wusool'),
+                'alternateName' => 'وُصول',
                 'url' => $appUrl,
-                'logo' => getSetting('metaImage', $appUrl . '/images/logos/wusool.png'),
+                'logo' => $orgLogo,
+                'image' => $orgLogo,
                 'description' => $seoDesc,
                 'sameAs' => [],
+                'contactPoint' => [
+                    '@type' => 'ContactPoint',
+                    'contactType' => 'customer support',
+                    'availableLanguage' => ['Arabic', 'English'],
+                ],
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+            </script>
+            <script type="application/ld+json">
+            {!! json_encode([
+                '@' . 'context' => 'https://schema.org',
+                '@type' => 'WebSite',
+                'name' => config('app.name', 'Wusool'),
+                'alternateName' => 'وُصول',
+                'url' => $appUrl,
+                'inLanguage' => 'ar',
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
             </script>
         @endif
@@ -147,6 +188,9 @@
                 $storeDesc = $store?->seo_description ?? '';
                 $storeKeywords = $store?->seo_keywords ?? '';
                 $storeImage = $store?->seo_image ?? '';
+                if ($storeImage && !str_starts_with($storeImage, 'http')) {
+                    $storeImage = rtrim($appUrl, '/') . '/' . ltrim($storeImage, '/');
+                }
                 $storeCanonical = url()->current();
             @endphp
             <title>{{ $storeTitle }}</title>

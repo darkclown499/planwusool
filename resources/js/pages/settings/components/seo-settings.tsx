@@ -24,7 +24,10 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  metaTitle: '',
  metaKeywords: '',
  metaDescription: '',
- metaImage: ''
+ metaImage: '',
+ googleVerification: '',
+ bingVerification: '',
+ googleAnalyticsId: ''
  };
 
  // Combine settings from props and page props
@@ -37,7 +40,10 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  metaTitle: settingsData.metaTitle || defaultSettings.metaTitle,
  metaKeywords: settingsData.metaKeywords || defaultSettings.metaKeywords,
  metaDescription: settingsData.metaDescription || defaultSettings.metaDescription,
- metaImage: settingsData.metaImage || defaultSettings.metaImage
+ metaImage: settingsData.metaImage || defaultSettings.metaImage,
+ googleVerification: settingsData.googleVerification || defaultSettings.googleVerification,
+ bingVerification: settingsData.bingVerification || defaultSettings.bingVerification,
+ googleAnalyticsId: settingsData.googleAnalyticsId || defaultSettings.googleAnalyticsId
  }));
 
  const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +56,10 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  metaTitle: pageProps.settings.metaTitle || prev.metaTitle,
  metaKeywords: pageProps.settings.metaKeywords || prev.metaKeywords,
  metaDescription: pageProps.settings.metaDescription || prev.metaDescription,
- metaImage: pageProps.settings.metaImage || prev.metaImage
+ metaImage: pageProps.settings.metaImage || prev.metaImage,
+ googleVerification: pageProps.settings.googleVerification || prev.googleVerification,
+ bingVerification: pageProps.settings.bingVerification || prev.bingVerification,
+ googleAnalyticsId: pageProps.settings.googleAnalyticsId || prev.googleAnalyticsId
  }));
  }
  }, [pageProps.settings]);
@@ -94,18 +103,8 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  e.preventDefault();
 
  // Client-side validation
- if (!seoSettings.metaKeywords.trim()) {
- toast.error(t('Meta Keywords is required'));
- return;
- }
-
  if (!seoSettings.metaDescription.trim()) {
  toast.error(t('Meta Description is required'));
- return;
- }
-
- if (!seoSettings.metaImage.trim()) {
- toast.error(t('Meta Image is required'));
  return;
  }
 
@@ -225,6 +224,54 @@ export default function SeoSettings({ settings = {} }: SeoSettingsProps) {
  </div>
  <p className="text-xs text-gray-500 mt-1">
  {t("Image displayed when sharing on social media. Recommended: 1200x630px")}
+ </p>
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="googleVerification" className="font-semibold text-gray-800">{t("Google Search Console Verification")}</Label>
+ <Input
+ id="googleVerification"
+ type="text"
+ value={seoSettings.googleVerification}
+ onChange={(e) => handleSeoSettingsChange('googleVerification', e.target.value)}
+ placeholder={t("Paste your Google site verification code (content value)")}
+ className="focus-visible:ring-emerald-500"
+ dir="ltr"
+ />
+ <p className="text-xs text-gray-500 mt-1">
+ {t("Found in Google Search Console > Settings > Ownership verification. Paste the content value only.")}
+ </p>
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="bingVerification" className="font-semibold text-gray-800">{t("Bing Webmaster Verification")}</Label>
+ <Input
+ id="bingVerification"
+ type="text"
+ value={seoSettings.bingVerification}
+ onChange={(e) => handleSeoSettingsChange('bingVerification', e.target.value)}
+ placeholder={t("Paste your Bing site verification code")}
+ className="focus-visible:ring-emerald-500"
+ dir="ltr"
+ />
+ <p className="text-xs text-gray-500 mt-1">
+ {t("Found in Bing Webmaster Tools > Configure my site. Paste the msvalidate.01 content value.")}
+ </p>
+ </div>
+
+ <div className="space-y-2">
+ <Label htmlFor="googleAnalyticsId" className="font-semibold text-gray-800">{t("Google Analytics ID")}</Label>
+ <Input
+ id="googleAnalyticsId"
+ type="text"
+ value={seoSettings.googleAnalyticsId}
+ onChange={(e) => handleSeoSettingsChange('googleAnalyticsId', e.target.value)}
+ placeholder={t("G-XXXXXXX or UA-XXXXXXXX-X")}
+ className="focus-visible:ring-emerald-500"
+ dir="ltr"
+ />
+ <p className="text-xs text-gray-500 mt-1">
+ {t("Enables Google Analytics 4 tracking across the public site.")}
  </p>
  </div>
  </div>

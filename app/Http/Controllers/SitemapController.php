@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Store;
+use App\Models\StorePage;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Response;
@@ -12,7 +13,7 @@ class SitemapController extends Controller
 {
     public function index(): Response
     {
-        $baseUrl = getSchemeAwareUrl();
+        $baseUrl = rtrim(getSchemeAwareUrl(), '/');
         $stores = Store::whereHas('user', fn($q) => $q->where('is_active', 1))
             ->where('is_active', 1)
             ->get();
@@ -26,14 +27,15 @@ class SitemapController extends Controller
         // Home page
         $xml .= $this->urlEntry($baseUrl, '1.0', 'daily');
 
-        // Plans page
-        $xml .= $this->urlEntry($baseUrl . '/plans', '0.8', 'weekly');
-
         // Features page
-        $xml .= $this->urlEntry($baseUrl . '/features', '0.7', 'monthly');
+        $xml .= $this->urlEntry($baseUrl . '/features', '0.8', 'weekly');
 
         // About page
         $xml .= $this->urlEntry($baseUrl . '/about', '0.6', 'monthly');
+
+        // Terms & Privacy
+        $xml .= $this->urlEntry($baseUrl . '/terms', '0.3', 'yearly');
+        $xml .= $this->urlEntry($baseUrl . '/privacy', '0.3', 'yearly');
 
         foreach ($stores as $store) {
             $storeUrl = $this->getStoreUrl($store);
@@ -56,7 +58,13 @@ class SitemapController extends Controller
                 ->get();
 
             foreach ($products as $product) {
-                $xml .= $this->urlEntry($storeUrl . '/product/' . ($product->slug ?? $product->id), '0.8', 'daily');
+                $xml .= $this->urlEntry($storeUrl . '/product/' . ($product->slug ?? $product->id), '0.8', 'daily', $product->updated_at);
+            }
+
+            // Custom store pages (Professional plan feature)
+            $pages = StorePage::where('store_id', $store->id)->where('is_active', 1)->get();
+            foreach ($pages as $page) {
+                $xml .= $this->urlEntry($storeUrl . '/page/' . $page->slug, '0.5', 'monthly', $page->updated_at);
             }
         }
 
@@ -67,14 +75,16 @@ class SitemapController extends Controller
             ->header('Cache-Control', 'public, max-age=3600');
     }
 
-    private function urlEntry(string $url, string $priority, string $changefreq): string
+    private function urlEntry(string $url, string $priority, string $changefreq, $lastmod = null): string
     {
         // Escape XML-significant characters (store names/domains are user-supplied)
         $url = htmlspecialchars($url, ENT_QUOTES | ENT_XML1, 'UTF-8');
 
+        $mod = $lastmod ? \Carbon\Carbon::parse($lastmod)->format('Y-m-d') : now()->format('Y-m-d');
+
         return "  <url>\n" .
                "    <loc>{$url}</loc>\n" .
-               "    <lastmod>" . now()->format('Y-m-d') . "</lastmod>\n" .
+               "    <lastmod>{$mod}</lastmod>\n" .
                "    <changefreq>{$changefreq}</changefreq>\n" .
                "    <priority>{$priority}</priority>\n" .
                "  </url>\n";

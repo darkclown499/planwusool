@@ -2253,7 +2253,15 @@ if (!function_exists('getSchemeAwareUrl')) {
     {
         $request = request();
         if ($request) {
-            return $request->getSchemeAndHttpHost();
+            $schemeAndHost = $request->getSchemeAndHttpHost();
+            // The site is served over HTTPS (Cloudflare/CDN). When the backend
+            // receives a plain-HTTP proxied request we must still emit https://
+            // so sitemap URLs, canonical links and OG tags never leak http://.
+            if (str_starts_with($schemeAndHost, 'http://')
+                && str_starts_with((string) config('app.url'), 'https://')) {
+                return 'https://' . substr($schemeAndHost, 7);
+            }
+            return $schemeAndHost;
         }
         return config('app.url', 'http://localhost');
     }
