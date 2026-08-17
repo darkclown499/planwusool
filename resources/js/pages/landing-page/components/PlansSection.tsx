@@ -121,8 +121,8 @@ const fallbackPlans: Plan[] = [
   {
     id: 2,
     name: 'Growth',
-    price: 240,
-    yearly_price: 240,
+    price: 299,
+    yearly_price: 299,
     duration: 'yearly',
     domain_type: 'subdomain',
     support_hours: 12,
@@ -150,8 +150,8 @@ const fallbackPlans: Plan[] = [
   {
     id: 3,
     name: 'Professional',
-    price: 360,
-    yearly_price: 360,
+    price: 399,
+    yearly_price: 399,
     duration: 'yearly',
     domain_type: 'custom',
     support_hours: 24,

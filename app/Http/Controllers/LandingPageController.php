@@ -124,6 +124,7 @@ class LandingPageController extends Controller
             });
         
         return Inertia::render('landing-page/index', [
+            'title' => getSetting('metaTitle', '') ?: getSetting('titleText', config('app.name', 'Wusool')),
             'plans' => $plans,
             'testimonials' => [],
             'faqs' => [],
