@@ -18,7 +18,7 @@ class SocialAuthController extends Controller
     public function redirect(Request $request, $provider)
     {
         $provider = strtolower($provider);
-        if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
+        if (in_array($provider, ['google', 'facebook', 'github', 'apple', 'linkedin'])) {
             // Apple has no static client_secret — the driver generates an ES256
             // JWT from the .p8 private key, so guard it with client_id + private_key.
             $configured = $provider === 'apple'
@@ -65,7 +65,7 @@ class SocialAuthController extends Controller
     {
         $provider = strtolower($provider);
 
-        if (in_array($provider, ['google', 'facebook', 'github', 'apple'])) {
+        if (in_array($provider, ['google', 'facebook', 'github', 'apple', 'linkedin'])) {
             try {
                 $socialUser = Socialite::driver($provider)->user();
             } catch (\Throwable $e) {

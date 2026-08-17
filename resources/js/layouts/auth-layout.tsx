@@ -5,7 +5,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { getImageUrl } from '@/utils/image-helper';
-import { Store, CreditCard, BarChart3 } from 'lucide-react';
+import { Store, CreditCard, BarChart3, MessageCircle } from 'lucide-react';
 
 interface AuthLayoutProps {
     children: ReactNode;
@@ -39,9 +39,10 @@ export default function AuthLayout({
     }, []);
 
     const features = [
-        { icon: <Store className="w-6 h-6" />, label: t('Multi-Store Management'), desc: t('Unlimited stores'), gradient: 'from-amber-400 to-orange-500' },
-        { icon: <CreditCard className="w-6 h-6" />, label: t('30+ Payments'), desc: t('Global gateways'), gradient: 'from-emerald-400 to-teal-500' },
-        { icon: <BarChart3 className="w-6 h-6" />, label: t('Analytics'), desc: t('Real-time insights'), gradient: 'from-blue-400 to-indigo-500' },
+        { icon: <Store className="w-6 h-6" />, label: t('Manage multiple stores'), desc: t('Unlimited stores'), gradient: 'from-amber-400 to-orange-500' },
+        { icon: <CreditCard className="w-6 h-6" />, label: t('30+ Payment gateways'), desc: t('Global payment gateways'), gradient: 'from-emerald-400 to-teal-500' },
+        { icon: <BarChart3 className="w-6 h-6" />, label: t('Analytics'), desc: t('Real-time analytics'), gradient: 'from-blue-400 to-indigo-500' },
+        { icon: <MessageCircle className="w-6 h-6" />, label: t('WhatsApp-first selling'), desc: t('Convert chats into orders'), gradient: 'from-rose-400 to-pink-500' },
     ];
 
     return (

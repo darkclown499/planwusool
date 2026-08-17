@@ -5137,5 +5137,11 @@
   "• {اسم_المنتج} ({اسم_المتغير}) × {كمية} = {مجموع_السلعة}": "• {اسم_المنتج} ({اسم_المتغير}) × {كمية} = {مجموع_السلعة}",
   "∞": "∞",
   "🚀 New: Advanced Analytics Dashboard": " جديد: لوحة تحليلات متقدمة",
-  "🛍️ Order {order_no} from {store_name}\\nCustomer: {customer_name}\\nTotal: {final_total}\\n\\nItems:\\n{item_variable}": "🛍️ طلب {order_no} من {store_name}\\nالعميل: {customer_name}\\nالإجمالي: {final_total}\\n\\nالعناصر:\\n{item_variable}"
+  "🛍️ Order {order_no} from {store_name}\\nCustomer: {customer_name}\\nTotal: {final_total}\\n\\nItems:\\n{item_variable}": "🛍️ طلب {order_no} من {store_name}\\nالعميل: {customer_name}\\nالإجمالي: {final_total}\\n\\nالعناصر:\\n{item_variable}",
+  "Manage multiple stores": "إدارة متاجر متعددة",
+  "30+ Payment gateways": "أكثر من 30 بوابة دفع",
+  "Global payment gateways": "بوابات دفع عالمية",
+  "Real-time analytics": "تحليلات فورية",
+  "WhatsApp-first selling": "بيع عبر واتساب",
+  "Convert chats into orders": "حوّل المحادثات إلى طلبات"
 }

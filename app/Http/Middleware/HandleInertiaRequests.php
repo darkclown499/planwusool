@@ -49,7 +49,7 @@ class HandleInertiaRequests extends Middleware
         if (app()->isProduction() && ! str_starts_with($base, 'https://')) {
             $base = rtrim((string) config('app.url'), '/');
         }
-        foreach (['google', 'facebook', 'apple', 'github', 'plankton'] as $provider) {
+        foreach (['google', 'facebook', 'apple', 'github', 'linkedin', 'plankton'] as $provider) {
             config(["services.{$provider}.redirect" => $base . '/auth/callback/' . $provider]);
         }
         // Also override the public filesystem URL
@@ -125,7 +125,7 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'csrf_token' => csrf_token(),
             // Only expose which social providers are configured (names only — never secrets)
-            'authProviders' => collect(['google', 'facebook', 'apple', 'github', 'plankton'])
+            'authProviders' => collect(['google', 'facebook', 'apple', 'github', 'linkedin', 'plankton'])
                 ->filter(function ($provider) {
                     if ($provider === 'apple') {
                         return !empty(config('services.apple.client_id')) && !empty(config('services.apple.private_key'));

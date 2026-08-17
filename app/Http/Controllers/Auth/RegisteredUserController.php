@@ -43,6 +43,7 @@ class RegisteredUserController extends Controller
         }
         
         return Inertia::render('auth/register', [
+            'title' => __('Create your account'),
             'referralCode' => $referralCode,
             'planId' => $planId,
             'referrer' => $referrer ? $referrer->name : null,

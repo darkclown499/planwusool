@@ -62,6 +62,12 @@ return [
         'redirect' => env('APP_URL') . '/auth/callback/github',
     ],
 
+    'linkedin' => [
+        'client_id' => env('LINKEDIN_CLIENT_ID'),
+        'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
+        'redirect' => env('APP_URL') . '/auth/callback/linkedin',
+    ],
+
 'vapid' => [
         // Web Push VAPID keys — generate with:
         //   php artisan webpush:generate-keys  (or via minishlink/web-push)
