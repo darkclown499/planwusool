@@ -41,6 +41,25 @@ class ThemeController extends Controller
         // No store found - abort with 404
         abort(404);
     }
+
+    /**
+     * Apply a ?theme=<slug>&preview=1 override for live template previews.
+     * Only slugs in the 29-template catalog are accepted; anything else keeps
+     * the store's saved theme.
+     */
+    protected function applyPreviewTheme(?Request $request, string $currentTheme): string
+    {
+        if (!$request || !$request->boolean('preview')) {
+            return $currentTheme;
+        }
+
+        $candidate = trim((string) $request->query('theme'));
+        if ($candidate === '') {
+            return $currentTheme;
+        }
+
+        return Store::normalizeThemeSlug($candidate);
+    }
     
 
     
@@ -342,6 +361,12 @@ class ThemeController extends Controller
         }
 
         $theme = $store['theme'] ?? 'core-minimal';
+
+        // Live template preview: ?theme=<slug>&preview=1 overrides the store's
+        // saved theme so merchants can preview any of the 29 templates without
+        // changing their store. The slug is validated against the catalog so an
+        // arbitrary query value can never reach the renderer.
+        $theme = $this->applyPreviewTheme($request, $theme);
 
         // Get countries for checkout modal (cached for 24h)
         $countries = \Illuminate\Support\Facades\Cache::remember(

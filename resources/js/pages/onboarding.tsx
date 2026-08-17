@@ -24,7 +24,6 @@ import {
     Phone,
     ShieldCheck,
     ShoppingBag,
-    Smartphone,
     Sparkles,
     Store,
     User,
@@ -41,6 +40,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
+import { getTemplateConfig, getTemplateSummaries } from '@/templates/registry';
+import type { PlanTier, TemplateSummary } from '@/templates/types';
 
 interface Currency {
     code: string;
@@ -387,15 +388,32 @@ export default function Onboarding({
         { code: 'en', name: t('English'), countryCode: 'GB' },
     ];
 
-    const themeOptions = [
-        { value: 'core-minimal', icon: Store, name: t('Core Minimal'), desc: t('Clean and modern design that suits any store.') },
-        { value: 'core-bold', icon: Store, name: t('Core Bold'), desc: t('Dense product grid with a full-width banner.') },
-        { value: 'core-sidebar', icon: Store, name: t('Core Sidebar'), desc: t('Sidebar navigation layout.') },
-        { value: 'core-dark', icon: Smartphone, name: t('Core Dark'), desc: t('Modern dark theme.') },
-        { value: 'core-bazaar', icon: Store, name: t('Core Bazaar'), desc: t('Colorful layout for grocery/market stores.') },
-        { value: 'core-elegant', icon: Store, name: t('Core Elegant'), desc: t('Quiet elegant theme for premium brands.') },
-        { value: 'core-showcase', icon: Smartphone, name: t('Core Showcase'), desc: t('Big hero with video and featured carousel.') },
-    ];
+    const themeCatalog: TemplateSummary[] = useMemo(() => getTemplateSummaries(), []);
+    const themeBySlug = useMemo(() => new Map(themeCatalog.map((tmpl) => [tmpl.slug, tmpl])), [themeCatalog]);
+
+    const TIER_LABEL: Record<PlanTier, string> = {
+        starter: t('Free'),
+        growth: t('Growth'),
+        professional: t('Pro'),
+    };
+
+    const TIER_BADGE: Record<PlanTier, string> = {
+        starter: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        growth: 'bg-sky-100 text-sky-700 border-sky-200',
+        professional: 'bg-violet-100 text-violet-700 border-violet-200',
+    };
+
+    // Per-template accent colour pulled from its design tokens so each card
+    // shows a distinct identity colour even before a thumbnail exists.
+    const themeAccent = (slug: string): string => {
+        const cfg = getTemplateConfig(slug);
+        return cfg?.design_tokens?.colors?.['primary-500'] || primaryColor;
+    };
+
+    const previewUrlFor = (slug: string): string =>
+        demoStoreUrl
+            ? `${demoStoreUrl}?theme=${encodeURIComponent(slug)}&preview=1`
+            : `/demo?template=${encodeURIComponent(slug)}`;
 
     const featureChips = [
         { icon: Store, label: t('Your store on WhatsApp') },
@@ -1194,46 +1212,76 @@ export default function Onboarding({
                                                             {t('Choose a design')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Pick the look of your store. You can change it anytime.')}
+                                                            {t('Pick the look of your store. Preview any design live — you can change it anytime.')}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    {themeOptions.map((theme) => (
-                                                        <button
-                                                            key={theme.value}
-                                                            type="button"
-                                                            onClick={() => setData('theme', theme.value)}
-                                                            className={`relative flex items-start gap-4 rounded-2xl border-2 p-5 text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                                                                data.theme === theme.value
-                                                                    ? 'border-primary bg-primary/5'
-                                                                    : 'border-gray-200 hover:border-gray-300'
-                                                            }`}
-                                                        >
-                                                            <span
-                                                                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-                                                                style={{ backgroundColor: `${primaryColor}1a` }}
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    {themeCatalog.map((tmpl) => {
+                                                        const accent = themeAccent(tmpl.slug);
+                                                        const selected = data.theme === tmpl.slug;
+                                                        return (
+                                                            <div
+                                                                key={tmpl.slug}
+                                                                className={`group relative rounded-2xl border-2 p-4 text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                                                                    selected
+                                                                        ? 'border-primary bg-primary/5'
+                                                                        : 'border-gray-200 hover:border-gray-300'
+                                                                }`}
                                                             >
-                                                                <theme.icon className="h-6 w-6" style={{ color: primaryColor }} />
-                                                            </span>
-                                                            <span className="min-w-0">
-                                                                <span className="block font-semibold text-gray-900">
-                                                                    {theme.name}
-                                                                </span>
-                                                                <span className="mt-1 block text-sm leading-relaxed text-gray-500">
-                                                                    {theme.desc}
-                                                                </span>
-                                                            </span>
-                                                            {data.theme === theme.value && (
-                                                                <span
-                                                                    className="absolute end-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-white animate-pop"
-                                                                    style={{ backgroundColor: primaryColor }}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setData('theme', tmpl.slug)}
+                                                                    className="flex w-full items-start gap-4 text-start"
                                                                 >
-                                                                    <Check className="h-4 w-4" />
-                                                                </span>
-                                                            )}
-                                                        </button>
-                                                    ))}
+                                                                    <span
+                                                                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
+                                                                        style={{ backgroundColor: accent }}
+                                                                    >
+                                                                        {tmpl.slug.startsWith('core-')
+                                                                            ? tmpl.name_en?.charAt(0)
+                                                                            : tmpl.name_en?.charAt(0)}
+                                                                    </span>
+                                                                    <span className="min-w-0 flex-1">
+                                                                        <span className="flex flex-wrap items-center gap-2">
+                                                                            <span className="font-semibold text-gray-900">
+                                                                                {tmpl.name}
+                                                                            </span>
+                                                                            <span className="text-xs text-gray-400">
+                                                                                {tmpl.name_en}
+                                                                            </span>
+                                                                            <span
+                                                                                className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${TIER_BADGE[tmpl.plan_required]}`}
+                                                                            >
+                                                                                {TIER_LABEL[tmpl.plan_required]}
+                                                                            </span>
+                                                                        </span>
+                                                                        <span className="mt-1 block text-sm leading-relaxed text-gray-500">
+                                                                            {tmpl.description}
+                                                                        </span>
+                                                                    </span>
+                                                                    {selected && (
+                                                                        <span
+                                                                            className="absolute end-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-white animate-pop"
+                                                                            style={{ backgroundColor: primaryColor }}
+                                                                        >
+                                                                            <Check className="h-4 w-4" />
+                                                                        </span>
+                                                                    )}
+                                                                </button>
+                                                                <a
+                                                                    href={previewUrlFor(tmpl.slug)}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
+                                                                >
+                                                                    <ExternalLink className="h-3.5 w-3.5" />
+                                                                    {t('Preview')}
+                                                                </a>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         )}
@@ -1352,13 +1400,14 @@ export default function Onboarding({
                                                                     currencies.find((c) => c.code === data.currency)?.name ||
                                                                     data.currency,
                                                             },
-                                                            {
-                                                                icon: Palette,
-                                                                label: t('Design'),
-                                                                value:
-                                                                    themeOptions.find((t) => t.value === data.theme)?.name ||
-                                                                    t('Basic'),
-                                                            },
+                                                                {
+                                                                    icon: Palette,
+                                                                    label: t('Design'),
+                                                                    value:
+                                                                        themeBySlug.get(data.theme)?.name ||
+                                                                        themeBySlug.get(data.theme)?.name_en ||
+                                                                        data.theme,
+                                                                },
                                                             {
                                                                 icon: Globe,
                                                                 label: t('Status'),
