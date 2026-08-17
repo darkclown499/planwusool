@@ -75,7 +75,6 @@ export default defineConfig({
                     payments: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
                     qr: ['qrcode', 'react-qr-code', 'react-barcode'],
                     sentry: ['@sentry/react', '@sentry/tracing', '@sentry/replay'],
-                    icons: ['lucide-react', 'react-icons'],
                 }
             },
         },
