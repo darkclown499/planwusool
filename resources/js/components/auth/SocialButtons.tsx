@@ -85,7 +85,7 @@ export default function SocialButtons({ primaryColor = '#10b77f', availableProvi
         <a
           key={p.id}
           href={`/auth/redirect/${p.id}`}
-          className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-md active:scale-[0.98]"
+          className="social-auth-btn flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 hover:shadow-md active:scale-[0.98]"
           style={{
             backgroundColor: p.bgColor,
             color: p.textColor,

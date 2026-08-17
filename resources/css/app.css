@@ -207,7 +207,7 @@ a:hover {
 
 .btn-green:hover,
 a.bg-primary:hover,
-a[style*="background-color"]:hover {
+a[style*="background-color"]:hover:not(.social-auth-btn) {
   color: white !important;
 }
 
