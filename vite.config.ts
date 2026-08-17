@@ -71,7 +71,6 @@ export default defineConfig({
                     editor: ['@uiw/react-codemirror', '@codemirror/lang-css', '@codemirror/lang-javascript', '@codemirror/lang-json'],
                     tiptap: ['@tiptap/react', '@tiptap/starter-kit'],
                     calendar: ['@fullcalendar/react', '@fullcalendar/daygrid', '@fullcalendar/timegrid', '@fullcalendar/interaction'],
-                    three: ['three', '@react-three/fiber', '@react-three/drei'],
                     payments: ['@stripe/stripe-js', '@stripe/react-stripe-js'],
                     qr: ['qrcode', 'react-qr-code', 'react-barcode'],
                     sentry: ['@sentry/react', '@sentry/tracing', '@sentry/replay'],
