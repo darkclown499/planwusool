@@ -153,9 +153,10 @@ class MediaController extends Controller
         $uploadedMedia = [];
         $errors = [];
 
-        DB::transaction(function () use ($request, &$uploadedMedia, &$errors, $allowedMimes) {
+        DB::transaction(function () use ($request, &$uploadedMedia, &$errors, $allowedMimes, $allowedTypes) {
             foreach ($request->file('files') as $file) {
                 $tempFilePath = null;
+                $optimizedPath = null;
                 try {
                     $sanitizedName = $this->sanitizeFilename($file->getClientOriginalName());
 
@@ -173,6 +174,15 @@ class MediaController extends Controller
                         $source = $tempFilePath;
                     } else {
                         $source = $file;
+
+                        // Downscale raster uploads and store them as WebP so the
+                        // storefront serves small, modern images instead of the
+                        // raw multi-megabyte camera file the user picked.
+                        $optimizedPath = $this->optimizePhoto($file->getPathname(), $sanitizedName, $allowedTypes);
+                        if ($optimizedPath) {
+                            $tempFilePath = $optimizedPath;
+                            $source = $optimizedPath;
+                        }
                     }
 
                     $fileAdder = $mediaItem
@@ -181,6 +191,9 @@ class MediaController extends Controller
 
                     if ($isSvg) {
                         $fileAdder->usingFileName($sanitizedName);
+                    } elseif (isset($optimizedPath)) {
+                        // The source is a temp WebP file — give it a clean name.
+                        $fileAdder->usingFileName(pathinfo($sanitizedName, PATHINFO_FILENAME) . '.webp');
                     }
 
                     $media = $fileAdder->toMediaCollection('images');
@@ -394,6 +407,112 @@ class MediaController extends Controller
     }
 
     /**
+     * Downscale a raster upload and re-encode it as WebP so originals stay
+     * small when served on the storefront. Returns a temp file path (caller
+     * must clean it up) or null to store the uploaded file unchanged.
+     */
+    private function optimizePhoto(string $sourcePath, string $originalName, array $allowedTypes): ?string
+    {
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        // Only optimize raster images. Keep GIF/SVG (animation/interactivity)
+        // and non-image uploads (PDF/ZIP/etc.) exactly as provided.
+        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'bmp'])) {
+            return null;
+        }
+
+        // Never store a format the tenant's allowed list forbids.
+        if (!in_array('webp', $allowedTypes)) {
+            return null;
+        }
+
+        $info = @getimagesize($sourcePath);
+        if (!$info || $info[0] < 1 || $info[1] < 1) {
+            return null;
+        }
+
+        $width = $info[0];
+        $height = $info[1];
+        $type = $info[2];
+
+        $source = null;
+        switch ($type) {
+            case IMAGETYPE_JPEG:
+                $source = @imagecreatefromjpeg($sourcePath);
+                break;
+            case IMAGETYPE_PNG:
+                $source = @imagecreatefrompng($sourcePath);
+                break;
+            case IMAGETYPE_WEBP:
+                $source = @imagecreatefromwebp($sourcePath);
+                break;
+            default:
+                return null;
+        }
+
+        if (!$source) {
+            return null;
+        }
+
+        // Correct EXIF orientation from phone cameras before downscaling so
+        // width/height are measured on the upright image.
+        $orientation = 1;
+        if ($type === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
+            $exif = @exif_read_data($sourcePath);
+            $orientation = (int) ($exif['Orientation'] ?? 1);
+        }
+
+        if ($orientation !== 1 && in_array($orientation, [3, 6, 8], true)) {
+            $rotation = [3 => 180, 6 => -90, 8 => 90][$orientation];
+            $rotated = imagerotate($source, $rotation, 0);
+            if ($rotated) {
+                imagedestroy($source);
+                $source = $rotated;
+            }
+        }
+
+        $width = imagesx($source);
+        $height = imagesy($source);
+
+        // Max target dimension — keeps cards crisp while slashing bytes.
+        $maxDim = 1280;
+        $scale = min(1.0, $maxDim / max($width, $height));
+        $newWidth = max(1, (int) round($width * $scale));
+        $newHeight = max(1, (int) round($height * $scale));
+
+        $target = imagecreatetruecolor($newWidth, $newHeight);
+
+        // Preserve alpha for PNG/WebP sources.
+        if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_WEBP) {
+            imagealphablending($target, false);
+            imagesavealpha($target, true);
+            $transparent = imagecolorallocatealpha($target, 0, 0, 0, 127);
+            imagefill($target, 0, 0, $transparent);
+        }
+
+        imagecopyresampled($target, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'med_opt_') . '.webp';
+        $saved = imagewebp($target, $tempPath, 82);
+
+        imagedestroy($source);
+        imagedestroy($target);
+
+        if (!$saved || !is_file($tempPath)) {
+            @unlink($tempPath);
+            return null;
+        }
+
+        // Never return a "optimized" file that's bigger than the input.
+        if (filesize($tempPath) >= filesize($sourcePath)) {
+            @unlink($tempPath);
+            return null;
+        }
+
+        return $tempPath;
+    }
+
+    /**
      * Strip executable content from uploaded SVG files so they cannot run
      * scripts when served inline from the storage disk.
      */
@@ -549,6 +668,9 @@ class MediaController extends Controller
                 case IMAGETYPE_PNG:
                     $source = imagecreatefrompng($localPath);
                     break;
+                case IMAGETYPE_WEBP:
+                    $source = imagecreatefromwebp($localPath);
+                    break;
                 default:
                     return;
             }
@@ -557,7 +679,7 @@ class MediaController extends Controller
 
             $resized = imagecreatetruecolor(512, 512);
 
-            if ($type === IMAGETYPE_PNG) {
+            if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_WEBP) {
                 imagealphablending($resized, false);
                 imagesavealpha($resized, true);
                 $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
@@ -574,7 +696,7 @@ class MediaController extends Controller
             $pwaFileName = $pathInfo['filename'] . '_pwa.png';
             $pwaPath = dirname($localPath) . '/' . $pwaFileName;
 
-            imagepng($resized, $pwaPath, 9);
+            @imagepng($resized, $pwaPath, 9);
 
             imagedestroy($source);
             imagedestroy($resized);
