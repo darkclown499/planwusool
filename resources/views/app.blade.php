@@ -211,9 +211,20 @@
                 $cleanPath = ltrim($favicon, '/');
                 $faviconUrl = rtrim($appUrl, '/') . '/' . $cleanPath;
             }
+            $brandBase = rtrim($appUrl, '/') . '/images/logos';
+            $themeColorName = getSetting('themeColor', getSetting('primaryColor', 'green'));
+            $themeColorsMap = ['blue' => '#3b82f6', 'green' => '#10b77f', 'purple' => '#8b5cf6', 'orange' => '#f97316', 'red' => '#ef4444'];
+            $themeColor = $themeColorName === 'custom'
+                ? getSetting('customColor', '#10b77f')
+                : ($themeColorsMap[$themeColorName] ?? $themeColorName);
         @endphp
-        <link rel="icon" href="{{ $faviconUrl }}">
-        <link rel="apple-touch-icon" href="{{ $faviconUrl }}">
+        <link rel="icon" type="image/x-icon" href="{{ $faviconUrl }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ $faviconUrl }}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ $brandBase }}/favicon-16x16.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ $brandBase }}/apple-touch-icon.png">
+        <link rel="manifest" href="{{ $brandBase }}/site.webmanifest">
+        <meta name="theme-color" content="{{ $themeColor }}">
+        <meta name="theme-color" content="#10b77f" media="(prefers-color-scheme: dark)">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&family=tajawal:400,500,700,800,900&family=cairo:400,500,600,700,800,900&family=ibm-plex-sans-arabic:400,500,600,700" rel="stylesheet" />
