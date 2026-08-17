@@ -146,7 +146,7 @@ export default function LandingPage() {
 
   // Use Superadmin Settings from the 'settings' table for SEO as requested
   const pageTitle = superadminSettings?.metaTitle || superadminSettings?.titleText || 'Wusool - Build Your Online Store';
-  const metaDescription = superadminSettings?.metaDescription || 'Create beautiful, professional online stores with Wusool. Everything you need to start selling online.';
+  const metaDescription = superadminSettings?.metaDescription || 'أنشئ متجرك الإلكتروني الاحترافي خلال دقائق مع منصة وصول. ربط مباشر مع الواتساب، طرق دفع متعددة، وإدارة كاملة لطلباتك من مكان واحد. جرب مجاناً!';
   const metaKeywords = superadminSettings?.metaKeywords || '';
   const metaImage = superadminSettings?.metaImage ? getImageUrl(superadminSettings.metaImage) : '';
 

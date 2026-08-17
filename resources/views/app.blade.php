@@ -218,6 +218,14 @@
                 'alternateName' => 'وُصول',
                 'url' => $appUrl,
                 'inLanguage' => 'ar',
+                'potentialAction' => [
+                    '@type' => 'SearchAction',
+                    'target' => [
+                        '@type' => 'EntryPoint',
+                        'urlTemplate' => $appUrl . '/search?q={search_term_string}',
+                    ],
+                    'query-input' => 'required name=search_term_string',
+                ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
             </script>
         @endif
@@ -290,7 +298,7 @@
         @elseif($isStoreRoute)
             <title inertia>{{ $storeTitle ?? config('app.name', 'Wusool') }}</title>
         @elseif($isLandingRoute)
-            <title inertia>{{ getSetting('titleText', config('app.name', 'Wusool')) }}</title>
+            <title inertia>{{ $seoTitle ?? getSetting('titleText', config('app.name', 'Wusool')) }}</title>
         @endif
 
         {{-- Dynamic Favicon --}}
