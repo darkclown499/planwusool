@@ -110,6 +110,62 @@ const FIELD_STEP: Record<string, number> = {
 
 const CONFETTI_COLORS = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ec4899', '#8b5cf6'];
 
+/**
+ * Mini storefront mockup rendered from a template's design tokens so each card
+ * shows the template's real colour identity (hero, header, product grid).
+ */
+function TemplateMiniPreview({ colors }: { colors: Record<string, string> }) {
+    const bg = colors?.background || '#ffffff';
+    const surface = colors?.surface || '#f9fafb';
+    const primary = colors?.['primary-500'] || '#10b77f';
+    const primarySoft = colors?.['primary-50'] || `${primary}14`;
+    const primaryDeep = colors?.['primary-700'] || '#047857';
+    const text = colors?.['text-primary'] || '#111827';
+    const muted = colors?.['text-muted'] || '#6b7280';
+
+    return (
+        <div className="pointer-events-none h-28 w-full select-none overflow-hidden rounded-xl border border-black/5"
+            style={{ backgroundColor: bg }}>
+            {/* Header bar */}
+            <div className="flex items-center justify-between px-3 pb-1 pt-2"
+                style={{ backgroundColor: `${bg}f2`, borderBottom: `1px solid ${surface}` }}>
+                <span className="flex items-center gap-1.5">
+                    <span className="block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: primary }} />
+                    <span className="block h-1.5 w-12 rounded-full" style={{ backgroundColor: primaryDeep, opacity: 0.55 }} />
+                </span>
+                <span className="flex items-center gap-1">
+                    <span className="block h-1.5 w-5 rounded-full" style={{ backgroundColor: muted, opacity: 0.5 }} />
+                    <span className="block h-1.5 w-5 rounded-full" style={{ backgroundColor: primary }} />
+                </span>
+            </div>
+
+            {/* Hero banner */}
+            <div className="mx-3 mt-2 flex items-center justify-between rounded-lg px-3 py-2.5"
+                style={{ backgroundColor: primary, backgroundImage: `linear-gradient(120deg, ${primary}, ${primaryDeep})` }}>
+                <span className="space-y-1">
+                    <span className="block h-1.5 w-16 rounded-full bg-white/90" />
+                    <span className="block h-1.5 w-10 rounded-full bg-white/50" />
+                    <span className="mt-1 block h-2.5 w-8 rounded-full bg-white" />
+                </span>
+                <span className="block h-7 w-7 rounded-lg bg-white/25" />
+            </div>
+
+            {/* Product grid */}
+            <div className="grid grid-cols-4 gap-1.5 px-3 pb-3 pt-2">
+                {[0, 1, 2, 3].map((i) => (
+                    <span key={i} className="space-y-1 rounded-md p-1.5"
+                        style={{ backgroundColor: surface }}>
+                        <span className="block h-7 w-full rounded-md"
+                            style={{ backgroundColor: `${primarySoft}` }} />
+                        <span className="block h-1 w-3/4 rounded-full" style={{ backgroundColor: muted, opacity: 0.55 }} />
+                        <span className="block h-1 w-1/2 rounded-full" style={{ backgroundColor: primary, opacity: 0.8 }} />
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 function slugify(value: string): string {
     const latin = value
         .normalize('NFKD')
@@ -403,11 +459,9 @@ export default function Onboarding({
         professional: 'bg-violet-100 text-violet-700 border-violet-200',
     };
 
-    // Per-template accent colour pulled from its design tokens so each card
-    // shows a distinct identity colour even before a thumbnail exists.
-    const themeAccent = (slug: string): string => {
+    const themeColors = (slug: string): Record<string, string> => {
         const cfg = getTemplateConfig(slug);
-        return cfg?.design_tokens?.colors?.['primary-500'] || primaryColor;
+        return (cfg?.design_tokens?.colors as Record<string, string>) || {};
     };
 
     const previewUrlFor = (slug: string): string =>
@@ -1216,69 +1270,65 @@ export default function Onboarding({
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 gap-3">
+                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                     {themeCatalog.map((tmpl) => {
-                                                        const accent = themeAccent(tmpl.slug);
                                                         const selected = data.theme === tmpl.slug;
                                                         return (
                                                             <div
                                                                 key={tmpl.slug}
-                                                                className={`group relative rounded-2xl border-2 p-4 text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                                                                className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-white text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
                                                                     selected
-                                                                        ? 'border-primary bg-primary/5'
+                                                                        ? 'border-primary shadow-lg shadow-primary/10'
                                                                         : 'border-gray-200 hover:border-gray-300'
                                                                 }`}
                                                             >
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setData('theme', tmpl.slug)}
-                                                                    className="flex w-full items-start gap-4 text-start"
+                                                                    className="w-full text-start"
                                                                 >
-                                                                    <span
-                                                                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
-                                                                        style={{ backgroundColor: accent }}
-                                                                    >
-                                                                        {tmpl.slug.startsWith('core-')
-                                                                            ? tmpl.name_en?.charAt(0)
-                                                                            : tmpl.name_en?.charAt(0)}
-                                                                    </span>
-                                                                    <span className="min-w-0 flex-1">
-                                                                        <span className="flex flex-wrap items-center gap-2">
-                                                                            <span className="font-semibold text-gray-900">
+                                                                    <div className="relative">
+                                                                        <TemplateMiniPreview colors={themeColors(tmpl.slug)} />
+                                                                        <span
+                                                                            className={`absolute end-2.5 top-2.5 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${TIER_BADGE[tmpl.plan_required]}`}
+                                                                        >
+                                                                            {TIER_LABEL[tmpl.plan_required]}
+                                                                        </span>
+                                                                        {selected && (
+                                                                            <span
+                                                                                className="absolute start-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full text-white animate-pop"
+                                                                                style={{ backgroundColor: primaryColor }}
+                                                                            >
+                                                                                <Check className="h-4 w-4" />
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="px-4 pb-4 pt-3">
+                                                                        <span className="flex items-center gap-2">
+                                                                            <span className="font-bold text-gray-900">
                                                                                 {tmpl.name}
                                                                             </span>
-                                                                            <span className="text-xs text-gray-400">
+                                                                            <span className="text-xs font-medium text-gray-400">
                                                                                 {tmpl.name_en}
                                                                             </span>
-                                                                            <span
-                                                                                className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${TIER_BADGE[tmpl.plan_required]}`}
-                                                                            >
-                                                                                {TIER_LABEL[tmpl.plan_required]}
-                                                                            </span>
                                                                         </span>
-                                                                        <span className="mt-1 block text-sm leading-relaxed text-gray-500">
+                                                                        <span className="mt-1 line-clamp-2 block text-xs leading-relaxed text-gray-500">
                                                                             {tmpl.description}
                                                                         </span>
-                                                                    </span>
-                                                                    {selected && (
-                                                                        <span
-                                                                            className="absolute end-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-white animate-pop"
-                                                                            style={{ backgroundColor: primaryColor }}
-                                                                        >
-                                                                            <Check className="h-4 w-4" />
-                                                                        </span>
-                                                                    )}
+                                                                    </div>
                                                                 </button>
-                                                                <a
-                                                                    href={previewUrlFor(tmpl.slug)}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-gray-50"
-                                                                >
-                                                                    <ExternalLink className="h-3.5 w-3.5" />
-                                                                    {t('Preview')}
-                                                                </a>
+                                                                <div className="mt-auto px-4 pb-4">
+                                                                    <a
+                                                                        href={previewUrlFor(tmpl.slug)}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 transition hover:border-primary hover:text-primary"
+                                                                    >
+                                                                        <ExternalLink className="h-3.5 w-3.5" />
+                                                                        {t('Preview design')}
+                                                                    </a>
+                                                                </div>
                                                             </div>
                                                         );
                                                     })}
