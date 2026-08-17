@@ -52,11 +52,8 @@ class UserObserver
                         'slug' => \App\Models\Store::generateUniqueSlug($user->name),
                         'theme' => 'core-minimal',
                         'email' => $user->email,
+                        'user_id' => $user->id,
                     ]);
-
-                    // user_id is guarded (not mass-assignable), set explicitly
-                    $store->user_id = $user->id;
-                    $store->save();
 
                     $user->update(['current_store' => $store->id]);
                 }

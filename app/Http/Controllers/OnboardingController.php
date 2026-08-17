@@ -320,11 +320,8 @@ class OnboardingController extends Controller
             'slug' => Store::generateUniqueSlug($user->name),
             'theme' => 'core-minimal',
             'email' => $user->email,
+            'user_id' => $user->id,
         ]);
-
-        // user_id is guarded against mass assignment; assign explicitly.
-        $store->user_id = $user->id;
-        $store->save();
 
         $user->current_store = $store->id;
         $user->save();

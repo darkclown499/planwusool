@@ -1,58 +1,69 @@
 #!/usr/bin/env bash
+# ==============================================================
+# Wusool production deploy script (run on the SERVER).
 #
-# Wusool deployment script — run from the project root on the VPS.
+# This is the ONLY supported way to deploy the app. It guarantees
+# the Vite manifest and the compiled assets are always generated
+# together ON THE SERVER, which eliminates the recurring
+# "white screen" / 404-asset bugs caused by committing stale
+# public/build output.
 #
-# Usage:
-#   ./deploy.sh [branch]        # default branch: main
-#
-# Requirements: git, composer, node/npm, php, and sudo for cache/perms.
-# This script is safe to re-run; it is idempotent.
-#
+# Usage (on the server, from the app directory):
+#     bash /www/wwwroot/wusool.ps/deploy.sh
+# ==============================================================
 set -euo pipefail
 
-BRANCH="${1:-main}"
-APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APP_DIR="${APP_DIR:-/www/wwwroot/wusool.ps}"
+BRANCH="${BRANCH:-main}"
+PHP="${PHP:-/usr/bin/php}"
+FPM_SERVICE="${FPM_SERVICE:-php-fpm-83}"
 
 cd "$APP_DIR"
+echo "==> Deploying branch '$BRANCH' to $APP_DIR"
 
-echo "==> [1/8] Pulling latest code (branch: $BRANCH)"
-git fetch --all --prune
-git checkout "$BRANCH"
-git pull origin "$BRANCH"
+echo "==> [1/7] Fetching and resetting to origin/$BRANCH"
+git fetch origin "$BRANCH"
+git reset --hard "origin/$BRANCH"
+git submodule update --init --recursive 2>/dev/null || true
 
-echo "==> [2/8] Installing PHP dependencies"
-if [ -f composer.phar ]; then
-    php composer.phar install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+echo "==> [2/7] Composer install (no-dev)"
+if [ -f composer.lock ]; then
+    composer install --no-dev --optimize-autoloader --no-interaction
 else
-    composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+    composer update --no-dev --optimize-autoloader --no-interaction
 fi
 
-echo "==> [3/8] Installing JS dependencies"
-npm ci || npm install --no-audit --no-fund
+echo "==> [3/7] npm install"
+npm ci --no-audit --no-fund 2>/dev/null || npm install --no-audit --no-fund
 
-echo "==> [4/8] Building frontend assets"
+echo "==> [4/7] Building frontend assets (manifest + files on server)"
+rm -rf public/build
 npm run build
 
-echo "==> [5/8] Running database migrations"
-php artisan migrate --force
+echo "==> [5/7] Database migrations"
+"$PHP" artisan migrate --force --no-interaction
 
-echo "==> [6/8] Caching config, routes and views"
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-php artisan event:cache 2>/dev/null || true
+echo "==> [6/7] Clearing caches"
+"$PHP" artisan optimize:clear
+"$PHP" artisan view:clear
+"$PHP" artisan config:clear
 
-echo "==> [7/8] Creating storage link and fixing permissions"
-[ -L public/storage ] || php artisan storage:link
-# php-fpm runs as www:www on this VPS (BT panel) — using www-data here
-# silently breaks runtime view compilation (Blade tempnam) and causes 500s.
+echo "==> [7/8] Storage link + permissions (php-fpm runs as www on this VPS)"
+[ -L public/storage ] || "$PHP" artisan storage:link
 WEB_USER="${WEB_USER:-www}"
-sudo chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache public 2>/dev/null || true
-sudo chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache public 2>/dev/null || true
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-echo "==> [8/8] Restarting queue worker"
-if systemctl list-unit-files 2>/dev/null | grep -q '^queue-worker'; then
-    sudo systemctl restart queue-worker
+echo "==> [8/8] Reloading services + queue worker"
+if command -v systemctl >/dev/null 2>&1 && systemctl list-units --type=service 2>/dev/null | grep -q "$FPM_SERVICE"; then
+    systemctl reload "$FPM_SERVICE" 2>/dev/null || systemctl restart "$FPM_SERVICE"
+else
+    service "$FPM_SERVICE" reload 2>/dev/null || /etc/init.d/"$FPM_SERVICE" reload 2>/dev/null || true
+fi
+nginx -s reload 2>/dev/null || service nginx reload 2>/dev/null || true
+if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q '^queue-worker'; then
+    systemctl restart queue-worker 2>/dev/null || true
 fi
 
-echo "==> Deployment complete for branch '$BRANCH'."
+echo "==> Done. Verify:"
+echo "    curl -I https://wusool.ps/"
