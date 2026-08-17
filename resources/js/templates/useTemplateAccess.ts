@@ -11,7 +11,7 @@ import { getTemplateConfig } from '@/templates/registry';
 interface TemplateAccessOptions {
   templateSlug?: string;
   userPlanName?: string | null;
-  userPlanTier?: PlanTier;
+  userPlanTier?: PlanTier | null;
   isSuperAdmin?: boolean;
   isPreview?: boolean;
 }
@@ -37,7 +37,7 @@ export function useTemplateAccess({
   isPreview = false,
 }: TemplateAccessOptions): TemplateAccessResult {
   const planTier: PlanTier = useMemo(
-    () => userPlanTier || getTemplateTierFromPlanName(userPlanName),
+    () => (userPlanTier ? userPlanTier : getTemplateTierFromPlanName(userPlanName)),
     [userPlanName, userPlanTier]
   );
 

@@ -1308,9 +1308,6 @@ export default function Onboarding({
                                                                             <span className="font-bold text-gray-900">
                                                                                 {tmpl.name}
                                                                             </span>
-                                                                            <span className="text-xs font-medium text-gray-400">
-                                                                                {tmpl.name_en}
-                                                                            </span>
                                                                         </span>
                                                                         <span className="mt-1 line-clamp-2 block text-xs leading-relaxed text-gray-500">
                                                                             {tmpl.description}

@@ -4,7 +4,7 @@ import { useTemplateAccess } from '@/templates/useTemplateAccess';
 interface PlanGuardProps {
   templateSlug?: string;
   userPlanName?: string | null;
-  userPlanTier?: 'starter' | 'growth' | 'professional';
+  userPlanTier?: 'starter' | 'growth' | 'professional' | null;
   isSuperAdmin?: boolean;
   isPreview?: boolean;
   fallback?: React.ReactNode;
@@ -52,7 +52,7 @@ interface UpgradePromptProps {
   templateName?: string;
   requiredPlan?: string;
   userPlanName?: string | null;
-  userPlanTier?: 'starter' | 'growth' | 'professional';
+  userPlanTier?: 'starter' | 'growth' | 'professional' | null;
   demoStoreUrl?: string;
   className?: string;
 }

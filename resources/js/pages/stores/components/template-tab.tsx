@@ -35,6 +35,7 @@ interface TemplateTabProps {
     store: any;
     availableThemes?: string[];
     storeContent?: any;
+    demoStoreUrl?: string;
     initialAction?: 'theme' | 'editor' | null;
 }
 
@@ -123,7 +124,7 @@ const DEFAULT_BEHAVIOR: any = {
     show_auth_button: true,
 };
 
-export default function TemplateTab({ store, initialAction = null }: TemplateTabProps) {
+export default function TemplateTab({ store, demoStoreUrl = '', initialAction = null }: TemplateTabProps) {
     const { t } = useTranslation();
 
     const [caps, setCaps] = useState<TemplateCapabilities>({
@@ -287,6 +288,11 @@ export default function TemplateTab({ store, initialAction = null }: TemplateTab
         return `${protocol}//${slug}.${base}${port ? `:${port}` : ''}`;
     })();
 
+    const previewUrlFor = (templateValue: string): string => {
+        const base = demoStoreUrl || storeUrl;
+        return base ? `${base}?theme=${encodeURIComponent(templateValue)}&preview=1` : '';
+    };
+
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
@@ -399,41 +405,56 @@ export default function TemplateTab({ store, initialAction = null }: TemplateTab
                             {catalog.map((th) => {
                                 const active = selectedTheme === th.value;
                                 const locked = th.tier === 'growth' ? caps.level === 'none' : caps.level === 'none' || caps.level === 'limited';
+                                const previewUrl = previewUrlFor(th.value);
                                 return (
-                                    <button
+                                    <div
                                         key={th.value}
-                                        type="button"
-                                        onClick={() => {
-                                            if (locked) {
-                                                maybeUpgrade(t('Premium template'));
-                                                return;
-                                            }
-                                            setSelectedTheme(th.value);
-                                        }}
                                         className={cn(
                                             'rounded-xl border-2 p-4 text-start transition',
                                             active ? 'border-primary bg-primary/5 shadow-sm' : 'border-gray-200 hover:border-gray-300',
                                         )}
                                     >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-2xl">{th.icon}</span>
-                                                <span className="font-semibold">{th.name}</span>
-                                            </div>
-                                            {active && <CheckCircle2 className="h-5 w-5 text-primary" />}
-                                        </div>
-                                        <p className="mt-1 text-xs text-muted-foreground">{th.name_en}</p>
-                                        <span
-                                            className={cn(
-                                                'mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                                locked ? 'bg-muted text-muted-foreground' : 'text-white',
-                                            )}
-                                            style={locked ? undefined : { background: th.accent }}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (locked) {
+                                                    maybeUpgrade(t('Premium template'));
+                                                    return;
+                                                }
+                                                setSelectedTheme(th.value);
+                                            }}
+                                            className="w-full text-start"
                                         >
-                                            {locked && <Lock className="h-3 w-3" />}
-                                            {TIER_LABEL[th.tier]}
-                                        </span>
-                                    </button>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-2xl">{th.icon}</span>
+                                                    <span className="font-semibold">{th.name}</span>
+                                                </div>
+                                                {active && <CheckCircle2 className="h-5 w-5 text-primary" />}
+                                            </div>
+                                            <span
+                                                className={cn(
+                                                    'mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                                    locked ? 'bg-muted text-muted-foreground' : 'text-white',
+                                                )}
+                                                style={locked ? undefined : { background: th.accent }}
+                                            >
+                                                {locked && <Lock className="h-3 w-3" />}
+                                                {TIER_LABEL[th.tier]}
+                                            </span>
+                                        </button>
+                                        {previewUrl && (
+                                            <a
+                                                href={previewUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="mt-3 inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition hover:border-primary hover:text-primary"
+                                            >
+                                                <ExternalLink className="h-3.5 w-3.5" />
+                                                {t('Preview')}
+                                            </a>
+                                        )}
+                                    </div>
                                 );
                             })}
                         </div>

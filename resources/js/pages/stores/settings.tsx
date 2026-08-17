@@ -31,6 +31,7 @@ interface Props {
   locationData: any[];
   availableThemes?: string[];
   storeContent?: any;
+  demoStoreUrl?: string;
 }
 
 const STORE_LANGUAGES: { code: string; label: string }[] = [
@@ -124,7 +125,7 @@ function initSocialLinks(s: any): any[] {
   return legacy;
 }
 
-export default function StoreSettings({ store, settings, currencies, timezones, locationData = [], availableThemes = [], storeContent = {} }: Props) {
+export default function StoreSettings({ store, settings, currencies, timezones, locationData = [], availableThemes = [], storeContent = {}, demoStoreUrl = '' }: Props) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
@@ -372,7 +373,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
         </TabsList>
 
         <TabsContent value="template" className="space-y-4 mt-6">
-          <TemplateTab store={store} availableThemes={availableThemes} storeContent={storeContent} initialAction={initialTemplateAction} />
+          <TemplateTab store={store} availableThemes={availableThemes} storeContent={storeContent} demoStoreUrl={demoStoreUrl} initialAction={initialTemplateAction} />
         </TabsContent>
 
         <TabsContent value="general" className="space-y-4 mt-6">

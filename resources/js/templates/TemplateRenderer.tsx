@@ -12,7 +12,7 @@ interface TemplateRendererProps {
     designTokens?: DesignTokens | null;
     overrides?: { sections?: TemplateSectionConfig[] } | null;
     userPlanName?: string | null;
-    userPlanTier?: 'starter' | 'growth' | 'professional';
+    userPlanTier?: 'starter' | 'growth' | 'professional' | null;
     isSuperAdmin?: boolean;
     isPreview?: boolean;
     loading?: boolean;

@@ -24,7 +24,7 @@ interface DynamicStoreProps {
     page?: any;
     isPreview?: boolean;
     userPlanName?: string | null;
-    userPlanTier?: 'starter' | 'growth' | 'professional';
+    userPlanTier?: 'starter' | 'growth' | 'professional' | null;
     isSuperAdmin?: boolean;
     demoStoreUrl?: string;
     isLoggedIn?: boolean;
@@ -57,7 +57,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     page = null,
     isPreview = false,
     userPlanName = null,
-    userPlanTier = 'starter',
+    userPlanTier = null,
     isSuperAdmin = false,
     demoStoreUrl = '',
     isLoggedIn = false,

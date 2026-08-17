@@ -60,6 +60,22 @@ class ThemeController extends Controller
 
         return Store::normalizeThemeSlug($candidate);
     }
+
+    /**
+     * Map an owner's plan to a template tier so premium templates render for
+     * the correct plan instead of defaulting to the Starter gate.
+     */
+    protected function planTierFor($plan): string
+    {
+        if ($plan && $plan->template_editor_level === 'full') {
+            return 'professional';
+        }
+        if ($plan && $plan->template_editor_level === 'limited') {
+            return 'growth';
+        }
+
+        return 'starter';
+    }
     
 
     
@@ -441,6 +457,8 @@ class ThemeController extends Controller
         // Growth/Pro instead of showing an upgrade prompt.
         $ownerPlan = $storeModel && $storeModel->user ? $storeModel->user->plan : null;
         $props['userPlanName'] = $ownerPlan ? $ownerPlan->name : null;
+        $props['userPlanTier'] = $this->planTierFor($ownerPlan);
+        $props['isPreview'] = $request ? $request->boolean('preview') : false;
 
         return Inertia::render('store/dynamic', array_merge($props, [
             'showResetModal' => $request ? $request->get('showResetModal', false) : false,
@@ -545,6 +563,8 @@ class ThemeController extends Controller
 
         $ownerPlan = $storeModel->user ? $storeModel->user->plan : null;
         $props['userPlanName'] = $ownerPlan ? $ownerPlan->name : null;
+        $props['userPlanTier'] = $this->planTierFor($ownerPlan);
+        $props['isPreview'] = $request ? $request->boolean('preview') : false;
 
         return Inertia::render('store/dynamic', array_merge($props, $this->getCommonData()));
     }

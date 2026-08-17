@@ -230,7 +230,7 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
                     <div className="text-end">
                       {user.plan ? (
                         <Badge variant="default" className="text-xs">
-                          {user.plan.name}
+                          {t(user.plan.name)}
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="text-xs">

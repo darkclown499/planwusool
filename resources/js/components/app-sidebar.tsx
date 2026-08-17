@@ -528,7 +528,7 @@ export function AppSidebar() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{t('Current Plan')}</p>
-                                    <p className="text-[13px] font-semibold text-gray-800 truncate">{auth.user.plan?.name || t('Free')}</p>
+                                    <p className="text-[13px] font-semibold text-gray-800 truncate">{t(auth.user.plan?.name || 'Free')}</p>
                                 </div>
                             </div>
                             <Link

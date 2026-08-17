@@ -60,6 +60,7 @@ class StoreSettingsController extends Controller
             'locationData' => $locationData,
             'availableThemes' => Auth::user()->getAvailableThemes(),
             'storeContent' => $store->getMergedStoreContent(),
+            'demoStoreUrl' => app(\App\Services\DemoStoreService::class)->demoStoreUrl(),
         ]);
     }
 

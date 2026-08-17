@@ -388,7 +388,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                             #{index + 1}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-gray-900">{plan.name}</p>
+                            <p className="font-semibold text-gray-900">{t(plan.name)}</p>
                             <p className="text-sm text-gray-500">{plan.subscribers || plan.orders || 0} {t('active subscriptions')}</p>
                           </div>
                         </div>

@@ -11,6 +11,15 @@ interface FeatureLockedOverlayProps {
 export default function FeatureLockedOverlay({ featureName, requiredPlan = 'Growth' }: FeatureLockedOverlayProps) {
   const { t } = useTranslation();
 
+  const planLabel = (plan: string) => {
+    const labels: Record<string, string> = {
+      Starter: t('Starter'),
+      Growth: t('Growth'),
+      Professional: t('Professional'),
+    };
+    return labels[plan] || plan;
+  };
+
   return (
     <div className="relative rounded-lg border border-dashed border-amber-300 bg-amber-50/50 p-8">
       <div className="flex flex-col items-center justify-center text-center">
@@ -19,7 +28,7 @@ export default function FeatureLockedOverlay({ featureName, requiredPlan = 'Grow
         </div>
         <h3 className="mb-1 text-lg font-semibold text-amber-800">{t(featureName)}</h3>
         <p className="mb-4 max-w-sm text-sm text-amber-700">
-          {t('This feature requires the {{plan}} plan or higher.', { plan: requiredPlan })}
+          {t('This feature requires the {{plan}} plan or higher.', { plan: planLabel(requiredPlan) })}
           <br />
           {t('Upgrade your plan to unlock this feature and more.')}
         </p>

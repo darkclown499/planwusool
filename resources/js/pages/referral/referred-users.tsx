@@ -214,9 +214,9 @@ export default function ReferredUsers() {
  const planInfo = getPlanDisplayInfo(user);
  return planInfo ? (
  <div>
- <Badge variant="default" className="mb-1">
- {planInfo.name}
- </Badge>
+<Badge variant="default" className="mb-1">
+  {t(planInfo.name)}
+  </Badge>
  <p className="text-sm text-muted-foreground">
  {(() => {
  const latestOrder = user.plan_orders?.[0];
