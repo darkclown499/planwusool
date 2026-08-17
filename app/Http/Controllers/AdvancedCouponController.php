@@ -395,8 +395,8 @@ class AdvancedCouponController extends Controller
     {
         $codeRule = 'nullable|string|max:50';
         if ($request->code_type === 'manual') {
-            $codeRule = 'required|string|max:50|unique:advanced_coupons,code' .
-                ($ignoreId ? ',' . $ignoreId : '') . ',id,store_id,' . $storeId;
+            $codeRule = 'required|string|max:50|unique:advanced_coupons,code,' .
+                ($ignoreId ?? '') . ',id,store_id,' . $storeId;
         }
 
         return $request->validate([

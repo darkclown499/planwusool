@@ -830,7 +830,7 @@ class ThemeController extends Controller
             'storeSettings' => $storeSettings,
             'currencies' => $currencies,
             'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
-            'vat' => $storeData['vat'],
+            'vat' => $storeData['config']['vat'],
             'locale' => $storeData['locale'],
         ];
         

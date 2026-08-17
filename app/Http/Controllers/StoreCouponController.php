@@ -95,8 +95,8 @@ class StoreCouponController extends Controller
             'type' => 'required|in:percentage,flat',
             'discount_amount' => [
                 'required', 'numeric', 'min:0',
-                function ($attribute, $value, $fail) {
-                    if ($this->type === 'percentage' && $value > 99) {
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->type === 'percentage' && $value > 99) {
                         $fail(__('The discount amount cannot exceed 99% for percentage discounts.'));
                     }
                 },
@@ -212,8 +212,8 @@ class StoreCouponController extends Controller
             'type' => 'required|in:percentage,flat',
             'discount_amount' => [
                 'required', 'numeric', 'min:0',
-                function ($attribute, $value, $fail) {
-                    if ($this->type === 'percentage' && $value > 99) {
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->type === 'percentage' && $value > 99) {
                         $fail(__('The discount amount cannot exceed 99% for percentage discounts.'));
                     }
                 },

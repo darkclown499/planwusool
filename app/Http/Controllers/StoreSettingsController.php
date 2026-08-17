@@ -142,7 +142,7 @@ class StoreSettingsController extends Controller
 
         // Get all settings from request (not just validated ones)
         $allSettings = $request->input('settings', []);
-        $settingsToSave = array_merge($validated['settings'], $allSettings);
+        $settingsToSave = array_merge($validated['settings'] ?? [], $allSettings);
 
         // Normalize social_links and keep legacy keys in sync
         if (array_key_exists('social_links', $settingsToSave) && is_array($settingsToSave['social_links'])) {

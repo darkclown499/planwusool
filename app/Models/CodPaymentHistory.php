@@ -10,6 +10,8 @@ class CodPaymentHistory extends Model
 {
     use HasFactory;
 
+    protected $table = 'cod_payment_history';
+
     protected $fillable = [
         'cod_payment_id',
         'amount',

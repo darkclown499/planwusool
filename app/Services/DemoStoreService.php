@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Category;
+use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
@@ -123,13 +124,26 @@ class DemoStoreService
      * Import the demo catalog directly into a target store, using the language
      * the merchant picked during onboarding.
      */
-    public function importCatalog(Store $store, string $lang = 'ar'): void
+    public function importCatalog(Store $store, string $lang = 'ar', ?int $maxProducts = null): void
     {
         $lang = in_array($lang, ['ar', 'en'], true) ? $lang : 'ar';
 
         $this->writeSvgImages();
 
+        // Respect the merchant's plan product limit so the demo catalog never
+        // leaves them over quota (e.g. free plan capped at 18 products).
+        if ($maxProducts === null) {
+            $plan = $store->user?->getCurrentPlan() ?? Plan::getDefaultPlan();
+            $maxProducts = (int) ($plan->max_products_per_store ?? 0);
+        }
+
+        $imported = 0;
+
         foreach ($this->catalog($lang) as $categorySlug => $category) {
+            if ($maxProducts > 0 && $imported >= $maxProducts) {
+                break;
+            }
+
             $categoryModel = Category::create([
                 'name' => $category['name'],
                 'slug' => Category::generateUniqueSlug($category['name'], $store->id),
@@ -141,6 +155,10 @@ class DemoStoreService
             ]);
 
             foreach ($category['products'] as [$imageSlug, $name, $description, $price, $salePrice, $stock]) {
+                if ($maxProducts > 0 && $imported >= $maxProducts) {
+                    break;
+                }
+
                 Product::create([
                     'name' => $name,
                     'sku' => 'DEMO-' . strtoupper($imageSlug),
@@ -154,6 +172,8 @@ class DemoStoreService
                     'store_id' => $store->id,
                     'is_active' => true,
                 ]);
+
+                $imported++;
             }
         }
     }

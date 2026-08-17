@@ -193,6 +193,33 @@ class RoleSeeder extends Seeder
             'view-notifications',
             'send-notifications',
             'delete-notifications',
+
+            // Loyalty program permissions
+            'manage-loyalty',
+            'view-loyalty',
+            'edit-loyalty',
+            'view-loyalty-transactions',
+            'manage-loyalty-settings',
+
+            // Product reviews permissions
+            'manage-product-reviews',
+            'view-product-reviews',
+            'approve-product-reviews',
+            'reply-product-reviews',
+            'delete-product-reviews',
+            'export-product-reviews',
+
+            // Abandoned carts permissions
+            'manage-abandoned-carts',
+            'view-abandoned-carts',
+            'send-abandoned-cart-reminders',
+            'delete-abandoned-carts',
+            'export-abandoned-carts',
+
+            // Digital downloads permissions
+            'manage-digital-downloads',
+            'view-digital-downloads',
+            'download-digital-products',
             
         ])->get();
 
