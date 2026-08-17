@@ -218,14 +218,6 @@
                 'alternateName' => 'وُصول',
                 'url' => $appUrl,
                 'inLanguage' => 'ar',
-                'potentialAction' => [
-                    '@type' => 'SearchAction',
-                    'target' => [
-                        '@type' => 'EntryPoint',
-                        'urlTemplate' => $appUrl . '/search?q={search_term_string}',
-                    ],
-                    'query-input' => 'required name=search_term_string',
-                ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
             </script>
         @endif
