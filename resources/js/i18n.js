@@ -1,21 +1,27 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import en from '../lang/en.json';
 import ar from '../lang/ar.json';
-import es from '../lang/es.json';
-import da from '../lang/da.json';
-import de from '../lang/de.json';
-import fr from '../lang/fr.json';
-import he from '../lang/he.json';
-import it from '../lang/it.json';
-import ja from '../lang/ja.json';
-import nl from '../lang/nl.json';
-import pl from '../lang/pl.json';
-import pt from '../lang/pt.json';
-import ptBR from '../lang/pt-BR.json';
-import ru from '../lang/ru.json';
-import tr from '../lang/tr.json';
-import zh from '../lang/zh.json';
+
+// Arabic-first: only Arabic is bundled into the initial payload. All other
+// languages are loaded on demand when the user switches, keeping the landing
+// page and dashboard shell fast to first paint.
+const LAZY_LANGS = {
+    en: () => import('../lang/en.json'),
+    es: () => import('../lang/es.json'),
+    da: () => import('../lang/da.json'),
+    de: () => import('../lang/de.json'),
+    fr: () => import('../lang/fr.json'),
+    he: () => import('../lang/he.json'),
+    it: () => import('../lang/it.json'),
+    ja: () => import('../lang/ja.json'),
+    nl: () => import('../lang/nl.json'),
+    pl: () => import('../lang/pl.json'),
+    pt: () => import('../lang/pt.json'),
+    'pt-BR': () => import('../lang/pt-BR.json'),
+    ru: () => import('../lang/ru.json'),
+    tr: () => import('../lang/tr.json'),
+    zh: () => import('../lang/zh.json'),
+};
 
 function getInitialLanguage() {
     // Arabic-first: always start in Arabic.
@@ -37,28 +43,36 @@ i18n
         ns: ['translation'],
         defaultNS: 'translation',
         resources: {
-            en: { translation: en },
             ar: { translation: ar },
-            es: { translation: es },
-            da: { translation: da },
-            de: { translation: de },
-            fr: { translation: fr },
-            he: { translation: he },
-            it: { translation: it },
-            ja: { translation: ja },
-            nl: { translation: nl },
-            pl: { translation: pl },
-            pt: { translation: pt },
-            'pt-BR': { translation: ptBR },
-            ru: { translation: ru },
-            tr: { translation: tr },
-            zh: { translation: zh },
         },
     });
+
+// Lazy-load + register a language bundle the first time it is requested.
+i18n.on('languageChanged', function (lng) {
+    const loader = LAZY_LANGS[lng];
+    if (!loader || i18n.hasResourceBundle(lng, 'translation')) return;
+    loader()
+        .then((mod) => {
+            i18n.addResourceBundle(lng, 'translation', mod.default, true, true);
+            i18n.emit('languageLoaded', lng);
+        })
+        .catch(() => {
+            // Non-critical: fall back to Arabic.
+        });
+});
 
 var originalChangeLanguage = i18n.changeLanguage.bind(i18n);
 i18n.changeLanguage = function (lng, callback) {
     localStorage.setItem('i18nextLng', lng || 'ar');
+    // If the bundle isn't loaded yet, add it first so the UI never flashes
+    // untranslated keys.
+    const loader = LAZY_LANGS[lng];
+    if (loader && !i18n.hasResourceBundle(lng, 'translation')) {
+        return loader().then((mod) => {
+            i18n.addResourceBundle(lng, 'translation', mod.default, true, true);
+            return originalChangeLanguage(lng, callback);
+        });
+    }
     return originalChangeLanguage(lng, callback);
 };
 
