@@ -831,7 +831,7 @@ class ThemeController extends Controller
             'currencies' => $currencies,
             'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
             'vat' => $storeData['config']['vat'],
-            'locale' => $storeData['locale'],
+            'locale' => $storeData['config']['locale'],
         ];
         
         $pdf = Pdf::loadView('pdf.invoice', $data);
