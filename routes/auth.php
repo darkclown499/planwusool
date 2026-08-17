@@ -64,13 +64,13 @@ Route::middleware(['guest', 'landing.enabled'])->group(function () {
 
     // Social authentication redirects/callbacks
     Route::get('auth/redirect/{provider}', [SocialAuthController::class, 'redirect'])
-        ->where('provider', 'google|facebook|github|apple|plankton')
+        ->where('provider', 'google|facebook|github|apple|linkedin|plankton')
         ->name('social.redirect');
 
     // Social authentication callbacks — Apple delivers the result as a
     // form_post (POST), the other providers use a GET redirect.
     Route::match(['get', 'post'], 'auth/callback/{provider}', [SocialAuthController::class, 'callback'])
-        ->where('provider', 'google|facebook|github|apple|plankton')
+        ->where('provider', 'google|facebook|github|apple|linkedin|plankton')
         ->name('social.callback');
 });
 
