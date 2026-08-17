@@ -152,6 +152,9 @@ export default function HeroSection({
             <img
               src={displayLogo}
               alt={settings.company_name || 'Wusool'}
+              width={320}
+              height={64}
+              fetchPriority="high"
               className="mb-5 h-[40px] w-auto object-contain sm:h-[42px] lg:h-[46px]"
               style={{ filter: 'drop-shadow(0 6px 24px rgba(16,183,127,0.35))' }}
             />

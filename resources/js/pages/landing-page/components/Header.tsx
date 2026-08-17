@@ -92,9 +92,9 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                   ) : '';
 
                   return displayUrl ? (
-                    <img src={displayUrl} alt={settings.company_name} className="h-8 w-auto max-w-[180px] object-scale-down" />
+                    <img src={displayUrl} alt={settings.company_name} width={320} height={145} className="h-8 w-auto max-w-[180px] object-scale-down" />
                   ) : (
-                    <img src="/images/logos/wusool.png" alt={settings.company_name} className="h-8 w-auto max-w-[180px] object-scale-down" />
+                    <img src="/images/logos/wusool.png" alt={settings.company_name} width={320} height={145} className="h-8 w-auto max-w-[180px] object-scale-down" />
                   );
                 })()}
               </Link>

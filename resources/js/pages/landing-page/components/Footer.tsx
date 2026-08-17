@@ -161,9 +161,9 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
                 ) : '';
 
                 return displayUrl ? (
-                  <img src={displayUrl} alt={settings.company_name} className="h-7 w-auto max-w-[140px] object-scale-down" />
+                  <img src={displayUrl} alt={settings.company_name} width={320} height={145} className="h-7 w-auto max-w-[140px] object-scale-down" />
                 ) : (
-                  <img src="/images/logos/wusool.png" alt={settings.company_name} className="h-7 w-auto max-w-[140px] object-scale-down" />
+                  <img src="/images/logos/wusool.png" alt={settings.company_name} width={320} height={145} className="h-7 w-auto max-w-[140px] object-scale-down" />
                 );
               })()}
             </Link>

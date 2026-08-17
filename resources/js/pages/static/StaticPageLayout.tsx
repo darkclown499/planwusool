@@ -72,7 +72,7 @@ export default function StaticPageLayout({
           <div className="flex h-[72px] items-center justify-between">
             {/* Logo */}
             <Link href={route('home')} className="flex items-center gap-2.5">
-              <img src="/images/logos/wusool-Tlogo.png" alt="Wusool" className="h-8 w-auto" />
+              <img src="/images/logos/wusool-Tlogo.png" alt="Wusool" width={320} height={89} className="h-8 w-auto" />
             </Link>
 
             {/* Desktop Nav */}
@@ -155,7 +155,7 @@ export default function StaticPageLayout({
       <div className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition md:hidden ${isMenuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={() => setIsMenuOpen(false)} />
       <div className={`fixed top-0 z-50 flex h-full w-[85vw] max-w-sm flex-col border-l border-white/10 bg-gray-950 shadow-2xl transition-transform duration-300 md:hidden ${isRtl ? 'right-0' : 'left-0'} ${isMenuOpen ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-          <img src="/images/logos/wusool-Tlogo.png" alt="Wusool" className="h-7 w-auto" />
+          <img src="/images/logos/wusool-Tlogo.png" alt="Wusool" width={320} height={89} className="h-7 w-auto" />
           <button onClick={() => setIsMenuOpen(false)} className="rounded-lg p-2 text-gray-400 hover:bg-white/10"><X size={20} /></button>
         </div>
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
@@ -180,7 +180,6 @@ export default function StaticPageLayout({
       <main className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
         {children}
       </main>
-
       {/* Footer */}
       <footer className="border-t border-white/10 bg-gray-950 py-8">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">

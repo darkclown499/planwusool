@@ -112,7 +112,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             >
                 <StoreBoundary>
                     <TemplateStorefront>
-                        <div className="pb-24 md:pb-16" style={{ background: 'var(--twc-background, #ffffff)' }}>
+                        <main className="pb-24 md:pb-16" style={{ background: 'var(--twc-background, #ffffff)' }}>
                             {page ? (
                                 <TemplateRenderer
                                     template={resolvedTemplate}
@@ -140,7 +140,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                                     demoStoreUrl={demoStoreUrl}
                                 />
                             )}
-                        </div>
+                        </main>
                     </TemplateStorefront>
                 </StoreBoundary>
             </ThemeProvider>

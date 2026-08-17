@@ -37,8 +37,14 @@ class SecurityHeadersMiddleware
             $response->headers->set('Permissions-Policy', $headers['permissions_policy']);
         }
 
-        // HSTS only makes sense over HTTPS in production.
-        if ($headers['hsts']['enabled'] && app()->isProduction() && $request->isSecure()) {
+        // HSTS only makes sense over HTTPS in production. The site is served
+        // behind Cloudflare/CDN, so the origin request may look plain-HTTP even
+        // though the browser is on https. Emit HSTS whenever the app's public
+        // URL is https (production), not just when the origin request is secure.
+        $appUrlScheme = strtolower((string) parse_url((string) config('app.url'), PHP_URL_SCHEME));
+        $isHttpsApp = $appUrlScheme === 'https' || $request->isSecure();
+
+        if ($headers['hsts']['enabled'] && app()->isProduction() && $isHttpsApp) {
             $value = 'max-age=' . $headers['hsts']['max_age'];
 
             if ($headers['hsts']['include_subdomains']) {

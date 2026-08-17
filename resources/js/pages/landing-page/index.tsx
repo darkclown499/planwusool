@@ -352,7 +352,7 @@ export default function LandingPage() {
         {metaImage && <meta property="og:image" content={metaImage} />}
         {metaImage && <meta name="twitter:image" content={metaImage} />}
       </Head>
-      <div
+      <main
         className="min-h-screen overflow-x-hidden bg-white"
         data-landing-page="true"
         style={{
@@ -370,7 +370,7 @@ export default function LandingPage() {
 
         {/* AI Chat Widget */}
         <AIChatWidget position="left" enabled={true} />
-      </div>
+      </main>
     </>
   );
 }

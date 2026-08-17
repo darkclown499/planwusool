@@ -63,7 +63,7 @@ export default function TemplatePreviewCard({
               e.stopPropagation();
 
               // Simple preview alert for Storego
-              alert(`Preview: ${templateData?.defaultData?.header?.name || template.name}`);
+              alert(`Preview: ${template.name}`);
             }}
           >
             <Button size="sm" variant="secondary" className="text-xs bg-white hover:bg-gray-100 shadow-sm">
