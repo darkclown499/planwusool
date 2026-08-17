@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { Head } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Menu, X, Globe, ChevronDown, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ReactCountryFlag from 'react-country-flag';
 import languageData from '@/../../resources/lang/language.json';
 
+export interface StaticPageMeta {
+  title?: string;
+  description?: string;
+}
+
 interface StaticPageLayoutProps {
   title: string;
   children: React.ReactNode;
   brandColor?: string;
+  meta?: StaticPageMeta;
 }
 
 export default function StaticPageLayout({
   title,
   children,
-  brandColor = '#10b77f'
+  brandColor = '#10b77f',
+  meta
 }: StaticPageLayoutProps) {
   const { t, i18n } = useTranslation();
   const currentLocale = (i18n.language || 'ar').split('-')[0];
@@ -48,6 +56,10 @@ export default function StaticPageLayout({
       dir="rtl"
       style={{ fontFamily: isRtl ? 'Tajawal, "IBM Plex Sans Arabic", Inter, sans-serif' : 'Inter, "Segoe UI", sans-serif' }}
     >
+      <Head>
+        <title>{meta?.title || title}</title>
+        {meta?.description ? <meta name="description" content={meta.description} /> : null}
+      </Head>
       {/* Header — matches landing page */}
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${

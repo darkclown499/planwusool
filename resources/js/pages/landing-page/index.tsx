@@ -341,6 +341,14 @@ export default function LandingPage() {
         <title>{pageTitle}</title>
         <meta name="description" content={metaDescription} />
         {metaKeywords && <meta name="keywords" content={metaKeywords} />}
+        <meta property="og:site_name" content="Wusool" />
+        <meta property="og:title" content={pageTitle} />
+        {metaDescription && <meta property="og:description" content={metaDescription} />}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        {metaDescription && <meta name="twitter:description" content={metaDescription} />}
         {metaImage && <meta property="og:image" content={metaImage} />}
         {metaImage && <meta name="twitter:image" content={metaImage} />}
       </Head>

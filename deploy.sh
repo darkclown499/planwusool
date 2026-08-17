@@ -67,3 +67,12 @@ fi
 
 echo "==> Done. Verify:"
 echo "    curl -I https://wusool.ps/"
+
+echo "==> [9] Notifying search engines (IndexNow, best-effort)"
+KEY="189fa4637ec052bd"
+if command -v curl >/dev/null 2>&1; then
+  curl -s -X POST "https://api.indexnow.org/indexnow" \
+    -H "Content-Type: application/json; charset=utf-8" \
+    --data "{\"host\":\"wusool.ps\",\"key\":\"$KEY\",\"keyLocation\":\"https://wusool.ps/$KEY.txt\",\"urlList\":[\"https://wusool.ps/\",\"https://wusool.ps/features\",\"https://wusool.ps/sitemap.xml\"]}" \
+    -o /dev/null -w "indexnow-home: %{http_code}\n" || echo "indexnow ping skipped"
+fi

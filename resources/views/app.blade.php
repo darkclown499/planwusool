@@ -26,15 +26,19 @@
         default => 'en_US',
     };
     $isStoreRoute = request()->routeIs('store.*') || request()->routeIs('storefront.*');
+    $isStaticRoute = request()->routeIs('page.about') || request()->routeIs('page.features')
+        || request()->routeIs('page.terms') || request()->routeIs('page.privacy');
     $isLandingRoute = request()->routeIs('home') || request()->routeIs('custom-page.show');
     $isSitemap = request()->routeIs('sitemap');
+    $isPrivateRoute = !$isLandingRoute && !$isStoreRoute && !$isStaticRoute && !$isSitemap;
+    $isPreview = request()->has('preview');
 @endphp
 <html lang="{{ $locale }}" dir="{{ $dir }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+        <meta name="robots" content="{{ $isPrivateRoute || $isPreview ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }}">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         @php
             $googleVerification = getSetting('googleVerification', '');
@@ -106,6 +110,39 @@
             })();
         </script>
 
+        @if($isStaticRoute)
+            @php
+                $staticMeta = match(true) {
+                    request()->routeIs('page.about') => ['عن وصول - منصة متاجر واتساب', 'تعرف على منصة وصول لإنشاء وإدارة المتاجر على واتساب: إدارة المنتجات والعملاء والطلبات بسهولة وبدون خبرة تقنية.'],
+                    request()->routeIs('page.features') => ['مميزات وصول - كل أدوات متجر الواتساب في مكان واحد', 'استعرض مميزات منصة وصول: إدارة المنتجات، الطلبات، العملاء، التقارير، والدفع الإلكتروني — كل ما تحتاجه للمتجر على واتساب.'],
+                    request()->routeIs('page.privacy') => ['سياسة الخصوصية - وصول', 'تعرف على سياسة الخصوصية لمنصة وصول وكيفية حماية بياناتك وبيانات عملائك.'],
+                    default => ['اتفاقية المستخدم - وصول', 'اطلع على اتفاقية الاستخدام وشروط خدمة منصة وصول لمتاجر الواتساب.'],
+                };
+                $staticTitle = $staticMeta[0];
+                $staticDesc = $staticMeta[1];
+            @endphp
+            <title>{{ $staticTitle }}</title>
+            <meta name="description" content="{{ $staticDesc }}">
+            <link rel="canonical" href="{{ url()->current() }}">
+            <meta property="og:site_name" content="{{ config('app.name', 'Wusool') }}">
+            <meta property="og:title" content="{{ $staticTitle }}">
+            <meta property="og:description" content="{{ $staticDesc }}">
+            <meta property="og:url" content="{{ url()->current() }}">
+            <meta property="og:type" content="website">
+            <meta property="og:locale" content="{{ $ogLocale }}">
+            <meta name="twitter:card" content="summary">
+            <meta name="twitter:title" content="{{ $staticTitle }}">
+            <meta name="twitter:description" content="{{ $staticDesc }}">
+        @endif
+
+        @if($isLandingRoute || $isStaticRoute)
+            {{-- hreflang defaults: site is Arabic-first, English available --}}
+            <link rel="alternate" hreflang="ar" href="{{ $appUrl }}">
+            <link rel="alternate" hreflang="en" href="{{ $appUrl }}">
+            <link rel="alternate" hreflang="x-default" href="{{ $appUrl }}">
+            <meta property="og:locale:alternate" content="en_US">
+        @endif
+
         @if($isLandingRoute)
             @php
                 $seoTitle = getSetting('metaTitle', '') ?: getSetting('titleText', config('app.name', 'Wusool'));
@@ -117,6 +154,13 @@
                 }
                 $canonicalUrl = url()->current();
                 $orgLogo = $seoImage ?: $appUrl . '/images/logos/wusool.png';
+                $orgSameAs = array_values(array_filter([
+                    getSetting('social_facebook', ''),
+                    getSetting('social_instagram', ''),
+                    getSetting('social_twitter', ''),
+                    getSetting('social_youtube', ''),
+                    getSetting('social_tiktok', ''),
+                ]));
             @endphp
             <title>{{ $seoTitle }}</title>
             <meta name="description" content="{{ $seoDesc }}">
@@ -158,7 +202,7 @@
                 'logo' => $orgLogo,
                 'image' => $orgLogo,
                 'description' => $seoDesc,
-                'sameAs' => [],
+                'sameAs' => $orgSameAs,
                 'contactPoint' => [
                     '@type' => 'ContactPoint',
                     'contactType' => 'customer support',
@@ -241,10 +285,12 @@
         @endif
 
         {{-- Fallback title for non-landing/non-store routes --}}
-        @if(!$isLandingRoute && !$isStoreRoute)
+        @if(!$isLandingRoute && !$isStoreRoute && !$isStaticRoute)
             <title inertia>{{ getSetting('titleText', config('app.name', 'Wusool')) }}</title>
-        @else
-            <title inertia>{{ $isStoreRoute ? ($storeTitle ?? config('app.name', 'Wusool')) : getSetting('titleText', config('app.name', 'Wusool')) }}</title>
+        @elseif($isStoreRoute)
+            <title inertia>{{ $storeTitle ?? config('app.name', 'Wusool') }}</title>
+        @elseif($isLandingRoute)
+            <title inertia>{{ getSetting('titleText', config('app.name', 'Wusool')) }}</title>
         @endif
 
         {{-- Dynamic Favicon --}}

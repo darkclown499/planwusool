@@ -97,7 +97,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 customCss={store?.custom_css}
                 customJavascript={store?.custom_javascript}
             />
-            <StoreHead store={store} defaultTitle={config?.storeName || store?.name || 'متجري'} defaultDescription={config?.description} />
+            <StoreHead store={store} products={products} defaultTitle={config?.storeName || store?.name || 'متجري'} defaultDescription={config?.description} />
             <ThemeProvider
                 config={config ?? {}}
                 store={store}

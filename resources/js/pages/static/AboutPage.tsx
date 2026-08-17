@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import StaticPageLayout from './StaticPageLayout';
-import { useTranslation } from 'react-i18next';
 import { Eye, Target, ShieldCheck, Sparkles, HeadphonesIcon, Globe, Zap, ArrowLeft } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 
@@ -34,7 +33,13 @@ export default function AboutPage() {
   ];
 
   return (
-    <StaticPageLayout title={t('عن وصول')}>
+    <StaticPageLayout
+      title={t('عن وصول')}
+      meta={{
+        title: t('عن وصول - منصة متاجر واتساب'),
+        description: t('تعرف على منصة وصول لإنشاء وإدارة المتاجر على واتساب: إدارة المنتجات والعملاء والطلبات بسهولة وبدون خبرة تقنية.'),
+      }}
+    >
       <div className="space-y-16">
 
         {/* Hero intro */}

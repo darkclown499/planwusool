@@ -6,7 +6,13 @@ export default function PrivacyPage() {
   const { t } = useTranslation();
 
   return (
-    <StaticPageLayout title={t('سياسة الخصوصية')}>
+    <StaticPageLayout
+      title={t('سياسة الخصوصية')}
+      meta={{
+        title: t('سياسة الخصوصية - وصول'),
+        description: t('تعرف على سياسة الخصوصية لمنصة وصول وكيفية حماية بياناتك وبيانات عملائك.'),
+      }}
+    >
       <div className="space-y-10 text-sm leading-relaxed text-gray-300">
         <p className="text-gray-500">{t('آخر تحديث: يوليو ٢٠٢٦')}</p>
 

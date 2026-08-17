@@ -6,7 +6,13 @@ export default function TermsPage() {
   const { t } = useTranslation();
 
   return (
-    <StaticPageLayout title={t('اتفاقية المستخدم')}>
+    <StaticPageLayout
+      title={t('اتفاقية المستخدم')}
+      meta={{
+        title: t('اتفاقية المستخدم - وصول'),
+        description: t('اطلع على اتفاقية الاستخدام وشروط خدمة منصة وصول لمتاجر الواتساب.'),
+      }}
+    >
       <div className="space-y-10 text-sm leading-relaxed text-gray-300">
         <p className="text-gray-500">{t('آخر تحديث: يوليو ٢٠٢٦')}</p>
 

@@ -22,7 +22,13 @@ export default function FeaturesPage() {
   const { t } = useTranslation();
 
   return (
-    <StaticPageLayout title={t('مميزات وصول')}>
+    <StaticPageLayout
+      title={t('مميزات وصول')}
+      meta={{
+        title: t('مميزات وصول - كل أدوات متجر الواتساب في مكان واحد'),
+        description: t('استعرض مميزات منصة وصول: إدارة المنتجات، الطلبات، العملاء، التقارير، والدفع الإلكتروني — كل ما تحتاجه للمتجر على واتساب.'),
+      }}
+    >
       <div className="space-y-16">
         <div className="text-center">
           <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto">
