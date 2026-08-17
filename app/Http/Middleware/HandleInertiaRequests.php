@@ -135,6 +135,12 @@ class HandleInertiaRequests extends Middleware
                         return !empty(config('services.plankton.client_id'));
                     }
 
+                    // LinkedIn is always shown on the auth pages (branding choice).
+                    // It becomes fully functional once services.linkedin is configured.
+                    if ($provider === 'linkedin') {
+                        return true;
+                    }
+
                     return !empty(config("services.{$provider}.client_id"))
                         && !empty(config("services.{$provider}.client_secret"));
                 })
