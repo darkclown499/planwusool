@@ -270,13 +270,19 @@ export default function CreateShipping() {
         { title: t('Create Shipping Method') }
       ]}
     >
-      <form noValidate onSubmit={handleSubmit} className="space-y-6">
+      <form noValidate onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         {/* Stepper header */}
         <div>
-          <div className="flex items-center">
+          <div className="flex items-center justify-end">
             {steps.map((step, index) => (
               <React.Fragment key={step.title}>
-                <div className="flex items-center">
+                {index < steps.length - 1 && (
+                  <div className={cn('mx-2 h-0.5 flex-1 rounded-full sm:mx-3', index < currentStep ? 'bg-primary' : 'bg-muted')} />
+                )}
+                <div className="flex items-center justify-end">
+                  <div className={cn('ms-2 hidden text-sm font-medium sm:block', index <= currentStep ? 'text-foreground' : 'text-muted-foreground')}>
+                    {step.title}
+                  </div>
                   <div
                     className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors',
@@ -289,20 +295,14 @@ export default function CreateShipping() {
                   >
                     {index < currentStep ? <Check className="h-4 w-4" /> : index + 1}
                   </div>
-                  <div className={cn('ms-2 hidden text-sm font-medium sm:block', index <= currentStep ? 'text-foreground' : 'text-muted-foreground')}>
-                    {step.title}
-                  </div>
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={cn('mx-2 h-0.5 flex-1 rounded-full sm:mx-3', index < currentStep ? 'bg-primary' : 'bg-muted')} />
-                )}
               </React.Fragment>
             ))}
           </div>
           <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
               className="h-full rounded-full bg-primary transition-all duration-300"
-              style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+              style={{ width: `${((steps.length - 1 - currentStep) / (steps.length - 1)) * 100}%` }}
             />
           </div>
         </div>
@@ -333,7 +333,7 @@ export default function CreateShipping() {
                     onValueChange={(value) => handleSelectChange('type', value)}
                   >
                     <SelectTrigger aria-invalid={!!errors.type}>
-                      <SelectValue />
+                      <SelectValue placeholder={t('Select shipping type')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="flat_rate">{t('Flat Rate')}</SelectItem>
@@ -347,7 +347,7 @@ export default function CreateShipping() {
                 </div>
               </div>
               {shippingType !== 'free_shipping' && (
-                <div className="grid gap-4 md:max-w-md md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="grid gap-1">
                     <Label htmlFor="cost">
                       {shippingType === 'percentage_based' ? t('Percentage (%)') : t('Shipping Cost')}
@@ -369,7 +369,7 @@ export default function CreateShipping() {
                       onValueChange={(value) => handleSelectChange('currency', value)}
                     >
                       <SelectTrigger id="currency">
-                        <SelectValue />
+                        <SelectValue placeholder={t('Select currency')} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ILS">{t('Shekel (ILS)')}</SelectItem>
@@ -865,25 +865,25 @@ export default function CreateShipping() {
         )}
 
         {/* Navigation */}
-        <div className="flex items-center justify-between border-t pt-4">
+        <div className="flex items-center justify-start gap-3 border-t pt-4">
           <Button
             type="button"
             variant="outline"
             onClick={handlePrevious}
             disabled={currentStep === 0}
           >
-            <ChevronLeft className="h-4 w-4" />
             {t('Previous')}
+            <ChevronRight className="h-4 w-4" />
           </Button>
           {currentStep === steps.length - 1 ? (
-            <Button type="button" onClick={handleSubmit}>
+            <Button type="button" onClick={handleSubmit} className="ml-auto">
               <Save className="h-4 w-4" />
               {t('Save Shipping')}
             </Button>
           ) : (
             <Button type="button" onClick={handleNext}>
+              <ChevronLeft className="h-4 w-4" />
               {t('Next')}
-              <ChevronRight className="h-4 w-4" />
             </Button>
           )}
         </div>
