@@ -4780,5 +4780,9 @@
   "SEO URL Slug Placeholder": "product-name",
   "Parent Category (optional)": "Parent Category (optional)",
   "Select parent category (subcategory hint)": "Select the parent category if this is a subcategory",
-  "Sort Order (Display)": "Sort Order"
+  "Sort Order (Display)": "Sort Order",
+  "Tax Rules Helper": "Add the tax rate that applies to your store products (e.g., sales tax)",
+  "Prices Include Tax": "All store prices include tax by default",
+  "Prices Include Tax Helper": "When enabled, displayed prices already include tax",
+  "Tax settings updated successfully.": "Tax settings updated successfully."
 }

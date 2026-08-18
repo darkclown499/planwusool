@@ -1539,7 +1539,7 @@
   "Explore our intuitive interface and powerful features...": "استكشفوا واجهة المستخدم الحسية والخصائص القوية",
   "Explore our powerful multi-store management platform and see how easy it is to build your online empire.": "استكشف منصتنا القوية لإدارة المتاجر المتعددة وشاهد مدى سهولة بناء إمبراطوريتك الإلكترونية.",
   "Export": "الصادرات",
-  "Export Report": "تقرير الصادرات",
+  "Export Report": "تصدير التقرير",
   "Express Cart": "عربة السفر السريعة",
   "Express Checkout": "تسجيل الدفع السريع",
   "Express Checkout Details": "تفاصيل الدفع السريع",
@@ -5194,5 +5194,9 @@
   "SEO URL Slug Placeholder": "product-name",
   "Parent Category (optional)": "القسم الرئيسي (اختياري)",
   "Select parent category (subcategory hint)": "اختر القسم الرئيسي إذا كانت هذه فئة فرعية",
-  "Sort Order (Display)": "ترتيب الظهور"
+  "Sort Order (Display)": "ترتيب الظهور",
+  "Tax Rules Helper": "أضف نسبة الضريبة التي تطبق على منتجات متجرك (مثل: ضريبة المبيعات)",
+  "Prices Include Tax": "جميع الأسعار في المتجر تشمل الضريبة تلقائياً",
+  "Prices Include Tax Helper": "تفعيل هذا الخيار يجعل الأسعار المعروضة تشمل الضريبة",
+  "Tax settings updated successfully.": "تم تحديث إعدادات الضريبة بنجاح"
 }

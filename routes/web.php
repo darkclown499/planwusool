@@ -653,6 +653,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // Tax Management routes with permissions
         Route::get('tax', [\App\Http\Controllers\TaxController::class, 'index'])->middleware('permission:manage-tax')->name('tax.index');
+        Route::post('tax/toggle-tax-included', [\App\Http\Controllers\TaxController::class, 'toggleTaxIncluded'])->middleware('permission:manage-tax')->name('tax.toggle-tax-included');
         Route::get('tax/export', [\App\Http\Controllers\TaxController::class, 'export'])->middleware('permission:export-tax')->name('tax.export');
         Route::get('tax/create', [\App\Http\Controllers\TaxController::class, 'create'])->middleware('permission:create-tax')->name('tax.create');
         Route::post('tax', [\App\Http\Controllers\TaxController::class, 'store'])->middleware('permission:create-tax')->name('tax.store');

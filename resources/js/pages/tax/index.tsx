@@ -4,6 +4,8 @@ import { Plus, RefreshCw, Download, Calculator, Eye, Edit, Trash2 } from 'lucide
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
@@ -12,8 +14,28 @@ import { hasPermission, checkPermission } from '@/utils/permissions';
 
 export default function Tax() {
   const { t } = useTranslation();
-  const { taxes, stats, auth, currencySymbol } = usePage().props as any;
+  const { taxes, stats, auth, currencySymbol, pricesIncludeTax } = usePage().props as any;
   const [taxToDelete, setTaxToDelete] = useState<number | null>(null);
+  const [taxIncluded, setTaxIncluded] = useState<boolean>(pricesIncludeTax !== false);
+  const [savingTaxSetting, setSavingTaxSetting] = useState(false);
+
+  const handleTaxIncludedToggle = (checked: boolean) => {
+    setTaxIncluded(checked);
+    setSavingTaxSetting(true);
+    router.post(
+      route('tax.toggle-tax-included'),
+      { prices_include_tax: checked },
+      {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => setSavingTaxSetting(false),
+        onError: () => {
+          setTaxIncluded(!checked);
+          setSavingTaxSetting(false);
+        },
+      }
+    );
+  };
 
   
   const handleActionClick = (action: string, permission: string, taxId?: number) => {
@@ -49,7 +71,7 @@ export default function Tax() {
 
   const pageActions = [
     ...(hasPermission('export-tax') ? [{
-      label: t('Export'),
+      label: t('Export Report'),
       icon: <Download className="h-4 w-4" />,
       variant: 'outline' as const,
       onClick: () => handleActionClick('export', 'export-tax')
@@ -128,8 +150,17 @@ export default function Tax() {
         <Card>
           <CardHeader>
             <CardTitle>{t('Tax Rules')}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t('Tax Rules Helper')}</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+              <div className="text-start">
+                <Label>{t('Prices Include Tax')}</Label>
+                <p className="text-sm text-muted-foreground">{t('Prices Include Tax Helper')}</p>
+              </div>
+              <Switch checked={taxIncluded} disabled={savingTaxSetting} onCheckedChange={handleTaxIncludedToggle} />
+            </div>
+
             <div className="space-y-4">
               {taxes.length === 0 ? (
                 <div className="text-center py-8">

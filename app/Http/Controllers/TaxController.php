@@ -55,6 +55,10 @@ class TaxController extends Controller
         $currency = \App\Models\Currency::where('code', $currencyCode)->first();
         $currencySymbol = $currency ? $currency->symbol : '$';
         
+        $pricesIncludeTax = ($storeSettings['prices_include_tax'] ?? true) !== false
+            && ($storeSettings['prices_include_tax'] ?? '1') !== '0'
+            && ($storeSettings['prices_include_tax'] ?? '1') !== 'false';
+        
         return Inertia::render('tax/index', [
             'taxes' => $taxes,
             'stats' => [
@@ -63,8 +67,34 @@ class TaxController extends Controller
                 'averageRate' => round($averageRate, 2),
                 'collected' => round($taxCollected, 2)
             ],
-            'currencySymbol' => $currencySymbol
+            'currencySymbol' => $currencySymbol,
+            'pricesIncludeTax' => $pricesIncludeTax
         ]);
+    }
+
+    /**
+     * Toggle the global "prices include tax" store setting.
+     */
+    public function toggleTaxIncluded(Request $request)
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+        $userId = $user->type === 'company' ? $user->id : $user->created_by;
+
+        $request->validate([
+            'prices_include_tax' => 'required|boolean',
+        ]);
+
+        \App\Models\Setting::setSetting('prices_include_tax', $request->boolean('prices_include_tax') ? '1' : '0', $userId, $currentStoreId);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'ok',
+                'prices_include_tax' => $request->boolean('prices_include_tax'),
+            ]);
+        }
+
+        return redirect()->back()->with('success', __('Tax settings updated successfully.'));
     }
 
     /**
