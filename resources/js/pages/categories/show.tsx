@@ -78,7 +78,7 @@ export default function ShowCategory() {
                 <p className="text-lg font-semibold">{category.name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">{t('Slug')}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('Category Slug')}</p>
                 <p>/{category.slug}</p>
               </div>
               <div>
@@ -114,32 +114,32 @@ export default function ShowCategory() {
             <CardHeader>
               <CardTitle>{t('Category Statistics')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">{t('Total Products')}</span>
                 <span className="font-semibold">{stats?.total_products || productCount}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">{t('Active Products')}</span>
                 <span className="font-semibold">{stats?.active_products || 0}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">{t('Sub Categories')}</span>
                 <span className="font-semibold">{stats?.subcategories_count || subcategories?.length || 0}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">{t('Total Revenue')}</span>
                 <span className="font-semibold">{formatCurrency(stats?.total_revenue || 0)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">{t('Sort Order')}</span>
                 <span className="font-semibold">{category.sort_order}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">{t('Created')}</span>
                 <span className="text-sm">{new Date(category.created_at).toLocaleDateString()}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">{t('Updated')}</span>
                 <span className="text-sm">{new Date(category.updated_at).toLocaleDateString()}</span>
               </div>
@@ -156,7 +156,7 @@ export default function ShowCategory() {
               <div className="space-y-3">
                 {subcategories.map((sub: any) => (
                   <div key={sub.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center gap-3">
                       <Package className="h-5 w-5 text-muted-foreground" />
                       <span className="font-medium">{sub.name}</span>
                     </div>
