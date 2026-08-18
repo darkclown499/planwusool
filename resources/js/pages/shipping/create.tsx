@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Bike, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Globe, Home, MapPin, Save, Search, Truck } from 'lucide-react';
+import { Bike, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Globe, Home, MapPin, Save, Search, Truck, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { SearchableSelect } from '@/components/searchable-select';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
@@ -43,13 +44,13 @@ export default function CreateShipping() {
   const [currentStep, setCurrentStep] = useState(0);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
-  const [countryQuery, setCountryQuery] = useState('');
   const [stateOpen, setStateOpen] = useState(false);
   const [stateQuery, setStateQuery] = useState('');
   const [cityOpen, setCityOpen] = useState(false);
   const [cityQuery, setCityQuery] = useState('');
   const [customCompanyOpen, setCustomCompanyOpen] = useState(false);
   const countrySearchRef = useRef<HTMLInputElement>(null);
+  const [selectedCountries, setSelectedCountries] = useState<number[]>([]);
 
   useEffect(() => {
     if (currentStep === 1) {
@@ -132,59 +133,6 @@ export default function CreateShipping() {
   const filteredCities = (cityList as City[]).filter(city => city.state_id === formData.state_id);
 
   const sortedCountries = [...(countryList as Country[])].sort((a, b) => a.name.localeCompare(b.name));
-  const quickCodes = ['PSE', 'JOR', 'EGY', 'ISR'];
-  const quickCountryPills = quickCodes
-    .map(code => (countryList as Country[]).find(c => c.code === code))
-    .filter((c): c is Country => !!c);
-  const filteredQuickCountryPills = quickCountryPills.filter(c => c.name.toLowerCase().includes(countryQuery.toLowerCase()));
-  const filteredOtherCountryPills = sortedCountries
-    .filter(c => !quickCodes.includes(c.code))
-    .filter(c => c.name.toLowerCase().includes(countryQuery.toLowerCase()));
-  const countryHasNoMatches = filteredQuickCountryPills.length === 0 && filteredOtherCountryPills.length === 0;
-
-  const renderCountryPill = (country: Country) => {
-    const selected = formData.country_id === country.id;
-    return (
-      <button
-        type="button"
-        key={country.id}
-        onClick={() => setCountry(country)}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all',
-          selected
-            ? 'border-primary bg-primary/10 text-foreground ring-1 ring-primary/20'
-            : 'border-input bg-background text-foreground/80 hover:border-muted-foreground/50 hover:bg-muted'
-        )}
-      >
-        {selected && <Check className="h-3.5 w-3.5" />}
-        {country.name}
-        <span className="text-[10px] font-normal uppercase text-muted-foreground/90">{country.code}</span>
-      </button>
-    );
-  };
-
-  const setCountry = (country: Country) => {
-    setFormData(prev => ({
-      ...prev,
-      country_id: country.id,
-      countries: country.name,
-      state_id: null,
-      city_id: null,
-      all_regions: true
-    }));
-    setCountryQuery('');
-  };
-
-  const clearCountry = () => {
-    setFormData(prev => ({
-      ...prev,
-      country_id: null,
-      countries: '',
-      state_id: null,
-      city_id: null
-    }));
-  };
-
   const setState = (state: State) => {
     setFormData(prev => ({
       ...prev,
@@ -203,6 +151,18 @@ export default function CreateShipping() {
     }));
     setCityQuery('');
     setCityOpen(false);
+  };
+
+  const handleCountryMultiSelect = (countryId: number) => {
+    setSelectedCountries(prev => 
+      prev.includes(countryId) 
+        ? prev.filter(id => id !== countryId)
+        : [...prev, countryId]
+    );
+  };
+
+  const clearAllCountries = () => {
+    setSelectedCountries([]);
   };
 
   const handleCompanyChange = (value: string) => {
@@ -434,40 +394,58 @@ export default function CreateShipping() {
 
               <div>
                 <Label required>{t('Country')}</Label>
-                <p className="mt-1 text-xs text-muted-foreground">{t('Choose the country first, then decide whether to cover all of its regions or a specific city.')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('Choose one or more countries, then decide whether to cover all of their regions or a specific city.')}</p>
                 <div className="mt-3">
-                  <Input
-                    ref={countrySearchRef}
-                    type="search"
-                    value={countryQuery}
-                    onChange={(e) => setCountryQuery(e.target.value)}
-                    placeholder={t('Filter countries...')}
-                    className="mb-2"
+                  <SearchableSelect
+                    value={selectedCountries.length > 0 ? selectedCountries.join(',') : ''}
+                    onChange={(val: string) => {
+                      if (!val) {
+                        setSelectedCountries([]);
+                      } else {
+                        const ids = val.split(',').map(Number);
+                        setSelectedCountries(ids);
+                      }
+                    }}
+                    options={sortedCountries.map(c => ({
+                      value: c.id.toString(),
+                      label: c.name,
+                      hint: c.code
+                    }))}
+                    placeholder={t('Search and select countries...')}
+                    searchPlaceholder={t('Search countries...')}
+                    emptyMessage={t('No countries found')}
+                    allowFreeText={false}
+                    disabled={false}
                   />
-                  <div className="rounded-lg border bg-background p-3">
-                    <div className="mb-2 text-xs font-semibold text-foreground/70">{t('Popular countries')}</div>
-                    <div className="flex flex-wrap gap-2">
-                      {filteredQuickCountryPills.map(renderCountryPill)}
+                  {selectedCountries.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {selectedCountries.map(id => {
+                        const c = sortedCountries.find(x => x.id === id);
+                        return c ? (
+                          <span
+                            key={c.id}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1 text-sm font-medium"
+                          >
+                            {c.name}
+                            <button
+                              type="button"
+                              onClick={() => handleCountryMultiSelect(c.id)}
+                              className="ml-1 text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ) : null;
+                      })}
                     </div>
-                    {filteredOtherCountryPills.length > 0 && (
-                      <>
-                        <div className="mb-2 mt-4 text-xs font-semibold text-foreground/70">{t('All countries')}</div>
-                        <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto pb-1">
-                          {filteredOtherCountryPills.map(renderCountryPill)}
-                        </div>
-                      </>
-                    )}
-                    {countryHasNoMatches && (
-                      <p className="w-full text-sm text-muted-foreground">{t('No countries found')}</p>
-                    )}
-                  </div>
-                  {selectedCountry && (
+                  )}
+                  {selectedCountries.length > 0 && (
                     <button
                       type="button"
-                      onClick={clearCountry}
+                      onClick={clearAllCountries}
                       className="mt-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                     >
-                      {t('Clear selection')}
+                      {t('Clear all')}
                     </button>
                   )}
                 </div>
@@ -806,7 +784,7 @@ export default function CreateShipping() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="handling_fee">{t('Handling Fee ($)')}</Label>
+                      <Label htmlFor="handling_fee">{t('Handling Fee')}</Label>
                       <Input 
                         id="handling_fee" 
                         name="handling_fee"
@@ -818,46 +796,46 @@ export default function CreateShipping() {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('Method Status')}</Label>
-                      <p className="text-sm text-muted-foreground">{t('Enable or disable shipping method')}</p>
-                    </div>
-                    <Switch 
-                      checked={formData.is_active}
-                      onCheckedChange={(checked) => handleSwitchChange('is_active', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('Require Signature')}</Label>
-                      <p className="text-sm text-muted-foreground">{t('Require signature on delivery')}</p>
-                    </div>
-                    <Switch 
-                      checked={formData.require_signature}
-                      onCheckedChange={(checked) => handleSwitchChange('require_signature', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('Insurance Required')}</Label>
-                      <p className="text-sm text-muted-foreground">{t('Require shipping insurance')}</p>
-                    </div>
-                    <Switch 
-                      checked={formData.insurance_required}
-                      onCheckedChange={(checked) => handleSwitchChange('insurance_required', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>{t('Tracking Available')}</Label>
-                      <p className="text-sm text-muted-foreground">{t('Provide tracking information')}</p>
-                    </div>
-                    <Switch 
-                      checked={formData.tracking_available}
-                      onCheckedChange={(checked) => handleSwitchChange('tracking_available', checked)}
-                    />
-                  </div>
+                  <div className="flex items-center justify-end gap-4">
+          <Switch 
+            checked={formData.is_active}
+            onCheckedChange={(checked) => handleSwitchChange('is_active', checked)}
+          />
+          <div className="text-right">
+            <Label>{t('Method Status')}</Label>
+            <p className="text-sm text-muted-foreground">{t('Enable or disable shipping method')}</p>
+          </div>
+        </div>
+                  <div className="flex items-center justify-end gap-4">
+          <Switch 
+            checked={formData.require_signature}
+            onCheckedChange={(checked) => handleSwitchChange('require_signature', checked)}
+          />
+          <div className="text-right">
+            <Label>{t('Require Signature')}</Label>
+            <p className="text-sm text-muted-foreground">{t('Require signature on delivery')}</p>
+          </div>
+        </div>
+                  <div className="flex items-center justify-end gap-4">
+          <Switch 
+            checked={formData.insurance_required}
+            onCheckedChange={(checked) => handleSwitchChange('insurance_required', checked)}
+          />
+          <div className="text-right">
+            <Label>{t('Insurance Required')}</Label>
+            <p className="text-sm text-muted-foreground">{t('Require shipping insurance')}</p>
+          </div>
+        </div>
+                  <div className="flex items-center justify-end gap-4">
+          <Switch 
+            checked={formData.tracking_available}
+            onCheckedChange={(checked) => handleSwitchChange('tracking_available', checked)}
+          />
+          <div className="text-right">
+            <Label>{t('Tracking Available')}</Label>
+            <p className="text-sm text-muted-foreground">{t('Provide tracking information')}</p>
+          </div>
+        </div>
                 </CollapsibleContent>
               </Collapsible>
             </CardContent>
