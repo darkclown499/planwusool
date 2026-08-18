@@ -352,7 +352,10 @@ export default function EditProduct() {
           {/* Content */}
           <TabsContent value="content" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle>{t('Product Content')}</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>{t('Product Content')}</CardTitle>
+                <p className="text-sm text-muted-foreground">{t('Product Content Helper')}</p>
+              </CardHeader>
               <CardContent className="space-y-4 text-start">
                 <div>
                   <Label htmlFor="short_description">{t('Short Description')}</Label>
@@ -366,18 +369,18 @@ export default function EditProduct() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label>{t('Quick Specs')}</Label>
-                    <span className="text-xs text-muted-foreground">{t('Key')} / {t('Value')}</span>
+                    <span className="text-xs text-muted-foreground">{t('Property Name')} / {t('Property Details')}</span>
                   </div>
                   <div className="space-y-2">
                     {quickSpecs.map((spec: any, i: number) => (
                       <div key={i} className="flex items-center gap-2" dir="rtl">
                         <div className="grid flex-1 gap-1">
-                          <span className="text-xs font-medium text-muted-foreground">{t('Key')}</span>
-                          <Input placeholder={t('Key')} value={spec.key || ''} onChange={(e) => handleQuickSpecChange(i, 'key', e.target.value)} />
+                          <span className="text-xs font-medium text-muted-foreground">{t('Property Name')}</span>
+                          <Input placeholder={t('Property Name Placeholder')} value={spec.key || ''} onChange={(e) => handleQuickSpecChange(i, 'key', e.target.value)} />
                         </div>
                         <div className="grid flex-1 gap-1">
-                          <span className="text-xs font-medium text-muted-foreground">{t('Value')}</span>
-                          <Input placeholder={t('Value')} value={spec.value || ''} onChange={(e) => handleQuickSpecChange(i, 'value', e.target.value)} />
+                          <span className="text-xs font-medium text-muted-foreground">{t('Property Details')}</span>
+                          <Input placeholder={t('Property Details Placeholder')} value={spec.value || ''} onChange={(e) => handleQuickSpecChange(i, 'value', e.target.value)} />
                         </div>
                         <Button type="button" variant="ghost" size="sm" className="shrink-0 mt-5 text-muted-foreground hover:text-destructive" onClick={() => setQuickSpecs(quickSpecs.filter((_: any, j: number) => j !== i))}>
                           <Trash2 className="h-4 w-4" />
