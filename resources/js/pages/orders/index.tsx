@@ -66,7 +66,7 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
 
   const pageActions = [
     ...(hasPermission('export-orders') ? [{
-      label: t('Export'),
+      label: t('Export Orders'),
       icon: <Download className="h-4 w-4" />,
       variant: 'outline' as const,
       onClick: () => handleActionClick('export', 'export-orders')
@@ -97,46 +97,46 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t('Total Orders')}</CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalOrders || 0}</div>
-              <p className="text-xs text-muted-foreground">{t('Total orders in store')}</p>
+              <div className="text-2xl font-bold text-start">{stats?.totalOrders || 0}</div>
+              <p className="text-xs text-muted-foreground text-start">{t('Total orders in store')}</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t('Pending Orders')}</CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.pendingOrders || 0}</div>
-              <p className="text-xs text-muted-foreground">{t('Need attention')}</p>
+              <div className="text-2xl font-bold text-start">{stats?.pendingOrders || 0}</div>
+              <p className="text-xs text-muted-foreground text-start">{t('Need attention')}</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t('Total Revenue')}</CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats?.totalRevenue || 0)}</div>
-              <p className="text-xs text-muted-foreground">{t('Total revenue')}</p>
+              <div className="text-2xl font-bold text-start">{formatCurrency(stats?.totalRevenue || 0)}</div>
+              <p className="text-xs text-muted-foreground text-start">{t('Total revenue')}</p>
             </CardContent>
           </Card>
           
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t('Avg. Order Value')}</CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats?.avgOrderValue || 0)}</div>
-              <p className="text-xs text-muted-foreground">{t('Average order value')}</p>
+              <div className="text-2xl font-bold text-start">{formatCurrency(stats?.avgOrderValue || 0)}</div>
+              <p className="text-xs text-muted-foreground text-start">{t('Average order value')}</p>
             </CardContent>
           </Card>
         </div>
@@ -149,20 +149,20 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
           <CardContent>
             <div className="space-y-4">
               {orders.length > 0 ? orders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                <div key={order.id} className="flex items-center justify-between gap-4 p-4 border rounded-lg">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                       <ShoppingCart className="h-6 w-6 text-primary" />
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
                         <h3 className="font-semibold">{order.orderNumber}</h3>
                         <Badge variant={getStatusVariant(order.status)}>
                           {order.status}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">{order.customer} • {order.email}</p>
-                      <div className="flex items-center space-x-4 mt-1">
+                      <p className="text-sm text-muted-foreground truncate">{order.customer} • {order.email}</p>
+                      <div className="flex items-center gap-4 mt-1 flex-wrap">
                         <span className="text-xs text-muted-foreground">{formatCurrency(order.total)}</span>
                         <span className="text-xs text-muted-foreground">{t('{{items}} items', { items: order.items })}</span>
                         <span className="text-xs text-muted-foreground">{order.date}</span>
@@ -170,7 +170,7 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {hasPermission('view-orders') && (
                       <Button variant="ghost" size="sm" onClick={() => handleActionClick('view', 'view-orders', order.id)}>
                         <Eye className="h-4 w-4" />
@@ -189,7 +189,8 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                   </div>
                 </div>
               )) : (
-                <div className="text-center py-8">
+                <div className="text-center py-10">
+                  <ShoppingCart className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                   <p className="text-muted-foreground">{t('No orders found')}</p>
                 </div>
               )}
