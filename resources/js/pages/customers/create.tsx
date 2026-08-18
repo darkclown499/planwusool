@@ -1,22 +1,120 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save, UploadCloud, Image as ImageIcon, X, User, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
-import MediaPicker from '@/components/MediaPicker';
+import MediaLibraryModal from '@/components/MediaLibraryModal';
 import { LocationDropdowns } from '@/components/LocationDropdowns';
+import { getImageUrl } from '@/utils/image-helper';
+import { toast } from 'sonner';
 import InputError from '@/components/input-error';
+
+function AvatarPicker({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const { t } = useTranslation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const toRelative = (url: string) => {
+    if (!url || url.startsWith('/storage')) return url;
+    const match = url.match(/\/storage\/(.*)$/);
+    return match && match[0] ? match[0] : url;
+  };
+
+  const uploadFiles = async (files: FileList | File[]) => {
+    const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+      toast.warning(t('Please select an image file'));
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      imageFiles.forEach((file) => formData.append('files[]', file));
+      const response = await fetch(route('api.media.batch'), {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+      });
+      const result = await response.json();
+      if (response.ok && result.data && result.data.length > 0) {
+        onChange(toRelative((result.data as { url: string }[])[0].url));
+        toast.success(result.message || t('Image uploaded successfully'));
+      } else {
+        toast.error(result.message || t('Upload failed'));
+      }
+    } catch {
+      toast.error(t('Error uploading file'));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative shrink-0">
+        {value ? (
+          <img src={getImageUrl(value)} alt={label} className="h-20 w-20 rounded-full object-cover border shadow-sm" />
+        ) : (
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <User className="h-9 w-9" />
+          </div>
+        )}
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="absolute -top-1 -end-1 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-white shadow"
+            aria-label={t('Remove')}
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      <div className="space-y-1.5">
+        <Label required>{label}</Label>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+            {uploading ? <Loader2 className="h-4 w-4 me-2 animate-spin" /> : <UploadCloud className="h-4 w-4 me-2" />}
+            {uploading ? t('Uploading...') : t('Upload')}
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => setIsModalOpen(true)}>
+            <ImageIcon className="h-4 w-4 me-2" />
+            {t('Media Library')}
+          </Button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files) {
+              uploadFiles(e.target.files);
+            }
+            e.target.value = '';
+          }}
+        />
+      </div>
+      <MediaLibraryModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSelect={(url) => onChange(toRelative(url))} />
+    </div>
+  );
+}
 
 export default function CreateCustomer() {
   const { t } = useTranslation();
-  const { errors } = usePage().props as any;
+  const { errors } = usePage().props as { errors: Record<string, string> };
   const [avatar, setAvatar] = useState('');
   const [formData, setFormData] = useState({
     first_name: '',
@@ -131,7 +229,7 @@ export default function CreateCustomer() {
         { title: t('Create Customer') }
       ]}
     >
-      <form noValidate onSubmit={handleSubmit} className="space-y-6">
+      <form noValidate onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         <Tabs defaultValue="personal" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="personal">{t('Personal Info')}</TabsTrigger>
@@ -144,17 +242,12 @@ export default function CreateCustomer() {
               <CardHeader>
                 <CardTitle>{t('Personal Information')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <MediaPicker
-                    label={t('Profile Picture')}
-                    value={avatar}
-                    onChange={setAvatar}
-                    placeholder={t('Select profile picture...')}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-1 mb-4">
+              <CardContent>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <AvatarPicker label={t('Profile Picture')} value={avatar} onChange={setAvatar} />
+                  </div>
+                  <div className="grid gap-1.5">
                     <Label htmlFor="first_name" required>{t('First Name')}</Label>
                     <Input
                       id="first_name"
@@ -166,7 +259,7 @@ export default function CreateCustomer() {
                     />
                     <InputError message={errors.first_name} />
                   </div>
-                  <div className="grid gap-1 mb-4">
+                  <div className="grid gap-1.5">
                     <Label htmlFor="last_name" required>{t('Last Name')}</Label>
                     <Input
                       id="last_name"
@@ -178,14 +271,14 @@ export default function CreateCustomer() {
                     />
                     <InputError message={errors.last_name} />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-1 mb-4">
+                  <div className="grid gap-1.5">
                     <Label htmlFor="email" required>{t('Email Address')}</Label>
                     <Input 
                       id="email" 
                       name="email"
                       type="email" 
+                      dir="ltr"
+                      className="text-end"
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder={t('customer@example.com')}
@@ -193,19 +286,19 @@ export default function CreateCustomer() {
                     />
                     <InputError message={errors.email} />
                   </div>
-                  <div>
+                  <div className="grid gap-1.5">
                     <Label htmlFor="phone">{t('Phone Number')}</Label>
                     <Input 
                       id="phone" 
                       name="phone"
+                      dir="ltr"
+                      className="text-end"
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder={t('+1 (555) 123-4567')} 
                     />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="grid gap-1.5">
                     <Label htmlFor="date_of_birth">{t('Date of Birth')}</Label>
                     <Input 
                       id="date_of_birth" 
@@ -213,9 +306,10 @@ export default function CreateCustomer() {
                       type="date" 
                       value={formData.date_of_birth}
                       onChange={handleInputChange}
+                      className="[&::-webkit-datetime-edit]:text-end [&::-webkit-datetime-edit-field]:pe-1"
                     />
                   </div>
-                  <div>
+                  <div className="grid gap-1.5">
                     <Label htmlFor="gender">{t('Gender')}</Label>
                     <Select
                       value={formData.gender}
@@ -232,26 +326,26 @@ export default function CreateCustomer() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="notes">{t('Notes')}</Label>
-                  <Textarea 
-                    id="notes" 
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleInputChange}
-                    placeholder={t('Customer notes...')} 
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('Customer Status')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('Enable or disable customer account')}</p>
+                  <div className="grid gap-1.5 md:col-span-2">
+                    <Label htmlFor="notes">{t('Notes')}</Label>
+                    <Textarea 
+                      id="notes" 
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleInputChange}
+                      placeholder={t('Customer notes...')} 
+                    />
                   </div>
-                  <Switch 
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => handleSwitchChange('is_active', checked)}
-                  />
+                  <div className="flex items-center justify-between md:col-span-2">
+                    <div>
+                      <Label>{t('Customer Status')}</Label>
+                      <p className="text-sm text-muted-foreground">{t('Enable or disable customer account')}</p>
+                    </div>
+                    <Switch 
+                      checked={formData.is_active}
+                      onCheckedChange={(checked) => handleSwitchChange('is_active', checked)}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
