@@ -32,7 +32,7 @@ export default function DefaultStore({ store, categories, products, settings }: 
                                             {product.name}
                                         </h3>
                                         <p className="text-gray-600 text-sm mb-3">
-                                            {product.description}
+                                            {product.short_description || product.description}
                                         </p>
                                         <div className="flex items-center justify-between">
                                             <span className="text-lg font-bold text-blue-600">

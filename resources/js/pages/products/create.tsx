@@ -3,6 +3,7 @@ import { PageTemplate } from '@/components/page-template';
 import { Save, Plus, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, FileText, EyeOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { ProfitSummary } from '@/components/ui/profit-summary';
 import { Label } from '@/components/ui/label';
@@ -34,6 +35,7 @@ export default function CreateProduct() {
     name: '',
     sku: '',
     description: '',
+    short_description: '',
     specifications: '',
     details: '',
     price: '',
@@ -359,27 +361,39 @@ export default function CreateProduct() {
               <CardHeader className="pb-3"><CardTitle className="text-base">{t('Product Content')}</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-start">
                 <div>
+                  <Label htmlFor="short_description">{t('Short Description')}</Label>
+                  <Textarea id="short_description" name="short_description" rows={3} value={formData.short_description} onChange={handleChange} placeholder={t('Enter short description...')} />
+                  <p className="text-xs text-muted-foreground mt-1">{t('A brief summary shown in storefront product previews')}</p>
+                </div>
+                <div>
                   <Label>{t('Product Description')}</Label>
                   <RichTextEditor value={formData.description} onChange={(v) => handleSelectChange('description', v)} placeholder={t('Enter product description...')} />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <Label>{t('Quick Specs')}</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={() => setQuickSpecs([...quickSpecs, { key: '', value: '' }])}>
-                      <Plus className="h-4 w-4 me-1" />{t('Add')}
-                    </Button>
+                    <span className="text-xs text-muted-foreground">{t('Key')} / {t('Value')}</span>
                   </div>
                   <div className="space-y-2">
                     {quickSpecs.map((spec, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <Input placeholder={t('Key')} value={spec.key} onChange={(e) => handleQuickSpecChange(i, 'key', e.target.value)} />
-                        <Input placeholder={t('Value')} value={spec.value} onChange={(e) => handleQuickSpecChange(i, 'value', e.target.value)} />
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setQuickSpecs(quickSpecs.filter((_, j) => j !== i))}>
+                      <div key={i} className="flex items-center gap-2" dir="rtl">
+                        <div className="grid flex-1 gap-1">
+                          <span className="text-xs font-medium text-muted-foreground">{t('Key')}</span>
+                          <Input placeholder={t('Key')} value={spec.key} onChange={(e) => handleQuickSpecChange(i, 'key', e.target.value)} />
+                        </div>
+                        <div className="grid flex-1 gap-1">
+                          <span className="text-xs font-medium text-muted-foreground">{t('Value')}</span>
+                          <Input placeholder={t('Value')} value={spec.value} onChange={(e) => handleQuickSpecChange(i, 'value', e.target.value)} />
+                        </div>
+                        <Button type="button" variant="ghost" size="sm" className="shrink-0 mt-5 text-muted-foreground hover:text-destructive" onClick={() => setQuickSpecs(quickSpecs.filter((_, j) => j !== i))}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
                   </div>
+                  <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => setQuickSpecs([...quickSpecs, { key: '', value: '' }])}>
+                    <Plus className="h-4 w-4 me-1" />{t('Add Specification')}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

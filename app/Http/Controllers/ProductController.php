@@ -165,6 +165,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'sku' => 'required|string|max:100',
             'description' => 'nullable|string',
+            'short_description' => 'nullable|string|max:500',
             'specifications' => 'nullable|string',
             'details' => 'nullable|string',
             'price' => 'required|numeric|min:0',
@@ -195,6 +196,7 @@ class ProductController extends Controller
         $product->name = $request->name;
         $product->sku = $request->sku;
         $product->description = $request->description;
+        $product->short_description = $request->short_description;
         $product->specifications = $request->specifications;
         $product->details = $request->details;
         $product->price = $request->price;
@@ -294,6 +296,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'sku' => 'required|string|max:100',
             'description' => 'nullable|string',
+            'short_description' => 'nullable|string|max:500',
             'specifications' => 'nullable|string',
             'details' => 'nullable|string',
             'price' => 'required|numeric|min:0',
@@ -343,6 +346,7 @@ class ProductController extends Controller
         $product->name = $request->name;
         $product->sku = $request->sku;
         $product->description = $request->description ?? $product->description;
+        $product->short_description = $request->short_description ?? $product->short_description;
         $product->specifications = $request->specifications ?? $product->specifications;
         $product->details = $request->details ?? $product->details;
         $product->price = $request->price;

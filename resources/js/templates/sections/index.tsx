@@ -549,9 +549,9 @@ export const ProductsSection: React.FC<SectionProps> = ({ section, storeData, la
                                     <h3 className="font-semibold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
                                         {product.name}
                                     </h3>
-                                    {product.description && (
+                                    {(product.short_description || product.description) && (
                                         <p className="mt-1 line-clamp-2 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
-                                            {product.description}
+                                            {product.short_description || product.description}
                                         </p>
                                     )}
                                     <p className="mt-2 font-bold" style={{ color: 'var(--twc-primary-600, #059669)' }}>

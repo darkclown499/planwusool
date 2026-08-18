@@ -4743,5 +4743,9 @@
   "Manage stock quantity and low stock alerts for this product": "Manage stock quantity and low stock alerts for this product",
   "Allow Purchases When Out of Stock": "Allow Purchases When Out of Stock",
   "Customers can still order this product when stock reaches zero": "Customers can still order this product when stock reaches zero",
-  "Digital Product (Downloadable)": "Digital Product (Downloadable)"
+  "Digital Product (Downloadable)": "Digital Product (Downloadable)",
+  "Short Description": "Short Description",
+  "Enter short description...": "Enter short description...",
+  "Add Specification": "Add Specification",
+  "A brief summary shown in storefront product previews": "A brief summary shown in storefront product previews"
 }

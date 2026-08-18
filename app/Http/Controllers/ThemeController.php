@@ -489,6 +489,7 @@ class ThemeController extends Controller
             'sku' => $product->sku ?: 'SKU-' . $product->id,
             'stockQuantity' => (int) $product->stock,
             'description' => $product->description,
+            'short_description' => $product->short_description,
             'variants' => $product->variants ? (is_array($product->variants) ? $product->variants : json_decode($product->variants, true)) : null,
             'customFields' => $product->custom_fields ? (is_array($product->custom_fields) ? $product->custom_fields : json_decode($product->custom_fields, true)) : null,
             'taxName' => $product->tax_name ?? null,

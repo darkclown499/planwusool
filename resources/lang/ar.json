@@ -5157,5 +5157,9 @@
   "Manage stock quantity and low stock alerts for this product": "إدارة كمية المخزون وتنبيهات انخفاضه لهذا المنتج",
   "Allow Purchases When Out of Stock": "السماح بالشراء عند نفاد الكمية",
   "Customers can still order this product when stock reaches zero": "يمكن للعملاء طلب هذا المنتج حتى عندما يصل المخزون إلى الصفر",
-  "Digital Product (Downloadable)": "منتج رقمي (قابل للتنزيل)"
+  "Digital Product (Downloadable)": "منتج رقمي (قابل للتنزيل)",
+  "Short Description": "الوصف القصير",
+  "Enter short description...": "أدخل وصفاً قصيراً...",
+  "Add Specification": "إضافة مواصفة",
+  "A brief summary shown in storefront product previews": "ملخص مختصر يظهر في معاينات المنتج داخل المتجر"
 }
