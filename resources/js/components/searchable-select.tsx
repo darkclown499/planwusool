@@ -93,9 +93,9 @@ export function SearchableSelect({
                       setOpen(false);
                       setSearch('');
                     }}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between cursor-pointer hover:bg-accent"
                   >
-                    <span className="text-start">
+                    <span className="text-start text-foreground">
                       {option.label}
                       {option.hint && <span className="ms-2 text-xs text-muted-foreground">{option.hint}</span>}
                     </span>
@@ -111,10 +111,10 @@ export function SearchableSelect({
                     setOpen(false);
                     setSearch('');
                   }}
-                  className="flex items-center gap-2 text-muted-foreground"
+                  className="flex items-center gap-2 text-muted-foreground cursor-pointer hover:bg-accent"
                 >
                   <CornerDownLeft className="h-4 w-4 shrink-0" />
-                  <span className="text-start">
+                  <span className="text-start text-foreground">
                     {t('Use')} "{search.trim()}"
                   </span>
                 </CommandItem>
