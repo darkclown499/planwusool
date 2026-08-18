@@ -40,7 +40,7 @@ export default function Customers() {
 
   const pageActions = [
     ...(hasPermission('export-customers') ? [{
-      label: t('Export'),
+      label: t('Export Customers'),
       icon: <Download className="h-4 w-4" />,
       variant: 'outline' as const,
       onClick: () => handleActionClick('export-customers', () => window.open(route('customers.export'), '_blank'))
@@ -68,50 +68,50 @@ export default function Customers() {
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('Total Customers')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalCustomers}</div>
-                <p className="text-xs text-muted-foreground">{stats.newThisMonth > 0 ? t('+{{count}} from last month', { count: stats.newThisMonth }) : t('No new customers')}</p>
+                <div className="text-2xl font-bold text-start">{stats.totalCustomers}</div>
+                <p className="text-xs text-muted-foreground text-start">{stats.newThisMonth > 0 ? t('+{{count}} from last month', { count: stats.newThisMonth }) : t('No new customers')}</p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('Active Customers')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.activeCustomers}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold text-start">{stats.activeCustomers}</div>
+                <p className="text-xs text-muted-foreground text-start">
                   {t('{{percent}}% active rate', { percent: stats.totalCustomers > 0 ? Math.round((stats.activeCustomers / stats.totalCustomers) * 100) : 0 })}
                 </p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('New This Month')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.newThisMonth}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold text-start">{stats.newThisMonth}</div>
+                <p className="text-xs text-muted-foreground text-start">
                   {stats.totalCustomers > 0 ? t('{{percent}}% growth', { percent: Math.round((stats.newThisMonth / stats.totalCustomers) * 100) }) : t('No growth')}
                 </p>
               </CardContent>
             </Card>
             
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader dir="rtl" className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('Avg. Order Value')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold ltr-num">{formatCurrency(stats.avgOrderValue)}</div>
-                <p className="text-xs text-muted-foreground">{t('Per order')}</p>
+                <div className="text-2xl font-bold text-start ltr-num">{formatCurrency(stats.avgOrderValue)}</div>
+                <p className="text-xs text-muted-foreground text-start">{t('Per order')}</p>
               </CardContent>
             </Card>
           </div>
@@ -143,37 +143,37 @@ export default function Customers() {
                 ) : (
                   <div className="space-y-4">
                     {customers.map((customer: any) => (
-                      <div key={customer.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <Avatar className="h-12 w-12">
+                      <div key={customer.id} className="flex items-center justify-between gap-4 p-4 border rounded-lg">
+                        <div className="flex items-center gap-4 min-w-0">
+                          <Avatar className="h-12 w-12 shrink-0">
                             <AvatarImage src={customer.avatar ? getImageUrl(customer.avatar) : ''} alt={customer.full_name} />
                             <AvatarFallback>{customer.initials}</AvatarFallback>
                           </Avatar>
-                          <div>
-                            <div className="flex items-center space-x-2">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
                               <h3 className="font-semibold">{customer.full_name}</h3>
                               <Badge variant={customer.is_active ? 'default' : 'secondary'}>
                                 {customer.is_active ? t('Active') : t('Inactive')}
                               </Badge>
                             </div>
-                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                              <Mail className="h-3 w-3" />
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="h-3 w-3 shrink-0" />
                               <span>{customer.email}</span>
                               {customer.phone && (
                                 <>
-                                  <Phone className="h-3 w-3 ms-2" />
+                                  <Phone className="h-3 w-3 ms-2 shrink-0" />
                                   <span>{customer.phone}</span>
                                 </>
                               )}
                             </div>
-                            <div className="flex items-center space-x-4 mt-1">
+                            <div className="flex items-center gap-4 mt-1 flex-wrap">
                               <span className="text-xs text-muted-foreground">{t('{{count}} orders', { count: customer.total_orders })}</span>
                               <span className="text-xs text-muted-foreground">{t('{{amount}} spent', { amount: formatCurrency(customer.total_spent || 0) })}</span>
                               <span className="text-xs text-muted-foreground">{t('Joined {{date}}', { date: new Date(customer.created_at).toLocaleDateString() })}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           {hasPermission('view-customers') && (
                             <Button variant="ghost" size="sm" onClick={() => handleActionClick('view-customers', () => router.visit(route('customers.show', customer.id)))}>
                               <Eye className="h-4 w-4" />
