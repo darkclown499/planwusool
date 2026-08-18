@@ -635,8 +635,8 @@ export default function CreateShipping() {
                 )}
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
+              <div className="grid gap-4 md:grid-cols-2 grid-cols-1">
+                <div className="grid gap-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <Label htmlFor="postal_codes">{t('Postal Codes')}</Label>
                     <a
@@ -658,7 +658,7 @@ export default function CreateShipping() {
                   />
                   <p className="mt-1 text-xs text-muted-foreground">{t('Comma-separated codes or ranges, e.g., 10001-10299')}</p>
                 </div>
-                <div>
+                <div className="grid gap-1">
                   <Label htmlFor="max_distance" className="flex items-center gap-2">
                     {t('Max Distance (km)')}
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
