@@ -170,6 +170,9 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'low_stock_warning' => 'nullable|integer|min:0',
+            'track_inventory' => 'nullable|boolean',
+            'allow_backorder' => 'nullable|boolean',
             'cover_image' => 'required|string',
             'images' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
@@ -197,6 +200,9 @@ class ProductController extends Controller
         $product->price = $request->price;
         $product->sale_price = $request->sale_price;
         $product->stock = $request->stock;
+        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : ($product->low_stock_warning ?? 5);
+        $product->track_inventory = $request->has('track_inventory') ? $request->track_inventory : true;
+        $product->allow_backorder = $request->has('allow_backorder') ? $request->allow_backorder : false;
         $product->cover_image = $request->cover_image;
         $product->images = $request->images;
         $product->category_id = $request->category_id;
@@ -293,6 +299,9 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'low_stock_warning' => 'nullable|integer|min:0',
+            'track_inventory' => 'nullable|boolean',
+            'allow_backorder' => 'nullable|boolean',
             'cover_image' => 'required|string',
             'images' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
@@ -339,6 +348,9 @@ class ProductController extends Controller
         $product->price = $request->price;
         $product->sale_price = $request->sale_price;
         $product->stock = $request->stock;
+        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : ($product->low_stock_warning ?? 5);
+        $product->track_inventory = $request->has('track_inventory') ? $request->track_inventory : true;
+        $product->allow_backorder = $request->has('allow_backorder') ? $request->allow_backorder : false;
         $product->cover_image = $request->cover_image;
         $product->images = $request->images;
         $product->category_id = $request->category_id;

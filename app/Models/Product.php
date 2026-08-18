@@ -19,6 +19,9 @@ class Product extends Model
         'price',
         'sale_price',
         'stock',
+        'low_stock_warning',
+        'track_inventory',
+        'allow_backorder',
         'cover_image',
         'images',
         'variants',
@@ -34,6 +37,8 @@ class Product extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'is_downloadable' => 'boolean',
+        'track_inventory' => 'boolean',
+        'allow_backorder' => 'boolean',
         'price' => 'decimal:2',
         'sale_price' => 'decimal:2',
         'stock' => 'integer',

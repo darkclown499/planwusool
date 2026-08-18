@@ -5152,5 +5152,10 @@
   "Discounted Price": "السعر المخفض / الخصم",
   "Price includes tax": "السعر شامل الضريبة",
   "Net Profit": "صافي الربح",
-  "Profit Margin %": "نسبة هامش الربح"
+  "Profit Margin %": "نسبة هامش الربح",
+  "Track Inventory for this Product": "تتبع مخزون هذا المنتج",
+  "Manage stock quantity and low stock alerts for this product": "إدارة كمية المخزون وتنبيهات انخفاضه لهذا المنتج",
+  "Allow Purchases When Out of Stock": "السماح بالشراء عند نفاد الكمية",
+  "Customers can still order this product when stock reaches zero": "يمكن للعملاء طلب هذا المنتج حتى عندما يصل المخزون إلى الصفر",
+  "Digital Product (Downloadable)": "منتج رقمي (قابل للتنزيل)"
 }

@@ -31,6 +31,8 @@ export default function EditProduct() {
     sale_price: product.sale_price || '',
     stock: product.stock || 0,
     low_stock_warning: product.low_stock_warning || 5,
+    track_inventory: product.track_inventory !== undefined ? product.track_inventory : true,
+    allow_backorder: product.allow_backorder || false,
     cover_image: product.cover_image || '',
     images: product.images || '',
     category_id: product.category_id ? String(product.category_id) : '',
@@ -76,6 +78,8 @@ export default function EditProduct() {
         sale_price: product.sale_price || '',
         stock: product.stock || 0,
         low_stock_warning: product.low_stock_warning || 5,
+        track_inventory: product.track_inventory !== undefined ? product.track_inventory : true,
+        allow_backorder: product.allow_backorder || false,
         cover_image: product.cover_image || '',
         images: product.images || '',
         category_id: product.category_id ? String(product.category_id) : '',
@@ -265,21 +269,38 @@ export default function EditProduct() {
             <Card>
               <CardHeader><CardTitle>{t('Inventory Management')}</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-start">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-1 mb-4 text-start">
-                    <Label htmlFor="stock" required>{t('Stock Quantity')}</Label>
-                    <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleChange} placeholder="0" aria-invalid={!!errors.stock} />
-                    <InputError message={errors.stock} />
-                  </div>
-                  <div className="grid gap-1 mb-4 text-start">
-                    <Label htmlFor="low_stock_warning">{t('Low Stock Warning')}</Label>
-                    <Input id="low_stock_warning" name="low_stock_warning" type="number" value={formData.low_stock_warning} onChange={handleChange} placeholder="5" />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
                   <div className="text-start">
-                    <Label>{t('Downloadable Product')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('Is this a digital product?')}</p>
+                    <Label>{t('Track Inventory for this Product')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('Manage stock quantity and low stock alerts for this product')}</p>
+                  </div>
+                  <Switch checked={formData.track_inventory} onCheckedChange={(c) => setField('track_inventory', c)} />
+                </div>
+                {formData.track_inventory && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-1 mb-4 text-start">
+                        <Label htmlFor="stock" required>{t('Stock Quantity')}</Label>
+                        <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleChange} placeholder="0" aria-invalid={!!errors.stock} />
+                        <InputError message={errors.stock} />
+                      </div>
+                      <div className="grid gap-1 mb-4 text-start">
+                        <Label htmlFor="low_stock_warning">{t('Low Stock Warning')}</Label>
+                        <Input id="low_stock_warning" name="low_stock_warning" type="number" value={formData.low_stock_warning} onChange={handleChange} placeholder="5" />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                      <div className="text-start">
+                        <Label>{t('Allow Purchases When Out of Stock')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('Customers can still order this product when stock reaches zero')}</p>
+                      </div>
+                      <Switch checked={formData.allow_backorder} onCheckedChange={(c) => setField('allow_backorder', c)} />
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                  <div className="text-start">
+                    <Label>{t('Digital Product (Downloadable)')}</Label>
                   </div>
                   <Switch checked={formData.is_downloadable} onCheckedChange={(c) => { setField('is_downloadable', c); if (!c) setField('downloadable_file', ''); }} />
                 </div>
