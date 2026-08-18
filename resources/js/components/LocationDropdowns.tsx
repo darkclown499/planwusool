@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SearchableSelect } from '@/components/searchable-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import axios from 'axios';
+import type { SearchableOption } from '@/components/searchable-select';
 
 interface Country {
   id: number;
@@ -127,6 +129,35 @@ const FALLBACK_LOCATIONS = (() => {
   return { countries, statesByCountry, citiesByState };
 })();
 
+/** Priority country codes to pin at the top of the country list. */
+const PRIORITY_COUNTRY_CODES = [
+  'PSE', // فلسطين
+  'JOR', // الأردن
+  'SAU', // السعودية
+  'ARE', // الإمارات
+  'QAT', // قطر
+  'KWT', // الكويت
+  'EGY', // مصر
+];
+
+/** Sort countries: priority codes first (in order), then rest alphabetically by name. */
+function sortCountries(countries: Country[]): Country[] {
+  const priority = new Map<string, number>();
+  PRIORITY_COUNTRY_CODES.forEach((code, index) => priority.set(code, index));
+
+  return [...countries].sort((a, b) => {
+    const aPriority = priority.get(a.code);
+    const bPriority = priority.get(b.code);
+
+    if (aPriority !== undefined && bPriority !== undefined) {
+      return aPriority - bPriority;
+    }
+    if (aPriority !== undefined) return -1;
+    if (bPriority !== undefined) return 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
 export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
   countryValue,
   stateValue,
@@ -225,26 +256,38 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
     }
   };
 
+  // Sorted countries with priority codes pinned at top
+  const sortedCountries = useMemo(() => sortCountries(countries), [countries]);
+
+  // Convert to SearchableSelect options with separator after priority countries
+  const countryOptions = useMemo((): SearchableOption[] => {
+    const options: SearchableOption[] = [];
+    sortedCountries.forEach((c, index) => {
+      options.push({
+        value: c.id.toString(),
+        label: c.name,
+        hint: c.code,
+      });
+      // Insert separator after the last priority country
+      if (PRIORITY_COUNTRY_CODES.includes(c.code) && index === PRIORITY_COUNTRY_CODES.length - 1) {
+        options.push({ value: '', label: '', isSeparator: true });
+      }
+    });
+    return options;
+  }, [sortedCountries]);
+
   return (
     <div className="grid grid-cols-3 gap-4">
       <div>
         <Label>{t("Country")} {required && '*'}</Label>
-        <Select
+        <SearchableSelect
           value={countryValue}
-          onValueChange={onCountryChange}
+          onChange={onCountryChange}
+          options={countryOptions}
+          placeholder={loading.countries ? t('Loading...') : t('Select country')}
+          searchPlaceholder={t('Search countries...')}
           disabled={disabled || loading.countries}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={loading.countries ? t('Loading...') : t('Select country')} />
-          </SelectTrigger>
-          <SelectContent>
-            {countries.map((country) => (
-              <SelectItem key={country.id} value={country.id.toString()}>
-                {country.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </div>
 
       <div>

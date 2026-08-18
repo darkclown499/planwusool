@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
 import { Button } from '@/components/ui/button';
 import { Check, ChevronsUpDown, CornerDownLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ export interface SearchableOption {
   value: string;
   label: string;
   hint?: string;
+  isSeparator?: boolean;
 }
 
 interface SearchableSelectProps {
@@ -74,29 +75,34 @@ export function SearchableSelect({
             value={search}
             onValueChange={setSearch}
           />
-          <CommandList>
+<CommandList>
             {filtered.length === 0 && !canUseFreeText && (
               <CommandEmpty>{emptyMessage || t('No results found.')}</CommandEmpty>
             )}
             <CommandGroup>
-              {filtered.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={() => {
-                    onChange(option.value);
-                    setOpen(false);
-                    setSearch('');
-                  }}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-start">
-                    {option.label}
-                    {option.hint && <span className="ms-2 text-xs text-muted-foreground">{option.hint}</span>}
-                  </span>
-                  {value === option.value && <Check className="h-4 w-4 shrink-0" />}
-                </CommandItem>
-              ))}
+              {filtered.map((option, index) => {
+                if (option.isSeparator) {
+                  return <CommandSeparator key={`sep-${index}`} />;
+                }
+                return (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    onSelect={() => {
+                      onChange(option.value);
+                      setOpen(false);
+                      setSearch('');
+                    }}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-start">
+                      {option.label}
+                      {option.hint && <span className="ms-2 text-xs text-muted-foreground">{option.hint}</span>}
+                    </span>
+                    {value === option.value && <Check className="h-4 w-4 shrink-0" />}
+                  </CommandItem>
+                );
+              })}
               {canUseFreeText && (
                 <CommandItem
                   value={search.trim()}
@@ -109,7 +115,7 @@ export function SearchableSelect({
                 >
                   <CornerDownLeft className="h-4 w-4 shrink-0" />
                   <span className="text-start">
-                    {t('Use')} &quot;{search.trim()}&quot;
+                    {t('Use')} "{search.trim()}"
                   </span>
                 </CommandItem>
               )}

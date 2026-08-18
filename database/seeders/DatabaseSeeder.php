@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
                 LocationSeeder::class,
                 WorldCountriesSeeder::class,
                 RegionalCountriesSeeder::class,
+                CountryArabicNamesSeeder::class,
                 ExpressCheckoutSeeder::class,
                 PlanOrderSeeder::class,
                 PlanRequestSeeder::class,
