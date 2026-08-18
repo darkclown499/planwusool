@@ -273,7 +273,7 @@ export default function CreateShipping() {
               <CardTitle>{t('Basic Information')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 grid-cols-1">
                 <div className="grid gap-1">
                   <Label htmlFor="name" required>{t('Method Name')}</Label>
                   <Input 
@@ -307,21 +307,7 @@ export default function CreateShipping() {
                 </div>
               </div>
               {shippingType !== 'free_shipping' && (
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="grid gap-1">
-                    <Label htmlFor="cost">
-                      {shippingType === 'percentage_based' ? t('Percentage (%)') : t('Shipping Cost')}
-                    </Label>
-                    <Input 
-                      id="cost" 
-                      name="cost"
-                      type="number" 
-                      step={shippingType === 'percentage_based' ? '0.1' : '0.01'} 
-                      value={formData.cost}
-                      onChange={handleInputChange}
-                      placeholder={shippingType === 'percentage_based' ? t('5.0') : t('9.99')} 
-                    />
-                  </div>
+                <div className="grid gap-4 md:grid-cols-2 grid-cols-1">
                   <div className="grid gap-1">
                     <Label htmlFor="currency">{t('Currency')}</Label>
                     <Select
