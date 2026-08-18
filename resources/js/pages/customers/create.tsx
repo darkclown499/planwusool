@@ -447,68 +447,77 @@ export default function CreateCustomer() {
                 <CardTitle>{t('Communication Preferences')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('Email Marketing')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('Receive promotional emails')}</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 flex items-center gap-3">
+                    <div>
+                      <Label>{t('Email Marketing')}</Label>
+                      <p className="text-sm text-muted-foreground">{t('Receive promotional emails')}</p>
+                    </div>
+                    <Switch 
+                      checked={formData.email_marketing}
+                      onCheckedChange={(checked) => handleSwitchChange('email_marketing', checked)}
+                    />
                   </div>
-                  <Switch 
-                    checked={formData.email_marketing}
-                    onCheckedChange={(checked) => handleSwitchChange('email_marketing', checked)}
-                  />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('SMS Notifications')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('Receive SMS updates')}</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 flex items-center gap-3">
+                    <div>
+                      <Label>{t('SMS Notifications')}</Label>
+                      <p className="text-sm text-muted-foreground">{t('Receive SMS updates')}</p>
+                    </div>
+                    <Switch 
+                      checked={formData.sms_notifications}
+                      onCheckedChange={(checked) => handleSwitchChange('sms_notifications', checked)}
+                    />
                   </div>
-                  <Switch 
-                    checked={formData.sms_notifications}
-                    onCheckedChange={(checked) => handleSwitchChange('sms_notifications', checked)}
-                  />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>{t('Order Updates')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('Receive order status updates')}</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 flex items-center gap-3">
+                    <div>
+                      <Label>{t('Order Updates')}</Label>
+                      <p className="text-sm text-muted-foreground">{t('Receive order status updates')}</p>
+                    </div>
+                    <Switch 
+                      checked={formData.order_updates}
+                      onCheckedChange={(checked) => handleSwitchChange('order_updates', checked)}
+                    />
                   </div>
-                  <Switch 
-                    checked={formData.order_updates}
-                    onCheckedChange={(checked) => handleSwitchChange('order_updates', checked)}
-                  />
                 </div>
-                <div>
-                  <Label htmlFor="preferred_language">{t('Preferred Language')}</Label>
-                  <Select
-                    value={formData.preferred_language}
-                    onValueChange={(value) => handleSelectChange('preferred_language', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">{t('English')}</SelectItem>
-                      <SelectItem value="es">{t('Spanish')}</SelectItem>
-                      <SelectItem value="fr">{t('French')}</SelectItem>
-                      <SelectItem value="de">{t('German')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="customer_group">{t('Customer Group')}</Label>
-                  <Select
-                    value={formData.customer_group}
-                    onValueChange={(value) => handleSelectChange('customer_group', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="regular">{t('Regular Customer')}</SelectItem>
-                      <SelectItem value="vip">{t('VIP Customer')}</SelectItem>
-                      <SelectItem value="wholesale">{t('Wholesale Customer')}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="preferred_language">{t('Preferred Language')}</Label>
+                    <Select
+                      value={formData.preferred_language}
+                      onValueChange={(value) => handleSelectChange('preferred_language', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('Select language')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ar">{t('Arabic')}</SelectItem>
+                        <SelectItem value="en">{t('English')}</SelectItem>
+                        <SelectItem value="es">{t('Spanish')}</SelectItem>
+                        <SelectItem value="fr">{t('French')}</SelectItem>
+                        <SelectItem value="de">{t('German')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="customer_group">{t('Customer Group')}</Label>
+                    <Select
+                      value={formData.customer_group}
+                      onValueChange={(value) => handleSelectChange('customer_group', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('Select group')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="regular">{t('Regular Customer')}</SelectItem>
+                        <SelectItem value="vip">{t('VIP Customer')}</SelectItem>
+                        <SelectItem value="wholesale">{t('Wholesale Customer')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </CardContent>
             </Card>
