@@ -4777,5 +4777,8 @@
   "SEO Meta Description": "Google Product Description (Meta Description)",
   "SEO Meta Description Placeholder": "Enter a description up to 160 characters",
   "SEO URL Slug": "Product URL (URL Slug)",
-  "SEO URL Slug Placeholder": "product-name"
+  "SEO URL Slug Placeholder": "product-name",
+  "Parent Category (optional)": "Parent Category (optional)",
+  "Select parent category (subcategory hint)": "Select the parent category if this is a subcategory",
+  "Sort Order (Display)": "Sort Order"
 }

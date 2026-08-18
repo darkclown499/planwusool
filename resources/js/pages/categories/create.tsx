@@ -72,57 +72,59 @@ export default function CreateCategory() {
         { title: t('Create Category') }
       ]}
     >
-      <form noValidate onSubmit={handleSubmit} className="space-y-6">
+      <form noValidate onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         <Card>
           <CardHeader>
             <CardTitle>{t('Category Information')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-1 mb-4">
-                <Label htmlFor="name" required>{t('Category Name')}</Label>
-                <Input 
-                  id="name" 
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange} 
-                  placeholder={t('Enter category name')} 
-                  aria-invalid={!!errors.name}
-                />
-                <InputError message={errors.name} />
-              </div>
-              <div className="grid gap-1 mb-4">
-                <Label htmlFor="description">{t('Description')}</Label>
-                <Input 
-                  id="description" 
-                  name="description" 
-                  value={formData.description} 
-                  onChange={handleChange} 
-                  placeholder={t('Category description')} 
-                  aria-invalid={!!errors.description}
-                />
-                <InputError message={errors.description} />
-              </div>
+          <CardContent className="space-y-5">
+            <div className="grid gap-1.5">
+              <Label htmlFor="name" required>{t('Category Name')}</Label>
+              <Input 
+                id="name" 
+                name="name" 
+                value={formData.name} 
+                onChange={handleChange} 
+                placeholder={t('Enter category name')} 
+                aria-invalid={!!errors.name}
+              />
+              <InputError message={errors.name} />
             </div>
-            <div className="grid gap-1 mb-4">
+            <div className="grid gap-1.5">
+              <Label htmlFor="description">{t('Description')}</Label>
+              <Textarea
+                id="description" 
+                name="description" 
+                rows={3}
+                value={formData.description} 
+                onChange={handleChange} 
+                placeholder={t('Category description')} 
+                aria-invalid={!!errors.description}
+              />
+              <InputError message={errors.description} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label>{t('Category Image')}</Label>
               <MediaPicker
                 label={t('Category Image')}
                 value={formData.image}
                 onChange={handleImageChange}
                 placeholder={t('Select category image...')}
                 required
+                dragDrop
+                showPreview
               />
               <InputError message={errors.image} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="parent_id">{t('Parent Category')}</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid gap-1.5">
+                <Label htmlFor="parent_id">{t('Parent Category (optional)')}</Label>
                 <Select 
                   value={formData.parent_id} 
                   onValueChange={(value) => handleSelectChange('parent_id', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t('Select parent category')} />
+                    <SelectValue placeholder={t('Select parent category (subcategory hint)')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">{t('None (Root Category)')}</SelectItem>
@@ -134,8 +136,8 @@ export default function CreateCategory() {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label htmlFor="sort_order">{t('Sort Order')}</Label>
+              <div className="grid gap-1.5">
+                <Label htmlFor="sort_order">{t('Sort Order (Display)')}</Label>
                 <Input 
                   id="sort_order" 
                   name="sort_order" 
@@ -146,8 +148,8 @@ export default function CreateCategory() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+              <div className="text-start">
                 <Label>{t('Category Status')}</Label>
                 <p className="text-sm text-muted-foreground">{t('Enable or disable category')}</p>
               </div>

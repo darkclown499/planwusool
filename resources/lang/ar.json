@@ -5191,5 +5191,8 @@
   "SEO Meta Description": "وصف المنتج في جوجل (Meta Description)",
   "SEO Meta Description Placeholder": "أدخل وصفاً يصل إلى 160 حرفاً",
   "SEO URL Slug": "رابط المنتج (URL Slug)",
-  "SEO URL Slug Placeholder": "product-name"
+  "SEO URL Slug Placeholder": "product-name",
+  "Parent Category (optional)": "القسم الرئيسي (اختياري)",
+  "Select parent category (subcategory hint)": "اختر القسم الرئيسي إذا كانت هذه فئة فرعية",
+  "Sort Order (Display)": "ترتيب الظهور"
 }
