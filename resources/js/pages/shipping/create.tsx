@@ -117,10 +117,9 @@ export default function CreateShipping() {
   };
 
   const zoneTypes = [
-    { value: 'domestic', icon: Home, label: t('Domestic'), description: t('Within the same country') },
-    { value: 'local', icon: MapPin, label: t('Local'), description: t('Within a specific city or area') },
-    { value: 'regional', icon: Building2, label: t('Regional'), description: t('Nearby countries or a broader region') },
-    { value: 'international', icon: Globe, label: t('International'), description: t('Ship to any country worldwide') }
+    { value: 'domestic', icon: Home, label: t('Local Shipping'), description: t('Within the country') },
+    { value: 'regional', icon: Building2, label: t('Regional Shipping'), description: t('Neighboring countries') },
+    { value: 'international', icon: Globe, label: t('International Shipping'), description: t('All countries worldwide') }
   ];
 
   const deliveryOptions = [
@@ -232,14 +231,11 @@ export default function CreateShipping() {
     >
       <form noValidate onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         {/* Stepper header */}
-        <div>
-          <div className="flex items-center justify-end">
+        <div className="w-full">
+          <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <React.Fragment key={step.title}>
-                {index < steps.length - 1 && (
-                  <div className={cn('mx-2 h-0.5 flex-1 rounded-full sm:mx-3', index < currentStep ? 'bg-primary' : 'bg-muted')} />
-                )}
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-end flex-1">
                   <div className={cn('ms-2 hidden text-sm font-medium sm:block', index <= currentStep ? 'text-foreground' : 'text-muted-foreground')}>
                     {step.title}
                   </div>
@@ -256,6 +252,9 @@ export default function CreateShipping() {
                     {index < currentStep ? <Check className="h-4 w-4" /> : index + 1}
                   </div>
                 </div>
+                {index < steps.length - 1 && (
+                  <div className={cn('mx-2 h-0.5 flex-1 rounded-full', index < currentStep ? 'bg-primary' : 'bg-muted')} />
+                )}
               </React.Fragment>
             ))}
           </div>
@@ -380,7 +379,6 @@ export default function CreateShipping() {
 
               <div>
                 <Label required>{t('Country')}</Label>
-                <p className="mt-1 text-xs text-muted-foreground">{t('Choose one or more countries, then decide whether to cover all of their regions or a specific city.')}</p>
                 <div className="mt-3">
                   <SearchableSelect
                     value={selectedCountries.length > 0 ? selectedCountries.join(',') : ''}
@@ -435,30 +433,6 @@ export default function CreateShipping() {
                     </button>
                   )}
                 </div>
-                {selectedCountry && (
-                  <div className="mt-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, state_id: null, city_id: null, all_regions: true }))}
-                        className={cn(
-                          'rounded-lg border-2 px-4 py-2 text-sm font-medium transition-all',
-                          formData.all_regions ? 'border-primary bg-primary/5 text-foreground' : 'border-input bg-background text-foreground/80 hover:border-muted-foreground/50 hover:bg-muted'
-                        )}
-                      >
-                        {t('All regions')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, all_regions: false }))}
-                        className={cn(
-                          'rounded-lg border-2 px-4 py-2 text-sm font-medium transition-all',
-                          !formData.all_regions ? 'border-primary bg-primary/5 text-foreground' : 'border-input bg-background text-foreground/80 hover:border-muted-foreground/50 hover:bg-muted'
-                        )}
-                      >
-                        {t('Specific city')}
-                      </button>
-                    </div>
 
                     {formData.all_regions ? (
                       <p className="mt-2 text-xs text-muted-foreground">{t('Method applies to every region within the selected country.')}</p>
@@ -554,13 +528,11 @@ export default function CreateShipping() {
                                 </CommandList>
                               </Command>
                             </PopoverContent>
-                          </Popover>
+</Popover>
                         </div>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
 
               <div>
                 <Label required>{t('Delivery Method')}</Label>
@@ -603,40 +575,41 @@ export default function CreateShipping() {
                   ))}
                 </div>
 
-                {formData.delivery_method === 'company' && (
-                  <div className="mt-3 max-w-md">
-                    <Label>{t('Select Delivery Company')}</Label>
-                    {showCustomCompany ? (
-                      <div className="mt-2 flex items-center gap-2">
-                        <Input
-                          value={formData.delivery_company}
-                          onChange={handleInputChange}
-                          name="delivery_company"
-                          placeholder={t('Enter company name')}
-                        />
-                        <Button type="button" variant="outline" onClick={() => setCustomCompanyOpen(false)}>
-                          {t('Back to list')}
-                        </Button>
-                      </div>
-                    ) : (
-                      <Select value={companySelectValue} onValueChange={handleCompanyChange}>
-                        <SelectTrigger className="mt-2">
-                          <SelectValue placeholder={t('Choose a company...')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {companyOptions.map((company) => (
-                            <SelectItem key={company} value={company}>{company}</SelectItem>
-                          ))}
-                          <SelectItem value="__custom__">{t('Other / Enter custom name')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
+{formData.delivery_method === 'company' && (
+                  <>
+                    <div className="mt-3 max-w-md">
+                      <Label>{t('Select Delivery Company')}</Label>
+                      {showCustomCompany ? (
+                        <div className="mt-2 flex items-center gap-2">
+                          <Input
+                            value={formData.delivery_company}
+                            onChange={handleInputChange}
+                            name="delivery_company"
+                            placeholder={t('Enter company name')}
+                          />
+                          <Button type="button" variant="outline" onClick={() => setCustomCompanyOpen(false)}>
+                            {t('Back to list')}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Select value={companySelectValue} onValueChange={handleCompanyChange}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder={t('Choose a company...')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {companyOptions.map((company) => (
+                              <SelectItem key={company} value={company}>{company}</SelectItem>
+                            ))}
+                            <SelectItem value="__custom__">{t('Other / Enter custom name')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  </>
                 )}
-              </div>
 
-              <div className="grid gap-4 md:grid-cols-2 grid-cols-1">
-                <div className="grid gap-1">
+                <div className="grid gap-4 md:grid-cols-2 grid-cols-1">
+                  <div className="grid gap-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <Label htmlFor="postal_codes">{t('Postal Codes')}</Label>
                     <a
@@ -677,6 +650,7 @@ export default function CreateShipping() {
                   <p className="mt-1 text-xs text-muted-foreground">{t('Used for local delivery. Leave empty for no limit.')}</p>
                 </div>
               </div>
+            </div>
             </CardContent>
           </Card>
         )}
