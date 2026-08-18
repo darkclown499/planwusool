@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Brain } from 'lucide-react';
 import { ChatGptModal } from '@/components/chatgpt';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,24 @@ export function FloatingChatGpt() {
   const { t } = useTranslation();
   const { auth } = usePage<{ auth?: FloatingChatAuth }>().props;
   const [isOpen, setIsOpen] = useState(false);
+  const [nearBottom, setNearBottom] = useState(false);
+
+  // Hide the button when the user scrolls near the bottom of the page so it
+  // doesn't sit on top of the footer / last dashboard rows.
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollable = document.scrollingElement || document.documentElement;
+      const distanceFromBottom = scrollable.scrollHeight - scrollable.scrollTop - window.innerHeight;
+      setNearBottom(distanceFromBottom < 160);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
 
   // Check if user can access ChatGPT
   const userRole = auth?.roles?.[0] || auth?.user?.type;
@@ -61,9 +79,9 @@ export function FloatingChatGpt() {
   return createPortal(
     <>
       <div
-        className="fixed bottom-6 rtl:left-6 ltr:right-6 z-[80000] pointer-events-none cursor-pointer"
+        className={`fixed bottom-6 rtl:left-6 ltr:right-6 z-40 pointer-events-none cursor-pointer transition-all duration-300 ${nearBottom ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'}`}
         data-chatgpt-button
-        style={{ pointerEvents: 'none', zIndex: 80000, cursor: 'pointer' }}
+        style={{ pointerEvents: 'none', zIndex: 40, cursor: 'pointer' }}
         onClickCapture={(e) => {
           e.preventDefault();
           e.stopPropagation();

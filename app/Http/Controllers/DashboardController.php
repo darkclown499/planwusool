@@ -415,6 +415,8 @@ class DashboardController extends Controller
     
     /**
      * أحدث التنبيهات الهامة للتاجر من جدول merchant_notifications.
+     * Grouped by (type + title) so repeated alerts (e.g. repeated new-device
+     * login notices) collapse into a single card with a count badge.
      */
     private function getMerchantAlerts(?int $userId, ?int $storeId = null)
     {
@@ -422,24 +424,34 @@ class DashboardController extends Controller
             return [];
         }
 
-        return MerchantNotificationService::getUrgentForUser($userId, $storeId, 10)
-            ->map(function ($notification) {
+        $notifications = MerchantNotificationService::getUrgentForUser($userId, $storeId, 50);
+
+        return $notifications
+            // Dismissed (read) alerts are hidden from the dashboard.
+            ->filter(fn ($n) => !$n->is_read)
+            // Collapse duplicates by type + title, keeping the most recent.
+            ->groupBy(fn ($n) => $n->type . '|' . $n->title)
+            ->map(function ($group) {
+                $latest = $group->first();
                 return [
-                    'id' => $notification->id,
-                    'type' => $notification->type,
-                    'title' => $notification->title,
-                    'body' => $notification->body,
-                    'icon' => $notification->icon,
-                    'color' => $notification->color,
-                    'action_url' => $notification->action_url,
-                    'related_id' => $notification->related_id,
-                    'related_type' => $notification->related_type,
-                    'is_read' => $notification->is_read,
-                    'is_urgent' => $notification->is_urgent,
-                    'created_at' => $notification->created_at?->diffForHumans(),
+                    'id' => $latest->id,
+                    'type' => $latest->type,
+                    'title' => $latest->title,
+                    'body' => $latest->body,
+                    'icon' => $latest->icon,
+                    'color' => $latest->color,
+                    'action_url' => $latest->action_url,
+                    'related_id' => $latest->related_id,
+                    'related_type' => $latest->related_type,
+                    'is_read' => $latest->is_read,
+                    'is_urgent' => $latest->is_urgent,
+                    'created_at' => $latest->created_at?->diffForHumans(),
+                    'count' => $group->count(),
+                    'group_ids' => $group->pluck('id')->all(),
                 ];
             })
             ->values()
+            ->take(10)
             ->toArray();
     }
     

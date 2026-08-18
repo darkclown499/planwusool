@@ -32,9 +32,27 @@ export default function AIChatWidget({
   const [toast, setToast] = useState<string | null>(null);
   const [savedChatExists, setSavedChatExists] = useState(false);
   const [draftExists, setDraftExists] = useState(false);
+  const [nearBottom, setNearBottom] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Hide the widget when the user scrolls near the bottom of the page so it
+  // doesn't overlap the footer or last sections.
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollable = document.scrollingElement || document.documentElement;
+      const distanceFromBottom = scrollable.scrollHeight - scrollable.scrollTop - window.innerHeight;
+      setNearBottom(distanceFromBottom < 160);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
 
   const STORAGE_KEY_SAVED = 'wusool_ai_saved_chat';
   const STORAGE_KEY_DRAFT = 'wusool_ai_draft';
@@ -273,7 +291,7 @@ export default function AIChatWidget({
   if (!isVisible) return null;
 
   return (
-    <div className={`fixed bottom-6 z-50 ${position === 'left' ? 'left-6' : 'right-6'}`}>
+    <div className={`fixed bottom-6 z-50 ${position === 'left' ? 'left-6' : 'right-6'} transition-all duration-300 ${nearBottom ? 'opacity-0 translate-y-3 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
       {isOpen && (
         <div className={`absolute bottom-16 ${position === 'left' ? 'left-0' : 'right-0'} bg-white rounded-2xl shadow-2xl border border-gray-200 w-80 sm:w-96 max-w-[calc(100vw-3rem)] flex flex-col overflow-hidden transform transition-all duration-300 animate-in slide-in-from-bottom-4`}>
           {/* Header */}

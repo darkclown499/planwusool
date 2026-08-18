@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { formatCurrency } from '@/utils/currency-helper';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { hasPermission, checkPermission } from '@/utils/permissions';
+import { getCsrfToken } from '@/utils/csrf';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar as RechartsBar, BarChart as RechartsBarChart } from 'recharts';
 
 interface Props {
@@ -53,6 +54,8 @@ interface Props {
       action_url?: string | null;
       is_read: boolean;
       created_at?: string | null;
+      count?: number;
+      group_ids?: number[];
     }[];
   };
   currentStore?: any;
@@ -74,6 +77,36 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [chartMode, setChartMode] = useState<'sales' | 'revenue'>('sales');
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<number>>(new Set());
+
+  // Merge group_ids into the dismissed set so collapsing duplicate alerts
+  // dismisses the whole group at once.
+  const dismissAlert = async (alert: any) => {
+    const ids = Array.isArray(alert?.group_ids) && alert.group_ids.length > 0
+      ? alert.group_ids
+      : [alert?.id];
+
+    setDismissedAlerts(prev => {
+      const next = new Set(prev);
+      ids.forEach((id: number) => next.add(id));
+      return next;
+    });
+
+    try {
+      await Promise.all(ids.map((id: number) =>
+        fetch(route('api.merchant-notifications.mark-read', id), {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': getCsrfToken() || '', 'Accept': 'application/json' },
+        }).catch(() => {})
+      ));
+    } catch {
+      // Ignore — the card is already hidden locally.
+    }
+  };
+
+  const visibleAlerts = (dashboardData.alerts || []).filter(
+    (alert) => !dismissedAlerts.has(alert.id)
+  );
 
   const breadcrumbs = [
     { title: t('Dashboard') }
@@ -85,7 +118,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
     return isSuperAdmin || hasPermission(permission);
   };
 
-  const hasPendingAlerts = (dashboardData.alerts?.length || 0) > 0 || (dashboardData.metrics.pendingOrders || 0) > 0 || (dashboardData.metrics.pendingRequests || 0) > 0;
+  const hasPendingAlerts = (visibleAlerts.length) > 0 || (dashboardData.metrics.pendingOrders || 0) > 0 || (dashboardData.metrics.pendingRequests || 0) > 0;
 
   const handleCardClick = (routeName: string, requiredPermission: string, id?: any) => {
     if (!checkPermission(requiredPermission, (usePage().props as any).auth)) {
@@ -273,19 +306,19 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const TrendLine = ({ value }: { value?: number }) => {
     if (value === undefined || value === null || value === 0) {
       return (
-        <div className="flex items-center gap-1 justify-start">
+        <div className="rtl-start flex items-center gap-1.5 min-w-0">
           <span className="text-xs text-muted-foreground">—</span>
-          <span className="text-xs text-muted-foreground">{t('vs last month')}</span>
+          <span className="text-xs text-muted-foreground truncate">{t('vs last month')}</span>
         </div>
       );
     }
     const positive = value > 0;
     return (
-      <div className="flex items-center gap-1 justify-start">
-        <span dir="ltr" className={`text-xs font-medium ${positive ? 'text-emerald-700' : 'text-red-600'}`}>
+      <div className="rtl-start flex items-center gap-1.5 min-w-0">
+        <span dir="ltr" className={`ltr-num text-xs font-medium ${positive ? 'text-emerald-700' : 'text-red-600'}`}>
           {positive ? '+' : ''}{value.toLocaleString()}%
         </span>
-        <span className="text-xs text-muted-foreground">{t('vs last month')}</span>
+        <span className="text-xs text-muted-foreground truncate">{t('vs last month')}</span>
       </div>
     );
   };
@@ -600,16 +633,18 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           {userHasPermission('view-orders') && (
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick('orders.index', 'view-orders')}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">{t('Total Orders')}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('Total Orders')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.orders?.toLocaleString() || 0}</div>
-                  <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 text-2xl font-bold tabular-nums ltr-num">{dashboardData.metrics.orders?.toLocaleString() || 0}</div>
+                  <div className="flex-shrink-0 p-2.5 rounded-full bg-blue-100 text-blue-600">
                     <ShoppingCart className="h-4 w-4" />
                   </div>
                 </div>
-                <TrendLine value={dashboardData.metrics.ordersGrowth} />
+                <div className="mt-2">
+                  <TrendLine value={dashboardData.metrics.ordersGrowth} />
+                </div>
               </CardContent>
             </Card>
           )}
@@ -617,16 +652,18 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           {userHasPermission('view-products') && (
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick('products.index', 'view-products')}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">{t('Total Products')}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('Total Products')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.products?.toLocaleString() || 0}</div>
-                  <div className="p-2 rounded-full bg-purple-100 text-purple-600">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 text-2xl font-bold tabular-nums ltr-num">{dashboardData.metrics.products?.toLocaleString() || 0}</div>
+                  <div className="flex-shrink-0 p-2.5 rounded-full bg-purple-100 text-purple-600">
                     <Package className="h-4 w-4" />
                   </div>
                 </div>
-                <TrendLine value={dashboardData.metrics.productsGrowth} />
+                <div className="mt-2">
+                  <TrendLine value={dashboardData.metrics.productsGrowth} />
+                </div>
               </CardContent>
             </Card>
           )}
@@ -634,16 +671,18 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           {userHasPermission('view-customers') && (
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick('customers.index', 'view-customers')}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">{t('Total Customers')}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('Total Customers')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-2xl font-bold tabular-nums">{dashboardData.metrics.customers?.toLocaleString() || 0}</div>
-                  <div className="p-2 rounded-full bg-green-100 text-green-600">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 text-2xl font-bold tabular-nums ltr-num">{dashboardData.metrics.customers?.toLocaleString() || 0}</div>
+                  <div className="flex-shrink-0 p-2.5 rounded-full bg-green-100 text-green-600">
                     <Users className="h-4 w-4" />
                   </div>
                 </div>
-                <TrendLine value={dashboardData.metrics.customersGrowth} />
+                <div className="mt-2">
+                  <TrendLine value={dashboardData.metrics.customersGrowth} />
+                </div>
               </CardContent>
             </Card>
           )}
@@ -651,16 +690,18 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           {userHasPermission('manage-analytics') && (
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick('analytics.index', 'manage-analytics')}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">{t('Total Revenue')}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('Total Revenue')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-2xl font-bold ltr-num tabular-nums whitespace-nowrap">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
-                  <div className="p-2 rounded-full bg-yellow-100 text-yellow-600">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 text-2xl font-bold ltr-num tabular-nums whitespace-nowrap">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
+                  <div className="flex-shrink-0 p-2.5 rounded-full bg-yellow-100 text-yellow-600">
                     <Wallet className="h-4 w-4" />
                   </div>
                 </div>
-                <TrendLine value={dashboardData.metrics.monthlyGrowth} />
+                <div className="mt-2">
+                  <TrendLine value={dashboardData.metrics.monthlyGrowth} />
+                </div>
               </CardContent>
             </Card>
           )}
@@ -718,22 +759,58 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-3">
-                {dashboardData.alerts?.map((alert) => {
+                {visibleAlerts.map((alert) => {
                   const AlertIcon = getAlertIcon(alert.icon);
+                  const groupCount = alert.count || 1;
                   return (
-                    <button
+                    <div
                       key={alert.id}
-                      onClick={() => alert.action_url && router.visit(alert.action_url)}
-                      className={`flex items-center gap-2 rounded-lg border bg-white px-3 py-2 text-start transition-shadow hover:shadow-sm ${alertBorderClasses[alert.color || 'amber']}`}
+                      className={`group relative flex items-center gap-2 rounded-lg border bg-white px-3 py-2 pe-9 text-start transition-shadow hover:shadow-sm ${alertBorderClasses[alert.color || 'amber']}`}
                     >
-                      <AlertIcon className={`h-4 w-4 flex-shrink-0 ${alertIconClasses[alert.color || 'amber']}`} />
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium">{alert.title}</span>
-                        {alert.body && (
-                          <span className="block max-w-56 truncate text-xs text-muted-foreground">{alert.body}</span>
-                        )}
-                      </span>
-                    </button>
+                      {alert.action_url ? (
+                        <button
+                          type="button"
+                          onClick={() => router.visit(alert.action_url)}
+                          className="flex min-w-0 flex-1 items-center gap-2 text-start"
+                        >
+                          <AlertIcon className={`h-4 w-4 flex-shrink-0 ${alertIconClasses[alert.color || 'amber']}`} />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium">{alert.title}</span>
+                            {alert.body && (
+                              <span className="block max-w-56 truncate text-xs text-muted-foreground">{alert.body}</span>
+                            )}
+                          </span>
+                          {groupCount > 1 && (
+                            <span className="flex-shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">
+                              ×{groupCount}
+                            </span>
+                          )}
+                        </button>
+                      ) : (
+                        <div className="flex min-w-0 flex-1 items-center gap-2 text-start">
+                          <AlertIcon className={`h-4 w-4 flex-shrink-0 ${alertIconClasses[alert.color || 'amber']}`} />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium">{alert.title}</span>
+                            {alert.body && (
+                              <span className="block max-w-56 truncate text-xs text-muted-foreground">{alert.body}</span>
+                            )}
+                          </span>
+                          {groupCount > 1 && (
+                            <span className="flex-shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">
+                              ×{groupCount}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => dismissAlert(alert)}
+                        aria-label={t('Dismiss')}
+                        className="absolute top-1.5 left-1.5 rounded-full p-1 text-muted-foreground opacity-60 transition-all hover:bg-gray-100 hover:text-gray-900 hover:opacity-100"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   );
                 })}
                 {(dashboardData.metrics.pendingOrders || 0) > 0 && (
