@@ -4751,5 +4751,12 @@
   "Variant Combinations": "Variant Combinations",
   "Generated automatically from the options above": "Generated automatically from the options above",
   "Combination": "Combination",
-  "Type a value and press Enter": "Type a value and press Enter"
+  "Type a value and press Enter": "Type a value and press Enter",
+  "Option": "Option",
+  "Option Name": "Option Name (e.g., Color, Size)",
+  "Option Name Placeholder": "Color, Size",
+  "Available Options": "Available Options (type an option and press Enter)",
+  "Available Stock Quantity": "Available Stock Quantity",
+  "SKU (optional)": "SKU (optional)",
+  "Add Option": "Add Option"
 }

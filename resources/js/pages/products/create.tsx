@@ -428,30 +428,42 @@ export default function CreateProduct() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">{t('Product Variants')}</CardTitle>
                   <Button type="button" variant="outline" size="sm" onClick={addVariantGroup}>
-                    <Plus className="h-4 w-4" />{t('Add Variant')}
+                    <Plus className="h-4 w-4" />{t('Add Option')}
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 text-start">
                 {variants.map((variant, index) => (
                   <div key={index} className="rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 border-b border-gray-100">
-                      <Input
-                        placeholder={t('Variant name (e.g., Color, Size)')}
-                        value={variant.name}
-                        onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
-                        className="flex-1 font-medium"
-                      />
+                    <div className="flex items-center justify-between gap-3 bg-gray-50 px-4 py-3 border-b border-gray-100">
+                      <span className="text-sm font-semibold text-muted-foreground">{t('Option')} {index + 1}</span>
                       <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => removeVariantGroup(index)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                     <div className="p-4 space-y-3">
-                      <TagInput
-                        values={variant.values || []}
-                        onChange={(values) => handleVariantValuesChange(index, values)}
-                        placeholder={t('Type a value and press Enter')}
-                      />
+                      <div className="grid gap-1.5">
+                        <Label htmlFor={`variant-name-${index}`} className="text-sm font-medium">
+                          {t('Option Name')}
+                        </Label>
+                        <Input
+                          id={`variant-name-${index}`}
+                          placeholder={t('Option Name Placeholder')}
+                          value={variant.name}
+                          onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
+                          className="font-medium"
+                        />
+                      </div>
+                      <div className="grid gap-1.5">
+                        <Label htmlFor={`variant-values-${index}`} className="text-sm font-medium">
+                          {t('Available Options')}
+                        </Label>
+                        <TagInput
+                          values={variant.values || []}
+                          onChange={(values) => handleVariantValuesChange(index, values)}
+                          placeholder={t('Type a value and press Enter')}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -474,8 +486,8 @@ export default function CreateProduct() {
                               <th className="px-3 py-2 text-start font-medium">{t('Combination')}</th>
                               <th className="px-3 py-2 text-start font-medium">{t('Price')}</th>
                               <th className="px-3 py-2 text-start font-medium">{t('Cost')}</th>
-                              <th className="px-3 py-2 text-start font-medium">{t('Stock')}</th>
-                              <th className="px-3 py-2 text-start font-medium">{t('SKU')}</th>
+                              <th className="px-3 py-2 text-start font-medium">{t('Available Stock Quantity')}</th>
+                              <th className="px-3 py-2 text-start font-medium">{t('SKU (optional)')}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -495,7 +507,7 @@ export default function CreateProduct() {
                                   <Input type="number" placeholder="0" value={combo.stock} onChange={(e) => handleComboEdit(combo.id, 'stock', e.target.value)} />
                                 </td>
                                 <td className="px-3 py-2">
-                                  <Input placeholder={t('SKU')} value={combo.sku} onChange={(e) => handleComboEdit(combo.id, 'sku', e.target.value)} />
+                                  <Input placeholder={t('SKU (optional)')} value={combo.sku} onChange={(e) => handleComboEdit(combo.id, 'sku', e.target.value)} />
                                 </td>
                               </tr>
                             ))}

@@ -5165,5 +5165,12 @@
   "Variant Combinations": "التركيبات المجمعة",
   "Generated automatically from the options above": "تُنشأ تلقائياً من الخيارات أعلاه",
   "Combination": "التركيبة",
-  "Type a value and press Enter": "اكتب قيمة ثم اضغط Enter"
+  "Type a value and press Enter": "اكتب قيمة ثم اضغط Enter",
+  "Option": "الخيار",
+  "Option Name": "اسم الخيار (مثال: اللون، المقاس، الحجم)",
+  "Option Name Placeholder": "اللون، المقاس، الحجم",
+  "Available Options": "الخيارات المتاحة (اكتب الخيار واضغط Enter)",
+  "Available Stock Quantity": "الكمية المتوفرة",
+  "SKU (optional)": "رمز المنتج (اختياري)",
+  "Add Option": "إضافة خيار"
 }
