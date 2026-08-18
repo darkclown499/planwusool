@@ -4747,5 +4747,9 @@
   "Short Description": "Short Description",
   "Enter short description...": "Enter short description...",
   "Add Specification": "Add Specification",
-  "A brief summary shown in storefront product previews": "A brief summary shown in storefront product previews"
+  "A brief summary shown in storefront product previews": "A brief summary shown in storefront product previews",
+  "Variant Combinations": "Variant Combinations",
+  "Generated automatically from the options above": "Generated automatically from the options above",
+  "Combination": "Combination",
+  "Type a value and press Enter": "Type a value and press Enter"
 }

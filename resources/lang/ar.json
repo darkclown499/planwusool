@@ -5161,5 +5161,9 @@
   "Short Description": "الوصف القصير",
   "Enter short description...": "أدخل وصفاً قصيراً...",
   "Add Specification": "إضافة مواصفة",
-  "A brief summary shown in storefront product previews": "ملخص مختصر يظهر في معاينات المنتج داخل المتجر"
+  "A brief summary shown in storefront product previews": "ملخص مختصر يظهر في معاينات المنتج داخل المتجر",
+  "Variant Combinations": "التركيبات المجمعة",
+  "Generated automatically from the options above": "تُنشأ تلقائياً من الخيارات أعلاه",
+  "Combination": "التركيبة",
+  "Type a value and press Enter": "اكتب قيمة ثم اضغط Enter"
 }

@@ -182,6 +182,7 @@ class ProductController extends Controller
             'is_downloadable' => 'nullable|boolean',
             'downloadable_file' => 'nullable|string',
             'variants' => 'nullable|array',
+            'variant_combinations' => 'nullable|array',
             'custom_fields' => 'nullable|array',
         ], [], [
             'name' => __('Product Name'),
@@ -214,6 +215,7 @@ class ProductController extends Controller
         $product->is_downloadable = $request->has('is_downloadable') ? $request->is_downloadable : false;
         $product->downloadable_file = $request->downloadable_file;
         $product->variants = $request->variants;
+        $product->variant_combinations = $request->variant_combinations;
         $product->custom_fields = $request->custom_fields;
         $product->save();
         
@@ -313,6 +315,7 @@ class ProductController extends Controller
             'is_downloadable' => 'nullable|boolean',
             'downloadable_file' => 'nullable|string',
             'variants' => 'nullable|array',
+            'variant_combinations' => 'nullable|array',
             'custom_fields' => 'nullable|array',
         ], [], [
             'name' => __('Product Name'),
@@ -363,6 +366,7 @@ class ProductController extends Controller
         $product->is_downloadable = $request->has('is_downloadable') ? $request->is_downloadable : $product->is_downloadable;
         $product->downloadable_file = $request->downloadable_file;
         $product->variants = $request->variants;
+        $product->variant_combinations = $request->variant_combinations;
         $product->custom_fields = $request->custom_fields;
         $product->save();
         

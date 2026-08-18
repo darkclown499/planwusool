@@ -26,6 +26,7 @@ class Product extends Model
         'cover_image',
         'images',
         'variants',
+        'variant_combinations',
         'custom_fields',
         'category_id',
         'tax_id',
@@ -62,6 +63,24 @@ class Product extends Model
     public function setVariantsAttribute($value)
     {
         $this->attributes['variants'] = is_array($value) ? json_encode($value) : $value;
+    }
+    
+    /**
+     * Get the variant combinations as an array
+     */
+    public function getVariantCombinationsAttribute($value)
+    {
+        if (empty($value)) return [];
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+    
+    /**
+     * Set the variant combinations as JSON
+     */
+    public function setVariantCombinationsAttribute($value)
+    {
+        $this->attributes['variant_combinations'] = is_array($value) ? json_encode($value) : $value;
     }
     
     /**
