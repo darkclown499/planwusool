@@ -356,78 +356,86 @@ export default function CreateCustomer() {
               <CardHeader>
                 <CardTitle>{t('Billing Address')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="billing_address">{t('Street Address')}</Label>
-                  <Input 
-                    id="billing_address" 
-                    value={formData.billing_address.address}
-                    onChange={(e) => handleAddressChange('billing_address', 'address', e.target.value)}
-                    placeholder={t('123 Main Street')} 
-                  />
-                </div>
-                <LocationDropdowns
-                  countryValue={formData.billing_address.country}
-                  stateValue={formData.billing_address.state}
-                  cityValue={formData.billing_address.city}
-                  onCountryChange={(value) => handleAddressSelectChange('billing_address', 'country', value)}
-                  onStateChange={(value) => handleAddressSelectChange('billing_address', 'state', value)}
-                  onCityChange={(value) => handleAddressSelectChange('billing_address', 'city', value)}
-                />
-                <div>
-                  <Label htmlFor="billing_postal">{t('Postal Code')}</Label>
-                  <Input 
-                    id="billing_postal" 
-                    value={formData.billing_address.postal_code}
-                    onChange={(e) => handleAddressChange('billing_address', 'postal_code', e.target.value)}
-                    placeholder={t('10001')} 
-                  />
+              <CardContent>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div className="grid gap-1.5 md:col-span-2">
+                    <Label htmlFor="billing_address">{t('Street Address')}</Label>
+                    <Input 
+                      id="billing_address" 
+                      value={formData.billing_address.address}
+                      onChange={(e) => handleAddressChange('billing_address', 'address', e.target.value)}
+                      placeholder={t('123 Main Street')} 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <LocationDropdowns
+                      countryValue={formData.billing_address.country}
+                      stateValue={formData.billing_address.state}
+                      cityValue={formData.billing_address.city}
+                      onCountryChange={(value) => handleAddressSelectChange('billing_address', 'country', value)}
+                      onStateChange={(value) => handleAddressSelectChange('billing_address', 'state', value)}
+                      onCityChange={(value) => handleAddressSelectChange('billing_address', 'city', value)}
+                    />
+                  </div>
+                  <div className="grid gap-1.5 md:col-span-2">
+                    <Label htmlFor="billing_postal">{t('Postal Code')}</Label>
+                    <Input 
+                      id="billing_postal" 
+                      value={formData.billing_address.postal_code}
+                      onChange={(e) => handleAddressChange('billing_address', 'postal_code', e.target.value)}
+                      placeholder={t('10001')} 
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
                   <CardTitle>{t('Shipping Address')}</CardTitle>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <Switch 
                       checked={formData.same_as_billing}
                       onCheckedChange={(checked) => handleSwitchChange('same_as_billing', checked)}
                     />
-                    <Label className="text-sm">{t('Same as billing')}</Label>
+                    <Label className="text-sm whitespace-nowrap">{t('Same as billing')}</Label>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="shipping_address">{t('Street Address')}</Label>
-                  <Input 
-                    id="shipping_address" 
-                    value={formData.shipping_address.address}
-                    onChange={(e) => handleAddressChange('shipping_address', 'address', e.target.value)}
-                    disabled={formData.same_as_billing}
-                    placeholder="123 Main Street" 
-                  />
-                </div>
-                <LocationDropdowns
-                  countryValue={formData.shipping_address.country}
-                  stateValue={formData.shipping_address.state}
-                  cityValue={formData.shipping_address.city}
-                  onCountryChange={(value) => handleAddressSelectChange('shipping_address', 'country', value)}
-                  onStateChange={(value) => handleAddressSelectChange('shipping_address', 'state', value)}
-                  onCityChange={(value) => handleAddressSelectChange('shipping_address', 'city', value)}
-                  disabled={formData.same_as_billing}
-                />
-                <div>
-                  <Label htmlFor="shipping_postal">{t('Postal Code')}</Label>
-                  <Input 
-                    id="shipping_postal" 
-                    value={formData.shipping_address.postal_code}
-                    onChange={(e) => handleAddressChange('shipping_address', 'postal_code', e.target.value)}
-                    disabled={formData.same_as_billing}
-                    placeholder="10001" 
-                  />
+              <CardContent>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div className="grid gap-1.5 md:col-span-2">
+                    <Label htmlFor="shipping_address">{t('Street Address')}</Label>
+                    <Input 
+                      id="shipping_address" 
+                      value={formData.shipping_address.address}
+                      onChange={(e) => handleAddressChange('shipping_address', 'address', e.target.value)}
+                      disabled={formData.same_as_billing}
+                      placeholder={t('123 Main Street')} 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <LocationDropdowns
+                      countryValue={formData.shipping_address.country}
+                      stateValue={formData.shipping_address.state}
+                      cityValue={formData.shipping_address.city}
+                      onCountryChange={(value) => handleAddressSelectChange('shipping_address', 'country', value)}
+                      onStateChange={(value) => handleAddressSelectChange('shipping_address', 'state', value)}
+                      onCityChange={(value) => handleAddressSelectChange('shipping_address', 'city', value)}
+                      disabled={formData.same_as_billing}
+                    />
+                  </div>
+                  <div className="grid gap-1.5 md:col-span-2">
+                    <Label htmlFor="shipping_postal">{t('Postal Code')}</Label>
+                    <Input 
+                      id="shipping_postal" 
+                      value={formData.shipping_address.postal_code}
+                      onChange={(e) => handleAddressChange('shipping_address', 'postal_code', e.target.value)}
+                      disabled={formData.same_as_billing}
+                      placeholder={t('10001')} 
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>

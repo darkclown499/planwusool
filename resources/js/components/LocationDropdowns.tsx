@@ -128,7 +128,7 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
           disabled={disabled || loading.countries}
         >
           <SelectTrigger>
-            <SelectValue placeholder={loading.countries ? "Loading..." : "Select country"} />
+            <SelectValue placeholder={loading.countries ? t('Loading...') : t('Select country')} />
           </SelectTrigger>
           <SelectContent>
             {countries.map((country) => (
@@ -149,9 +149,9 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
         >
           <SelectTrigger>
             <SelectValue placeholder={
-              !countryValue ? "Select country first" :
-              loading.states ? "Loading..." : 
-              "Select state"
+              !countryValue ? t('Select country first') :
+              loading.states ? t('Loading...') : 
+              t('Select state')
             } />
           </SelectTrigger>
           <SelectContent>
@@ -173,9 +173,9 @@ export const LocationDropdowns: React.FC<LocationDropdownsProps> = ({
         >
           <SelectTrigger>
             <SelectValue placeholder={
-              !stateValue ? "Select state first" :
-              loading.cities ? "Loading..." : 
-              "Select city"
+              !stateValue ? t('Select state first') :
+              loading.cities ? t('Loading...') : 
+              t('Select city')
             } />
           </SelectTrigger>
           <SelectContent>
