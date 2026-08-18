@@ -59,17 +59,17 @@ export default function Shipping() {
   };
 
   const pageActions = [
-    ...(hasPermission('export-shipping') ? [{
-      label: t('Export'),
-      icon: <Download className="h-4 w-4" />,
-      variant: 'outline' as const,
-      onClick: () => handleActionClick('export', 'export-shipping')
-    }] : []),
     ...(hasPermission('create-shipping') ? [{
       label: t('Create Shipping'),
       icon: <Plus className="h-4 w-4" />,
       variant: 'default' as const,
       onClick: () => handleActionClick('create', 'create-shipping')
+    }] : []),
+    ...(hasPermission('export-shipping') ? [{
+      label: t('Export'),
+      icon: <Download className="h-4 w-4" />,
+      variant: 'outline' as const,
+      onClick: () => handleActionClick('export', 'export-shipping')
     }] : [])
   ];
 
@@ -96,8 +96,8 @@ export default function Shipping() {
                 <Truck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalShippings}</div>
-                <p className="text-xs text-muted-foreground">{t('All shipping methods')}</p>
+                <div className="text-2xl font-bold text-start">{stats.totalShippings}</div>
+                <p className="text-xs text-muted-foreground text-start">{t('All shipping methods')}</p>
               </CardContent>
             </Card>
             
@@ -107,8 +107,8 @@ export default function Shipping() {
                 <Truck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.activeShippings}</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold text-start">{stats.activeShippings}</div>
+                <p className="text-xs text-muted-foreground text-start">
                   {t('{{percent}}% active rate', { percent: stats.totalShippings > 0 ? Math.round((stats.activeShippings / stats.totalShippings) * 100) : 0 })}
                 </p>
               </CardContent>
@@ -120,8 +120,8 @@ export default function Shipping() {
                 <Truck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.shippingZones}</div>
-                <p className="text-xs text-muted-foreground">{t('Coverage areas')}</p>
+                <div className="text-2xl font-bold text-start">{stats.shippingZones}</div>
+                <p className="text-xs text-muted-foreground text-start">{t('Coverage areas')}</p>
               </CardContent>
             </Card>
             
@@ -131,8 +131,8 @@ export default function Shipping() {
                 <Truck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(stats.avgShippingCost)}</div>
-                <p className="text-xs text-muted-foreground">Per order</p>
+                <div className="text-2xl font-bold text-start">{formatCurrency(stats.avgShippingCost)}</div>
+                <p className="text-xs text-muted-foreground text-start">{t('Per order')}</p>
               </CardContent>
             </Card>
           </div>
@@ -140,7 +140,7 @@ export default function Shipping() {
           {/* Shipping Methods List */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('Shipping Methods')}</CardTitle>
+              <CardTitle className="text-start">{t('Shipping Methods')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
