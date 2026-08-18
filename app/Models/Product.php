@@ -34,6 +34,9 @@ class Product extends Model
         'is_active',
         'is_downloadable',
         'downloadable_file',
+        'meta_title',
+        'meta_description',
+        'seo_url_slug',
     ];
     
     protected $casts = [

@@ -4767,5 +4767,15 @@
   "Property Name": "Property Name (e.g., Country of Origin)",
   "Property Name Placeholder": "Country of Origin",
   "Property Details": "Details (e.g., Palestine)",
-  "Property Details Placeholder": "Palestine"
+  "Property Details Placeholder": "Palestine",
+  "Custom Fields Helper": "Use this section to add product-specific data for your system (e.g., warehouse location, supplier name)",
+  "Field Name Placeholder": "e.g., Warehouse location",
+  "Field Value Placeholder": "e.g., Shelf A3",
+  "SEO Helper": "These settings help Google and search engines understand your product page better",
+  "SEO Meta Title": "Google Page Title (Meta Title)",
+  "SEO Meta Title Placeholder": "Enter a title up to 60 characters",
+  "SEO Meta Description": "Google Product Description (Meta Description)",
+  "SEO Meta Description Placeholder": "Enter a description up to 160 characters",
+  "SEO URL Slug": "Product URL (URL Slug)",
+  "SEO URL Slug Placeholder": "product-name"
 }

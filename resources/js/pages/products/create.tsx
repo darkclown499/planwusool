@@ -28,6 +28,16 @@ import {
 
 const TAB_ORDER = ['general', 'pricing', 'inventory', 'content', 'variants', 'advanced'];
 
+function slugify(value: string): string {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s\u0600-\u06FF-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function ImageFieldHint({ hint }: { hint: string }) {
   return <p className="text-xs text-muted-foreground mt-1">{hint}</p>;
 }
@@ -61,6 +71,9 @@ export default function CreateProduct() {
     is_tax_included: true,
     is_downloadable: false,
     downloadable_file: '',
+    meta_title: '',
+    meta_description: '',
+    seo_url_slug: '',
   });
 
   const [quickSpecs, setQuickSpecs] = useState([{ key: '', value: '' }]);
@@ -561,7 +574,7 @@ export default function CreateProduct() {
             </Card>
           </TabsContent>
 
-          {/* Advanced / Custom Fields */}
+          {/* Advanced / Custom Fields + SEO */}
           <TabsContent value="advanced" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3">
@@ -571,17 +584,71 @@ export default function CreateProduct() {
                     <Plus className="h-4 w-4 me-2" />{t('Add Custom Field')}
                   </Button>
                 </div>
+                <p className="text-sm text-muted-foreground">{t('Custom Fields Helper')}</p>
               </CardHeader>
               <CardContent className="space-y-4 text-start">
                 {customFields.map((field, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <Input placeholder={t('Field name')} value={field.name} onChange={(e) => { const f = [...customFields]; f[index].name = e.target.value; setCustomFields(f); }} />
-                    <Input placeholder={t('Field value')} value={field.value} onChange={(e) => { const f = [...customFields]; f[index].value = e.target.value; setCustomFields(f); }} />
+                    <Input placeholder={t('Field Name Placeholder')} value={field.name} onChange={(e) => { const f = [...customFields]; f[index].name = e.target.value; setCustomFields(f); }} />
+                    <Input placeholder={t('Field Value Placeholder')} value={field.value} onChange={(e) => { const f = [...customFields]; f[index].value = e.target.value; setCustomFields(f); }} />
                     <Button type="button" variant="ghost" size="sm" onClick={() => setCustomFields(customFields.filter((_, i) => i !== index))}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{t('Search Engine Optimization')}</CardTitle>
+                <p className="text-sm text-muted-foreground">{t('SEO Helper')}</p>
+              </CardHeader>
+              <CardContent className="space-y-4 text-start">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="meta_title">{t('SEO Meta Title')}</Label>
+                  <Input
+                    id="meta_title"
+                    name="meta_title"
+                    maxLength={60}
+                    value={formData.meta_title}
+                    onChange={handleChange}
+                    placeholder={t('SEO Meta Title Placeholder')}
+                  />
+                  <div className={`text-xs ${(formData.meta_title || '').length >= 60 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                    <span dir="ltr">{`${(formData.meta_title || '').length}/60`}</span>
+                  </div>
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="meta_description">{t('SEO Meta Description')}</Label>
+                  <Textarea
+                    id="meta_description"
+                    name="meta_description"
+                    rows={3}
+                    maxLength={160}
+                    value={formData.meta_description}
+                    onChange={handleChange}
+                    placeholder={t('SEO Meta Description Placeholder')}
+                  />
+                  <div className={`text-xs ${(formData.meta_description || '').length >= 160 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                    <span dir="ltr">{`${(formData.meta_description || '').length}/160`}</span>
+                  </div>
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="seo_url_slug">{t('SEO URL Slug')}</Label>
+                  <Input
+                    id="seo_url_slug"
+                    name="seo_url_slug"
+                    value={formData.seo_url_slug}
+                    onChange={handleChange}
+                    placeholder={t('SEO URL Slug Placeholder')}
+                    dir="ltr"
+                    className="text-start"
+                  />
+                  <p className="text-xs text-muted-foreground break-all" dir="ltr">
+                    /products/{formData.seo_url_slug || slugify(formData.name)}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

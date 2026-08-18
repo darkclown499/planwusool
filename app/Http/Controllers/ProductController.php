@@ -181,6 +181,9 @@ class ProductController extends Controller
             'is_active' => 'nullable|boolean',
             'is_downloadable' => 'nullable|boolean',
             'downloadable_file' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'seo_url_slug' => 'nullable|string|max:191',
             'variants' => 'nullable|array',
             'variant_combinations' => 'nullable|array',
             'custom_fields' => 'nullable|array',
@@ -214,6 +217,9 @@ class ProductController extends Controller
         $product->is_active = $request->has('is_active') ? $request->is_active : true;
         $product->is_downloadable = $request->has('is_downloadable') ? $request->is_downloadable : false;
         $product->downloadable_file = $request->downloadable_file;
+        $product->meta_title = $request->meta_title;
+        $product->meta_description = $request->meta_description;
+        $product->seo_url_slug = $request->seo_url_slug;
         $product->variants = $request->variants;
         $product->variant_combinations = $request->variant_combinations;
         $product->custom_fields = $request->custom_fields;
@@ -314,6 +320,9 @@ class ProductController extends Controller
             'is_active' => 'nullable|boolean',
             'is_downloadable' => 'nullable|boolean',
             'downloadable_file' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'seo_url_slug' => 'nullable|string|max:191',
             'variants' => 'nullable|array',
             'variant_combinations' => 'nullable|array',
             'custom_fields' => 'nullable|array',
@@ -365,6 +374,9 @@ class ProductController extends Controller
         $product->is_active = $newIsActive;
         $product->is_downloadable = $request->has('is_downloadable') ? $request->is_downloadable : $product->is_downloadable;
         $product->downloadable_file = $request->downloadable_file;
+        $product->meta_title = $request->meta_title;
+        $product->meta_description = $request->meta_description;
+        $product->seo_url_slug = $request->seo_url_slug;
         $product->variants = $request->variants;
         $product->variant_combinations = $request->variant_combinations;
         $product->custom_fields = $request->custom_fields;

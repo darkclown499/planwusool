@@ -5181,5 +5181,15 @@
   "Property Name": "اسم الخاصية (مثال: بلد الصنع)",
   "Property Name Placeholder": "بلد الصنع",
   "Property Details": "التفاصيل (مثال: فلسطين)",
-  "Property Details Placeholder": "فلسطين"
+  "Property Details Placeholder": "فلسطين",
+  "Custom Fields Helper": "استخدم هذا القسم لإضافة بيانات خاصة بالمنتج لنظامك (مثل: موقع المنتج بالمخزن، اسم المورد)",
+  "Field Name Placeholder": "مثال: موقع المنتج بالمخزن",
+  "Field Value Placeholder": "مثال: الرف A3",
+  "SEO Helper": "هذه الإعدادات تساعد جوجل ومحركات البحث على فهم صفحة منتجك بشكل أفضل",
+  "SEO Meta Title": "عنوان الصفحة على جوجل (Meta Title)",
+  "SEO Meta Title Placeholder": "أدخل عنواناً يصل إلى 60 حرفاً",
+  "SEO Meta Description": "وصف المنتج في جوجل (Meta Description)",
+  "SEO Meta Description Placeholder": "أدخل وصفاً يصل إلى 160 حرفاً",
+  "SEO URL Slug": "رابط المنتج (URL Slug)",
+  "SEO URL Slug Placeholder": "product-name"
 }
