@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useTranslation } from 'react-i18next';
 import MediaLibraryModal from './MediaLibraryModal';
-import { Image as ImageIcon, X, UploadCloud, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Images, X, UploadCloud, Loader2 } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { toast } from 'sonner';
 
@@ -111,15 +111,24 @@ export default function MediaPicker({
               uploadFiles(e.dataTransfer.files);
             }
           }}
-          className={`flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-            dragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
+          className={`flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 text-center transition-colors ${
+            multiple
+              ? dragActive ? 'border-purple-500 bg-purple-500/10' : 'border-dashed border-purple-300 bg-purple-50/50'
+              : dragActive ? 'border-primary bg-primary/10' : 'border-primary/40 bg-primary/5'
           }`}
         >
-          {uploading ? (
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          ) : (
-            <UploadCloud className="h-8 w-8 text-muted-foreground" />
-          )}
+          <div className={`flex h-10 w-10 items-center justify-center rounded-full ${multiple ? 'bg-purple-100 text-purple-600' : 'bg-primary/10 text-primary'}`}>
+            {uploading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : multiple ? (
+              <Images className="h-5 w-5" />
+            ) : (
+              <UploadCloud className="h-5 w-5" />
+            )}
+          </div>
+          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${multiple ? 'bg-purple-100 text-purple-700' : 'bg-primary/10 text-primary'}`}>
+            {multiple ? t('Multiple images') : t('Cover image (one file)')}
+          </span>
           <p className="text-sm text-muted-foreground">
             {uploading ? t('Uploading...') : t('Drag and drop an image here, or')}
           </p>
@@ -140,6 +149,7 @@ export default function MediaPicker({
               size="sm"
               onClick={() => setIsModalOpen(true)}
             >
+              <ImageIcon className="h-4 w-4 me-2" />
               {t('Media Library')}
             </Button>
           </div>

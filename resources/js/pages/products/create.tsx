@@ -168,7 +168,7 @@ export default function CreateProduct() {
 
       <form noValidate onSubmit={(e) => handleSubmit(e)} className="space-y-4 pb-24" dir="rtl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 gap-1 h-auto p-1">
+          <TabsList dir="rtl" className="grid w-full grid-cols-6 gap-1 h-auto p-1">
             {TAB_ORDER.map((tab) => {
               const hasError = getTabErrors(tab);
               const tabLabels: Record<string, string> = {
@@ -487,7 +487,7 @@ export default function CreateProduct() {
                 className="gap-1"
               >
                 {t('Previous')}
-                <ChevronRight className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 rtl-flip" />
               </Button>
               <Button
                 type="button"
@@ -497,7 +497,7 @@ export default function CreateProduct() {
                 onClick={() => tabIndex < TAB_ORDER.length - 1 && setActiveTab(TAB_ORDER[tabIndex + 1])}
                 className="gap-1"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 rtl-flip" />
                 {t('Next')}
               </Button>
               <span className="text-xs text-muted-foreground me-2 hidden sm:inline">

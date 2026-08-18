@@ -160,7 +160,7 @@ export default function EditProduct() {
     >
       <form noValidate onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 gap-2">
+          <TabsList dir="rtl" className="grid w-full grid-cols-6 gap-2">
             <TabsTrigger value="general">{t('General')}</TabsTrigger>
             <TabsTrigger value="pricing">{t('Pricing')}</TabsTrigger>
             <TabsTrigger value="inventory">{t('Inventory')}</TabsTrigger>

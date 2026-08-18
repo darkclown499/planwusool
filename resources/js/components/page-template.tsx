@@ -68,7 +68,7 @@ export function PageTemplate({
                 className="flex items-center gap-2 h-8 px-3"
                 onClick={() => router.visit(backUrl)}
               >
-                <ArrowLeft className="h-4 w-4 text-neutral-500" />
+                <ArrowLeft className="h-4 w-4 text-neutral-500 rtl-flip" />
                 <span>{t('Back')}</span>
               </Button>
             )}
