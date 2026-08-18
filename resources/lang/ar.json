@@ -3366,7 +3366,7 @@
   "Save Settings": "حفظ الإعدادات",
   "Save Shipping": "احفظ الشحن",
   "Save Store": "حفظ المتجر",
-  "Save Tax": "توفير الضرائب",
+  "Save Tax": "حفظ الضريبة",
   "Save Template": "حفظ القالب",
   "Save as Draft": "حفظ كمسودة",
   "Save functionality will be implemented later": "سيتم تفعيل الحفظ لاحقًا",
@@ -5198,5 +5198,8 @@
   "Tax Rules Helper": "أضف نسبة الضريبة التي تطبق على منتجات متجرك (مثل: ضريبة المبيعات)",
   "Prices Include Tax": "جميع الأسعار في المتجر تشمل الضريبة تلقائياً",
   "Prices Include Tax Helper": "تفعيل هذا الخيار يجعل الأسعار المعروضة تشمل الضريبة",
-  "Tax settings updated successfully.": "تم تحديث إعدادات الضريبة بنجاح"
+  "Tax settings updated successfully.": "تم تحديث إعدادات الضريبة بنجاح",
+  "Tax Name Placeholder": "مثال: ضريبة المبيعات 16%",
+  "Priority Helper": "حدد الترتيب في حال تطبيق أكثر من ضريبة (الأقل أولاً).",
+  "Compound Tax Helper": "تطبيق الضريبة فوق الضرائب الأخرى (Compound Tax)."
 }

@@ -69,38 +69,26 @@ export default function CreateTax() {
         { title: t('Create Tax') }
       ]}
     >
-      <form noValidate onSubmit={handleSubmit} className="space-y-6">
+      <form noValidate onSubmit={handleSubmit} className="space-y-6" dir="rtl">
         <Card>
           <CardHeader>
             <CardTitle>{t('Tax Rule Information')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="grid gap-1 mb-4">
-                <Label htmlFor="name" required>{t('Tax Name')}</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder={t('Enter tax name')}
-                  aria-invalid={!!errors.name}
-                />
-                <InputError message={errors.name} />
-              </div>
-              {/* <div>
-                <Label htmlFor="region">{t('Region')}</Label>
-                <Input 
-                  id="region" 
-                  name="region" 
-                  value={formData.region} 
-                  onChange={handleChange} 
-                  placeholder={t('Enter region/country')} 
-                />
-              </div> */}
+          <CardContent className="space-y-5">
+            <div className="grid gap-1.5">
+              <Label htmlFor="name" required>{t('Tax Name')}</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder={t('Tax Name Placeholder')}
+                aria-invalid={!!errors.name}
+              />
+              <InputError message={errors.name} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid gap-1.5">
                 <Label htmlFor="type">{t('Tax Type')}</Label>
                 <Select 
                   value={formData.type} 
@@ -115,7 +103,7 @@ export default function CreateTax() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-1 mb-4">
+              <div className="grid gap-1.5">
                 <Label htmlFor="rate" required>{t('Tax Rate')} ({formData.type === 'percentage' ? '%' : (currencySymbol || '$')})</Label>
                 <Input
                   id="rate"
@@ -130,8 +118,8 @@ export default function CreateTax() {
                 <InputError message={errors.rate} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid gap-1.5">
                 <Label htmlFor="priority">{t('Priority')}</Label>
                 <Input 
                   id="priority" 
@@ -141,8 +129,9 @@ export default function CreateTax() {
                   onChange={handleChange} 
                   placeholder="1" 
                 />
+                <p className="text-sm text-muted-foreground">{t('Priority Helper')}</p>
               </div>
-              <div>
+              <div className="grid gap-1.5">
                 <Label htmlFor="compound">{t('Compound Tax')}</Label>
                 <Select 
                   value={formData.compound ? 'yes' : 'no'} 
@@ -156,10 +145,11 @@ export default function CreateTax() {
                     <SelectItem value="yes">{t('Yes')}</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-sm text-muted-foreground">{t('Compound Tax Helper')}</p>
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+              <div className="text-start">
                 <Label>{t('Tax Status')}</Label>
                 <p className="text-sm text-muted-foreground">{t('Enable or disable tax rule')}</p>
               </div>

@@ -4784,5 +4784,8 @@
   "Tax Rules Helper": "Add the tax rate that applies to your store products (e.g., sales tax)",
   "Prices Include Tax": "All store prices include tax by default",
   "Prices Include Tax Helper": "When enabled, displayed prices already include tax",
-  "Tax settings updated successfully.": "Tax settings updated successfully."
+  "Tax settings updated successfully.": "Tax settings updated successfully.",
+  "Tax Name Placeholder": "e.g., 16% Sales Tax",
+  "Priority Helper": "Set the ordering when more than one tax applies (lowest first).",
+  "Compound Tax Helper": "Apply the tax on top of other taxes (Compound Tax)."
 }
