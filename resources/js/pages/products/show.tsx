@@ -1,7 +1,7 @@
 ﻿import { createSafeHtml } from '@/utils/xss-protection';
 import React from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Edit, Star, Package, DollarSign, Eye } from 'lucide-react';
+import { Edit, Package, DollarSign, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,33 @@ import { router, usePage } from '@inertiajs/react';
 import { getImageUrl } from '@/utils/image-helper';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
+
+function parseProductImages(raw: unknown): string[] {
+  if (!raw) return [];
+
+  if (Array.isArray(raw)) {
+    return raw.map(String).filter(Boolean);
+  }
+
+  const trimmed = String(raw).trim();
+  if (!trimmed) return [];
+
+  if (trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map(String).filter(Boolean);
+      }
+    } catch {
+      // fall through to comma splitting
+    }
+  }
+
+  return trimmed
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
 
 export default function ShowProduct() {
   const { t } = useTranslation();
@@ -36,8 +63,8 @@ export default function ShowProduct() {
     }] : [])
   ];
 
-  // Parse product images
-  const productImages = product.images ? product.images.split(',').filter(Boolean) : [];
+  // Parse product images (supports JSON-encoded arrays and comma-separated strings)
+  const productImages = parseProductImages(product.images);
 
   return (
     <PageTemplate 
@@ -59,8 +86,8 @@ export default function ShowProduct() {
               <CardTitle>{t('Product Information')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-start space-x-4">
-                <div className="w-32 h-32 rounded-lg overflow-hidden border">
+              <div className="flex items-start gap-4">
+                <div className="w-32 h-32 rounded-lg overflow-hidden border shrink-0">
                   {product.cover_image ? (
                     <img
                       src={getImageUrl(product.cover_image)}
@@ -73,8 +100,8 @@ export default function ShowProduct() {
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h2 className="text-2xl font-bold">{product.name}</h2>
                     <Badge variant={product.is_active ? "default" : "secondary"}>
                       {product.is_active ? t('Active') : t('Inactive')}
@@ -84,7 +111,7 @@ export default function ShowProduct() {
                     )}
                   </div>
                   <p className="text-muted-foreground mb-2">{t('SKU: {{sku}}', { sku: product.sku || '-' })}</p>
-                  <div className="flex items-center space-x-4 mb-2">
+                  <div className="flex flex-wrap items-center gap-4 mb-2">
                     <span className="text-lg font-semibold text-primary">
                       {formatCurrency(product.sale_price || product.price)}
                     </span>
@@ -104,33 +131,33 @@ export default function ShowProduct() {
               <CardTitle>{t('Quick Stats')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-sm">{t('Stock')}</span>
                 </div>
-                <span className="font-semibold">{t('{{stock}} units', { stock: product.stock })}</span>
+                <span className="font-semibold text-end">{t('{{stock}} units', { stock: product.stock })}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-sm">{t('Revenue')}</span>
                 </div>
-                <span className="font-semibold">{formatCurrency(stats.revenue || 0)}</span>
+                <span className="font-semibold text-end">{formatCurrency(stats.revenue || 0)}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Eye className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Eye className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-sm">{t('Total Sold')}</span>
                 </div>
-                <span className="font-semibold">{stats.total_sold || 0}</span>
+                <span className="font-semibold text-end">{stats.total_sold || 0}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-sm">{t('Orders')}</span>
                 </div>
-                <span className="font-semibold">{stats.total_orders || 0}</span>
+                <span className="font-semibold text-end">{stats.total_orders || 0}</span>
               </div>
             </CardContent>
           </Card>
@@ -142,37 +169,37 @@ export default function ShowProduct() {
               <CardTitle>{t('Product Details')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Category')}</span>
-                <span>{product.category?.name || '-'}</span>
+                <span className="text-end">{product.category?.name || '-'}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Product Tax')}</span>
-                <span>{product.tax?.name || '-'}</span>
+                <span className="text-end">{product.tax?.name || '-'}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Product Display')}</span>
                 <Badge variant={product.is_active ? "default" : "secondary"}>
                   {product.is_active ? t('Active') : t('Inactive')}
                 </Badge>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Downloadable')}</span>
-                <span>{product.is_downloadable ? t('Yes') : t('No')}</span>
+                <span className="text-end">{product.is_downloadable ? t('Yes') : t('No')}</span>
               </div>
               {product.downloadable_file && (
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">{t('Download File')}</span>
-                  <span className="text-sm text-blue-600 truncate max-w-32">{product.downloadable_file}</span>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-muted-foreground shrink-0">{t('Download File')}</span>
+                  <span className="text-sm text-blue-600 truncate text-end min-w-0">{product.downloadable_file}</span>
                 </div>
               )}
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Created')}</span>
-                <span className="text-sm">{new Date(product.created_at).toLocaleDateString()}</span>
+                <span className="text-sm text-end">{new Date(product.created_at).toLocaleDateString()}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Updated')}</span>
-                <span className="text-sm">{new Date(product.updated_at).toLocaleDateString()}</span>
+                <span className="text-sm text-end">{new Date(product.updated_at).toLocaleDateString()}</span>
               </div>
             </CardContent>
           </Card>
@@ -182,19 +209,19 @@ export default function ShowProduct() {
               <CardTitle>{t('Pricing & Inventory')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Current Price')}</span>
-                <span className="font-semibold text-green-600">{formatCurrency(product.sale_price || product.price)}</span>
+                <span className="font-semibold text-green-600 text-end">{formatCurrency(product.sale_price || product.price)}</span>
               </div>
               {product.sale_price && (
-                <div className="flex justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-medium text-muted-foreground">{t('Original Price')}</span>
-                  <span className="font-semibold line-through text-muted-foreground">{formatCurrency(product.price)}</span>
+                  <span className="font-semibold line-through text-muted-foreground text-end">{formatCurrency(product.price)}</span>
                 </div>
               )}
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Stock Quantity')}</span>
-                <span>{t('{{stock}} units', { stock: product.stock })}</span>
+                <span className="text-end">{t('{{stock}} units', { stock: product.stock })}</span>
               </div>
             </CardContent>
           </Card>
@@ -279,14 +306,18 @@ export default function ShowProduct() {
               <CardTitle>{t('Product Images')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {productImages.map((image: string, index: number) => (
-                  <div key={index} className="aspect-square rounded-lg overflow-hidden border">
+                  <div key={index} className="group relative aspect-square rounded-lg overflow-hidden border bg-muted">
                     <img
                       src={getImageUrl(image)}
                       alt={t('Product image {{number}}', { number: index + 1 })}
-                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
+                    <span className="absolute top-2 right-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs font-medium text-white">
+                      {index + 1}
+                    </span>
                   </div>
                 ))}
               </div>
