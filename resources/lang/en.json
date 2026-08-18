@@ -4758,5 +4758,9 @@
   "Available Options": "Available Options (type an option and press Enter)",
   "Available Stock Quantity": "Available Stock Quantity",
   "SKU (optional)": "SKU (optional)",
-  "Add Option": "Add Option"
+  "Add Option": "Add Option",
+  "This product comes in multiple colors or sizes": "This product comes in multiple colors or sizes",
+  "Design options like size, color, or material for this product": "Design options like size, color, or material for this product",
+  "Show Optional Fields": "Show Optional Fields",
+  "Hide Optional Fields": "Hide Optional Fields"
 }

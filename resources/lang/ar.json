@@ -5172,5 +5172,9 @@
   "Available Options": "الخيارات المتاحة (اكتب الخيار واضغط Enter)",
   "Available Stock Quantity": "الكمية المتوفرة",
   "SKU (optional)": "رمز المنتج (اختياري)",
-  "Add Option": "إضافة خيار"
+  "Add Option": "إضافة خيار",
+  "This product comes in multiple colors or sizes": "هذا المنتج يتوفر بألوان أو مقاسات متعددة",
+  "Design options like size, color, or material for this product": "أضف خيارات مثل المقاس أو اللون أو الخامة لهذا المنتج",
+  "Show Optional Fields": "إظهار الحقول الاختيارية",
+  "Hide Optional Fields": "إخفاء الحقول الاختيارية"
 }

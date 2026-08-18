@@ -71,6 +71,11 @@ export default function EditProduct() {
     return [{ name: '', values: [] as string[] }];
   });
 
+  const [variantsEnabled, setVariantsEnabled] = useState(
+    () => Boolean(product.variants && Array.isArray(product.variants) && product.variants.length > 0)
+  );
+  const [showVariantFields, setShowVariantFields] = useState(false);
+
   const [comboEdits, setComboEdits] = useState<Record<string, VariantCombination>>(
     () => toCombinationEditsMap(product.variant_combinations)
   );
@@ -118,9 +123,11 @@ export default function EditProduct() {
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const cleanedVariants = variants
-      .map((v: any) => ({ name: v.name, values: (v.values || []).map((x: string) => x.trim()).filter(Boolean) }))
-      .filter((v: any) => v.name?.trim() !== '');
+    const cleanedVariants = variantsEnabled
+      ? variants
+          .map((v: any) => ({ name: v.name, values: (v.values || []).map((x: string) => x.trim()).filter(Boolean) }))
+          .filter((v: any) => v.name?.trim() !== '')
+      : [];
     const generated = generateVariantCombinations(cleanedVariants);
     const combos = mergeCombinationEdits(generated, comboEdits);
     const productData = {
@@ -390,98 +397,129 @@ export default function EditProduct() {
           <TabsContent value="variants" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>{t('Product Variants')}</CardTitle>
-                  <Button type="button" variant="outline" size="sm" onClick={addVariantGroup}>
-                    <Plus className="h-4 w-4" />{t('Add Option')}
-                  </Button>
-                </div>
+                <CardTitle>{t('Product Variants')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-start">
-                {variants.map((variant: any, index: number) => (
-                  <div key={index} className="rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="flex items-center justify-between gap-3 bg-gray-50 px-4 py-3 border-b border-gray-100">
-                      <span className="text-sm font-semibold text-muted-foreground">{t('Option')} {index + 1}</span>
-                      <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => removeVariantGroup(index)}>
-                        <Trash2 className="h-4 w-4" />
+                <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                  <div className="text-start">
+                    <Label>{t('This product comes in multiple colors or sizes')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('Design options like size, color, or material for this product')}</p>
+                  </div>
+                  <Switch checked={variantsEnabled} onCheckedChange={setVariantsEnabled} />
+                </div>
+
+                {variantsEnabled && (
+                  <>
+                    <div className="flex items-center justify-end">
+                      <Button type="button" variant="outline" size="sm" onClick={addVariantGroup}>
+                        <Plus className="h-4 w-4" />{t('Add Option')}
                       </Button>
                     </div>
-                    <div className="p-4 space-y-3">
-                      <div className="grid gap-1.5">
-                        <Label htmlFor={`variant-name-${index}`} className="text-sm font-medium">
-                          {t('Option Name')}
-                        </Label>
-                        <Input
-                          id={`variant-name-${index}`}
-                          placeholder={t('Option Name Placeholder')}
-                          value={variant.name || ''}
-                          onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
-                          className="font-medium"
-                        />
-                      </div>
-                      <div className="grid gap-1.5">
-                        <Label htmlFor={`variant-values-${index}`} className="text-sm font-medium">
-                          {t('Available Options')}
-                        </Label>
-                        <TagInput
-                          values={variant.values || []}
-                          onChange={(values) => handleVariantValuesChange(index, values)}
-                          placeholder={t('Type a value and press Enter')}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
 
-                {(() => {
-                  const generated = generateVariantCombinations(variants);
-                  if (generated.length === 0) return null;
-                  const combos = mergeCombinationEdits(generated, comboEdits);
-                  return (
-                    <div className="rounded-lg border border-gray-200 overflow-hidden">
-                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-semibold">{t('Variant Combinations')}</p>
-                        <p className="text-xs text-muted-foreground">{t('Generated automatically from the options above')}</p>
+                    {variants.map((variant: any, index: number) => (
+                      <div key={index} className="rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="flex items-center justify-between gap-3 bg-gray-50 px-4 py-3 border-b border-gray-100">
+                          <span className="text-sm font-semibold text-muted-foreground">{t('Option')} {index + 1}</span>
+                          <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => removeVariantGroup(index)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          <div className="grid gap-1.5">
+                            <Label htmlFor={`variant-name-${index}`} className="text-sm font-medium">
+                              {t('Option Name')}
+                            </Label>
+                            <Input
+                              id={`variant-name-${index}`}
+                              placeholder={t('Option Name Placeholder')}
+                              value={variant.name || ''}
+                              onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
+                              className="font-medium"
+                            />
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label htmlFor={`variant-values-${index}`} className="text-sm font-medium">
+                              {t('Available Options')}
+                            </Label>
+                            <TagInput
+                              values={variant.values || []}
+                              onChange={(values) => handleVariantValuesChange(index, values)}
+                              placeholder={t('Type a value and press Enter')}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="bg-gray-50/70 text-xs text-muted-foreground border-b border-gray-100">
-                              <th className="px-3 py-2 text-start font-medium">{t('Image')}</th>
-                              <th className="px-3 py-2 text-start font-medium">{t('Combination')}</th>
-                              <th className="px-3 py-2 text-start font-medium">{t('Price')}</th>
-                              <th className="px-3 py-2 text-start font-medium">{t('Cost')}</th>
-                              <th className="px-3 py-2 text-start font-medium">{t('Available Stock Quantity')}</th>
-                              <th className="px-3 py-2 text-start font-medium">{t('SKU (optional)')}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {combos.map((combo) => (
-                              <tr key={combo.id} className="border-b border-gray-100 last:border-b-0">
-                                <td className="px-3 py-2">
-                                  <VariantImageSlot value={combo.image} onChange={(v) => handleComboEdit(combo.id, 'image', v)} />
-                                </td>
-                                <td className="px-3 py-2 font-medium whitespace-nowrap">{combo.label}</td>
-                                <td className="px-3 py-2">
-                                  <CurrencyInput type="number" step="0.01" placeholder="0.00" value={combo.price} onChange={(e) => handleComboEdit(combo.id, 'price', e.target.value)} />
-                                </td>
-                                <td className="px-3 py-2">
-                                  <CurrencyInput type="number" step="0.01" placeholder="0.00" value={combo.cost_price} onChange={(e) => handleComboEdit(combo.id, 'cost_price', e.target.value)} />
-                                </td>
-                                <td className="px-3 py-2">
-                                  <Input type="number" placeholder="0" value={combo.stock} onChange={(e) => handleComboEdit(combo.id, 'stock', e.target.value)} />
-                                </td>
-                                <td className="px-3 py-2">
-                                  <Input placeholder={t('SKU (optional)')} value={combo.sku} onChange={(e) => handleComboEdit(combo.id, 'sku', e.target.value)} />
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  );
-                })()}
+                    ))}
+
+                    {(() => {
+                      const generated = generateVariantCombinations(variants);
+                      if (generated.length === 0) return null;
+                      const combos = mergeCombinationEdits(generated, comboEdits);
+                      return (
+                        <div className="rounded-xl border border-gray-200 overflow-hidden">
+                          <div className="flex items-center justify-between bg-gray-50 px-4 py-3 border-b border-gray-100">
+                            <div>
+                              <p className="text-sm font-semibold">{t('Variant Combinations')}</p>
+                              <p className="text-xs text-muted-foreground">{t('Generated automatically from the options above')}</p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowVariantFields(!showVariantFields)}
+                            >
+                              {showVariantFields ? t('Hide Optional Fields') : t('Show Optional Fields')}
+                            </Button>
+                          </div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="bg-gray-50/70 text-xs text-muted-foreground border-b border-gray-100">
+                                  <th className="px-3 py-2 text-start font-medium">{t('Image')}</th>
+                                  <th className="px-3 py-2 text-start font-medium">{t('Combination')}</th>
+                                  <th className="px-3 py-2 text-start font-medium">{t('Price')}</th>
+                                  <th className="px-3 py-2 text-start font-medium">{t('Available Stock Quantity')}</th>
+                                  {showVariantFields && (
+                                    <>
+                                      <th className="px-3 py-2 text-start font-medium">{t('Cost')}</th>
+                                      <th className="px-3 py-2 text-start font-medium">{t('SKU (optional)')}</th>
+                                    </>
+                                  )}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {combos.map((combo) => (
+                                  <tr key={combo.id} className="border-b border-gray-100 last:border-b-0">
+                                    <td className="px-3 py-2">
+                                      <VariantImageSlot value={combo.image} onChange={(v) => handleComboEdit(combo.id, 'image', v)} />
+                                    </td>
+                                    <td className="px-3 py-2 font-medium whitespace-nowrap">{combo.label}</td>
+                                    <td className="px-3 py-2">
+                                      <CurrencyInput type="number" step="0.01" placeholder="0.00" value={combo.price} onChange={(e) => handleComboEdit(combo.id, 'price', e.target.value)} />
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <Input type="number" placeholder="0" value={combo.stock} onChange={(e) => handleComboEdit(combo.id, 'stock', e.target.value)} />
+                                    </td>
+                                    {showVariantFields && (
+                                      <>
+                                        <td className="px-3 py-2">
+                                          <CurrencyInput type="number" step="0.01" placeholder="0.00" value={combo.cost_price} onChange={(e) => handleComboEdit(combo.id, 'cost_price', e.target.value)} />
+                                        </td>
+                                        <td className="px-3 py-2">
+                                          <Input placeholder={t('SKU (optional)')} value={combo.sku} onChange={(e) => handleComboEdit(combo.id, 'sku', e.target.value)} />
+                                        </td>
+                                      </>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
