@@ -177,7 +177,7 @@ export default function HeroSection({
           <div className="mt-7 flex w-full flex-col items-stretch gap-3 md:mt-9 md:w-auto md:flex-row md:items-center md:gap-4">
             <Link
               href={route('register')}
-              className="group inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-[16px] font-bold text-white transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] md:w-auto"
+              className="group inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-[16px] font-bold text-white ring-1 ring-white/25 ring-offset-0 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:ring-white/40 md:w-auto"
               style={{
                 backgroundColor: brandColor,
                 boxShadow: `0 12px 40px ${brandColor}55, 0 0 80px ${brandColor}30`,
@@ -218,7 +218,7 @@ export default function HeroSection({
                   <Icon size={17} />
                 </div>
                 <div className="text-sm font-extrabold text-white sm:text-[15px]">{stat.value}</div>
-                <div className="mt-1 text-[11px] font-medium leading-relaxed text-white/45 sm:text-[12px]">
+                <div className="mt-1 text-[11px] font-medium leading-relaxed text-gray-300 sm:text-[12px]">
                   {stat.label}
                 </div>
               </div>

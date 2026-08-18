@@ -72,6 +72,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
   return (
     <>
       <header
+        dir="rtl"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
             ? 'bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] border-b border-gray-100'
@@ -189,7 +190,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                     className="btn-green rounded-lg px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90"
                     style={{ backgroundColor: brandColor }}
                   >
-                    {t('Get Started')}
+                    {t('Free Trial')}
                   </Link>
                 </>
               )}
@@ -310,7 +311,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                 style={{ backgroundColor: brandColor }}
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('Get Started')}
+                {t('Free Trial')}
               </Link>
             </>
           )}
