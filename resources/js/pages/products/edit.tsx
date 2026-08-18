@@ -3,6 +3,8 @@ import { PageTemplate } from '@/components/page-template';
 import { Save, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { ProfitSummary } from '@/components/ui/profit-summary';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -97,13 +99,6 @@ export default function EditProduct() {
 
   const handleSelectChange = (name: string, value: string) => {
     setField(name, value);
-  };
-
-  const calculateProfitMargin = () => {
-    const cost = parseFloat(String(formData.cost_price));
-    const price = parseFloat(String(formData.price));
-    if (!cost || !price || cost === 0) return 0;
-    return ((price - cost) / cost) * 100;
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -241,28 +236,23 @@ export default function EditProduct() {
               <CardContent className="space-y-4 text-start">
                 <div className="grid grid-cols-3 gap-4">
                   <div className="grid gap-1 mb-4 text-start">
-                    <Label htmlFor="price" required>{t('Price')}</Label>
-                    <Input id="price" name="price" type="number" step="0.01" value={formData.price} onChange={handleChange} placeholder="0.00" aria-invalid={!!errors.price} />
+                    <Label htmlFor="price" required>{t('Selling Price')}</Label>
+                    <CurrencyInput id="price" name="price" type="number" step="0.01" value={formData.price} onChange={handleChange} placeholder="0.00" aria-invalid={!!errors.price} />
                     <InputError message={errors.price} />
                   </div>
                   <div className="grid gap-1 mb-4 text-start">
                     <Label htmlFor="cost_price">{t('Cost Price')}</Label>
-                    <Input id="cost_price" name="cost_price" type="number" step="0.01" value={formData.cost_price} onChange={handleChange} placeholder="0.00" />
+                    <CurrencyInput id="cost_price" name="cost_price" type="number" step="0.01" value={formData.cost_price} onChange={handleChange} placeholder="0.00" />
                   </div>
                   <div className="grid gap-1 mb-4 text-start">
-                    <Label htmlFor="sale_price">{t('Sale Price')}</Label>
-                    <Input id="sale_price" name="sale_price" type="number" step="0.01" value={formData.sale_price} onChange={handleChange} placeholder="0.00" />
+                    <Label htmlFor="sale_price">{t('Discounted Price')}</Label>
+                    <CurrencyInput id="sale_price" name="sale_price" type="number" step="0.01" value={formData.sale_price} onChange={handleChange} placeholder="0.00" />
                   </div>
                 </div>
-                {calculateProfitMargin() > 0 && (
-                  <div className="rounded-md bg-green-50 p-2 text-sm text-green-700">
-                    <strong>{t('Profit Margin')}:</strong> {calculateProfitMargin().toFixed(1)}%
-                  </div>
-                )}
+                <ProfitSummary costPrice={formData.cost_price} sellingPrice={formData.price} />
                 <div className="flex items-center justify-between gap-3 pt-4">
                   <div className="text-start">
-                    <Label>{t('Include tax in price?')}</Label>
-                    <p className="text-sm text-muted-foreground">{t('Should price include tax?')}</p>
+                    <Label>{t('Price includes tax')}</Label>
                   </div>
                   <Switch checked={formData.is_tax_included} onCheckedChange={(c) => setField('is_tax_included', c)} />
                 </div>

@@ -5148,5 +5148,9 @@
   "Dismiss": "إغلاق التنبيه",
   "Bulk Delete": "حذف جماعي",
   "Multiple images": "عدة صور",
-  "Cover image (one file)": "صورة الغلاف (ملف واحد)"
+  "Cover image (one file)": "صورة الغلاف (ملف واحد)",
+  "Discounted Price": "السعر المخفض / الخصم",
+  "Price includes tax": "السعر شامل الضريبة",
+  "Net Profit": "صافي الربح",
+  "Profit Margin %": "نسبة هامش الربح"
 }

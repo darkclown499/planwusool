@@ -4734,5 +4734,9 @@
   "Dismiss": "Dismiss",
   "Bulk Delete": "Bulk Delete",
   "Multiple images": "Multiple images",
-  "Cover image (one file)": "Cover image (one file)"
+  "Cover image (one file)": "Cover image (one file)",
+  "Discounted Price": "Discounted Price",
+  "Price includes tax": "Price includes tax",
+  "Net Profit": "Net Profit",
+  "Profit Margin %": "Profit Margin %"
 }
