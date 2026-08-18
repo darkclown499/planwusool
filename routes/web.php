@@ -638,6 +638,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('products/{id}', [\App\Http\Controllers\ProductController::class, 'update'])->middleware('permission:edit-products')->name('products.update');
          Route::delete('products/{id}', [\App\Http\Controllers\ProductController::class, 'destroy'])->middleware('permission:delete-products')->name('products.destroy');
          Route::delete('products', [\App\Http\Controllers\ProductController::class, 'destroyBulk'])->middleware('permission:delete-products')->name('products.bulk-destroy');
+         Route::post('products/bulk-status', [\App\Http\Controllers\ProductController::class, 'bulkStatus'])->middleware('permission:edit-products')->name('products.bulk-status');
          Route::get('products/{id}', [\App\Http\Controllers\ProductController::class, 'show'])->middleware('permission:view-products')->name('products.show');
         
         // Categories Management routes with permissions

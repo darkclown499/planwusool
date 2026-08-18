@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, Download, Package, Eye, Edit, Trash2, AlertTriangle, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Download, Package, Eye, Edit, Trash2, AlertTriangle, Search, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ export default function Products() {
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState<'active' | 'inactive'>('active');
 
   const products: any[] = paginatedProducts?.data ?? [];
 
@@ -120,6 +121,13 @@ export default function Products() {
     if (selected.size === 0) return;
     if (!checkPermission('delete-products', auth)) return;
     router.delete(route('products.bulk-destroy'), { data: { ids: Array.from(selected) }, preserveScroll: true });
+    setSelected(new Set());
+  };
+
+  const handleBulkStatus = () => {
+    if (selected.size === 0) return;
+    if (!checkPermission('edit-products', auth)) return;
+    router.post(route('products.bulk-status'), { ids: Array.from(selected), status: bulkStatus }, { preserveScroll: true });
     setSelected(new Set());
   };
 
@@ -277,16 +285,46 @@ export default function Products() {
                     <SelectItem value="low_stock">{t('Low Stock')}</SelectItem>
                   </SelectContent>
                 </Select>
-                {selectedTotal > 0 && hasPermission('delete-products') && (
-                  <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                    <Trash2 className="h-4 w-4 me-2" />
-                    {t('Delete')} ({selectedTotal})
-                  </Button>
-                )}
               </div>
             </div>
           </CardHeader>
           <CardContent>
+            {/* Floating bulk actions bar — revealed when items are selected */}
+            {selectedTotal > 0 && (
+              <div className="sticky top-2 z-20 -mx-6 mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/40 bg-primary/5 px-4 py-3 shadow-sm backdrop-blur">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-center text-xs font-bold text-primary-foreground">
+                    {selectedTotal}
+                  </span>
+                  <span>{t('Selected')}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {hasPermission('edit-products') && (
+                    <>
+                      <Select value={bulkStatus} onValueChange={(v) => setBulkStatus(v as 'active' | 'inactive')}>
+                        <SelectTrigger className="w-36 h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">{t('Active')}</SelectItem>
+                          <SelectItem value="inactive">{t('Inactive')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="secondary" onClick={handleBulkStatus}>
+                        <CheckCircle className="h-4 w-4 me-2" />
+                        {t('Change Status')}
+                      </Button>
+                    </>
+                  )}
+                  {hasPermission('delete-products') && (
+                    <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+                      <Trash2 className="h-4 w-4 me-2" />
+                      {t('Bulk Delete')}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
             {products.length === 0 ? (
               <div className="text-center py-8">
                 <Package className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
@@ -377,9 +415,9 @@ export default function Products() {
                           </TableCell>
                           <TableCell>{product.category?.name || <span className="text-muted-foreground">{t('Uncategorized')}</span>}</TableCell>
                           <TableCell>
-                            <div className="flex items-center space-x-1">
-                              <span className="ltr-num">{formatCurrency(product.sale_price || product.price)}</span>
-                              {product.sale_price && <span className="text-xs line-through text-muted-foreground ltr-num">{formatCurrency(product.price)}</span>}
+                            <div className="flex items-center gap-2">
+                              <span className="ltr-num font-bold text-gray-900">{formatCurrency(product.sale_price || product.price)}</span>
+                              {product.sale_price && <span className="text-xs text-gray-400 line-through ltr-num">{formatCurrency(product.price)}</span>}
                             </div>
                           </TableCell>
                           <TableCell>{product.stock}</TableCell>
@@ -436,12 +474,27 @@ export default function Products() {
             <Pagination>
               <PaginationContent>
                 {paginatedProducts.links.map((link: any, index: number) => {
+                  // RTL flow: "next" must point LEFT («) and "previous" must point
+                  // RIGHT (»). Laravel ships LTR guillemets, so swap them on the
+                  // first (previous) and last (next) pagination items.
+                  let labelHtml = link.label;
+                  const total = paginatedProducts.links.length;
+                  if (index === 0) {
+                    labelHtml = labelHtml
+                      .replace(/&laquo;/g, '&raquo;')
+                      .replace(/«/g, '»');
+                  } else if (index === total - 1) {
+                    labelHtml = labelHtml
+                      .replace(/&raquo;/g, '&laquo;')
+                      .replace(/»/g, '«');
+                  }
+
                   if (!link.url) {
                     return (
                       <PaginationItem key={index}>
                         <span
                           className="px-3 py-1.5 text-sm text-muted-foreground"
-                          dangerouslySetInnerHTML={{ __html: link.label }}
+                          dangerouslySetInnerHTML={{ __html: labelHtml }}
                         />
                       </PaginationItem>
                     );
@@ -451,7 +504,7 @@ export default function Products() {
                       <PaginationLink
                         isActive={link.active}
                         href={link.url}
-                        dangerouslySetInnerHTML={{ __html: link.label }}
+                        dangerouslySetInnerHTML={{ __html: labelHtml }}
                       />
                     </PaginationItem>
                   );

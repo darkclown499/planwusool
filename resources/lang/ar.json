@@ -3749,7 +3749,7 @@
   "Step": "الخطوة",
   "Step {{current}} of {{total}}": "الخطوة {{current}} من {{total}}",
   "Still have questions?": "هل مازال لديك أسئلة؟",
-  "Stock": "الأسهم",
+  "Stock": "الكمية",
   "Stock Quantity": "كمية المخزون",
   "Stock Quantity *": "كمية المخزون *",
   "Stock: {{stock}}": "المخزون: {{stock}}",
@@ -5145,5 +5145,6 @@
   "Real-time analytics": "تحليلات فورية",
   "WhatsApp-first selling": "بيع عبر واتساب",
   "Convert chats into orders": "حوّل المحادثات إلى طلبات",
-  "Dismiss": "إغلاق التنبيه"
+  "Dismiss": "إغلاق التنبيه",
+  "Bulk Delete": "حذف جماعي"
 }

@@ -354,6 +354,51 @@ class ProductController extends Controller
     }
 
     /**
+     * Bulk update products status (active/inactive).
+     */
+    public function bulkStatus(Request $request)
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+
+        $ids = array_filter((array) $request->input('ids', []), fn ($id) => is_numeric($id));
+        $ids = array_map('intval', $ids);
+
+        if (empty($ids)) {
+            return back()->with('error', __('No products selected.'));
+        }
+
+        $status = (string) $request->input('status', 'active');
+        $newActive = $status === 'active';
+
+        if ($newActive) {
+            // Respect the plan's product limit when bulk-activating.
+            $companyUser = $user->type === 'company' ? $user : $user->creator;
+            if ($companyUser && $companyUser->plan) {
+                $maxProducts = $companyUser->plan->max_products_per_store ?? 0;
+                if ($maxProducts > 0) {
+                    $activeProducts = Product::where('store_id', $currentStoreId)
+                        ->where('is_active', true)
+                        ->whereNotIn('id', $ids)
+                        ->count();
+
+                    if ($activeProducts >= $maxProducts) {
+                        return redirect()->back()->with('error', __('Cannot activate products. You have reached your plan limit of :max products per store. Please upgrade your plan or deactivate some products first.', ['max' => $maxProducts]));
+                    }
+                }
+            }
+        }
+
+        Product::where('store_id', $currentStoreId)
+            ->whereIn('id', $ids)
+            ->update(['is_active' => $newActive]);
+
+        return redirect()
+            ->route('products.index', $request->only(['search', 'category_id', 'status', 'sort', 'direction', 'per_page']))
+            ->with('success', __(':count Product(s) updated successfully.', ['count' => count($ids)]));
+    }
+
+    /**
      * Remove the specified product from storage.
      */
     public function destroy(string $id)
