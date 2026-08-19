@@ -28,8 +28,21 @@ class LoyaltyController extends Controller
 
         $settings = $currentStoreId ? LoyaltySetting::forStore($currentStoreId) : new LoyaltySetting();
 
+        $currencySymbol = '₪';
+        if ($currentStoreId) {
+            try {
+                $currencySettings = app(\App\Services\Currency\CurrencyService::class)
+                    ->getCurrencySettings($user->id, $currentStoreId);
+                $currency = \App\Models\Currency::where('code', $currencySettings['defaultCurrency'] ?? 'ILS')->first();
+                $currencySymbol = $currency ? $currency->symbol : '₪';
+            } catch (\Throwable $e) {
+                $currencySymbol = '₪';
+            }
+        }
+
         return Inertia::render('loyalty/settings', [
             'settings' => $settings,
+            'currency_symbol' => $currencySymbol,
         ]);
     }
 
@@ -50,7 +63,8 @@ class LoyaltyController extends Controller
             'signup_bonus_points' => 'required|numeric|min:0|max:999999.99',
             'review_bonus_points' => 'required|numeric|min:0|max:999999.99',
             'points_expire' => 'boolean',
-            'expiry_months' => 'required_if:points_expire,true|integer|min:1|max:120',
+            'expiry_days' => 'required_if:points_expire,true|integer|min:1|max:3650',
+            'expiry_reminder_days' => 'required_if:points_expire,true|integer|min:0|max:365',
         ]);
 
         $settings = LoyaltySetting::updateOrCreate(
@@ -64,7 +78,8 @@ class LoyaltyController extends Controller
                 'signup_bonus_points' => $request->signup_bonus_points,
                 'review_bonus_points' => $request->review_bonus_points,
                 'points_expire' => $request->boolean('points_expire', false),
-                'expiry_months' => $request->points_expire ? $request->expiry_months : 12,
+                'expiry_days' => $request->points_expire ? $request->expiry_days : 90,
+                'expiry_reminder_days' => $request->points_expire ? $request->expiry_reminder_days : 7,
             ]
         );
 

@@ -51,10 +51,23 @@ class AbandonedCartController extends Controller
 
         $stats = $currentStoreId ? $this->abandonedCartService->getStats($currentStoreId) : [];
 
+        $currencySymbol = '₪';
+        if ($currentStoreId) {
+            try {
+                $currencySettings = app(\App\Services\Currency\CurrencyService::class)
+                    ->getCurrencySettings($user->id, $currentStoreId);
+                $currency = \App\Models\Currency::where('code', $currencySettings['defaultCurrency'] ?? 'ILS')->first();
+                $currencySymbol = $currency ? $currency->symbol : '₪';
+            } catch (\Throwable $e) {
+                $currencySymbol = '₪';
+            }
+        }
+
         return Inertia::render('abandoned-carts/index', [
             'carts' => $carts,
             'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'per_page']),
             'stats' => $stats,
+            'currency_symbol' => $currencySymbol,
         ]);
     }
 

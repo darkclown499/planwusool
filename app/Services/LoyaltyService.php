@@ -42,8 +42,8 @@ class LoyaltyService
         $currentBalance = LoyaltyTransaction::balanceFor($store->id, $customer->id);
 
         $expiresAt = null;
-        if ($settings->points_expire && $settings->expiry_months > 0) {
-            $expiresAt = now()->addMonths($settings->expiry_months);
+        if ($settings->points_expire && $settings->expiry_days > 0) {
+            $expiresAt = now()->addDays($settings->expiry_days);
         }
 
         LoyaltyTransaction::create([

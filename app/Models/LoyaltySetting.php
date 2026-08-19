@@ -20,7 +20,8 @@ class LoyaltySetting extends Model
         'signup_bonus_points',
         'review_bonus_points',
         'points_expire',
-        'expiry_months',
+        'expiry_days',
+        'expiry_reminder_days',
         'earning_rules',
     ];
 
@@ -33,7 +34,8 @@ class LoyaltySetting extends Model
         'signup_bonus_points' => 'decimal:2',
         'review_bonus_points' => 'decimal:2',
         'points_expire' => 'boolean',
-        'expiry_months' => 'integer',
+        'expiry_days' => 'integer',
+        'expiry_reminder_days' => 'integer',
         'earning_rules' => 'array',
     ];
 
@@ -61,7 +63,8 @@ class LoyaltySetting extends Model
                 'signup_bonus_points' => 0,
                 'review_bonus_points' => 0,
                 'points_expire' => false,
-                'expiry_months' => 12,
+                'expiry_days' => 90,
+                'expiry_reminder_days' => 7,
                 'earning_rules' => null,
             ]
         );

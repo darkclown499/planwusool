@@ -1,23 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { router, usePage, Link } from '@inertiajs/react';
-import { DollarSign, Download, Eye, Banknote, CheckCircle, Landmark } from 'lucide-react';
+import { Download, Eye, Banknote, Clock, CheckCircle2, Percent, Search } from 'lucide-react';
 import { hasPermission } from '@/utils/permissions';
 
 export default function CodPayments() {
   const { t } = useTranslation();
-  const { payments = { data: [] }, filters = {}, stats = { total: 0, pending: 0, partial: 0, paid: 0, failed: 0, returned: 0, total_amount: 0, total_collected: 0, total_remaining: 0, collection_rate: 0 }, auth } = usePage().props as any;
+  const { payments = { data: [], links: [] }, filters = {}, stats = { total: 0, pending: 0, partial: 0, paid: 0, failed: 0, returned: 0, total_amount: 0, total_collected: 0, total_remaining: 0, collection_rate: 0 }, currency_symbol } = usePage().props as any;
+
+  const [search, setSearch] = useState(filters.search || '');
+  const [status, setStatus] = useState(filters.status || 'all');
+  const didMount = useRef(false);
+
+  const currencySymbol: string = typeof currency_symbol === 'string' && currency_symbol ? currency_symbol : '₪';
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    const value = (Number(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `${currencySymbol} ${value}`;
   };
 
   const getStatusBadge = (status: string) => {
@@ -36,9 +41,33 @@ export default function CodPayments() {
     window.open(route('cod-payments.export'), '_blank');
   };
 
-  const handleFilterChange = (key: string, value: string) => {
-    router.get(route('cod-payments.index'), { ...filters, [key]: value }, { preserveState: true, preserveScroll: true, replace: true });
-  };
+  useEffect(() => {
+    if (!didMount.current) {
+      return;
+    }
+    const debounce = setTimeout(() => {
+      router.get(
+        route('cod-payments.index'),
+        { search: search.trim() || undefined, status: status === 'all' ? undefined : status },
+        { preserveState: true, replace: true, preserveScroll: true }
+      );
+    }, 400);
+    return () => clearTimeout(debounce);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  useEffect(() => {
+    if (!didMount.current) {
+      didMount.current = true;
+      return;
+    }
+    router.get(
+      route('cod-payments.index'),
+      { search: search.trim() || undefined, status: status === 'all' ? undefined : status },
+      { preserveState: true, replace: true, preserveScroll: true }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   return (
     <PageTemplate
@@ -49,115 +78,122 @@ export default function CodPayments() {
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('COD Payments') }
       ]}
-      actions={[
-        ...(hasPermission('export-cod-payments') ? [{
-          label: t('Export'),
-          icon: <Download className="h-4 w-4" />,
-          variant: 'outline' as const,
-          onClick: handleExport
-        }] : [])
-      ]}
     >
       <div className="space-y-4">
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Total COD Orders')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {formatCurrency(stats.total_amount || 0)} {t('total value')}
-              </p>
+            <CardContent className="flex items-start justify-between gap-4 pt-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Total COD Revenue')}</p>
+                <div className="mt-2 text-2xl font-bold text-foreground">{stats.total || 0}</div>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">{formatCurrency(stats.total_amount || 0)} {t('total value')}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                <Banknote className="h-6 w-6" />
+              </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Pending Collection')}</CardTitle>
-              <Banknote className="h-4 w-4 text-amber-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{(stats.pending || 0) + (stats.partial || 0)}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.pending || 0} {t('pending')}, {stats.partial || 0} {t('partial')}
-              </p>
+            <CardContent className="flex items-start justify-between gap-4 pt-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Pending Collection')}</p>
+                <div className="mt-2 text-2xl font-bold text-amber-600">{(stats.pending || 0) + (stats.partial || 0)}</div>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">{stats.pending || 0} {t('pending')}, {stats.partial || 0} {t('partial')}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <Clock className="h-6 w-6" />
+              </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Collected')}</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats.paid || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                {formatCurrency(stats.total_collected || 0)} {t('collected')}
-              </p>
+            <CardContent className="flex items-start justify-between gap-4 pt-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Collected Revenue')}</p>
+                <div className="mt-2 text-2xl font-bold text-green-600">{stats.paid || 0}</div>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">{formatCurrency(stats.total_collected || 0)} {t('collected')}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-600">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Collection Rate')}</CardTitle>
-              <Landmark className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.collection_rate || 0}%</div>
-              <p className="text-xs text-muted-foreground">
-                {formatCurrency(stats.total_remaining || 0)} {t('remaining')}
-              </p>
+            <CardContent className="flex items-start justify-between gap-4 pt-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('Collection Rate')}</p>
+                <div className="mt-2 text-2xl font-bold text-violet-600">{stats.collection_rate || 0}%</div>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">{formatCurrency(stats.total_remaining || 0)} {t('remaining')}</p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <Percent className="h-6 w-6" />
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filters */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-4">
-              <div className="flex-1 min-w-[200px]">
-                <Label htmlFor="search" className="sr-only">{t('Search')}</Label>
-                <Input
-                  id="search"
-                  placeholder={t('Search by name, phone, email or order...')}
-                  value={filters.search || ''}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                />
-              </div>
-              <div className="w-[180px]">
-                <Select
-                  value={filters.status || 'all'}
-                  onValueChange={(value) => handleFilterChange('status', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('All Status')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('All Status')}</SelectItem>
-                    <SelectItem value="pending">{t('Pending')}</SelectItem>
-                    <SelectItem value="partial">{t('Partial')}</SelectItem>
-                    <SelectItem value="paid">{t('Paid')}</SelectItem>
-                    <SelectItem value="failed">{t('Failed')}</SelectItem>
-                    <SelectItem value="cancelled">{t('Cancelled')}</SelectItem>
-                    <SelectItem value="returned">{t('Returned')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* Search & Filter Toolbar */}
+        <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:max-w-xs">
+              <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('Search by name, phone, email or order...')}
+                className="ps-9"
+                aria-label={t('Search by name, phone, email or order...')}
+              />
             </div>
-          </CardContent>
-        </Card>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-full sm:w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('All Statuses')}</SelectItem>
+                <SelectItem value="pending">{t('pending')}</SelectItem>
+                <SelectItem value="paid">{t('collected')}</SelectItem>
+                <SelectItem value="partial">{t('Partially collected')}</SelectItem>
+                <SelectItem value="cancelled">{t('Cancelled')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {hasPermission('export-cod-payments') && (
+            <Button type="button" variant="outline" onClick={handleExport} className="shrink-0">
+              <Download className="h-4 w-4 me-2" />
+              {t('Export')}
+            </Button>
+          )}
+        </div>
 
         {/* Payments List */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('COD Payments')}</CardTitle>
+            <CardTitle className="text-base font-semibold">{t('COD Payments')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {payments.data.length === 0 ? (
-                <div className="text-center py-8">
-                  <DollarSign className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                  <p className="mt-2 text-muted-foreground">{t('No COD payments found')}</p>
+                <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+                  <div className="relative">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+                      <Banknote className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <span className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <span className="text-[10px] font-bold">!</span>
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-base font-semibold">{t('No COD payments yet')}</h3>
+                  <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                    {t('COD payments will appear here for you to track collection on cash on delivery orders.')}
+                  </p>
+                  <Button type="button" className="mt-6" onClick={() => router.visit(route('settings'))}>
+                    <Banknote className="h-4 w-4 me-2" />
+                    {t('COD fee settings')}
+                  </Button>
                 </div>
               ) : (
                 <div className="relative overflow-x-auto">
@@ -261,4 +297,3 @@ export default function CodPayments() {
     </PageTemplate>
   );
 }
-
