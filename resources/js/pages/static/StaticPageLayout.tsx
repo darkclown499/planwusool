@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Menu, X, Globe, ChevronDown, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import ReactCountryFlag from 'react-country-flag';
+import { FlagIcon } from '@/components/FlagIcon';
 import languageData from '@/../../resources/lang/language.json';
 
 export interface StaticPageMeta {
@@ -101,7 +101,7 @@ export default function StaticPageLayout({
                   className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[13px] font-medium text-gray-300 transition-all hover:border-white/20 hover:bg-white/10"
                 >
                   <Globe className="h-4 w-4 text-gray-400" />
-                  <ReactCountryFlag countryCode={currentLang.countryCode} svg style={{ width: '1.1em', height: '1.1em' }} />
+                  <FlagIcon countryCode={currentLang.countryCode} svg style={{ width: '1.1em', height: '1.1em' }} />
                   <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -119,7 +119,7 @@ export default function StaticPageLayout({
                               : 'text-gray-400 hover:bg-white/5 hover:text-white'
                           }`}
                         >
-                          <ReactCountryFlag countryCode={lang.countryCode} svg style={{ width: '1.2em', height: '1.2em' }} />
+                          <FlagIcon countryCode={lang.countryCode} svg style={{ width: '1.2em', height: '1.2em' }} />
                           <span className="flex-1 text-start">{lang.name}</span>
                           {currentLocale === lang.code && <Check className="h-4 w-4 text-emerald-400" />}
                         </button>

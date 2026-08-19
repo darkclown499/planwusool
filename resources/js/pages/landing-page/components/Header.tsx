@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/react';
 import { Menu, X, Globe, ChevronDown, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBrand } from '@/contexts/BrandContext';
-import ReactCountryFlag from 'react-country-flag';
+import { FlagIcon } from '@/components/FlagIcon';
 import languageData from '@/../../resources/lang/language.json';
 
 interface CustomPage {
@@ -139,7 +139,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                   className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50"
                 >
                   <Globe className="h-4 w-4 text-gray-500" />
-                  <ReactCountryFlag countryCode={currentLang.countryCode} svg style={{ width: '1.1em', height: '1.1em' }} />
+                  <FlagIcon countryCode={currentLang.countryCode} svg style={{ width: '1.1em', height: '1.1em' }} />
                   <span className="hidden lg:inline">{currentLang.code.toUpperCase()}</span>
                   <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -158,7 +158,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                               : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                           }`}
                         >
-                          <ReactCountryFlag countryCode={lang.countryCode} svg style={{ width: '1.2em', height: '1.2em' }} />
+                          <FlagIcon countryCode={lang.countryCode} svg style={{ width: '1.2em', height: '1.2em' }} />
                           <span className="flex-1 text-start">{lang.name}</span>
                           {currentLocale === lang.code && <Check className="h-4 w-4" style={{ color: brandColor }} />}
                         </button>
@@ -248,7 +248,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                     : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                 }`}
               >
-                <ReactCountryFlag countryCode={lang.countryCode} svg style={{ width: '1em', height: '1em' }} />
+                <FlagIcon countryCode={lang.countryCode} svg style={{ width: '1em', height: '1em' }} />
                 {lang.code.toUpperCase()}
               </button>
             ))}

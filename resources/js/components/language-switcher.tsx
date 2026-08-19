@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import ReactCountryFlag from 'react-country-flag';
+import { FlagIcon } from '@/components/FlagIcon';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -44,7 +44,7 @@ export const LanguageSwitcher: React.FC = () => {
                     <span className="text-sm font-medium hidden md:inline-block">
                         {currentLanguage.name}
                     </span>
-                    <ReactCountryFlag
+                    <FlagIcon
                         countryCode={currentLanguage.countryCode}
                         svg
                         alt={currentLanguage.name}
@@ -81,7 +81,7 @@ export const LanguageSwitcher: React.FC = () => {
                             }}
                             className="flex items-center gap-2"
                         >
-                            <ReactCountryFlag
+                            <FlagIcon
                                 countryCode={language.countryCode}
                                 svg
                                 style={{

@@ -11,7 +11,7 @@ import { toast } from '@/components/custom-toast';
 import { useStackedModal } from '@/hooks/useStackedModal';
 import { useModalStack } from '@/contexts/ModalStackContext';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import ReactCountryFlag from 'react-country-flag';
+import { FlagIcon } from '@/components/FlagIcon';
 import languageData from '@/../../resources/lang/language.json';
 
 interface ChatGptModalProps {
@@ -206,7 +206,7 @@ export function ChatGptModal({
                       <SelectContent style={{ zIndex: zIndex + 10 }}>
                         {languageData.map((lang) => (
                           <SelectItem key={lang.code} value={lang.code} className="cursor-pointer">
-                            <ReactCountryFlag
+                            <FlagIcon
                               countryCode={lang.countryCode}
                               svg
                               style={{ width: '1em', height: '1em', marginRight: '8px' }}

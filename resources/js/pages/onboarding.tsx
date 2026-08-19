@@ -1,7 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import ReactCountryFlag from 'react-country-flag';
+import { FlagIcon } from '@/components/FlagIcon';
 import {
     Banknote,
     Check,
@@ -1177,7 +1177,7 @@ export default function Onboarding({
                                                                     : 'border-gray-200 hover:border-gray-300'
                                                             }`}
                                                         >
-                                                            <ReactCountryFlag
+                                                            <FlagIcon
                                                                 countryCode={lang.countryCode}
                                                                 svg
                                                                 className="text-3xl"

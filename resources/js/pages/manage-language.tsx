@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/custom-toast';
 import { useTranslation } from 'react-i18next';
 import { usePage, router } from '@inertiajs/react';
-import ReactCountryFlag from 'react-country-flag';
+import { FlagIcon } from '@/components/FlagIcon';
 import { cn } from '@/lib/utils';
 
 interface Language {
@@ -135,7 +135,7 @@ export default function ManageLanguagePage() {
                     }}
                   >
                     {lang.countryCode && (
-                      <ReactCountryFlag
+                      <FlagIcon
                         countryCode={lang.countryCode}
                         svg
                         style={{ width: '1.2em', height: '1.2em' }}
