@@ -73,10 +73,8 @@ export default function Header({ settings, sectionData, customPages = [], brandC
     <>
       <header
         dir="rtl"
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] border-b border-gray-100'
-            : 'bg-white/80 backdrop-blur-md'
+        className={`sticky top-0 left-0 right-0 z-50 backdrop-blur-md bg-zinc-950/80 border-b border-zinc-800/50 transition-all duration-300 ${
+          isScrolled ? 'shadow-[0_8px_30px_rgba(0,0,0,0.45)]' : ''
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -107,24 +105,24 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                  className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white"
                 >
                   {item.name}
                 </Link>
               ))}
-              <Link href="/about" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+              <Link href="/about" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
                 {t('عن وصول')}
               </Link>
-              <Link href="#features" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+              <Link href="#features" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
                 {t('المميزات')}
               </Link>
-              <Link href="#pricing" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+              <Link href="#pricing" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
                 {t('الأسعار')}
               </Link>
-              <Link href="/terms" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+              <Link href="/terms" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
                 {t('اتفاقية المستخدم')}
               </Link>
-              <Link href="/privacy" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+              <Link href="/privacy" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
                 {t('سياسة الخصوصية')}
               </Link>
             </nav>
@@ -136,12 +134,12 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                 <button
                   type="button"
                   onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-50"
+                  className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-[13px] font-medium text-zinc-200 transition-all hover:border-zinc-600 hover:bg-zinc-800"
                 >
-                  <Globe className="h-4 w-4 text-gray-500" />
+                  <Globe className="h-4 w-4 text-zinc-400" />
                   <FlagIcon countryCode={currentLang.countryCode} svg style={{ width: '1.1em', height: '1.1em' }} />
                   <span className="hidden lg:inline">{currentLang.code.toUpperCase()}</span>
-                  <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 text-zinc-500 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isLangOpen && (
@@ -172,8 +170,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
               {user ? (
                 <Link
                   href={route('dashboard')}
-                  className="btn-green rounded-lg px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90"
-                  style={{ backgroundColor: brandColor }}
+                  className="rounded-lg bg-emerald-500 px-5 py-2.5 text-[13px] font-bold text-zinc-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600"
                 >
                   {t('Dashboard')}
                 </Link>
@@ -181,7 +178,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                 <>
                   <Link
                     href={route('login')}
-                    className="rounded-lg px-4 py-2.5 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                    className="rounded-lg px-4 py-2.5 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white"
                   >
                     {t('Login')}
                   </Link>

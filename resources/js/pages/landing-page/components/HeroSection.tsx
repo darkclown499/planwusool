@@ -1,11 +1,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Megaphone, RefreshCw, Zap } from 'lucide-react';
-
-// HeroComputerDemo is a heavy demo component (1800+ lines) - only load in development
-const HeroComputerDemo = import.meta.env.DEV 
-  ? (await import('./HeroComputerDemo')).default 
-  : () => null;
+import { ArrowLeft, Megaphone, RefreshCw, Star, Zap } from 'lucide-react';
+import ProductShowcase from './ProductShowcase';
 
 interface HeroSectionProps {
   brandColor?: string;
@@ -27,7 +23,6 @@ export default function HeroSection({
   settings,
   sectionData,
   brandColor = '#22c55e',
-  superadminLogoLight = '',
 }: HeroSectionProps) {
   const title = sectionData.title || 'ابدأ متجرك خلال دقائق';
   const subtitle = sectionData.subtitle || 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع';
@@ -50,7 +45,7 @@ export default function HeroSection({
     <section
       id="hero"
       dir="rtl"
-      className="relative z-10 bg-gray-950 pb-16 pt-[96px] sm:pb-20 sm:pt-[110px] md:pb-24 md:pt-[120px] lg:pt-[140px]"
+      className="relative z-10 bg-gray-950 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pb-24 md:pt-20 lg:pt-24"
       style={{ fontFamily: "'Tajawal', 'Segoe UI', sans-serif" }}
     >
       {/* ── Backdrop layer (clipped to the hero box) ── */}
@@ -160,10 +155,15 @@ export default function HeroSection({
             />
           )}
 
+          {/* ── Pulsating announcement badge ── */}
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-[13px] font-semibold text-emerald-300 shadow-[0_0_24px_rgba(16,185,129,0.25)] animate-pulse">
+            <Zap size={14} className="text-emerald-400" />
+            المنصة الأولى لإدارة متاجر الواتساب في فلسطين
+          </div>
+
           {/* ── Title ── */}
           <h1
-            className="text-[40px] font-extrabold leading-[1.15] text-white sm:text-[44px] lg:text-[60px]"
-            style={{ letterSpacing: '-0.02em' }}
+            className="bg-gradient-to-r from-emerald-400 via-teal-200 to-white bg-clip-text font-black text-transparent text-4xl leading-[1.15] tracking-tight sm:text-6xl"
           >
             {title}
           </h1>
@@ -175,17 +175,20 @@ export default function HeroSection({
 
           {/* ── CTA buttons ── */}
           <div className="mt-7 flex w-full flex-col items-stretch gap-3 md:mt-9 md:w-auto md:flex-row md:items-center md:gap-4">
-            <Link
-              href={route('register')}
-              className="group inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-[16px] font-bold text-white ring-1 ring-white/25 ring-offset-0 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:ring-white/40 md:w-auto"
-              style={{
-                backgroundColor: brandColor,
-                boxShadow: `0 12px 40px ${brandColor}55, 0 0 80px ${brandColor}30`,
-              }}
-            >
-              {primaryButtonText}
-              <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-            </Link>
+            <div className="group relative inline-flex">
+              <span aria-hidden="true" className="absolute -inset-1 animate-pulse rounded-full bg-emerald-500/20 blur-lg" />
+              <Link
+                href={route('register')}
+                className="relative inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-[16px] font-bold text-white ring-1 ring-white/25 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:ring-white/40 md:w-auto"
+                style={{
+                  backgroundColor: brandColor,
+                  boxShadow: `0 12px 40px ${brandColor}55, 0 0 80px ${brandColor}30`,
+                }}
+              >
+                {primaryButtonText}
+                <ArrowLeft size={18} className="transition-transform duration-300 group-hover:-translate-x-1.5 group-hover:scale-110" />
+              </Link>
+            </div>
             <Link
               href={route('login')}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white md:w-auto"
@@ -194,9 +197,17 @@ export default function HeroSection({
             </Link>
           </div>
 
-          {/* ── Computer demo — directly under the CTA buttons ── */}
+          {/* ── Social proof badge ── */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-white/60">
+            <Star size={16} className="fill-amber-400 text-amber-400" />
+            <span>
+              انضم لأكثر من <span dir="ltr" className="font-bold text-emerald-300">+500</span> متجر نشط على المنصة
+            </span>
+          </div>
+
+          {/* ── Product showcase — directly under the CTA buttons ── */}
           <div className="mt-14 w-full">
-            <HeroComputerDemo brandColor={brandColor} appName={settings.company_name || 'وصول'} appLogo={superadminLogoLight} />
+            <ProductShowcase brandColor={brandColor} appName={settings.company_name || 'وصول'} />
           </div>
         </div>
       </div>
@@ -209,13 +220,12 @@ export default function HeroSection({
             return (
               <div
                 key={index}
-                className="group rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/10"
+                className="group rounded-2xl border border-emerald-500/10 bg-zinc-900/50 p-6 text-center shadow-xl backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:shadow-emerald-500/5"
               >
                 <div
-                  className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110"
-                  style={{ background: `${brandColor}22`, color: brandColor }}
+                  className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 transition-transform duration-300 group-hover:scale-110"
                 >
-                  <Icon size={17} />
+                  <Icon size={20} />
                 </div>
                 <div className="text-sm font-extrabold text-white sm:text-[15px]">{stat.value}</div>
                 <div className="mt-1 text-[11px] font-medium leading-relaxed text-gray-300 sm:text-[12px]">
