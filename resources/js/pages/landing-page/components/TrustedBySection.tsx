@@ -78,16 +78,11 @@ export default function TrustedBySection({
   return (
     <section
       id="trusted-by"
-      className="relative overflow-hidden bg-white pt-20 pb-14 sm:pt-24 sm:pb-16 lg:pb-20"
+      className="relative overflow-hidden bg-gradient-to-b from-zinc-950 via-zinc-900/20 to-slate-50/50 pt-20 pb-14 sm:pt-24 sm:pb-16 lg:pb-20"
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
       <style>{MARQUEE_CSS}</style>
-      {/* Soft blend from the dark hero above */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-zinc-950 via-zinc-800/60 to-transparent"
-      />
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[720px] -translate-x-1/2 rounded-full blur-[130px]"
         style={{ background: hexToRgba(brandColor, 0.07) }}
@@ -99,10 +94,7 @@ export default function TrustedBySection({
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
-          <span
-            className="mb-4 inline-block rounded-full px-4 py-1.5 text-[13px] font-bold"
-            style={{ backgroundColor: hexToRgba(brandColor, 0.12), color: brandColor }}
-          >
+          <span className="mb-4 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1 text-xs font-bold tracking-wide text-emerald-600">
             معتمد لدى
           </span>
           <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
@@ -129,7 +121,7 @@ export default function TrustedBySection({
           {[...TRUSTED_LOGOS, ...TRUSTED_LOGOS].map((logo, index) => (
             <div
               key={`${logo.name}-${index}`}
-              className="mx-2 flex h-16 min-w-[140px] shrink-0 cursor-pointer items-center justify-center rounded-xl border border-zinc-200/60 bg-white/50 px-6 py-4 shadow-sm backdrop-blur-sm transition-all duration-300 ease-out hover:scale-105"
+              className="mx-2 flex h-16 min-w-[120px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-zinc-200/80 bg-white/70 px-6 py-3 shadow-sm transition-all duration-300 ease-out hover:scale-105 sm:min-w-[140px] dark:border-zinc-800 dark:bg-zinc-900/70"
               title={logo.name}
             >
               <img
