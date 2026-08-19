@@ -35,7 +35,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CrudDeleteModal } from '@/components/CrudDeleteModal';
-import { useForm } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { PlanSubscriptionModal } from '@/components/plan-subscription-modal';
 import { hasPermission, checkPermissionWithAuth } from '@/utils/permissions';
@@ -88,8 +87,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-
-  const { post, processing } = useForm();
+  const [submittingPlan, setSubmittingPlan] = useState<number | null>(null);
 
 
 
@@ -104,6 +102,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       toast.error(t('You do not have permission to request plans'));
       return;
     }
+    setSubmittingPlan(planId);
     router.post(route('plans.request'), {
       plan_id: planId,
       billing_cycle: billingCycle
@@ -113,7 +112,8 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       },
       onError: (errors) => {
         toast.error('Plan request failed');
-      }
+      },
+      onFinish: () => setSubmittingPlan(null)
     });
   };
 
@@ -122,6 +122,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       toast.error(t('You do not have permission to start trials'));
       return;
     }
+    setSubmittingPlan(planId);
     router.post(route('plans.trial'), {
       plan_id: planId
     }, {
@@ -134,7 +135,8 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
         } else {
           toast.error('Trial start failed');
         }
-      }
+      },
+      onFinish: () => setSubmittingPlan(null)
     });
   };
 
@@ -145,10 +147,12 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
     }
     const plan = plans.find(p => p.id === planId);
     if (plan) {
+      setSubmittingPlan(planId);
       try {
         const response = await fetch(route('payment.methods'));
         if (!response.ok) {
           toast.error(t('Failed to load payment methods'));
+          setSubmittingPlan(null);
           return;
         }
         const paymentData = await response.json();
@@ -156,13 +160,16 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
         // Check for demo mode restriction for company users
         if (paymentData.is_demo && paymentData.user_type === 'company') {
           toast.error('Payment subscriptions are disabled in demo mode. This feature is available in the full version.');
+          setSubmittingPlan(null);
           return;
         }
 
+        setSubmittingPlan(null);
         setSelectedPlan({ ...plan, paymentMethods: paymentData });
         setIsSubscriptionModalOpen(true);
       } catch (error) {
         toast.error(t('Failed to load payment methods'));
+        setSubmittingPlan(null);
       }
     }
   };
@@ -467,15 +474,22 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
     // If currently subscribed and on matching billing cycle tab — show expiry info (AccountGo style)
     if (isPlanCurrentForCycle(plan)) {
       return (
-        <div className="text-center p-2 bg-green-50 rounded-lg border border-green-200">
-          <p className="text-xs text-green-600 font-medium">
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-center space-y-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {t('Current Plan')}
+          </span>
+          <p className="text-xs font-medium text-emerald-700 leading-5">
             {currentPlan?.expires_at
-              ? `${t('Expires on')} ${new Date(currentPlan.expires_at).toLocaleDateString([], { dateStyle: 'medium' })}`
+              ? `${t('Subscription expires on')}: ${formatArabicDate(currentPlan.expires_at)}`
               : t('Lifetime')}
           </p>
         </div>
       );
     }
+
+    const isLoading = submittingPlan === plan.id;
+    const isLoadingAny = submittingPlan !== null;
 
     if (plan.is_trial_available && !userTrialUsed) {
       return (
@@ -483,21 +497,28 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
           {hasPermission('trial-plans') && (
             <Button
               onClick={() => handleStartTrial(plan.id)}
-              disabled={processing}
+              disabled={isLoadingAny}
               variant="outline"
               className="w-full"
             >
-              <Zap className="h-4 w-4 me-2" />
-              {t('Start {{days}} Day Trial', { days: plan.trial_days })}
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary me-2"></div>
+              ) : (
+                <Zap className="h-4 w-4 me-2" />
+              )}
+              {isLoading ? t('Starting...') : t('Start {{days}} Day Trial', { days: plan.trial_days })}
             </Button>
           )}
           {hasPermission('subscribe-plans') && (
             <Button
               onClick={() => handleSubscribe(plan.id)}
-              disabled={processing}
+              disabled={isLoadingAny}
               className="w-full"
             >
-              {t('Subscribe Now')}
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white me-2"></div>
+              ) : null}
+              {isLoading ? t('Starting...') : t('Subscribe Now')}
             </Button>
           )}
         </div>
@@ -509,25 +530,86 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
         {hasPermission('request-plans') && (
           <Button
             onClick={() => handlePlanRequest(plan.id)}
-            disabled={processing}
+            disabled={isLoadingAny}
             variant="outline"
             className="w-full"
           >
-            <Clock className="h-4 w-4 me-2" />
-            {t('Request Plan')}
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary me-2"></div>
+            ) : (
+              <Clock className="h-4 w-4 me-2" />
+            )}
+            {isLoading ? t('Starting...') : t('Request Plan')}
           </Button>
         )}
         {hasPermission('subscribe-plans') && (
           <Button
             onClick={() => handleSubscribe(plan.id)}
-            disabled={processing}
+            disabled={isLoadingAny}
             className="w-full"
           >
-            {t('Subscribe Now')}
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white me-2"></div>
+            ) : null}
+            {isLoading ? t('Starting...') : t('Subscribe Now')}
           </Button>
         )}
       </div>
     );
+  };
+
+  // Format a date with Arabic month names and Western (latin) digits,
+  // e.g. "17 أغسطس 2027".
+  const formatArabicDate = (date: string) => {
+    if (!date) return '';
+    try {
+      return new Intl.DateTimeFormat('ar-EG-u-nu-latn', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }).format(new Date(date));
+    } catch {
+      return new Date(date).toLocaleDateString();
+    }
+  };
+
+  // Normalize storage values like "50GB", "0.5 TB" into clean RTL Arabic
+  // labels, e.g. "50 جيجابايت".
+  const formatStorageLimit = (storage: string | number): string => {
+    if (storage === undefined || storage === null) return '∞';
+    const s = String(storage).trim();
+    if (/unlimited|∞|-1/i.test(s) || s === '-') return '∞';
+    const match = s.match(/([\d.]+)\s*([a-zA-Z]+)/);
+    if (match) {
+      const units: Record<string, string> = {
+        KB: 'كيلوبايت',
+        MB: 'ميجابايت',
+        GB: 'جيجابايت',
+        TB: 'تيرابايت',
+        PB: 'بيتابايت',
+      };
+      const unit = match[2].toUpperCase();
+      return `${match[1]} ${units[unit] || unit}`;
+    }
+    return s;
+  };
+
+  // Build the compact usage-limits list rendered at the bottom of each card.
+  const buildLimits = (plan: Plan) => {
+    const stats = plan.stats || {};
+    const rawItems = [
+      { key: 'stores', label: t('Stores'), value: stats.stores },
+      { key: 'users_per_store', label: t('Users/Store'), value: stats.users_per_store },
+      { key: 'products_per_store', label: t('Products/Store'), value: stats.products_per_store },
+      { key: 'storage', label: t('Storage'), value: formatStorageLimit(stats.storage) },
+      { key: 'templates', label: t('Themes'), value: stats.templates },
+      ...(stats.warehouses !== undefined
+        ? [{ key: 'warehouses', label: t('Branches'), value: stats.warehouses }]
+        : []),
+    ];
+    return rawItems
+      .filter(item => item.value !== undefined && item.value !== null && String(item.value) !== '')
+      .map(item => ({ ...item, formattedValue: String(item.value) }));
   };
 
   // Function to get the appropriate icon for a feature
@@ -607,17 +689,6 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
     'Mobile App'
   ];
 
-  // Define stat icons
-  const statIcons = {
-    stores: <Store className="h-5 w-5" />,
-    users_per_store: <Users className="h-5 w-5" />,
-    products_per_store: <Box className="h-5 w-5" />,
-    storage: <HardDrive className="h-5 w-5" />,
-    templates: <FileText className="h-5 w-5" />,
-    warehouses: <Store className="h-5 w-5" />
-  };
-
-
   return (
     <PageTemplate
       title={t("Plans")}
@@ -658,12 +729,12 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
 
         {/* External services notice */}
         {!isAdmin && (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <div className="bg-blue-50/80 border border-blue-200 text-blue-900 rounded-xl p-4 text-sm font-medium leading-6">
             <div className="flex items-start gap-3">
               <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <h4 className="text-sm font-semibold text-blue-800 mb-1">{t('External Services Notice')}</h4>
-                <p className="text-sm text-blue-700">
+              <div className="min-w-0">
+                <h4 className="font-semibold mb-1">{t('External Services Notice')}</h4>
+                <p>
                   {t('Some features in Growth and Professional plans (e.g., ChatGPT integration, mobile app publishing) require external service subscriptions. These costs are separate from the basic subscription fee and are billed directly by the service provider.')}
                 </p>
               </div>
@@ -676,19 +747,20 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`group relative h-full flex flex-col ${plan.recommended
-                  ? 'z-10 scale-[1.02]'
-                  : ''
-                }`}
+              className={`group relative h-full flex flex-col transition-all duration-300 ${
+                plan.recommended
+                  ? 'z-10 scale-[1.02] lg:scale-[1.03] hover:scale-[1.04]'
+                  : 'hover:scale-[1.01]'
+              }`}
             >
               {/* Card with decorative elements */}
               <div className={`
                 absolute inset-0 rounded-2xl 
                 ${plan.recommended
-                  ? 'bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border-primary/30'
-                  : 'bg-gradient-to-br from-gray-100/80 via-gray-50/50 to-transparent border-gray-200/80'
+                  ? 'bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border-2 border-primary/40 shadow-primary/20'
+                  : 'bg-gradient-to-br from-gray-100/80 via-gray-50/50 to-transparent border border-gray-200/80'
                 } 
-                border shadow-lg transition-all duration-300 
+                shadow-lg transition-all duration-300 
                 group-hover:shadow-xl group-hover:shadow-primary/5
                 overflow-hidden
               `}>
@@ -751,15 +823,26 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                     {t(plan.name)}
                   </h3>
                   <div className="flex items-baseline gap-1.5 mb-3">
-                    <span className={`
-                      text-3xl font-extrabold 
-                      ${plan.recommended ? 'text-primary' : ''}
-                    `}>
-                      {plan.formatted_price || formatSuperadminCurrency(plan.price)}
-                    </span>
-                    <span className="text-muted-foreground text-sm">
-                      /{t(plan.duration.toLowerCase())}
-                    </span>
+                    {plan.is_free ? (
+                      <span className={`
+                        text-3xl font-extrabold 
+                        ${plan.recommended ? 'text-primary' : ''}
+                      `}>
+                        {t('Free')}
+                      </span>
+                    ) : (
+                      <>
+                        <span className={`
+                          text-3xl font-extrabold 
+                          ${plan.recommended ? 'text-primary' : ''}
+                        `}>
+                          {plan.formatted_price || formatSuperadminCurrency(plan.price)}
+                        </span>
+                        <span className="text-muted-foreground text-sm">
+                          / {t(plan.duration.toLowerCase())}
+                        </span>
+                      </>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-3">
                     {t(plan.description)}
@@ -814,95 +897,13 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                   <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                     {t("Usage Limits")}
                   </h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-blue-100 text-blue-600">
-                          {statIcons.stores}
-                        </div>
-                        <div className="text-xl font-bold text-blue-700">
-                          {plan.stats.stores}
-                        </div>
+                  <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t">
+                    {buildLimits(plan).map((limit) => (
+                      <div key={limit.key} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50 border text-xs">
+                        <span className="text-muted-foreground truncate">{limit.label}</span>
+                        <span className="font-semibold" dir="ltr">{limit.formattedValue}</span>
                       </div>
-                      <div className="relative text-xs font-medium text-blue-600 uppercase tracking-wide">
-                        {t("Stores")}
-                      </div>
-                    </div>
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-emerald-100 text-emerald-600">
-                          {statIcons.users_per_store}
-                        </div>
-                        <div className="text-xl font-bold text-emerald-700">
-                          {plan.stats.users_per_store}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-emerald-600 uppercase tracking-wide">
-                        {t("Users/Store")}
-                      </div>
-                    </div>
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-orange-100 text-orange-600">
-                          {statIcons.products_per_store}
-                        </div>
-                        <div className="text-xl font-bold text-orange-700">
-                          {plan.stats.products_per_store}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-orange-600 uppercase tracking-wide">
-                        {t("Products/Store")}
-                      </div>
-                    </div>
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-amber-100 text-amber-600">
-                          {statIcons.storage}
-                        </div>
-                        <div className="text-xl font-bold text-amber-700">
-                          {plan.stats.storage}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-amber-600 uppercase tracking-wide">
-                        {t("Storage")}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mt-3">
-                    <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-70"></div>
-                      <div className="relative flex items-center gap-2 mb-1">
-                        <div className="p-1.5 rounded-full bg-purple-100 text-purple-600">
-                          {statIcons.templates}
-                        </div>
-                        <div className="text-xl font-bold text-purple-700">
-                          {plan.stats.templates}
-                        </div>
-                      </div>
-                      <div className="relative text-xs font-medium text-purple-600 uppercase tracking-wide">
-                        {t("Themes")}
-                      </div>
-                    </div>
-                    {plan.stats.warehouses !== undefined && (
-                      <div className="relative overflow-hidden bg-white rounded-xl border border-gray-200 p-3 group-hover:border-primary/30 transition-colors">
-                        <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-transparent opacity-70"></div>
-                        <div className="relative flex items-center gap-2 mb-1">
-                          <div className="p-1.5 rounded-full bg-rose-100 text-rose-600">
-                            {statIcons.warehouses}
-                          </div>
-                          <div className="text-xl font-bold text-rose-700">
-                            {plan.stats.warehouses}
-                          </div>
-                        </div>
-                        <div className="relative text-xs font-medium text-rose-600 uppercase tracking-wide">
-                          {t("Branches")}
-                        </div>
-                      </div>
-                    )}
+                    ))}
                   </div>
                 </div>
 
