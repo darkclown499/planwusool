@@ -211,17 +211,18 @@ export function RolePermissionCheckboxGroup({
             
             {/* Individual Permissions */}
             <div className="p-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {modulePermissions.map((permission) => (
-                  <div key={permission.id} className="flex items-center space-x-2">
+                  <div key={permission.id} className="flex items-start gap-2 min-w-0">
                     <Checkbox
                       id={`permission-checkbox-${permission.id.toString().replace(/\s+/g, '-').toLowerCase()}`}
                       checked={selected.includes(permission.id.toString()) || selected.includes(permission.name)}
                       onCheckedChange={(checked) => 
                         handlePermissionChange(permission.id.toString(), checked === true)
                       }
+                      className="mt-0.5 flex-shrink-0"
                     />
-                    <Label htmlFor={`permission-checkbox-${permission.id.toString().replace(/\s+/g, '-').toLowerCase()}`} className="text-sm truncate">
+                    <Label htmlFor={`permission-checkbox-${permission.id.toString().replace(/\s+/g, '-').toLowerCase()}`} className="text-sm font-normal leading-snug whitespace-normal">
                       {translatePermissionName(permission.name, permission.label)}
                     </Label>
                   </div>

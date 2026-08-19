@@ -11,6 +11,7 @@ export const MODULE_LABELS: Record<string, string> = {
   product_reviews: 'تقييمات المنتجات',
   abandoned_carts: 'السلات المتروكة',
   digital_downloads: 'التحميلات الرقمية',
+  digital_products: 'المنتجات الرقمية',
   stores: 'إدارة المتاجر',
   orders: 'إدارة الطلبات',
   settings: 'الإعدادات العامة',
@@ -28,6 +29,9 @@ export const MODULE_LABELS: Record<string, string> = {
   plan_requests: 'طلبات الخطط',
   plan_orders: 'أوامر الخطط',
   referral: 'التسويق بالإحالة',
+  referral_payout: 'مدفوعات الإحالة',
+  payout_referral: 'مدفوعات الإحالة',
+  abandoned_cart_reminders: 'تذكيرات السلات المتروكة',
   landing_page: 'صفحة الهبوط',
   pos: 'نقطة البيع',
   express_checkout: 'الدفع السريع',
@@ -41,6 +45,27 @@ export const MODULE_LABELS: Record<string, string> = {
   webhooks: 'خطافات الويب',
   cache: 'الذاكرة المؤقتة',
   system: 'النظام',
+};
+
+/**
+ * Object (genitive) form of a module used after action verbs so phrases read
+ * "إدارة المستخدمين / عرض المتاجر" instead of doubling prefixes like
+ * "إدارة إدارة المتاجر" or mixing cases like "إدارة المستخدمون".
+ */
+export const MODULE_OBJECT_LABELS: Record<string, string> = {
+  users: 'المستخدمين',
+  stores: 'المتاجر',
+  orders: 'الطلبات',
+  settings: 'الإعدادات العامة',
+  products: 'المنتجات',
+  categories: 'التصنيفات',
+  customers: 'العملاء',
+  media: 'الوسائط',
+  multimedia: 'الوسائط',
+  coupons: 'الكوبونات',
+  advanced_coupons: 'الكوبونات المتقدمة',
+  digital_downloads: 'التحميلات الرقمية',
+  digital_products: 'المنتجات الرقمية',
 };
 
 export const ACTION_LABELS: Record<string, string> = {
@@ -67,11 +92,17 @@ export const ACTION_LABELS: Record<string, string> = {
   settings: 'إعدادات',
 };
 
-const SPECIAL_LABELS: Record<string, string> = {
+export const SPECIAL_LABELS: Record<string, string> = {
   'manage-any-media': 'إدارة جميع الوسائط',
+  'change-status-users': 'تغيير حالة المستخدمين',
+  'toggle-status-users': 'تغيير حالة المستخدمين',
+  'manage-referral-payout': 'إدارة مدفوعات الإحالة',
+  'manage-payout-referral': 'إدارة مدفوعات الإحالة',
+  'toggle-status-coupon-system': 'تعديل حالة الكوبونات',
+  'send-abandoned-cart-reminders': 'إرسال تذكيرات السلات',
+  'download-digital-products': 'تنزيل المنتجات الرقمية',
+  'toggle-status-advanced-coupons': 'تعديل حالة الكوبونات المتقدمة',
   'reset-password-users': 'إعادة تعيين كلمة مرور المستخدم',
-  'toggle-status': 'تغيير الحالة',
-  'process-transactions-pos': 'معالجة معاملات نقطة البيع',
   'settings-stores': 'إعدادات المتاجر',
   'settings-express-checkout': 'إعدادات الدفع السريع',
   'manage-digital-downloads': 'إدارة التحميلات الرقمية',
@@ -82,7 +113,7 @@ const SPECIAL_LABELS: Record<string, string> = {
 /**
  * Build an Arabic, human-readable label for a permission slug.
  * Handles patterns like: create-users, edit-orders, manage-analytics,
- * view-digital-downloads, reset-password-users, settings-stores, ...
+ * view-digital-downloads, toggle-status-coupon-system, settings-stores, ...
  */
 export function translatePermissionName(name?: string, label?: string): string {
   if (!name) return label || '';
@@ -94,27 +125,34 @@ export function translatePermissionName(name?: string, label?: string): string {
   const parts = name.split('-');
   const action = parts[0] || '';
   const moduleKey = parts.slice(1).join('_');
-  const moduleAr = moduleKey ? MODULE_LABELS[moduleKey] || '' : '';
 
-  if (action === 'toggle-status') {
-    return 'تغيير الحالة';
+  const moduleLabel = moduleKey ? MODULE_LABELS[moduleKey] || '' : '';
+  // Prefer the object form (genitive) for phrasing after action verbs, falling
+  // back to the module label when there is no dedicated object form.
+  const objectLabel = moduleKey
+    ? MODULE_OBJECT_LABELS[moduleKey] || moduleLabel
+    : '';
+
+  if (action === 'toggle-status' && objectLabel) {
+    return `تغيير حالة ${objectLabel}`;
   }
-  if (action === 'reset-password') {
-    return 'إعادة تعيين كلمة المرور';
+  if (action === 'reset-password' && objectLabel) {
+    return `إعادة تعيين كلمة مرور ${objectLabel}`;
   }
   if (action === 'settings') {
-    return moduleAr ? `إعدادات ${moduleAr}` : (label || name);
-  }
-  if (action === 'manage' && moduleKey === 'dashboard') {
-    return 'إدارة لوحة التحكم';
+    return objectLabel ? `إعدادات ${objectLabel}` : (label || name);
   }
 
   const actionAr = ACTION_LABELS[action];
-  if (actionAr && moduleAr) {
-    return `${actionAr} ${moduleAr}`;
+  if (actionAr && objectLabel) {
+    // Avoid duplication like "إدارة إدارة المتاجر".
+    if (objectLabel.startsWith(`${actionAr} `)) {
+      return objectLabel;
+    }
+    return `${actionAr} ${objectLabel}`;
   }
-  if (moduleAr) {
-    return moduleAr;
+  if (moduleLabel) {
+    return moduleLabel;
   }
 
   return label || name;

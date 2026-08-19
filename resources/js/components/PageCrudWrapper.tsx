@@ -61,10 +61,17 @@ export function PageCrudWrapper({
     'plan-requests': t('Plan Request'),
   };
   const entityLabel = ENTITY_LABELS[entity.name] || entity.name;
-  
+
   // Get data from page props using entity name
   const data = pageProps[entity.name] || { data: [], links: [] };
   const pageFilters = pageProps.filters || {};
+
+  // Roles use singular "دور" for 0/1 and indefinite plural "أدوار" for 2+ so the
+  // pagination footer reads "من إجمالي 2 أدوار" instead of "من إجمالي 2 الدور".
+  const dataTotal = Number(data?.total ?? 0);
+  const paginationItemLabel = entity.name === 'roles'
+    ? (dataTotal === 1 ? t('Role') : t('Roles Plural'))
+    : entityLabel;
   
   // State
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
@@ -588,7 +595,7 @@ export function PageCrudWrapper({
         {/* Pagination section */}
         <div className="p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-sm text-muted-foreground">
-            {t("Showing {{from}} to {{to}} of {{total}} {{item}}", { from: data.from || 0, to: data.to || 0, total: data.total, item: entityLabel })}
+            {t("Showing {{from}} to {{to}} of {{total}} {{item}}", { from: data.from || 0, to: data.to || 0, total: dataTotal, item: paginationItemLabel })}
           </div>
           
           <div className="flex flex-row items-center gap-1">
@@ -637,10 +644,10 @@ export function PageCrudWrapper({
         initialData={currentItem}
         title={
           formMode === 'create' 
-            ? t('Add New {{entity}}', { entity: entityLabel }) 
+            ? (entity.name === 'roles' ? t('Add New Role') : t('Add New {{entity}}', { entity: entityLabel }))
             : formMode === 'edit' 
-              ? t('Edit {{entity}}', { entity: entityLabel }) 
-              : t('View {{entity}}', { entity: entityLabel })
+              ? (entity.name === 'roles' ? t('Edit Role') : t('Edit {{entity}}', { entity: entityLabel }))
+              : (entity.name === 'roles' ? t('View Role') : t('View {{entity}}', { entity: entityLabel }))
         }
         mode={formMode}
         description={config.description}
