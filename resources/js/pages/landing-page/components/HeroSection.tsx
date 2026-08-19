@@ -45,7 +45,7 @@ export default function HeroSection({
     <section
       id="hero"
       dir="rtl"
-      className="relative z-10 bg-gray-950 pb-16 pt-14 sm:pb-20 sm:pt-16 md:pb-24 md:pt-20 lg:pt-24"
+      className="relative z-10 bg-[#09090b] pb-16 pt-14 sm:pb-20 sm:pt-16 md:pb-24 md:pt-20 lg:pt-24"
       style={{ fontFamily: "'Tajawal', 'Segoe UI', sans-serif" }}
     >
       {/* ── Backdrop layer (clipped to the hero box) ── */}

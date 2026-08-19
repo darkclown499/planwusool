@@ -78,7 +78,7 @@ export default function TrustedBySection({
   return (
     <section
       id="trusted-by"
-      className="relative overflow-hidden bg-gradient-to-b from-zinc-950 via-zinc-900/20 to-slate-50/50 pt-20 pb-14 sm:pt-24 sm:pb-16 lg:pb-20"
+      className="relative overflow-hidden bg-[#09090b] py-20 sm:py-28"
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
@@ -94,13 +94,13 @@ export default function TrustedBySection({
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
-          <span className="mb-4 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1 text-xs font-bold tracking-wide text-emerald-600">
+          <span className="mb-4 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1 text-xs font-bold tracking-wide text-emerald-400">
             معتمد لدى
           </span>
-          <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="mb-2 text-center text-2xl font-extrabold text-white sm:text-3xl">
             {sectionData?.title || 'ثقة كبرى شركات الدفع والتقنية'}
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-gray-500">
+          <p className="mt-3 text-center text-base leading-relaxed text-zinc-400 sm:text-lg">
             {sectionData?.subtitle ||
               'بوابات دفع وبنية تقنية موثوقة من أبرز العلامات العالمية تضمن أمان متجرك وعملياتك.'}
           </p>
@@ -121,14 +121,14 @@ export default function TrustedBySection({
           {[...TRUSTED_LOGOS, ...TRUSTED_LOGOS].map((logo, index) => (
             <div
               key={`${logo.name}-${index}`}
-              className="mx-2 flex h-16 min-w-[120px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-zinc-200/80 bg-white/70 px-6 py-3 shadow-sm transition-all duration-300 ease-out hover:scale-105 sm:min-w-[140px] dark:border-zinc-800 dark:bg-zinc-900/70"
+              className="mx-2 flex h-16 min-w-[120px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/70 px-6 py-3 shadow-sm transition-all duration-300 ease-out hover:scale-105 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/5 sm:min-w-[140px]"
               title={logo.name}
             >
               <img
                 src={logo.src}
                 alt={logo.name}
                 loading="lazy"
-                className="max-h-9 w-auto max-w-full object-contain opacity-60 grayscale transition-all duration-300 ease-out hover:opacity-100 hover:grayscale-0"
+                className="max-h-9 w-auto max-w-full object-contain opacity-75 grayscale transition-all duration-300 hover:grayscale-0 hover:opacity-100"
               />
             </div>
           ))}

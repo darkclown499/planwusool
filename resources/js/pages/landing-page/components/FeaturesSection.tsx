@@ -195,7 +195,7 @@ export default function FeaturesSection({
   return (
     <section
       id="features"
-      className="relative overflow-hidden bg-zinc-950 py-20 text-white sm:py-24"
+      className="relative overflow-hidden bg-zinc-950 py-20 text-white sm:py-28"
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >

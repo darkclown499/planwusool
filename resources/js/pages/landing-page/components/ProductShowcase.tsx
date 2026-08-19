@@ -28,8 +28,11 @@ export default function ProductShowcase({ brandColor = '#22c55e', appName = 'ÙˆØ
       <div className="pointer-events-none absolute inset-0 -z-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-emerald-900/30 via-zinc-950 to-transparent" />
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-0 h-72 w-[42rem] max-w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-[130px]" />
 
+      {/* Backlight glow behind the frame */}
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-4 -z-10 rounded-full bg-emerald-500/15 blur-3xl" />
+
       {/* Framed device container */}
-      <div className="relative mx-auto w-full max-w-5xl transition-transform duration-700 [transform:perspective(1400px)_rotateX(6deg)] hover:[transform:perspective(1400px)_rotateX(2deg)_rotateY(-2deg)]">
+      <div className="group relative mx-auto w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/80 shadow-2xl transition-transform duration-700 [transform:perspective(1400px)_rotateX(6deg)] hover:[transform:perspective(1400px)_rotateX(2deg)_rotateY(-2deg)]">
         {/* Browser chrome */}
         <div className="flex items-center gap-3 rounded-t-2xl border border-b-0 border-zinc-800 bg-zinc-900/95 px-4 py-3 backdrop-blur-sm">
           <div className="flex items-center gap-1.5">
@@ -40,7 +43,7 @@ export default function ProductShowcase({ brandColor = '#22c55e', appName = 'ÙˆØ
           <div className="mx-auto flex max-w-xs flex-1 items-center justify-center gap-2 rounded-lg bg-zinc-800/80 px-4 py-1.5">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
             <span dir="ltr" className="truncate font-mono text-[11px] text-zinc-400">
-              my-store.wusool.ps
+              https://app.wusool.ps
             </span>
           </div>
           <MessageCircle size={15} style={{ color: brandColor }} className="flex-shrink-0" />
