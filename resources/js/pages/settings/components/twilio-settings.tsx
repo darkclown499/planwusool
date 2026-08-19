@@ -5,9 +5,11 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { SettingsSection } from '@/components/settings-section';
 import {
   Save,
@@ -23,6 +25,7 @@ import {
   Type,
   Lock,
   User,
+  PlugZap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -95,7 +98,9 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
     initialData[contentKey] = systemSettings?.[contentKey] || '';
   });
 
-  const { data, setData, post, processing, errors } = useForm<TwilioFormData>(initialData);
+  const { data, setData, post, processing, errors, isDirty, reset } = useForm<TwilioFormData>(initialData);
+
+  const [testDialogOpen, setTestDialogOpen] = useState(false);
 
   const twilioTestForm = useForm({
     twilio_sid: systemSettings?.twilio_sid || '',
@@ -115,16 +120,19 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
   const twilioConfigured = Boolean(systemSettings?.twilio_sid);
   const hotsmsConfigured = Boolean(systemSettings?.hotsms_user_name);
 
+  const handleTestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (activeProvider === 'hotsms') {
+      hotsmsTestForm.post(route('settings.hotsms.test'), { preserveScroll: true });
+    } else {
+      twilioTestForm.post(route('settings.twilio.test'), { preserveScroll: true });
+    }
+  };
+
   return (
     <SettingsSection
       title={t('SMS Settings')}
       description={t('Choose your SMS provider (Twilio or HotSMS) and configure its settings for your store')}
-      action={
-        <Button type="submit" form="twilio-form" size="sm" disabled={processing}>
-          <Save className="h-4 w-4 me-2" />
-          {processing ? t('Saving...') : t('Save Changes')}
-        </Button>
-      }
     >
       <form id="twilio-form" onSubmit={(e) => { e.preventDefault(); post(route('settings.twilio'), { preserveScroll: true }); }} className="space-y-6">
       {/* Status banner */}
@@ -242,6 +250,12 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                 checked={data.is_twilio_enabled}
                 onCheckedChange={(checked) => setData('is_twilio_enabled', checked)}
               />
+              </div>
+            <div className="flex items-center justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={() => setTestDialogOpen(true)}>
+                <PlugZap className="h-4 w-4 me-1" />
+                {"اختبار الاتصال"}
+              </Button>
             </div>
 
             {data.is_twilio_enabled && (
@@ -250,7 +264,7 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                   <div className="space-y-2">
                     <Label htmlFor="twilio_sid" className="inline-flex items-center gap-1.5">
                       <User className="h-3.5 w-3.5 text-muted-foreground" />
-                      {t('Twilio SID')}
+                      {t('معرّف الحساب (Account SID)')}
                     </Label>
                     <Input
                       id="twilio_sid"
@@ -258,6 +272,8 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                       value={data.twilio_sid}
                       onChange={(e) => setData('twilio_sid', e.target.value)}
                       placeholder={t('Enter Twilio SID')}
+                      dir="ltr"
+                      className="font-mono text-left"
                     />
                     {errors.twilio_sid && (
                       <p className="text-sm text-red-600">{errors.twilio_sid}</p>
@@ -267,7 +283,7 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                   <div className="space-y-2">
                     <Label htmlFor="twilio_token" className="inline-flex items-center gap-1.5">
                       <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                      {t('Twilio Auth Token')}
+                      {t('رمز التوثيق (Auth Token)')}
                     </Label>
                     <Input
                       id="twilio_token"
@@ -275,6 +291,8 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                       value={data.twilio_token}
                       onChange={(e) => setData('twilio_token', e.target.value)}
                       placeholder={t('Leave blank to keep the current token')}
+                      dir="ltr"
+                      className="font-mono text-left"
                     />
                     <p className="text-xs text-muted-foreground">{t('Token is masked for security. Only enter a new value to replace it.')}</p>
                     {errors.twilio_token && (
@@ -285,7 +303,7 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="twilio_from" className="inline-flex items-center gap-1.5">
                       <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-                      {t('From Number')}
+                      {t('رقم المرسل')}
                     </Label>
                     <Input
                       id="twilio_from"
@@ -293,6 +311,8 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                       value={data.twilio_from}
                       onChange={(e) => setData('twilio_from', e.target.value)}
                       placeholder={t('Enter Twilio phone number (e.g., +1234567890)')}
+                      dir="ltr"
+                      className="font-mono text-left"
                     />
                     {errors.twilio_from && (
                       <p className="text-sm text-red-600">{errors.twilio_from}</p>
@@ -332,44 +352,11 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                         value={data.twilio_owner_phone}
                         onChange={(e) => setData('twilio_owner_phone', e.target.value)}
                         placeholder="+97059XXXXXXX"
-                        className="mt-1.5"
+                        dir="ltr"
+                        className="mt-1.5 font-mono text-left"
                       />
                     </div>
                   )}
-                </div>
-
-                {/* Test SMS */}
-                <div className="rounded-lg border border-gray-100 p-4">
-                  <div className="mb-3 flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-600">
-                      <Send className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h5 className="text-sm font-medium text-gray-900">{t('Test SMS')}</h5>
-                      <p className="text-xs text-muted-foreground">{t('Send a test message to verify your Twilio credentials.')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-end gap-3">
-                    <div className="flex-1 space-y-2">
-                      <Label htmlFor="twilio_test_phone">{t('Send Test SMS to')}</Label>
-                      <Input
-                        id="twilio_test_phone"
-                        type="text"
-                        value={twilioTestForm.data.phone}
-                        onChange={(e) => twilioTestForm.setData('phone', e.target.value)}
-                        placeholder="+97059XXXXXXX"
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      disabled={twilioTestForm.processing}
-                      onClick={() => twilioTestForm.post(route('settings.twilio.test'), { preserveScroll: true })}
-                    >
-                      <Send className="h-4 w-4 me-2" />
-                      {twilioTestForm.processing ? t('Sending...') : t('Send Test SMS')}
-                    </Button>
-                  </div>
                 </div>
               </>
             )}
@@ -396,6 +383,12 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                 checked={data.is_hotsms_enabled}
                 onCheckedChange={(checked) => setData('is_hotsms_enabled', checked)}
               />
+              </div>
+            <div className="flex items-center justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={() => setTestDialogOpen(true)}>
+                <PlugZap className="h-4 w-4 me-1" />
+                {"اختبار الاتصال"}
+              </Button>
             </div>
 
             {data.is_hotsms_enabled && (
@@ -412,6 +405,8 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                       value={data.hotsms_user_name}
                       onChange={(e) => setData('hotsms_user_name', e.target.value)}
                       placeholder={t('Enter HotSMS username')}
+                      dir="ltr"
+                      className="font-mono text-left"
                     />
                     {errors.hotsms_user_name && (
                       <p className="text-sm text-red-600">{errors.hotsms_user_name}</p>
@@ -429,6 +424,8 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                       value={data.hotsms_password}
                       onChange={(e) => setData('hotsms_password', e.target.value)}
                       placeholder={t('Leave blank to keep the current password')}
+                      dir="ltr"
+                      className="font-mono text-left"
                     />
                     <p className="text-xs text-muted-foreground">{t('Password is masked for security. Only enter a new value to replace it.')}</p>
                     {errors.hotsms_password && (
@@ -439,7 +436,7 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="hotsms_sender" className="inline-flex items-center gap-1.5">
                       <Type className="h-3.5 w-3.5 text-muted-foreground" />
-                      {t('HotSMS Sender Name')}
+                      {t('اسم المرسل')}
                     </Label>
                     <Input
                       id="hotsms_sender"
@@ -447,6 +444,8 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                       value={data.hotsms_sender}
                       onChange={(e) => setData('hotsms_sender', e.target.value)}
                       placeholder={t('Enter approved sender name (optional)')}
+                      dir="ltr"
+                      className="font-mono text-left"
                     />
                     {errors.hotsms_sender && (
                       <p className="text-sm text-red-600">{errors.hotsms_sender}</p>
@@ -486,44 +485,11 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
                         value={data.hotsms_owner_phone}
                         onChange={(e) => setData('hotsms_owner_phone', e.target.value)}
                         placeholder="+97059XXXXXXX"
-                        className="mt-1.5"
+                        dir="ltr"
+                        className="mt-1.5 font-mono text-left"
                       />
                     </div>
                   )}
-                </div>
-
-                {/* Test SMS */}
-                <div className="rounded-lg border border-gray-100 p-4">
-                  <div className="mb-3 flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
-                      <Send className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <h5 className="text-sm font-medium text-gray-900">{t('Test SMS')}</h5>
-                      <p className="text-xs text-muted-foreground">{t('Send a test message to verify your HotSMS credentials.')}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-end gap-3">
-                    <div className="flex-1 space-y-2">
-                      <Label htmlFor="hotsms_test_phone">{t('Send Test SMS to')}</Label>
-                      <Input
-                        id="hotsms_test_phone"
-                        type="text"
-                        value={hotsmsTestForm.data.phone}
-                        onChange={(e) => hotsmsTestForm.setData('phone', e.target.value)}
-                        placeholder="+97059XXXXXXX"
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      disabled={hotsmsTestForm.processing}
-                      onClick={() => hotsmsTestForm.post(route('settings.hotsms.test'), { preserveScroll: true })}
-                    >
-                      <Send className="h-4 w-4 me-2" />
-                      {hotsmsTestForm.processing ? t('Sending...') : t('Send Test SMS')}
-                    </Button>
-                  </div>
                 </div>
               </>
             )}
@@ -615,6 +581,65 @@ export default function TwilioSettings({ systemSettings, templates }: TwilioSett
         </div>
       </div>
       </form>
+
+      <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('اختبار الاتصال')}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleTestSubmit} className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="test-phone">{t('رقم الهاتف للاختبار')}</Label>
+              <Input
+                id="test-phone"
+                type="text"
+                value={activeProvider === 'hotsms' ? hotsmsTestForm.data.phone : twilioTestForm.data.phone}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (activeProvider === 'hotsms') {
+                    hotsmsTestForm.setData('phone', value);
+                  } else {
+                    twilioTestForm.setData('phone', value);
+                  }
+                }}
+                placeholder="+97059XXXXXXX"
+                dir="ltr"
+                className="font-mono text-left"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                {activeProvider === 'hotsms'
+                  ? t('سيتم إرسال رسالة تجريبية عبر HotSMS')
+                  : t('سيتم إرسال رسالة تجريبية عبر Twilio')}
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setTestDialogOpen(false)}>
+                {t('Close')}
+              </Button>
+              <Button type="submit" disabled={activeProvider === 'hotsms' ? hotsmsTestForm.processing : twilioTestForm.processing}>
+                <Send className="h-4 w-4 me-2" />
+                {activeProvider === 'hotsms' ? (hotsmsTestForm.processing ? t('Sending...') : t('Send Test SMS')) : (twilioTestForm.processing ? t('Sending...') : t('Send Test SMS'))}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {isDirty && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+          <div className="flex items-center gap-3 rounded-xl border bg-white/95 px-4 py-3 shadow-lg">
+            <span className="text-sm text-muted-foreground">{t('لديك تغييرات غير محفوظة')}</span>
+            <Button type="submit" form="twilio-form" size="sm" disabled={processing}>
+              <Save className="h-4 w-4 me-2" />
+              {processing ? t('Saving...') : t('Save Changes')}
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => reset()} disabled={processing}>
+              {t('Discard')}
+            </Button>
+          </div>
+        </div>
+      )}
     </SettingsSection>
   );
 }
