@@ -34,7 +34,6 @@ export function useTemplateAccess({
   userPlanName,
   userPlanTier,
   isSuperAdmin = false,
-  isPreview = false,
 }: TemplateAccessOptions): TemplateAccessResult {
   const planTier: PlanTier = useMemo(
     () => (userPlanTier ? userPlanTier : getTemplateTierFromPlanName(userPlanName)),
@@ -47,10 +46,10 @@ export function useTemplateAccess({
   );
 
   const canActivate = useMemo(() => {
-    if (isSuperAdmin || isPreview) return true;
+    if (isSuperAdmin) return true;
     if (!template) return false;
     return canAccessTemplate(template, planTier);
-  }, [template, planTier, isSuperAdmin, isPreview]);
+  }, [template, planTier, isSuperAdmin]);
 
   // Advanced builder is only available on professional tier
   const canCustomize = useMemo(

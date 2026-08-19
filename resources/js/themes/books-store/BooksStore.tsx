@@ -170,6 +170,8 @@ const BooksStoreContent: React.FC = () => {
       <CustomCodeInjector 
         customCss={store?.custom_css} 
         customJavascript={store?.custom_javascript} 
+        customHeadScripts={store?.custom_head_scripts}
+        customBodyScripts={store?.custom_body_scripts}
       />
       
       <Header 

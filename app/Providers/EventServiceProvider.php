@@ -9,6 +9,7 @@ use App\Events\OrderStatusChanged;
 use App\Events\CustomerCreated;
 use App\Events\ProductCreated;
 use App\Listeners\SendUserCreatedEmail;
+use App\Listeners\SendOrderCreatedEmail;
 use App\Listeners\SendOrderCreatedMessaging;
 use App\Listeners\SendStoreCreatedEmail;
 use App\Listeners\SendOrderStatusChangedEmail;
@@ -30,6 +31,7 @@ class EventServiceProvider extends ServiceProvider
             HandleWebhooks::class . '@handleUserCreated',
         ],
         OrderCreated::class => [
+            SendOrderCreatedEmail::class,
             SendOrderCreatedMessaging::class,
             SendUniversalNotification::class . '@handleOrderCreated',
             HandleWebhooks::class . '@handleOrderCreated',

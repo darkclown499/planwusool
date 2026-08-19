@@ -10,9 +10,13 @@ interface StoreHeadProps {
 }
 
 export default function StoreHead({ store, defaultTitle, defaultDescription, defaultKeywords, products = [] }: StoreHeadProps) {
-  const title = store?.seo_title || store?.name || defaultTitle || 'Wusool Store';
-  const description = store?.seo_description || defaultDescription || store?.description || '';
-  const keywords = store?.seo_keywords || defaultKeywords || '';
+  const title = store?.seo_title || store?.meta_title || store?.name || defaultTitle || 'Wusool Store';
+  const description = store?.seo_description || store?.meta_description || defaultDescription || store?.description || '';
+  const keywords = store?.seo_keywords || store?.meta_keywords || defaultKeywords || '';
+  const rawOgImage = store?.seo_image || store?.og_image || '';
+  const ogImage = rawOgImage
+    ? (rawOgImage.startsWith('http') ? rawOgImage : `${window.location.origin}${rawOgImage.startsWith('/') ? '' : '/'}${rawOgImage}`)
+    : '';
 
   useEffect(() => {
     // Name the browser tab after the store (seo_title, then store name) so tabs
@@ -77,7 +81,7 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
       <meta property="og:title" content={title} />
       {description ? <meta property="og:description" content={description} /> : null}
       <meta property="og:type" content="website" />
-      {store?.seo_image ? <meta property="og:image" content={store.seo_image} /> : null}
+      {ogImage ? <meta property="og:image" content={ogImage} /> : null}
     </Head>
   );
 }

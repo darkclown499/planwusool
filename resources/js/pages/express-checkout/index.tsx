@@ -1,21 +1,47 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, RefreshCw, Zap, Eye, Edit, Trash2, Settings } from 'lucide-react';
+import { CheckCircle2, CreditCard, Edit, Eye, Plus, RotateCcw, Search, Settings, Trash2, TrendingUp, Wallet, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 
+type StatusFilter = 'all' | 'active' | 'inactive';
+
 export default function ExpressCheckout() {
   const { t } = useTranslation();
-  const { checkouts, stats, auth } = usePage().props as any;
+  const { checkouts = [], stats = { total: 0, active: 0, conversionRate: 0, totalRevenue: 0 }, auth } = usePage().props as any;
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const [selectedCheckout, setSelectedCheckout] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  const allCheckouts = checkouts || [];
+
+  const filteredCheckouts = allCheckouts.filter((checkout: any) => {
+    const q = searchTerm.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
+      (checkout.name && checkout.name.toLowerCase().includes(q)) ||
+      (checkout.description && checkout.description.toLowerCase().includes(q));
+    const matchesStatus =
+      statusFilter === 'all' || (statusFilter === 'active' ? !!checkout.is_active : !checkout.is_active);
+    return matchesSearch && matchesStatus;
+  });
+
+  const filtersActive = searchTerm.trim() !== '' || statusFilter !== 'all';
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+  };
 
 
   const handleActionClick = (action: string, permission: string, checkout?: any) => {
@@ -42,14 +68,6 @@ export default function ExpressCheckout() {
         router.visit(route('express-checkout.create'));
         break;
     }
-  };
-
-  const handleDelete = (checkout: any) => {
-    handleActionClick('delete', 'delete-express-checkout', checkout);
-  };
-
-  const handleSettings = (checkout: any) => {
-    handleActionClick('settings', 'settings-express-checkout', checkout);
   };
 
   const handleDeleteConfirm = () => {
@@ -97,7 +115,7 @@ export default function ExpressCheckout() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('Active Checkouts')}</CardTitle>
-                <Zap className="h-4 w-4 text-muted-foreground" />
+                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.active}</div>
@@ -110,7 +128,7 @@ export default function ExpressCheckout() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('Conversion Rate')}</CardTitle>
-                <Zap className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.conversionRate}%</div>
@@ -121,7 +139,7 @@ export default function ExpressCheckout() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('Total Revenue')}</CardTitle>
-                <Zap className="h-4 w-4 text-muted-foreground" />
+                <Wallet className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold ltr-num">{formatCurrency(stats.totalRevenue)}</div>
@@ -136,27 +154,68 @@ export default function ExpressCheckout() {
               <CardTitle>{t('Express Checkout Methods')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {checkouts.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Zap className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                    <h3 className="mt-4 text-lg font-medium">{t('No express checkouts found')}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {t('Get started by creating your first express checkout.')}
-                    </p>
-                    {hasPermission('create-express-checkout') && (
-                      <Button 
-                        onClick={() => handleActionClick('create', 'create-express-checkout')} 
-                        className="mt-4"
-                      >
-                        <Plus className="h-4 w-4 me-2" />
-                        {t('Create Checkout')}
+              {allCheckouts.length > 0 && (
+                <div className="mb-4 flex flex-col gap-3 rounded-lg border bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="relative w-full sm:max-w-sm">
+                    <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder={t('Search by link or product name')}
+                      aria-label={t('Search by link or product name')}
+                      className="w-full ps-9"
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                      <SelectTrigger className="w-36" aria-label={t('Status')}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t('All Statuses')}</SelectItem>
+                        <SelectItem value="active">{t('Active')}</SelectItem>
+                        <SelectItem value="inactive">{t('Disabled')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {filtersActive && (
+                      <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={resetFilters}>
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        {t('Reset Filters')}
                       </Button>
                     )}
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {checkouts.map((checkout: any) => (
+                </div>
+              )}
+
+              {allCheckouts.length === 0 ? (
+                <div className="text-center py-12">
+                  <CreditCard className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                  <h3 className="mt-4 text-lg font-medium">{t('No express checkouts found')}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {t('Get started by creating your first express checkout.')}
+                  </p>
+                  {hasPermission('create-express-checkout') && (
+                    <Button
+                      onClick={() => handleActionClick('create', 'create-express-checkout')}
+                      className="mt-4"
+                    >
+                      <Plus className="h-4 w-4 me-2" />
+                      {t('Create Checkout')}
+                    </Button>
+                  )}
+                </div>
+              ) : filteredCheckouts.length === 0 ? (
+                <div className="text-center py-10">
+                  <Search className="h-10 w-10 mx-auto text-muted-foreground opacity-50" />
+                  <h3 className="mt-3 text-base font-medium">{t('No express checkouts found')}</h3>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={resetFilters}>
+                    <RotateCcw className="h-3.5 w-3.5 me-1.5" />
+                    {t('Reset Filters')}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredCheckouts.map((checkout: any) => (
                       <div key={checkout.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-4">
                           <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -206,7 +265,6 @@ export default function ExpressCheckout() {
                     ))}
                   </div>
                 )}
-              </div>
             </CardContent>
           </Card>
         </div>

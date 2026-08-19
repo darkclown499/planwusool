@@ -175,7 +175,12 @@ class OnboardingController extends Controller
             $store->slug = $request->store_subdomain;
         }
         $store->name = $request->store_name;
-        $store->theme = Store::normalizeThemeSlug($request->theme);
+        $theme = Store::normalizeThemeSlug($request->theme);
+        $availableThemes = $user->getAvailableThemes();
+        if (!in_array($theme, $availableThemes, true)) {
+            return back()->withErrors(['theme' => __('This template is not available on your current plan. Please choose one of your plan templates.')])->withInput();
+        }
+        $store->theme = $theme;
         $store->save();
 
         $currency = Currency::where('code', $request->currency)->first();

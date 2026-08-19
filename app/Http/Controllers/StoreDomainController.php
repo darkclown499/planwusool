@@ -29,11 +29,37 @@ class StoreDomainController extends Controller
     }
 
     /**
+     * Guard: connecting a custom (external) domain requires a plan that
+     * explicitly enables custom domains. Super admins always pass.
+     *
+     * @return \Illuminate\Http\JsonResponse|null
+     */
+    private function requireDomainPlan(Store $store)
+    {
+        $user = Auth::user();
+        if ($user && $user->isSuperAdmin()) {
+            return null;
+        }
+
+        if (!$store->canUseCustomDomain()) {
+            return response()->json([
+                'message' => __('Connecting a custom domain is not included in your current plan. Please upgrade your plan to use your own domain.'),
+            ], 403);
+        }
+
+        return null;
+    }
+
+    /**
      * List all domains for a store, plus the DNS setup hints.
      */
     public function index($storeId)
     {
         $store = $this->resolveStore($storeId);
+
+        if ($gate = $this->requireDomainPlan($store)) {
+            return $gate;
+        }
 
         $domains = $store->storeDomains()
             ->orderByDesc('is_primary')
@@ -64,6 +90,10 @@ class StoreDomainController extends Controller
     public function store($storeId, Request $request)
     {
         $store = $this->resolveStore($storeId);
+
+        if ($gate = $this->requireDomainPlan($store)) {
+            return $gate;
+        }
 
         $data = $request->validate([
             'domain_name' => 'required|string|max:255',
@@ -98,6 +128,10 @@ class StoreDomainController extends Controller
         $store = $this->resolveStore($storeId);
         $domain = $this->resolveDomain($store, $domainId);
 
+        if ($gate = $this->requireDomainPlan($store)) {
+            return $gate;
+        }
+
         $verified = $this->checkDnsTxt($domain);
 
         $domain->is_verified = $verified;
@@ -122,14 +156,29 @@ class StoreDomainController extends Controller
         $store = $this->resolveStore($storeId);
         $domain = $this->resolveDomain($store, $domainId);
 
-        $domain->ssl_status = $this->checkSslConnection($domain->domain_name) ? 'active' : 'pending';
+        if ($gate = $this->requireDomainPlan($store)) {
+            return $gate;
+        }
+
+        if ($this->checkSslConnection($domain->domain_name)) {
+            $domain->ssl_status = 'active';
+        } elseif ($this->isApexPointingToServer($domain->domain_name)) {
+            // DNS already points to our servers, but TLS is not served yet.
+            $domain->ssl_status = 'error';
+        } else {
+            $domain->ssl_status = 'pending';
+        }
         $domain->save();
+
+        $message = match ($domain->ssl_status) {
+            'active' => 'SSL certificate is active.',
+            'error' => 'SSL certificate could not be detected. Make sure your domain points to our servers and the web server is configured.',
+            default => 'No SSL certificate detected yet. Make sure the domain points to our servers.',
+        };
 
         return response()->json([
             'domain' => $this->formatDomain($domain->refresh()),
-            'message' => $domain->ssl_status === 'active'
-                ? 'SSL certificate is active.'
-                : 'No SSL certificate detected yet. Make sure the domain points to our servers.',
+            'message' => $message,
         ]);
     }
 
@@ -141,6 +190,10 @@ class StoreDomainController extends Controller
         $store = $this->resolveStore($storeId);
         $domain = $this->resolveDomain($store, $domainId);
 
+        if ($gate = $this->requireDomainPlan($store)) {
+            return $gate;
+        }
+
         $store->storeDomains()->update(['is_primary' => false]);
         $domain->is_primary = true;
         $domain->save();
@@ -151,10 +204,15 @@ class StoreDomainController extends Controller
     /**
      * Remove a custom domain from the store.
      */
-    public function destroy($storeId, $domainId)
+public function destroy($storeId, $domainId)
     {
         $store = $this->resolveStore($storeId);
         $domain = $this->resolveDomain($store, $domainId);
+
+        if ($gate = $this->requireDomainPlan($store)) {
+            return $gate;
+        }
+
         $domain->delete();
 
         // If we removed the primary domain, promote the oldest verified one
@@ -269,6 +327,35 @@ class StoreDomainController extends Controller
         if ($fp) {
             fclose($fp);
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Whether the domain's DNS A record currently resolves to our server IP.
+     * Used to differentiate "still propagating" from a real SSL problem.
+     */
+    private function isApexPointingToServer(string $domain): bool
+    {
+        if (!function_exists('dns_get_record')) {
+            return false;
+        }
+
+        $serverIp = $this->getServerIp();
+        if (!$serverIp) {
+            return false;
+        }
+
+        $records = @dns_get_record($domain, DNS_A);
+        if (!$records) {
+            return false;
+        }
+
+        foreach ($records as $record) {
+            if (!empty($record['ip']) && $record['ip'] === $serverIp) {
+                return true;
+            }
         }
 
         return false;

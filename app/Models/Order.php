@@ -46,6 +46,8 @@ class Order extends Model
         'shipping_amount',
         'discount_amount',
         'total_amount',
+        'currency',
+        'stock_restored',
         'payment_method',
         'whatsapp_number',
         'payment_transaction_id',
@@ -67,6 +69,7 @@ class Order extends Model
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'coupon_discount' => 'decimal:2',
+        'stock_restored' => 'boolean',
         'payment_details' => 'array',
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
@@ -99,5 +102,35 @@ class Order extends Model
         } while (self::where('order_number', $orderNumber)->exists());
 
         return $orderNumber;
+    }
+
+    /**
+     * Restore the product quantities deducted when this order was created, once
+     * the order reaches a terminal state (failed / cancelled / refunded).
+     * Guarded by the stock_restored flag so it only ever runs once.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::updating(function (Order $order) {
+            $terminal = in_array(strtolower((string) $order->status), ['failed', 'cancelled', 'refunded'], true)
+                || strtolower((string) $order->payment_status) === 'failed';
+
+            if (!$terminal || (bool) $order->stock_restored || !$order->exists) {
+                return;
+            }
+
+            foreach ($order->items()->get() as $item) {
+                if (!$item->product_id) {
+                    continue;
+                }
+                \Illuminate\Support\Facades\DB::table('products')
+                    ->where('id', $item->product_id)
+                    ->increment('stock', (int) $item->quantity);
+            }
+
+            $order->forceFill(['stock_restored' => true]);
+        });
     }
 }

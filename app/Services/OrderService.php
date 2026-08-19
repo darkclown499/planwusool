@@ -60,6 +60,7 @@ class OrderService
                 'shipping_amount' => $orderData['shipping_amount'],
                 'discount_amount' => $orderData['discount_amount'],
                 'total_amount' => $orderData['total_amount'],
+                'currency' => $orderData['currency'] ?? null,
                 
                 // Payment info
                 'payment_method' => $orderData['payment_method'],
@@ -82,16 +83,35 @@ class OrderService
                 // Check and update product inventory
                 $product = Product::find($cartItem['product_id']);
                 if ($product) {
-                    if ($product->stock < $cartItem['quantity']) {
-                        throw new \Exception("Insufficient stock for product: {$cartItem['name']}");
-                    }
-                    
-                    // Reduce product stock
-                    $product->decrement('stock', $cartItem['quantity']);
+                    $tracking = (bool) ($product->track_inventory ?? true);
+                    $backorder = (bool) $product->allow_backorder;
 
-                    // Notify the merchant when stock runs low
-                    if ($product->stock <= 5) {
-                        MerchantNotificationService::lowStock($product);
+                    if (!$tracking) {
+                        // Inventory tracking is disabled for this product.
+                    } elseif ($backorder) {
+                        // Backorders allowed: record the sale; stock may go negative.
+                        $product->decrement('stock', $cartItem['quantity']);
+                    } else {
+                        // Atomic conditional decrement prevents concurrent oversell
+                        // (two simultaneous requests can never both pass the check).
+                        $decremented = DB::table('products')
+                            ->where('id', $product->id)
+                            ->where('stock', '>=', $cartItem['quantity'])
+                            ->decrement('stock', $cartItem['quantity']);
+
+                        if (!$decremented) {
+                            throw new \Exception("Insufficient stock for product: {$cartItem['name']}");
+                        }
+                    }
+
+                    // Notify the merchant when stock drops at/below the product's
+                    // configured warning threshold (defaults to 5).
+                    if ($tracking) {
+                        $threshold = (int) ($product->low_stock_warning ?: 5);
+                        $product->refresh();
+                        if ($product->stock !== null && $product->stock <= $threshold) {
+                            MerchantNotificationService::lowStock($product, $threshold);
+                        }
                     }
                 }
                 
@@ -346,7 +366,7 @@ class OrderService
                 'payment_method_types' => ['card'],
                 'line_items' => [[
                     'price_data' => [
-                        'currency' => 'usd',
+                        'currency' => strtolower($order->currency ?: 'usd'),
                         'product_data' => [
                             'name' => "Order #{$order->order_number}",
                         ],
@@ -429,7 +449,7 @@ class OrderService
                     'purchase_units' => [
                         [
                             'amount' => [
-                                'currency_code' => 'USD',
+                                'currency_code' => strtoupper($order->currency ?: 'USD'),
                                 'value' => number_format($order->total_amount, 2, '.', ''),
                             ],
                             'description' => "Order #{$order->order_number}",

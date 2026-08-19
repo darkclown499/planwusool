@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
    Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate, Package, Warehouse,
+   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate, Package, Warehouse, Code2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -98,6 +98,39 @@ const SectionResetButton = ({ onReset }: { onReset: () => void }) => {
       <History className="h-3.5 w-3.5 me-1" />
       {t('Reset')}
     </Button>
+  );
+};
+
+const GoogleSnippetPreview = ({ title, url, description, favicon }: { title: string; url: string; description: string; favicon?: string }) => {
+  const { t } = useTranslation();
+  let hostname = '';
+  try {
+    hostname = new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    hostname = url;
+  }
+  return (
+    <div className="rounded-xl border border-border bg-white p-4 sm:p-5" dir="ltr">
+      <div className="mb-2 flex items-center gap-2.5">
+        {favicon ? (
+          <img src={favicon} alt="" className="h-7 w-7 shrink-0 rounded-full object-cover" />
+        ) : (
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F1F3F4] text-xs font-medium text-gray-600">
+            {hostname?.charAt(0).toUpperCase() || 'S'}
+          </div>
+        )}
+        <div className="min-w-0 leading-tight">
+          <div className="truncate text-[13px] text-gray-700">{hostname || t('Store Link')}</div>
+          <div className="truncate text-[12px] text-gray-500">{url || ''}</div>
+        </div>
+      </div>
+      <h3 className="mb-1 truncate text-xl font-normal leading-snug text-[#1a0dab] hover:underline">
+        {title ? title : <span className="font-normal text-gray-400">{t('No meta title set')}</span>}
+      </h3>
+      <p className="line-clamp-2 text-sm leading-snug text-gray-800">
+        {description ? description : <span className="text-gray-400">{t('No meta description set')}</span>}
+      </p>
+    </div>
   );
 };
 
@@ -318,6 +351,19 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
   const languageValue = formData.language || formData.defaultLanguage || 'ar';
   const maintenanceOn = formData.maintenance_mode === true || formData.maintenance_mode === 'true';
   const storeStatusOn = formData.store_status === true || formData.store_status === 'true';
+  const whatsappOn = formData.whatsapp_widget_enabled === true || formData.whatsapp_widget_enabled === 'true';
+
+  const seoPreviewUrl = useMemo(() => {
+    const domain = store.custom_domain || store.custom_subdomain || '';
+    if (domain) {
+      return domain.startsWith('http') ? domain : `https://${domain}`;
+    }
+    try {
+      return route('store.home', { storeSlug: store.slug });
+    } catch {
+      return '';
+    }
+  }, [store]);
 
   return (
     <PageTemplate
@@ -449,6 +495,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
             </div>
           </AccordionSection>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <AccordionSection
             title={t('Regional Settings')}
             icon={<Globe className="h-4 w-4" />}
@@ -583,6 +630,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
               </div>
             </div>
           </AccordionSection>
+          </div>
 
           <AccordionSection
             title={t('Store Branding')}
@@ -598,6 +646,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                   value={formData.logo || ''}
                   onChange={(value) => updateSetting('logo', value)}
                   placeholder={t('Select store logo...')}
+                  dropzoneLabel={t('Upload store logo (PNG/SVG)')}
                   dragDrop
                 />
               </div>
@@ -607,6 +656,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                   value={formData.favicon || ''}
                   onChange={(value) => updateSetting('favicon', value)}
                   placeholder={t('Select store favicon...')}
+                  dropzoneLabel={t('Upload store icon / Favicon (32x32)')}
                   dragDrop
                 />
               </div>
@@ -686,7 +736,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                     id="state"
                     value={formData.state || ''}
                     onChange={(e) => updateSetting('state', e.target.value)}
-                    placeholder={t('NY')}
+                    placeholder={t('Amman')}
                   />
                 </div>
               </div>
@@ -697,7 +747,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                     id="country"
                     value={formData.country || ''}
                     onChange={(e) => updateSetting('country', e.target.value)}
-                    placeholder={t('United States')}
+                    placeholder={t('Jordan')}
                   />
                 </div>
                 <div>
@@ -706,7 +756,7 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                     id="postal_code"
                     value={formData.postal_code || ''}
                     onChange={(e) => updateSetting('postal_code', e.target.value)}
-                    placeholder={t('10001')}
+                    placeholder="11181"
                   />
                 </div>
               </div>
@@ -825,61 +875,116 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
           </Card>
         </TabsContent>
 
-        <TabsContent value="seo" className="space-y-4 mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+        <TabsContent value="seo" className="mt-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Right column (RTL): input fields */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Search className="h-4 w-4" />
+                      {t('SEO Settings')}
+                      <HelpTip text={t('These meta tags help search engines understand and rank your store.')} />
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1 text-start">
+                      {t('Improve your store visibility in search engines with these settings.')}
+                    </p>
+                  </div>
+                  <SectionResetButton onReset={() => handleResetSection('seo')} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Search className="h-4 w-4" />
-                    {t('SEO Settings')}
-                    <HelpTip text={t('These meta tags help search engines understand and rank your store.')} />
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1 text-start">
-                    {t('Improve your store visibility in search engines with these settings.')}
+                  <Label htmlFor="meta_title" className="flex items-center gap-1.5">
+                    {t('Meta Title')}
+                    <HelpTip text={t('Keep it under 70 characters for best search engine display.')} />
+                  </Label>
+                  <Input
+                    id="meta_title"
+                    value={formData.meta_title || ''}
+                    onChange={(e) => updateSetting('meta_title', e.target.value)}
+                    placeholder={t('Your Store Name - Best Products Online')}
+                    maxLength={100}
+                  />
+                  <div className={`text-xs mt-1 ${(formData.meta_title?.length || 0) > 70 ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
+                    {formData.meta_title?.length || 0}/70 {t('characters')}
+                    {(formData.meta_title?.length || 0) > 70 && ` — ${t('Exceeds recommended limit')}`}
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="meta_description" className="flex items-center gap-1.5">
+                    {t('Meta Description')}
+                    <HelpTip text={t('Keep it under 160 characters for best search engine display.')} />
+                  </Label>
+                  <Textarea
+                    id="meta_description"
+                    value={formData.meta_description || ''}
+                    onChange={(e) => updateSetting('meta_description', e.target.value)}
+                    placeholder={t('A short description that appears in search engine results...')}
+                    rows={4}
+                    maxLength={200}
+                  />
+                  <div className={`text-xs mt-1 ${(formData.meta_description?.length || 0) > 160 ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
+                    {formData.meta_description?.length || 0}/160 {t('characters')}
+                    {(formData.meta_description?.length || 0) > 160 && ` — ${t('Exceeds recommended limit')}`}
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="meta_keywords" className="flex items-center gap-1.5">
+                    {t('Meta Keywords')}
+                    <HelpTip text={t('Separate keywords with commas')} />
+                  </Label>
+                  <Input
+                    id="meta_keywords"
+                    value={formData.meta_keywords || ''}
+                    onChange={(e) => updateSetting('meta_keywords', e.target.value)}
+                    placeholder={t('store, online store, products')}
+                    maxLength={200}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{t('Separate keywords with commas')}</p>
+                </div>
+                <div className="pt-2">
+                  <MediaPicker
+                    label={t('Social Share Image (Open Graph)')}
+                    value={formData.og_image || ''}
+                    onChange={(value) => updateSetting('og_image', value)}
+                    placeholder={t('Select image for social media sharing...')}
+                    dragDrop
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('This image is shown when your store link is shared on Facebook and WhatsApp.')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('Recommended size: 1200x630px for optimal social media sharing. Max file size: 5MB')}
                   </p>
                 </div>
-                <SectionResetButton onReset={() => handleResetSection('seo')} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="meta_title" className="flex items-center gap-1.5">
-                  {t('Meta Title')}
-                  <HelpTip text={t('Keep it under 70 characters for best search engine display.')} />
-                </Label>
-                <Input
-                  id="meta_title"
-                  value={formData.meta_title || ''}
-                  onChange={(e) => updateSetting('meta_title', e.target.value)}
-                  placeholder={t('Your Store Name - Best Products Online')}
-                  maxLength={100}
-                />
-                <div className={`text-xs mt-1 ${(formData.meta_title?.length || 0) > 70 ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
-                  {formData.meta_title?.length || 0}/70 {t('characters')}
-                  {(formData.meta_title?.length || 0) > 70 && ` — ${t('Exceeds recommended limit')}`}
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="meta_description" className="flex items-center gap-1.5">
-                  {t('Meta Description')}
-                  <HelpTip text={t('Keep it under 160 characters for best search engine display.')} />
-                </Label>
-                <Textarea
-                  id="meta_description"
-                  value={formData.meta_description || ''}
-                  onChange={(e) => updateSetting('meta_description', e.target.value)}
-                  placeholder={t('A short description that appears in search engine results...')}
-                  rows={4}
-                  maxLength={200}
-                />
-                <div className={`text-xs mt-1 ${(formData.meta_description?.length || 0) > 160 ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
-                  {formData.meta_description?.length || 0}/160 {t('characters')}
-                  {(formData.meta_description?.length || 0) > 160 && ` — ${t('Exceeds recommended limit')}`}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Left column (RTL): sticky live Google preview */}
+            <div className="self-start lg:sticky lg:top-20">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-4 w-4" />
+                    {t('Google Search Preview')}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1 text-start">
+                    {t('This preview shows how your store may appear in Google search results.')}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <GoogleSnippetPreview
+                    title={formData.meta_title || store.name}
+                    url={seoPreviewUrl}
+                    description={formData.meta_description || formData.store_description || ''}
+                    favicon={formData.favicon || ''}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="advanced" className="space-y-4 mt-6">
@@ -928,6 +1033,48 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                   />
                   <p className="text-xs text-muted-foreground mt-1">{t('Example: 123456789012345')}</p>
                 </div>
+                <div>
+                  <Label htmlFor="tiktok_pixel_id" className="flex items-center gap-1.5">
+                    {t('TikTok Pixel ID')}
+                    <HelpTip text={t('Found in TikTok Ads Manager under Events Manager.')} />
+                  </Label>
+                  <Input
+                    id="tiktok_pixel_id"
+                    dir="ltr"
+                    value={formData.tiktok_pixel_id || ''}
+                    onChange={(e) => updateSetting('tiktok_pixel_id', e.target.value)}
+                    placeholder="TIK-XXXX-XXXX-XXXX"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{t('Example: TIK-XXXX-XXXX-XXXX')}</p>
+                </div>
+                <div>
+                  <Label htmlFor="snapchat_pixel_id" className="flex items-center gap-1.5">
+                    {t('Snapchat Pixel ID')}
+                    <HelpTip text={t('Found in Snapchat Business Manager under Event Manager.')} />
+                  </Label>
+                  <Input
+                    id="snapchat_pixel_id"
+                    dir="ltr"
+                    value={formData.snapchat_pixel_id || ''}
+                    onChange={(e) => updateSetting('snapchat_pixel_id', e.target.value)}
+                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{t('Example: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')}</p>
+                </div>
+                <div>
+                  <Label htmlFor="gtm_id" className="flex items-center gap-1.5">
+                    {t('Google Tag Manager (GTM) ID')}
+                    <HelpTip text={t('Found in your GTM container dashboard. Format: GTM-XXXXXXX.')} />
+                  </Label>
+                  <Input
+                    id="gtm_id"
+                    dir="ltr"
+                    value={formData.gtm_id || ''}
+                    onChange={(e) => updateSetting('gtm_id', e.target.value)}
+                    placeholder="GTM-XXXXXXX"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{t('Example: GTM-XXXXXXX')}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -948,83 +1095,153 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
                   <p className="text-sm text-muted-foreground">{t('Show floating WhatsApp button on storefront')}</p>
                 </div>
                 <Switch
-                  checked={formData.whatsapp_widget_enabled === true || formData.whatsapp_widget_enabled === 'true'}
+                  checked={whatsappOn}
                   onCheckedChange={(checked) => updateSetting('whatsapp_widget_enabled', checked)}
                 />
               </div>
 
-              {(formData.whatsapp_widget_enabled === true || formData.whatsapp_widget_enabled === 'true') && (
-                <>
-                  <div>
-                    <Label htmlFor="whatsapp_widget_phone">{t('WhatsApp Phone Number')}</Label>
-                    <Input
-                      id="whatsapp_widget_phone"
-                      value={formData.whatsapp_widget_phone || ''}
-                      onChange={(e) => updateSetting('whatsapp_widget_phone', e.target.value)}
-                      placeholder="+919876543210"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('Enter phone number with country code (e.g., +919876543210, +1234567890)')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="whatsapp_widget_message">{t('Default Message')}</Label>
-                    <Textarea
-                      id="whatsapp_widget_message"
-                      value={formData.whatsapp_widget_message || ''}
-                      onChange={(e) => updateSetting('whatsapp_widget_message', e.target.value)}
-                      placeholder={t('Hello! I need help with...')}
-                      rows={3}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('Pre-filled message when customers click the widget')}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+              <div
+                className={`grid transition-all duration-300 ease-in-out ${
+                  whatsappOn ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                }`}
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <div className="space-y-4 border-t border-border pt-4">
                     <div>
-                      <Label htmlFor="whatsapp_widget_position">{t('Widget Position')}</Label>
-                      <Select value={formData.whatsapp_widget_position || 'right'} onValueChange={(value) => updateSetting('whatsapp_widget_position', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="left">{t('Left')}</SelectItem>
-                          <SelectItem value="right">{t('Right')}</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="whatsapp_widget_phone" className="flex items-center gap-1.5">
+                        {t('WhatsApp Number')}
+                        <HelpTip text={t('Include the country code, e.g. +970599123456')} />
+                      </Label>
+                      <Input
+                        id="whatsapp_widget_phone"
+                        dir="ltr"
+                        value={formData.whatsapp_widget_phone || ''}
+                        onChange={(e) => updateSetting('whatsapp_widget_phone', e.target.value)}
+                        placeholder="+970599123456"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {t('Enter phone number with country code (e.g., +919876543210, +1234567890)')}
+                      </p>
                     </div>
-                  </div>
 
-                  <div className="space-y-3">
-                    <Label>{t('Display Options')}</Label>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>{t('Show on Mobile')}</Label>
-                        <p className="text-sm text-muted-foreground">{t('Display widget on mobile devices')}</p>
-                      </div>
-                      <Switch
-                        checked={formData.whatsapp_widget_show_on_mobile === true || formData.whatsapp_widget_show_on_mobile === 'true'}
-                        onCheckedChange={(checked) => updateSetting('whatsapp_widget_show_on_mobile', checked)}
+                    <div>
+                      <Label htmlFor="whatsapp_widget_message" className="flex items-center gap-1.5">
+                        {t('Default Welcome Message')}
+                        <HelpTip text={t('This message is pre-filled when a customer opens the chat.')} />
+                      </Label>
+                      <Textarea
+                        id="whatsapp_widget_message"
+                        value={formData.whatsapp_widget_message || ''}
+                        onChange={(e) => updateSetting('whatsapp_widget_message', e.target.value)}
+                        placeholder={t('Hello! I need help with...')}
+                        rows={3}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {t('Pre-filled message when customers click the widget')}
+                      </p>
                     </div>
-                    <div className="flex items-center justify-between">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label>{t('Show on Desktop')}</Label>
-                        <p className="text-sm text-muted-foreground">{t('Display widget on desktop devices')}</p>
+                        <Label htmlFor="whatsapp_widget_position">{t('Button Position')}</Label>
+                        <Select
+                          value={formData.whatsapp_widget_position || 'right'}
+                          onValueChange={(value) => updateSetting('whatsapp_widget_position', value)}
+                        >
+                          <SelectTrigger id="whatsapp_widget_position">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="right">{t('Bottom Right')}</SelectItem>
+                            <SelectItem value="left">{t('Bottom Left')}</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <Switch
-                        checked={formData.whatsapp_widget_show_on_desktop === true || formData.whatsapp_widget_show_on_desktop === 'true'}
-                        onCheckedChange={(checked) => updateSetting('whatsapp_widget_show_on_desktop', checked)}
-                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>{t('Display Options')}</Label>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>{t('Show on Mobile')}</Label>
+                          <p className="text-sm text-muted-foreground">{t('Display widget on mobile devices')}</p>
+                        </div>
+                        <Switch
+                          checked={formData.whatsapp_widget_show_on_mobile === true || formData.whatsapp_widget_show_on_mobile === 'true'}
+                          onCheckedChange={(checked) => updateSetting('whatsapp_widget_show_on_mobile', checked)}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>{t('Show on Desktop')}</Label>
+                          <p className="text-sm text-muted-foreground">{t('Display widget on desktop devices')}</p>
+                        </div>
+                        <Switch
+                          checked={formData.whatsapp_widget_show_on_desktop === true || formData.whatsapp_widget_show_on_desktop === 'true'}
+                          onCheckedChange={(checked) => updateSetting('whatsapp_widget_show_on_desktop', checked)}
+                        />
+                      </div>
                     </div>
                   </div>
-                </>
-              )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Code2 className="h-4 w-4" />
+                    {t('Custom Scripts')}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1 text-start">
+                    {t('Insert custom scripts (analytics, chat, tracking) into your store pages.')}
+                  </p>
+                </div>
+                <SectionResetButton onReset={() => handleResetSection('custom_scripts')} />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="custom_head_scripts" className="flex items-center gap-1.5">
+                  {t('Head Scripts (<head>)')}
+                  <HelpTip text={t('HTML or JavaScript injected into the <head> of every store page.')} />
+                </Label>
+                <Textarea
+                  id="custom_head_scripts"
+                  dir="ltr"
+                  className="font-mono text-xs"
+                  value={formData.custom_head_scripts || ''}
+                  onChange={(e) => updateSetting('custom_head_scripts', e.target.value)}
+                  placeholder={t('<!-- e.g. <script>...</script> -->')}
+                  rows={6}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('HTML or JavaScript injected into the <head> of every store page.')}
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="custom_body_scripts" className="flex items-center gap-1.5">
+                  {t('Body Scripts (</body>)')}
+                  <HelpTip text={t('HTML or JavaScript injected before the closing </body> tag.')} />
+                </Label>
+                <Textarea
+                  id="custom_body_scripts"
+                  dir="ltr"
+                  className="font-mono text-xs"
+                  value={formData.custom_body_scripts || ''}
+                  onChange={(e) => updateSetting('custom_body_scripts', e.target.value)}
+                  placeholder={t('<!-- e.g. <script>...</script> -->')}
+                  rows={6}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('HTML or JavaScript injected before the closing </body> tag.')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="domains" className="space-y-4 mt-0">

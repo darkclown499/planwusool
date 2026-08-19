@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, LayoutTemplate, Paintbrush } from 'lucide-react';
+import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, LayoutTemplate, Paintbrush, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
@@ -172,74 +173,81 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                   className="flex flex-wrap items-center justify-between gap-3 p-4 border rounded-lg cursor-pointer transition-shadow hover:shadow-md"
                   onClick={() => handleActionClick('view', 'view-stores', store.id)}
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                       <Building2 className="h-6 w-6 text-primary" />
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold">{store.name}</h3>
                         <Badge variant={store.config_status ? 'default' : 'secondary'}>
                           {store.config_status ? t('Active') : t('Inactive')}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground truncate">
                         {(() => {
                           const domain = store.custom_domain || store.custom_subdomain;
                           return domain ? <span dir="ltr">{domain}</span> : t('No domain set');
                         })()}
                       </p>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                        <span className="text-xs text-muted-foreground">{t('Theme: {{theme}}', { theme: store.theme })}</span>
+                        <span className="text-xs text-muted-foreground">{t('Category: {{category}}', { category: store.theme })}</span>
                         <span className="text-xs text-muted-foreground">{t('Created: {{date}}', { date: formatLocalDate(store.created_at) })}</span>
                         <span className="text-xs text-muted-foreground">{t('{{orders}} orders', { orders: store.orders_count || 0 })}</span>
                         <span className="text-xs text-muted-foreground">{t('{{revenue}} revenue', { revenue: formatCurrency(store.revenue || 0) })}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
                     {hasPermission('view-stores') && (
                       <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('view', 'view-stores', store.id); }}>
                         <Eye className="h-3.5 w-3.5" />
-                        {t('View')}
+                        {t('View Store')}
                       </Button>
                     )}
                     {hasPermission('edit-stores') && (
-                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('edit', 'edit-stores', store.id); }}>
+                      <Button variant="secondary" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('edit', 'edit-stores', store.id); }}>
                         <Edit className="h-3.5 w-3.5" />
                         {t('Edit')}
                       </Button>
                     )}
-                    {hasPermission('settings-stores') && (
-                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleActionClick('settings', 'settings-stores', store.id); }}>
-                        <Settings className="h-3.5 w-3.5" />
-                        {t('Settings')}
-                      </Button>
-                    )}
-                    {hasPermission('settings-stores') && (
-                      <Button variant="outline" size="sm" className="gap-1.5 text-primary" onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=theme'); }}>
-                        <Paintbrush className="h-3.5 w-3.5" />
-                        {t('Choose Template')}
-                      </Button>
-                    )}
-                    {hasPermission('settings-stores') && (
-                      <Button variant="outline" size="sm" className="gap-1.5" onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=editor'); }}>
-                        <LayoutTemplate className="h-3.5 w-3.5" />
-                        {t('Edit Template')}
-                      </Button>
-                    )}
-                    {hasPermission('delete-stores') && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="gap-1.5 text-destructive hover:text-destructive"
-                        onClick={(e) => { e.stopPropagation(); handleActionClick('delete', 'delete-stores', store.id); }}
-                        disabled={stores.length <= 1}
-                        title={stores.length <= 1 ? t('Cannot delete the last store') : ''}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        {t('Delete')}
-                      </Button>
+                    {(hasPermission('settings-stores') || hasPermission('delete-stores')) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label={t('Actions')} title={t('Actions')} onClick={(e) => e.stopPropagation()}>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {hasPermission('settings-stores') && (
+                            <>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleActionClick('settings', 'settings-stores', store.id); }}>
+                                <Settings className="h-4 w-4" />
+                                {t('Settings')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=theme'); }}>
+                                <Paintbrush className="h-4 w-4" />
+                                {t('Choose Template')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=editor'); }}>
+                                <LayoutTemplate className="h-4 w-4" />
+                                {t('Edit Template')}
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {hasPermission('settings-stores') && hasPermission('delete-stores') && <DropdownMenuSeparator />}
+                          {hasPermission('delete-stores') && (
+                            <DropdownMenuItem
+                              variant="destructive"
+                              disabled={stores.length <= 1}
+                              onClick={(e) => { e.stopPropagation(); handleActionClick('delete', 'delete-stores', store.id); }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              {t('Delete')}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
                 </div>

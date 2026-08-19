@@ -14,6 +14,7 @@ interface MediaPickerProps {
   onChange: (value: string) => void;
   multiple?: boolean;
   placeholder?: string;
+  dropzoneLabel?: string;
   showPreview?: boolean;
   required?: boolean;
   dragDrop?: boolean;
@@ -25,6 +26,7 @@ export default function MediaPicker({
   onChange,
   multiple = false,
   placeholder = 'Select image...',
+  dropzoneLabel,
   showPreview = true,
   required = false,
   dragDrop = false,
@@ -127,7 +129,7 @@ export default function MediaPicker({
             )}
           </div>
           <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${multiple ? 'bg-purple-100 text-purple-700' : 'bg-primary/10 text-primary'}`}>
-            {multiple ? t('Multiple images') : t('Cover image (one file)')}
+            {multiple ? t('Multiple images') : (dropzoneLabel || t('Cover image (one file)'))}
           </span>
           <p className="text-sm text-muted-foreground">
             {uploading ? t('Uploading...') : t('Drag and drop an image here, or')}

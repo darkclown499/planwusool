@@ -50,7 +50,16 @@ class AdvancedCouponController extends Controller
             $query->where('discount_type', $request->discount_type);
         }
         if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status === 'active' ? true : false);
+            if ($request->status === 'scheduled') {
+                // Active but not yet started.
+                $query->where('status', true)
+                    ->whereNotNull('starts_at')
+                    ->where('starts_at', '>', now());
+            } elseif ($request->status === 'active') {
+                $query->where('status', true);
+            } else {
+                $query->where('status', false);
+            }
         }
 
         $perPage = (int) $request->get('per_page', 10);

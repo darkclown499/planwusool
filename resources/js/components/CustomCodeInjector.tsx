@@ -4,11 +4,15 @@ import { useTranslation } from 'react-i18next';
 interface CustomCodeInjectorProps {
   customCss?: string;
   customJavascript?: string;
+  customHeadScripts?: string;
+  customBodyScripts?: string;
 }
 
 export const CustomCodeInjector: React.FC<CustomCodeInjectorProps> = ({
   customCss,
-  customJavascript
+  customJavascript,
+  customHeadScripts,
+  customBodyScripts,
 }) => {
   const { t } = useTranslation();
   // Helper function to decode HTML entities
@@ -50,6 +54,34 @@ export const CustomCodeInjector: React.FC<CustomCodeInjectorProps> = ({
       document.body.appendChild(scriptElement);
     }
 
+    // Inject custom head scripts (<head>)
+    if (customHeadScripts && customHeadScripts.trim()) {
+      const scriptId = 'custom-store-head';
+      const existing = document.getElementById(scriptId) as HTMLScriptElement;
+      if (existing) {
+        existing.remove();
+      }
+      const scriptElement = document.createElement('script');
+      scriptElement.id = scriptId;
+      scriptElement.type = 'text/javascript';
+      scriptElement.textContent = decodeHtmlEntities(customHeadScripts);
+      document.head.appendChild(scriptElement);
+    }
+
+    // Inject custom body scripts (</body>)
+    if (customBodyScripts && customBodyScripts.trim()) {
+      const scriptId = 'custom-store-body';
+      const existing = document.getElementById(scriptId) as HTMLScriptElement;
+      if (existing) {
+        existing.remove();
+      }
+      const scriptElement = document.createElement('script');
+      scriptElement.id = scriptId;
+      scriptElement.type = 'text/javascript';
+      scriptElement.textContent = decodeHtmlEntities(customBodyScripts);
+      document.body.appendChild(scriptElement);
+    }
+
     // Cleanup function
     return () => {
       // Remove custom CSS on unmount
@@ -63,8 +95,18 @@ export const CustomCodeInjector: React.FC<CustomCodeInjectorProps> = ({
       if (scriptElement) {
         scriptElement.remove();
       }
+
+      // Remove custom head/body scripts on unmount
+      const headScript = document.getElementById('custom-store-head');
+      if (headScript) {
+        headScript.remove();
+      }
+      const bodyScript = document.getElementById('custom-store-body');
+      if (bodyScript) {
+        bodyScript.remove();
+      }
     };
-  }, [customCss, customJavascript]);
+  }, [customCss, customJavascript, customHeadScripts, customBodyScripts]);
 
   return null; // This component doesn't render anything visible
 };

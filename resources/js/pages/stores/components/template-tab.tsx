@@ -30,6 +30,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import MediaPicker from '@/components/MediaPicker';
 import { apiDelete, apiGet, apiPut } from '@/utils/api';
 import { cn } from '@/lib/utils';
+import { getTemplateConfig } from '@/templates/registry';
 
 interface TemplateTabProps {
     store: any;
@@ -201,6 +202,7 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
         loadAll();
         if (!initialAction) return;
         if (initialAction === 'theme') setThemeDialogOpen(true);
+        if (initialAction === 'editor') setActiveTab('colors');
     }, [loadAll, initialAction]);
 
     const maybeUpgrade = (feature: string) => {
@@ -401,59 +403,84 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
                         <p className="mb-4 text-sm text-muted-foreground">
                             {t('One core design system with 29 ready-made variations. Your plan unlocks a subset; premium templates include advanced sections (offers, video, multi-banner, cart & page controls).')}
                         </p>
-                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {catalog.map((th) => {
                                 const active = selectedTheme === th.value;
                                 const locked = th.tier === 'growth' ? caps.level === 'none' : caps.level === 'none' || caps.level === 'limited';
                                 const previewUrl = previewUrlFor(th.value);
+                                const templateConfig = getTemplateConfig(th.value);
                                 return (
                                     <div
                                         key={th.value}
                                         className={cn(
-                                            'rounded-xl border-2 p-4 text-start transition',
-                                            active ? 'border-primary bg-primary/5 shadow-sm' : 'border-gray-200 hover:border-gray-300',
+                                            'rounded-xl border-2 p-0 text-start transition overflow-hidden relative',
+                                            active ? 'border-primary shadow-lg' : 'border-gray-200 hover:border-primary/50 hover:shadow-md',
                                         )}
                                     >
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                if (locked) {
-                                                    maybeUpgrade(t('Premium template'));
-                                                    return;
-                                                }
-                                                setSelectedTheme(th.value);
-                                            }}
-                                            className="w-full text-start"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-2xl">{th.icon}</span>
-                                                    <span className="font-semibold">{th.name}</span>
+                                        {/* Template Preview Card */}
+                                        <div className="relative aspect-[4/3] overflow-hidden">
+                                            {/* Dynamic thumbnail built from the template's section config + design tokens */}
+                                            <TemplateThumbnail slug={th.value} />
+                                            {/* Lock overlay for premium templates */}
+                                            {locked && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                    <Lock className="h-8 w-8 text-white/80" />
                                                 </div>
-                                                {active && <CheckCircle2 className="h-5 w-5 text-primary" />}
+                                            )}
+                                            {/* Active indicator */}
+                                            {active && (
+                                                <div className="absolute top-2 end-2">
+                                                    <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                                                        <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="p-3">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <span className="text-xl shrink-0">{th.icon}</span>
+                                                    <span className="font-semibold truncate">{th.name}</span>
+                                                </div>
                                             </div>
-                                            <span
-                                                className={cn(
-                                                    'mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                                    locked ? 'bg-muted text-muted-foreground' : 'text-white',
-                                                )}
-                                                style={locked ? undefined : { background: th.accent }}
-                                            >
-                                                {locked && <Lock className="h-3 w-3" />}
-                                                {TIER_LABEL[th.tier]}
-                                            </span>
-                                        </button>
-                                        {previewUrl && (
-                                            <a
-                                                href={previewUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="mt-3 inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition hover:border-primary hover:text-primary"
-                                            >
-                                                <ExternalLink className="h-3.5 w-3.5" />
-                                                {t('Preview')}
-                                            </a>
-                                        )}
+                                            <div className="mt-2 flex items-center gap-2">
+                                                <span
+                                                    className={cn(
+                                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+                                                        locked ? 'bg-muted text-muted-foreground' : 'text-white',
+                                                    )}
+                                                    style={locked ? undefined : { background: th.accent }}
+                                                >
+                                                    {locked && <Lock className="h-2.5 w-2.5" />}
+                                                    {TIER_LABEL[th.tier]}
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Preview button */}
+                                            {previewUrl && !locked && (
+                                                <a
+                                                    href={previewUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="mt-3 w-full inline-flex items-center justify-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition hover:border-primary hover:text-primary hover:bg-primary/5"
+                                                >
+                                                    <ExternalLink className="h-3.5 w-3.5" />
+                                                    {t('Preview')}
+                                                </a>
+                                            )}
+                                            
+                                            {locked && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => maybeUpgrade(t('Premium template'))}
+                                                    className="mt-3 w-full inline-flex items-center justify-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 transition"
+                                                >
+                                                    <Lock className="h-3.5 w-3.5" />
+                                                    {t('Upgrade to unlock')}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -814,6 +841,113 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
 }
 
 /* ------------------------------ Helpers ------------------------------ */
+
+function TemplateThumbnail({ slug }: { slug: string }) {
+    const cfg = getTemplateConfig(slug);
+    const colors = cfg?.design_tokens?.colors ?? {};
+    const primary = colors['primary-600'] || '#059669';
+    const primaryDeep = colors['primary-700'] || '#047857';
+    const primarySoft = colors['primary-100'] || '#d1fae5';
+    const bg = colors['background'] || '#ffffff';
+    const surface = colors['surface'] || '#f9fafb';
+    const text = colors['text-primary'] || '#111827';
+    const muted = colors['text-muted'] || '#6b7280';
+    const dark = !!cfg?.layout?.dark_mode;
+
+    const types = (cfg?.sections ?? []).map((s) => s.type);
+    const hasSidebar = cfg?.layout?.sidebar === true && types.includes('sidebar');
+    const contentTypes = types.filter((t) => t !== 'sidebar' && t !== 'footer' && t !== 'header');
+
+    const headerBlock = types.includes('header') ? (
+        <div className="flex shrink-0 items-center gap-1 px-2 py-1.5" style={{ background: dark ? '#111827' : bg, borderBottom: `1px solid ${muted}22` }}>
+            <div className="h-2.5 w-2.5 rounded-full" style={{ background: primary }} />
+            <div className="h-1.5 w-12 rounded-full" style={{ background: text, opacity: 0.7 }} />
+            <div className="ms-auto h-1.5 w-7 rounded-full" style={{ background: primary }} />
+        </div>
+    ) : null;
+
+    const blocks = contentTypes.map((type, i) => {
+        if (type === 'hero') {
+            return (
+                <div key={i} className="mx-2 mt-1.5 shrink-0 rounded-md px-2 py-2.5" style={{ background: `linear-gradient(135deg, ${primaryDeep}, ${primary})` }}>
+                    <div className="mx-auto h-1.5 w-16 rounded-full bg-white/85" />
+                    <div className="mx-auto mt-1 h-1 w-24 rounded-full bg-white/40" />
+                    <div className="mx-auto mt-1.5 h-2 w-9 rounded-full bg-white" />
+                </div>
+            );
+        }
+        if (type === 'categories') {
+            return (
+                <div key={i} className="flex shrink-0 items-center justify-center gap-1.5 pt-1.5">
+                    {[0, 1, 2, 3, 4].map((n) => (
+                        <div key={n} className="h-4 w-4 rounded-full" style={{ background: n === 0 ? primarySoft : surface, border: `1px solid ${muted}33` }} />
+                    ))}
+                </div>
+            );
+        }
+        if (type === 'products') {
+            const dense = (cfg?.sections.find((s) => s.type === 'products')?.props as any)?.columns;
+            const cols = dense && dense >= 5 ? 6 : 4;
+            return (
+                <div key={i} className="grid min-h-0 grid-cols-1 gap-1 px-2 py-1.5" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+                    {Array.from({ length: Math.min(cols * 2, 12) }).map((_, n) => (
+                        <div key={n} className="rounded-sm p-1" style={{ background: surface }}>
+                            <div className="h-4 w-full rounded-sm" style={{ background: primarySoft }} />
+                            <div className="mt-0.5 h-1 w-3/4 rounded-full" style={{ background: text, opacity: 0.6 }} />
+                            <div className="mt-0.5 h-1 w-1/2 rounded-full" style={{ background: primary }} />
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        if (type === 'banner' || type === 'banners') {
+            return <div key={i} className="mx-2 mt-1 h-2.5 shrink-0 rounded-sm" style={{ background: primary, opacity: 0.85 }} />;
+        }
+        if (type === 'offers') {
+            return (
+                <div key={i} className="flex shrink-0 gap-1 px-2 py-1">
+                    {[0, 1, 2].map((n) => (
+                        <div key={n} className="flex-1 rounded-sm p-1" style={{ background: surface }}>
+                            <div className="h-3 w-full rounded-sm" style={{ background: primarySoft }} />
+                            <div className="mt-0.5 h-1 w-2/3 rounded-full" style={{ background: primary }} />
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+        return (
+            <div key={i} className="mx-2 mt-1 flex shrink-0 items-center justify-center rounded-sm py-1" style={{ background: surface }}>
+                <div className="h-1.5 w-14 rounded-full" style={{ background: muted }} />
+            </div>
+        );
+    });
+
+    const footerBlock = (
+        <div className="mt-auto flex shrink-0 items-center justify-center gap-1 px-2 py-1.5" style={{ background: dark ? '#0f172a' : primary }}>
+            <div className="h-1 w-12 rounded-full bg-white/70" />
+            <div className="h-1 w-6 rounded-full bg-white/50" />
+        </div>
+    );
+
+    return (
+        <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: bg }}>
+            {headerBlock}
+            {hasSidebar ? (
+                <div className="flex min-h-0 flex-1">
+                    <div className="w-5 shrink-0 space-y-1.5 border-e py-1.5" style={{ borderColor: `${muted}22`, background: dark ? '#0b1220' : surface }}>
+                        <div className="h-1.5 w-3 rounded-full" style={{ background: primary }} />
+                        {[0, 1, 2, 3].map((n) => (
+                            <div key={n} className="h-1.5 w-3 rounded-full" style={{ background: muted, opacity: 0.5 }} />
+                        ))}
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col">{blocks}{footerBlock}</div>
+                </div>
+            ) : (
+                <div className="flex min-h-0 flex-1 flex-col">{blocks}{footerBlock}</div>
+            )}
+        </div>
+    );
+}
 
 function TemplateSection({ title, badge, children }: { title: string; badge?: string; children: React.ReactNode }) {
     return (

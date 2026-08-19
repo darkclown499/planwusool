@@ -65,7 +65,8 @@ class CheckStoreStatus
             // Check if store is in maintenance mode
             if ($config['maintenance_mode'] ?? false) {
                 return Inertia::render('store/StoreMaintenance', [
-                    'store' => $store
+                    'store' => $store,
+                    'message' => $config['maintenance_message'] ?? null,
                 ])->toResponse($request)->setStatusCode(503);
             }
         }

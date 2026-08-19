@@ -99,9 +99,21 @@ class OrderController extends Controller
                 $bankTransferReceiptPath = $file->store('bank_transfers', 'public');
             }
 
+            // Resolve the store's default currency so every order records what
+            // the customer is charged (gateway payloads use it instead of
+            // hard-coded USD).
+            $currencyCode = 'ILS';
+            $currencySourceStore = \App\Models\Store::find($request->store_id);
+            if ($currencySourceStore && $currencySourceStore->user) {
+                $currencyCode = \App\Models\Setting::getUserSettings($currencySourceStore->user->id, $currencySourceStore->id)['defaultCurrency']
+                    ?? \App\Models\StoreConfiguration::getConfiguration($currencySourceStore->id)['default_currency']
+                    ?? 'ILS';
+            }
+
             // Prepare order data
             $orderData = [
                 'store_id' => $request->store_id,
+                'currency' => strtoupper($currencyCode),
                 'customer_first_name' => $request->customer_first_name,
                 'customer_last_name' => $request->customer_last_name,
                 'customer_email' => $request->customer_email,
@@ -280,6 +292,13 @@ class OrderController extends Controller
                     'message' => $paymentResult['message']
                 ]);
             } else {
+                // The order was created and stock deducted before the payment
+                // could be initialized. Mark it failed so the Order updater
+                // restores the reserved inventory automatically.
+                if ($order instanceof \App\Models\Order) {
+                    $order->forceFill(['status' => 'failed', 'payment_status' => 'failed'])->save();
+                }
+
                 return response()->json([
                     'success' => false,
                     'message' => $paymentResult['message']
@@ -296,6 +315,16 @@ class OrderController extends Controller
             }
             throw $e;
         } catch (\Exception $e) {
+            // Payment bridge (or anything post-creation) threw. If an order was
+            // already created, release its reserved stock before reporting.
+            if (isset($order) && $order instanceof \App\Models\Order) {
+                try {
+                    $order->forceFill(['status' => 'failed', 'payment_status' => 'failed'])->save();
+                } catch (\Throwable $ignored) {
+                    \Illuminate\Support\Facades\Log::warning('Could not finalize failed order state', ['order_id' => $order->id ?? null]);
+                }
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'تعذر إتمام الطلب: ' . $e->getMessage()

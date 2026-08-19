@@ -783,6 +783,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Analytics & Reporting routes
         Route::get('analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->middleware('permission:manage-analytics')->name('analytics.index');
         Route::get('analytics/export', [\App\Http\Controllers\AnalyticsController::class, 'export'])->middleware('permission:export-analytics')->name('analytics.export');
+        Route::get('analytics/export/pdf', [\App\Http\Controllers\AnalyticsController::class, 'exportPdf'])->middleware('permission:export-analytics')->name('analytics.export.pdf');
         
         // Payment Gateway routes
         Route::get('payment-gateways', [\App\Http\Controllers\PageController::class, 'paymentGateways'])->name('payment-gateways.index');

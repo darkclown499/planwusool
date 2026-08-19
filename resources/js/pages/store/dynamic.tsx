@@ -6,6 +6,8 @@ import { TemplateRenderer } from '@/templates/TemplateRenderer';
 import { getTemplateConfig } from '@/templates/registry';
 import { TemplateStorefront } from '@/templates/storefront';
 import React, { useMemo } from 'react';
+import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface DynamicStoreProps {
     template: string;
@@ -65,6 +67,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     customer_address = [],
     action = null,
 }) => {
+    const { t } = useTranslation();
     const resolvedTemplate = useMemo(() => {
         if (templateConfig) {
             return templateConfig;
@@ -88,14 +91,17 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     );
 
     // Plan gating on the storefront is based on the store owner's plan (passed
-    // from the server), not the viewer. Preview/demo + superadmin bypass gating.
-    const effectiveSuperAdmin = isSuperAdmin || isLoggedIn || isPreview;
+    // from the server), not the viewer. Only a real superadmin bypasses the
+    // template tier gate; previews and logged-in customers never do.
+    const effectiveSuperAdmin = isSuperAdmin;
 
     return (
         <>
             <CustomCodeInjector
                 customCss={store?.custom_css}
                 customJavascript={store?.custom_javascript}
+                customHeadScripts={store?.custom_head_scripts}
+                customBodyScripts={store?.custom_body_scripts}
             />
             <StoreHead store={store} products={products} defaultTitle={config?.storeName || store?.name || 'متجري'} defaultDescription={config?.description} />
             <ThemeProvider
@@ -112,6 +118,27 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             >
                 <StoreBoundary>
                     <TemplateStorefront>
+                        {/* Exit Preview Toolbar */}
+                        {isPreview && (
+                            <div className="sticky top-0 z-50 w-full bg-amber-600 text-white shadow-md border-b border-amber-700">
+                                <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="h-2 w-2 shrink-0 rounded-full bg-white" />
+                                        <span className="text-sm font-medium">{t('Preview Mode')}</span>
+                                        <span className="hidden sm:inline text-xs opacity-90">
+                                            {t('You are viewing a live template preview. Changes are not saved.')}
+                                        </span>
+                                    </div>
+                                    <a
+                                        href={window.location.pathname}
+                                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+                                    >
+                                        <X className="h-4 w-4" />
+                                        {t('Exit Preview')}
+                                    </a>
+                                </div>
+                            </div>
+                        )}
                         <main className="pb-24 md:pb-16" style={{ background: 'var(--twc-background, #ffffff)' }}>
                             {page ? (
                                 <TemplateRenderer

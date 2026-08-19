@@ -28,6 +28,8 @@ export interface SectionClasses {
   card?: string;
   header?: string;
   footer?: string;
+  aside?: string;
+  sidebar?: string;
 }
 
 export interface TemplateSectionConfig {

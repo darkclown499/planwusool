@@ -27,7 +27,7 @@ function pickFruits(products: any[]): any[] {
 }
 
 function buildSectionItems(tag: string, all: any[], categoryId: string): any[] {
-    let pool = categoryId === 'all' ? all : all.filter((p) => String(p.categoryId) === String(categoryId));
+    const pool = categoryId === 'all' ? all : all.filter((p) => String(p.categoryId) === String(categoryId));
 
     const tagged = pool.filter((p) => p.tags?.includes(tag));
     let items: any[];

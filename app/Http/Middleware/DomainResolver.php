@@ -159,7 +159,8 @@ class DomainResolver
                 
                 if ($config['maintenance_mode'] ?? false) {
                     return Inertia::render('store/StoreMaintenance', [
-                        'store' => $store->only(['id', 'name', 'slug'])
+                        'store' => $store->only(['id', 'name', 'slug']),
+                        'message' => $config['maintenance_message'] ?? null,
                     ])->toResponse($request)->setStatusCode(503);
                 }
                 

@@ -4,7 +4,7 @@ import type { DesignTokens, TemplateLayoutConfig, TemplateSectionConfig } from '
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
-import { ChevronLeft, MessageCircle, Minus, PackageX, Plus, Search, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, LayoutPanelLeft, MessageCircle, Minus, PackageX, Plus, Search, ShoppingCart, Star } from 'lucide-react';
 import React, { useState } from 'react';
 
 export interface SectionProps {
@@ -741,7 +741,8 @@ const BulkTable: React.FC<{ products: any[] }> = ({ products }) => {
 
 export const ReviewsSection: React.FC<SectionProps> = ({ section, storeData }) => {
     const classes = section.classes || {};
-    const reviews = storeData?.reviews || [];
+    const content = storeData?.content || {};
+    const reviews = content?.testimonials || [];
 
     if (reviews.length === 0) return null;
 
@@ -752,21 +753,38 @@ export const ReviewsSection: React.FC<SectionProps> = ({ section, storeData }) =
                     تقييمات العملاء
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {reviews.map((review: any) => (
-                        <div
-                            key={review.id}
-                            className="rounded-2xl border p-5"
-                            style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}
-                        >
-                            <div className="mb-2 text-yellow-400">{'★'.repeat(review.rating || 5)}</div>
-                            <p className="text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
-                                {review.comment}
-                            </p>
-                            <p className="mt-3 text-sm font-semibold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
-                                {review.customer_name}
-                            </p>
-                        </div>
-                    ))}
+                    {reviews.map((review: any, index: number) => {
+                        const rating = Math.min(5, Math.max(0, Number(review.rating) || 5));
+                        const name = review.customer_name || review.name || review.author || 'عميل';
+                        const text = review.comment || review.content || review.text || '';
+                        return (
+                            <figure
+                                key={review.id || index}
+                                className="rounded-2xl border p-5"
+                                style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}
+                            >
+                                <div className="mb-2 flex items-center gap-0.5">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <Star key={i} className={i < rating ? 'h-4 w-4 fill-yellow-400 text-yellow-400' : 'h-4 w-4 text-gray-300'} />
+                                    ))}
+                                </div>
+                                <blockquote className="text-sm leading-relaxed" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
+                                    {text}
+                                </blockquote>
+                                <figcaption className="mt-3 flex items-center gap-2">
+                                    <span
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                                        style={{ background: 'var(--twc-primary-600, #059669)' }}
+                                    >
+                                        {name.charAt(0)}
+                                    </span>
+                                    <span className="text-sm font-semibold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                                        {name}
+                                    </span>
+                                </figcaption>
+                            </figure>
+                        );
+                    })}
                 </div>
             </div>
         </section>
@@ -872,29 +890,137 @@ export const FooterSection: React.FC<SectionProps> = ({ section, storeData }) =>
     );
 };
 
-/* ============================== CUSTOM ============================== */
+/* ============================== FEATURED PRODUCTS ============================== */
 
-export const CustomSection: React.FC<SectionProps> = (props) => {
-    const { section } = props;
-    const sectionProps = section.props || {};
+export const FeaturedSection: React.FC<SectionProps> = ({ section, storeData, isPreview }) => {
+    const props = section.props || {};
     const classes = section.classes || {};
-    const componentName = sectionProps.component || section.id;
+    const { product: productCtx, cart } = useStorefrontCore();
+    const { storeSettings, currencies } = storeSettingsOf();
+
+    // Featured products come from real store content. Explicit IDs configured
+    // in content.featured_products win; otherwise the newest active products
+    // passed by ThemeController are used (there is no per-product flag yet).
+    const content = storeData?.content || {};
+    const featuredConfig = content?.featured_products || [];
+    const storeProducts = storeData?.products || [];
+
+    let productsToShow: any[] = [];
+    if (Array.isArray(featuredConfig) && featuredConfig.length > 0) {
+        const ids = new Set(featuredConfig.map((f: any) => String(f?.id ?? f)));
+        productsToShow = storeProducts.filter((p: any) => ids.has(String(p.id)));
+    }
+    if (productsToShow.length === 0) {
+        productsToShow = storeProducts.slice(0, Math.max(Number(props.per_page) || 8, 4));
+    }
+
+    if (productsToShow.length === 0) return null;
+
+    const perPage = Math.max(Number(props.per_page) || 8, 4);
+    const columns = Math.min(Math.max(Number(props.columns || 4), 2), 6);
+    const gridClass = GRID_CLASSES[columns] || GRID_CLASSES[4];
 
     return (
-        <section className={classes.section || 'w-full py-10 sm:py-12'} style={{ background: 'var(--twc-surface, #f1f5f9)' }}>
+        <section className={section.classes?.section || 'w-full py-10 sm:py-12'} style={{ background: 'var(--twc-background, #ffffff)' }}>
             <div className={classes.container || 'mx-auto max-w-7xl px-4'}>
-                <div className="rounded-2xl border-2 border-dashed p-8 text-center" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
-                    <h2 className="text-xl font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
-                        {componentName}
-                    </h2>
-                    <p className="mt-2 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
-                        قسم مخصص لقوالب هذا التصنيف
-                    </p>
+                <h2 className="mb-6 text-center text-2xl font-bold sm:text-3xl" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                    {section.props?.title || 'منتجات مميزة'}
+                </h2>
+                <div className={gridClass}>
+                    {productsToShow.slice(0, perPage).map((product: any) => (
+                        <div key={product.id} className="group overflow-hidden rounded-2xl border transition hover:shadow-lg" style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}>
+                            <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative block aspect-square w-full overflow-hidden bg-gray-100">
+                                <img src={getImageUrl(product.image)} alt={product.name} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
+                            </button>
+                            <div className="p-3">
+                                <button type="button" onClick={() => productCtx.handleProductClick(product)} className="block w-full text-start">
+                                    <h3 className="line-clamp-1 text-sm font-semibold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                                        {product.name}
+                                    </h3>
+                                </button>
+                                <div className="mt-2 flex items-center justify-between gap-2">
+                                    <div className="min-w-0">
+                                        <span className="block truncate text-sm font-bold" style={{ color: 'var(--twc-primary-600, #059669)' }}>
+                                            {formatCurrency(Number(product.price) || 0, storeSettings, currencies)}
+                                        </span>
+                                    </div>
+                                    <div className="flex shrink-0 items-center gap-1.5">
+                                        <button
+                                            type="button"
+                                            disabled={isPreview}
+                                            onClick={() => cart.addToCart(product)}
+                                            className="flex h-9 items-center gap-1 rounded-full px-3 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-40"
+                                            style={{ background: 'var(--twc-primary-600, #059669)' }}
+                                        >
+                                            <ShoppingCart className="h-4 w-4" />
+                                            أضف
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </section>
     );
 };
+
+/* ============================== SIDEBAR ============================== */
+
+export const SidebarSection: React.FC<SectionProps> = ({ section, storeData }) => {
+    const props = section.props || {};
+    const classes = section.classes || {};
+    const { product } = useStorefrontCore();
+
+    const categoriesList = product.categories?.length ? product.categories : storeData?.categories || [];
+    const activeCategory = props.active_category || storeData?.activeCategory || product.activeCategory;
+
+    if (categoriesList.length === 0) return null;
+
+    return (
+        <aside className={`${classes.aside || 'w-full lg:w-64 flex-shrink-0'} ${classes.sidebar || ''}`} aria-label="تصنيف المنتجات">
+            <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
+                    <LayoutPanelLeft className="h-5 w-5" style={{ color: 'var(--twc-primary-600, #059669)' }} />
+                    <h3 className="font-semibold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                        {props.title || 'التصنيفات'}
+                    </h3>
+                </div>
+                <nav className="space-y-1" aria-label="تصنيف المنتجات">
+                    <button
+                        type="button"
+                        onClick={() => product.handleCategoryClick('all')}
+                        className={`w-full text-start rounded-lg px-3 py-2 text-sm font-medium transition ${!activeCategory || activeCategory === 'all' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                        style={{
+                            color: 'var(--twc-text-primary, #111827)',
+                            backgroundColor: 'var(--twc-background, #ffffff)',
+                        }}
+                    >
+                        جميع المنتجات
+                    </button>
+                    {categoriesList.map((category: any) => (
+                        <button
+                            key={category.id}
+                            type="button"
+                            onClick={() => product.handleCategoryClick(category.id)}
+                            className={`w-full text-start rounded-lg px-3 py-2 text-sm transition ${product.activeCategory === category.id ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                            style={{
+                                backgroundColor: 'var(--twc-background, #ffffff)',
+                            }}
+                        >
+                            {category.name}
+                            {category.products_count && (
+                                <span className="ml-auto text-xs text-gray-400">({category.products_count})</span>
+                            )}
+                        </button>
+                    ))}
+                </nav>
+            </div>
+        </aside>
+    );
+};
+
 
 /* ============================== ANNOUNCEMENT (banner) ============================== */
 
@@ -930,7 +1056,7 @@ export const AnnouncementSection: React.FC<SectionProps> = ({ section, storeData
 
 /* ============================== CONTENT (custom kinds) ============================== */
 
-export const ContentSection: React.FC<SectionProps> = ({ section, storeData }) => {
+export const ContentSection: React.FC<SectionProps> = ({ section }) => {
     const props = section.props || {};
     const classes = section.classes || {};
     const kind = props.kind || section.id || 'custom';
@@ -986,8 +1112,9 @@ export const ContentSection: React.FC<SectionProps> = ({ section, storeData }) =
         );
     }
 
-    // Unknown custom kinds keep the original placeholder behaviour.
-    return <CustomSection section={section} storeData={storeData} />;
+    // Unknown custom kinds have no configured content — render nothing
+    // instead of a placeholder box.
+    return null;
 };
 
 /* ============================== OFFERS ============================== */
@@ -1219,10 +1346,10 @@ export const SECTION_COMPONENTS: Record<string, React.FC<SectionProps>> = {
     reviews: ReviewsSection,
     footer: FooterSection,
     custom: ContentSection,
-    featured: ContentSection,
+    featured: FeaturedSection,
     banner: AnnouncementSection,
     banners: BannersSection,
     offers: OffersSection,
     video: VideoSection,
-    sidebar: CustomSection,
+    sidebar: SidebarSection,
 };

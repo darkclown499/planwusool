@@ -25,8 +25,20 @@ export function AppSidebar() {
     const permissions = auth?.permissions || [];
     const businesses = auth.user?.businesses || [];
     const currentBusiness = businesses.find((b: any) => b.id === auth.user?.current_store) || businesses[0];
-    
+
+    // Ziggy route existence guard: some legacy nav entries reference routes
+    // that were never defined; never crash the sidebar over a missing route.
+    const routeExists = (name: string): boolean => {
+        try {
+            route(name);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
     const handleBusinessSwitch = (businessId: number) => {
+        if (!routeExists('switch-business')) return;
         router.post(route('switch-business'), { business_id: businessId });
     };
 
@@ -295,7 +307,7 @@ export function AppSidebar() {
                 href: route('cod-payments.index')
             });
         }
-        if (hasPermission('manage-pos')) {
+        if (hasPermission('manage-pos') && routeExists('pos.index')) {
             marketingChildren.push({ title: t('POS System'), href: route('pos.index') });
         }
         if (marketingChildren.length > 0) {
@@ -469,8 +481,8 @@ export function AppSidebar() {
                     </Link>
                 </div>
                 
-                {/* Business Switcher - Only show for company users */}
-                {userRole !== 'superadmin' && businesses.length > 0 && (
+                {/* Business Switcher - only meaningful with multiple businesses */}
+                {userRole !== 'superadmin' && businesses.length > 1 && (
                     <div className="px-2 pb-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

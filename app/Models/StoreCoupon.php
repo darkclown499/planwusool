@@ -22,6 +22,7 @@ class StoreCoupon extends Model
         'start_date',
         'expiry_date',
         'status',
+        'single_use',
         'store_id',
         'created_by'
     ];
@@ -32,7 +33,8 @@ class StoreCoupon extends Model
         'discount_amount' => 'decimal:2',
         'start_date' => 'date',
         'expiry_date' => 'date',
-        'status' => 'boolean'
+        'status' => 'boolean',
+        'single_use' => 'boolean'
     ];
 
     /**

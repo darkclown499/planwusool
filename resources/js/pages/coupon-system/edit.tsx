@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,9 @@ import InputError from '@/components/input-error';
 
 export default function EditCoupon() {
   const { t } = useTranslation();
-  const { coupon, errors } = usePage().props as any;
+  const { coupon, errors, storeCurrency, globalSettings } = usePage().props as any;
+
+  const currencySymbol = storeCurrency?.symbol || globalSettings?.currencySymbol || '₪';
 
   // Format dates for input fields (YYYY-MM-DD format)
   const formatDate = (dateString: string | null) => {
@@ -34,8 +36,9 @@ export default function EditCoupon() {
     start_date: formatDate(coupon.start_date),
     expiry_date: formatDate(coupon.expiry_date),
     use_limit_per_coupon: coupon.use_limit_per_coupon || '',
-    use_limit_per_user: coupon.use_limit_per_user || '',
+    use_limit_per_user: coupon.use_limit_per_user || '1',
     status: coupon.status !== undefined ? coupon.status : true,
+    single_use: coupon.single_use !== undefined ? coupon.single_use : false,
     code_type: coupon.code_type || 'manual'
   });
 
@@ -43,7 +46,7 @@ export default function EditCoupon() {
     const { name, value, type } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'number' ? parseFloat(value) : value
+      [name]: type === 'number' ? (value === '' ? '' : parseFloat(value)) : value
     });
   };
 
@@ -238,30 +241,56 @@ export default function EditCoupon() {
               <CardHeader>
                 <CardTitle>{t('Usage Restrictions')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="grid gap-1">
                     <Label htmlFor="minimum_spend">{t('Minimum Spend Amount')}</Label>
-                    <Input 
-                      id="minimum_spend" 
-                      name="minimum_spend"
-                      type="number" 
-                      step="0.01" 
-                      value={formData.minimum_spend}
-                      onChange={handleChange}
-                      placeholder="0.00" 
-                    />
+                    <div className="relative">
+                      <Input
+                        id="minimum_spend"
+                        name="minimum_spend"
+                        type="number"
+                        step="0.01"
+                        value={formData.minimum_spend}
+                        onChange={handleChange}
+                        placeholder="0.00"
+                        className="pe-14"
+                      />
+                      <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-sm font-semibold text-muted-foreground">
+                        {currencySymbol}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('Min spend helper')}</p>
                   </div>
-                  <div>
+
+                  <div className="grid gap-1">
                     <Label htmlFor="maximum_spend">{t('Maximum Spend Amount')}</Label>
-                    <Input 
-                      id="maximum_spend" 
-                      name="maximum_spend"
-                      type="number" 
-                      step="0.01" 
-                      value={formData.maximum_spend}
-                      onChange={handleChange}
-                      placeholder="0.00" 
+                    <div className="relative">
+                      <Input
+                        id="maximum_spend"
+                        name="maximum_spend"
+                        type="number"
+                        step="0.01"
+                        value={formData.maximum_spend}
+                        onChange={handleChange}
+                        placeholder="0.00"
+                        className="pe-14"
+                      />
+                      <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-sm font-semibold text-muted-foreground">
+                        {currencySymbol}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('Max spend helper')}</p>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg border p-4 md:col-span-2">
+                    <div>
+                      <Label>{t('Single Use Only')}</Label>
+                      <p className="text-sm text-muted-foreground">{t('Cannot be used with other discount coupons')}</p>
+                    </div>
+                    <Switch
+                      checked={formData.single_use}
+                      onCheckedChange={(checked) => handleSwitchChange('single_use', checked)}
                     />
                   </div>
                 </div>
@@ -274,29 +303,36 @@ export default function EditCoupon() {
               <CardHeader>
                 <CardTitle>{t('Usage Limits')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="grid gap-1">
                     <Label htmlFor="use_limit_per_coupon">{t('Usage Limit per Coupon')}</Label>
-                    <Input 
-                      id="use_limit_per_coupon" 
+                    <Input
+                      id="use_limit_per_coupon"
                       name="use_limit_per_coupon"
-                      type="number" 
+                      type="number"
+                      min={0}
+                      step={1}
                       value={formData.use_limit_per_coupon}
                       onChange={handleChange}
-                      placeholder={t('Unlimited')} 
+                      placeholder="0"
                     />
+                    <p className="text-xs text-muted-foreground">{t('Per coupon usage helper')}</p>
                   </div>
-                  <div>
+
+                  <div className="grid gap-1">
                     <Label htmlFor="use_limit_per_user">{t('Usage Limit per User')}</Label>
-                    <Input 
-                      id="use_limit_per_user" 
+                    <Input
+                      id="use_limit_per_user"
                       name="use_limit_per_user"
-                      type="number" 
+                      type="number"
+                      min={1}
+                      step={1}
                       value={formData.use_limit_per_user}
                       onChange={handleChange}
-                      placeholder={t('1')} 
+                      placeholder="1"
                     />
+                    <p className="text-xs text-muted-foreground">{t('Per user usage helper')}</p>
                   </div>
                 </div>
               </CardContent>

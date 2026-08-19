@@ -232,6 +232,21 @@
                 $storeDesc = $store?->seo_description ?? '';
                 $storeKeywords = $store?->seo_keywords ?? '';
                 $storeImage = $store?->seo_image ?? '';
+                if ($store) {
+                    $storeConfig = \App\Models\StoreConfiguration::getConfiguration($store->id);
+                    if (!$store->seo_title && !empty($storeConfig['meta_title'])) {
+                        $storeTitle = $storeConfig['meta_title'];
+                    }
+                    if (empty($storeDesc) && !empty($storeConfig['meta_description'])) {
+                        $storeDesc = $storeConfig['meta_description'];
+                    }
+                    if (empty($storeKeywords) && !empty($storeConfig['meta_keywords'])) {
+                        $storeKeywords = $storeConfig['meta_keywords'];
+                    }
+                    if (empty($storeImage) && !empty($storeConfig['og_image'])) {
+                        $storeImage = $storeConfig['og_image'];
+                    }
+                }
                 if ($storeImage && !str_starts_with($storeImage, 'http')) {
                     $storeImage = rtrim($appUrl, '/') . '/' . ltrim($storeImage, '/');
                 }

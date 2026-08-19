@@ -11,11 +11,50 @@ use Inertia\Inertia;
 
 class StoreSettingsController extends Controller
 {
+    /**
+     * Setting keys considered "advanced" storefront features. These are only
+     * persisted when the merchant's active plan explicitly includes them
+     * (Growth/Professional). Values submitted for lower tiers are discarded so
+     * a Free/Starter merchant can never enable them through the raw payload.
+     */
+    private const ADVANCED_SETTING_KEYS = [
+        'whatsapp_widget_enabled',
+        'whatsapp_widget_phone',
+        'whatsapp_widget_message',
+        'whatsapp_widget_position',
+        'whatsapp_widget_show_on_mobile',
+        'whatsapp_widget_show_on_desktop',
+        'google_analytics_id',
+        'meta_pixel_id',
+        'tiktok_pixel_id',
+        'snapchat_pixel_id',
+        'gtm_id',
+        'custom_css',
+        'custom_javascript',
+        'custom_head_scripts',
+        'custom_body_scripts',
+        'secondaryCurrency',
+        'exchangeRate',
+    ];
+
     private function resolveStore($storeId)
     {
         $user = Auth::user();
 
         return resolveStoreQuery($user)->findOrFail($storeId);
+    }
+
+    /**
+     * Whether the merchant's active plan includes advanced storefront settings.
+     * Uses template_editor_level as the tier discriminator (none=Starter,
+     * limited=Growth, full=Professional).
+     */
+    private function planAllowsAdvancedFeatures(): bool
+    {
+        $user = Auth::user();
+        $plan = $user->type === 'company' ? $user->plan : ($user->creator->plan ?? null);
+
+        return $plan && !empty($plan->template_editor_level) && $plan->template_editor_level !== 'none';
     }
 
     public function show($storeId)
@@ -103,10 +142,27 @@ class StoreSettingsController extends Controller
             'settings' => 'required|array',
             'settings.custom_css' => 'nullable|string|max:50000',
             'settings.custom_javascript' => 'nullable|string|max:50000',
+            'settings.custom_head_scripts' => 'nullable|string|max:50000',
+            'settings.custom_body_scripts' => 'nullable|string|max:50000',
             'settings.meta_title' => 'nullable|string|max:70',
             'settings.meta_description' => 'nullable|string|max:160',
+            'settings.meta_keywords' => 'nullable|string|max:500',
+            'settings.og_image' => 'nullable|string|max:1000',
             'settings.google_analytics_id' => 'nullable|string|max:100',
             'settings.meta_pixel_id' => 'nullable|string|max:100',
+            'settings.tiktok_pixel_id' => 'nullable|string|max:100',
+            'settings.snapchat_pixel_id' => 'nullable|string|max:100',
+            'settings.gtm_id' => 'nullable|string|max:100',
+            'settings.logo' => 'nullable|string|max:1000',
+            'settings.favicon' => 'nullable|string|max:1000',
+            'settings.welcome_message' => 'nullable|string|max:500',
+            'settings.store_description' => 'nullable|string|max:2000',
+            'settings.copyright_text' => 'nullable|string|max:500',
+            'settings.address' => 'nullable|string|max:255',
+            'settings.city' => 'nullable|string|max:100',
+            'settings.state' => 'nullable|string|max:100',
+            'settings.country' => 'nullable|string|max:100',
+            'settings.postal_code' => 'nullable|string|max:20',
             'settings.default_currency' => 'nullable|string|exists:currencies,code',
             'settings.defaultCurrency' => 'nullable|string|exists:currencies,code',
             'settings.secondaryCurrency' => 'nullable|string|exists:currencies,code',
@@ -126,7 +182,15 @@ class StoreSettingsController extends Controller
             'settings.social_links.*.platform' => 'required|string|max:50',
             'settings.social_links.*.url' => 'nullable|url|max:500',
             'settings.social_links.*.enabled' => 'nullable|boolean',
+            'settings.store_status' => 'nullable|boolean',
+            'settings.maintenance_mode' => 'nullable|boolean',
             'settings.maintenance_message' => 'nullable|string|max:2000',
+            'settings.whatsapp_widget_enabled' => 'nullable|boolean',
+            'settings.whatsapp_widget_phone' => 'nullable|string|max:20',
+            'settings.whatsapp_widget_message' => 'nullable|string|max:1000',
+            'settings.whatsapp_widget_position' => 'nullable|in:left,right',
+            'settings.whatsapp_widget_show_on_mobile' => 'nullable|boolean',
+            'settings.whatsapp_widget_show_on_desktop' => 'nullable|boolean',
             'settings.low_stock_threshold' => 'nullable|integer|min:0|max:9999',
             'settings.low_stock_warning' => 'nullable|integer|min:0|max:9999',
         ];
@@ -140,9 +204,18 @@ class StoreSettingsController extends Controller
         $user = Auth::user();
         $validated = $request->validate($this->validatedRules());
 
-        // Get all settings from request (not just validated ones)
-        $allSettings = $request->input('settings', []);
-        $settingsToSave = array_merge($validated['settings'] ?? [], $allSettings);
+        // Only keys covered by the explicit whitelist above are persisted.
+        // Deliberately NOT merged with the raw request payload, so unknown /
+        // plan-gated keys cannot reach store_configurations.
+        $settingsToSave = $validated['settings'] ?? [];
+
+        // Strip advanced (Growth/Pro) storefront features for plans that do
+        // not explicitly include them. Skips the whole save for those keys.
+        if (!$this->planAllowsAdvancedFeatures()) {
+            foreach (self::ADVANCED_SETTING_KEYS as $advancedKey) {
+                unset($settingsToSave[$advancedKey]);
+            }
+        }
 
         // Normalize social_links and keep legacy keys in sync
         if (array_key_exists('social_links', $settingsToSave) && is_array($settingsToSave['social_links'])) {
@@ -308,7 +381,7 @@ class StoreSettingsController extends Controller
         $store = $this->resolveStore($storeId);
 
         $request->validate([
-            'section' => 'required|string|in:regional,inventory,branding,homepage,address,social,seo,tracking,status',
+            'section' => 'required|string|in:regional,inventory,branding,homepage,address,social,seo,tracking,custom_scripts,status',
         ]);
 
         $section = $request->input('section');
@@ -320,8 +393,9 @@ class StoreSettingsController extends Controller
             'homepage' => ['welcome_message', 'store_description', 'copyright_text'],
             'address' => ['address', 'city', 'state', 'country', 'postal_code'],
             'social' => ['social_links', 'facebook_url', 'instagram_url', 'twitter_url', 'youtube_url', 'whatsapp_url', 'email'],
-            'seo' => ['meta_title', 'meta_description'],
-            'tracking' => ['google_analytics_id', 'meta_pixel_id'],
+            'seo' => ['meta_title', 'meta_description', 'meta_keywords', 'og_image'],
+            'tracking' => ['google_analytics_id', 'meta_pixel_id', 'tiktok_pixel_id', 'snapchat_pixel_id', 'gtm_id'],
+            'custom_scripts' => ['custom_head_scripts', 'custom_body_scripts'],
             'status' => ['store_status', 'maintenance_mode', 'maintenance_message'],
         ];
 

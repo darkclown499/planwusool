@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, RefreshCw, Download, Percent, Banknote, Truck, Gift, Sparkles, Eye, Edit, Trash2, Copy, Search } from 'lucide-react';
+import { Plus, Download, Percent, Banknote, Truck, Gift, Sparkles, Edit, Trash2, Copy, Search, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,13 +13,6 @@ import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 import { toast } from 'sonner';
-
-const DISCOUNT_TYPE_LABELS: Record<string, string> = {
-  fixed: 'Fixed Amount',
-  percentage: 'Percentage',
-  free_shipping: 'Free Shipping',
-  buy_one_get_one: 'Buy 1 Get 1',
-};
 
 export default function AdvancedCoupons() {
   const { t } = useTranslation();
@@ -61,6 +54,18 @@ export default function AdvancedCoupons() {
     }
   };
 
+  const openCreate = () => handleActionClick('create', 'create-coupon-system');
+
+  const filtersActive = !!(search || discountType !== 'all' || status !== 'all' || Number(perPage) !== 10);
+
+  const resetFilters = () => {
+    setSearch('');
+    setDiscountType('all');
+    setStatus('all');
+    setPerPage(10);
+    router.get(route('advanced-coupons.index'), {}, { preserveState: true, replace: true });
+  };
+
   const handleDelete = () => {
     if (couponToDelete && checkPermission('delete-coupon-system', auth)) {
       router.delete(route('advanced-coupons.destroy', couponToDelete), { preserveScroll: true });
@@ -99,7 +104,7 @@ export default function AdvancedCoupons() {
       label: t('Create Advanced Coupon'),
       icon: <Plus className="h-4 w-4" />,
       variant: 'default' as const,
-      onClick: () => handleActionClick('create', 'create-coupon-system')
+      onClick: openCreate
     }] : [])
   ];
 
@@ -125,7 +130,7 @@ export default function AdvancedCoupons() {
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {statCards.map((card, i) => (
-            <Card key={i}>
+            <Card key={i} className="transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{card.label}</CardTitle>
                 <div className={`p-2 rounded-full ${card.color}`}>
@@ -133,7 +138,7 @@ export default function AdvancedCoupons() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{card.value || 0}</div>
+                <div className="text-2xl font-bold tabular-nums">{card.value || 0}</div>
               </CardContent>
             </Card>
           ))}
@@ -146,19 +151,20 @@ export default function AdvancedCoupons() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  className="ps-9 w-56"
+                  className="ps-9 w-full sm:w-64"
                   placeholder={t('Search coupons...')}
+                  aria-label={t('Search coupons...')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') applyFilters({ search }); }}
                 />
               </div>
               <Select value={discountType} onValueChange={(v) => { setDiscountType(v); applyFilters({ discount_type: v }); }}>
-                <SelectTrigger className="w-44">
-                  <SelectValue placeholder={t('Discount Type')} />
+                <SelectTrigger className="w-44" aria-label={t('Discount Type')}>
+                  <SelectValue placeholder={t('All Offer Types')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('All Types')}</SelectItem>
+                  <SelectItem value="all">{t('All Offer Types')}</SelectItem>
                   <SelectItem value="percentage">{t('Percentage')}</SelectItem>
                   <SelectItem value="fixed">{t('Fixed Amount')}</SelectItem>
                   <SelectItem value="free_shipping">{t('Free Shipping')}</SelectItem>
@@ -166,17 +172,19 @@ export default function AdvancedCoupons() {
                 </SelectContent>
               </Select>
               <Select value={status} onValueChange={(v) => { setStatus(v); applyFilters({ status: v }); }}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder={t('Status')} />
+                <SelectTrigger className="w-36" aria-label={t('Status')}>
+                  <SelectValue placeholder={t('All Offer Statuses')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('All Statuses')}</SelectItem>
+                  <SelectItem value="all">{t('All Offer Statuses')}</SelectItem>
                   <SelectItem value="active">{t('Active')}</SelectItem>
                   <SelectItem value="inactive">{t('Inactive')}</SelectItem>
+                  <SelectItem value="scheduled">{t('Scheduled')}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={String(perPage)} onValueChange={(v) => { setPerPage(Number(v)); applyFilters({ per_page: v }); }}>
-                <SelectTrigger className="w-28">
+                <SelectTrigger className="w-32 gap-1" aria-label={t('Show')}>
+                  <span className="text-xs text-muted-foreground">{t('Show')}:</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,6 +193,12 @@ export default function AdvancedCoupons() {
                   <SelectItem value="50">50</SelectItem>
                 </SelectContent>
               </Select>
+              {filtersActive && (
+                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={resetFilters}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {t('Reset Filters')}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -201,7 +215,7 @@ export default function AdvancedCoupons() {
                   <Gift className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
                   <p className="mt-2 text-muted-foreground">{t('No advanced coupons found')}</p>
                   {hasPermission('create-coupon-system') && (
-                    <Button variant="outline" className="mt-4" onClick={() => handleActionClick('create', 'create-coupon-system')}>
+                    <Button variant="outline" className="mt-4" onClick={openCreate}>
                       <Plus className="h-4 w-4 me-2" />
                       {t('Create your first advanced coupon')}
                     </Button>

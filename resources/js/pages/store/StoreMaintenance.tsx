@@ -6,9 +6,10 @@ interface StoreMaintenanceProps {
     store: {
         name: string;
     };
+    message?: string | null;
 }
 
-export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
+export default function StoreMaintenance({ store, message }: StoreMaintenanceProps) {
     const [dots, setDots] = useState('');
     
     useEffect(() => {
@@ -17,6 +18,8 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
         }, 500);
         return () => clearInterval(interval);
     }, []);
+    
+    const merchantMessage = (message && String(message).trim()) || 'نحن نجري بعض التحسينات المميزة! سيعود متجرنا للعمل قريباً بميزات محسّنة وأداء أفضل.';
     
     return (
         <>
@@ -58,7 +61,7 @@ export default function StoreMaintenance({ store }: StoreMaintenanceProps) {
                             </div>
                             
                             <p className="text-gray-600 text-sm leading-relaxed mb-8">
-                                نحن نجري بعض التحسينات المميزة! سيعود متجرنا للعمل قريباً بميزات محسّنة وأداء أفضل.
+                                {merchantMessage}
                             </p>
                             
                             {/* Progress Bar */}

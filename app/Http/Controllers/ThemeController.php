@@ -45,9 +45,11 @@ class ThemeController extends Controller
     /**
      * Apply a ?theme=<slug>&preview=1 override for live template previews.
      * Only slugs in the 29-template catalog are accepted; anything else keeps
-     * the store's saved theme.
+     * the store's saved theme. When the store owner's plan is known, the
+     * override is also restricted to templates that plan actually includes so
+     * a free-tier store cannot run premium templates through preview.
      */
-    protected function applyPreviewTheme(?Request $request, string $currentTheme): string
+    protected function applyPreviewTheme(?Request $request, string $currentTheme, $ownerPlan = null): string
     {
         if (!$request || !$request->boolean('preview')) {
             return $currentTheme;
@@ -58,7 +60,16 @@ class ThemeController extends Controller
             return $currentTheme;
         }
 
-        return Store::normalizeThemeSlug($candidate);
+        $slug = Store::normalizeThemeSlug($candidate);
+
+        if ($ownerPlan && !empty($ownerPlan->themes)) {
+            $available = is_array($ownerPlan->themes) ? $ownerPlan->themes : [];
+            if (count($available) > 0 && !in_array($slug, $available, true)) {
+                return $currentTheme;
+            }
+        }
+
+        return $slug;
     }
 
     /**
@@ -128,13 +139,21 @@ class ThemeController extends Controller
             'custom_subdomain' => $store->custom_subdomain,
             'enable_custom_domain' => $store->enable_custom_domain,
             'enable_custom_subdomain' => $store->enable_custom_subdomain,
-            'custom_css' => $configuration['custom_css'] ?: '',
-            'custom_javascript' => $configuration['custom_javascript'] ?: '',
+            'custom_css' => $configuration['custom_css'] ?? '',
+            'custom_javascript' => $configuration['custom_javascript'] ?? '',
+            'custom_head_scripts' => $configuration['custom_head_scripts'] ?? '',
+            'custom_body_scripts' => $configuration['custom_body_scripts'] ?? '',
             'pwa' => $pwaData,
             'seo_title' => $store->seo_title,
             'seo_description' => $store->seo_description,
             'seo_keywords' => $store->seo_keywords,
             'seo_image' => $store->seo_image,
+            // Settings-driven SEO meta (store config) as fallbacks for the
+            // storefront <head> so the SEO tab values actually appear live.
+            'meta_title' => $configuration['meta_title'] ?? '',
+            'meta_description' => $configuration['meta_description'] ?? '',
+            'meta_keywords' => $configuration['meta_keywords'] ?? '',
+            'og_image' => $configuration['og_image'] ?? '',
         ];
     }
 
@@ -281,6 +300,9 @@ class ThemeController extends Controller
                 // Tracking & Analytics
                 'google_analytics_id' => $configuration['google_analytics_id'] ?? '',
                 'meta_pixel_id' => $configuration['meta_pixel_id'] ?? '',
+                'tiktok_pixel_id' => $configuration['tiktok_pixel_id'] ?? '',
+                'snapchat_pixel_id' => $configuration['snapchat_pixel_id'] ?? '',
+                'gtm_id' => $configuration['gtm_id'] ?? '',
             ],
             'storeSettings' => $storeSettings,
         ];
@@ -382,7 +404,7 @@ class ThemeController extends Controller
         // saved theme so merchants can preview any of the 29 templates without
         // changing their store. The slug is validated against the catalog so an
         // arbitrary query value can never reach the renderer.
-        $theme = $this->applyPreviewTheme($request, $theme);
+        $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
 
         // Get countries for checkout modal (cached for 24h)
         $countries = \Illuminate\Support\Facades\Cache::remember(
