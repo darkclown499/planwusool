@@ -29,6 +29,8 @@ export default function EmailNotificationSettings() {
     });
     return initial;
   });
+
+  const [dirty, setDirty] = useState(false);
   
   // Update state when settings change
   useEffect(() => {
@@ -46,6 +48,7 @@ export default function EmailNotificationSettings() {
       ...prev,
       [key]: value
     }));
+    setDirty(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -60,6 +63,9 @@ export default function EmailNotificationSettings() {
       mail_noti: mailNoti
     }, {
       preserveScroll: true,
+      onSuccess: () => {
+        setDirty(false);
+      },
       onError: (errors) => {
         // Handle errors if needed
       }
@@ -70,34 +76,40 @@ export default function EmailNotificationSettings() {
     <SettingsSection
       title={t('Email Notification Settings')}
       description={t('Configure email notification preferences for your store')}
-      action={
-        <Button type="submit" form="email-notification-form" size="sm">
-          <Save className="h-4 w-4 me-2" />
-          {t('Save Changes')}
-        </Button>
-      }
     >
       <form id="email-notification-form" onSubmit={handleSubmit} className="space-y-6" dir="rtl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {emailTemplates.map((template) => (
-            <div key={template.key} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-slate-300">
-              <div className="flex flex-col">
-                <Label htmlFor={template.key} className="font-medium text-gray-900">
+            <div key={template.key} className="flex items-start justify-between gap-3 p-4 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-slate-300">
+              <div className="min-w-0">
+                <Label htmlFor={template.key} className="font-medium text-slate-900">
                   {template.label}
                 </Label>
                 {template.description && (
-                  <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{template.description}</p>
                 )}
               </div>
               <Switch
                 id={template.key}
                 checked={notifications[template.key] || false}
                 onCheckedChange={(checked) => handleToggle(template.key, checked)}
+                className="mt-0.5 flex-shrink-0"
               />
             </div>
           ))}
         </div>
       </form>
+
+      {/* Floating sticky save bar when toggles changed */}
+      {dirty && (
+        <div className="sticky bottom-4 z-20 mt-6 flex items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-lg animate-in slide-in-from-bottom-2 fade-in">
+          <p className="text-sm text-muted-foreground">{t('Unsaved changes')}</p>
+          <Button type="submit" form="email-notification-form">
+            <Save className="h-4 w-4 ms-2" />
+            {t('Save Changes')}
+          </Button>
+        </div>
+      )}
     </SettingsSection>
   );
 }

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 
 import { Save, CreditCard, AlertCircle, Banknote, IndianRupee, Wallet, Coins, Search, X, Copy, Undo2 } from 'lucide-react';
 import { route } from 'ziggy-js';
+import { cn } from '@/lib/utils';
 import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, PAYMENT_METHOD_HELP_URLS } from '@/utils/payment';
 import { SettingsSection } from '@/components/settings-section';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -157,6 +158,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
   const { auth } = usePage().props as any;
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
+  const [activeCategory, setActiveCategory] = useState('gateways');
 
   // Dynamic variables from backend
   const orderVariables = messagingVariables?.orderVariables || [];
@@ -200,7 +202,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
   };
 
   // Form state
-  const { data, setData, post, processing, errors } = useForm<PaymentSettings>({
+  const { data, setData, post, processing, errors, isDirty } = useForm<PaymentSettings>({
     currency: settings.currency || 'USD',
     currency_symbol: settings.currency_symbol || '$',
     is_manually_enabled: settings.is_manually_enabled === true || settings.is_manually_enabled === '1',
@@ -576,6 +578,32 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
     setIban(parsed.iban);
   }, []);
 
+  // Payment method categories (tab groups)
+  const PAYMENT_CATEGORIES: { key: string; label: string }[] = [
+    { key: 'gateways', label: 'بوابات الدفع الإلكتروني' },
+    { key: 'wallets', label: 'المحافظ الإلكترونية' },
+    { key: 'banks', label: 'التحويلات البنكية' },
+    { key: 'crypto', label: 'العملات الرقمية (Crypto)' },
+  ];
+
+  const METHOD_CATEGORY: Record<string, string> = {
+    // Electronic payment gateways
+    cod: 'gateways', stripe: 'gateways', paypal: 'gateways', razorpay: 'gateways',
+    mercadopago: 'gateways', paystack: 'gateways', flutterwave: 'gateways',
+    // Local wallets
+    jawwal_pay: 'wallets', pal_pay: 'wallets', zain_cash: 'wallets', orange_money: 'wallets',
+    etihad_wallet: 'wallets', dinar_pay: 'wallets', cliq: 'wallets',
+    zain_cash_jo: 'wallets', orange_money_jo: 'wallets',
+    // Bank transfers
+    bank: 'banks', bank_palestine: 'banks', al_quds_bank: 'banks', arab_islamic_bank: 'banks',
+    cairo_amman_bank: 'banks', housing_bank: 'banks', safad_bank: 'banks',
+    jordan_kuwait_bank: 'banks', arab_bank: 'banks', housing_bank_jo: 'banks',
+    cairo_amman_bank_jo: 'banks', safad_bank_jo: 'banks',
+    // Crypto
+    usdt_trc20: 'crypto', usdt_erc20: 'crypto', usdt_bep20: 'crypto',
+    usdt_polygon: 'crypto', usdt_solana: 'crypto',
+  };
+
   // Payment methods data for search
   const paymentMethods = useMemo(() => {
     const methods: { key: string; name: string }[] = [];
@@ -651,6 +679,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
 
   // Check if method should be shown
   const shouldShowMethod = (methodKey: string) => {
+    if (METHOD_CATEGORY[methodKey] !== activeCategory) return false;
     return filteredMethods.some(m => m.key === methodKey);
   };
 
@@ -689,12 +718,6 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
     <SettingsSection
       title={t("Payment Settings")}
       description={t("Configure payment gateway for subscription plans")}
-      action={
-        <Button type="submit" form="payment-settings-form" size="sm" disabled={processing}>
-          <Save className="h-4 w-4 ms-2" />
-          {processing ? t("Saving...") : t("Save Changes")}
-        </Button>
-      }
     >
       <form id="payment-settings-form" onSubmit={handleSubmit} dir="rtl">
         <div className="space-y-6">
@@ -707,6 +730,31 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Category tabs */}
+              <div className="flex flex-wrap gap-2 rounded-xl bg-muted p-1">
+                {PAYMENT_CATEGORIES.map((category) => {
+                  const isActive = activeCategory === category.key;
+                  const count = paymentMethods.filter(m => METHOD_CATEGORY[m.key] === category.key).length;
+                  return (
+                    <button
+                      key={category.key}
+                      type="button"
+                      onClick={() => setActiveCategory(category.key)}
+                      className={cn(
+                        'flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-all',
+                        isActive
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-muted-foreground hover:bg-background hover:text-foreground'
+                      )}
+                    >
+                      {category.label}
+                      <span className={`rounded-full px-1.5 text-[10px] ${isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
               {/* Search and Filter Controls */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1" dir="rtl">
@@ -815,6 +863,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                 </div>
               )}
 
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Cash on Delivery (COD) */}
               {shouldShowMethod('cod') && (
                 <PaymentMethodCard
@@ -2444,6 +2493,8 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                 </PaymentMethodCard>
               )}
 
+              </div>
+
               {/* Shared Messaging Templates - For company users and sub-users */}
               {(auth?.user?.type === 'company' || (auth?.user?.type !== 'superadmin' && auth?.user?.created_by)) && (
                 <Card dir="rtl">
@@ -2598,6 +2649,17 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
           </Alert>
         </div>
       </form>
+
+      {/* Floating sticky save bar when form is dirty */}
+      {isDirty && (
+        <div className="sticky bottom-4 z-20 mt-6 flex items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-lg animate-in slide-in-from-bottom-2 fade-in">
+          <p className="text-sm text-muted-foreground">{t('Unsaved changes')}</p>
+          <Button type="submit" form="payment-settings-form" disabled={processing}>
+            <Save className="h-4 w-4 ms-2" />
+            {processing ? t("Saving...") : t("Save Changes")}
+          </Button>
+        </div>
+      )}
     </SettingsSection>
   );
 }
