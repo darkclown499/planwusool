@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
-import { Plus, Check, X, Search } from 'lucide-react';
+import { Plus, Check, X, Search, Wallet } from 'lucide-react';
 import { useForm, router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
 import { formatCurrency } from '@/utils/currency-helper';
@@ -110,17 +110,49 @@ export default function PayoutRequests({ userType, payoutRequests, settings, sta
 
   return (
     <div className="space-y-6">
-      {userType === 'company' && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>{t('Create Payout Request')}</CardTitle>
+      {userType === 'company' && (() => {
+        const belowMin = stats.availableBalance < settings.threshold_amount;
+        const minMessage = t('You need at least {{amount}} to request a payout', { amount: formattedSettings?.formattedThresholdAmount || '0' });
+        return (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-blue-200/70 bg-blue-50/60 p-5">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-lg bg-blue-100 text-blue-600 flex-shrink-0">
+                <Wallet className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-blue-900">{t('Create Payout Request')}</p>
+                <p className="mt-1 text-sm text-blue-700 leading-6">
+                  {belowMin
+                    ? minMessage
+                    : t('You can request up to {{amount}} for payout', { amount: stats.formattedAvailableBalance || '0' })}
+                </p>
+              </div>
+            </div>
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
-                <Button disabled={stats.availableBalance < settings.threshold_amount}>
-                  <Plus className="h-4 w-4 ms-2" />
-                  {t('Request Payout')}
-                </Button>
-              </DialogTrigger>
+              {belowMin ? (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex cursor-not-allowed">
+                        <Button disabled aria-disabled="true" className="cursor-not-allowed">
+                          <Plus className="h-4 w-4 ms-2" />
+                          {t('Request Payout')}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{minMessage}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : (
+                <DialogTrigger asChild>
+                  <Button className="flex-shrink-0">
+                    <Plus className="h-4 w-4 ms-2" />
+                    {t('Request Payout')}
+                  </Button>
+                </DialogTrigger>
+              )}
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>{t('Create Payout Request')}</DialogTitle>
@@ -158,16 +190,9 @@ export default function PayoutRequests({ userType, payoutRequests, settings, sta
                 </form>
               </DialogContent>
             </Dialog>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {stats.availableBalance < settings.threshold_amount
-                ? t('You need at least {{amount}} to request a payout', { amount: formattedSettings?.formattedThresholdAmount || '0' })
-                : t('You can request up to {{amount}} for payout', { amount: stats.formattedAvailableBalance || '0' })}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        );
+      })()}
 
       <Card>
         <CardHeader>

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-import { Copy, Check, Users, DollarSign, FileText, TrendingUp, Award, Clock } from 'lucide-react';
+import { Copy, Check, Users, DollarSign, FileText, TrendingUp, Clock, Wallet, MessageCircle } from 'lucide-react';
 import { toast } from '@/components/custom-toast';
 import { Link } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
@@ -29,6 +29,14 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  const shareViaWhatsApp = () => {
+    if (!referralLink) return;
+    const inviteText = `${t('Join the Wusool platform via my referral link:')} ${referralLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(inviteText)}`, '_blank', 'noopener');
+  };
+
+  const money = (value: any) => formatCurrency(Number(value ?? 0));
 
   if (userType === 'superadmin') {
     return (
@@ -137,7 +145,9 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('Total Referrals')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
+              <Users className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalReferrals}</div>
@@ -147,27 +157,33 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('Total Earned')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-green-50 text-green-600">
+              <DollarSign className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.formattedTotalEarned || '0'}</div>
+            <div className="text-2xl font-bold" dir="ltr">{stats.formattedTotalEarned || money(stats.totalEarned)}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('Available Balance')}</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+              <Wallet className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.formattedAvailableBalance || '0'}</div>
+            <div className="text-2xl font-bold" dir="ltr">{stats.formattedAvailableBalance || money(stats.availableBalance)}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('Payout Requests')}</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+              <FileText className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalPayoutRequests}</div>
@@ -196,7 +212,17 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button variant="outline" onClick={shareViaWhatsApp} className="gap-2">
+                <MessageCircle className="h-4 w-4 text-green-600" />
+                {t('Share via WhatsApp')}
+              </Button>
+              <Button variant="outline" onClick={copyReferralLink} className="gap-2">
+                {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+                {copied ? t('Copied!') : t('Copy Link')}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-3">
               {t('Share this link to earn commissions when users sign up and purchase plans')}
             </p>
           </CardContent>

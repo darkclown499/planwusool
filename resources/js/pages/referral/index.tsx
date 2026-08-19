@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { BarChart3, DollarSign, Users, Settings as SettingsIcon } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Toaster } from '@/components/ui/toaster';
 import { useTranslation } from 'react-i18next';
 import { usePage, router } from '@inertiajs/react';
@@ -100,36 +99,33 @@ export default function Referral() {
         { title: t('Referral Program') }
       ]}
     >
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="md:w-64 flex-shrink-0">
-          <div className="sticky top-20">
-            <ScrollArea className="h-[calc(100vh-5rem)]">
-              <div className="flex flex-col gap-1 px-3">
-                {sidebarNavItems.map((item) => {
-                  const isActive = activeSection === item.href.replace('#', '');
-                  return (
-                    <button
-                      key={item.href}
-                      dir="rtl"
-                      className={cn(
-                        'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-normal transition-colors',
-                        isActive
-                          ? 'bg-primary/10 text-primary font-medium shadow-sm'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                      )}
-                      onClick={() => handleNavClick(item.href)}
-                    >
-                      {item.icon}
-                      <span>{item.title}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+      <div className="space-y-8">
+        {/* Segmented control tabs */}
+        <div className="w-full overflow-x-auto pb-1">
+          <div className="inline-flex items-center gap-1 bg-muted p-1 rounded-xl min-w-max sm:min-w-0">
+            {sidebarNavItems.map((item) => {
+              const isActive = activeSection === item.href.replace('#', '');
+              return (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={() => handleNavClick(item.href)}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:bg-background hover:text-foreground'
+                  )}
+                >
+                  {item.icon}
+                  <span>{item.title}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0">
           <section id="dashboard" ref={dashboardRef} className="mb-8">
             <h2 className="text-xl font-semibold mb-4">{t('Dashboard')}</h2>
             <ReferralDashboard
