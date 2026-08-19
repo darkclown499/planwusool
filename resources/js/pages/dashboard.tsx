@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 import { useTranslation } from 'react-i18next';
 import { Link, router, usePage } from '@inertiajs/react';
 import QRCode from 'react-qr-code';
@@ -78,6 +80,42 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const [copied, setCopied] = useState(false);
   const [chartMode, setChartMode] = useState<'sales' | 'revenue'>('sales');
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<number>>(new Set());
+  const [qrOpen, setQrOpen] = useState(false);
+  const qrDialogRef = useRef<HTMLDivElement>(null);
+
+  const formatPrice = (value: number | string) => {
+    const formatted = formatCurrency(value);
+    const match = formatted.match(/(.*?)([^0-9.,\-\s]+?)\s*$/);
+    if (match && match[1]?.trim()) {
+      return `${match[1].replace(/\s+$/, '')} ${match[2]}`;
+    }
+    return formatted;
+  };
+
+  const downloadQr = () => {
+    const svg = qrDialogRef.current?.querySelector('svg');
+    if (!svg) return;
+    const xml = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 1024;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `store-qr-${(currentStore?.slug || currentStore?.id || 'store')}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  };
 
   // Merge group_ids into the dismissed set so collapsing duplicate alerts
   // dismisses the whole group at once.
@@ -304,10 +342,13 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const getAlertIcon = (icon: string | null | undefined) => alertIconMap[icon || ''] || Activity;
 
   const TrendLine = ({ value }: { value?: number }) => {
-    if (value === undefined || value === null || value === 0) {
+    if (value === undefined || value === null) {
+      return null;
+    }
+    if (value === 0) {
       return (
         <div className="rtl-start flex items-center gap-1.5 min-w-0">
-          <span className="text-xs text-muted-foreground">—</span>
+          <Badge variant="outline" className="text-xs ltr-num">0%</Badge>
           <span className="text-xs text-muted-foreground truncate">{t('vs last month')}</span>
         </div>
       );
@@ -543,6 +584,18 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const revenueData = dashboardData.revenueChart || [];
   const chartData = chartMode === 'sales' ? salesData : revenueData;
 
+  const storeSubdomain = (() => {
+    try {
+      return new URL(storeUrl!).hostname;
+    } catch {
+      return currentStore?.slug || '';
+    }
+  })();
+
+  const emptyBaseline = chartData.length === 0
+    ? Array.from({ length: 30 }, (_, i) => ({ date: `${i + 1}`, orders: 0, revenue: 0 }))
+    : chartData;
+
   return (
     <PageTemplate
       title={t('Dashboard')}
@@ -553,80 +606,107 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
     >
       <div className="space-y-4">
         {/* Store Spotlight Bar */}
-        <div className="rounded-xl border bg-gradient-to-l from-primary/10 via-transparent to-transparent p-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="bg-white p-2 rounded-xl flex-shrink-0 shadow-sm">
-              <QRCode value={storeUrl!} size={64} />
+        <div className="rounded-xl border bg-card shadow-sm bg-gradient-to-l from-primary/10 via-transparent to-transparent">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5">
+            {/* Store Info — right */}
+            <div className="order-2 min-w-0 text-center sm:order-1 sm:text-start">
+              <div className="flex items-center justify-center gap-2 mb-1 sm:justify-start">
+                <Store className="h-4 w-4 flex-shrink-0 text-primary" />
+                <p className="truncate text-base font-bold">{currentStore.name}</p>
+              </div>
+              <div className="mt-2 mb-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                <span className="inline-flex items-center rounded-full border bg-white/60 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                  <Globe className="me-1 h-3 w-3 text-primary" />
+                  <span dir="ltr" className="ltr-num font-mono">{storeSubdomain}</span>
+                </span>
+                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                  <span className="me-1.5 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                  {t('Active')}
+                </span>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Store className="h-4 w-4 text-primary" />
-                <p className="text-base font-bold truncate">{currentStore.name}</p>
-              </div>
-              <p className="text-xs text-muted-foreground truncate ltr-num text-start mb-3" dir="ltr">
-                {storeUrl}
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button size="sm" variant="outline" onClick={copyToClipboard} className="h-8 gap-1.5">
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? t('Copied!') : t('Copy Store Link')}
+
+            {/* Quick Actions — center */}
+            <div className="order-3 flex flex-wrap items-center justify-center gap-2 sm:order-2">
+              <Button size="sm" variant="outline" onClick={copyToClipboard} className="h-8 gap-1.5">
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? t('Copied!') : t('نسخ رابط المتجر')}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => window.open(storeUrl!, '_blank')} className="h-8 gap-1.5">
+                <ExternalLink className="h-3.5 w-3.5" />
+                {t('عرض المتجر')}
+              </Button>
+              {userHasPermission('manage-analytics') && (
+                <Button size="sm" variant="ghost" onClick={() => router.visit(route('analytics.index'))} className="h-8 gap-1.5">
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  {t('Analytics & Reporting')}
                 </Button>
-                <Button size="sm" onClick={() => window.open(storeUrl!, '_blank')} className="h-8 gap-1.5">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  {t('View Store')}
-                </Button>
-                {userHasPermission('manage-analytics') && (
-                  <Button size="sm" variant="ghost" onClick={() => router.visit(route('analytics.index'))} className="h-8 gap-1.5">
-                    <BarChart3 className="h-3.5 w-3.5" />
-                    {t('Analytics & Reporting')}
-                  </Button>
-                )}
-              </div>
+              )}
+            </div>
+
+            {/* QR Code — left, click to expand */}
+            <div className="order-1 flex flex-shrink-0 items-center justify-center sm:order-3">
+              <button
+                type="button"
+                onClick={() => setQrOpen(true)}
+                title={t('Expand QR code')}
+                className="group relative rounded-xl bg-white p-2 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md"
+              >
+                <QRCode value={storeUrl!} size={72} />
+                <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                  <QrCode className="h-6 w-6 text-white" />
+                </span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Getting Started Checklist */}
-        {onboarding?.show && !isSuperAdmin && (
-          <Card className="border-primary/30 bg-primary/5">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-base">{t('Getting Started')}</CardTitle>
+        {/* Onboarding Stepper */}
+        {onboarding?.show && !isSuperAdmin && (() => {
+          const doneCount = Math.max(onboarding.totalCount - (onboarding.pendingCount || 0), 0);
+          const percent = onboarding.totalCount > 0 ? Math.round((doneCount / onboarding.totalCount) * 100) : 0;
+          return (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader className="pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-base">{t('ابدأ من هنا')}</CardTitle>
+                  </div>
+                  <span className="text-sm font-semibold text-primary">
+                    <span className="ltr-num" dir="ltr">{percent}%</span> {t('إكمال تهيئة المتجر')}
+                  </span>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  {onboarding.pendingCount}/{onboarding.totalCount} {t('remaining')}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {onboarding.steps.map((step) => {
-                  const stepMeta = {
-                    products: { icon: Package, label: t('Add your products') },
-                    whatsapp: { icon: MessageSquare, label: t('Set up WhatsApp') },
-                    payments: { icon: CreditCard, label: t('Configure payment methods') },
-                    published: { icon: CheckCircle, label: t('Publish your store') },
-                  }[step.key] || { icon: CheckCircle, label: step.key };
-                  const Icon = stepMeta.icon;
-                  return step.done ? (
-                    <div key={step.key} className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5">
-                      <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600" />
-                      <span className="text-sm font-medium text-green-800 line-through">{stepMeta.label}</span>
-                    </div>
-                  ) : (
-                    <Link key={step.key} href={step.href || '#'} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2.5 shadow-sm transition-colors hover:border-primary hover:bg-primary/5">
-                      <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
-                      <span className="text-sm font-medium">{stepMeta.label}</span>
-                      <ChevronRight className="ms-auto h-4 w-4 text-muted-foreground" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                <Progress value={percent} className="mt-3 h-2" />
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {onboarding.steps.map((step) => {
+                    const stepMeta = {
+                      products: { icon: Package, label: t('Add your products') },
+                      whatsapp: { icon: MessageSquare, label: t('Set up WhatsApp') },
+                      payments: { icon: CreditCard, label: t('Configure payment methods') },
+                      published: { icon: CheckCircle, label: t('Publish your store') },
+                    }[step.key] || { icon: CheckCircle, label: step.key };
+                    const Icon = stepMeta.icon;
+                    return step.done ? (
+                      <div key={step.key} className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                        <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600" />
+                        <span className="truncate text-xs font-medium text-green-800">{stepMeta.label}</span>
+                      </div>
+                    ) : (
+                      <Link key={step.key} href={step.href || '#'} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm transition-colors hover:border-primary hover:bg-primary/5">
+                        <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
+                        <span className="min-w-0 flex-1 truncate text-xs font-medium">{stepMeta.label}</span>
+                        <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -694,7 +774,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 text-2xl font-bold ltr-num tabular-nums whitespace-nowrap">{formatCurrency(dashboardData.metrics.revenue || 0)}</div>
+                  <div className="min-w-0 whitespace-nowrap text-2xl font-bold tabular-nums ltr-num">{formatPrice(dashboardData.metrics.revenue || 0)}</div>
                   <div className="flex-shrink-0 p-2.5 rounded-full bg-yellow-100 text-yellow-600">
                     <Wallet className="h-4 w-4" />
                   </div>
@@ -714,9 +794,9 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm font-medium text-muted-foreground">{t('Quick Actions')}:</span>
                 {userHasPermission('manage-products') && (
-                  <Button size="sm" onClick={() => router.visit(route('products.create'))} className="h-8 gap-1.5">
-                    <Package className="h-3.5 w-3.5" />
-                    {t('Add New Product')}
+                  <Button size="sm" variant="default" onClick={() => router.visit(route('products.create'))} className="h-8 gap-1.5">
+                    <Plus className="h-3.5 w-3.5" />
+                    {t('إضافة منتج')}
                   </Button>
                 )}
                 {userHasPermission('manage-coupon-system') && (
@@ -891,10 +971,27 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                     )}
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[220px] flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                    <BarChart3 className="h-10 w-10 text-gray-500 mb-2" />
-                    <p className="text-sm font-medium text-gray-500">{t('Sales chart')}</p>
-                    <p className="text-xs text-gray-500 mt-1">{t('No sales in the last 30 days yet')}</p>
+                  <div className="relative h-[220px] rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={emptyBaseline} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-gray-200" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                        <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} tickLine={false} axisLine={false} domain={[0, 1]} allowDecimals={false} />
+                        <Area
+                          type="monotone"
+                          dataKey={chartMode === 'sales' ? 'orders' : 'revenue'}
+                          stroke="#cbd5e1"
+                          strokeWidth={1.5}
+                          strokeDasharray="6 6"
+                          fill="none"
+                          isAnimationActive={false}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                    <p className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-medium text-gray-500">
+                      <BarChart3 className="me-2 h-4 w-4" />
+                      {t('No sales in the last 30 days yet')}
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -922,14 +1019,21 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                         <p className="text-xs text-muted-foreground">{order.customer}</p>
                       </div>
                       <div className="text-end">
-                        <p className="text-sm font-medium ltr-num">{formatCurrency(order.amount)}</p>
+                        <p className="text-sm font-medium ltr-num">{formatPrice(order.amount)}</p>
                         <p className="text-xs text-muted-foreground">{order.status}</p>
                       </div>
                     </div>
                   )) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <ShoppingCart className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                      {t('No recent orders')}
+                    <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 px-6 py-10 text-center">
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-muted-foreground">
+                        <ShoppingCart className="h-6 w-6" />
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-gray-500">{t('No recent orders')}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{t('Orders will appear here once customers start buying')}</p>
+                      <Button size="sm" variant="outline" className="mt-4" onClick={() => router.visit(route('orders.index'))}>
+                        <ShoppingCart className="h-3.5 w-3.5 me-1.5" />
+                        {t('عرض كل الطلبات')}
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -959,17 +1063,26 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                       </div>
                       <div className="text-end">
                         <div className="flex flex-col items-end">
-                          <p className="text-sm font-medium ltr-num">{formatCurrency(product.sale_price || product.price)}</p>
+                          <p className="text-sm font-medium ltr-num">{formatPrice(product.sale_price || product.price)}</p>
                           {product.sale_price && (
-                            <p className="text-xs line-through text-muted-foreground ltr-num">{formatCurrency(product.price)}</p>
+                            <p className="text-xs line-through text-muted-foreground ltr-num">{formatPrice(product.price)}</p>
                           )}
                         </div>
                       </div>
                     </div>
                   )) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Package className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                      {t('No products available')}
+                    <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 px-6 py-10 text-center">
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-muted-foreground">
+                        <Package className="h-6 w-6" />
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-gray-500">{t('No products available')}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{t('Products will appear here as they get sold')}</p>
+                      {userHasPermission('manage-products') && (
+                        <Button size="sm" variant="outline" className="mt-4" onClick={() => router.visit(route('products.index'))}>
+                          <Package className="h-3.5 w-3.5 me-1.5" />
+                          {t('عرض كل المنتجات')}
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -978,6 +1091,33 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           )}
         </div>
       </div>
+
+      {/* QR Code Expand Modal */}
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('رمز المتجر QR')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4">
+            <div ref={qrDialogRef} className="rounded-2xl border bg-white p-5 shadow-sm">
+              <QRCode value={storeUrl!} size={220} />
+            </div>
+            <p className="max-w-xs text-center text-xs text-muted-foreground" dir="ltr">
+              {storeUrl}
+            </p>
+            <div className="flex w-full gap-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={copyToClipboard}>
+                {copied ? <Check className="h-4 w-4 me-2" /> : <Copy className="h-4 w-4 me-2" />}
+                {copied ? t('Copied!') : t('نسخ رابط المتجر')}
+              </Button>
+              <Button type="button" className="flex-1" onClick={downloadQr}>
+                <Download className="h-4 w-4 me-2" />
+                {t('تحميل QR')}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageTemplate>
   );
 }
