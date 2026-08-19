@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
 import {
   Store,
   Palette,
@@ -123,7 +124,7 @@ const CARD_PALETTE = [
   { color: '#ea580c', gradient: 'from-orange-500 to-red-500' },
 ];
 
-const HERO_CHIPS = ['إطلاق خلال دقائق', 'دعم متعدد اللغات', 'أمان على مستوى المؤسسات'];
+const HERO_CHIPS = ['سريع', 'ذكي', 'منظم', 'دعم متعدد العمولات'];
 
 const BENTO_CSS = `
   .bento-card {
@@ -189,7 +190,7 @@ export default function FeaturesSection({
   const HeroIcon = hero.IconComp;
   const rest = features.slice(1);
 
-  const gridClass = 'sm:col-span-2 lg:col-span-2 lg:row-span-2';
+  const gridClass = 'md:col-span-2 lg:col-span-2 lg:row-span-2';
 
   return (
     <section
@@ -247,15 +248,14 @@ export default function FeaturesSection({
         </div>
 
         {/* ─── Bento Grid ─── */}
-        <div className="mx-auto mt-14 grid max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        <div className="mx-auto mt-14 grid max-w-6xl grid-cols-1 gap-4 md:grid-cols-3 sm:gap-6 lg:grid-cols-4">
           {/* ═══ Hero tile — rich content ═══ */}
           <div
             className={`bento-card ${isVisible ? 'on' : ''} ${gridClass}`}
             style={{ transitionDelay: '0.15s' }}
           >
             <div
-              className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 sm:p-9"
-              style={{ backgroundColor: '#0f172a' }}
+              className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-zinc-900 via-zinc-950 to-emerald-950 p-8 text-white shadow-2xl transition-all duration-300"
             >
               {/* Decor */}
               <div
@@ -276,6 +276,10 @@ export default function FeaturesSection({
 
               {/* Content */}
               <div className="relative">
+                <span className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold tracking-wide text-emerald-300">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                  متوفر الآن
+                </span>
                 <div
                   className="flex h-16 w-16 items-center justify-center rounded-2xl ring-1 ring-white/30 shadow-lg transition-transform duration-300 group-hover:scale-105"
                   style={{
@@ -299,7 +303,7 @@ export default function FeaturesSection({
                   {HERO_CHIPS.map((chip) => (
                     <span
                       key={chip}
-                      className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/85"
+                      className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-200"
                     >
                       {chip}
                     </span>
@@ -329,39 +333,25 @@ export default function FeaturesSection({
                 className={`bento-card ${isVisible ? 'on' : ''}`}
                 style={{ transitionDelay: `${0.2 + index * 0.08}s` }}
               >
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg sm:p-7">
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/80">
                   {/* Top accent bar */}
-                  <div
-                    className="pointer-events-none absolute inset-x-0 top-0 h-[3px] opacity-60 transition-opacity duration-300 group-hover:opacity-100"
-                    style={{
-                      background: `linear-gradient(90deg, transparent, ${feature.color}, transparent)`,
-                    }}
-                  />
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-60 transition-opacity duration-300 group-hover:opacity-100" />
                   {/* Corner glow */}
-                  <div
-                    className="pointer-events-none absolute -left-12 -top-12 h-40 w-40 rounded-full opacity-[0.08] blur-2xl transition-opacity duration-500 group-hover:opacity-20"
-                    style={{ background: feature.color }}
-                  />
+                  <div className="pointer-events-none absolute -left-12 -top-12 h-40 w-40 rounded-full bg-emerald-500/10 opacity-40 blur-2xl transition-opacity duration-500 group-hover:opacity-70" />
 
                   <div className="relative flex flex-1 flex-col">
                     <div className="flex items-start justify-between gap-3">
-                      <div
-                        className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} ring-1 ring-white/50 shadow-lg transition-transform duration-300 group-hover:scale-110`}
-                        style={{ boxShadow: `0 10px 26px -6px ${hexToRgba(feature.color, 0.4)}` }}
-                      >
-                        <Icon className="h-5 w-5 text-white" strokeWidth={1.9} />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 shadow-sm transition-all duration-300 group-hover:bg-emerald-500 group-hover:text-white">
+                        <Icon className="h-5 w-5" strokeWidth={1.9} />
                       </div>
-                      <span
-                        className="text-xs font-black tracking-widest"
-                        style={{ color: hexToRgba(feature.color, 0.5) }}
-                      >
+                      <span className="font-mono text-xs font-bold text-zinc-400 transition-colors group-hover:text-emerald-500">
                         {String(index + 2).padStart(2, '0')}
                       </span>
                     </div>
-                    <h3 className="mt-4 text-[15px] font-extrabold leading-snug text-gray-900">
+                    <h3 className="mt-4 text-[15px] font-extrabold leading-snug text-gray-900 dark:text-white">
                       {feature.title}
                     </h3>
-                    <p className="mt-2.5 text-[13px] leading-relaxed text-gray-500">
+                    <p className="mt-2.5 text-[13px] leading-relaxed text-gray-500 dark:text-zinc-400">
                       {feature.description}
                     </p>
                   </div>
@@ -377,13 +367,16 @@ export default function FeaturesSection({
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}
         >
-          <span
-            className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-semibold"
-            style={{ borderColor: hexToRgba(brandColor, 0.5), color: brandColor }}
+          <Button
+            type="button"
+            variant="outline"
+            className="group gap-2 rounded-full px-8 py-3 text-sm font-semibold"
+            onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
           >
-            <Sparkles size={16} />
+            <Sparkles size={16} className="transition-colors duration-300 group-hover:text-emerald-500" />
             ومميزات أكثر تكتشفها بنفسك
-          </span>
+            <ArrowLeft size={16} className="transition-transform duration-300 group-hover:-translate-x-1" />
+          </Button>
         </div>
       </div>
     </section>
