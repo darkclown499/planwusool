@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from 'react-i18next';
 import { router, usePage, Link } from '@inertiajs/react';
-import { Bell, Send, Eye, Trash2, MessageSquare, Mail, Smartphone, Globe, CheckCircle, XCircle, AlertCircle, Clock, Filter } from 'lucide-react';
+import { Bell, Send, Eye, Trash2, MessageSquare, Mail, Smartphone, Globe, CheckCircle, XCircle, AlertCircle, Clock, Search } from 'lucide-react';
 import { hasPermission } from '@/utils/permissions';
 
 const CHANNEL_ICONS: Record<string, any> = {
@@ -19,10 +19,11 @@ const CHANNEL_ICONS: Record<string, any> = {
 };
 
 const CHANNEL_LABELS: Record<string, string> = {
-  in_app: 'In-App',
-  push: 'Web Push',
-  email: 'Email',
+  in_app: 'داخل التطبيق',
+  push: 'إشعارات المتصفح',
+  email: 'البريد',
   sms: 'SMS',
+  whatsapp: 'واتساب',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -121,43 +122,51 @@ export default function AdminNotifications() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Total Sent')}</CardTitle>
-              <Bell className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs text-muted-foreground">{t('Total Sent')}</CardTitle>
+              <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                <Bell className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total || 0}</div>
               <p className="text-xs text-muted-foreground">
-                {stats.sent || 0} {t('sent')} · {stats.unread || 0} {t('unread')}
+                {t('Sent: {{count}}', { count: stats.sent || 0 })} · {t('Unread: {{count}}', { count: stats.unread || 0 })}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Last 24 Hours')}</CardTitle>
-              <Clock className="h-4 w-4 text-amber-600" />
+              <CardTitle className="text-xs text-muted-foreground">{t('Last 24 Hours')}</CardTitle>
+              <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
+                <Clock className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{stats.last_24h || 0}</div>
+              <div className="text-2xl font-bold">{stats.last_24h || 0}</div>
               <p className="text-xs text-muted-foreground">{t('notifications sent today')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Web Push')}</CardTitle>
-              <Globe className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-xs text-muted-foreground">{t('Web Push')}</CardTitle>
+              <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
+                <Globe className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.push_sent || 0}</div>
+              <div className="text-2xl font-bold">{stats.push_sent || 0}</div>
               <p className="text-xs text-muted-foreground">{t('push notifications sent')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Read Rate')}</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-xs text-muted-foreground">{t('Read Rate')}</CardTitle>
+              <div className="p-2 rounded-lg bg-green-50 text-green-600">
+                <CheckCircle className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold">
                 {stats.total > 0 ? Math.round((stats.read / stats.total) * 100) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -168,56 +177,54 @@ export default function AdminNotifications() {
         </div>
 
         {/* Filters */}
-        <Card>
-          <CardContent className="py-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  className="ps-9 w-56"
-                  placeholder={t('Search notifications...')}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') applyFilters({ search }); }}
-                />
-              </div>
-              <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); applyFilters({ type: v }); }}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder={t('All Types')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('All Types')}</SelectItem>
-                  {types.map((type: string) => (
-                    <SelectItem key={type} value={type}>{TYPE_LABELS[type] || type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={channelFilter} onValueChange={(v) => { setChannelFilter(v); applyFilters({ channel: v }); }}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder={t('All Channels')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('All Channels')}</SelectItem>
-                  {Object.keys(channels).map((ch: string) => (
-                    <SelectItem key={ch} value={ch}>{CHANNEL_LABELS[ch] || ch}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); applyFilters({ status: v }); }}>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder={t('All Statuses')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('All Statuses')}</SelectItem>
-                  <SelectItem value="sent">{t('Sent')}</SelectItem>
-                  <SelectItem value="unsent">{t('Pending')}</SelectItem>
-                  <SelectItem value="read">{t('Read')}</SelectItem>
-                  <SelectItem value="unread">{t('Unread')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-card rounded-lg border">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute end-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              dir="rtl"
+              className="pe-9 w-full"
+              placeholder={t('Search notifications...')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyFilters({ search }); }}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); applyFilters({ type: v }); }}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder={t('All Types')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('All Types')}</SelectItem>
+                {types.map((type: string) => (
+                  <SelectItem key={type} value={type}>{TYPE_LABELS[type] || type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={channelFilter} onValueChange={(v) => { setChannelFilter(v); applyFilters({ channel: v }); }}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder={t('All Channels')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('All Channels')}</SelectItem>
+                {Object.keys(channels).map((ch: string) => (
+                  <SelectItem key={ch} value={ch}>{CHANNEL_LABELS[ch] || ch}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); applyFilters({ status: v }); }}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder={t('All Statuses')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('All Statuses')}</SelectItem>
+                <SelectItem value="sent">{t('Sent Status')}</SelectItem>
+                <SelectItem value="unsent">{t('Pending Status')}</SelectItem>
+                <SelectItem value="failed">{t('Failed Status')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         {/* Type Distribution */}
         {typeStatsArray.length > 0 && (
@@ -244,11 +251,16 @@ export default function AdminNotifications() {
           </CardHeader>
           <CardContent>
             {(!notifications || !notifications.data || notifications.data.length === 0) ? (
-              <div className="text-center py-12">
-                <Bell className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                <p className="mt-2 text-muted-foreground">{t('No notifications found')}</p>
+              <div className="py-16 flex flex-col items-center justify-center text-center">
+                <div className="p-4 bg-primary/10 text-primary rounded-full mb-3">
+                  <Bell className="h-8 w-8" />
+                </div>
+                <h3 className="text-lg font-semibold">{t('No notifications found')}</h3>
+                <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                  {t('Notifications empty description')}
+                </p>
                 {hasPermission('send-notifications') && (
-                  <Button variant="outline" className="mt-4" onClick={() => router.visit(route('notifications.create'))}>
+                  <Button className="mt-6" onClick={() => router.visit(route('notifications.create'))}>
                     <Send className="h-4 w-4 me-2" />
                     {t('Send your first notification')}
                   </Button>

@@ -544,7 +544,7 @@ class NotificationService
                 $query->unread();
             } elseif ($filters['status'] === 'sent') {
                 $query->sent();
-            } elseif ($filters['status'] === 'unsent') {
+            } elseif (in_array($filters['status'], ['unsent', 'failed'], true)) {
                 $query->where('is_sent', false);
             }
         }
