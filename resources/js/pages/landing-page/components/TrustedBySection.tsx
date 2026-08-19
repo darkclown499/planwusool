@@ -16,10 +16,10 @@ const TRUSTED_LOGOS = [
   { name: 'HotSMS', src: '/images/logos/hotsms.png' },
   { name: 'PayPal', src: '/images/logos/paypal.png' },
   { name: 'Stripe', src: '/images/logos/Stripe.png' },
-  { name: 'Jawwal', src: '/images/logos/jawwal.png' },
+  { name: 'Jawwal Pay', src: '/images/logos/jawwal.png' },
   { name: 'Reflect', src: '/images/logos/reflect.png' },
   { name: 'PalPay', src: '/images/logos/palpay.png' },
-  { name: 'Aramaex', src: '/images/logos/aramaex.png' },
+  { name: 'Aramex', src: '/images/logos/aramaex.png' },
   { name: 'Mada', src: '/images/logos/mada.png' },
   { name: 'Ooredoo', src: '/images/logos/ooredoo.png' },
   { name: 'Laravel', src: '/images/logos/laravel.png' },
@@ -78,11 +78,16 @@ export default function TrustedBySection({
   return (
     <section
       id="trusted-by"
-      className="relative overflow-hidden bg-white py-14 sm:py-16 lg:py-20"
+      className="relative overflow-hidden bg-white pt-20 pb-14 sm:pt-24 sm:pb-16 lg:pb-20"
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
       <style>{MARQUEE_CSS}</style>
+      {/* Soft blend from the dark hero above */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-zinc-950 via-zinc-800/60 to-transparent"
+      />
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[720px] -translate-x-1/2 rounded-full blur-[130px]"
         style={{ background: hexToRgba(brandColor, 0.07) }}
@@ -112,27 +117,26 @@ export default function TrustedBySection({
 
       <div
         dir="ltr"
-        className={`mt-10 overflow-hidden transition-all duration-700 delay-200 ${
+        className={`mt-10 overflow-hidden transition-all duration-700 delay-200 [mask-image:linear-gradient(to_right,transparent_0,black_128px,black_calc(100%-128px),transparent_100%)] ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`}
         style={{
-          maskImage:
-            'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
           WebkitMaskImage:
-            'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+            'linear-gradient(to right, transparent 0, black 128px, black calc(100% - 128px), transparent 100%)',
         }}
       >
         <div className="trusted-track">
           {[...TRUSTED_LOGOS, ...TRUSTED_LOGOS].map((logo, index) => (
             <div
               key={`${logo.name}-${index}`}
-              className="mx-2 flex h-24 w-52 shrink-0 items-center justify-center rounded-2xl border border-gray-100 bg-white px-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-gray-200 hover:shadow-md"
+              className="mx-2 flex h-16 min-w-[140px] shrink-0 cursor-pointer items-center justify-center rounded-xl border border-zinc-200/60 bg-white/50 px-6 py-4 shadow-sm backdrop-blur-sm transition-all duration-300 ease-out hover:scale-105"
+              title={logo.name}
             >
               <img
                 src={logo.src}
                 alt={logo.name}
                 loading="lazy"
-                className="max-h-12 w-auto max-w-full object-contain opacity-70 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+                className="max-h-9 w-auto max-w-full object-contain opacity-60 grayscale transition-all duration-300 ease-out hover:opacity-100 hover:grayscale-0"
               />
             </div>
           ))}

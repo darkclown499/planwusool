@@ -222,13 +222,10 @@ export default function FeaturesSection({
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
-          <span
-            className="mb-4 inline-block rounded-full px-4 py-1.5 text-[13px] font-bold"
-            style={{ backgroundColor: hexToRgba(brandColor, 0.12), color: brandColor }}
-          >
+          <span className="mb-4 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1 text-xs font-bold uppercase tracking-wide text-emerald-600">
             المميزات
           </span>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+          <h2 className="mx-auto mt-3 mb-2 text-center text-3xl font-black tracking-tight text-zinc-900 sm:text-5xl">
             {sectionData.title || (
               <>
                 كل ما تحتاجه لإطلاق{' '}
@@ -243,7 +240,7 @@ export default function FeaturesSection({
               </>
             )}
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-gray-500">
+          <p className="mx-auto mt-5 max-w-xl text-center text-base font-normal text-zinc-600 sm:text-lg">
             {sectionData.description ||
               'منصة وصول تمنحك كل الأدوات اللازمة لإنشاء وإدارة متجر واتساب احترافي ومتكامل.'}
           </p>
