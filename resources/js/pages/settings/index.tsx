@@ -159,6 +159,9 @@ export default function Settings() {
   
   // Smart scroll functionality
   useEffect(() => {
+    // Enable smooth scrolling on the document root for anchor navigation
+    document.documentElement.style.scrollBehavior = 'smooth';
+
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 100; // Add offset for better UX
       
@@ -226,6 +229,7 @@ export default function Settings() {
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      document.documentElement.style.scrollBehavior = '';
     };
   }, []);
 
@@ -276,35 +280,35 @@ export default function Settings() {
         <div className="flex-1">
           {/* Currency Settings Section */}
           {(auth.permissions?.includes('manage-settings') || auth.user?.type === 'superadmin') && (
-            <section id="currency-settings" ref={currencySettingsRef} className="mb-8">
+            <section id="currency-settings" ref={currencySettingsRef} className="mb-8 scroll-mt-24">
               <CurrencySettings />
             </section>
           )}
 
           {/* Email Settings Section */}
           {(auth.permissions?.includes('manage-settings') || auth.user?.type === 'superadmin') && (
-            <section id="email-settings" ref={emailSettingsRef} className="mb-8">
+            <section id="email-settings" ref={emailSettingsRef} className="mb-8 scroll-mt-24">
               <EmailSettings />
             </section>
           )}
 
           {/* Email Notification Settings Section */}
           {auth.user?.type === 'company' && (
-            <section id="email-notification-settings" ref={emailNotificationSettingsRef} className="mb-8">
+            <section id="email-notification-settings" ref={emailNotificationSettingsRef} className="mb-8 scroll-mt-24">
               <EmailNotificationSettings />
             </section>
           )}
 
           {/* Payment Settings Section */}
           {(auth.permissions?.includes('manage-settings') || auth.user?.type === 'superadmin') && (
-            <section id="payment-settings" ref={paymentSettingsRef} className="mb-8">
+            <section id="payment-settings" ref={paymentSettingsRef} className="mb-8 scroll-mt-24">
               <PaymentSettings settings={paymentSettings} messagingVariables={messagingVariables} />
             </section>
           )}
 
           {/* Twilio Settings Section */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
-            <section id="twilio-settings" ref={twilioSettingsRef} className="mb-8">
+            <section id="twilio-settings" ref={twilioSettingsRef} className="mb-8 scroll-mt-24">
               {planFeatures?.enable_sms ? (
                 <TwilioSettings systemSettings={systemSettings} templates={templates} />
               ) : (
@@ -315,21 +319,21 @@ export default function Settings() {
 
           {/* Storage Settings Section */}
           {auth.user?.type === 'superadmin' && (
-            <section id="storage-settings" ref={storageSettingsRef} className="mb-8">
+            <section id="storage-settings" ref={storageSettingsRef} className="mb-8 scroll-mt-24">
               <StorageSettings settings={systemSettings} />
             </section>
           )}
 
           {/* ReCaptcha Settings Section */}
           {(auth.permissions?.includes('manage-recaptcha-settings') || auth.user?.type === 'superadmin') && (
-            <section id="recaptcha-settings" ref={recaptchaSettingsRef} className="mb-8">
+            <section id="recaptcha-settings" ref={recaptchaSettingsRef} className="mb-8 scroll-mt-24">
               <RecaptchaSettings settings={systemSettings} />
             </section>
           )}
 
           {/* Chat GPT Settings Section */}
           {(auth.permissions?.includes('manage-chatgpt-settings') || auth.user?.type === 'superadmin') && (
-            <section id="chatgpt-settings" ref={chatgptSettingsRef} className="mb-8">
+            <section id="chatgpt-settings" ref={chatgptSettingsRef} className="mb-8 scroll-mt-24">
               {auth.user?.type === 'superadmin' || planFeatures?.enable_chatgpt ? (
                 <ChatGptSettings settings={systemSettings} />
               ) : (
@@ -340,28 +344,28 @@ export default function Settings() {
 
           {/* Cookie Settings Section */}
           {(auth.permissions?.includes('manage-cookie-settings') || auth.user?.type === 'superadmin') && (
-            <section id="cookie-settings" ref={cookieSettingsRef} className="mb-8">
+            <section id="cookie-settings" ref={cookieSettingsRef} className="mb-8 scroll-mt-24">
               <CookieSettings settings={systemSettings} />
             </section>
           )}
 
           {/* SEO Settings Section */}
           {(auth.permissions?.includes('manage-seo-settings') || auth.user?.type === 'superadmin') && (
-            <section id="seo-settings" ref={seoSettingsRef} className="mb-8">
+            <section id="seo-settings" ref={seoSettingsRef} className="mb-8 scroll-mt-24">
               <SeoSettings settings={systemSettings} />
             </section>
           )}
 
           {/* Cache Settings Section */}
           {(auth.permissions?.includes('manage-cache-settings') || auth.user?.type === 'superadmin') && (
-            <section id="cache-settings" ref={cacheSettingsRef} className="mb-8">
+            <section id="cache-settings" ref={cacheSettingsRef} className="mb-8 scroll-mt-24">
               <CacheSettings cacheSize={cacheSize} />
             </section>
           )}
 
           {/* Webhook Settings Section */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
-            <section id="webhook-settings" ref={webhookSettingsRef} className="mb-8">
+            <section id="webhook-settings" ref={webhookSettingsRef} className="mb-8 scroll-mt-24">
               {planFeatures?.enable_custdomain || auth.user?.type === 'superadmin' ? (
                 <WebhookSettings webhooks={webhooks} availableModules={availableModules} />
               ) : (
@@ -372,7 +376,7 @@ export default function Settings() {
 
           {/* Accounting Integration Section */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
-            <section id="accounting-integration" ref={accountingIntegrationRef} className="mb-8">
+            <section id="accounting-integration" ref={accountingIntegrationRef} className="mb-8 scroll-mt-24">
               {planFeatures?.enable_accounting_integration ? (
                 <AccountingIntegration />
               ) : (

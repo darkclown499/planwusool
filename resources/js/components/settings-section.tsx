@@ -21,16 +21,16 @@ export function SettingsSection({ title, description, children, action }: Settin
               </CardDescription>
             )}
           </div>
-          {action && (
-            <div>
-              {action}
-            </div>
-          )}
         </div>
       </CardHeader>
       <CardContent>
         {children}
       </CardContent>
+      {action && (
+        <div className="flex items-center justify-end border-t bg-muted/20 px-6 py-4 rounded-b-lg">
+          {action}
+        </div>
+      )}
     </Card>
   );
 }

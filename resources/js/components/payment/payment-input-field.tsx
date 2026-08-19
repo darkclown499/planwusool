@@ -15,6 +15,7 @@ interface PaymentInputFieldProps {
   isSecret?: boolean;
   error?: string;
   className?: string;
+  dir?: 'ltr' | 'rtl';
 }
 
 export function PaymentInputField({
@@ -26,7 +27,8 @@ export function PaymentInputField({
   type = 'text',
   isSecret = false,
   error,
-  className = ''
+  className = '',
+  dir,
 }: PaymentInputFieldProps) {
   const [showSecret, setShowSecret] = useState(false);
   
@@ -47,6 +49,7 @@ export function PaymentInputField({
           value={displayValue}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          dir={dir}
           className={`font-mono text-sm ${isSecret ? 'pr-10' : ''} ${className}`}
           readOnly={isDemoMode && value}
           aria-invalid={!!error}

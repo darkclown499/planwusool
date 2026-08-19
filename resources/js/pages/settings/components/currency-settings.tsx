@@ -17,6 +17,25 @@ interface CurrencyProps {
     is_default: boolean;
 }
 
+const CURRENCY_LABELS: Record<string, string> = {
+    ILS: 'شيكل أردني/فلسطيني',
+    USD: 'دولار أمريكي',
+    JOD: 'دينار أردني',
+    EUR: 'يورو',
+    GBP: 'جنيه إسترليني',
+    AED: 'درهم إماراتي',
+    SAR: 'ريال سعودي',
+    EGP: 'جنيه مصري',
+    KWD: 'دينار كويتي',
+    QAR: 'ريال قطري',
+    TRY: 'ليرة تركية',
+    MAD: 'درهم مغربي',
+    CAD: 'دولار كندي',
+    AUD: 'دولار أسترالي',
+    CNY: 'يوان صيني',
+    INR: 'روبية هندية',
+};
+
 export default function CurrencySettings() {
     const { t } = useTranslation();
     const { currencies = [], systemSettings = {} } = usePage().props as any;
@@ -79,9 +98,11 @@ export default function CurrencySettings() {
                                 {currencies && currencies.length > 0 ? (
                                     currencies.map((currency: CurrencyProps) => (
                                         <SelectItem key={currency.id} value={currency.code}>
-                                            <div className="flex items-center">
-                                                <span className="w-8 text-center">{currency.symbol}</span>
-                                                <span>{currency.code} - {currency.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="flex-shrink-0">{CURRENCY_LABELS[currency.code] || currency.name}</span>
+                                                <span dir="ltr" className="text-xs text-muted-foreground">
+                                                    ({currency.code} {currency.symbol})
+                                                </span>
                                             </div>
                                         </SelectItem>
                                     ))

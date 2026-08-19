@@ -168,6 +168,8 @@ export default function EmailSettings() {
                       value={emailSettings.driver}
                       onChange={(e) => handleEmailSettingsChange('driver', e.target.value)}
                       placeholder="smtp"
+                      dir="ltr"
+                      className="text-left font-mono"
                     />
                   </div>
 
@@ -181,6 +183,8 @@ export default function EmailSettings() {
                       value={emailSettings.host}
                       onChange={(e) => handleEmailSettingsChange('host', e.target.value)}
                       placeholder="smtp.example.com"
+                      dir="ltr"
+                      className="text-left font-mono"
                     />
                   </div>
 
@@ -204,6 +208,8 @@ export default function EmailSettings() {
                       value={emailSettings.port}
                       onChange={(e) => handleEmailSettingsChange('port', e.target.value)}
                       placeholder="587"
+                      dir="ltr"
+                      className="text-left font-mono"
                     />
                   </div>
 
@@ -218,6 +224,7 @@ export default function EmailSettings() {
                       value={emailSettings.username}
                       onChange={(value) => handleEmailSettingsChange('username', value)}
                       placeholder="user@example.com"
+                      dir="ltr"
                     />
                   </div>
 
@@ -233,6 +240,7 @@ export default function EmailSettings() {
                       onChange={(value) => handleEmailSettingsChange('password', value)}
                       placeholder="••••••••••••"
                       isSecret
+                      dir="ltr"
                     />
                   </div>
 
@@ -267,6 +275,8 @@ export default function EmailSettings() {
                       value={emailSettings.fromAddress}
                       onChange={(e) => handleEmailSettingsChange('fromAddress', e.target.value)}
                       placeholder="noreply@example.com"
+                      dir="ltr"
+                      className="text-left font-mono"
                     />
                   </div>
 
@@ -306,6 +316,8 @@ export default function EmailSettings() {
                     value={testEmail}
                     onChange={(e) => setTestEmail(e.target.value)}
                     placeholder="test@example.com"
+                    dir="ltr"
+                    className="text-left font-mono"
                     required
                   />
                   <p className="text-xs text-muted-foreground">
