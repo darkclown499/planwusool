@@ -366,6 +366,13 @@ export function CrudFormModal({
           : field.options || [];
 
         const currentValue = String(formData[field.name] || '');
+        // Only bind a value that actually exists in the option list. Passing a
+        // stale/unknown value to a controlled Radix Select leaves it showing an
+        // empty value and swallowing clicks (looks like "unresponsive").
+        const valueExists = options.some((opt) =>
+          String(field.relation ? opt[field.relation!.valueField] : opt.value) === currentValue
+        );
+        const safeValue = valueExists ? currentValue : '';
         const selectedOption = field.relation
           ? options.find((opt: any) => String(opt[field.relation!.valueField]) === currentValue)
           : options.find((opt) => String(opt.value) === currentValue);
@@ -376,7 +383,7 @@ export function CrudFormModal({
 
         return (
           <Select
-            value={currentValue}
+            value={safeValue}
             onValueChange={(value) => handleChange(field.name, value)}
             disabled={false}
           >

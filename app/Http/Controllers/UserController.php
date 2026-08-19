@@ -75,18 +75,25 @@ class UserController extends BaseController
         $users = $userQuery->paginate($perPage)->withQueryString();
 
         # Roles listing - Filter roles based on user type
-        if ($authUserRole == 'company') {
-            // Company users can only see roles they created (exclude system roles)
-            $roles = Role::where('created_by', $authUser->id)
-                ->whereNotIn('name', ['superadmin', 'company'])
-                ->get();
-        } elseif ($authUser->type !== 'superadmin') {
-            // Non-company, non-superadmin users can only see roles created by their creator
-            $roles = Role::where('created_by', $authUser->created_by)
-                ->whereNotIn('name', ['superadmin', 'company'])
+        if ($authUserRole == 'superadmin') {
+            // Superadmin can assign any role
+            $roles = Role::get();
+        } elseif ($authUser->type == 'company') {
+            // Company users can assign roles they created OR roles created by
+            // the user who created them (their own platform account), so the
+            // role dropdown is never empty for freshly created companies that
+            // have not built custom roles yet.
+            $roles = Role::whereNotIn('name', ['superadmin', 'company'])
+                ->where(function ($query) use ($authUser) {
+                    $query->where('created_by', $authUser->id)
+                        ->orWhere('created_by', $authUser->created_by);
+                })
                 ->get();
         } else {
-            $roles = Role::get();
+            // Sub-users can only assign roles created by their creator
+            $roles = Role::whereNotIn('name', ['superadmin', 'company'])
+                ->where('created_by', $authUser->created_by)
+                ->get();
         }
 
         // Get plan limits for current store
@@ -162,8 +169,12 @@ class UserController extends BaseController
             $roleQuery = Role::where('id', $request->roles);
             
             if ($authUser->type === 'company') {
-                // Company users can only assign roles they created
-                $roleQuery->where('created_by', $authUser->id);
+                // Company users can only assign roles they created or roles
+                // created by the platform account that created them
+                $roleQuery->where(function ($query) use ($authUser) {
+                    $query->where('created_by', $authUser->id)
+                        ->orWhere('created_by', $authUser->created_by);
+                });
             } elseif ($authUser->type !== 'superadmin' && $authUser->type !== 'company') {
                 // Sub-users can only assign roles created by their creator
                 $roleQuery->where('created_by', $authUser->created_by);
@@ -210,8 +221,12 @@ class UserController extends BaseController
                 $roleQuery = Role::where('id', $request->roles);
                 
                 if (auth()->user()->type === 'company') {
-                    // Company users can only assign roles they created
-                    $roleQuery->where('created_by', auth()->id());
+                    // Company users can only assign roles they created or roles
+                    // created by the platform account that created them
+                    $roleQuery->where(function ($query) use ($created_by) {
+                        $query->where('created_by', $created_by)
+                            ->orWhere('created_by', auth()->user()->created_by);
+                    });
                 } elseif (auth()->user()->type !== 'superadmin' && auth()->user()->type !== 'company') {
                     // Sub-users can only assign roles created by their creator
                     $roleQuery->where('created_by', auth()->user()->created_by);

@@ -60,6 +60,10 @@ class UserSeeder extends Seeder
             $this->createDemoCompanies($defaultPlan, $superAdmin);
         }
 
+        // Ensure every company has assignable tenant roles (Store Manager /
+        // Staff) so the Add User role dropdown is never empty.
+        $this->ensureTenantRolesForAllCompanies();
+
         // Assign default plan to all company users with null plan_id
         if ($defaultPlan) {
             User::where('type', 'company')
@@ -275,5 +279,49 @@ class UserSeeder extends Seeder
             'manage-media', 'upload-media', 'delete-media', 'view-customers'
         ])->get();
         $contentWriterRole->syncPermissions($contentWriterPermissions);
+    }
+
+    /**
+     * Ensure every company has scoped, assignable tenant roles so the Add User
+     * role dropdown is populated even for companies that never created custom
+     * roles. Roles are scoped to the company via `created_by`.
+     */
+    private function ensureTenantRolesForAllCompanies(): void
+    {
+        $companies = User::where('type', 'company')->get();
+
+        $managerPermissions = \Spatie\Permission\Models\Permission::whereIn('name', [
+            'manage-dashboard', 'manage-stores', 'view-stores', 'edit-stores',
+            'manage-products', 'view-products', 'create-products', 'edit-products', 'delete-products',
+            'manage-categories', 'view-categories', 'create-categories', 'edit-categories',
+            'manage-orders', 'view-orders', 'edit-orders',
+            'manage-customers', 'view-customers', 'edit-customers'
+        ])->pluck('name');
+
+        $staffPermissions = \Spatie\Permission\Models\Permission::whereIn('name', [
+            'manage-dashboard', 'view-stores', 'view-products', 'view-orders', 'view-customers'
+        ])->pluck('name');
+
+        foreach ($companies as $company) {
+            $managerRole = Role::firstOrCreate(
+                ['name' => 'manager_' . $company->id, 'guard_name' => 'web'],
+                [
+                    'label' => 'Store Manager',
+                    'description' => 'Store Manager has access to manage store operations',
+                    'created_by' => $company->id,
+                ]
+            );
+            $managerRole->syncPermissions($managerPermissions);
+
+            $staffRole = Role::firstOrCreate(
+                ['name' => 'staff_' . $company->id, 'guard_name' => 'web'],
+                [
+                    'label' => 'Staff',
+                    'description' => 'Staff has read-only access to store data',
+                    'created_by' => $company->id,
+                ]
+            );
+            $staffRole->syncPermissions($staffPermissions);
+        }
     }
 }
