@@ -51,13 +51,15 @@ export default function RolesPage() {
                         </span>
                       )}
                     </p>
-                    <RolePermissionCheckboxGroup
-                      permissions={permissions}
-                      selectedPermissions={formData.permissions || []}
-                      onChange={(selected) => {
-                        onChange('permissions', selected);
-                      }}
-                    />
+                    <div className="max-h-[60vh] overflow-y-auto px-2">
+                      <RolePermissionCheckboxGroup
+                        permissions={permissions}
+                        selectedPermissions={formData.permissions || []}
+                        onChange={(selected) => {
+                          onChange('permissions', selected);
+                        }}
+                      />
+                    </div>
                   </div>
                 );
               }
@@ -72,13 +74,14 @@ export default function RolesPage() {
   const breadcrumbs = [
     { title: t('Dashboard'), href: route('dashboard') },
     { title: t('Staff Management'), href: route('users.index') },
-    { title: t('Roles') }
+    { title: t('Roles & Permissions') }
   ];
 
   return (
     <PageCrudWrapper 
       config={config} 
       url="/roles" 
+      title={t('Manage Roles & Permissions')}
       breadcrumbs={breadcrumbs}
     />
   );

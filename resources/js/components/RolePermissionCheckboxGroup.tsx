@@ -5,6 +5,7 @@ import { IndeterminateCheckbox } from '@/components/ui/indeterminate-checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { getModuleLabel, translatePermissionName } from '@/utils/permission-translations';
 
 interface Permission {
   id: string | number;
@@ -169,7 +170,7 @@ export function RolePermissionCheckboxGroup({
             </Label>
           </div>
           <div className="text-xs text-gray-500">
-            {selected.length} {t("of")} {getAllPermissionIds().length} {t("selected")}
+            {t('Selected {{count}} of {{total}}', { count: selected.length, total: getAllPermissionIds().length })}
           </div>
         </div>
       </div>
@@ -179,20 +180,32 @@ export function RolePermissionCheckboxGroup({
         {Object.entries(filteredPermissions).map(([module, modulePermissions]) => (
           <div key={module} className="border rounded shadow-sm">
             {/* Module Header */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 border-b">
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between gap-2 p-3 bg-gray-50 border-b">
+              <div className="flex items-center space-x-2 min-w-0">
                 <IndeterminateCheckbox
                   id={`module-checkbox-${module.replace(/\s+/g, '-').toLowerCase()}`}
                   checked={isModuleSelected(module)}
                   indeterminate={isModuleIndeterminate(module)}
                   onCheckedChange={(checked) => handleModuleChange(module, checked === true)}
                 />
-                <Label htmlFor={`module-checkbox-${module.replace(/\s+/g, '-').toLowerCase()}`} className="font-medium">
-                  {module}
+                <Label htmlFor={`module-checkbox-${module.replace(/\s+/g, '-').toLowerCase()}`} className="font-medium truncate">
+                  {getModuleLabel(module)}
                 </Label>
               </div>
-              <div className="text-xs text-gray-500">
-                {modulePermissions.filter(p => selected.includes(p.id.toString())).length} of {modulePermissions.length} {t("selected")}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <span className="text-xs text-gray-500">
+                  {t('Selected {{count}} of {{total}}', {
+                    count: modulePermissions.filter(p => selected.includes(p.id.toString())).length,
+                    total: modulePermissions.length
+                  })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleModuleChange(module, !isModuleSelected(module))}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  {isModuleSelected(module) ? t('Clear Selection') : t('Select All')}
+                </button>
               </div>
             </div>
             
@@ -209,7 +222,7 @@ export function RolePermissionCheckboxGroup({
                       }
                     />
                     <Label htmlFor={`permission-checkbox-${permission.id.toString().replace(/\s+/g, '-').toLowerCase()}`} className="text-sm truncate">
-                      {permission.label}
+                      {translatePermissionName(permission.name, permission.label)}
                     </Label>
                   </div>
                 ))}

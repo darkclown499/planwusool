@@ -39,10 +39,19 @@ export interface TableAction {
   condition?: (row: any, permissions?: string[]) => boolean;
 }
 
+export interface EmptyStateConfig {
+  icon?: React.ReactNode;
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  actionLabel?: React.ReactNode;
+  actionPermission?: string;
+}
+
 export interface TableConfig {
   columns: TableColumn[];
   actions: TableAction[];
   statusColors?: Record<string, string>;
+  emptyState?: EmptyStateConfig;
 }
 
 export interface FilterOption {

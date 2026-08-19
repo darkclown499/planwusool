@@ -1,6 +1,8 @@
 // config/crud/roles.ts
 import { CrudConfig } from '@/types/crud';
 import { columnRenderers } from '@/utils/columnRenderers';
+import { ShieldAlert } from 'lucide-react';
+import { createElement } from 'react';
 import i18n from 'i18next';
 
 const t = (key: string, options?: any) => i18n.t(key, options);
@@ -9,6 +11,7 @@ export const rolesConfig: CrudConfig = {
   entity: {
     name: 'roles',
     endpoint: route('roles.index'),
+    searchPlaceholder: 'ابحث باسم الدور أو الوصف...',
     permissions: {
       view: 'view-roles',
       create: 'create-roles',
@@ -59,7 +62,14 @@ export const rolesConfig: CrudConfig = {
         requiredPermission: 'delete-roles',
         condition: (row) => !row.is_system_role
       }
-    ]
+    ],
+    emptyState: {
+      icon: createElement(ShieldAlert, { className: 'h-12 w-12 text-muted-foreground' }),
+      title: 'لا توجد أدوار مضافة حالياً',
+      description: 'ابدأ بإنشاء دور جديد ثم حدد صلاحياته حسب الحاجة.',
+      actionLabel: 'إضافة دور جديد',
+      actionPermission: 'create-roles'
+    }
   },
   filters: [],
   form: {

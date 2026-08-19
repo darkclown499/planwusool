@@ -1,7 +1,7 @@
 // components/PageCrudWrapper.tsx
 import { useState, useEffect, ReactNode } from 'react';
 import { PageTemplate, PageAction } from '@/components/page-template';
-import { PlusIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusIcon, ChevronLeft, ChevronRight, ShieldAlert } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -553,24 +553,42 @@ export function PageCrudWrapper({
 
       {/* Table section */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <CrudTable
-          columns={table.columns}
-          actions={table.actions}
-          data={data.data}
-          from={data.from || 1}
-          onAction={handleAction}
-          sortField={pageFilters.sort_field}
-          sortDirection={pageFilters.sort_direction}
-          onSort={handleSort}
-          statusColors={table.statusColors}
-          permissions={permissions}
-          entityPermissions={entity.permissions}
-        />
+        {data.data.length === 0 && table.emptyState ? (
+          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted">
+              {table.emptyState.icon || <ShieldAlert className="h-12 w-12 text-muted-foreground" />}
+            </div>
+            <h3 className="mt-5 text-lg font-semibold text-foreground">{table.emptyState.title}</h3>
+            {table.emptyState.description && (
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">{table.emptyState.description}</p>
+            )}
+            {table.emptyState.actionLabel && hasPermission(permissions, table.emptyState.actionPermission || entity.permissions.create) && (
+              <Button className="mt-6" onClick={handleAddNew}>
+                <PlusIcon className="h-4 w-4 me-2" />
+                {table.emptyState.actionLabel}
+              </Button>
+            )}
+          </div>
+        ) : (
+          <CrudTable
+            columns={table.columns}
+            actions={table.actions}
+            data={data.data}
+            from={data.from || 1}
+            onAction={handleAction}
+            sortField={pageFilters.sort_field}
+            sortDirection={pageFilters.sort_direction}
+            onSort={handleSort}
+            statusColors={table.statusColors}
+            permissions={permissions}
+            entityPermissions={entity.permissions}
+          />
+        )}
 
         {/* Pagination section */}
         <div className="p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="text-sm text-muted-foreground">
-            {t("Showing {{from}} to {{to}} of {{total}} {{item}}", { from: data.from || 0, to: data.to || 0, total: data.total, item: entity.name })}
+            {t("Showing {{from}} to {{to}} of {{total}} {{item}}", { from: data.from || 0, to: data.to || 0, total: data.total, item: entityLabel })}
           </div>
           
           <div className="flex flex-row items-center gap-1">

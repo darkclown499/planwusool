@@ -573,16 +573,14 @@ export function CrudFormModal({
   const layout = formConfig.layout || 'default';
   const columns = formConfig.columns || 1;
 
-  const modalId = `crud-modal-${mode}-${Date.now()}`;
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className={`${getModalSizeClass()} max-h-[90vh]`} modalId={modalId}>
-        <DialogHeader>
+      <DialogContent className={`${getModalSizeClass()} flex max-h-[90vh] flex-col overflow-hidden p-0`}>
+        <DialogHeader className="sticky top-0 z-10 flex-shrink-0 rounded-t-lg border-b bg-background px-6 py-5">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description || " "}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh] pe-4">
+        <ScrollArea className="min-h-0 flex-1 px-6 py-4">
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Price Summary Section */}
             {formConfig.priceSummary && (
@@ -686,7 +684,7 @@ export function CrudFormModal({
             )}
           </form>
         </ScrollArea>
-        <DialogFooter className="sm:justify-end">
+        <DialogFooter className="sticky bottom-0 z-10 flex-shrink-0 border-t bg-white px-6 py-4">
           <Button type="button" variant="outline" onClick={onClose}>
             {t("Cancel")}
           </Button>
