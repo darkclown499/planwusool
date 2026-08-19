@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>جاري الصيانة — Wusool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; background: #f4f5f7; color: #111827;
+        }
+        .box { text-align: center; padding: 2rem; max-width: 30rem; }
+        .icon {
+            width: 72px; height: 72px; margin: 0 auto 1.5rem;
+            border-radius: 24px; background: #e0f2fe; color: #0369a1;
+            display: flex; align-items: center; justify-content: center; font-size: 36px;
+        }
+        h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+        p { color: #6b7280; line-height: 1.7; }
+        .refresh-btn {
+            display: inline-block; margin-top: 1.5rem; padding: 0.65rem 1.5rem;
+            background: #0369a1; color: #fff; border: 0; border-radius: 10px;
+            font-size: 0.95rem; cursor: pointer; text-decoration: none; font-family: inherit;
+        }
+        .refresh-btn:hover { background: #075985; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="icon">&#9881;</div>
+        <h1>جاري الصيانة حالياً</h1>
+        <p>نعمل على تحسين خدماتنا لخدمتك بشكل أفضل. سيتم استعادة الخدمة خلال دقائق.</p>
+        <button class="refresh-btn" onclick="location.reload()">إعادة المحاولة</button>
+    </div>
+</body>
+</html>

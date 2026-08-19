@@ -37,8 +37,32 @@ echo "==> [3/7] npm install"
 npm ci --no-audit --no-fund 2>/dev/null || npm install --no-audit --no-fund
 
 echo "==> [4/7] Building frontend assets (manifest + files on server)"
+
+# Park the app during the asset rebuild so requests see a friendly maintenance
+# page instead of a blank screen / 500 while public/build is temporarily removed.
+BACKUP_INDEX="public/index.php.deploy-bak"
+park_app() {
+    cp -f public/index.php "$BACKUP_INDEX"
+    cat > public/index.php <<'INDEXPHP'
+<?php
+http_response_code(503);
+header('Cache-Control: no-store, private');
+readfile(__DIR__ . '/maintenance.html');
+INDEXPHP
+}
+restore_app() {
+    if [ -f "$BACKUP_INDEX" ]; then
+        mv -f "$BACKUP_INDEX" public/index.php
+    fi
+}
+trap restore_app EXIT
+
+park_app
 rm -rf public/build
 npm run build
+restore_app
+trap - EXIT
+chmod 644 public/index.php
 
 echo "==> [5/7] Database migrations"
 "$PHP" artisan migrate --force --no-interaction
