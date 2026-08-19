@@ -119,7 +119,7 @@ createInertiaApp({
             }
 
             return (
-                <ErrorBoundary>
+                <ErrorBoundary key={appProps.initialPage.component}>
                     <BrandProvider globalSettings={currentGlobalSettings} user={user}>
                         <LayoutProvider>
                             <SidebarProvider>

@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, Users } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, Users as UsersIcon } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { checkPermission } from '@/utils/permissions';
 import { CrudTable } from '@/components/CrudTable';
@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Users() {
   const { t } = useTranslation();
-  const { auth, users, roles, planLimits, filters: pageFilters = {} } = usePage().props as any;
+  const { auth, users = { data: [], from: 0, to: 0, total: 0, links: [] }, roles = [], planLimits, filters: pageFilters = {} } = usePage().props as any;
   const permissions = auth?.permissions || [];
   const getInitials = useInitials();
 
@@ -226,7 +226,6 @@ export default function Users() {
   const handleResetFilters = () => {
     setSelectedRole('all');
     setSearchTerm('');
-    setShowFilters(false);
 
     router.get(route('users.index'), {
       page: 1,
@@ -458,7 +457,7 @@ export default function Users() {
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-white px-4 py-16 text-center shadow-sm">
           <div className="relative">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-              <Users className="h-8 w-8" />
+              <UsersIcon className="h-8 w-8" />
             </div>
             <span className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
               <span className="text-[10px] font-bold">!</span>
