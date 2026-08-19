@@ -9,9 +9,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DigitalDownloadController extends Controller
 {
+    /**
+     * Display the admin digital downloads management page.
+     */
+    public function index()
+    {
+        $user = Auth::user();
+        $currentStoreId = $user->current_store;
+
+        $downloads = DigitalDownload::where('store_id', $currentStoreId)
+            ->with(['product:id,name,cover_image', 'customer:id,first_name,last_name,email', 'order:id,order_number'])
+            ->latest()
+            ->paginate(15);
+
+        return Inertia::render('digital-downloads/index', [
+            'downloads' => $downloads,
+        ]);
+    }
+
     /**
      * Generate download tokens for a completed order.
      */

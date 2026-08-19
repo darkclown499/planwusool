@@ -20,6 +20,7 @@ class ProductReview extends Model
         'comment',
         'images',
         'is_approved',
+        'is_rejected',
         'is_verified_purchase',
         'admin_reply',
     ];
@@ -28,6 +29,7 @@ class ProductReview extends Model
         'rating' => 'integer',
         'images' => 'array',
         'is_approved' => 'boolean',
+        'is_rejected' => 'boolean',
         'is_verified_purchase' => 'boolean',
     ];
 

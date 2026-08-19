@@ -38,14 +38,25 @@ class ProductReviewController extends Controller
             $query->where('rating', $request->rating);
         }
         if ($request->has('status') && $request->status !== 'all') {
-            $query->where('is_approved', $request->status === 'approved');
+            if ($request->status === 'approved') {
+                $query->where('is_approved', true);
+            } elseif ($request->status === 'rejected') {
+                $query->where('is_rejected', true);
+            } else {
+                $query->where('is_approved', false)->where('is_rejected', false);
+            }
         }
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->whereHas('product', function ($pq) use ($search) {
                     $pq->where('name', 'like', "%{$search}%");
-                })->orWhere('comment', 'like', "%{$search}%");
+                })
+                    ->orWhere('comment', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($cq) use ($search) {
+                        $cq->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -56,7 +67,8 @@ class ProductReviewController extends Controller
         $stats = [
             'total' => ProductReview::where('store_id', $currentStoreId)->count(),
             'approved' => ProductReview::where('store_id', $currentStoreId)->where('is_approved', true)->count(),
-            'pending' => ProductReview::where('store_id', $currentStoreId)->where('is_approved', false)->count(),
+            'pending' => ProductReview::where('store_id', $currentStoreId)->where('is_approved', false)->where('is_rejected', false)->count(),
+            'rejected' => ProductReview::where('store_id', $currentStoreId)->where('is_rejected', true)->count(),
             'average_rating' => (float) ProductReview::where('store_id', $currentStoreId)->where('is_approved', true)->avg('rating') ?? 0,
             'rating_distribution' => [
                 5 => ProductReview::where('store_id', $currentStoreId)->where('rating', 5)->count(),
@@ -193,9 +205,26 @@ class ProductReviewController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $review->update(['is_approved' => true]);
+        $review->update(['is_approved' => true, 'is_rejected' => false]);
 
         return redirect()->back()->with('success', __('Review approved successfully!'));
+    }
+
+    /**
+     * Reject a review.
+     */
+    public function reject(ProductReview $review)
+    {
+        $user = Auth::user();
+        $currentStoreId = $user->current_store;
+
+        if ($review->store_id !== $currentStoreId) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $review->update(['is_rejected' => true, 'is_approved' => false]);
+
+        return redirect()->back()->with('success', __('Review rejected successfully!'));
     }
 
     /**
@@ -261,7 +290,7 @@ class ProductReviewController extends Controller
                 $review->rating . ' ★',
                 $review->title ?? '',
                 $review->comment ?? '',
-                $review->is_approved ? 'Approved' : 'Pending',
+                $review->is_approved ? 'Approved' : ($review->is_rejected ? 'Rejected' : 'Pending'),
                 $review->created_at->format('Y-m-d H:i:s'),
             ];
         }

@@ -332,7 +332,7 @@ export function AppSidebar() {
             contentChildren.push({ 
                 title: t('Digital Downloads'),
                 icon: Download,
-                href: route('api.digital-downloads.index')
+                href: route('digital-downloads.index')
             });
         }
         if (contentChildren.length > 0) {

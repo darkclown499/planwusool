@@ -133,5 +133,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Unauthenticated Inertia (SPA) requests must be redirected to the
+        // login page (HTTP 302), otherwise the SPA hangs on a plain redirect
+        // instead of following it, or worse receives a JSON 401 body and
+        // throws an "Inertia.js response error". API/JSON and regular browser
+        // requests keep the framework's default handling (401 JSON / 302 redirect).
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            if ($request->hasHeader('X-Inertia')) {
+                return redirect()->guest(route('login'));
+            }
+        });
     })->create();
