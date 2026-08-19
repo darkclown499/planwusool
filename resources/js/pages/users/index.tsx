@@ -1,6 +1,5 @@
 // pages/users/index.tsx
-import { useState, useEffect } from 'react';
-import { usersConfig } from '@/config/crud/users';
+import { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { type PageAction } from '@/types';
 import { usePage, router } from '@inertiajs/react';
@@ -10,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter, Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, MoreHorizontal } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Trash2, KeyRound, Lock, Unlock, LayoutGrid, List, Users } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
 import { checkPermission } from '@/utils/permissions';
 import { CrudTable } from '@/components/CrudTable';
@@ -30,7 +29,6 @@ export default function Users() {
   const [activeView, setActiveView] = useState('list');
   const [searchTerm, setSearchTerm] = useState(pageFilters.search || '');
   const [selectedRole, setSelectedRole] = useState(pageFilters.role || 'all');
-  const [showFilters, setShowFilters] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
@@ -40,11 +38,6 @@ export default function Users() {
   // Check if any filters are active
   const hasActiveFilters = () => {
     return selectedRole !== 'all' || searchTerm !== '';
-  };
-
-  // Count active filters
-  const activeFilterCount = () => {
-    return (selectedRole !== 'all' ? 1 : 0) + (searchTerm ? 1 : 0);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -299,7 +292,7 @@ export default function Users() {
     },
     {
       key: 'created_at',
-      label: t('Joined'),
+      label: t('Join Date'),
       sortable: true,
       render: (value: string) => window.appSettings?.formatDateTime(value, false) || new Date(value).toLocaleDateString()
     },
@@ -352,6 +345,8 @@ export default function Users() {
     }
   ];
 
+  const isEmpty = !users?.data || users?.data.length === 0;
+
   return (
     <PageTemplate
       title={t("Users")}
@@ -363,13 +358,13 @@ export default function Users() {
       {/* Search and filters section */}
       <div className="bg-white rounded-lg shadow mb-4">
         <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <div className="relative w-64">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <form onSubmit={handleSearch} className="flex items-center gap-2">
+                <div className="relative w-full sm:w-72">
                   <Search className="absolute start-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder={t("Search users...")}
+                    placeholder={t("Search by user name, email or phone...")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full ps-9"
@@ -381,22 +376,29 @@ export default function Users() {
                 </Button>
               </form>
 
-              <div className="ms-2">
-                <Button
-                  variant={hasActiveFilters() ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 px-2 py-1"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <Filter className="h-3.5 w-3.5 me-1.5" />
-                  {showFilters ? 'Hide Filters' : 'Filters'}
-                  {hasActiveFilters() && (
-                    <span className="ms-1 bg-primary-foreground text-primary rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                      {activeFilterCount()}
-                    </span>
-                  )}
-                </Button>
-              </div>
+              <Select value={selectedRole} onValueChange={handleRoleFilter}>
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder={t("All Roles")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("All Roles")}</SelectItem>
+                  {roles && roles.map((role: any) => (
+                    <SelectItem key={role.id} value={role.id.toString()}>
+                      {role.label || role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9"
+                onClick={handleResetFilters}
+                disabled={!hasActiveFilters()}
+              >
+                {t("Reset Filters")}
+              </Button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -448,47 +450,30 @@ export default function Users() {
               </Select>
             </div>
           </div>
-
-          {showFilters && (
-            <div className="w-full mt-3 p-4 bg-gray-50 border rounded-md">
-              <div className="flex flex-wrap gap-4 items-end">
-                <div className="space-y-2">
-                  <Label>{t("Role")}</Label>
-                  <Select
-                    value={selectedRole}
-                    onValueChange={handleRoleFilter}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder={t("All Roles")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("All Roles")}</SelectItem>
-                      {roles && roles.map((role: any) => (
-                        <SelectItem key={role.id} value={role.id.toString()}>
-                          {role.label || role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9"
-                  onClick={handleResetFilters}
-                  disabled={!hasActiveFilters()}
-                >
-                  {t("Reset Filters")}
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Content section */}
-      {activeView === 'list' ? (
+      {isEmpty ? (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-white px-4 py-16 text-center shadow-sm">
+          <div className="relative">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <Users className="h-8 w-8" />
+            </div>
+            <span className="absolute -end-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <span className="text-[10px] font-bold">!</span>
+            </span>
+          </div>
+          <h3 className="mt-4 text-base font-semibold">{t("No users yet")}</h3>
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">{t("Invite your team members to collaborate on your store.")}</p>
+          {hasPermission(permissions, 'create-users') && (
+            <Button className="mt-6" onClick={handleAddNew} disabled={!!planLimits && !planLimits.can_create}>
+              <Plus className="h-4 w-4 me-2" />
+              {t("Add New User")}
+            </Button>
+          )}
+        </div>
+      ) : activeView === 'list' ? (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <CrudTable
             columns={columns}
@@ -694,6 +679,7 @@ export default function Users() {
           fields: [
             { name: 'name', label: t('Name'), type: 'text', required: true },
             { name: 'email', label: t('Email'), type: 'email', required: true },
+            { name: 'phone', label: t('Mobile Number'), type: 'text', placeholder: t('Mobile Number') },
             {
               name: 'password',
               label: t('Password'),
@@ -717,6 +703,13 @@ export default function Users() {
                 label: role.label || role.name
               })) : [],
               required: true
+            },
+            {
+              name: 'send_credentials',
+              label: t('Send login credentials to the user via email'),
+              type: 'checkbox',
+              defaultValue: true,
+              conditional: (mode) => mode === 'create'
             }
           ],
           modalSize: 'lg'

@@ -14,6 +14,7 @@ import { MultiSelectField } from '@/components/multi-select-field';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { Eye, EyeOff } from 'lucide-react';
 import InputError from '@/components/input-error';
 
 interface CrudFormModalProps {
@@ -51,6 +52,7 @@ export function CrudFormModal({
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [relationOptions, setRelationOptions] = useState<Record<string, any[]>>({});
+  const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
 
   // Track previous states to avoid unnecessary resets
   const prevIsOpen = useRef(false);
@@ -260,9 +262,37 @@ export function CrudFormModal({
     }
 
     switch (field.type) {
+      case 'password': {
+        const passwordVisible = !!showPassword[field.name];
+        return (
+          <div className="relative">
+            <Input
+              id={field.name}
+              name={field.name}
+              type={passwordVisible ? 'text' : 'password'}
+              placeholder={field.placeholder}
+              value={formData[field.name] || ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              required={field.required}
+              aria-invalid={!!errors[field.name]}
+              disabled={false}
+              className="pe-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => ({ ...prev, [field.name]: !prev[field.name] }))}
+              className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              tabIndex={-1}
+              aria-label={passwordVisible ? t('Hide password') : t('Show password')}
+            >
+              {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        );
+      }
+
       case 'text':
       case 'email':
-      case 'password':
       case 'time':
         return (
           <Input

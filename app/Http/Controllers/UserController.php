@@ -145,6 +145,7 @@ class UserController extends BaseController
         $user = User::create([
             'name'       => $request->name,
             'email'      => $request->email,
+            'phone'      => $request->phone,
             'password'   => Hash::make($request->password),
             'created_by' => $created_by,
             'lang'       => $userLang,
@@ -174,8 +175,10 @@ class UserController extends BaseController
             $user->type = $role->name;
             $user->save();
             
-            // Trigger email notification
-            event(new \App\Events\UserCreated($user, $request->password));
+            // Trigger email notification only when requested
+            if ($request->input('send_credentials', true)) {
+                event(new \App\Events\UserCreated($user, $request->password));
+            }
             
             // Check for email errors
             if (session()->has('email_error')) {
@@ -194,7 +197,8 @@ class UserController extends BaseController
     {
         if ($user) {
             $user->name  = $request->name;
-            $user->email = $request->email;            
+            $user->email = $request->email;
+            $user->phone = $request->phone;            
 
             // find and syncing role
             if ($request->roles) {
