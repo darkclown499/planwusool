@@ -21,6 +21,35 @@ import { PaymentInputField } from '@/components/payment/payment-input-field';
 import { PaymentModeSelector } from '@/components/payment/payment-mode-selector';
 import { DualModePaymentCard } from '@/components/payment/dual-mode-payment-card';
 
+// Message template types (labeled selector with default templates)
+const TEMPLATE_TYPES: { key: string; emoji: string; label: string; template: string }[] = [
+  {
+    key: 'new_order', emoji: '🛒', label: 'طلب جديد',
+    template: "طلب جديد رقم {order_no} من متجر {store_name}\nالعميل: {customer_name}\nالمجموع الكلي: {final_total}\n\nالمنتجات:\n{item_variable}",
+  },
+  {
+    key: 'shipped', emoji: '🚚', label: 'تم الشحن',
+    template: "تم شحن طلبك رقم {order_no} من متجر {store_name}\nالعميل: {customer_name}\nالمجموع الكلي: {final_total}",
+  },
+  {
+    key: 'payment_confirmed', emoji: '✅', label: 'تأكيد الدفع',
+    template: "تم تأكيد الدفع لطلبك رقم {order_no} بمبلغ {final_total}\nشكراً لثقتكم بمتجر {store_name}",
+  },
+  {
+    key: 'status_update', emoji: '🔔', label: 'تحديث الحالة',
+    template: "تم تحديث حالة طلبك رقم {order_no}\nمتجر {store_name}\nالعميل: {customer_name}",
+  },
+  {
+    key: 'abandoned_cart', emoji: '📞', label: 'تذكير بالسلة',
+    template: "عزيزنا {customer_name}، تركت بعض الأصناف في سلة التسوق بمتجر {store_name}\n\nالمنتجات:\n{item_variable}\nالمجموع الكلي: {final_total}",
+  },
+];
+
+// Standard snake_case variable placeholders (used as fallback chips when the
+// backend returns no variables, and as the canonical list for the UI).
+const DEFAULT_ORDER_VARIABLES = ['order_no', 'customer_name', 'final_total', 'store_name', 'items_list', 'item_variable'];
+const DEFAULT_ITEM_VARIABLES = ['product_name', 'variant_name', 'quantity', 'line_total'];
+
 interface PaymentSettings {
   [key: string]: any;
   currency: string;
@@ -159,17 +188,20 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'enabled' | 'disabled'>('all');
   const [activeCategory, setActiveCategory] = useState('gateways');
+  const [activeTemplateType, setActiveTemplateType] = useState('new_order');
 
   // Dynamic variables from backend
   const orderVariables = messagingVariables?.orderVariables || [];
   const itemVariables = messagingVariables?.itemVariables || [];
+  // Always surface a usable set of variable chips even when the backend
+  // returns an empty list.
+  const effectiveOrderVariables = orderVariables && orderVariables.length > 0 ? orderVariables : DEFAULT_ORDER_VARIABLES;
+  const effectiveItemVariables = itemVariables && itemVariables.length > 0 ? itemVariables : DEFAULT_ITEM_VARIABLES;
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const itemRef = useRef<HTMLTextAreaElement>(null);
 
   const DEFAULT_MSG_TEMPLATE = "طلب جديد رقم {order_no} من متجر {store_name}\nالعميل: {customer_name}\nالمجموع الكلي: {final_total}\n\nالمنتجات:\n{item_variable}";
-  const DEFAULT_ITEM_TEMPLATE = "• {اسم_المنتج} ({اسم_المتغير}) × {كمية} = {مجموع_السلعة}";
-
-  const EMOTICONS = ['🛒', '✅', '📦', '📞', '🔔', '⭐', '💰', '🚚'];
+  const DEFAULT_ITEM_TEMPLATE = "• {product_name} ({variant_name}) × {quantity} = {line_total}";
 
   const toPlaceholder = (v: string) => v.startsWith('{') ? v : `{${v}}`;
 
@@ -189,13 +221,13 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
   const restoreDefaults = () => {
     setData('messaging_message_template', DEFAULT_MSG_TEMPLATE.replace(/\n/g, '\\n'));
     setData('messaging_item_template', DEFAULT_ITEM_TEMPLATE.replace(/\n/g, '\\n'));
-    toast.success('تمت استعادة القالب الافتراضي');
+    toast.success('تم استعادة القالب الافتراضي بنجاح');
   };
 
   const copyToClipboard = async (label: string, text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(`تم نسخ ${label}`);
+      toast.success(`تم نسخ ${label} بنجاح`);
     } catch {
       toast.error('فشل النسخ');
     }
@@ -537,13 +569,14 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
         .replace(/\{product_name\}/g, s.a).replace(/\{اسم_المنتج\}/g, s.a)
         .replace(/\{variant_name\}/g, s.b).replace(/\{اسم_المتغير\}/g, s.b)
         .replace(/\{quantity\}/g, s.c).replace(/\{كمية\}/g, s.c)
-        .replace(/\{item_total\}/g, s.d).replace(/\{مجموع_السلعة\}/g, s.d)
+        .replace(/\{line_total\}/g, s.d).replace(/\{item_total\}/g, s.d).replace(/\{مجموع_السلعة\}/g, s.d)
     ).join('\n');
     return msgTmpl
-      .replace(/\{order_no\}/g, '1234')
+      .replace(/\{order_no\}/g, '#1082')
       .replace(/\{store_name\}/g, 'متجر الأزياء')
-      .replace(/\{customer_name\}/g, 'أحمد محمد')
-      .replace(/\{final_total\}/g, '150.00 ر.س')
+      .replace(/\{customer_name\}/g, 'أحمد محمود')
+      .replace(/\{final_total\}/g, '250 ₪')
+      .replace(/\{items_list\}/g, items)
       .replace(/\{item_variable\}/g, items);
   }, [data.messaging_message_template, data.messaging_item_template]);
 
@@ -2510,17 +2543,30 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                     {/* Message Template */}
                     <div className="space-y-2">
                       <Label htmlFor="messaging_message_template" className="block text-start">{t("Message Template")}</Label>
-                      <div className="flex flex-wrap gap-1">
-                        {EMOTICONS.map(emoji => (
-                          <button
-                            key={emoji}
-                            type="button"
-                            className="px-2 py-1 text-sm border rounded hover:bg-gray-100 transition cursor-pointer"
-                            onClick={() => insertAtCursor(messageRef, emoji, (v) => setData('messaging_message_template', v))}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
+                      {/* Labeled template type selector */}
+                      <div className="flex flex-wrap gap-2 rounded-xl bg-muted p-1">
+                        {TEMPLATE_TYPES.map((tpl) => {
+                          const isActive = activeTemplateType === tpl.key;
+                          return (
+                            <button
+                              key={tpl.key}
+                              type="button"
+                              onClick={() => {
+                                setActiveTemplateType(tpl.key);
+                                setData('messaging_message_template', tpl.template.replace(/\n/g, '\\n'));
+                              }}
+                              className={cn(
+                                'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm whitespace-nowrap transition-all',
+                                isActive
+                                  ? 'bg-primary text-primary-foreground shadow-sm'
+                                  : 'text-muted-foreground hover:bg-background hover:text-foreground'
+                              )}
+                            >
+                              <span>{tpl.emoji}</span>
+                              {tpl.label}
+                            </button>
+                          );
+                        })}
                       </div>
                       <Textarea
                         id="messaging_message_template"
@@ -2533,10 +2579,10 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         rows={6}
                       />
                       <div className="text-xs text-muted-foreground text-start">
-                        <p className="font-medium mb-1 text-start">{"متغيرات الطلب:"} ({orderVariables?.length || 0})</p>
+                        <p className="font-medium mb-1 text-start">{"متغيرات الطلب:"} ({effectiveOrderVariables?.length || 0})</p>
                         <div className="flex flex-wrap gap-1">
-                          {orderVariables?.length > 0 ? (
-                            orderVariables.map((variable) => (
+                          {effectiveOrderVariables?.length > 0 ? (
+                            effectiveOrderVariables.map((variable) => (
                               <button
                                 key={variable}
                                 type="button"
@@ -2569,14 +2615,14 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                         className="text-start"
                         value={(data.messaging_item_template || '').replace(/\\n/g, '\n')}
                         onChange={(e) => setData('messaging_item_template', e.target.value.replace(/\n/g, '\\n'))}
-                        placeholder={t("• {اسم_المنتج} ({اسم_المتغير}) × {كمية} = {مجموع_السلعة}")}
+                        placeholder="• {product_name} ({variant_name}) × {quantity} = {line_total}"
                         rows={3}
                       />
                       <div className="text-xs text-muted-foreground text-start">
-                        <p className="font-medium mb-1 text-start">{"متغيرات المنتج:"} ({itemVariables?.length || 0})</p>
+                        <p className="font-medium mb-1 text-start">{"متغيرات المنتج:"} ({effectiveItemVariables?.length || 0})</p>
                         <div className="flex flex-wrap gap-1">
-                          {itemVariables?.length > 0 ? (
-                            itemVariables.map((variable) => (
+                          {effectiveItemVariables?.length > 0 ? (
+                            effectiveItemVariables.map((variable) => (
                               <button
                                 key={variable}
                                 type="button"
@@ -2627,7 +2673,7 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
                       <p className="font-medium text-start">{"معاينة مباشرة:"}</p>
                       <div
                         dir="rtl"
-                        className="text-start p-3 bg-gray-50 border rounded-md text-sm whitespace-pre-line min-h-[60px]"
+                        className="text-start p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl text-sm leading-relaxed whitespace-pre-wrap min-h-[60px]"
                       >
                         {previewText || "..."}
                       </div>
