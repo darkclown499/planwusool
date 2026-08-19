@@ -1989,6 +1989,7 @@
   "Within the country": "توصيل داخل نفس الدولة",
   "Neighboring countries": "توصيل للدول المجاورة",
   "All countries worldwide": "توصيل لجميع دول العالم",
+  "International / Regional Shipping": "شحن دولي / إقليمي",
   "Intuitive drag-and-drop store builder with professional themes and customization options.": "منشئ متجر بسيط بالسحب والإفلات مع قوالب احترافية وخيارات التخصيص.",
   "Invalid": "غير صالح",
   "Invalid JSON response from ToyyibPay": "استجابة JSON غير صالحة من ToyyibPay",
@@ -3409,7 +3410,7 @@
   "Search company or store...": "ابحث عن شركة أو متجر...",
   "Search contacts...": "البحث عن جهات الاتصال...",
   "Search countries to add...": "ابحث عن دول لإضافتها...",
-  "Search countries...": "البحث عن الدول...",
+  "Search countries...": "ابحث عن الدول...",
   "Search coupons...": "ابحث عن قسائم...",
   "Search currencies...": "البحث في العملات...",
   "Search currencys": "البحث في العملات",
@@ -3521,7 +3522,6 @@
   "Select language": "حدد اللغة",
   "Select language...": "اختر اللغة...",
   "Search and select countries...": "ابحث واختر الدول...",
-  "Search countries...": "ابحث عن الدول...",
   "Select light logo...": "حدد شعار الضوء",
   "Select meta image...": "حدد الصورة...",
   "Select method": "طريقة اختيار",
@@ -5217,5 +5217,8 @@
   "Tax settings updated successfully.": "تم تحديث إعدادات الضريبة بنجاح",
   "Tax Name Placeholder": "مثال: ضريبة المبيعات 16%",
   "Priority Helper": "حدد الترتيب في حال تطبيق أكثر من ضريبة (الأقل أولاً).",
-  "Compound Tax Helper": "تطبيق الضريبة فوق الضرائب الأخرى (Compound Tax)."
+  "Compound Tax Helper": "تطبيق الضريبة فوق الضرائب الأخرى (Compound Tax).",
+  "Select shipping type": "اختر نوع الشحن",
+  "This shipping method applies to all cities and regions within the country.": "تنطبق طريقة الشحن هذه على جميع المدن والمناطق داخل الدولة.",
+  "Method applies to every region within the selected countries.": "تنطبق الطريقة على كل منطقة داخل الدول المحددة."
 }

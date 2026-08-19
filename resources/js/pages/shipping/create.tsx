@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Bike, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Globe, Home, MapPin, Save, Search, Truck, X } from 'lucide-react';
+import { Bike, Check, ChevronDown, ChevronLeft, ChevronRight, Globe, Home, Save, Search, Truck, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -118,8 +118,7 @@ export default function CreateShipping() {
 
   const zoneTypes = [
     { value: 'domestic', icon: Home, label: t('Local Shipping'), description: t('Within the country') },
-    { value: 'regional', icon: Building2, label: t('Regional Shipping'), description: t('Neighboring countries') },
-    { value: 'international', icon: Globe, label: t('International Shipping'), description: t('All countries worldwide') }
+    { value: 'international', icon: Globe, label: t('International Shipping'), description: t('International / Regional Shipping') }
   ];
 
   const deliveryOptions = [
@@ -377,65 +376,68 @@ export default function CreateShipping() {
                 </div>
               </div>
 
-              <div>
-                <Label required>{t('Country')}</Label>
-                <div className="mt-3">
-                  <SearchableSelect
-                    value={selectedCountries.length > 0 ? selectedCountries.join(',') : ''}
-                    onChange={(val: string) => {
-                      if (!val) {
-                        setSelectedCountries([]);
-                      } else {
-                        const ids = val.split(',').map(Number);
-                        setSelectedCountries(ids);
-                      }
-                    }}
-                    options={sortedCountries.map(c => ({
-                      value: c.id.toString(),
-                      label: c.name,
-                      hint: c.code
-                    }))}
-                    placeholder={t('Search and select countries...')}
-                    searchPlaceholder={t('Search countries...')}
-                    emptyMessage={t('No countries found')}
-                    allowFreeText={false}
-                    disabled={false}
-                  />
-                  {selectedCountries.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {selectedCountries.map(id => {
-                        const c = sortedCountries.find(x => x.id === id);
-                        return c ? (
-                          <span
-                            key={c.id}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1 text-sm font-medium"
-                          >
-                            {c.name}
-                            <button
-                              type="button"
-                              onClick={() => handleCountryMultiSelect(c.id)}
-                              className="ml-1 text-muted-foreground hover:text-foreground"
+              {formData.zone_type === 'domestic' ? (
+                <p className="rounded-lg border border-dashed border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+                  {t('This shipping method applies to all cities and regions within the country.')}
+                </p>
+              ) : (
+                <div>
+                  <Label required>{t('Country')}</Label>
+                  <div className="mt-3">
+                    <SearchableSelect
+                      value={selectedCountries.length > 0 ? selectedCountries.join(',') : ''}
+                      onChange={(val: string) => {
+                        if (!val) {
+                          setSelectedCountries([]);
+                        } else {
+                          const ids = val.split(',').map(Number);
+                          setSelectedCountries(ids);
+                        }
+                      }}
+                      options={sortedCountries.map(c => ({
+                        value: c.id.toString(),
+                        label: c.name,
+                        hint: c.code
+                      }))}
+                      placeholder={t('Search and select countries...')}
+                      searchPlaceholder={t('Search countries...')}
+                      emptyMessage={t('No countries found')}
+                      allowFreeText={false}
+                      disabled={false}
+                    />
+                    {selectedCountries.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {selectedCountries.map(id => {
+                          const c = sortedCountries.find(x => x.id === id);
+                          return c ? (
+                            <span
+                              key={c.id}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1 text-sm font-medium"
                             >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
-                  )}
-                  {selectedCountries.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={clearAllCountries}
-                      className="mt-2 text-xs font-medium text-muted-foreground hover:text-foreground"
-                    >
-                      {t('Clear all')}
-                    </button>
-                  )}
-                </div>
-
+                              {c.name}
+                              <button
+                                type="button"
+                                onClick={() => handleCountryMultiSelect(c.id)}
+                                className="ml-1 text-muted-foreground hover:text-foreground"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    )}
+                    {selectedCountries.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearAllCountries}
+                        className="mt-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+                      >
+                        {t('Clear all')}
+                      </button>
+                    )}
                     {formData.all_regions ? (
-                      <p className="mt-2 text-xs text-muted-foreground">{t('Method applies to every region within the selected country.')}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">{t('Method applies to every region within the selected countries.')}</p>
                     ) : (
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
                         <div>
@@ -528,11 +530,13 @@ export default function CreateShipping() {
                                 </CommandList>
                               </Command>
                             </PopoverContent>
-</Popover>
+                          </Popover>
                         </div>
                       </div>
                     )}
                   </div>
+                </div>
+              )}
 
               <div>
                 <Label required>{t('Delivery Method')}</Label>
@@ -576,8 +580,7 @@ export default function CreateShipping() {
                 </div>
 
 {formData.delivery_method === 'company' && (
-                  <>
-                    <div className="mt-3 max-w-md">
+                  <div className="mt-3 max-w-md">
                       <Label>{t('Select Delivery Company')}</Label>
                       {showCustomCompany ? (
                         <div className="mt-2 flex items-center gap-2">
@@ -605,52 +608,8 @@ export default function CreateShipping() {
                         </Select>
                       )}
                     </div>
-                  </>
                 )}
-
-                <div className="grid gap-4 md:grid-cols-2 grid-cols-1">
-                  <div className="grid gap-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Label htmlFor="postal_codes">{t('Postal Codes')}</Label>
-                    <a
-                      href="https://postcode.palestine.ps/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      {t("If you don't know your postal code, click here")}
-                    </a>
-                  </div>
-                  <Input
-                    id="postal_codes"
-                    name="postal_codes"
-                    value={formData.postal_codes}
-                    onChange={handleInputChange}
-                    placeholder={t('e.g., 10001-10299')}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">{t('Comma-separated codes or ranges, e.g., 10001-10299')}</p>
-                </div>
-                <div className="grid gap-1">
-                  <Label htmlFor="max_distance" className="flex items-center gap-2">
-                    {t('Max Distance (km)')}
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
-                      {t('Optional')}
-                    </span>
-                  </Label>
-                  <Input
-                    id="max_distance"
-                    name="max_distance"
-                    type="number"
-                    min="0"
-                    value={formData.max_distance || ''}
-                    onChange={handleInputChange}
-                    placeholder={t('e.g., 50')}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">{t('Used for local delivery. Leave empty for no limit.')}</p>
-                </div>
               </div>
-            </div>
             </CardContent>
           </Card>
         )}
@@ -729,6 +688,37 @@ export default function CreateShipping() {
                         onChange={handleInputChange}
                         placeholder={t('50×50×50')} 
                       />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="postal_codes">{t('Postal Codes')}</Label>
+                      <Input
+                        id="postal_codes"
+                        name="postal_codes"
+                        value={formData.postal_codes}
+                        onChange={handleInputChange}
+                        placeholder={t('e.g., 10001-10299')}
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">{t('Comma-separated codes or ranges, e.g., 10001-10299')}</p>
+                    </div>
+                    <div>
+                      <Label htmlFor="max_distance" className="flex items-center gap-2">
+                        {t('Max Distance (km)')}
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                          {t('Optional')}
+                        </span>
+                      </Label>
+                      <Input
+                        id="max_distance"
+                        name="max_distance"
+                        type="number"
+                        min="0"
+                        value={formData.max_distance || ''}
+                        onChange={handleInputChange}
+                        placeholder={t('e.g., 50')}
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">{t('Used for local delivery. Leave empty for no limit.')}</p>
                     </div>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
