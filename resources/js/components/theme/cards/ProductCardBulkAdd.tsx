@@ -74,15 +74,13 @@ export const ProductCardBulkAdd: React.FC<ThemeCardProps> = ({
         </button>
 
         {showQuickVariantPicker && product.variants && product.variants.length > 0 && (
-          <div className="min-h-7">
-            <QuantityStepper
-              quantity={quantity}
-              stock={product.stockQuantity}
-              onDecrease={() => setQuantity((q) => Math.max(1, q - 1))}
-              onIncrease={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
-              size="sm"
-            />
-          </div>
+          <QuantityStepper
+            quantity={quantity}
+            stock={product.stockQuantity}
+            onDecrease={() => setQuantity((q) => Math.max(1, q - 1))}
+            onIncrease={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
+            size="sm"
+          />
         )}
 
         <div className="mt-auto flex items-center justify-between gap-1.5">
@@ -96,18 +94,16 @@ export const ProductCardBulkAdd: React.FC<ThemeCardProps> = ({
               {product.price}
             </span>
           </div>
-          {!showQuickVariantPicker && (
-            <button
-              type="button"
-              disabled={outOfStock}
-              onClick={() => add(quantity)}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-              style={{ backgroundColor: accentColor }}
-              aria-label={`أضف ${product.name} إلى السلة`}
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          )}
+          <button
+            type="button"
+            disabled={outOfStock}
+            onClick={() => add(quantity)}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            style={{ backgroundColor: accentColor }}
+            aria-label={`أضف ${product.name} إلى السلة`}
+          >
+            <Plus className="h-4 w-4" />
+          </button>
         </div>
 
         {showWhatsApp && onWhatsAppOrder && !outOfStock && (
