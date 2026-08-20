@@ -299,6 +299,19 @@ class DomainResolver
             return app(\App\Http\Controllers\Store\StripeController::class)->success($request, $store->slug, $segments[2]);
         } elseif ($segments[0] === 'paypal' && isset($segments[1]) && $segments[1] === 'success' && isset($segments[2])) {
             return app(\App\Http\Controllers\Store\PayPalController::class)->success($request, $store->slug, $segments[2]);
+        } elseif (isset($segments[1]) && in_array($segments[0], ['tap', 'payfast', 'paytr', 'iyzipay', 'khalti', 'easebuzz', 'ozow', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'nepalste', 'paiement', 'aamarpay'], true) && $segments[1] === 'success') {
+            // Universal adapter returns (GET or gateway POST-back to return_url)
+            $gw = $segments[0];
+            $gatewayController = app(\App\Http\Controllers\Store\GatewayReturnController::class);
+            if ($gw === 'nepalste' && isset($segments[3])) {
+                return $gatewayController->nepalsteSuccess($request, $store->slug, $segments[2], $segments[3]);
+            }
+            return $gatewayController->{$gw . 'Success'}($request, $store->slug, $segments[2]);
+        } elseif (isset($segments[1]) && in_array($segments[0], ['tap', 'payfast', 'paytr', 'iyzipay', 'khalti', 'easebuzz', 'ozow', 'fedapay', 'payhere', 'cinetpay', 'nepalste', 'paiement', 'aamarpay'], true) && $segments[1] === 'callback') {
+            // Universal adapter server-to-server callbacks (signature verified in controller)
+            $gw = $segments[0];
+            $orderNumber = $segments[2] ?? null;
+            return app(\App\Http\Controllers\Store\GatewayReturnController::class)->{$gw . 'Callback'}($request, $store->slug, $orderNumber);
         } else {
             // Default to home page for unknown routes
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
