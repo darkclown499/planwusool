@@ -78,11 +78,16 @@ export default function TrustedBySection({
   return (
     <section
       id="trusted-by"
-      className="relative overflow-hidden bg-[#09090b] py-20 sm:py-28"
+      className="relative overflow-hidden bg-slate-50 py-20 sm:py-28"
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
       <style>{MARQUEE_CSS}</style>
+      {/* Subtle light mesh dots */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] opacity-70 [background-size:20px_20px]"
+      />
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[720px] -translate-x-1/2 rounded-full blur-[130px]"
         style={{ background: hexToRgba(brandColor, 0.07) }}
@@ -94,13 +99,13 @@ export default function TrustedBySection({
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
-          <span className="mb-4 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1 text-xs font-bold tracking-wide text-emerald-400">
+          <span className="mb-4 inline-block rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-xs font-bold tracking-wide text-emerald-700">
             معتمد لدى
           </span>
-          <h2 className="mb-2 text-center text-2xl font-extrabold text-white sm:text-3xl">
+          <h2 className="mb-2 text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
             {sectionData?.title || 'ثقة كبرى شركات الدفع والتقنية'}
           </h2>
-          <p className="mt-3 text-center text-base leading-relaxed text-zinc-400 sm:text-lg">
+          <p className="mt-3 text-center text-base leading-relaxed text-slate-600 sm:text-lg">
             {sectionData?.subtitle ||
               'بوابات دفع وبنية تقنية موثوقة من أبرز العلامات العالمية تضمن أمان متجرك وعملياتك.'}
           </p>
@@ -121,7 +126,7 @@ export default function TrustedBySection({
           {[...TRUSTED_LOGOS, ...TRUSTED_LOGOS].map((logo, index) => (
             <div
               key={`${logo.name}-${index}`}
-              className="mx-2 flex h-16 min-w-[120px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/70 px-6 py-3 shadow-sm transition-all duration-300 ease-out hover:scale-105 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/5 sm:min-w-[140px]"
+              className="mx-2 flex h-16 min-w-[120px] shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-slate-200/80 bg-white px-6 py-3 shadow-sm transition-all duration-300 ease-out hover:scale-105 hover:border-emerald-500/40 hover:shadow-lg sm:min-w-[140px]"
               title={logo.name}
             >
               <img

@@ -73,8 +73,8 @@ export default function Header({ settings, sectionData, customPages = [], brandC
     <>
       <header
         dir="rtl"
-        className={`sticky top-0 left-0 right-0 z-50 backdrop-blur-md bg-zinc-950/80 border-b border-zinc-800/50 transition-all duration-300 ${
-          isScrolled ? 'shadow-[0_8px_30px_rgba(0,0,0,0.45)]' : ''
+        className={`sticky top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80 transition-all duration-300 ${
+          isScrolled ? 'shadow-[0_4px_20px_rgba(0,0,0,0.06)]' : ''
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -105,24 +105,24 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white"
+                  className="relative rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
                 >
                   {item.name}
                 </Link>
               ))}
-              <Link href="/about" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
+              <Link href="/about" className="relative rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
                 {t('عن وصول')}
               </Link>
-              <Link href="#features" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
+              <Link href="#features" className="relative rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
                 {t('المميزات')}
               </Link>
-              <Link href="#pricing" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
+              <Link href="#pricing" className="relative rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
                 {t('الأسعار')}
               </Link>
-              <Link href="/terms" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
+              <Link href="/terms" className="relative rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
                 {t('اتفاقية المستخدم')}
               </Link>
-              <Link href="/privacy" className="relative rounded-lg px-4 py-2 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white">
+              <Link href="/privacy" className="relative rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900">
                 {t('سياسة الخصوصية')}
               </Link>
             </nav>
@@ -134,12 +134,12 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                 <button
                   type="button"
                   onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-[13px] font-medium text-zinc-200 transition-all hover:border-zinc-600 hover:bg-zinc-800"
+                  className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[13px] font-medium text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
                 >
-                  <Globe className="h-4 w-4 text-zinc-400" />
+                  <Globe className="h-4 w-4 text-slate-500" />
                   <FlagIcon countryCode={currentLang.countryCode} svg style={{ width: '1.1em', height: '1.1em' }} />
                   <span className="hidden lg:inline">{currentLang.code.toUpperCase()}</span>
-                  <ChevronDown className={`h-3.5 w-3.5 text-zinc-500 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isLangOpen && (
@@ -170,7 +170,7 @@ export default function Header({ settings, sectionData, customPages = [], brandC
               {user ? (
                 <Link
                   href={route('dashboard')}
-                  className="rounded-lg bg-emerald-500 px-5 py-2.5 text-[13px] font-bold text-zinc-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600"
+                  className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-700"
                 >
                   {t('Dashboard')}
                 </Link>
@@ -178,14 +178,13 @@ export default function Header({ settings, sectionData, customPages = [], brandC
                 <>
                   <Link
                     href={route('login')}
-                    className="rounded-lg px-4 py-2.5 text-[13px] font-medium text-zinc-300 transition-colors hover:bg-zinc-800/60 hover:text-white"
+                    className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
                   >
                     {t('Login')}
                   </Link>
                   <Link
                     href={route('register')}
-                    className="btn-green rounded-lg px-5 py-2.5 text-[13px] font-semibold text-white transition-all hover:opacity-90"
-                    style={{ backgroundColor: brandColor }}
+                    className="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-700"
                   >
                     {t('Free Trial')}
                   </Link>

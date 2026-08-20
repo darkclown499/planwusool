@@ -195,22 +195,27 @@ export default function FeaturesSection({
   return (
     <section
       id="features"
-      className="relative overflow-hidden bg-zinc-950 py-20 text-white sm:py-28"
+      className="relative overflow-hidden bg-slate-50 py-20 text-slate-900 sm:py-28"
       style={{ fontFamily: 'Tajawal, sans-serif', direction: 'rtl' }}
       ref={ref}
     >
       <style>{BENTO_CSS}</style>
-      {/* Ambient green radial glow spheres */}
-      <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-10 h-80 w-80 rounded-full bg-emerald-500/10 blur-[120px]" />
-      <div aria-hidden="true" className="pointer-events-none absolute right-0 top-1/3 h-96 w-96 rounded-full bg-emerald-500/10 blur-[120px]" />
+      {/* Subtle light mesh dots */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] opacity-70 [background-size:20px_20px]"
+      />
+      {/* Ambient emerald radial glow spheres */}
+      <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-10 h-80 w-80 rounded-full bg-emerald-200/40 blur-[120px]" />
+      <div aria-hidden="true" className="pointer-events-none absolute right-0 top-1/3 h-96 w-96 rounded-full bg-emerald-200/40 blur-[120px]" />
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[820px] -translate-x-1/2 rounded-full blur-[140px]"
-        style={{ background: hexToRgba(brandColor, 0.1) }}
+        style={{ background: hexToRgba(brandColor, 0.08) }}
       />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.4]"
+        className="pointer-events-none absolute inset-0 opacity-[0.35]"
         style={{
-          backgroundImage: `radial-gradient(${hexToRgba(brandColor, 0.16)} 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(${hexToRgba(brandColor, 0.14)} 1px, transparent 1px)`,
           backgroundSize: '34px 34px',
           maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 72%)',
           WebkitMaskImage:
@@ -225,10 +230,10 @@ export default function FeaturesSection({
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
           }`}
         >
-          <span className="mb-4 inline-block rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1 text-xs font-bold uppercase tracking-wide text-emerald-400">
+          <span className="mb-4 inline-block rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-xs font-bold uppercase tracking-wide text-emerald-700">
             المميزات
           </span>
-          <h2 className="mx-auto mt-3 mb-2 text-center text-3xl font-black tracking-tight text-white sm:text-5xl">
+          <h2 className="mx-auto mt-3 mb-2 text-center text-3xl font-black tracking-tight text-slate-900 sm:text-5xl">
             {sectionData.title || (
               <>
                 كل ما تحتاجه لإطلاق{' '}
@@ -243,7 +248,7 @@ export default function FeaturesSection({
               </>
             )}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-center text-base font-normal text-zinc-400 sm:text-lg">
+          <p className="mx-auto mt-5 max-w-xl text-center text-base font-normal text-slate-600 sm:text-lg">
             {sectionData.description ||
               'منصة وصول تمنحك كل الأدوات اللازمة لإنشاء وإدارة متجر واتساب احترافي ومتكامل.'}
           </p>
@@ -257,44 +262,44 @@ export default function FeaturesSection({
             style={{ transitionDelay: '0.15s' }}
           >
             <div
-              className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-zinc-900 via-zinc-950 to-emerald-950 p-8 text-white shadow-2xl transition-all duration-300"
+              className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-200/60 bg-gradient-to-br from-white via-emerald-50/50 to-white p-8 text-slate-900 shadow-xl transition-all duration-300"
             >
               {/* Decor */}
               <div
                 className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full blur-3xl"
-                style={{ background: hexToRgba(brandColor, 0.28) }}
+                style={{ background: hexToRgba(brandColor, 0.18) }}
               />
               <div
                 className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full opacity-70 blur-3xl"
-                style={{ background: hexToRgba(brandColor, 0.16) }}
+                style={{ background: hexToRgba(brandColor, 0.12) }}
               />
               <div
-                className="pointer-events-none absolute inset-0 opacity-[0.05]"
+                className="pointer-events-none absolute inset-0 opacity-[0.06]"
                 style={{
-                  backgroundImage: 'radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)',
+                  backgroundImage: `radial-gradient(${hexToRgba(brandColor, 0.5)} 1px, transparent 1px)`,
                   backgroundSize: '18px 18px',
                 }}
               />
 
               {/* Content */}
               <div className="relative">
-                <span className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold tracking-wide text-emerald-300">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                <span className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold tracking-wide text-emerald-700">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                   متوفر الآن
                 </span>
                 <div
-                  className="flex h-16 w-16 items-center justify-center rounded-2xl ring-1 ring-white/30 shadow-lg transition-transform duration-300 group-hover:scale-105"
+                  className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-105"
                   style={{
-                    background: `linear-gradient(135deg, ${brandColor}, ${hexToRgba(brandColor, 0.55)})`,
-                    boxShadow: `0 16px 40px -10px ${hexToRgba(brandColor, 0.55)}`,
+                    background: `linear-gradient(135deg, ${brandColor}, ${hexToRgba(brandColor, 0.75)})`,
+                    boxShadow: `0 16px 40px -10px ${hexToRgba(brandColor, 0.5)}`,
                   }}
                 >
                   <HeroIcon className="h-8 w-8 text-white" strokeWidth={1.8} />
                 </div>
-                <h3 className="mt-6 text-2xl font-extrabold leading-snug text-white sm:text-[1.65rem]">
+                <h3 className="mt-6 text-2xl font-extrabold leading-snug text-slate-900 sm:text-[1.65rem]">
                   {hero.title}
                 </h3>
-                <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-white/75">
+                <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-slate-600">
                   {hero.description}
                 </p>
               </div>
@@ -305,7 +310,7 @@ export default function FeaturesSection({
                   {HERO_CHIPS.map((chip) => (
                     <span
                       key={chip}
-                      className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-200"
+                      className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700"
                     >
                       {chip}
                     </span>
@@ -313,11 +318,7 @@ export default function FeaturesSection({
                 </div>
                 <Link
                   href={route('register')}
-                  className="mt-7 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white transition-transform duration-300 hover:-translate-y-0.5 hover:scale-[1.02]"
-                  style={{
-                    backgroundColor: brandColor,
-                    boxShadow: `0 12px 32px -6px ${hexToRgba(brandColor, 0.55)}`,
-                  }}
+                  className="mt-7 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-emerald-700"
                 >
                   ابدأ متجرك مجاناً
                   <ArrowLeft size={16} />
@@ -335,20 +336,20 @@ export default function FeaturesSection({
                 className={`bento-card ${isVisible ? 'on' : ''}`}
                 style={{ transitionDelay: `${0.2 + index * 0.08}s` }}
               >
-                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/90 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10 after:absolute after:inset-x-0 after:top-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-white/20 after:to-transparent">
+                <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-xl">
                   <div className="relative flex flex-1 flex-col">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 shadow-sm transition-all duration-300 group-hover:bg-emerald-500 group-hover:text-white">
                         <Icon className="h-5 w-5" strokeWidth={1.9} />
                       </div>
-                      <span className="font-mono text-xs font-bold text-emerald-400/80">
+                      <span className="font-mono text-xs font-bold text-emerald-600">
                         {String(index + 2).padStart(2, '0')}
                       </span>
                     </div>
-                    <h3 className="mt-4 text-[15px] font-extrabold leading-snug text-white">
+                    <h3 className="mt-4 text-[15px] font-extrabold leading-snug text-slate-900">
                       {feature.title}
                     </h3>
-                    <p className="mt-2.5 text-xs leading-relaxed text-zinc-300 sm:text-sm">
+                    <p className="mt-2.5 text-xs leading-relaxed text-slate-600 sm:text-sm">
                       {feature.description}
                     </p>
                   </div>
@@ -367,10 +368,10 @@ export default function FeaturesSection({
           <Button
             type="button"
             variant="outline"
-            className="group gap-2 rounded-full border border-zinc-700/80 bg-zinc-900 px-6 py-2.5 text-sm font-medium text-zinc-200 shadow-lg transition-all hover:border-emerald-500/50 hover:bg-zinc-800"
+            className="group gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 shadow-md transition-all hover:border-emerald-500/40 hover:bg-slate-100"
             onClick={() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
           >
-            <Sparkles size={16} className="text-emerald-500" />
+            <Sparkles size={16} className="text-emerald-600" />
             ومميزات أكثر تكتشفها بنفسك
             <ArrowLeft size={16} className="transition-transform duration-300 group-hover:-translate-x-1" />
           </Button>

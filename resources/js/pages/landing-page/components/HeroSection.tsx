@@ -45,11 +45,16 @@ export default function HeroSection({
     <section
       id="hero"
       dir="rtl"
-      className="relative z-10 bg-[#09090b] pb-16 pt-14 sm:pb-20 sm:pt-16 md:pb-24 md:pt-20 lg:pt-24"
+      className="relative z-10 bg-slate-50 pb-16 pt-14 text-slate-900 sm:pb-20 sm:pt-16 md:pb-24 md:pt-20 lg:pt-24"
       style={{ fontFamily: "'Tajawal', 'Segoe UI', sans-serif" }}
     >
       {/* ── Backdrop layer (clipped to the hero box) ── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Subtle light mesh dots */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] opacity-70 [background-size:20px_20px]"
+        />
         {/* Animated gradient orbs */}
         <div
           className="absolute -left-40 -top-40 h-[700px] w-[700px] rounded-full opacity-20 blur-[120px]"
@@ -156,34 +161,28 @@ export default function HeroSection({
           )}
 
           {/* ── Pulsating announcement badge ── */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-[13px] font-semibold text-emerald-300 shadow-[0_0_24px_rgba(16,185,129,0.25)] animate-pulse">
-            <Zap size={14} className="text-emerald-400" />
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-[13px] font-semibold text-emerald-700 animate-pulse">
+            <Zap size={14} className="text-emerald-600" />
             المنصة الأولى لإدارة متاجر الواتساب في فلسطين
           </div>
 
           {/* ── Title ── */}
-          <h1
-            className="bg-gradient-to-r from-emerald-400 via-teal-200 to-white bg-clip-text font-black text-transparent text-4xl leading-[1.15] tracking-tight sm:text-6xl"
-          >
+          <h1 className="mt-4 mb-4 text-4xl font-black leading-[1.15] tracking-tight text-slate-900 sm:text-6xl">
             {title}
           </h1>
 
           {/* ── Subtitle ── */}
-          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-white/55 sm:text-base lg:mt-5 lg:text-lg">
+          <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
             {subtitle}
           </p>
 
           {/* ── CTA buttons ── */}
           <div className="mt-7 flex w-full flex-col items-stretch gap-3 md:mt-9 md:w-auto md:flex-row md:items-center md:gap-4">
             <div className="group relative inline-flex">
-              <span aria-hidden="true" className="absolute -inset-1 animate-pulse rounded-full bg-emerald-500/20 blur-lg" />
+              <span aria-hidden="true" className="absolute -inset-1 rounded-full bg-emerald-500/15 blur-lg" />
               <Link
                 href={route('register')}
-                className="relative inline-flex items-center justify-center gap-2.5 rounded-full px-9 py-4 text-[16px] font-bold text-white ring-1 ring-white/25 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:ring-white/40 md:w-auto"
-                style={{
-                  backgroundColor: brandColor,
-                  boxShadow: `0 12px 40px ${brandColor}55, 0 0 80px ${brandColor}30`,
-                }}
+                className="relative inline-flex items-center justify-center gap-2.5 rounded-full bg-emerald-600 px-9 py-4 text-[16px] font-bold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-emerald-700 md:w-auto"
               >
                 {primaryButtonText}
                 <ArrowLeft size={18} className="transition-transform duration-300 group-hover:-translate-x-1.5 group-hover:scale-110" />
@@ -191,17 +190,17 @@ export default function HeroSection({
             </div>
             <Link
               href={route('login')}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-8 py-4 text-[15px] font-semibold text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white md:w-auto"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-8 py-4 text-[15px] font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:border-slate-300 hover:bg-slate-50 md:w-auto"
             >
               {secondaryButtonText}
             </Link>
           </div>
 
           {/* ── Social proof badge ── */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-white/60">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-600">
             <Star size={16} className="fill-amber-400 text-amber-400" />
             <span>
-              انضم لأكثر من <span dir="ltr" className="font-bold text-emerald-300">+500</span> متجر نشط على المنصة
+              انضم لأكثر من <span dir="ltr" className="font-bold text-emerald-600">+500</span> متجر نشط على المنصة
             </span>
           </div>
 
@@ -220,15 +219,15 @@ export default function HeroSection({
             return (
               <div
                 key={index}
-                className="group rounded-2xl border border-emerald-500/10 bg-zinc-900/50 p-6 text-center shadow-xl backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:shadow-emerald-500/5"
+                className="group rounded-2xl border border-slate-200/80 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-xl"
               >
                 <div
-                  className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 transition-transform duration-300 group-hover:scale-110"
+                  className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-50 text-emerald-600 transition-transform duration-300 group-hover:scale-110"
                 >
                   <Icon size={20} />
                 </div>
-                <div className="text-sm font-extrabold text-white sm:text-[15px]">{stat.value}</div>
-                <div className="mt-1 text-[11px] font-medium leading-relaxed text-gray-300 sm:text-[12px]">
+                <div className="text-sm font-extrabold text-slate-900 sm:text-[15px]">{stat.value}</div>
+                <div className="mt-1 text-[11px] font-medium leading-relaxed text-slate-500 sm:text-[12px]">
                   {stat.label}
                 </div>
               </div>
