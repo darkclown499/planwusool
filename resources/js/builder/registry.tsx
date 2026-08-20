@@ -43,6 +43,11 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
     description: 'شريط التنقل العلوي مع الشعار والبحث والسلة.',
     props: [
       { key: 'sticky', label: 'تثبيت أعلى الصفحة', label_en: 'Sticky', type: 'boolean', default: true, group: 'behavior' },
+      { key: 'variant', label: 'نمط الترويسة', label_en: 'Header style', type: 'select', default: 'classic', group: 'layout', options: [
+          { value: 'classic', label: 'كلاسيكي' },
+          { value: 'centered', label: 'شعار إلى المنتصف' },
+          { value: 'minimal', label: 'بسيط' },
+        ] },
       { key: 'show_search', label: 'إظهار البحث', label_en: 'Show search', type: 'boolean', default: true, group: 'behavior' },
       { key: 'show_cart', label: 'إظهار السلة', label_en: 'Show cart', type: 'boolean', default: true, group: 'behavior' },
       { key: 'show_auth', label: 'إظهار الدخول', label_en: 'Show login', type: 'boolean', default: true, group: 'behavior' },
@@ -60,6 +65,12 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
     props: [
       { key: 'layout', label: 'التخطيط', label_en: 'Layout', type: 'select', default: 'split', group: 'layout', options: [
           { value: 'split', label: 'نص وصورة' },
+          { value: 'full', label: 'تدرج بعرض كامل' },
+        ] },
+      { key: 'hero_variant', label: 'نمط الواجهة', label_en: 'Hero style', type: 'select', default: 'split_banner', group: 'layout', options: [
+          { value: 'split_banner', label: 'بانر منقسم (نص وصورة)' },
+          { value: 'bento_grid', label: 'شبكة Bento (رئيسي + جانبي)' },
+          { value: 'slider_full', label: 'سلايدر بعرض كامل' },
           { value: 'full', label: 'تدرج بعرض كامل' },
         ] },
       { key: 'title', label: 'العنوان', label_en: 'Title', type: 'text', default: '', group: 'content' },
@@ -84,6 +95,11 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
           { value: 'cards', label: 'بطاقات ملونة' },
           { value: 'chips', label: 'أزرار' },
         ] },
+      { key: 'category_variant', label: 'نمط التصنيفات', label_en: 'Categories style', type: 'select', default: 'card_pills', group: 'layout', options: [
+          { value: 'icon_grid', label: 'شبكة أيقونات' },
+          { value: 'card_pills', label: 'حبوب / بطاقات صغيرة' },
+          { value: 'image_tiles', label: 'بلاطات صور' },
+        ] },
       { key: 'show_all', label: 'زر الكل', label_en: 'Show all', type: 'boolean', default: true, group: 'behavior' },
       { key: 'columns', label: 'عدد الأعمدة', label_en: 'Columns', type: 'number', default: 4, group: 'layout' },
       { key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'تصنيفاتنا', group: 'content' },
@@ -101,6 +117,12 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
       { key: 'layout', label: 'التخطيط', label_en: 'Layout', type: 'select', default: 'grid', group: 'layout', options: [
           { value: 'grid', label: 'شبكة' },
           { value: 'list', label: 'قائمة' },
+        ] },
+      { key: 'product_variant', label: 'نمط المنتجات', label_en: 'Products style', type: 'select', default: 'detailed_cards_with_badges', group: 'layout', options: [
+          { value: 'compact_cards', label: 'بطاقات مضغوطة' },
+          { value: 'detailed_cards_with_badges', label: 'بطاقات مفصّلة + شارات' },
+          { value: 'horizontal_scroll', label: 'تمرير أفقي' },
+          { value: 'list', label: 'قائمة أفقية' },
         ] },
       { key: 'columns', label: 'عدد الأعمدة', label_en: 'Columns', type: 'number', default: 4, group: 'layout' },
       { key: 'per_page', label: 'منتج لكل تحميل', label_en: 'Per page', type: 'number', default: 12, group: 'layout' },
@@ -129,6 +151,11 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
     icon: 'image',
     description: 'بانر بعرض كامل مع نص وصورة وزر.',
     props: [
+      { key: 'variant', label: 'نمط البانرات', label_en: 'Banners style', type: 'select', default: 'carousel', group: 'layout', options: [
+          { value: 'carousel', label: 'سلايدر' },
+          { value: 'grid', label: 'شبكة عمودين' },
+          { value: 'stacked', label: 'عمود واحد' },
+        ] },
       { key: 'title', label: 'العنوان', label_en: 'Title', type: 'text', default: '', group: 'content' },
       { key: 'subtitle', label: 'النص الفرعي', label_en: 'Subtitle', type: 'textarea', default: '', group: 'content' },
       { key: 'image', label: 'الصورة', label_en: 'Image', type: 'image', default: '', group: 'content' },
