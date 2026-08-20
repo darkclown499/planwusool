@@ -30,7 +30,7 @@ export const MarketFastProductGrid: React.FC<MarketFastProductGridProps> = ({ co
   }, [sections, product]);
 
   const renderCard = (item: ThemeProduct) => {
-    const cartIdx = cart.cartItems.findIndex((i) => i.id === item.id);
+    const cartIdx = cart.cartItems.findIndex((i) => String(i.product_id ?? i.id) === String(item.id));
     const cartQuantity = cartIdx >= 0 ? cart.cartItems[cartIdx].quantity : 0;
 
     const add = () => {
