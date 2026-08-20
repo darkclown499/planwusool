@@ -358,7 +358,7 @@
             }
         </script>
         @viteReactRefresh
-        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @vite('resources/js/app.tsx')
         @inertiaHead
         <script{!! $nonceAttr !!}>
             // Mark the page when embedded inside a preview iframe (e.g. onboarding
