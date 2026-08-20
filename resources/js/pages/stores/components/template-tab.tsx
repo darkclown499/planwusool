@@ -18,6 +18,10 @@ import {
     Settings2,
     Lock,
     BadgePercent,
+    Check,
+    Smartphone,
+    Monitor,
+    X,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -86,6 +90,59 @@ const TEMPLATE_CATALOG: Record<string, { name: string; name_en: string; tier: 'f
     'pro-kids': { name: 'أطفال', name_en: 'Pro Kids', tier: 'pro', icon: '🧸', accent: '#38bdf8' },
     'pro-sports': { name: 'رياضات', name_en: 'Pro Sports', tier: 'pro', icon: '🏅', accent: '#6366f1' },
     'pro-boutique': { name: 'بوتيك', name_en: 'Pro Boutique', tier: 'pro', icon: '💎', accent: '#b08d3f' },
+    /* Dynamic Theme Engine niches (theme.config.json driven) */
+    'market-fast': { name: 'سوق سريع', name_en: 'Market Fast', tier: 'growth', icon: '🛒', accent: '#16a34a' },
+    'fashion-luxe': { name: 'أزياء فاخرة', name_en: 'Fashion Luxe', tier: 'growth', icon: '👗', accent: '#e11d48' },
+    'fresh-produce': { name: 'خضار طازجة', name_en: 'Fresh Produce', tier: 'growth', icon: '🥬', accent: '#65a30d' },
+};
+
+type NicheCategoryId = 'all' | 'fashion' | 'grocery' | 'fresh' | 'food' | 'tech' | 'beauty';
+
+/** Horizontal category filter bar items. */
+const NICHE_FILTERS: { id: NicheCategoryId; label: string }[] = [
+    { id: 'all', label: 'الكل' },
+    { id: 'fashion', label: 'أزياء وموضة' },
+    { id: 'grocery', label: 'سوبر ماركت وبقالة' },
+    { id: 'fresh', label: 'المنتجات الطازجة' },
+    { id: 'food', label: 'مطاعم وكافيهات' },
+    { id: 'tech', label: 'تقنية وإلكترونيات' },
+    { id: 'beauty', label: 'جمال وعناية' },
+];
+
+/** Theme slug → niche category (falls back to 'all' for general templates). */
+const TEMPLATE_CATEGORY: Record<string, NicheCategoryId> = {
+    'core-minimal': 'all',
+    'core-bold': 'all',
+    'core-sidebar': 'all',
+    'core-dark': 'all',
+    'core-showcase': 'all',
+    'core-bazaar': 'grocery',
+    'core-elegant': 'fashion',
+    'growth-electronics': 'tech',
+    'growth-fashion': 'fashion',
+    'growth-food': 'food',
+    'growth-cosmetics': 'beauty',
+    'growth-supermarket': 'grocery',
+    'growth-home-decor': 'all',
+    'growth-pharmacy': 'beauty',
+    'pro-tech': 'tech',
+    'pro-beauty': 'beauty',
+    'pro-books': 'all',
+    'pro-sport': 'all',
+    'pro-pets': 'all',
+    'pro-flowers': 'all',
+    'pro-coffee': 'food',
+    'pro-stationery': 'all',
+    'pro-spices': 'grocery',
+    'pro-clothing': 'fashion',
+    'pro-fragrances': 'beauty',
+    'pro-home-tools': 'all',
+    'pro-kids': 'all',
+    'pro-sports': 'all',
+    'pro-boutique': 'fashion',
+    'market-fast': 'grocery',
+    'fashion-luxe': 'fashion',
+    'fresh-produce': 'fresh',
 };
 
 const TIER_LABEL: Record<string, string> = {
@@ -156,6 +213,11 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
     const [themeDialogOpen, setThemeDialogOpen] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState(theme);
     const [savingTheme, setSavingTheme] = useState(false);
+
+    // Niche category filter + live preview modal state
+    const [categoryFilter, setCategoryFilter] = useState<NicheCategoryId>('all');
+    const [previewTheme, setPreviewTheme] = useState<string | null>(null);
+    const [previewDevice, setPreviewDevice] = useState<'mobile' | 'desktop'>('desktop');
 
     const [upgradeOpen, setUpgradeOpen] = useState(false);
     const [upgradeFeature, setUpgradeFeature] = useState('');
@@ -260,6 +322,7 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
     }, [caps.level]);
 
     const currentMeta = TEMPLATE_CATALOG[theme] || FREE_CATALOG[0];
+    const selectedMeta = TEMPLATE_CATALOG[selectedTheme] || FREE_CATALOG[0];
     const currentTier = caps.level;
     const tierUnlocks: Record<string, string[]> = {
         none: ['colors', 'variations'],
@@ -294,6 +357,12 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
         const base = demoStoreUrl || storeUrl;
         return base ? `${base}?theme=${encodeURIComponent(templateValue)}&preview=1` : '';
     };
+
+    // Live preview iframe target — the demo store renders the theme override
+    // without touching the merchant's live store.
+    const previewBaseUrl = demoStoreUrl || 'https://demo.wusool.ps';
+    const previewIframeUrl = (slug: string): string =>
+        `${previewBaseUrl}?theme=${encodeURIComponent(slug)}&preview=1`;
 
     if (loading) {
         return (
@@ -400,99 +469,143 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
+                        {/* Niche category filter bar */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-slate-200/80">
+                            {NICHE_FILTERS.map((f) => {
+                                const activeFilter = categoryFilter === f.id;
+                                return (
+                                    <button
+                                        key={f.id}
+                                        type="button"
+                                        onClick={() => setCategoryFilter(f.id)}
+                                        className={
+                                            activeFilter
+                                                ? 'bg-emerald-600 text-white font-bold rounded-full px-4 py-1.5 text-xs shadow-md shadow-emerald-600/20 shrink-0'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 font-semibold rounded-full px-4 py-1.5 text-xs transition-colors shrink-0'
+                                        }
+                                    >
+                                        {f.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
                         <p className="mb-4 text-sm text-muted-foreground">
                             {t('One core design system with 29 ready-made variations. Your plan unlocks a subset; premium templates include advanced sections (offers, video, multi-banner, cart & page controls).')}
                         </p>
+
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {catalog.map((th) => {
                                 const active = selectedTheme === th.value;
                                 const locked = th.tier === 'growth' ? caps.level === 'none' : caps.level === 'none' || caps.level === 'limited';
-                                const previewUrl = previewUrlFor(th.value);
-                                const templateConfig = getTemplateConfig(th.value);
+                                const category = TEMPLATE_CATEGORY[th.value] || 'all';
+                                const matchesFilter = categoryFilter === 'all' || category === categoryFilter;
+                                if (!matchesFilter) return null;
                                 return (
                                     <div
                                         key={th.value}
+                                        onClick={() => setSelectedTheme(th.value)}
                                         className={cn(
-                                            'rounded-xl border-2 p-0 text-start transition overflow-hidden relative',
-                                            active ? 'border-primary shadow-lg' : 'border-gray-200 hover:border-primary/50 hover:shadow-md',
+                                            'cursor-pointer bg-white border border-slate-200/90 rounded-2xl p-3 hover:border-emerald-500/50 hover:shadow-xl transition-all duration-200 relative group flex flex-col justify-between',
+                                            active && 'ring-2 ring-emerald-500 border-transparent shadow-xl bg-emerald-50/20 scale-[1.01] z-10',
                                         )}
                                     >
-                                        {/* Template Preview Card */}
-                                        <div className="relative aspect-[4/3] overflow-hidden">
-                                            {/* Dynamic thumbnail built from the template's section config + design tokens */}
-                                            <TemplateThumbnail slug={th.value} />
-                                            {/* Lock overlay for premium templates */}
+                                        {/* Rich gradient preview with real UI elements */}
+                                        <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
+                                            <RichTemplateThumbnail slug={th.value} category={category} accent={th.accent} />
                                             {locked && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                                    <Lock className="h-8 w-8 text-white/80" />
-                                                </div>
-                                            )}
-                                            {/* Active indicator */}
-                                            {active && (
-                                                <div className="absolute top-2 end-2">
-                                                    <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                                                        <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
-                                                    </div>
+                                                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-slate-900/45 backdrop-blur-[1px]">
+                                                    <span className="flex flex-col items-center gap-1 text-white">
+                                                        <Lock className="h-6 w-6" />
+                                                        <span className="text-[10px] font-semibold">{t('Premium')}</span>
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
-                                        
-                                        <div className="p-3">
+
+                                        {/* Selected checkmark badge */}
+                                        {active && (
+                                            <span className="absolute top-5 right-5 bg-emerald-600 text-white p-1.5 rounded-full shadow-lg z-10">
+                                                <Check className="h-4 w-4" />
+                                            </span>
+                                        )}
+
+                                        <div className="mt-3 flex flex-1 flex-col">
                                             <div className="flex items-center justify-between gap-2">
                                                 <div className="flex items-center gap-2 min-w-0">
-                                                    <span className="text-xl shrink-0">{th.icon}</span>
-                                                    <span className="font-semibold truncate">{th.name}</span>
+                                                    <span className="text-lg shrink-0">{th.icon}</span>
+                                                    <span className="font-bold truncate text-sm">{th.name}</span>
                                                 </div>
                                             </div>
                                             <div className="mt-2 flex items-center gap-2">
                                                 <span
                                                     className={cn(
-                                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-                                                        locked ? 'bg-muted text-muted-foreground' : 'text-white',
+                                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+                                                        locked ? 'bg-slate-100 text-slate-500' : 'text-white',
                                                     )}
                                                     style={locked ? undefined : { background: th.accent }}
                                                 >
                                                     {locked && <Lock className="h-2.5 w-2.5" />}
                                                     {TIER_LABEL[th.tier]}
                                                 </span>
+                                                {category !== 'all' && (
+                                                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                                                        {NICHE_FILTERS.find((f) => f.id === category)?.label}
+                                                    </span>
+                                                )}
                                             </div>
-                                            
-                                            {/* Preview button */}
-                                            {previewUrl && !locked && (
-                                                <a
-                                                    href={previewUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="mt-3 w-full inline-flex items-center justify-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition hover:border-primary hover:text-primary hover:bg-primary/5"
-                                                >
-                                                    <ExternalLink className="h-3.5 w-3.5" />
-                                                    {t('Preview')}
-                                                </a>
-                                            )}
-                                            
-                                            {locked && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => maybeUpgrade(t('Premium template'))}
-                                                    className="mt-3 w-full inline-flex items-center justify-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-medium text-amber-700 transition"
-                                                >
-                                                    <Lock className="h-3.5 w-3.5" />
-                                                    {t('Upgrade to unlock')}
-                                                </button>
-                                            )}
+
+                                            <div className="mt-3 flex items-center gap-2">
+                                                {!locked ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setPreviewTheme(th.value);
+                                                            setPreviewDevice('desktop');
+                                                        }}
+                                                        className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
+                                                    >
+                                                        <ExternalLink className="h-3.5 w-3.5" />
+                                                        {t('Preview')}
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            maybeUpgrade(t('Premium template'));
+                                                        }}
+                                                        className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
+                                                    >
+                                                        <Lock className="h-3.5 w-3.5" />
+                                                        {t('Upgrade to unlock')}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
-                        <div className="mt-5 flex items-center justify-end gap-2">
-                            <Button type="button" variant="outline" onClick={() => setSelectedTheme(theme)}>
-                                {t('Reset')}
-                            </Button>
-                            <Button type="button" onClick={handleChooseTheme} disabled={savingTheme || selectedTheme === theme}>
-                                {savingTheme && <Loader2 className="h-4 w-4 animate-spin me-2" />}
-                                {t('Apply Template')}
-                            </Button>
+
+                        {/* Sticky bottom apply footer */}
+                        <div className="sticky bottom-4 z-40 bg-white/90 backdrop-blur-md border border-slate-200/90 p-4 rounded-2xl shadow-2xl flex items-center justify-between mt-8">
+                            <div className="min-w-0 pe-4">
+                                <p className="text-xs font-medium text-slate-500">القالب المحدد</p>
+                                <p className="truncate text-sm font-bold text-slate-900">
+                                    {selectedMeta.name} - {selectedMeta.name_en}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleChooseTheme}
+                                disabled={savingTheme || selectedTheme === theme}
+                                className="inline-flex shrink-0 items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-600/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {savingTheme && <Loader2 className="h-4 w-4 animate-spin" />}
+                                {t('Apply Template Now')}
+                            </button>
                         </div>
                     </CardContent>
                 </Card>
@@ -790,6 +903,72 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
                 </Card>
             )}
 
+            {/* Live preview iframe modal with device switcher */}
+            <Dialog open={!!previewTheme} onOpenChange={(o) => !o && setPreviewTheme(null)}>
+                <DialogContent className="max-w-5xl gap-0 overflow-hidden p-0">
+                    <DialogHeader className="border-b border-slate-200/80 p-4">
+                        <DialogTitle className="flex items-center gap-2 text-base">
+                            <ExternalLink className="h-4 w-4 text-emerald-600" />
+                            {previewTheme ? TEMPLATE_CATALOG[previewTheme]?.name || previewTheme : ''}
+                            <span className="text-xs font-medium text-slate-400">- معاينة تفاعلية مباشرة</span>
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 bg-slate-50 px-4 py-3">
+                        <p className="text-xs text-slate-500">يُعرض القالب على المتجر التجريبي دون التأثير على متجرك</p>
+                        <div className="flex items-center gap-1 rounded-full bg-slate-200/70 p-1">
+                            <button
+                                type="button"
+                                onClick={() => setPreviewDevice('mobile')}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-colors',
+                                    previewDevice === 'mobile' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900',
+                                )}
+                            >
+                                <Smartphone className="h-3.5 w-3.5" />
+                                {t('Mobile View')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPreviewDevice('desktop')}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-colors',
+                                    previewDevice === 'desktop' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900',
+                                )}
+                            >
+                                <Monitor className="h-3.5 w-3.5" />
+                                {t('Desktop View')}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex items-start justify-center overflow-hidden bg-slate-100 p-4 sm:p-6" style={{ minHeight: '62vh' }}>
+                        {previewTheme &&
+                            (previewDevice === 'mobile' ? (
+                                <div className="w-[350px] max-w-full overflow-hidden rounded-[2rem] border-[10px] border-slate-900 bg-slate-900 shadow-2xl">
+                                    <iframe
+                                        src={previewIframeUrl(previewTheme)}
+                                        title={TEMPLATE_CATALOG[previewTheme]?.name || previewTheme}
+                                        className="h-[620px] w-full bg-white"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="w-full overflow-hidden rounded-xl border border-slate-300 bg-white shadow-2xl">
+                                    <iframe
+                                        src={previewIframeUrl(previewTheme)}
+                                        title={TEMPLATE_CATALOG[previewTheme]?.name || previewTheme}
+                                        className="h-[72vh] w-full bg-white"
+                                    />
+                                </div>
+                            ))}
+                    </div>
+                    <div className="flex items-center justify-end gap-2 border-t border-slate-200/80 px-4 py-3">
+                        <Button type="button" variant="outline" onClick={() => setPreviewTheme(null)}>
+                            <X className="h-4 w-4 me-1.5" />
+                            {t('Close')}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             {/* Upgrade modal */}
             <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
                 <DialogContent>
@@ -842,111 +1021,168 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
 
 /* ------------------------------ Helpers ------------------------------ */
 
-function TemplateThumbnail({ slug }: { slug: string }) {
+function RichTemplateThumbnail({ slug, category = 'all', accent }: { slug: string; category?: NicheCategoryId; accent: string }) {
     const cfg = getTemplateConfig(slug);
     const colors = cfg?.design_tokens?.colors ?? {};
-    const primary = colors['primary-600'] || '#059669';
-    const primaryDeep = colors['primary-700'] || '#047857';
-    const primarySoft = colors['primary-100'] || '#d1fae5';
-    const bg = colors['background'] || '#ffffff';
-    const surface = colors['surface'] || '#f9fafb';
-    const text = colors['text-primary'] || '#111827';
-    const muted = colors['text-muted'] || '#6b7280';
-    const dark = !!cfg?.layout?.dark_mode;
-
-    const types = (cfg?.sections ?? []).map((s) => s.type);
-    const hasSidebar = cfg?.layout?.sidebar === true && types.includes('sidebar');
-    const contentTypes = types.filter((t) => t !== 'sidebar' && t !== 'footer' && t !== 'header');
-
-    const headerBlock = types.includes('header') ? (
-        <div className="flex shrink-0 items-center gap-1 px-2 py-1.5" style={{ background: dark ? '#111827' : bg, borderBottom: `1px solid ${muted}22` }}>
-            <div className="h-2.5 w-2.5 rounded-full" style={{ background: primary }} />
-            <div className="h-1.5 w-12 rounded-full" style={{ background: text, opacity: 0.7 }} />
-            <div className="ms-auto h-1.5 w-7 rounded-full" style={{ background: primary }} />
-        </div>
-    ) : null;
-
-    const blocks = contentTypes.map((type, i) => {
-        if (type === 'hero') {
-            return (
-                <div key={i} className="mx-2 mt-1.5 shrink-0 rounded-md px-2 py-2.5" style={{ background: `linear-gradient(135deg, ${primaryDeep}, ${primary})` }}>
-                    <div className="mx-auto h-1.5 w-16 rounded-full bg-white/85" />
-                    <div className="mx-auto mt-1 h-1 w-24 rounded-full bg-white/40" />
-                    <div className="mx-auto mt-1.5 h-2 w-9 rounded-full bg-white" />
-                </div>
-            );
-        }
-        if (type === 'categories') {
-            return (
-                <div key={i} className="flex shrink-0 items-center justify-center gap-1.5 pt-1.5">
-                    {[0, 1, 2, 3, 4].map((n) => (
-                        <div key={n} className="h-4 w-4 rounded-full" style={{ background: n === 0 ? primarySoft : surface, border: `1px solid ${muted}33` }} />
-                    ))}
-                </div>
-            );
-        }
-        if (type === 'products') {
-            const dense = (cfg?.sections.find((s) => s.type === 'products')?.props as any)?.columns;
-            const cols = dense && dense >= 5 ? 6 : 4;
-            return (
-                <div key={i} className="grid min-h-0 grid-cols-1 gap-1 px-2 py-1.5" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-                    {Array.from({ length: Math.min(cols * 2, 12) }).map((_, n) => (
-                        <div key={n} className="rounded-sm p-1" style={{ background: surface }}>
-                            <div className="h-4 w-full rounded-sm" style={{ background: primarySoft }} />
-                            <div className="mt-0.5 h-1 w-3/4 rounded-full" style={{ background: text, opacity: 0.6 }} />
-                            <div className="mt-0.5 h-1 w-1/2 rounded-full" style={{ background: primary }} />
-                        </div>
-                    ))}
-                </div>
-            );
-        }
-        if (type === 'banner' || type === 'banners') {
-            return <div key={i} className="mx-2 mt-1 h-2.5 shrink-0 rounded-sm" style={{ background: primary, opacity: 0.85 }} />;
-        }
-        if (type === 'offers') {
-            return (
-                <div key={i} className="flex shrink-0 gap-1 px-2 py-1">
-                    {[0, 1, 2].map((n) => (
-                        <div key={n} className="flex-1 rounded-sm p-1" style={{ background: surface }}>
-                            <div className="h-3 w-full rounded-sm" style={{ background: primarySoft }} />
-                            <div className="mt-0.5 h-1 w-2/3 rounded-full" style={{ background: primary }} />
-                        </div>
-                    ))}
-                </div>
-            );
-        }
-        return (
-            <div key={i} className="mx-2 mt-1 flex shrink-0 items-center justify-center rounded-sm py-1" style={{ background: surface }}>
-                <div className="h-1.5 w-14 rounded-full" style={{ background: muted }} />
-            </div>
-        );
-    });
-
-    const footerBlock = (
-        <div className="mt-auto flex shrink-0 items-center justify-center gap-1 px-2 py-1.5" style={{ background: dark ? '#0f172a' : primary }}>
-            <div className="h-1 w-12 rounded-full bg-white/70" />
-            <div className="h-1 w-6 rounded-full bg-white/50" />
-        </div>
-    );
+    const primary = colors['primary-600'] || accent;
+    const deep = shadeHex(primary, -24);
+    const light = shadeHex(primary, 16);
 
     return (
-        <div className="absolute inset-0 flex flex-col overflow-hidden" style={{ background: bg }}>
-            {headerBlock}
-            {hasSidebar ? (
-                <div className="flex min-h-0 flex-1">
-                    <div className="w-5 shrink-0 space-y-1.5 border-e py-1.5" style={{ borderColor: `${muted}22`, background: dark ? '#0b1220' : surface }}>
-                        <div className="h-1.5 w-3 rounded-full" style={{ background: primary }} />
+        <div
+            className="relative flex h-full w-full flex-col overflow-hidden"
+            style={{ background: `linear-gradient(155deg, ${light} 0%, ${primary} 45%, ${deep} 100%)` }}
+        >
+            <DotPattern />
+
+            {/* Header chrome */}
+            <div
+                className="relative flex items-center justify-between px-2.5 py-1.5"
+                style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(3px)', borderBottom: '1px solid rgba(255,255,255,0.18)' }}
+            >
+                <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-white" />
+                    <span className="h-1.5 w-14 rounded-full bg-white/85" />
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-5 rounded-full bg-white/70" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white/70" />
+                </div>
+            </div>
+
+            {/* Hero band */}
+            <div className="relative px-2.5 pt-2">
+                <div className="h-1.5 w-16 rounded-full bg-white/95" />
+                <div className="mt-1 h-1 w-28 rounded-full bg-white/45" />
+                <div className="mt-1.5 inline-flex rounded-full bg-white px-2 py-0.5 text-[6px] font-black" style={{ color: primary }}>
+                    تسوّق الآن
+                </div>
+            </div>
+
+            {/* Category-specific detail strip */}
+            <div className="relative mt-1.5 flex items-center justify-center gap-1 px-2.5">
+                {category === 'fashion' && (
+                    <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2 py-0.5 backdrop-blur-sm">
+                        {['#e11d48', '#f59e0b', '#0ea5e9', '#0f172a'].map((c) => (
+                            <span key={c} className="h-2 w-2 rounded-full" style={{ background: c, boxShadow: '0 0 0 1px rgba(255,255,255,0.6)' }} />
+                        ))}
+                        <span className="text-[5px] font-bold text-white/90">مقاس M · عنابي</span>
+                    </div>
+                )}
+                {category === 'grocery' && (
+                    <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2 py-0.5 text-[6px] font-black text-white backdrop-blur-sm">
+                        <span className="rounded-full bg-white/20 px-1">₪8.50</span>
+                        <span className="rounded-full bg-white px-1" style={{ color: primary }}>أضف +</span>
+                    </div>
+                )}
+                {category === 'fresh' && (
+                    <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2 py-0.5 text-[6px] font-black text-white backdrop-blur-sm">
+                        <span>كجم</span>
+                        <span className="rounded-full bg-white px-1" style={{ color: primary }}>1.5</span>
+                        <span>جم</span>
+                    </div>
+                )}
+                {category === 'food' && (
+                    <div className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 backdrop-blur-sm">
+                        {['🍔', '☕', '🍕'].map((e, i) => <span key={i}>{e}</span>)}
+                        <span className="text-[5px] font-bold text-white/90">توصيل 30 دقيقة</span>
+                    </div>
+                )}
+                {category === 'tech' && (
+                    <div className="flex items-center gap-1 rounded-full bg-white/15 px-2 py-0.5 backdrop-blur-sm">
+                        {['📱', '💻', '🎧'].map((e, i) => <span key={i}>{e}</span>)}
+                        <span className="text-[5px] font-bold text-white/90">خصم 25%</span>
+                    </div>
+                )}
+                {category === 'beauty' && (
+                    <div className="rounded-full bg-white px-2 py-0.5 text-[6px] font-black" style={{ color: primary }}>
+                        ✨ عروض التجميل — حتى 40%
+                    </div>
+                )}
+                {category === 'all' && (
+                    <div className="flex items-center gap-1.5">
                         {[0, 1, 2, 3].map((n) => (
-                            <div key={n} className="h-1.5 w-3 rounded-full" style={{ background: muted, opacity: 0.5 }} />
+                            <span key={n} className="h-1.5 w-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.8)' }} />
                         ))}
                     </div>
-                    <div className="flex min-w-0 flex-1 flex-col">{blocks}{footerBlock}</div>
-                </div>
-            ) : (
-                <div className="flex min-h-0 flex-1 flex-col">{blocks}{footerBlock}</div>
-            )}
+                )}
+            </div>
+
+            {/* Product mini-grid */}
+            <div className="relative mt-2 grid flex-1 grid-cols-3 gap-1 px-2 pb-2">
+                <ThumbProductCard img={`linear-gradient(135deg, ${primary}, ${deep})`} primary={primary} />
+                <ThumbProductCard img={`linear-gradient(135deg, ${deep}, ${primary})`} primary={primary} />
+                <ThumbProductCard img="linear-gradient(135deg, #cbd5e1, #94a3b8)" primary={primary} />
+            </div>
+
+            {/* Signature category footer UI */}
+            <div className="relative px-2 pb-2">
+                {category === 'grocery' || category === 'fresh' ? (
+                    <div className="flex items-center justify-between rounded-lg bg-white/95 px-2 py-1 shadow-sm">
+                        <span className="text-[6px] font-black" style={{ color: primary }}>الإجمالي 42.50 ₪</span>
+                        <span className="rounded-md px-1.5 py-0.5 text-[6px] font-black text-white" style={{ background: primary }}>إتمام الطلب</span>
+                    </div>
+                ) : category === 'fashion' ? (
+                    <div className="flex items-center justify-between gap-1 rounded-lg bg-white/95 px-2 py-1 shadow-sm">
+                        <div className="h-1 w-1/2 rounded-full bg-emerald-100">
+                            <div className="h-1 w-4/5 rounded-full bg-emerald-500" />
+                        </div>
+                        <span className="text-[5px] font-bold text-slate-600">شحن مجاني</span>
+                    </div>
+                ) : category === 'food' ? (
+                    <div className="flex items-center justify-center gap-1.5 rounded-lg bg-white/95 px-2 py-1 shadow-sm">
+                        {['جديد', 'الأكثر مبيعاً', 'عرض'].map((b, i) => (
+                            <span key={b} className="rounded-full px-1.5 py-0.5 text-[5px] font-black text-white" style={{ background: [primary, '#f59e0b', deep][i] }}>
+                                {b}
+                            </span>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-between rounded-lg bg-white/95 px-2 py-1 shadow-sm">
+                        <span className="text-[5px] font-bold text-slate-600">منتجات مختارة لك</span>
+                        <span className="rounded-md px-1.5 py-0.5 text-[5px] font-black text-white" style={{ background: primary }}>تصفح</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
+}
+
+/** Dot-pattern overlay used by every rich thumbnail. */
+function DotPattern() {
+    return (
+        <div
+            aria-hidden="true"
+            className="absolute inset-0 opacity-[0.14]"
+            style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)', backgroundSize: '12px 12px' }}
+        />
+    );
+}
+
+/** Compact gradient product card for the thumbnail mockups. */
+function ThumbProductCard({ img, primary }: { img: string; primary: string }) {
+    return (
+        <div className="flex-1 rounded-lg bg-white/95 p-1 shadow-sm">
+            <div className="h-8 w-full rounded-md" style={{ background: img }} />
+            <div className="mt-1 h-1 w-full rounded-full bg-slate-300/80" />
+            <div className="mt-0.5 h-1 w-1/2 rounded-full" style={{ background: primary }} />
+        </div>
+    );
+}
+
+/** Darken or lighten a hex color by a percentage (-100..100). */
+function shadeHex(hex: string, percent: number): string {
+    const value = hex.replace('#', '');
+    const isShort = value.length === 3 || value.length === 4;
+    const full = (isShort ? value.split('').map((c) => c + c).join('') : value).slice(0, 6);
+    const num = parseInt(full, 16);
+    if (Number.isNaN(num)) return '#059669';
+    const amt = Math.round(2.55 * percent);
+    const channel = (c: number) => Math.min(255, Math.max(0, c + amt));
+    const r = channel((num >> 16) & 0xff);
+    const g = channel((num >> 8) & 0xff);
+    const b = channel(num & 0xff);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
 function TemplateSection({ title, badge, children }: { title: string; badge?: string; children: React.ReactNode }) {
