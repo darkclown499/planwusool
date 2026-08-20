@@ -239,7 +239,7 @@ interface CustomerInfo {
   postalCode: string;
 }
 
-interface CheckoutContextType {
+export interface CheckoutContextType {
   step: number;
   customerInfo: CustomerInfo;
   couponCode: string;

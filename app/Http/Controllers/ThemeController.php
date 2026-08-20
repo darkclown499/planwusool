@@ -544,6 +544,35 @@ class ThemeController extends Controller
     }
 
     /**
+     * Runtime `theme.config.json` for the schema-driven Theme Engine.
+     *
+     * Serves the JSON shipped in public/theme-configs/<theme>.json (falling
+     * back to the bundled preset delivered client-side when the file is
+     * absent). Returning proper JSON here also keeps the storefront catch-all
+     * route from swallowing the request and answering with HTML.
+     */
+    public function themeConfig($storeSlug, $theme, ?Request $request = null)
+    {
+        $slug = Store::normalizeThemeSlug($theme);
+
+        if (!in_array($slug, Store::ENGINE_THEMES, true)) {
+            return response()->json(['error' => 'Not an engine theme'], 404);
+        }
+
+        $path = public_path("theme-configs/{$slug}.json");
+        if (!file_exists($path)) {
+            return response()->json(['error' => 'No override config'], 404);
+        }
+
+        $json = json_decode((string) file_get_contents($path), true);
+        if (!is_array($json)) {
+            return response()->json(['error' => 'Invalid theme config'], 500);
+        }
+
+        return response()->json($json);
+    }
+
+    /**
      * Render a custom store page (Professional plan feature).
      * Pages render through the same template chrome as the homepage so the
      * header/footer/theme stay consistent.

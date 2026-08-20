@@ -1,0 +1,42 @@
+{
+  "id": "market-fast",
+  "name": "سوق سريع",
+  "sector": "سوبر ماركت وبقالة",
+  "styling": {
+    "primaryColor": "#16a34a",
+    "primaryDark": "#15803d",
+    "primarySoft": "#dcfce7",
+    "onPrimary": "#ffffff",
+    "borderRadius": "0.5rem",
+    "fontFamily": "cairo",
+    "colorMode": "light"
+  },
+  "layout": {
+    "heroType": "compact_tabs",
+    "cartType": "sticky_bottom_bar",
+    "productCardStyle": "bulk_add",
+    "gridColumns": 5,
+    "compactHeroMobileOnly": true,
+    "stickyCategoryBar": true,
+    "swatchStyle": "round"
+  },
+  "commerce": {
+    "enableWhatsAppOrdering": true,
+    "requireOtpVerification": false,
+    "freeDeliveryThreshold": 0,
+    "deliverySlots": ["09:00-12:00", "12:00-15:00", "15:00-18:00", "18:00-21:00"]
+  },
+  "features": {
+    "enableWeightCalculator": false,
+    "enableDeliverySlots": true,
+    "enableUrgencyBadges": true,
+    "enableQuickVariantPicker": true
+  },
+  "content": {
+    "heroTitle": "كل احتياجاتك اليومية",
+    "heroSubtitle": "منتجات طازجة بأسعار منافسة، تصلك في نفس اليوم",
+    "heroCtaText": "تسوّق الآن",
+    "announcementText": "توصيل مجاني للطلبات فوق 50 شيكل",
+    "bannerCtaText": "تسوّق الآن"
+  }
+}

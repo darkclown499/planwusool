@@ -427,10 +427,20 @@ protected $fillable = [
         'pro-sports', 'pro-boutique',
     ];
 
+    /**
+     * Schema-driven "engine" themes (see resources/js/components/theme).
+     * These are rendered by the ThemeEngine (theme.config.json driven) instead
+     * of the JSON template renderer, but are still valid theme slugs.
+     */
+    public const ENGINE_THEMES = [
+        'market-fast', 'fashion-luxe', 'fresh-produce',
+    ];
+
     public const ALL_TEMPLATES = [
         ...self::FREE_TEMPLATES,
         ...self::GROWTH_TEMPLATES,
         ...self::PRO_TEMPLATES,
+        ...self::ENGINE_THEMES,
     ];
 
     /** Legacy slugs → canonical core template mapping for one-time migration. */

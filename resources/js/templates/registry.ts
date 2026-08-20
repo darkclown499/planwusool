@@ -1038,6 +1038,72 @@ function withTemplateDefaults(template: TemplateConfig): TemplateConfig {
     };
 }
 
+/* ---------------------------------------------------------------------
+ * ENGINE THEMES - schema-driven niche layouts (theme.config.json).
+ * These are rendered by the ThemeEngine (components/theme) instead of the
+ * section renderer, but they are still registered so the slug resolves in
+ * `getTemplateConfig` and appears in the template picker.
+ * --------------------------------------------------------------------- */
+
+const engineTmpl = (
+    slug: string,
+    name: string,
+    name_en: string,
+    description: string,
+    primary: string,
+): TemplateConfig =>
+    tmpl(
+        slug,
+        name,
+        name_en,
+        description,
+        'niche',
+        'growth',
+        [
+            baseSection('hero', 'hero', 1, { layout: 'split', show_search: true }),
+            baseSection('categories', 'categories', 2, { style: 'chips' }),
+            baseSection('products', 'products', 3, { layout: 'grid', per_page: 24 }),
+            baseSection('footer', 'footer', 4, {}),
+        ],
+        CORE_LAYOUT,
+        {
+            'primary-50': `${primary}14`,
+            'primary-100': `${primary}2e`,
+            'primary-500': primary,
+            'primary-600': primary,
+            'primary-700': primary,
+            background: '#ffffff',
+            surface: '#f9fafb',
+            'text-primary': '#111827',
+            'text-secondary': '#6b7280',
+        },
+        { advanced_components: ['theme-engine'] },
+    );
+
+const marketFastEngine: TemplateConfig = engineTmpl(
+    'market-fast',
+    'سوق سريع',
+    'Market Fast',
+    'سوبر ماركت وبقالة بسلّة سريعة وتوصيل فوري',
+    '#16a34a',
+);
+
+const fashionLuxeEngine: TemplateConfig = engineTmpl(
+    'fashion-luxe',
+    'أزياء فاخرة',
+    'Fashion Luxe',
+    'أزياء وموضة بهيرو كامل وعربة جانبية أنيقة',
+    '#e11d48',
+);
+
+const freshProduceEngine: TemplateConfig = engineTmpl(
+    'fresh-produce',
+    'خضار وفواكه طازجة',
+    'Fresh Produce',
+    'منتجات طازجة بآلة حساب الأوزان وحجز توقيت التوصيل',
+    '#65a30d',
+);
+
 const rawTemplates: Record<string, TemplateConfig> = {
     'core-minimal': coreMinimal,
     'core-bold': coreBold,
@@ -1068,6 +1134,9 @@ const rawTemplates: Record<string, TemplateConfig> = {
     'pro-kids': proKids,
     'pro-sports': proSports,
     'pro-boutique': proBoutique,
+    'market-fast': marketFastEngine,
+    'fashion-luxe': fashionLuxeEngine,
+    'fresh-produce': freshProduceEngine,
 };
 
 const templates: Record<string, TemplateConfig> = Object.fromEntries(

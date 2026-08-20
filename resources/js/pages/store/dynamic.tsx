@@ -2,10 +2,12 @@ import StoreHead from '@/components/StoreHead';
 import StoreBoundary from '@/components/StoreBoundary';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
-import { TemplateRenderer } from '@/templates/TemplateRenderer';
+import { ThemeEngine } from '@/components/theme/ThemeEngine';
+import { engineThemeConfigUrl, getEngineThemeComponent, isEngineTheme } from '@/components/theme/registry';
+import { TemplateRenderer, StoreSkeleton } from '@/templates/TemplateRenderer';
 import { getTemplateConfig } from '@/templates/registry';
 import { TemplateStorefront } from '@/templates/storefront';
-import React, { useMemo } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -68,6 +70,12 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     action = null,
 }) => {
     const { t } = useTranslation();
+
+    // Engine-backed niche themes (market-fast / fashion-luxe / fresh-produce)
+    // render through the schema-driven ThemeEngine instead of the JSON template
+    // renderer. Everything else keeps the existing template pipeline untouched.
+    const EngineModule = useMemo(() => getEngineThemeComponent(template), [template]);
+
     const resolvedTemplate = useMemo(() => {
         if (templateConfig) {
             return templateConfig;
@@ -117,7 +125,19 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 behavior={behavior}
             >
                 <StoreBoundary>
-                    <TemplateStorefront>
+                    {EngineModule ? (
+                        /* ---- Schema-driven Theme Engine ---- */
+                        <ThemeEngine
+                            themeId={template}
+                            configUrl={engineThemeConfigUrl(template)}
+                            isPreview={isPreview}
+                        >
+                            <Suspense fallback={<StoreSkeleton />}>
+                                <EngineModule />
+                            </Suspense>
+                        </ThemeEngine>
+                    ) : (
+                        <TemplateStorefront>
                         {/* Exit Preview Toolbar */}
                         {isPreview && (
                             <div className="sticky top-0 z-50 w-full bg-amber-600 text-white shadow-md border-b border-amber-700">
@@ -169,6 +189,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                             )}
                         </main>
                     </TemplateStorefront>
+                    )}
                 </StoreBoundary>
             </ThemeProvider>
         </>

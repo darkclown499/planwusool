@@ -113,6 +113,11 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::post('/profile/update', [\App\Http\Controllers\Store\ProfileController::class, 'updateProfile'])->name('store.profile.update');
     Route::post('/profile/password', [\App\Http\Controllers\Store\ProfileController::class, 'updatePassword'])->name('store.profile.password');
 
+    // Storefront phone OTP (HotSMS/Twilio SMS gateway) for checkout verification
+    Route::post('/otp/send', [\App\Http\Controllers\StorefrontOtpController::class, 'send'])->middleware('throttle:6,1')->name('store.otp.send');
+    Route::post('/otp/verify', [\App\Http\Controllers\StorefrontOtpController::class, 'verify'])->middleware('throttle:10,1')->name('store.otp.verify');
+    Route::post('/otp/resend', [\App\Http\Controllers\StorefrontOtpController::class, 'resend'])->middleware('throttle:6,1')->name('store.otp.resend');
+
     // Password reset routes
     Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->middleware('throttle:5,1')->name('store.forgot-password');
     Route::get('/reset-password/{token}', [\App\Http\Controllers\Store\AuthController::class, 'showResetForm'])->name('store.reset-password');
@@ -173,6 +178,9 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
 
     // Custom store pages (Professional plan feature): /page/{slug}
     Route::get('/page/{slug}', [ThemeController::class, 'page'])->name('store.page');
+
+    // Schema-driven theme engine: runtime `theme.config.json` for a niche theme
+    Route::get('/theme-configs/{theme}.json', [ThemeController::class, 'themeConfig'])->name('store.theme-config');
 
     // Catch-all: any unmatched GET on a store subdomain renders the store homepage
     // (mirrors the previous "unknown route -> home" behaviour for custom domains).
