@@ -59,47 +59,54 @@ Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     Route::delete('profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::put('profile/password', [PasswordController::class, 'update'])->name('password.update');
 
-    // Email settings page
+    // Email settings page (global default templates — platform-level)
     Route::get('settings/email', function () {
         return Inertia::render('settings/components/email-settings');
-    })->name('settings.email');
+    })->middleware('platform.admin')->name('settings.email');
     
     // Email settings routes
-    Route::get('settings/email/get', [EmailSettingController::class, 'getEmailSettings'])->name('settings.email.get');
-    Route::post('settings/email/update', [EmailSettingController::class, 'updateEmailSettings'])->name('settings.email.update');
-    Route::post('settings/email/test', [EmailSettingController::class, 'sendTestEmail'])->name('settings.email.test');
+    Route::middleware('platform.admin')->group(function () {
+        Route::get('settings/email/get', [EmailSettingController::class, 'getEmailSettings'])->name('settings.email.get');
+        Route::post('settings/email/update', [EmailSettingController::class, 'updateEmailSettings'])->name('settings.email.update');
+        Route::post('settings/email/test', [EmailSettingController::class, 'sendTestEmail'])->name('settings.email.test');
+    });
   
     // General settings page with system and company settings
-    Route::get('settings', [SettingsController::class, 'index'])->name('settings');
+    // Platform-level ONLY — merchants use /stores/{id}/* pages.
+    Route::get('settings', [SettingsController::class, 'index'])->middleware('platform.admin')->name('settings');
     
     // Brand Settings routes
-    Route::post('settings/storage', [SystemSettingsController::class, 'updateStorage'])->name('settings.storage.update');
-    Route::post('settings/recaptcha', [SystemSettingsController::class, 'updateRecaptcha'])->name('settings.recaptcha.update');
-    Route::post('settings/chatgpt', [SystemSettingsController::class, 'updateChatgpt'])->name('settings.chatgpt.update');
-    Route::post('settings/cookie', [SystemSettingsController::class, 'updateCookie'])->name('settings.cookie.update');
-    Route::post('settings/seo', [SystemSettingsController::class, 'updateSeo'])->name('settings.seo.update');
-    Route::post('settings/cache/clear', [SystemSettingsController::class, 'clearCache'])->name('settings.cache.clear');
+    Route::post('settings/storage', [SystemSettingsController::class, 'updateStorage'])->middleware('platform.admin')->name('settings.storage.update');
+    Route::post('settings/recaptcha', [SystemSettingsController::class, 'updateRecaptcha'])->middleware('platform.admin')->name('settings.recaptcha.update');
+    Route::post('settings/chatgpt', [SystemSettingsController::class, 'updateChatgpt'])->middleware('platform.admin')->name('settings.chatgpt.update');
+    Route::post('settings/cookie', [SystemSettingsController::class, 'updateCookie'])->middleware('platform.admin')->name('settings.cookie.update');
+    Route::post('settings/seo', [SystemSettingsController::class, 'updateSeo'])->middleware('platform.admin')->name('settings.seo.update');
+    Route::post('settings/cache/clear', [SystemSettingsController::class, 'clearCache'])->middleware('platform.admin')->name('settings.cache.clear');
     
     // Currency Settings routes
-    Route::post('settings/currency', [CurrencySettingController::class, 'update'])->name('settings.currency.update');
+    Route::post('settings/currency', [CurrencySettingController::class, 'update'])->middleware('platform.admin')->name('settings.currency.update');
     
     // Email Notification Settings routes
-    Route::post('email-notification-settings-save', [SystemSettingsController::class, 'mailNotificationStore'])->name('email.notification.setting.store');
+    Route::post('email-notification-settings-save', [SystemSettingsController::class, 'mailNotificationStore'])->middleware('platform.admin')->name('email.notification.setting.store');
     
-    // Webhook Settings routes
-    Route::get('settings/webhooks', function () {
-        return Inertia::render('settings/webhook-settings');
-    })->name('settings.webhooks');
-    Route::get('settings/webhooks/data', [WebhookController::class, 'index'])->name('settings.webhooks.index');
-    Route::post('settings/webhooks', [WebhookController::class, 'store'])->name('settings.webhooks.store');
-    Route::put('settings/webhooks/{webhook}', [WebhookController::class, 'update'])->name('settings.webhooks.update');
-    Route::delete('settings/webhooks/{webhook}', [WebhookController::class, 'destroy'])->name('settings.webhooks.destroy');
+    // Webhook Settings routes (platform-level)
+    Route::middleware('platform.admin')->group(function () {
+        Route::get('settings/webhooks', function () {
+            return Inertia::render('settings/webhook-settings');
+        })->name('settings.webhooks');
+        Route::get('settings/webhooks/data', [WebhookController::class, 'index'])->name('settings.webhooks.index');
+        Route::post('settings/webhooks', [WebhookController::class, 'store'])->name('settings.webhooks.store');
+        Route::put('settings/webhooks/{webhook}', [WebhookController::class, 'update'])->name('settings.webhooks.update');
+        Route::delete('settings/webhooks/{webhook}', [WebhookController::class, 'destroy'])->name('settings.webhooks.destroy');
+    });
     
-    // Accounting Integration routes
-    Route::get('settings/accounting', [AccountingSettingController::class, 'index'])->name('settings.accounting.index');
-    Route::post('settings/accounting', [AccountingSettingController::class, 'store'])->name('settings.accounting.store');
-    Route::delete('settings/accounting', [AccountingSettingController::class, 'destroy'])->name('settings.accounting.destroy');
-    Route::post('settings/accounting/test-connection', [AccountingSettingController::class, 'testConnection'])->name('settings.accounting.test-connection');
-    Route::post('settings/accounting/sync-now', [AccountingSettingController::class, 'syncNow'])->name('settings.accounting.sync-now');
+    // Accounting Integration routes (platform-level; merchants use /stores/{id}/integrations/erp)
+    Route::middleware('platform.admin')->group(function () {
+        Route::get('settings/accounting', [AccountingSettingController::class, 'index'])->name('settings.accounting.index');
+        Route::post('settings/accounting', [AccountingSettingController::class, 'store'])->name('settings.accounting.store');
+        Route::delete('settings/accounting', [AccountingSettingController::class, 'destroy'])->name('settings.accounting.destroy');
+        Route::post('settings/accounting/test-connection', [AccountingSettingController::class, 'testConnection'])->name('settings.accounting.test-connection');
+        Route::post('settings/accounting/sync-now', [AccountingSettingController::class, 'syncNow'])->name('settings.accounting.sync-now');
+    });
 
 });

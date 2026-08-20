@@ -1,14 +1,13 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
-   Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, TrendingUp, FileText, Package, Warehouse, Code2, Power, Paintbrush,
+   Save, Mail, Globe, Search,
+   XCircle, Info, Loader2, Trash2, Palette, History, CheckCircle2, Building2, PenLine, Power, Paintbrush,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,7 +16,6 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import MediaPicker from '@/components/MediaPicker';
-import { SearchableSelect } from '@/components/searchable-select';
 import { AccordionSection } from '@/components/accordion-section';
 import { apiPut, apiPost } from '@/utils/api';
 import DomainsTab from './components/domains-tab';
@@ -25,42 +23,7 @@ import DomainsTab from './components/domains-tab';
 interface Props {
   store: any;
   settings: any;
-  currencies: any[];
-  timezones: Record<string, string>;
-  locationData: any[];
 }
-
-const STORE_LANGUAGES: { code: string; label: string }[] = [
-  { code: 'ar', label: 'العربية' },
-  { code: 'en', label: 'English' },
-  { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'tr', label: 'Türkçe' },
-  { code: 'ru', label: 'Русский' },
-  { code: 'pt', label: 'Português' },
-  { code: 'it', label: 'Italiano' },
-  { code: 'nl', label: 'Nederlands' },
-  { code: 'ja', label: '日本語' },
-  { code: 'zh', label: '中文' },
-  { code: 'he', label: 'עברית' },
-  { code: 'pl', label: 'Polski' },
-  { code: 'da', label: 'Dansk' },
-];
-
-const SOCIAL_PLATFORMS: { value: string; label: string }[] = [
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'twitter', label: 'Twitter / X' },
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'tiktok', label: 'TikTok' },
-  { value: 'snapchat', label: 'Snapchat' },
-  { value: 'telegram', label: 'Telegram' },
-  { value: 'linkedin', label: 'LinkedIn' },
-  { value: 'pinterest', label: 'Pinterest' },
-  { value: 'custom', label: 'Other / Custom' },
-];
 
 const LEGACY_SOCIAL_MAP: Record<string, string> = {
   facebook: 'facebook_url',
@@ -130,17 +93,6 @@ const GoogleSnippetPreview = ({ title, url, description, favicon }: { title: str
   );
 };
 
-const PlatformIcon = ({ platform, className }: { platform: string; className?: string }) => {
-  switch (platform) {
-    case 'facebook': return <Facebook className={className} />;
-    case 'instagram': return <Instagram className={`${className} text-pink-600`} />;
-    case 'twitter': return <X className={className} />;
-    case 'youtube': return <Youtube className={`${className} text-red-600`} />;
-    case 'whatsapp': return <Phone className={`${className} text-green-600`} />;
-    default: return <Share2 className={className} />;
-  }
-};
-
 function initSocialLinks(s: any): any[] {
   if (Array.isArray(s?.social_links) && s.social_links.length > 0) {
     return s.social_links.map((l: any) => ({ ...l }));
@@ -154,7 +106,7 @@ function initSocialLinks(s: any): any[] {
   return legacy;
 }
 
-export default function StoreSettings({ store, settings, currencies, timezones, locationData = [] }: Props) {
+export default function StoreSettings({ store, settings }: Props) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
@@ -182,16 +134,6 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
     setDirty(false);
   }, [settings]);
 
-  const isValidHttpUrl = (value?: string) => {
-    if (!value || !value.trim()) return true;
-    try {
-      const url = new URL(value.trim());
-      return url.protocol === 'http:' || url.protocol === 'https:';
-    } catch {
-      return false;
-    }
-  };
-
   const isValidEmail = (value?: string) => {
     if (!value || !value.trim()) return true;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -199,19 +141,8 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
 
   const validationErrors = useMemo(() => {
     const errors: Record<string, string> = {};
-    socialLinks.forEach((link, index) => {
-      if (link.url && !isValidHttpUrl(link.url)) {
-        errors[`social_${index}`] = t('Enter a valid URL starting with http:// or https://');
-      }
-    });
     if (!isValidEmail(formData.email)) {
       errors['email'] = t('Enter a valid email address');
-    }
-    if (formData.exchangeRate !== undefined && formData.exchangeRate !== '' && formData.exchangeRate !== null) {
-      const rate = Number(formData.exchangeRate);
-      if (isNaN(rate) || rate < 0) {
-        errors['exchangeRate'] = t('Enter a valid exchange rate (0 or greater)');
-      }
     }
     return errors;
   }, [formData, socialLinks]);
@@ -220,13 +151,6 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
 
   const updateSetting = (key: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [key]: value }));
-    setDirty(true);
-    setAutoSaveState('idle');
-  };
-
-  const setSocial = (links: any[]) => {
-    setSocialLinks(links);
-    setFormData((prev: any) => ({ ...prev, social_links: links }));
     setDirty(true);
     setAutoSaveState('idle');
   };
@@ -291,51 +215,8 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
     },
   ];
 
-  const currencyOptions = currencies.map((c) => ({
-    value: c.code,
-    label: `${c.code} — ${c.name}`,
-    hint: c.symbol,
-  }));
-  const timezoneOptions = Object.entries(timezones || {}).map(([key, label]) => ({ value: key, label: String(label) }));
-  const languageOptions = STORE_LANGUAGES.map((l) => ({ value: l.code, label: l.label }));
-
-  const cityOptions = useMemo(() => {
-    const options: { value: string; label: string; hint: string }[] = [];
-    (locationData || []).forEach((country) => {
-      (country.states || []).forEach((state: any) => {
-        (state.cities || []).forEach((city: any) => {
-          options.push({ value: `city-${city.id}`, label: city.name, hint: `${state.name} — ${country.name}` });
-        });
-      });
-    });
-    return options;
-  }, [locationData]);
-
-  const handleCitySelect = (value: string) => {
-    if (!value.startsWith('city-')) {
-      updateSetting('city', value);
-      return;
-    }
-    const cityId = value.replace('city-', '');
-    for (const country of locationData || []) {
-      for (const state of country.states || []) {
-        const match = (state.cities || []).find((c: any) => String(c.id) === cityId);
-        if (match) {
-          updateSetting('city', match.name);
-          updateSetting('state', state.name);
-          updateSetting('country', country.name);
-          return;
-        }
-      }
-    }
-  };
-
-  const currencyValue = (formData.defaultCurrency || (formData.default_currency ? String(formData.default_currency).toUpperCase() : '')) || 'ILS';
-  const timezoneValue = formData.defaultTimezone || formData.timezone || 'UTC';
-  const languageValue = formData.language || formData.defaultLanguage || 'ar';
   const maintenanceOn = formData.maintenance_mode === true || formData.maintenance_mode === 'true';
   const storeStatusOn = formData.store_status === true || formData.store_status === 'true';
-  const whatsappOn = formData.whatsapp_widget_enabled === true || formData.whatsapp_widget_enabled === 'true';
 
   const seoPreviewUrl = useMemo(() => {
     const domain = store.custom_domain || store.custom_subdomain || '';
@@ -465,171 +346,6 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
           </AccordionSection>
 
           <AccordionSection
-            title={t('Inventory Settings')}
-            icon={<Warehouse className="h-4 w-4" />}
-            subtitle={t('Define the stock level at which products are considered low and need restocking.')}
-            onReset={() => handleResetSection('inventory')}
-            resetDisabled={resettingSection === 'inventory'}
-          >
-            <div className="grid gap-4 md:grid-cols-2 items-end">
-              <div className="space-y-2">
-                <Label htmlFor="low_stock_threshold">{t('Low Stock Threshold')}</Label>
-                <p className="text-sm text-muted-foreground">
-                  {t('Products with stock at or below this number are flagged as low stock.')}
-                </p>
-              </div>
-              <div>
-                <Input
-                  id="low_stock_threshold"
-                  type="number"
-                  min={0}
-                  max={9999}
-                  value={formData.low_stock_threshold ?? ''}
-                  onChange={(e) => updateSetting('low_stock_threshold', e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder={t('e.g. 10')}
-                />
-              </div>
-            </div>
-          </AccordionSection>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <AccordionSection
-            title={t('Regional Settings')}
-            icon={<Globe className="h-4 w-4" />}
-            subtitle={t('These settings control how prices, dates, and content are displayed in your store.')}
-            defaultOpen
-            onReset={() => handleResetSection('regional')}
-            resetDisabled={resettingSection === 'regional'}
-          >
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label className="flex items-center gap-1.5 mb-2">
-                  <Coins className="h-3.5 w-3.5" />
-                  {t('Default Currency')}
-                  <HelpTip text={t('Used for all prices across your store and checkout.')} />
-                </Label>
-                <SearchableSelect
-                  value={currencyValue}
-                  onChange={(value) => {
-                    updateSetting('defaultCurrency', value);
-                    updateSetting('default_currency', value.toLowerCase());
-                  }}
-                  options={currencyOptions}
-                  placeholder={t('Select currency...')}
-                  searchPlaceholder={t('Search currencies...')}
-                  allowFreeText={false}
-                />
-              </div>
-              <div>
-                <Label className="flex items-center gap-1.5 mb-2">
-                  <Clock className="h-3.5 w-3.5" />
-                  {t('Store Timezone')}
-                  <HelpTip text={t('Determines how dates and times are shown in orders and reports.')} />
-                </Label>
-                <SearchableSelect
-                  value={timezoneValue}
-                  onChange={(value) => {
-                    updateSetting('defaultTimezone', value);
-                    updateSetting('timezone', value);
-                  }}
-                  options={timezoneOptions}
-                  placeholder={t('Select timezone...')}
-                  searchPlaceholder={t('Search timezones...')}
-                  allowFreeText={false}
-                />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 mt-4">
-              <div>
-                <Label className="flex items-center gap-1.5 mb-2">
-                  <Languages className="h-3.5 w-3.5" />
-                  {t('Store Language')}
-                  <HelpTip text={t('Default language used on your public storefront.')} />
-                </Label>
-                <SearchableSelect
-                  value={languageValue}
-                  onChange={(value) => updateSetting('language', value)}
-                  options={languageOptions}
-                  placeholder={t('Select language...')}
-                  searchPlaceholder={t('Search languages...')}
-                  allowFreeText={false}
-                />
-              </div>
-            </div>
-          </AccordionSection>
-
-          <AccordionSection
-            title={t('Secondary Currency & Tax')}
-            icon={<Coins className="h-4 w-4" />}
-            subtitle={t('Show a second currency alongside your default currency and include tax info on invoices.')}
-            onReset={() => handleResetSection('currency_tax')}
-            resetDisabled={resettingSection === 'currency_tax'}
-          >
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label className="flex items-center gap-1.5 mb-2">
-                  <Coins className="h-3.5 w-3.5" />
-                  {t('Secondary Currency')}
-                  <HelpTip text={t('When set, prices are shown in both your default currency and this one (e.g. ILS + USD for international customers).')} />
-                </Label>
-                <SearchableSelect
-                  value={formData.secondaryCurrency || ''}
-                  onChange={(value) => updateSetting('secondaryCurrency', value || null)}
-                  options={currencyOptions}
-                  placeholder={t('None — single currency')}
-                  searchPlaceholder={t('Search currencies...')}
-                  allowFreeText={false}
-                />
-              </div>
-              <div>
-                <Label className="flex items-center gap-1.5 mb-2">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  {t('Exchange Rate')}
-                  <HelpTip text={t('How much 1 unit of your default currency equals in the secondary currency. E.g. 1 USD = 3.7 ILS.')} />
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="any"
-                  value={formData.exchangeRate ?? ''}
-                  onChange={(e) => updateSetting('exchangeRate', e.target.value === '' ? null : e.target.value)}
-                  placeholder={t('e.g. 3.70')}
-                />
-                {validationErrors.exchangeRate && (
-                  <p className="mt-1 text-xs text-red-500">{validationErrors.exchangeRate}</p>
-                )}
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 mt-4">
-              <div>
-                <Label className="flex items-center gap-1.5 mb-2">
-                  <FileText className="h-3.5 w-3.5" />
-                  {t('VAT Number')}
-                  <HelpTip text={t('Shown on invoices. Used to identify your business for tax purposes.')} />
-                </Label>
-                <Input
-                  value={formData.vat_number || ''}
-                  onChange={(e) => updateSetting('vat_number', e.target.value)}
-                  placeholder={t('e.g. 123456789')}
-                />
-              </div>
-              <div>
-                <Label className="flex items-center gap-1.5 mb-2">
-                  <FileText className="h-3.5 w-3.5" />
-                  {t('Tax Registration Number')}
-                  <HelpTip text={t('Also shown on invoices if your jurisdiction requires it.')} />
-                </Label>
-                <Input
-                  value={formData.tax_registration_number || ''}
-                  onChange={(e) => updateSetting('tax_registration_number', e.target.value)}
-                  placeholder={t('e.g. 510000000')}
-                />
-              </div>
-            </div>
-          </AccordionSection>
-          </div>
-
-          <AccordionSection
             title={t('Store Branding')}
             icon={<Palette className="h-4 w-4" />}
             subtitle={t('Upload your logo and favicon. You can drag & drop an image directly.')}
@@ -697,155 +413,6 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
               </div>
             </div>
           </AccordionSection>
-
-          <AccordionSection
-            title={t('Store Address')}
-            icon={<MapPin className="h-4 w-4" />}
-            subtitle={t('Type a city name to get suggestions, or enter your address manually.')}
-            onReset={() => handleResetSection('address')}
-            resetDisabled={resettingSection === 'address'}
-          >
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="address">{t('Address')}</Label>
-                <Input
-                  id="address"
-                  value={formData.address || ''}
-                  onChange={(e) => updateSetting('address', e.target.value)}
-                  placeholder={t('123 Main Street')}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="city">{t('City')}</Label>
-                  <SearchableSelect
-                    value={cityOptions.find((o) => o.label === formData.city)?.value || formData.city || ''}
-                    onChange={handleCitySelect}
-                    options={cityOptions}
-                    placeholder={t('Type city name...')}
-                    searchPlaceholder={t('Search cities...')}
-                    allowFreeText
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="state">{t('State/Province')}</Label>
-                  <Input
-                    id="state"
-                    value={formData.state || ''}
-                    onChange={(e) => updateSetting('state', e.target.value)}
-                    placeholder={t('Amman')}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="country">{t('Country')}</Label>
-                  <Input
-                    id="country"
-                    value={formData.country || ''}
-                    onChange={(e) => updateSetting('country', e.target.value)}
-                    placeholder={t('Jordan')}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="postal_code">{t('Postal Code')}</Label>
-                  <Input
-                    id="postal_code"
-                    value={formData.postal_code || ''}
-                    onChange={(e) => updateSetting('postal_code', e.target.value)}
-                    placeholder="11181"
-                  />
-                </div>
-              </div>
-            </div>
-          </AccordionSection>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{t('Social Media Links')}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1 text-start">{t('Add or remove platforms as you need.')}</p>
-                </div>
-                <SectionResetButton onReset={() => handleResetSection('social')} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {socialLinks.length === 0 && (
-                <p className="text-sm text-muted-foreground py-2">{t('No social links added yet.')}</p>
-              )}
-              {socialLinks.map((link, index) => (
-                <div key={index} className="grid grid-cols-[200px_1fr_auto_auto] items-end gap-3">
-                  <div>
-                    <Label className="mb-1 block">{t('Platform')}</Label>
-                    <Select
-                      value={link.platform}
-                      onValueChange={(value) => {
-                        const next = [...socialLinks];
-                        next[index] = { ...next[index], platform: value };
-                        setSocial(next);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SOCIAL_PLATFORMS.map((p) => (
-                          <SelectItem key={p.value} value={p.value}>
-                            <span className="flex items-center gap-2">
-                              <PlatformIcon platform={p.value} className="h-4 w-4" />
-                              {p.value === 'custom' ? t('Other / Custom') : p.label}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="mb-1 block">{t('URL')}</Label>
-                    <Input
-                      dir="ltr"
-                      className={validationErrors[`social_${index}`] ? 'border-red-500' : ''}
-                      value={link.url || ''}
-                      onChange={(e) => {
-                        const next = [...socialLinks];
-                        next[index] = { ...next[index], url: e.target.value };
-                        setSocial(next);
-                      }}
-                      placeholder="https://..."
-                    />
-                    {validationErrors[`social_${index}`] && (
-                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                        <XCircle className="h-3 w-3" /> {validationErrors[`social_${index}`]}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={link.enabled !== false}
-                      onCheckedChange={(checked) => {
-                        const next = [...socialLinks];
-                        next[index] = { ...next[index], enabled: checked };
-                        setSocial(next);
-                      }}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setSocial(socialLinks.filter((_, i) => i !== index))}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </div>
-              ))}
-              <Button type="button" variant="outline" size="sm" onClick={() => setSocial([...socialLinks, { platform: 'tiktok', url: '', enabled: true }])}>
-                <Plus className="h-4 w-4 me-2" />
-                {t('Add Platform')}
-              </Button>
-            </CardContent>
-          </Card>
 
           <Card>
             <CardContent className="flex items-start gap-3 pt-5">

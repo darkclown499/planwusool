@@ -21,7 +21,12 @@ class SettingsController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
+        // Platform-level page — SuperAdmin / System Owners only.
+        if (!$user || (!$user->isSuperAdmin() && !$user->isAdmin())) {
+            abort(403, 'This area is restricted to platform administrators.');
+        }
+
         // Determine the correct user_id and store_id for settings
         if ($user->type === 'superadmin') {
             $settingsUserId = $user->id;

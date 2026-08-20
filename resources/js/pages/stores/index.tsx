@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, LayoutTemplate, Paintbrush, MoreVertical, CreditCard } from 'lucide-react';
+import { Plus, RefreshCw, Download, Building2, Globe, Users, BarChart, Settings, Eye, Edit, Trash2, LayoutTemplate, Paintbrush, MoreVertical, CreditCard, Link2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -231,11 +231,15 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.payments', store.id)); }}>
                                 <CreditCard className="h-4 w-4" />
-                                إعدادات الدفع
+                                طرق الدفع
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.erp', store.id)); }}>
+                                <Link2 className="h-4 w-4" />
+                                ربط ERP والمخزون
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id)); }}>
                                 <Settings className="h-4 w-4" />
-                                إعدادات المتجر
+                                إعدادات عامة
                               </DropdownMenuItem>
                             </>
                           )}

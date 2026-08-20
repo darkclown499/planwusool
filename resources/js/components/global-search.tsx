@@ -93,7 +93,8 @@ export function GlobalSearch({ open, onOpenChange, trigger }: { open: boolean; o
     const filteredPages = PAGE_ITEMS.filter((item) => {
         if (item.href === '/stores' && isSuperAdmin) return true;
         if (item.href === '/stores' && !isSuperAdmin) return false;
-        if (item.href === '/settings' && isSuperAdmin) return true;
+        if (item.href === '/settings' && (user?.type === 'admin' || isSuperAdmin)) return true;
+        if (item.href === '/settings' && user?.type !== 'admin' && !isSuperAdmin) return false;
         return true;
     }).filter((item) => (item.title.toLowerCase().includes(query.toLowerCase()))) || [];
 

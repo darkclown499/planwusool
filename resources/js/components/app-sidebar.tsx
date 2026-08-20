@@ -7,7 +7,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell, Paintbrush, LayoutTemplate } from 'lucide-react';
+import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell, Paintbrush, LayoutTemplate, Link2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -255,22 +255,30 @@ export function AppSidebar() {
 
         // ── إدارة المتاجر ──
         const currentStoreId = auth.user?.current_store;
-        const storeChildren: NavItem[] = [];
+
+        // المتاجر (قائمة المتاجر الخاصة بالمتاجر) — عنصر مستقل خارج قائمة المتجر
         if (hasPermission('manage-stores')) {
-            storeChildren.push({ title: t('Stores'), href: route('stores.index') });
-        }
-        if (hasPermission('settings-stores') && currentStoreId) {
-            storeChildren.push({ title: 'تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush });
-            storeChildren.push({ title: 'ميزات المتجر', href: route('stores.features', currentStoreId), icon: LayoutTemplate });
-            storeChildren.push({ title: 'إعدادات الدفع', href: route('stores.payments', currentStoreId), icon: CreditCard });
-            storeChildren.push({ title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings });
-        }
-        if (storeChildren.length > 0) {
             items.push({
                 title: t('Stores'),
+                href: route('stores.index'),
                 icon: Store,
                 groupLabel: t('Store'),
-                children: storeChildren,
+            });
+        }
+
+        // إدارة المتجر الحالي — 5 روابط فقط (لا تكرار)
+        if (hasPermission('settings-stores') && currentStoreId) {
+            items.push({
+                title: 'إدارة المتجر',
+                icon: Building2,
+                groupLabel: t('Store'),
+                children: [
+                    { title: 'تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush },
+                    { title: 'ميزات المتجر', href: route('stores.features', currentStoreId), icon: LayoutTemplate },
+                    { title: 'طرق الدفع', href: route('stores.payments', currentStoreId), icon: CreditCard },
+                    { title: 'ربط ERP والمخزون', href: route('stores.erp', currentStoreId), icon: Link2 },
+                    { title: 'إعدادات عامة', href: route('stores.settings', currentStoreId), icon: Settings },
+                ],
             });
         }
 
@@ -377,7 +385,8 @@ export function AppSidebar() {
         if (hasPermission('manage-referral')) {
             settingsChildren.push({ title: t('Referral Program'), href: route('referral.index') });
         }
-        if (hasPermission('manage-settings')) {
+        // إعدادات المنصة العالمية — SuperAdmin / مدير النظام فقط (للتجار تُدار من /stores/{id}/*)
+        if (hasPermission('manage-settings') && (user.type === 'superadmin' || user.type === 'admin')) {
             settingsChildren.push({ title: t('Settings'), href: route('settings') });
         }
         if (settingsChildren.length > 0) {

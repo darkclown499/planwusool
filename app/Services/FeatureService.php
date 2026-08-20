@@ -148,8 +148,8 @@ class FeatureService
 
         return [
             ['key' => 'erp', 'label' => 'ربط المحاسبة والمخزون (ERP)', 'enabled' => (bool) $erp, 'status' => $erp ? 'فعال — ' . ($erp->name ?? $erp->providerLabel()) : 'غير مفعّل'],
-            ['key' => 'sms', 'label' => 'الرسائل النصية (SMS)', 'enabled' => false, 'status' => 'من صفحة الإعدادات العامة'],
-            ['key' => 'cloud', 'label' => 'التخزين السحابي', 'enabled' => false, 'status' => 'من صفحة الإعدادات العامة'],
+            ['key' => 'sms', 'label' => 'الرسائل النصية (SMS)', 'enabled' => false, 'status' => 'تُدار من إعدادات المنصة (المشرف العام)'],
+            ['key' => 'cloud', 'label' => 'التخزين السحابي', 'enabled' => false, 'status' => 'تُدار من إعدادات المنصة (المشرف العام)'],
             ['key' => 'whatsapp_cloud', 'label' => 'WhatsApp Cloud API', 'enabled' => false, 'status' => 'قريباً'],
         ];
     }

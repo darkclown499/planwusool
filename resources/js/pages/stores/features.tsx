@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from '@/components/custom-toast';
 import { apiPut } from '@/utils/api';
 import { router } from '@inertiajs/react';
-import { Loader2, Lock, CreditCard, ShoppingCart, LayoutGrid, Plug, ExternalLink } from 'lucide-react';
+import { Loader2, Lock, CreditCard, ShoppingCart, LayoutGrid, Plug, ExternalLink, Settings2 } from 'lucide-react';
 
 interface FeatureItem {
   key: string;
@@ -95,7 +95,7 @@ export default function StoreFeatures({ store, groups: initialGroups = [], integ
         <div className="flex items-center gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => router.visit(`/stores/${store.id}/payments`)}>
             <CreditCard className="h-4 w-4 me-1.5" />
-            إعدادات الدفع
+            طرق الدفع
           </Button>
           <Button type="button" variant="outline" size="sm" onClick={() => window.open(`https://${store.slug}.${window.location.host.split(':')[0]}`, '_blank')}>
             <ExternalLink className="h-4 w-4 me-1.5" />
@@ -174,12 +174,12 @@ export default function StoreFeatures({ store, groups: initialGroups = [], integ
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       {isErp && (
-                        <a
-                          href={`/stores/${store.id}/integrations/erp`}
-                          className="rounded-full px-3 py-1 text-[11px] font-bold text-emerald-600 hover:bg-emerald-50"
-                        >
-                          الإعداد
-                        </a>
+                        <Button asChild size="sm" variant="default">
+                          <a href={`/stores/${store.id}/integrations/erp`}>
+                            <Settings2 className="h-4 w-4 me-1.5" />
+                            إعداد / ضبط
+                          </a>
+                        </Button>
                       )}
                       <span
                         className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${

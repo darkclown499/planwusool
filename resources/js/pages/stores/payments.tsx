@@ -206,8 +206,8 @@ export default function StorePayments({ store }: Props) {
                     </p>
                   </div>
                 </div>
-                <a href="/settings" className="inline-flex shrink-0 items-center gap-1.5 text-xs font-bold text-sky-700 hover:underline">
-                  إعدادات عامة إضافية
+                <a href={`/stores/${store.id}/settings`} className="inline-flex shrink-0 items-center gap-1.5 text-xs font-bold text-sky-700 hover:underline">
+                  إعدادات عامة المتجر
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               </CardContent>

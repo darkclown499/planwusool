@@ -80,6 +80,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'feature.access' => \App\Http\Middleware\CheckFeatureAccess::class,
             'store.status' => \App\Http\Middleware\CheckStoreStatus::class,
             'store.owner' => \App\Http\Middleware\EnsureStoreOwner::class,
+            'platform.admin' => \App\Http\Middleware\EnsurePlatformAdmin::class,
             'onboarded' => \App\Http\Middleware\EnsureOnboarding::class,
             'webhook.signature' => \App\Http\Middleware\VerifyWebhookSignature::class,
             'api.throttle' => \App\Http\Middleware\ApiRateLimiter::class,

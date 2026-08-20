@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Edit, Settings, Globe, Paintbrush, LayoutTemplate, MoreVertical, CreditCard } from 'lucide-react';
+import { ArrowLeft, Edit, Settings, Globe, Paintbrush, LayoutTemplate, MoreVertical, CreditCard, Link2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -79,11 +79,15 @@ export default function ViewStore({ store, stats }: any) {
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.visit(route('stores.payments', store.id))}>
               <CreditCard className="h-4 w-4" />
-              إعدادات الدفع
+              طرق الدفع
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.visit(route('stores.erp', store.id))}>
+              <Link2 className="h-4 w-4" />
+              ربط ERP والمخزون
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.visit(route('stores.settings', store.id))}>
               <Settings className="h-4 w-4" />
-              إعدادات المتجر
+              إعدادات عامة
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

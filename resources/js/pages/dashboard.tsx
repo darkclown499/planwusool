@@ -537,19 +537,35 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </button>
 
-                <button
-                  onClick={() => router.visit(route('settings'))}
-                  className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 group"
-                >
-                  <div className="p-2.5 rounded-lg bg-orange-100 text-orange-600 group-hover:scale-110 transition-transform">
-                    <Settings className="h-5 w-5" />
-                  </div>
-                  <div className="text-start flex-1">
-                    <p className="font-semibold text-sm">{t('System Settings')}</p>
-                    <p className="text-xs text-muted-foreground">{t('Configure platform')}</p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </button>
+                {userHasPermission('manage-settings') ? (
+                  <button
+                    onClick={() => router.visit(route('settings'))}
+                    className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 group"
+                  >
+                    <div className="p-2.5 rounded-lg bg-orange-100 text-orange-600 group-hover:scale-110 transition-transform">
+                      <Settings className="h-5 w-5" />
+                    </div>
+                    <div className="text-start flex-1">
+                      <p className="font-semibold text-sm">{t('System Settings')}</p>
+                      <p className="text-xs text-muted-foreground">{t('Configure platform')}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                ) : userHasPermission('settings-stores') && currentStore ? (
+                  <button
+                    onClick={() => router.visit(route('stores.settings', currentStore.id))}
+                    className="flex items-center gap-3 p-4 rounded-xl border bg-card hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 group"
+                  >
+                    <div className="p-2.5 rounded-lg bg-orange-100 text-orange-600 group-hover:scale-110 transition-transform">
+                      <Settings className="h-5 w-5" />
+                    </div>
+                    <div className="text-start flex-1">
+                      <p className="font-semibold text-sm">{t('Store Settings')}</p>
+                      <p className="text-xs text-muted-foreground">{t('Configure store')}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                ) : null}
               </div>
             </CardContent>
           </Card>
