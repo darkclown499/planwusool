@@ -160,10 +160,16 @@ export default function HeroSection({
             />
           )}
 
-          {/* ── Pulsating announcement badge ── */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-[13px] font-semibold text-emerald-700 animate-pulse">
-            <Zap size={14} className="text-emerald-600" />
-            المنصة الأولى لإدارة متاجر الواتساب في فلسطين
+          {/* ── Announcement logo (replaces the text badge) ── */}
+          <div className="mb-6 flex items-center justify-center animate-pulse">
+            <img
+              src={`${window.appSettings?.baseUrl || window.location.origin}/images/logos/wusool-badge.png`}
+              alt={settings.company_name || 'Wusool'}
+              width={260}
+              height={40}
+              loading="eager"
+              className="h-10 w-auto object-contain sm:h-11"
+            />
           </div>
 
           {/* ── Title ── */}
