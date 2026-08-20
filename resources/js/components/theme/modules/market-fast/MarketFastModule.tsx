@@ -38,7 +38,7 @@ const MARKET_FAST_CSS = `
 `;
 
 export const MarketFastModule: React.FC = () => {
-  const { config } = useThemeEngine();
+  const { config, banners, enableBanner } = useThemeEngine();
   const core = useCoreCommerce(config);
   const { config: storeConfig } = useStore();
   const product = useProduct();
@@ -95,7 +95,7 @@ export const MarketFastModule: React.FC = () => {
         onCartClick={handleCartClick}
       />
 
-      <MarketFastHeroOffers config={config} />
+      <MarketFastHeroOffers config={config} banners={enableBanner ? banners : []} />
 
       <main className="flex-1 pb-24">
         <MarketFastProductGrid

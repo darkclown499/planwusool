@@ -125,11 +125,17 @@ class StoreSettingsController extends Controller
             return response()->json(['error' => __('This template is not available on your current plan.')], 422);
         }
 
-        $store->update(['theme' => $theme]);
+        // Persist both the theme slug AND the matching theme.config.json schema
+        // so engine themes (market-fast, fashion-luxe, fresh-produce) can render
+        // with the exact applied styling/features on the store subdomain.
+        $store->theme = $theme;
+        $store->theme_config = \App\Services\ThemeConfigService::merge($store->theme_config, $theme);
+        $store->save();
 
         return response()->json([
             'success' => true,
             'theme' => $theme,
+            'theme_config' => $store->theme_config,
         ]);
     }
 

@@ -24,6 +24,8 @@ export interface ThemeEngineProps {
   themeId: string;
   /** Optional store-saved `theme.config.json` already serialized by the server. */
   serverConfig?: unknown;
+  /** Uploaded banner slides (content.banners) surfaced to hero sliders. */
+  banners?: any[];
   /** Optional runtime `theme.config.json` URL (previews / storage overrides). */
   configUrl?: string;
   children: ReactNode;
@@ -76,10 +78,11 @@ const CommerceShell: React.FC<{ children: ReactNode }> = ({ children }) => {
 export const ThemeEngine: React.FC<ThemeEngineProps> = ({
   themeId,
   serverConfig,
+  banners,
   configUrl,
   children,
 }) => (
-  <ThemeEngineProvider themeId={themeId} serverConfig={serverConfig} configUrl={configUrl}>
+  <ThemeEngineProvider themeId={themeId} serverConfig={serverConfig} configUrl={configUrl} banners={banners}>
     <CommerceShell>{children}</CommerceShell>
   </ThemeEngineProvider>
 );

@@ -31,6 +31,7 @@ class TemplateEditorController extends Controller
             'success' => true,
             'template' => [
                 'theme' => $store->getTemplateSlug(),
+                'theme_config' => $store->theme_config ?? \App\Services\ThemeConfigService::resolve($store->getTemplateSlug()),
                 'design_tokens' => $store->design_tokens ?? [],
                 'template_overrides' => $store->template_overrides ?? [],
                 'content' => $store->getMergedStoreContent(),
@@ -55,6 +56,7 @@ class TemplateEditorController extends Controller
 
         $validated = $request->validate([
             'theme' => 'nullable|string',
+            'theme_config' => 'nullable|array',
             'design_tokens' => 'nullable|array',
             'template_overrides' => 'nullable|array',
             'content' => 'nullable|array',
@@ -69,6 +71,18 @@ class TemplateEditorController extends Controller
                 return response()->json(['error' => 'This template is not available on your current plan.'], 422);
             }
             $store->theme = $theme;
+            // Seed the matching theme.config.json schema for engine themes.
+            if (\App\Services\ThemeConfigService::isEngineTheme($theme)) {
+                $store->theme_config = \App\Services\ThemeConfigService::merge($store->theme_config, $theme);
+            }
+        }
+
+        // Schema-driven theme config overrides (engine themes only).
+        if (isset($validated['theme_config'])) {
+            $store->theme_config = \App\Services\ThemeConfigService::save(
+                $validated['theme_config'],
+                $store->getTemplateSlug()
+            );
         }
 
         // Colors / design tokens — every tier may set colors.
@@ -108,6 +122,7 @@ class TemplateEditorController extends Controller
             'success' => true,
             'template' => [
                 'theme' => $store->getTemplateSlug(),
+                'theme_config' => $store->theme_config ?? \App\Services\ThemeConfigService::resolve($store->getTemplateSlug()),
                 'design_tokens' => $store->design_tokens ?? [],
                 'template_overrides' => $store->template_overrides ?? [],
                 'content' => $store->getMergedStoreContent(),

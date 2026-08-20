@@ -80,6 +80,8 @@ export interface ThemeFeatureConfig {
   enableDeliverySlots: boolean;
   enableUrgencyBadges: boolean;
   enableQuickVariantPicker: boolean;
+  /** Promotional hero/banner slider. Pairs with `content.banners` slides. */
+  enableBanner: boolean;
 }
 
 export interface ThemeContentConfig {
@@ -156,6 +158,7 @@ export const DEFAULT_THEME_CONFIG: ThemeConfig = {
     enableDeliverySlots: false,
     enableUrgencyBadges: false,
     enableQuickVariantPicker: false,
+    enableBanner: false,
   },
   content: {
     heroTitle: 'تسوّق كل ما تحتاجه',
@@ -362,6 +365,7 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
       enableDeliverySlots: true,
       enableUrgencyBadges: true,
       enableQuickVariantPicker: true,
+      enableBanner: true,
     },
     content: {
       heroTitle: 'كل احتياجاتك اليومية',
@@ -404,6 +408,7 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
       enableDeliverySlots: false,
       enableUrgencyBadges: false,
       enableQuickVariantPicker: true,
+      enableBanner: false,
     },
     content: {
       heroTitle: 'أناقة تليق بك',
@@ -446,6 +451,7 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
       enableDeliverySlots: true,
       enableUrgencyBadges: true,
       enableQuickVariantPicker: false,
+      enableBanner: true,
     },
     content: {
       heroTitle: 'من الأرض إلى مائدتك',

@@ -15,6 +15,10 @@ interface DynamicStoreProps {
     template: string;
     templateConfig?: any;
     designTokens?: any;
+    /** Store-saved theme.config.json for schema-driven engine themes. */
+    themeConfig?: any;
+    /** Uploaded banner slides (content.banners) for the engine hero sliders. */
+    bannerSlides?: any[];
     templateOverrides?: { sections?: any[] } | null;
     store: any;
     categories: any[];
@@ -48,6 +52,8 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     template,
     templateConfig,
     designTokens,
+    themeConfig,
+    bannerSlides = [],
     templateOverrides,
     store,
     categories,
@@ -129,6 +135,8 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                         /* ---- Schema-driven Theme Engine ---- */
                         <ThemeEngine
                             themeId={template}
+                            serverConfig={themeConfig}
+                            banners={bannerSlides}
                             configUrl={engineThemeConfigUrl(template)}
                             isPreview={isPreview}
                         >

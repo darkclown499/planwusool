@@ -31,7 +31,8 @@
     "enableWeightCalculator": false,
     "enableDeliverySlots": true,
     "enableUrgencyBadges": true,
-    "enableQuickVariantPicker": true
+    "enableQuickVariantPicker": true,
+    "enableBanner": true
   },
   "content": {
     "heroTitle": "كل احتياجاتك اليومية",

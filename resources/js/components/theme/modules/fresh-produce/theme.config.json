@@ -30,7 +30,8 @@
     "enableWeightCalculator": true,
     "enableDeliverySlots": true,
     "enableUrgencyBadges": true,
-    "enableQuickVariantPicker": false
+    "enableQuickVariantPicker": false,
+    "enableBanner": true
   },
   "content": {
     "heroTitle": "من الأرض إلى مائدتك",

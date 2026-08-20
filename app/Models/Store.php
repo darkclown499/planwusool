@@ -14,6 +14,7 @@ protected $fillable = [
         'slug',
         'description',
         'theme',
+        'theme_config',
         'design_tokens',
         'template_overrides',
         'custom_domain',
@@ -56,6 +57,7 @@ protected $fillable = [
         'enable_custom_subdomain' => 'boolean',
         'enable_pwa' => 'boolean',
         'store_content' => 'array',
+        'theme_config' => 'array',
         'design_tokens' => 'array',
         'template_overrides' => 'array',
     ];

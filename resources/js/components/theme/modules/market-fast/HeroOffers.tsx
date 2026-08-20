@@ -1,4 +1,5 @@
 import type { ThemeConfig } from '@/config/theme.schema';
+import type { ThemeBannerSlide } from '@/components/theme/ThemeEngineContext';
 import { getImageUrl } from '@/utils/image-helper';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -16,12 +17,14 @@ interface HeroSlide {
  * Compact promo slider for the market-fast (grocery) storefront.
  * Kept deliberately short (≤180px mobile / ≤260px desktop) so products stay
  * above the fold. Slides cycle automatically with arrow + dot controls.
+ * When the merchant uploaded `banner_slides` and the promotional banner feature
+ * is enabled, those slides take over from the built-in presets.
  */
-export const MarketFastHeroOffers: React.FC<{ config: ThemeConfig }> = ({ config }) => {
+export const MarketFastHeroOffers: React.FC<{ config: ThemeConfig; banners?: ThemeBannerSlide[] }> = ({ config, banners }) => {
   const { styling, content } = config;
   const primary = styling.primaryColor;
 
-  const slides: HeroSlide[] = [
+  const builtInSlides: HeroSlide[] = [
     {
       badge: 'خصم حتى 40%',
       title: content.bannerTitle || 'عروض هذا الأسبوع',
@@ -38,6 +41,18 @@ export const MarketFastHeroOffers: React.FC<{ config: ThemeConfig }> = ({ config
       accent: '#047857',
     },
   ];
+
+  const slides: HeroSlide[] =
+    banners && banners.length > 0
+      ? banners.map((b, idx) => ({
+          badge: idx === 0 ? 'خصم حتى 40%' : '',
+          title: b.title || content.bannerTitle || 'عروض هذا الأسبوع',
+          subtitle: b.subtitle || content.bannerSubtitle || '',
+          image: b.image || content.bannerImage || undefined,
+          cta: b.cta || content.bannerCtaText || content.heroCtaText || 'تسوّق الآن',
+          accent: idx % 2 === 0 ? primary : '#047857',
+        }))
+      : builtInSlides;
 
   const [index, setIndex] = useState(0);
   const count = slides.length;

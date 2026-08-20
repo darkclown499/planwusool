@@ -7,10 +7,22 @@ import {
 } from '@/config/theme.schema';
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 
+export interface ThemeBannerSlide {
+  image?: string;
+  title?: string;
+  subtitle?: string;
+  cta?: string;
+  link?: string;
+}
+
 export interface ThemeEngineContextValue {
   themeId: string;
   config: ThemeConfig;
   hydrated: boolean;
+  /** Normalized banner slides (content.banners) surfaced to hero sliders. */
+  banners: ThemeBannerSlide[];
+  /** Whether the promotional banner feature is enabled for this theme. */
+  enableBanner: boolean;
 }
 
 const ThemeEngineContext = createContext<ThemeEngineContextValue | undefined>(undefined);
@@ -94,17 +106,46 @@ export interface ThemeEngineProviderProps {
   serverConfig?: unknown;
   /** Optional remote `theme.config.json` URL for live overrides in preview. */
   configUrl?: string;
+  /** Raw uploaded banner slides (content.banners) from the stored theme. */
+  banners?: any[];
   children: ReactNode;
+}
+
+function normalizeBannerSlides(raw?: any[]): ThemeBannerSlide[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((slide) => {
+      if (!slide || typeof slide !== 'object') return null;
+      return {
+        image: slide.image ?? slide.image_url ?? slide.background ?? undefined,
+        title: slide.title ?? slide.headline ?? undefined,
+        subtitle: slide.subtitle ?? slide.description ?? slide.caption ?? undefined,
+        cta: slide.cta ?? slide.button_text ?? slide.cta_text ?? undefined,
+        link: slide.link ?? slide.button_link ?? slide.cta_link ?? slide.url ?? undefined,
+      };
+    })
+    .filter((s): s is ThemeBannerSlide => !!s);
 }
 
 export const ThemeEngineProvider: React.FC<ThemeEngineProviderProps> = ({
   themeId,
   serverConfig,
   configUrl,
+  banners: rawBanners,
   children,
 }) => {
   const { config, hydrated } = useEngineConfig(themeId, serverConfig, configUrl);
-  const value = useMemo(() => ({ themeId, config, hydrated }), [themeId, config, hydrated]);
+  const banners = useMemo(() => {
+    const serverSlides = (serverConfig as any)?.content?.banners;
+    return normalizeBannerSlides(Array.isArray(serverSlides) ? serverSlides : rawBanners);
+  }, [serverConfig, rawBanners]);
+  const enableBanner =
+    (config.features as any).enableBanner === true ||
+    (config.features as any)['enable_banner'] === true;
+  const value = useMemo(
+    () => ({ themeId, config, hydrated, banners, enableBanner }),
+    [themeId, config, hydrated, banners, enableBanner]
+  );
 
   return <ThemeEngineContext.Provider value={value}>{children}</ThemeEngineContext.Provider>;
 }

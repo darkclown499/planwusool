@@ -19,7 +19,7 @@ import { ModuleAnnouncement, ModuleFooter, ModuleHeader } from '../ModuleChrome'
  * out (a WhatsApp order or a normal order).
  */
 export const FreshProduceModule: React.FC = () => {
-  const { config } = useThemeEngine();
+  const { config, banners, enableBanner } = useThemeEngine();
   const core = useCoreCommerce(config);
   const { config: storeConfig } = useStore();
   const product = useProduct();
@@ -59,6 +59,7 @@ export const FreshProduceModule: React.FC = () => {
         activeCategory={activeCategory}
         onCategoryClick={handleCategoryClick}
         onSearch={handleSearch}
+        banners={enableBanner ? banners : []}
       />
 
       {config.layout.stickyCategoryBar && categories.length > 0 && (

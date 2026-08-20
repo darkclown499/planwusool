@@ -18,7 +18,7 @@ import { ModuleAnnouncement, ModuleFooter, ModuleHeader } from '../ModuleChrome'
  * progress bar. The drawer and cards still drive the shared cart / checkout.
  */
 export const FashionLuxeModule: React.FC = () => {
-  const { config } = useThemeEngine();
+  const { config, banners, enableBanner } = useThemeEngine();
   const core = useCoreCommerce(config);
   const { config: storeConfig } = useStore();
   const product = useProduct();
@@ -59,7 +59,7 @@ export const FashionLuxeModule: React.FC = () => {
         activeCategory={activeCategory}
         onCategoryClick={handleCategoryClick}
         onSearch={handleSearch}
-        banners={[]}
+        banners={enableBanner ? banners : []}
       />
 
       <main className="flex-1 pb-10">

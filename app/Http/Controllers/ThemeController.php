@@ -431,6 +431,16 @@ class ThemeController extends Controller
             'storeContent' => $storeModel && $storeModel->exists
                 ? $storeModel->getMergedStoreContent()
                 : [],
+            // Schema-driven theme engine: the store's saved theme.config.json
+            // (or the bundled preset) plus the uploaded banner slides, so an
+            // applied engine theme fully reflects on the live subdomain.
+            'themeConfig' => \App\Services\ThemeConfigService::isEngineTheme($theme)
+                ? ($storeModel->theme_config ?? \App\Services\ThemeConfigService::resolve($theme))
+                : null,
+            'bannerSlides' => $storeModel && $storeModel->exists
+                ? \App\Services\ThemeConfigService::bannerSlides($storeModel->theme_config)
+                    ?: ($storeModel->store_content['banners'] ?? [])
+                : [],
             'designTokens' => $storeModel && $storeModel->design_tokens ? $storeModel->design_tokens : [],
             'templateOverrides' => $storeModel && $storeModel->template_overrides ? $storeModel->template_overrides : [],
             'offers' => $storeModel && $storeModel->exists

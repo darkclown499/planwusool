@@ -201,6 +201,7 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
     const [availableThemes, setAvailableThemes] = useState<string[]>([]);
     const [theme, setTheme] = useState<string>('core-minimal');
     const [designTokens, setDesignTokens] = useState<any>({});
+    const [themeConfig, setThemeConfig] = useState<any>(null);
     const [content, setContent] = useState<any>({ ...DEFAULT_CONTENT });
     const [behavior, setBehavior] = useState<any>({ ...DEFAULT_BEHAVIOR });
     const [offers, setOffers] = useState<any[]>([]);
@@ -233,6 +234,7 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
                 setTheme(tmpl.theme || 'core-minimal');
                 setSelectedTheme(tmpl.theme || 'core-minimal');
                 setDesignTokens(tmpl.design_tokens || {});
+                setThemeConfig(tmpl.theme_config || null);
                 setContent({ ...DEFAULT_CONTENT, ...(tmpl.content || {}) });
                 setBehavior({ ...DEFAULT_BEHAVIOR, ...(data.behavior || {}) });
                 setCaps(data.capabilities || caps);
@@ -278,6 +280,7 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
         setSaving(true);
         const payload: any = {};
         if (patch.theme !== undefined) payload.theme = patch.theme;
+        if (patch.theme_config !== undefined) payload.theme_config = patch.theme_config;
         if (patch.design_tokens !== undefined) payload.design_tokens = patch.design_tokens;
         if (patch.content !== undefined) payload.content = patch.content;
         if (patch.behavior !== undefined) payload.behavior = patch.behavior;
@@ -300,6 +303,22 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
         const next = { ...behavior, [key]: value };
         setBehavior(next);
         saveState({ behavior: next });
+    };
+
+    const isPromotionalBannerEnabled = content?.banner?.enabled === true;
+
+    /** Promo banner toggle: mirrors content.banner.enabled AND merges the
+     *  boolean into theme_config.features.enable_banner so the engine
+     *  storefront shows/paids the banner slider on the live subdomain. */
+    const updatePromotionalBanner = (enabled: boolean) => {
+        const nextContent = { ...content, banner: { ...content.banner, enabled } };
+        const nextThemeConfig = {
+            ...(themeConfig || {}),
+            features: { ...((themeConfig as any)?.features || {}), enable_banner: enabled },
+        };
+        setContent(nextContent);
+        setThemeConfig(nextThemeConfig);
+        saveState({ content: nextContent, theme_config: nextThemeConfig });
     };
 
     const handleChooseTheme = () => {
@@ -693,7 +712,7 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
                             <div className="grid gap-3">
                                 <div className="flex items-center justify-between">
                                     <Label>{t('Enabled')}</Label>
-                                    <Switch checked={content?.banner?.enabled === true} onCheckedChange={(v) => updateContent('banner', { ...content.banner, enabled: v })} />
+                                    <Switch checked={isPromotionalBannerEnabled} onCheckedChange={updatePromotionalBanner} />
                                 </div>
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div>
