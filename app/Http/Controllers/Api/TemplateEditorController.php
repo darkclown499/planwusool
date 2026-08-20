@@ -142,6 +142,7 @@ class TemplateEditorController extends Controller
 
         if ($caps['banners']) {
             $allowedSections[] = 'banner';
+            $allowedSections[] = 'banners'; // promotional banner carousel slides
         }
         if ($caps['hero']) {
             $allowedSections[] = 'hero';
