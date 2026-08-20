@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Save, Plus, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, FileText, EyeOff } from 'lucide-react';
+import { Save, Plus, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, FileText, EyeOff, FolderPlus, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,9 @@ import InputError from '@/components/input-error';
 import UpgradeModal from '@/components/UpgradeModal';
 import { TagInput } from '@/components/ui/tag-input';
 import VariantImageSlot from '@/components/VariantImageSlot';
+import { toast } from '@/components/custom-toast';
+import { apiPost } from '@/utils/api';
+import { hasPermission } from '@/utils/permissions';
 import {
   generateVariantCombinations,
   mergeCombinationEdits,
@@ -48,6 +51,10 @@ export default function CreateProduct() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [isDraft, setIsDraft] = useState(false);
+  const [categoriesList, setCategoriesList] = useState<any[]>(categories || []);
+  const [newCategoryOpen, setNewCategoryOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -99,12 +106,38 @@ export default function CreateProduct() {
 
   const generateSku = () => {
     const name = formData.name.trim();
-    const cat = categories?.find((c: any) => String(c.id) === formData.category_id);
+    const cat = categoriesList?.find((c: any) => String(c.id) === formData.category_id);
     const prefix = name ? name.substring(0, 3).toUpperCase() : 'PRD';
     const catPrefix = cat ? cat.name.substring(0, 2).toUpperCase() : '';
     const num = String(Math.floor(Math.random() * 900) + 100);
     const sku = catPrefix ? `${catPrefix}-${prefix}-${num}` : `${prefix}-${num}`;
     setField('sku', sku);
+  };
+
+  const handleCreateCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) {
+      toast.error(t('Enter a category name'));
+      return;
+    }
+    if (creatingCategory) return;
+    setCreatingCategory(true);
+    try {
+      const res = await apiPost(route('categories.inline'), { name });
+      if (res?.category) {
+        setCategoriesList((prev) => [...prev, res.category]);
+        setField('category_id', String(res.category.id));
+        setNewCategoryName('');
+        setNewCategoryOpen(false);
+        toast.success(t('Category created'));
+      } else {
+        toast.error(res?.message || t('Could not create the category'));
+      }
+    } catch {
+      toast.error(t('Could not create the category'));
+    } finally {
+      setCreatingCategory(false);
+    }
   };
 
   const getTabErrors = (tab: string): boolean => {
@@ -241,9 +274,9 @@ export default function CreateProduct() {
                     <InputError message={errors.name} />
                   </div>
                   <div className="grid gap-1.5">
-                    <Label required>{t('Product Code (SKU)')}</Label>
+                    <Label>{t('Product Code (SKU)')} <span className="text-xs text-muted-foreground">({t('optional')})</span></Label>
                     <div className="flex gap-2">
-                      <Input id="sku" name="sku" value={formData.sku} onChange={handleChange} placeholder="PROD-001" aria-invalid={!!errors.sku} className="flex-1" />
+                      <Input id="sku" name="sku" value={formData.sku} onChange={handleChange} placeholder={t('PROD-001 (اختياري)')} aria-invalid={!!errors.sku} className="flex-1" />
                       <Button type="button" variant="outline" size="sm" onClick={generateSku} className="shrink-0 gap-1.5" title={t('Auto-generate SKU')}>
                         <RefreshCw className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">{t('Generate')}</span>
@@ -258,17 +291,44 @@ export default function CreateProduct() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-1.5">
-                    <Label htmlFor="category_id" required>{t('Category')}</Label>
+                    <div className="flex items-center justify-between gap-2">
+                      <Label htmlFor="category_id" required>{t('Category')}</Label>
+                      {hasPermission('create-categories') && (
+                        <button
+                          type="button"
+                          onClick={() => setNewCategoryOpen((v) => !v)}
+                          className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold text-primary hover:bg-primary/10"
+                        >
+                          <FolderPlus className="h-3 w-3" />
+                          {t('Create new category')}
+                        </button>
+                      )}
+                    </div>
                     <Select value={formData.category_id} onValueChange={(v) => handleSelectChange('category_id', v)}>
                       <SelectTrigger aria-invalid={!!errors.category_id}>
                         <SelectValue placeholder={t('Select category')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories?.map((cat: any) => (
+                        {categoriesList?.map((cat: any) => (
                           <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {newCategoryOpen && (
+                      <div className="flex gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2">
+                        <Input
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleCreateCategory(); } }}
+                          placeholder={t('اسم التصنيف الجديد...')}
+                          className="h-8 flex-1"
+                        />
+                        <Button type="button" size="sm" className="h-8 shrink-0 gap-1" onClick={handleCreateCategory} disabled={creatingCategory}>
+                          {creatingCategory ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                          {t('Create')}
+                        </Button>
+                      </div>
+                    )}
                     <InputError message={errors.category_id} />
                   </div>
                   <div className="grid gap-1.5">

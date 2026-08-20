@@ -163,7 +163,7 @@ class ProductController extends Controller
         // Validation
         $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|max:100',
+            'sku' => 'nullable|string|max:100',
             'barcode' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',
@@ -304,7 +304,7 @@ class ProductController extends Controller
         // Validation
         $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|max:100',
+            'sku' => 'nullable|string|max:100',
             'barcode' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',

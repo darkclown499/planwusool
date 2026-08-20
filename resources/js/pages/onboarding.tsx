@@ -16,6 +16,7 @@ import {
     Globe,
     Languages,
     Loader2,
+    Lock,
     Mail,
     MapPin,
     MessageCircle,
@@ -37,6 +38,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
@@ -221,6 +223,17 @@ export default function Onboarding({
     const [checking, setChecking] = useState(false);
     const [availability, setAvailability] = useState<{ available: boolean; message: string } | null>(null);
     const [generalError, setGeneralError] = useState<string | null>(null);
+    const [upgradeOpen, setUpgradeOpen] = useState(false);
+    const [pendingUpgradeTemplate, setPendingUpgradeTemplate] = useState<string | null>(null);
+
+    // During onboarding the merchant is on the free plan until they finish,
+    // so any template above the Starter tier is locked behind an upgrade.
+    const isLockedTemplate = (tmpl: TemplateSummary): boolean => tmpl.plan_required !== 'starter';
+
+    const openUpgrade = (slug: string) => {
+        setPendingUpgradeTemplate(slug);
+        setUpgradeOpen(true);
+    };
 
     const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const autosaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -391,6 +404,12 @@ export default function Onboarding({
     };
 
     const submit = () => {
+        // Never send a paid template for a free-tire merchant — open the
+        // upgrade prompt instead of letting the server bounce back to step 6.
+        if (data.theme && themeBySlug.get(data.theme) && isLockedTemplate(themeBySlug.get(data.theme)!)) {
+            openUpgrade(data.theme);
+            return;
+        }
         setGeneralError(null);
         post(route('onboarding.store'), {
             onError: (errs) => {
@@ -1273,33 +1292,58 @@ export default function Onboarding({
                                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                     {themeCatalog.map((tmpl) => {
                                                         const selected = data.theme === tmpl.slug;
+                                                        const locked = isLockedTemplate(tmpl);
                                                         return (
                                                             <div
                                                                 key={tmpl.slug}
-                                                                className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-white text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                                                                    selected
-                                                                        ? 'border-primary shadow-lg shadow-primary/10'
-                                                                        : 'border-gray-200 hover:border-gray-300'
+                                                                className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 bg-white text-start transition-all duration-300 ${
+                                                                    locked
+                                                                        ? 'border-gray-200'
+                                                                        : selected
+                                                                          ? 'border-primary shadow-lg shadow-primary/10 hover:-translate-y-1 hover:shadow-xl'
+                                                                          : 'border-gray-200 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl'
                                                                 }`}
                                                             >
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => setData('theme', tmpl.slug)}
+                                                                    onClick={() => (locked ? openUpgrade(tmpl.slug) : setData('theme', tmpl.slug))}
                                                                     className="w-full text-start"
                                                                 >
                                                                     <div className="relative">
-                                                                        <TemplateMiniPreview colors={themeColors(tmpl.slug)} />
+                                                                        <div className={locked ? 'opacity-40' : ''}>
+                                                                            <TemplateMiniPreview colors={themeColors(tmpl.slug)} />
+                                                                        </div>
                                                                         <span
                                                                             className={`absolute end-2.5 top-2.5 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${TIER_BADGE[tmpl.plan_required]}`}
                                                                         >
-                                                                            {TIER_LABEL[tmpl.plan_required]}
+                                                                            {locked
+                                                                                ? (
+                                                                                    <span className="inline-flex items-center gap-1">
+                                                                                        <Lock className="h-2.5 w-2.5" />
+                                                                                        {TIER_LABEL[tmpl.plan_required]}
+                                                                                    </span>
+                                                                                )
+                                                                                : TIER_LABEL[tmpl.plan_required]}
                                                                         </span>
-                                                                        {selected && (
+                                                                        {selected && !locked && (
                                                                             <span
                                                                                 className="absolute start-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full text-white animate-pop"
                                                                                 style={{ backgroundColor: primaryColor }}
                                                                             >
                                                                                 <Check className="h-4 w-4" />
+                                                                            </span>
+                                                                        )}
+                                                                        {locked && (
+                                                                            <span className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-white/55">
+                                                                                <span
+                                                                                    className="flex h-11 w-11 items-center justify-center rounded-full text-white"
+                                                                                    style={{ backgroundColor: primaryColor }}
+                                                                                >
+                                                                                    <Lock className="h-5 w-5" />
+                                                                                </span>
+                                                                                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-gray-700 shadow">
+                                                                                    {t('Available on Pro')}
+                                                                                </span>
                                                                             </span>
                                                                         )}
                                                                     </div>
@@ -1530,6 +1574,32 @@ export default function Onboarding({
                     </div>
                 </main>
             </div>
+
+            <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
+                <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>{t('Upgrade to Pro')}</DialogTitle>
+                        <DialogDescription>
+                            {t('التصميم')} «{pendingUpgradeTemplate ? themeBySlug.get(pendingUpgradeTemplate)?.name ?? '' : ''}» {t('متوفر في الباقة الاحترافية (Pro). قم بالترقية لفتحه وجميع المزايا.')}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2">
+                        <Button type="button" variant="outline" onClick={() => setUpgradeOpen(false)}>
+                            {t('Later')}
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                setUpgradeOpen(false);
+                                window.location.href = route('plans.index');
+                            }}
+                            style={{ backgroundColor: primaryColor }}
+                        >
+                            {t('Upgrade now')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

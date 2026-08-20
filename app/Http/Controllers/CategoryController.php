@@ -100,6 +100,40 @@ class CategoryController extends Controller
     }
 
     /**
+     * Create a category inline (from the product page) and return JSON so the
+     * frontend can insert it into the picker without leaving the form.
+     */
+    public function inlineStore(Request $request)
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ], [], [
+            'name' => __('Category Name'),
+        ]);
+
+        $category = new Category();
+        $category->name = $request->name;
+        $category->slug = Category::generateUniqueSlug($request->name, $currentStoreId);
+        $category->description = null;
+        $category->parent_id = null;
+        $category->store_id = $currentStoreId;
+        $category->sort_order = 0;
+        $category->is_active = true;
+        $category->save();
+
+        return response()->json([
+            'success' => true,
+            'category' => $category->only(['id', 'name']),
+            'categories' => Category::where('store_id', $currentStoreId)
+                ->orderBy('name')
+                ->get(['id', 'name']),
+        ]);
+    }
+
+    /**
      * Display the specified category.
      */
     public function show(string $id)

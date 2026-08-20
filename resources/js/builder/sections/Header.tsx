@@ -27,7 +27,7 @@ export const HeaderSection: React.FC<BuilderSectionProps> = ({ section, storeDat
 
   return (
     <header
-      className={`relative z-30 w-full border-b ${props.sticky === false ? '' : 'sticky top-0'}`}
+      className={`relative z-30 hidden w-full border-b md:block ${props.sticky === false ? '' : 'sticky top-0'}`}
       style={{
         background: css('--twc-surface', '#ffffff'),
         borderColor: css('--twc-border', '#e2e8f0'),

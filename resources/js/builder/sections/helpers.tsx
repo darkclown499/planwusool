@@ -145,7 +145,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
 
       <button
         type="button"
-        onClick={() => wishlist.toggle(product)}
+        onClick={() => wishlist.toggle(product.id)}
         aria-label="المفضلة"
         className="absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-400 shadow transition hover:text-red-500"
       >

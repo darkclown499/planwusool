@@ -31,7 +31,7 @@ class CartController extends Controller
                 'name' => $item->product->name,
                 'price' => $item->product->sale_price ? (float) $item->product->sale_price : (float) $item->product->price,
                 'originalPrice' => $item->product->sale_price ? (float) $item->product->price : null,
-                'image' => $item->product->cover_image ? $item->product->cover_image : asset('public/images/avatar/avatar.png'),
+                'image' => $item->product->cover_image ? $item->product->cover_image : asset('images/avatar/avatar.png'),
                 'images' => $item->product->images ? (is_array($item->product->images) ? $item->product->images : (strpos($item->product->images, ',') !== false ? explode(',', $item->product->images) : json_decode($item->product->images, true))) : null,
                 'categoryId' => (string) $item->product->category_id,
                 'category' => $item->product->category ? $item->product->category->name : 'Uncategorized',

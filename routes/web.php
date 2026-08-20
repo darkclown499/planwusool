@@ -714,6 +714,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('categories/export', [\App\Http\Controllers\CategoryController::class, 'export'])->middleware('permission:export-categories')->name('categories.export');
         Route::get('categories/create', [\App\Http\Controllers\CategoryController::class, 'create'])->middleware('permission:create-categories')->name('categories.create');
         Route::post('categories', [\App\Http\Controllers\CategoryController::class, 'store'])->middleware('permission:create-categories')->name('categories.store');
+    Route::post('categories/inline', [\App\Http\Controllers\CategoryController::class, 'inlineStore'])->middleware('permission:create-categories')->name('categories.inline');
         Route::get('categories/{id}/edit', [\App\Http\Controllers\CategoryController::class, 'edit'])->middleware('permission:edit-categories')->name('categories.edit');
         Route::put('categories/{id}', [\App\Http\Controllers\CategoryController::class, 'update'])->middleware('permission:edit-categories')->name('categories.update');
         Route::delete('categories/{id}', [\App\Http\Controllers\CategoryController::class, 'destroy'])->middleware('permission:delete-categories')->name('categories.destroy');
