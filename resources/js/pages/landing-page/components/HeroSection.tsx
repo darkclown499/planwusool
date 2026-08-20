@@ -35,12 +35,6 @@ export default function HeroSection({
     { value: 'تحديثات مستمرة', label: 'المنصة تتطور مع متجرك' },
   ];
 
-  const logo = '/images/logos/hero-logo.png';
-  const displayLogo = logo ? (
-    logo.startsWith('http') ? logo :
-    logo.startsWith('/') ? `${window.appSettings?.baseUrl || window.location.origin}${logo}` : logo
-  ) : '';
-
   return (
     <section
       id="hero"
@@ -147,30 +141,16 @@ export default function HeroSection({
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-          {/* ── Logo ── */}
-          {displayLogo && (
-            <img
-              src={displayLogo}
-              alt={settings.company_name || 'Wusool'}
-              width={320}
-              height={64}
-              fetchPriority="high"
-              className="mb-5 h-[40px] w-auto object-contain sm:h-[42px] lg:h-[46px]"
-              style={{ filter: 'drop-shadow(0 6px 24px rgba(16,183,127,0.35))' }}
-            />
-          )}
-
-          {/* ── Announcement logo (replaces the text badge) ── */}
-          <div className="mb-6 flex items-center justify-center animate-pulse">
-            <img
-              src={`${window.appSettings?.baseUrl || window.location.origin}/images/logos/wusool-badge.png`}
-              alt={settings.company_name || 'Wusool'}
-              width={260}
-              height={40}
-              loading="eager"
-              className="h-10 w-auto object-contain sm:h-11"
-            />
-          </div>
+          {/* ── Hero brand logo (replaces the two old logos) ── */}
+          <img
+            src={`${window.appSettings?.baseUrl || window.location.origin}/images/logos/wusool-badge.png`}
+            alt={settings.company_name || 'Wusool'}
+            width={360}
+            height={64}
+            fetchPriority="high"
+            loading="eager"
+            className="mb-6 h-14 w-auto object-contain sm:h-16 lg:h-[72px]"
+          />
 
           {/* ── Title ── */}
           <h1 className="mt-4 mb-4 text-4xl font-black leading-[1.15] tracking-tight text-slate-900 sm:text-6xl">
