@@ -5,6 +5,7 @@ import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import TrustedBySection from './components/TrustedBySection';
 import FeaturesSection from './components/FeaturesSection';
+import NicheThemesSection from './components/NicheThemesSection';
 import ScreenshotsSection from './components/ScreenshotsSection';
 import WhyChooseUs from './components/WhyChooseUs';
 import AboutUs from './components/AboutUs';
@@ -186,7 +187,7 @@ export default function LandingPage() {
     return settings.config_sections?.sections?.find(section => section.key === key) || {};
   };
 
-  const compactDefaultSections = ['header', 'hero', 'trusted_by', 'features', 'plans', 'faq', 'footer'];
+  const compactDefaultSections = ['header', 'hero', 'trusted_by', 'features', 'niche_themes', 'plans', 'faq', 'footer'];
 
   // Respect admin visibility settings when provided; otherwise keep the homepage lean by default.
   const isSectionVisible = (key: string) => {
@@ -235,6 +236,9 @@ export default function LandingPage() {
         sectionData={getSectionData('trusted_by')}
         brandColor={primaryColor}
       />
+    ),
+    niche_themes: () => isSectionVisible('niche_themes') && (
+      <NicheThemesSection brandColor={primaryColor} />
     ),
     screenshots: () => isSectionVisible('screenshots') && (
       <ScreenshotsSection
