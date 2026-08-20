@@ -247,7 +247,12 @@ export default function LandingPage() {
         brandColor={primaryColor}
       />
     ),
-    themes: () => null,
+    // Legacy "themes" slot renders the niche showcase on sites whose saved
+    // settings still use the older section_order (e.g. the current wusool.ps
+    // landing page) — kept mapping to the same engine showcase as niche_themes.
+    themes: () => isSectionVisible('themes') && (
+      <NicheThemesSection brandColor={primaryColor} />
+    ),
     why_choose_us: () => isSectionVisible('why_choose_us') && (
       <WhyChooseUs
         settings={settings}
