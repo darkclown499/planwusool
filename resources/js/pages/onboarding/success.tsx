@@ -166,7 +166,7 @@ export default function OnboardingSuccess({
                             },
                             {
                                 icon: CreditCard,
-                                href: `${route('settings')}#payment-settings`,
+                                href: route('stores.payments', storeId),
                                 label: t('Configure payment methods'),
                                 desc: t('Choose how your customers pay you.'),
                             },

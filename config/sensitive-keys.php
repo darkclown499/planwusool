@@ -53,7 +53,7 @@ return [
     'twilio_token',
 
     // Card & global payment gateways
-    'stripe_secret', 'stripe_key',
+    'stripe_secret', 'stripe_key', 'stripe_webhook_secret',
     'paypal_secret_key', 'paypal_client_id',
     'razorpay_secret', 'razorpay_key',
     'mercadopago_access_token',
@@ -75,7 +75,7 @@ return [
     'yookassa_secret_key',
     'nepalste_secret_key', 'nepalste_public_key',
     'cinetpay_secret_key', 'cinetpay_api_key',
-    'payhere_merchant_secret', 'payhere_app_secret',
+    'payhere_merchant_secret', 'payhere_app_secret', 'paiement_merchant_secret',
     'fedapay_secret_key', 'fedapay_public_key',
     'authorizenet_transaction_key',
     'khalti_secret_key', 'khalti_public_key',

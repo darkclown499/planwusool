@@ -10,17 +10,19 @@ import {
   Loader2, ChevronDown, CreditCard, Save, ExternalLink, KeyRound, CheckCircle2,
 } from 'lucide-react';
 
-interface Credential {
+interface CredentialField {
   key: string;
   label: string;
+  type?: string;
   value: string;
+  placeholder?: string;
 }
 
 interface PaymentMethod {
   method: string;
   label: string;
   enabled: boolean;
-  credentials: Credential[];
+  fields: CredentialField[];
 }
 
 interface Props {
@@ -150,32 +152,30 @@ export default function StorePayments({ store }: Props) {
                       >
                         <span className="flex items-center gap-1.5">
                           <KeyRound className="h-3.5 w-3.5" />
-                          مفاتيح الربط {m.credentials.length > 0 ? `(${m.credentials.length})` : ''}
+                          مفاتيح الربط {m.fields.length > 0 ? `(${m.fields.length})` : ''}
                         </span>
                         <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                       </button>
 
                       {isOpen && (
                         <div className="space-y-2.5 rounded-xl border border-slate-100 p-3">
-                          {m.credentials.length === 0 ? (
-                            <p className="text-xs text-slate-400">لا توجد مفاتيح محفوظة بعد — أضفها أدناه.</p>
+                          {m.fields.length === 0 ? (
+                            <p className="text-xs text-slate-400">هذه الطريقة لا تتطلب مفاتيح ربط.</p>
                           ) : (
-                            m.credentials.map((c) => (
+                            m.fields.map((c) => (
                               <div key={c.key}>
                                 <label className="mb-1 block text-[11px] font-bold text-slate-500" dir="ltr">
                                   {c.label}
                                 </label>
                                 <Input
                                   dir="ltr"
-                                  placeholder={c.value ? `المحفوظ: ${c.value}` : 'المفتاح'}
+                                  type={c.type === 'password' ? 'password' : 'text'}
+                                  placeholder={c.value ? `المحفوظ: ${c.value}` : (c.placeholder || 'المفتاح')}
                                   value={drafts[m.method]?.[c.key] ?? ''}
                                   onChange={(e) => setDraft(m.method, c.key, e.target.value)}
                                 />
                               </div>
                             ))
-                          )}
-                          {m.credentials.length === 0 && (
-                            <p className="text-xs text-slate-400">أضف مفتاحاً للبوابة من الشكل أدناه عند توفره.</p>
                           )}
                           <Button
                             type="button"

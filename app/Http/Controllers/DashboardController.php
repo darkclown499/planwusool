@@ -124,9 +124,9 @@ class DashboardController extends Controller
         $storePublished = ($config['store_status'] ?? null) === true || ($config['store_status'] ?? null) === 'true' || !array_key_exists('store_status', $config);
         $hasPayments = count(getEnabledPaymentMethods($user->id, $store->id)) > 0;
         try {
-            $canManageSettings = $user->can('manage-settings');
+            $canManageStoreSettings = $user->can('settings-stores') || $user->type === 'company';
         } catch (\Exception $e) {
-            $canManageSettings = true;
+            $canManageStoreSettings = true;
         }
         
         $steps = [
@@ -147,14 +147,14 @@ class DashboardController extends Controller
             ],
         ];
 
-        // The payments step only makes sense for users who can manage payment
-        // settings. For everyone else it would be a dead-end link.
-        if ($canManageSettings) {
+        // The payments step deep-links to the dedicated per-store payments page
+        // (/stores/{id}/payments) which is the single source of truth for the
+        // merchant's own gateways — never the platform-wide /settings page.
+        if ($canManageStoreSettings) {
             $steps[] = [
                 'key' => 'payments',
                 'done' => $hasPayments,
-                // Deep-link straight to the payment methods section.
-                'href' => $hasPayments ? null : route('settings') . '#payment-settings',
+                'href' => $hasPayments ? null : route('stores.payments', $store->id),
             ];
         }
         

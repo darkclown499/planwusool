@@ -173,6 +173,35 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::get('/yookassa/success/{orderNumber}', [\App\Http\Controllers\Store\YooKassaController::class, 'success'])->name('store.yookassa.success');
     Route::post('/yookassa/callback', [\App\Http\Controllers\Store\YooKassaController::class, 'callback'])->middleware('webhook.signature:yookassa')->name('store.yookassa.callback');
 
+    // ── Universal gateway adapters (success returns + server-side callbacks) ──
+    Route::get('/tap/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'tapSuccess'])->name('store.tap.success');
+    Route::post('/tap/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'tapCallback'])->name('store.tap.callback');
+    Route::get('/payfast/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'payfastSuccess'])->name('store.payfast.success');
+    Route::post('/payfast/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'payfastCallback'])->name('store.payfast.callback');
+    Route::get('/paytr/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'paytrSuccess'])->name('store.paytr.success');
+    Route::post('/paytr/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'paytrCallback'])->name('store.paytr.callback');
+    Route::get('/iyzipay/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'iyzipaySuccess'])->name('store.iyzipay.success');
+    Route::post('/iyzipay/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'iyzipayCallback'])->name('store.iyzipay.callback');
+    Route::get('/khalti/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'khaltiSuccess'])->name('store.khalti.success');
+    Route::post('/khalti/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'khaltiCallback'])->name('store.khalti.callback');
+    Route::get('/easebuzz/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'easebuzzSuccess'])->name('store.easebuzz.success');
+    Route::post('/easebuzz/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'easebuzzCallback'])->name('store.easebuzz.callback');
+    Route::get('/ozow/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'ozowSuccess'])->name('store.ozow.success');
+    Route::post('/ozow/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'ozowCallback'])->name('store.ozow.callback');
+    Route::get('/authorizenet/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'authorizenetSuccess'])->name('store.authorizenet.success');
+    Route::get('/fedapay/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'fedapaySuccess'])->name('store.fedapay.success');
+    Route::post('/fedapay/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'fedapayCallback'])->name('store.fedapay.callback');
+    Route::match(['GET', 'POST'], '/payhere/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'payhereSuccess'])->name('store.payhere.success');
+    Route::post('/payhere/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'payhereCallback'])->name('store.payhere.callback');
+    Route::get('/cinetpay/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'cinetpaySuccess'])->name('store.cinetpay.success');
+    Route::post('/cinetpay/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'cinetpayCallback'])->name('store.cinetpay.callback');
+    Route::get('/nepalste/success/{orderNumber}/{orderId}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'nepalsteSuccess'])->name('store.nepalste.success');
+    Route::post('/nepalste/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'nepalsteCallback'])->name('store.nepalste.callback');
+    Route::get('/paiement/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'paiementSuccess'])->name('store.paiement.success');
+    Route::post('/paiement/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'paiementCallback'])->name('store.paiement.callback');
+    Route::get('/aamarpay/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'aamarpaySuccess'])->name('store.aamarpay.success');
+    Route::post('/aamarpay/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'aamarpayCallback'])->name('store.aamarpay.callback');
+
     // On-demand product details (keeps heavy fields out of the storefront payload)
     Route::get('/product/{product}', [ThemeController::class, 'productDetail'])->name('store.product-detail');
 
@@ -190,6 +219,15 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // subdomain group, so they must never hit this fallback.
     Route::get('{any}', [ThemeController::class, 'home'])->where('any', '^(?!api(?:/|$|/v1/)).*');
 });
+
+// ---------------------------------------------------------------------------
+// Public store webhooks — reachable without authentication so gateway servers
+// can notify us even after the customer closes the browser tab post-payment.
+// ---------------------------------------------------------------------------
+Route::post('store/stripe/webhook', [\App\Http\Controllers\Store\GatewayWebhookController::class, 'stripe'])->name('store.stripe.webhook');
+Route::post('store/paypal/webhook', [\App\Http\Controllers\Store\GatewayWebhookController::class, 'paypal'])->name('store.paypal.webhook');
+Route::post('store/paystack/webhook', [StorePaystackController::class, 'webhook'])->middleware('webhook.signature:paystack')->name('store.paystack.webhook');
+Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->middleware('webhook.signature:mercadopago')->name('store.mercadopago.webhook');
 
 // Legacy redirects: keep old /store/{slug} links working after the move to subdomains
 Route::get('store/{storeSlug}', function ($storeSlug) {
@@ -543,8 +581,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('payments/bank', [BankPaymentController::class, 'processPayment'])->name('bank.payment');
     Route::post('payments/paystack', [PaystackPaymentController::class, 'processPayment'])->name('paystack.payment');
     
-    // Store-side Paystack webhook (webhooks stay on the base domain)
-    Route::post('store/paystack/webhook', [StorePaystackController::class, 'webhook'])->middleware('webhook.signature:paystack')->name('store.paystack.webhook');
     Route::post('payments/flutterwave', [FlutterwavePaymentController::class, 'processPayment'])->name('flutterwave.payment');
     Route::post('payments/paytabs', [PayTabsPaymentController::class, 'processPayment'])->name('paytabs.payment');
     Route::post('payments/skrill', [SkrillPaymentController::class, 'processPayment'])->name('skrill.payment');
@@ -616,8 +652,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('mercadopago/failure', [MercadoPagoController::class, 'failure'])->name('mercadopago.failure');
     Route::get('mercadopago/pending', [MercadoPagoController::class, 'pending'])->name('mercadopago.pending');
     
-    // Store-side MercadoPago webhook (webhooks stay on the base domain)
-    Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->middleware('webhook.signature:mercadopago')->name('store.mercadopago.webhook');
     Route::post('authorizenet/test-connection', [AuthorizeNetPaymentController::class, 'testConnection'])->name('authorizenet.test-connection');
 
     

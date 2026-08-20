@@ -339,6 +339,7 @@ if (! function_exists('getPaymentMethodConfig')) {
                     'enabled' => isPaymentMethodEnabled('stripe', $userId, $storeId),
                     'key' => $settings['stripe_key'] ?? null,
                     'secret' => $settings['stripe_secret'] ?? null,
+                    'webhook_secret' => $settings['stripe_webhook_secret'] ?? null,
                 ];
                 
             case 'paypal':
@@ -347,6 +348,7 @@ if (! function_exists('getPaymentMethodConfig')) {
                     'mode' => $settings['paypal_mode'] ?? 'sandbox',
                     'client_id' => $settings['paypal_client_id'] ?? null,
                     'secret' => $settings['paypal_secret_key'] ?? null,
+                    'webhook_id' => $settings['paypal_webhook_id'] ?? null,
                 ];
                 
             case 'razorpay':
@@ -628,6 +630,28 @@ if (! function_exists('getPaymentMethodConfig')) {
                     'merchant_id' => $settings[$method . '_merchant_id'] ?? null,
                 ];
 
+            case 'nepalste':
+                return [
+                    'enabled' => isPaymentMethodEnabled('nepalste', $userId, $storeId),
+                    'mode' => $settings['nepalste_mode'] ?? 'sandbox',
+                    'public_key' => $settings['nepalste_public_key'] ?? null,
+                    'secret_key' => $settings['nepalste_secret_key'] ?? null,
+                ];
+
+            case 'paiement':
+                return [
+                    'enabled' => isPaymentMethodEnabled('paiement', $userId, $storeId),
+                    'merchant_id' => $settings['paiement_merchant_id'] ?? null,
+                    'merchant_secret' => $settings['paiement_merchant_secret'] ?? null,
+                ];
+
+            case 'aamarpay':
+                return [
+                    'enabled' => isPaymentMethodEnabled('aamarpay', $userId, $storeId),
+                    'store_id' => $settings['aamarpay_store_id'] ?? null,
+                    'signature' => $settings['aamarpay_signature'] ?? null,
+                ];
+
             default:
                 return [];
         }
@@ -643,7 +667,7 @@ if (! function_exists('getEnabledPaymentMethods')) {
      */
     function getEnabledPaymentMethods($userId = null, $storeId = null)
     {
-        $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'midtrans', 'yookassa',
+        $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'midtrans', 'yookassa', 'nepalste', 'paiement', 'aamarpay',
             'jawwal_pay', 'pal_pay', 'zain_cash', 'orange_money', 'bank_palestine', 'al_quds_bank', 'arab_islamic_bank', 'cairo_amman_bank', 'housing_bank', 'safad_bank',
             'cliq', 'zain_cash_jo', 'orange_money_jo', 'etihad_wallet', 'dinar_pay', 'jordan_kuwait_bank', 'arab_bank', 'housing_bank_jo', 'cairo_amman_bank_jo', 'safad_bank_jo',
             'usdt_trc20', 'usdt_erc20', 'usdt_bep20', 'usdt_polygon', 'usdt_solana'

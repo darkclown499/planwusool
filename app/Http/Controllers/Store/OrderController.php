@@ -181,12 +181,30 @@ class OrderController extends Controller
             }
 
             if ($paymentResult['success']) {
-                // For Stripe, PayPal, Xendit, MercadoPago and ToyyibPay, return checkout URL for frontend redirect
-                if (in_array($request->payment_method, ['stripe', 'paypal', 'xendit', 'mercadopago', 'toyyibpay', 'paytabs', 'coingate', 'midtrans', 'mollie', 'benefit', 'yookassa']) && isset($paymentResult['checkout_url'])) {
+                // Hosted-redirect gateways (Stripe, PayPal, CoinGate, ... and the
+                // newly wired adapters: Tap, PayTR, iyzico, Khalti, Easebuzz, Ozow,
+                // Authorize.Net, FedaPay, Nepalste, Aamarpay) all return a
+                // checkout_url for the frontend to redirect the customer to.
+                if (isset($paymentResult['checkout_url'])) {
                     return response()->json([
                         'success' => true,
                         'redirect_url' => $paymentResult['checkout_url'],
                         'order_number' => $order->order_number
+                    ]);
+                }
+
+                // HTML-form gateways (PayFast, PayHere, CinetPay, Paiement Pro):
+                // return the endpoint + fields so the checkout frontend can
+                // auto-submit the payment form.
+                if (isset($paymentResult['payment_form']) && isset($paymentResult['payment_form']['action'])) {
+                    $form = $paymentResult['payment_form'];
+                    return response()->json([
+                        'success' => true,
+                        'payment_method' => $request->payment_method,
+                        'form_endpoint' => $form['action'],
+                        'form_fields' => $form['fields'] ?? [],
+                        'order_id' => $order->id,
+                        'order_number' => $order->order_number,
                     ]);
                 }
                 

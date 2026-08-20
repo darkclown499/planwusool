@@ -212,6 +212,34 @@ class OrderService
                 return $this->processBenefitPayment($order, $storeSlug);
             case 'yookassa':
                 return $this->processYooKassaPayment($order, $storeSlug);
+            case 'tap':
+                return $this->processTapPayment($order, $storeSlug);
+            case 'payfast':
+                return $this->processPayfastPayment($order, $storeSlug);
+            case 'paytr':
+                return $this->processPaytrPayment($order, $storeSlug);
+            case 'iyzipay':
+                return $this->processIyzipayPayment($order, $storeSlug);
+            case 'khalti':
+                return $this->processKhaltiPayment($order, $storeSlug);
+            case 'easebuzz':
+                return $this->processEasebuzzPayment($order, $storeSlug);
+            case 'ozow':
+                return $this->processOzowPayment($order, $storeSlug);
+            case 'authorizenet':
+                return $this->processAuthorizeNetPayment($order, $storeSlug);
+            case 'fedapay':
+                return $this->processFedaPayPayment($order, $storeSlug);
+            case 'payhere':
+                return $this->processPayHerePayment($order, $storeSlug);
+            case 'cinetpay':
+                return $this->processCinetPayPayment($order, $storeSlug);
+            case 'nepalste':
+                return $this->processNepalstePayment($order, $storeSlug);
+            case 'paiement':
+                return $this->processPaiementPayment($order, $storeSlug);
+            case 'aamarpay':
+                return $this->processAamarpayPayment($order, $storeSlug);
             case 'jawwal_pay':
             case 'pal_pay':
             case 'zain_cash':
@@ -1201,7 +1229,12 @@ class OrderService
     {
         try {
 
-            $cashfreeConfig = getPaymentMethodConfig('cashfree', $order->store->user->id, $order->store_id);
+            $storeModel = $order->store;
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+
+            $cashfreeConfig = getPaymentMethodConfig('cashfree', $storeModel->user->id, $order->store_id);
             
             if (!$cashfreeConfig['enabled']) {
                 Log::warning('[Cashfree Store] Payment method not enabled for store ' . $order->store_id);
@@ -1690,6 +1723,916 @@ class OrderService
 
         } catch (\Exception $e) {
             return ['success' => false, 'message' => 'YooKassa payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Tap
+    // -------------------------------------------------------------------------
+    private function processTapPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('tap', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['secret_key']) {
+                return ['success' => false, 'message' => 'Tap is not configured for this store'];
+            }
+
+            require_once app_path('Libraries/Tap/Tap.php');
+            require_once app_path('Libraries/Tap/Reference.php');
+            require_once app_path('Libraries/Tap/Payment.php');
+
+            $tap = new \App\Package\Payment(['company_tap_secret_key' => $config['secret_key']]);
+            $chargeData = [
+                'amount' => $order->total_amount,
+                'currency' => $order->currency ?: 'USD',
+                'threeDSecure' => 'true',
+                'save_card' => 'false',
+                'description' => 'Order #' . $order->order_number,
+                'statement_descriptor' => 'Store Order',
+                'metadata' => ['udf1' => (string) $order->id, 'udf2' => $order->order_number],
+                'reference' => ['transaction' => (string) $order->id, 'order' => $order->order_number],
+                'receipt' => ['email' => 'true', 'sms' => 'false'],
+                'customer' => [
+                    'first_name' => $order->customer_first_name ?: 'Customer',
+                    'middle_name' => '',
+                    'last_name' => $order->customer_last_name ?: '',
+                    'email' => $order->customer_email,
+                    'phone' => ['country_code' => '', 'number' => ''],
+                ],
+                'source' => ['id' => 'src_card'],
+                'post' => ['url' => $storeModel->route('tap/callback/' . $order->order_number)],
+                'redirect' => ['url' => $storeModel->route('tap/success/' . $order->order_number)],
+            ];
+
+            $charge = $tap->charge($chargeData, false);
+            if ($charge && isset($charge->transaction->url)) {
+                $order->update([
+                    'payment_gateway' => 'tap',
+                    'payment_transaction_id' => $charge->id,
+                    'payment_details' => array_merge($order->payment_details ?? [], [
+                        'tap_charge_id' => $charge->id,
+                        'checkout_url' => $charge->transaction->url,
+                    ]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $charge->transaction->url,
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'Tap payment creation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService Tap Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Tap payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // PayFast (HTML form POST)
+    // -------------------------------------------------------------------------
+    private function processPayfastPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('payfast', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['merchant_id'] || !$config['merchant_key']) {
+                return ['success' => false, 'message' => 'PayFast is not configured for this store'];
+            }
+
+            $paymentId = 'store_' . $order->id . '_' . time() . '_' . uniqid();
+            $data = [
+                'merchant_id' => $config['merchant_id'],
+                'merchant_key' => $config['merchant_key'],
+                'return_url' => $storeModel->route('payfast/success/' . $order->order_number),
+                'cancel_url' => $storeModel->getStoreUrl(),
+                'notify_url' => $storeModel->route('payfast/callback/' . $order->order_number),
+                'name_first' => $order->customer_first_name ?: 'Customer',
+                'name_last' => $order->customer_last_name ?: '',
+                'email_address' => $order->customer_email,
+                'm_payment_id' => $paymentId,
+                'amount' => number_format($order->total_amount, 2, '.', ''),
+                'item_name' => 'Order #' . $order->order_number,
+            ];
+            $data['signature'] = $this->payfastSignature($data, $config['passphrase'] ?? '');
+
+            $isLive = ($config['mode'] ?? 'sandbox') === 'live';
+            $endpoint = $isLive ? 'https://www.payfast.co.za/eng/process' : 'https://sandbox.payfast.co.za/eng/process';
+
+            $order->update([
+                'payment_gateway' => 'payfast',
+                'payment_transaction_id' => $paymentId,
+                'payment_details' => array_merge($order->payment_details ?? [], [
+                    'payfast_payment_id' => $paymentId,
+                ]),
+            ]);
+
+            return [
+                'success' => true,
+                'payment_form' => ['action' => $endpoint, 'method' => 'POST', 'fields' => $data],
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+            ];
+        } catch (\Throwable $e) {
+            Log::error('OrderService PayFast Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'PayFast payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    private function payfastSignature(array $data, ?string $passPhrase = null): string
+    {
+        $pfOutput = '';
+        foreach ($data as $key => $val) {
+            if ($val !== '') {
+                $pfOutput .= $key . '=' . urlencode(trim((string) $val)) . '&';
+            }
+        }
+        $getString = substr($pfOutput, 0, -1);
+        if ($passPhrase !== null) {
+            $getString .= '&passphrase=' . urlencode(trim($passPhrase));
+        }
+        return md5($getString);
+    }
+
+    // -------------------------------------------------------------------------
+    // PayTR
+    // -------------------------------------------------------------------------
+    private function processPaytrPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('paytr', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['merchant_id'] || !$config['merchant_key'] || !$config['merchant_salt']) {
+                return ['success' => false, 'message' => 'PayTR is not configured for this store'];
+            }
+
+            $merchantOid = 'store_' . $order->id . '_' . time() . '_' . uniqid();
+            $amountKurus = intval(round($order->total_amount * 100));
+            $userBasket = json_encode([['Order #' . $order->order_number, number_format($order->total_amount, 2), 1]]);
+            $ip = request()->ip() ?? '0.0.0.0';
+            $currency = 'TRY';
+
+            $hashStr = $config['merchant_id'] . $ip . $merchantOid . $order->customer_email . $amountKurus . $userBasket . '1' . '0' . $currency . '1' . $config['merchant_salt'];
+            $paytrToken = base64_encode(hash_hmac('sha256', $hashStr, $config['merchant_key'], true));
+
+            $response = \Illuminate\Support\Facades\Http::asForm()->timeout(40)->post('https://www.paytr.com/odeme/api/get-token', [
+                'merchant_id' => $config['merchant_id'],
+                'user_ip' => $ip,
+                'merchant_oid' => $merchantOid,
+                'email' => $order->customer_email,
+                'payment_amount' => $amountKurus,
+                'paytr_token' => $paytrToken,
+                'user_basket' => $userBasket,
+                'no_installment' => 1,
+                'max_installment' => 0,
+                'user_name' => trim($order->customer_first_name . ' ' . $order->customer_last_name) ?: 'Customer',
+                'user_address' => $order->shipping_address ?: 'Turkey',
+                'user_phone' => $order->customer_phone ?: '0',
+                'merchant_ok_url' => $storeModel->route('paytr/success/' . $order->order_number),
+                'merchant_fail_url' => $storeModel->getStoreUrl(),
+                'timeout_limit' => 30,
+                'currency' => $currency,
+                'test_mode' => 1,
+            ]);
+
+            $result = $response->json();
+            if ($response->successful() && ($result['status'] ?? null) === 'success' && !empty($result['token'])) {
+                $order->update([
+                    'payment_gateway' => 'paytr',
+                    'payment_transaction_id' => $merchantOid,
+                    'payment_details' => array_merge($order->payment_details ?? [], [
+                        'paytr_merchant_oid' => $merchantOid,
+                        'paytr_token' => $result['token'],
+                    ]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => 'https://www.paytr.com/odeme/guvenli/' . $result['token'],
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'PayTR token generation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService PayTR Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'PayTR payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // iyzico (hosted payment page)
+    // -------------------------------------------------------------------------
+    private function processIyzipayPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('iyzipay', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['public_key'] || !$config['secret_key']) {
+                return ['success' => false, 'message' => 'iyzico is not configured for this store'];
+            }
+
+            $options = new \Iyzipay\Options();
+            $options->setApiKey($config['public_key']);
+            $options->setSecretKey($config['secret_key']);
+            $options->setBaseUrl(($config['mode'] ?? 'sandbox') === 'live' ? 'https://api.iyzipay.com' : 'https://sandbox-api.iyzipay.com');
+
+            $conversationId = 'store_' . $order->id . '_' . time();
+            $amount = number_format($order->total_amount, 2, '.', '');
+            $currency = strtoupper($order->currency ?: 'TRY');
+            $currency = in_array($currency, ['TRY', 'USD', 'EUR', 'GBP'], true) ? $currency : 'TRY';
+
+            $checkoutRequest = new \Iyzipay\Request\CreateCheckoutFormInitializeRequest();
+            $checkoutRequest->setLocale(\Iyzipay\Model\Locale::EN);
+            $checkoutRequest->setConversationId($conversationId);
+            $checkoutRequest->setPrice($amount);
+            $checkoutRequest->setPaidPrice($amount);
+            $checkoutRequest->setCurrency($currency);
+            $checkoutRequest->setBasketId('order_' . $order->id);
+            $checkoutRequest->setPaymentGroup(\Iyzipay\Model\PaymentGroup::PRODUCT);
+            $checkoutRequest->setCallbackUrl($storeModel->route('iyzipay/callback/' . $order->order_number));
+            $checkoutRequest->setEnabledInstallments([1]);
+
+            $buyer = new \Iyzipay\Model\Buyer();
+            $buyer->setId((string) $order->id);
+            $buyer->setName($order->customer_first_name ?: 'Customer');
+            $buyer->setSurname($order->customer_last_name ?: 'User');
+            $buyer->setGsmNumber($order->customer_phone ?: '+0000000000');
+            $buyer->setEmail($order->customer_email);
+            $buyer->setIdentityNumber('11111111111');
+            $buyer->setLastLoginDate(date('Y-m-d H:i:s'));
+            $buyer->setRegistrationDate(date('Y-m-d H:i:s'));
+            $buyer->setRegistrationAddress($order->shipping_address ?: 'N/A');
+            $buyer->setIp(request()->ip() ?? '127.0.0.1');
+            $buyer->setCity($order->shipping_city ?: 'N/A');
+            $buyer->setCountry($order->shipping_country ?: 'N/A');
+            $buyer->setZipCode($order->shipping_postal_code ?: '00000');
+            $checkoutRequest->setBuyer($buyer);
+
+            $name = trim($order->customer_first_name . ' ' . $order->customer_last_name) ?: 'Customer';
+            $shipping = new \Iyzipay\Model\Address();
+            $shipping->setContactName($name);
+            $shipping->setCity($order->shipping_city ?: 'N/A');
+            $shipping->setCountry($order->shipping_country ?: 'N/A');
+            $shipping->setAddress($order->shipping_address ?: 'N/A');
+            $shipping->setZipCode($order->shipping_postal_code ?: '00000');
+            $checkoutRequest->setShippingAddress($shipping);
+            $checkoutRequest->setBillingAddress($shipping);
+
+            $basketItem = new \Iyzipay\Model\BasketItem();
+            $basketItem->setId((string) $order->id);
+            $basketItem->setName('Order #' . $order->order_number);
+            $basketItem->setCategory1('Store');
+            $basketItem->setItemType(\Iyzipay\Model\BasketItemType::VIRTUAL);
+            $basketItem->setPrice($amount);
+            $checkoutRequest->setBasketItems([$basketItem]);
+
+            $checkoutFormInitialize = \Iyzipay\Model\CheckoutFormInitialize::create($checkoutRequest, $options);
+            if ($checkoutFormInitialize->getStatus() === 'success') {
+                $order->update([
+                    'payment_gateway' => 'iyzipay',
+                    'payment_transaction_id' => $conversationId,
+                    'payment_details' => array_merge($order->payment_details ?? [], [
+                        'iyzipay_token' => $checkoutFormInitialize->getToken(),
+                        'iyzipay_conversation_id' => $conversationId,
+                    ]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $checkoutFormInitialize->getPaymentPageUrl(),
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'iyzico checkout form creation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService iyzico Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'iyzico payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Khalti (hosted ePay)
+    // -------------------------------------------------------------------------
+    private function processKhaltiPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('khalti', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['public_key'] || !$config['secret_key']) {
+                return ['success' => false, 'message' => 'Khalti is not configured for this store'];
+            }
+
+            $amountPaisa = (int) round($order->total_amount * 100);
+            $orderId = 'store_' . $order->id . '_' . $order->order_number;
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Key ' . $config['secret_key'],
+            ])->post('https://epay.khalti.com/api/v2/initiate', [
+                'return_url' => $storeModel->route('khalti/success/' . $order->order_number),
+                'website_url' => $storeModel->getStoreUrl(),
+                'amount' => $amountPaisa,
+                'purchase_order_id' => $orderId,
+                'purchase_order_name' => 'Order #' . $order->order_number,
+                'customer_info' => [
+                    'name' => trim($order->customer_first_name . ' ' . $order->customer_last_name) ?: 'Customer',
+                    'email' => $order->customer_email,
+                    'phone' => $order->customer_phone,
+                ],
+            ]);
+
+            $result = $response->json();
+            if ($response->successful() && !empty($result['payment_url'])) {
+                $order->update([
+                    'payment_gateway' => 'khalti',
+                    'payment_transaction_id' => $orderId,
+                    'payment_details' => array_merge($order->payment_details ?? [], [
+                        'khalti_pidx' => $result['pidx'] ?? null,
+                        'purchase_order_id' => $orderId,
+                    ]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $result['payment_url'],
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'Khalti payment initiation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService Khalti Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Khalti payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Easebuzz
+    // -------------------------------------------------------------------------
+    private function processEasebuzzPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('easebuzz', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['merchant_key'] || !$config['salt_key']) {
+                return ['success' => false, 'message' => 'Easebuzz is not configured for this store'];
+            }
+
+            require_once app_path('Libraries/Easebuzz/easebuzz_payment_gateway.php');
+
+            $environment = ($config['environment'] ?? 'test') === 'prod' ? 'prod' : 'test';
+            $easebuzz = new \Easebuzz($config['merchant_key'], $config['salt_key'], $environment);
+
+            $txnid = 'store_' . $order->id . '_' . time() . '_' . uniqid();
+            $postData = [
+                'txnid' => $txnid,
+                'amount' => number_format($order->total_amount, 2, '.', ''),
+                'productinfo' => 'Order #' . $order->order_number,
+                'firstname' => $order->customer_first_name ?: 'Customer',
+                'email' => $order->customer_email,
+                'phone' => $order->customer_phone ?: '9999999999',
+                'surl' => $storeModel->route('easebuzz/success/' . $order->order_number),
+                'furl' => $storeModel->getStoreUrl(),
+                'udf1' => $order->order_number,
+                'udf2' => (string) $order->id,
+            ];
+
+            $resultArray = json_decode($easebuzz->initiatePaymentAPI($postData, false), true);
+            if ($resultArray && isset($resultArray['status']) && (int) $resultArray['status'] === 1 && !empty($resultArray['access_key'])) {
+                $baseUrl = $environment === 'prod' ? 'https://pay.easebuzz.in' : 'https://testpay.easebuzz.in';
+                $order->update([
+                    'payment_gateway' => 'easebuzz',
+                    'payment_transaction_id' => $txnid,
+                    'payment_details' => array_merge($order->payment_details ?? [], ['easebuzz_txnid' => $txnid]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $baseUrl . '/pay/' . $resultArray['access_key'],
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'Easebuzz payment initialization failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService Easebuzz Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Easebuzz payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Ozow
+    // -------------------------------------------------------------------------
+    private function processOzowPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('ozow', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['site_key'] || !$config['private_key'] || !$config['api_key']) {
+                return ['success' => false, 'message' => 'Ozow is not configured for this store'];
+            }
+
+            $siteCode = $config['site_key'];
+            $privateKey = $config['private_key'];
+            $apiKey = $config['api_key'];
+            $isTest = ($config['mode'] ?? 'sandbox') === 'sandbox' ? 'true' : 'false';
+            $amount = number_format($order->total_amount, 2, '.', '');
+            $successUrl = $storeModel->route('ozow/success/' . $order->order_number);
+            $cancelUrl = $storeModel->getStoreUrl();
+            $bankReference = time() . 'WK';
+            $transactionReference = 'store_' . $order->id . '_' . time();
+            $countryCode = 'ZA';
+            $currency = 'ZAR';
+
+            $inputString = $siteCode . $countryCode . $currency . $amount . $transactionReference . $bankReference . $cancelUrl . $successUrl . $successUrl . $successUrl . $isTest . $privateKey;
+            $hashCheck = hash('sha512', strtolower($inputString));
+
+            $postData = [
+                'countryCode' => $countryCode,
+                'amount' => $amount,
+                'transactionReference' => $transactionReference,
+                'bankReference' => $bankReference,
+                'cancelUrl' => $cancelUrl,
+                'currencyCode' => $currency,
+                'errorUrl' => $successUrl,
+                'isTest' => $isTest,
+                'notifyUrl' => $storeModel->route('ozow/callback/' . $order->order_number),
+                'siteCode' => $siteCode,
+                'successUrl' => $successUrl,
+                'hashCheck' => $hashCheck,
+            ];
+
+            $client = new \GuzzleHttp\Client(['timeout' => 30]);
+            $response = $client->post('https://api.ozow.com/postpaymentrequest', [
+                'json' => $postData,
+                'headers' => [
+                    'ApiKey' => $apiKey,
+                    'Accept' => 'application/json',
+                ],
+            ]);
+            $data = json_decode((string) $response->getBody(), true);
+
+            if (!empty($data['url'])) {
+                $order->update([
+                    'payment_gateway' => 'ozow',
+                    'payment_transaction_id' => $transactionReference,
+                    'payment_details' => array_merge($order->payment_details ?? [], [
+                        'ozow_transaction_reference' => $transactionReference,
+                        'checkout_url' => $data['url'],
+                    ]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $data['url'],
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'Ozow payment creation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService Ozow Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Ozow payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Authorize.Net (Accept Hosted payment page)
+    // -------------------------------------------------------------------------
+    private function processAuthorizeNetPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('authorizenet', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['merchant_id'] || !$config['transaction_key']) {
+                return ['success' => false, 'message' => 'Authorize.Net is not configured for this store'];
+            }
+
+            $merchantAuth = new \net\authorize\api\contract\v1\MerchantAuthenticationType();
+            $merchantAuth->setName($config['merchant_id']);
+            $merchantAuth->setTransactionKey($config['transaction_key']);
+
+            $transactionRequestType = new \net\authorize\api\contract\v1\TransactionRequestType();
+            $transactionRequestType->setTransactionType('authCaptureTransaction');
+            $transactionRequestType->setAmount(number_format($order->total_amount, 2, '.', ''));
+            $transactionRequestType->setCurrencyCode(strtoupper($order->currency ?: 'USD'));
+
+            $hostedRequest = new \net\authorize\api\contract\v1\GetHostedPaymentPageRequest();
+            $hostedRequest->setMerchantAuthentication($merchantAuth);
+            $hostedRequest->setTransactionRequest($transactionRequestType);
+
+            $controller = new \net\authorize\api\controller\GetHostedPaymentPageController($hostedRequest);
+            $environment = ($config['mode'] ?? 'sandbox') === 'sandbox'
+                ? \net\authorize\api\constants\ANetEnvironment::SANDBOX
+                : \net\authorize\api\constants\ANetEnvironment::PRODUCTION;
+            $response = $controller->executeWithApiResponse($environment);
+
+            if ($response !== null && $response->getMessages()->getResultCode() === 'Ok' && $response->getToken()) {
+                $base = ($config['mode'] ?? 'sandbox') === 'sandbox'
+                    ? 'https://test.authorize.net/payment/payment'
+                    : 'https://accept.authorize.net/payment/payment';
+                $checkoutUrl = $base . '?token=' . $response->getToken();
+                $order->update([
+                    'payment_gateway' => 'authorizenet',
+                    'payment_details' => array_merge($order->payment_details ?? [], ['authorizenet_token' => $response->getToken()]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $checkoutUrl,
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'Authorize.Net hosted page creation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService AuthorizeNet Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Authorize.Net payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // FedaPay
+    // -------------------------------------------------------------------------
+    private function processFedaPayPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('fedapay', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['secret_key']) {
+                return ['success' => false, 'message' => 'FedaPay is not configured for this store'];
+            }
+
+            $baseUrl = ($config['mode'] ?? 'sandbox') === 'live'
+                ? 'https://api.fedapay.com'
+                : 'https://sandbox-api.fedapay.com';
+            $http = \Illuminate\Support\Facades\Http::withToken($config['secret_key'])->timeout(40);
+
+            $createRes = $http->post($baseUrl . '/v1/transactions', [
+                'description' => 'Order #' . $order->order_number,
+                'amount' => (int) round($order->total_amount * 100),
+                'currency' => ['iso' => 'XOF'],
+                'callback_url' => $storeModel->route('fedapay/callback/' . $order->order_number),
+                'customer' => [
+                    'firstname' => $order->customer_first_name ?: 'Customer',
+                    'lastname' => $order->customer_last_name ?: '',
+                    'email' => $order->customer_email,
+                ],
+                'custom_metadata' => [
+                    'store_order_id' => (string) $order->id,
+                    'order_number' => $order->order_number,
+                ],
+            ]);
+
+            $txnData = $createRes->json();
+            if (!$createRes->successful() || empty($txnData['transaction']['id'])) {
+                if (!empty($txnData['transaction']['id'])) {
+                    $id = $txnData['transaction']['id'];
+                } else {
+                    $json = $createRes->json();
+                    $id = $json['id'] ?? $json['transaction']['id'] ?? null;
+                }
+                if (!$id) {
+                    return ['success' => false, 'message' => 'FedaPay transaction creation failed'];
+                }
+            }
+
+            $transactionId = $txnData['transaction']['id'] ?? $txnData['id'] ?? null;
+            if (!$transactionId) {
+                return ['success' => false, 'message' => 'FedaPay transaction creation failed'];
+            }
+
+            $tokenRes = $http->post($baseUrl . '/v1/transactions/' . $transactionId . '/token');
+            $tokenData = $tokenRes->json();
+            $paymentUrl = $tokenData['token']['url'] ?? $tokenData['url'] ?? null;
+
+            if ($paymentUrl) {
+                $order->update([
+                    'payment_gateway' => 'fedapay',
+                    'payment_transaction_id' => (string) $transactionId,
+                    'payment_details' => array_merge($order->payment_details ?? [], [
+                        'fedapay_transaction_id' => (string) $transactionId,
+                        'checkout_url' => $paymentUrl,
+                    ]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $paymentUrl,
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'FedaPay payment link creation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService FedaPay Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'FedaPay payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // PayHere (HTML form POST)
+    // -------------------------------------------------------------------------
+    private function processPayHerePayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('payhere', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['merchant_id']) {
+                return ['success' => false, 'message' => 'PayHere is not configured for this store'];
+            }
+
+            $orderId = 'store_' . $order->id . '_' . $order->order_number;
+            $amount = number_format($order->total_amount, 2, '.', '');
+            $currency = 'LKR';
+            $data = [
+                'merchant_id' => $config['merchant_id'],
+                'return_url' => $storeModel->route('payhere/success/' . $order->order_number),
+                'cancel_url' => $storeModel->getStoreUrl(),
+                'notify_url' => $storeModel->route('payhere/callback/' . $order->order_number),
+                'order_id' => $orderId,
+                'items' => 'Order #' . $order->order_number,
+                'currency' => $currency,
+                'amount' => $amount,
+                'first_name' => $order->customer_first_name ?: 'Customer',
+                'last_name' => $order->customer_last_name ?: 'User',
+                'email' => $order->customer_email,
+                'phone' => $order->customer_phone ?: '0770000000',
+                'address' => $order->shipping_address ?: 'N/A',
+                'city' => $order->shipping_city ?: 'N/A',
+                'country' => $order->shipping_country ?: 'Sri Lanka',
+            ];
+            $hash = strtoupper(md5($data['merchant_id'] . $orderId . $amount . $currency . strtoupper(md5($config['merchant_secret'] ?? ''))));
+            $data['hash'] = $hash;
+
+            $baseUrl = ($config['mode'] ?? 'sandbox') === 'live' ? 'https://www.payhere.lk' : 'https://sandbox.payhere.lk';
+
+            $order->update([
+                'payment_gateway' => 'payhere',
+                'payment_transaction_id' => $orderId,
+                'payment_details' => array_merge($order->payment_details ?? [], ['payhere_order_id' => $orderId]),
+            ]);
+
+            return [
+                'success' => true,
+                'payment_form' => ['action' => $baseUrl . '/pay/checkout', 'method' => 'POST', 'fields' => $data],
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+            ];
+        } catch (\Throwable $e) {
+            Log::error('OrderService PayHere Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'PayHere payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // CinetPay (HTML form POST)
+    // -------------------------------------------------------------------------
+    private function processCinetPayPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('cinetpay', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['site_id']) {
+                return ['success' => false, 'message' => 'CinetPay is not configured for this store'];
+            }
+
+            $transactionId = 'store_' . $order->id . '_' . time();
+            $data = [
+                'cpm_site_id' => $config['site_id'],
+                'cpm_trans_id' => $transactionId,
+                'cpm_amount' => number_format($order->total_amount, 2, '.', ''),
+                'cpm_currency' => ($order->currency ?: 'XOF'),
+                'cpm_designation' => 'Order #' . $order->order_number,
+                'cpm_custom' => json_encode([
+                    'store_order_id' => (string) $order->id,
+                    'order_number' => $order->order_number,
+                ]),
+                'cpm_page_action' => 'PAYMENT',
+                'cpm_version' => 'V2',
+                'cpm_language' => 'fr',
+                'cpm_return_url' => $storeModel->route('cinetpay/success/' . $order->order_number),
+                'cpm_notify_url' => $storeModel->route('cinetpay/callback/' . $order->order_number),
+                'cpm_error_url' => $storeModel->getStoreUrl(),
+            ];
+
+            $order->update([
+                'payment_gateway' => 'cinetpay',
+                'payment_transaction_id' => $transactionId,
+                'payment_details' => array_merge($order->payment_details ?? [], ['cinetpay_trans_id' => $transactionId]),
+            ]);
+
+            return [
+                'success' => true,
+                'payment_form' => ['action' => 'https://www.cinetpay.com/payment/', 'method' => 'POST', 'fields' => $data],
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+            ];
+        } catch (\Throwable $e) {
+            Log::error('OrderService CinetPay Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'CinetPay payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Nepalste
+    // -------------------------------------------------------------------------
+    private function processNepalstePayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('nepalste', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['public_key'] || !$config['secret_key']) {
+                return ['success' => false, 'message' => 'Nepalste is not configured for this store'];
+            }
+
+            $baseUrl = ($config['mode'] ?? 'sandbox') === 'live'
+                ? 'https://nepalste.com.np/pay/api/v1'
+                : 'https://nepalste.com.np/pay/sandbox/api/v1';
+
+            $http = \Illuminate\Support\Facades\Http::timeout(40)->withoutVerifying();
+
+            $tokenRes = $http->post($baseUrl . '/access-token', [
+                'consumer_key' => $config['public_key'],
+                'consumer_secret' => $config['secret_key'],
+            ]);
+            $tokenData = $tokenRes->json();
+            $accessToken = $tokenData['token'] ?? null;
+            if (!$accessToken) {
+                return ['success' => false, 'message' => 'Nepalste access token failed'];
+            }
+
+            $orderId = 'store_' . $order->id . '_' . $order->order_number;
+            $payRes = $http->withHeaders(['Authorization' => 'Bearer ' . $accessToken])->post($baseUrl . '/payment/initiate', [
+                'amount' => number_format($order->total_amount, 2, '.', ''),
+                'purchase_order_id' => $orderId,
+                'purchase_order_name' => 'Order #' . $order->order_number,
+                'return_url' => $storeModel->route('nepalste/success/' . $order->order_number . '/' . $orderId),
+                'website_url' => $storeModel->getStoreUrl(),
+            ]);
+            $payData = $payRes->json();
+
+            if (!empty($payData['payment_url'])) {
+                $order->update([
+                    'payment_gateway' => 'nepalste',
+                    'payment_transaction_id' => $orderId,
+                    'payment_details' => array_merge($order->payment_details ?? [], [
+                        'nepalste_purchase_order_id' => $orderId,
+                        'checkout_url' => $payData['payment_url'],
+                    ]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $payData['payment_url'],
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'Nepalste payment initiation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService Nepalste Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Nepalste payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Paiement Pro (HTML form POST)
+    // -------------------------------------------------------------------------
+    private function processPaiementPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('paiement', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['merchant_id']) {
+                return ['success' => false, 'message' => 'Paiement Pro is not configured for this store'];
+            }
+
+            $transactionId = 'store_' . $order->id . '_' . time();
+            $data = [
+                'merchant_id' => $config['merchant_id'],
+                'amount' => number_format($order->total_amount, 2, '.', ''),
+                'currency' => 'XOF',
+                'reference' => $transactionId,
+                'description' => 'Order #' . $order->order_number,
+                'return_url' => $storeModel->route('paiement/success/' . $order->order_number),
+                'cancel_url' => $storeModel->getStoreUrl(),
+                'notify_url' => $storeModel->route('paiement/callback/' . $order->order_number),
+            ];
+
+            $order->update([
+                'payment_gateway' => 'paiement',
+                'payment_transaction_id' => $transactionId,
+                'payment_details' => array_merge($order->payment_details ?? [], ['paiement_reference' => $transactionId]),
+            ]);
+
+            return [
+                'success' => true,
+                'payment_form' => [
+                    'action' => 'https://www.paiementpro.net/webservice/onlinepayment/init/merchant-payment',
+                    'method' => 'POST',
+                    'fields' => $data,
+                ],
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+            ];
+        } catch (\Throwable $e) {
+            Log::error('OrderService Paiement Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Paiement payment failed: ' . $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Aamarpay (hosted redirect)
+    // -------------------------------------------------------------------------
+    private function processAamarpayPayment(Order $order, ?string $storeSlug = null): array
+    {
+        try {
+            $storeModel = \App\Models\Store::find($order->store_id);
+            if (!$storeModel || !$storeModel->user) {
+                return ['success' => false, 'message' => 'Store configuration error'];
+            }
+            $config = getPaymentMethodConfig('aamarpay', $storeModel->user->id, $order->store_id);
+            if (!$config['enabled'] || !$config['store_id'] || !$config['signature']) {
+                return ['success' => false, 'message' => 'Aamarpay is not configured for this store'];
+            }
+
+            $isSandbox = $config['store_id'] === 'aamarpaytest';
+            $endpoint = $isSandbox ? 'https://sandbox.aamarpay.com/request.php' : 'https://secure.aamarpay.com/request.php';
+            $orderId = 'store_' . $order->id . '_' . time();
+            $currency = 'BDT';
+
+            $response = \Illuminate\Support\Facades\Http::withoutVerifying()->asForm()->post($endpoint, [
+                'store_id' => $config['store_id'],
+                'amount' => number_format($order->total_amount, 2, '.', ''),
+                'payment_type' => '',
+                'currency' => $currency,
+                'tran_id' => $orderId,
+                'cus_name' => trim($order->customer_first_name . ' ' . $order->customer_last_name) ?: 'Customer',
+                'cus_email' => $order->customer_email,
+                'cus_phone' => $order->customer_phone ?: '1234567890',
+                'cus_add1' => $order->shipping_address ?: '',
+                'success_url' => $storeModel->route('aamarpay/success/' . $order->order_number),
+                'fail_url' => $storeModel->getStoreUrl(),
+                'cancel_url' => $storeModel->getStoreUrl(),
+                'signature_key' => $config['signature'],
+                'desc' => 'Order #' . $order->order_number,
+            ]);
+
+            $url = trim(str_replace('"', '', (string) $response->body()));
+            if ($url) {
+                $fullUrl = url($url);
+                if (!preg_match('#^https?://#', $url)) {
+                    $fullUrl = ($isSandbox ? 'https://sandbox.aamarpay.com/' : 'https://secure.aamarpay.com/') . ltrim($url, '/');
+                }
+                $order->update([
+                    'payment_gateway' => 'aamarpay',
+                    'payment_transaction_id' => $orderId,
+                    'payment_details' => array_merge($order->payment_details ?? [], ['aamarpay_tran_id' => $orderId]),
+                ]);
+                return [
+                    'success' => true,
+                    'checkout_url' => $fullUrl,
+                    'order_id' => $order->id,
+                    'order_number' => $order->order_number,
+                ];
+            }
+            return ['success' => false, 'message' => 'Aamarpay payment creation failed'];
+        } catch (\Throwable $e) {
+            Log::error('OrderService Aamarpay Error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Aamarpay payment failed: ' . $e->getMessage()];
         }
     }
 }

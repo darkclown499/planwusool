@@ -718,6 +718,23 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
           return;
         }
 
+        // Generic form-POST gateways (PayFast, PayHere, CinetPay, Paiement Pro)
+        if (data.form_endpoint && data.form_fields) {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = data.form_endpoint;
+          Object.entries(data.form_fields).forEach(([key, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = String(value);
+            form.appendChild(input);
+          });
+          document.body.appendChild(form);
+          form.submit();
+          return;
+        }
+
         // Handle Paystack payment - open modal
         if (data.payment_method === 'paystack' && data.authorization_url) {
           try {
