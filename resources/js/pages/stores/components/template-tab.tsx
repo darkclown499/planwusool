@@ -437,6 +437,15 @@ export default function TemplateTab({ store, demoStoreUrl = '', initialAction = 
                                 {t('Premium Setup')}
                             </Button>
                         )}
+                        <Button
+                            type="button"
+                            variant="default"
+                            size="sm"
+                            onClick={() => router.visit(`/stores/${store.id}/designer`)}
+                        >
+                            <Pencil className="h-4 w-4 me-1.5" />
+                            افتح المصمم البصري
+                        </Button>
                     </div>
 
                     {/* Sub-tabs (tier gated) */}

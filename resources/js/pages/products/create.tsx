@@ -52,6 +52,7 @@ export default function CreateProduct() {
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
+    barcode: '',
     description: '',
     short_description: '',
     specifications: '',
@@ -249,6 +250,10 @@ export default function CreateProduct() {
                       </Button>
                     </div>
                     <InputError message={errors.sku} />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="barcode">الباركود (Barcode)</Label>
+                    <Input id="barcode" name="barcode" value={formData.barcode} onChange={handleChange} placeholder="6291041500213" />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

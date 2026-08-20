@@ -34,19 +34,4 @@ class PageController extends Controller
     {
         return Inertia::render('examples/chatgpt-demo');
     }
-
-    public function whatsappDemo()
-    {
-        return Inertia::render('store/whatsapp-demo');
-    }
-
-    public function whatsappFoodDemo()
-    {
-        return Inertia::render('store/whatsapp-food-demo');
-    }
-
-    public function whatsappFashionDemo()
-    {
-        return Inertia::render('store/whatsapp-fashion-demo');
-    }
 }

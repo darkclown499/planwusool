@@ -2,12 +2,9 @@ import StoreHead from '@/components/StoreHead';
 import StoreBoundary from '@/components/StoreBoundary';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
-import { ThemeEngine } from '@/components/theme/ThemeEngine';
-import { engineThemeConfigUrl, getEngineThemeComponent, isEngineTheme } from '@/components/theme/registry';
-import { TemplateRenderer, StoreSkeleton } from '@/templates/TemplateRenderer';
-import { getTemplateConfig } from '@/templates/registry';
+import { StoreSite, StoreSkeleton } from '@/builder';
 import { TemplateStorefront } from '@/templates/storefront';
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,9 +12,7 @@ interface DynamicStoreProps {
     template: string;
     templateConfig?: any;
     designTokens?: any;
-    /** Store-saved theme.config.json for schema-driven engine themes. */
     themeConfig?: any;
-    /** Uploaded banner slides (content.banners) for the engine hero sliders. */
     bannerSlides?: any[];
     templateOverrides?: { sections?: any[] } | null;
     store: any;
@@ -42,18 +37,15 @@ interface DynamicStoreProps {
 }
 
 /**
- * DynamicStore - renders a store using the new template system.
- * The template config is passed from the controller, or falls back
- * to the static frontend registry. The page is wrapped in the full
- * storefront feature stack (ThemeProvider + TemplateStorefront) so
- * every template gets cart, checkout, login, orders and profile.
+ * DynamicStore — the single storefront entry of the new Wusool design system.
+ * Every template (legacy, engine or new) is normalized to the new builder
+ * catalog and rendered by StoreSite, wrapped in the full storefront feature
+ * stack (ThemeProvider + TemplateStorefront) so cart, checkout, login,
+ * orders and payments work on every store.
  */
 const DynamicStore: React.FC<DynamicStoreProps> = ({
     template,
-    templateConfig,
     designTokens,
-    themeConfig,
-    bannerSlides = [],
     templateOverrides,
     store,
     categories,
@@ -69,7 +61,6 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     userPlanName = null,
     userPlanTier = null,
     isSuperAdmin = false,
-    demoStoreUrl = '',
     isLoggedIn = false,
     customer = null,
     customer_address = [],
@@ -77,19 +68,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    // Engine-backed niche themes (market-fast / fashion-luxe / fresh-produce)
-    // render through the schema-driven ThemeEngine instead of the JSON template
-    // renderer. Everything else keeps the existing template pipeline untouched.
-    const EngineModule = useMemo(() => getEngineThemeComponent(template), [template]);
-
-    const resolvedTemplate = useMemo(() => {
-        if (templateConfig) {
-            return templateConfig;
-        }
-        return getTemplateConfig(template) || getTemplateConfig('core-minimal');
-    }, [template, templateConfig]);
-
-    const storeData = useMemo(
+    const storeData = React.useMemo(
         () => ({
             ...store,
             categories,
@@ -103,11 +82,6 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
         }),
         [store, categories, products, config, storeSettings, storeContent, offers, storePages, behavior],
     );
-
-    // Plan gating on the storefront is based on the store owner's plan (passed
-    // from the server), not the viewer. Only a real superadmin bypasses the
-    // template tier gate; previews and logged-in customers never do.
-    const effectiveSuperAdmin = isSuperAdmin;
 
     return (
         <>
@@ -131,21 +105,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 behavior={behavior}
             >
                 <StoreBoundary>
-                    {EngineModule ? (
-                        /* ---- Schema-driven Theme Engine ---- */
-                        <ThemeEngine
-                            themeId={template}
-                            serverConfig={themeConfig}
-                            banners={bannerSlides}
-                            configUrl={engineThemeConfigUrl(template)}
-                            isPreview={isPreview}
-                        >
-                            <Suspense fallback={<StoreSkeleton />}>
-                                <EngineModule />
-                            </Suspense>
-                        </ThemeEngine>
-                    ) : (
-                        <TemplateStorefront>
+                    <TemplateStorefront>
                         {/* Exit Preview Toolbar */}
                         {isPreview && (
                             <div className="sticky top-0 z-50 w-full bg-amber-600 text-white shadow-md border-b border-amber-700">
@@ -167,37 +127,21 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                                 </div>
                             </div>
                         )}
-                        <main className="pb-24 md:pb-16" style={{ background: 'var(--twc-background, #ffffff)' }}>
-                            {page ? (
-                                <TemplateRenderer
-                                    template={resolvedTemplate}
-                                    storeData={storeData}
-                                    designTokens={designTokens}
-                                    overrides={templateOverrides}
-                                    isPreview={isPreview}
-                                    userPlanName={userPlanName}
-                                    userPlanTier={userPlanTier}
-                                    isSuperAdmin={effectiveSuperAdmin}
-                                    demoStoreUrl={demoStoreUrl}
-                                    mode="page"
-                                    page={page}
-                                />
-                            ) : (
-                                <TemplateRenderer
-                                    template={resolvedTemplate}
-                                    storeData={storeData}
-                                    designTokens={designTokens}
-                                    overrides={templateOverrides}
-                                    isPreview={isPreview}
-                                    userPlanName={userPlanName}
-                                    userPlanTier={userPlanTier}
-                                    isSuperAdmin={effectiveSuperAdmin}
-                                    demoStoreUrl={demoStoreUrl}
-                                />
-                            )}
-                        </main>
+                        <Suspense fallback={<StoreSkeleton />}>
+                            <StoreSite
+                                template={template}
+                                designTokens={designTokens}
+                                templateOverrides={templateOverrides}
+                                storeData={storeData}
+                                userPlanName={userPlanName}
+                                userPlanTier={userPlanTier}
+                                isSuperAdmin={isSuperAdmin}
+                                isPreview={isPreview}
+                                mode={page ? 'page' : 'home'}
+                                page={page}
+                            />
+                        </Suspense>
                     </TemplateStorefront>
-                    )}
                 </StoreBoundary>
             </ThemeProvider>
         </>

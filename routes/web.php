@@ -239,6 +239,29 @@ Route::middleware('api.throttle')->group(function () {
         Route::put('/', [\App\Http\Controllers\Api\TemplateEditorController::class, 'update'])->name('update');
     });
 
+    // Visual designer API (drag & drop store builder)
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/designer')->name('api.store-designer.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\DesignerController::class, 'show'])->name('show');
+        Route::put('/', [\App\Http\Controllers\Api\DesignerController::class, 'update'])->name('update');
+    });
+
+    // Features hub API (unified on/off toggles)
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/features')->name('api.store-features.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\FeatureController::class, 'show'])->name('show');
+        Route::put('/', [\App\Http\Controllers\Api\FeatureController::class, 'update'])->name('update');
+    });
+
+    // ERP & inventory integration API
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/erp')->name('api.store-erp.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreErpController::class, 'index'])->name('index');
+        Route::get('logs', [\App\Http\Controllers\Api\StoreErpController::class, 'logs'])->name('logs');
+        Route::post('/', [\App\Http\Controllers\Api\StoreErpController::class, 'store'])->name('store');
+        Route::put('{config}', [\App\Http\Controllers\Api\StoreErpController::class, 'update'])->name('update');
+        Route::delete('{config}', [\App\Http\Controllers\Api\StoreErpController::class, 'destroy'])->name('destroy');
+        Route::post('{config}/test', [\App\Http\Controllers\Api\StoreErpController::class, 'test'])->name('test');
+        Route::post('{config}/sync', [\App\Http\Controllers\Api\StoreErpController::class, 'sync'])->name('sync');
+    });
+
     // Store offers API
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/offers')->name('api.store-offers.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StoreOfferController::class, 'index'])->name('index');
@@ -345,13 +368,6 @@ Route::prefix('api/locations')->group(function () {
 // Store frontend routes now live in the subdomain group at the top of this file.
 // Legacy /store/{storeSlug} redirects are also defined there.
 
-
-// WhatsApp Store Theme Demo Routes
-Route::get('/whatsapp-demo', [\App\Http\Controllers\PageController::class, 'whatsappDemo'])->name('whatsapp.demo');
-
-Route::get('/whatsapp-food-demo', [\App\Http\Controllers\PageController::class, 'whatsappFoodDemo'])->name('whatsapp.food.demo');
-
-Route::get('/whatsapp-fashion-demo', [\App\Http\Controllers\PageController::class, 'whatsappFashionDemo'])->name('whatsapp.fashion.demo');
 
 // Order invoice demo route
 Route::get('/demo-order/{orderNumber}', function($orderNumber) {
@@ -624,6 +640,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}', [\App\Http\Controllers\StoreController::class, 'show'])->middleware('permission:view-stores')->name('stores.show');
         Route::post('stores/{id}/toggle-status', [\App\Http\Controllers\StoreController::class, 'toggleStatus'])->middleware('permission:edit-stores')->name('stores.toggle-status');
         Route::get('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.settings');
+        Route::get('stores/{id}/designer', [\App\Http\Controllers\StoreDesignerController::class, 'show'])->middleware('permission:settings-stores')->name('stores.designer');
+        Route::get('stores/{id}/features', [\App\Http\Controllers\StoreFeaturesController::class, 'show'])->middleware('permission:settings-stores')->name('stores.features');
+        Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
         Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');

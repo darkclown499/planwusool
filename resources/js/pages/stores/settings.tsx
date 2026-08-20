@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
    Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate, Package, Warehouse, Code2,
+   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate, Package, Warehouse, Code2, Pencil, Power,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -378,7 +378,17 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
         { title: t('Store Settings') },
       ]}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+<div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2">
+          <Button type="button" size="sm" className="gap-1.5" onClick={() => router.visit(`/stores/${store.id}/designer`)}>
+            <Pencil className="h-3.5 w-3.5" />
+            المصمم البصري
+          </Button>
+          <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => router.visit(`/stores/${store.id}/features`)}>
+            <Power className="h-3.5 w-3.5" />
+            الميزات
+          </Button>
+        </div>
         <div className="flex items-center gap-2 text-sm">
           {autoSaveState === 'saving' && <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /> <span className="text-muted-foreground">{t('Auto-saving draft...')}</span></>}
           {autoSaveState === 'saved' && <><CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> <span className="text-green-600">{t('Draft saved automatically')}</span></>}

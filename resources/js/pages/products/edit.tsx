@@ -42,6 +42,7 @@ export default function EditProduct() {
   const [formData, setFormData] = useState({
     name: product.name || '',
     sku: product.sku || '',
+    barcode: product.barcode || '',
     description: product.description || '',
     short_description: product.short_description || '',
     specifications: product.specifications || '',
@@ -98,6 +99,7 @@ export default function EditProduct() {
       setFormData({
         name: product.name || '',
         sku: product.sku || '',
+        barcode: product.barcode || '',
         description: product.description || '',
         short_description: product.short_description || '',
         specifications: product.specifications || '',
@@ -238,6 +240,10 @@ export default function EditProduct() {
                     <Input id="sku" name="sku" value={formData.sku} onChange={handleChange} placeholder={t('PROD-001')} aria-invalid={!!errors.sku} />
                     <InputError message={errors.sku} />
                   </div>
+                </div>
+                <div className="grid gap-1 mb-4 text-start">
+                  <Label htmlFor="barcode">الباركود (Barcode)</Label>
+                  <Input id="barcode" name="barcode" value={formData.barcode} onChange={handleChange} placeholder="6291041500213" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-1 mb-4 text-start">

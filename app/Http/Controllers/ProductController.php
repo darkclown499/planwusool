@@ -164,6 +164,7 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'required|string|max:100',
+            'barcode' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',
             'specifications' => 'nullable|string',
@@ -199,6 +200,7 @@ class ProductController extends Controller
         $product = new Product();
         $product->name = $request->name;
         $product->sku = $request->sku;
+        $product->barcode = $request->barcode;
         $product->description = $request->description;
         $product->short_description = $request->short_description;
         $product->specifications = $request->specifications;
@@ -303,6 +305,7 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'required|string|max:100',
+            'barcode' => 'nullable|string|max:100',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string|max:500',
             'specifications' => 'nullable|string',
@@ -357,6 +360,7 @@ class ProductController extends Controller
         
         $product->name = $request->name;
         $product->sku = $request->sku;
+        $product->barcode = $request->barcode;
         $product->description = $request->description ?? $product->description;
         $product->short_description = $request->short_description ?? $product->short_description;
         $product->specifications = $request->specifications ?? $product->specifications;

@@ -94,4 +94,10 @@ Route::prefix('v1')->group(function () {
     Route::post('advanced-coupon/validate', [\App\Http\Controllers\AdvancedCouponController::class, 'validateCoupon'])
         ->name('api.v1.advanced-coupon.validate');
 
+    // ERP / inventory sync endpoints (inbound, API-key protected)
+    Route::prefix('store/sync')->name('api.v1.store.sync.')->group(function () {
+        Route::post('products', [\App\Http\Controllers\Api\ErpSyncController::class, 'products'])->name('products');
+        Route::post('stock', [\App\Http\Controllers\Api\ErpSyncController::class, 'stock'])->name('stock');
+    });
+
 });

@@ -25,3 +25,13 @@ Schedule::command('app:check-plan-expirations --days=7')
     ->dailyAt('02:15')
     ->withoutOverlapping()
     ->sendOutputTo(storage_path('logs/plan-expirations.log'));
+
+// ERP inventory sync (hourly configs each hour, daily configs once a day)
+Schedule::command('erp:sync --interval=hourly')
+    ->hourly()
+    ->withoutOverlapping()
+    ->sendOutputTo(storage_path('logs/erp-sync.log'));
+Schedule::command('erp:sync --interval=daily')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->sendOutputTo(storage_path('logs/erp-sync.log'));
