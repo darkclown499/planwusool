@@ -262,6 +262,7 @@ export function AppSidebar() {
         if (hasPermission('settings-stores') && currentStoreId) {
             storeChildren.push({ title: 'تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush });
             storeChildren.push({ title: 'ميزات المتجر', href: route('stores.features', currentStoreId), icon: LayoutTemplate });
+            storeChildren.push({ title: 'إعدادات الدفع', href: route('stores.payments', currentStoreId), icon: CreditCard });
             storeChildren.push({ title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings });
         }
         if (storeChildren.length > 0) {

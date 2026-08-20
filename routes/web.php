@@ -262,6 +262,12 @@ Route::middleware('api.throttle')->group(function () {
         Route::post('{config}/sync', [\App\Http\Controllers\Api\StoreErpController::class, 'sync'])->name('sync');
     });
 
+    // Store payments API (enable toggle + credentials, one place)
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/payments')->name('api.store-payments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StorePaymentController::class, 'index'])->name('index');
+        Route::put('/', [\App\Http\Controllers\Api\StorePaymentController::class, 'update'])->name('update');
+    });
+
     // Store offers API
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/offers')->name('api.store-offers.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StoreOfferController::class, 'index'])->name('index');
@@ -643,6 +649,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/designer', [\App\Http\Controllers\StoreDesignerController::class, 'show'])->middleware('permission:settings-stores')->name('stores.designer');
         Route::get('stores/{id}/features', [\App\Http\Controllers\StoreFeaturesController::class, 'show'])->middleware('permission:settings-stores')->name('stores.features');
         Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
+        Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
         Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');

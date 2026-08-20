@@ -33,7 +33,10 @@ class FeatureController extends Controller
             'enabled' => 'required|boolean',
         ]);
 
-        $ok = FeatureService::setFeature($store, $validated['key'], (bool) $validated['enabled']);
+        // Strict boolean normalisation — "false"/"0"/0/"" must never become true.
+        $enabled = filter_var($validated['enabled'], FILTER_VALIDATE_BOOLEAN);
+
+        $ok = FeatureService::setFeature($store, $validated['key'], $enabled);
 
         if (!$ok) {
             return response()->json(['error' => 'This feature is locked or invalid.'], 422);

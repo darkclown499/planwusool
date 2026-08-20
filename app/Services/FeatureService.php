@@ -8,29 +8,29 @@ use App\Models\StoreConfiguration;
 use App\Models\StoreErpConfig;
 
 /**
- * Unified Features Hub — one source of truth for every per-store on/off
- * toggle the merchant switches from the new "الميزات" page.
+ * Unified Features Hub — storefront UI/UX toggles only.
  *
- * Every feature points at the exact storage surface it already drives
- * on the storefront, so flipping a switch has an immediate real effect:
- *   - storefront behaviors   → store_configurations (read live by ThemeController)
- *   - payment gateways       → payment_settings (read live by getEnabledPaymentMethods)
- *   - WhatsApp widget        → store_configurations (plan-gated)
+ * Concerns are strictly separated:
+ *   - Store status / maintenance        → General settings (store_configurations)
+ *   - Payment enable + API keys         → Dedicated "الدفع" page (payment_settings)
+ *   - UI/UX toggles (cart/search/login/whatsapp) → THIS hub (store_configurations)
+ *
+ * Every toggle below is written to store_configurations, which the storefront
+ * (ThemeController / behavior) reads live, so flipping a switch has an
+ * immediate effect. Writes use setConfiguration (single key), never the
+ * array-only updateConfiguration().
  */
 class FeatureService
 {
-    /** Storefront behavior keys (Store::BEHAVIOR_KEYS) + store status. */
+    /** Storefront UI/UX behavior keys shown on the features page. */
     public const BEHAVIOR_FEATURES = [
         'show_cart',
         'show_search',
         'show_auth_button',
         'show_whatsapp_order_button',
-        'enable_customer_login',
-        'enable_customer_registration',
-        'require_login_checkout',
     ];
 
-    /** WhatsApp widget toggles — advanced plan features. */
+    /** WhatsApp widget toggles — advanced plan features (kept for compat). */
     public const WHATSAPP_FEATURES = [
         'whatsapp_widget_enabled',
         'whatsapp_widget_show_on_mobile',
@@ -43,14 +43,12 @@ class FeatureService
         'show_search' => true,
         'show_auth_button' => true,
         'show_whatsapp_order_button' => true,
-        'enable_customer_login' => true,
-        'enable_customer_registration' => true,
         'whatsapp_widget_enabled' => true,
         'whatsapp_widget_show_on_mobile' => true,
         'whatsapp_widget_show_on_desktop' => true,
     ];
 
-    /** Curated, storefront-relevant payment gateways (method => label). */
+    /** Payment gateways catalog (method => label). */
     public const PAYMENT_METHODS = [
         'cod' => 'الدفع عند الاستلام',
         'bank' => 'تحويل بنكي',
@@ -90,14 +88,11 @@ class FeatureService
     ];
 
     /**
-     * Full feature tree grouped for the UI.
+     * Feature tree for the UI. Only UI/UX toggles live here.
      */
     public static function getFeatures(Store $store, ?int $ownerId = null): array
     {
         $config = StoreConfiguration::getConfiguration($store->id);
-        $ownerId = $ownerId ?? $store->user_id;
-        $payments = $ownerId ? PaymentSetting::getUserSettings($ownerId, $store->id) : [];
-        $level = self::planLevel($store);
 
         $behavior = [];
         foreach (self::BEHAVIOR_FEATURES as $key) {
@@ -105,81 +100,39 @@ class FeatureService
             $behavior[] = self::item($key, self::labelFor($key), self::descFor($key), (bool) ($config[$key] ?? $default));
         }
 
-        // Store status is a special high-level switch.
-        $status = [
-            ['key' => 'store_status', 'label' => 'تفعيل المتجر', 'description' => 'عند إيقافه، لن يكون المتجر متاحاً للزوار.', 'enabled' => (bool) ($config['store_status'] ?? true), 'locked' => false, 'lockReason' => ''],
-            ['key' => 'maintenance_mode', 'label' => 'وضع الصيانة', 'description' => 'يعرض صفحة صيانة مؤقتة بدلاً من المتجر.', 'enabled' => (bool) ($config['maintenance_mode'] ?? false), 'locked' => false, 'lockReason' => ''],
-        ];
-
-        $whatsapp = [];
-        $whatsappLocked = $level === 'none';
-        foreach (self::WHATSAPP_FEATURES as $key) {
-            $default = self::DEFAULT_ON[$key] ?? false;
-            $whatsapp[] = self::item($key, self::labelFor($key), self::descFor($key), (bool) ($config[$key] ?? $default), $whatsappLocked, $whatsappLocked ? 'متاح في باقة النمو وما فوق.' : '');
-        }
-
-        $paymentFeatures = [];
-        foreach (self::PAYMENT_METHODS as $method => $label) {
-            $key = 'is_' . $method . '_enabled';
-            $paymentFeatures[] = self::item(
-                'payment_' . $method,
-                $label,
-                'طرق الدفع المتاحة للعملاء عند إتمام الطلب.',
-                (bool) ($payments[$key] ?? false),
-                false,
-                ''
-            );
-        }
-
         return [
-            ['id' => 'status', 'label' => 'حالة المتجر', 'description' => 'التحكم في توفر المتجر للزوار.', 'features' => $status],
-            ['id' => 'storefront', 'label' => 'واجهة المتجر', 'description' => 'أزرار ووظائف الواجهة الأمامية.', 'features' => $behavior],
-            ['id' => 'whatsapp', 'label' => 'واتساب', 'description' => 'أزرار وأدوات التواصل عبر واتساب.', 'features' => $whatsapp],
-            ['id' => 'payments', 'label' => 'طرق الدفع', 'description' => 'فعّل أو أوقف كل بوابة دفع على حدة.', 'features' => $paymentFeatures],
+            ['id' => 'storefront', 'label' => 'واجهة المتجر', 'description' => 'أزرار ووظائف الواجهة الأمامية — تفعيل أو إيقاف بضغطة واحدة.', 'features' => $behavior],
         ];
     }
 
     /**
-     * Set a single feature and write it to the right storage surface.
-     * Returns true on success; false if the feature is locked by the plan.
+     * Set a single UI/UX toggle. Returns true on success; false when the key
+     * is unknown or locked by the plan.
      */
     public static function setFeature(Store $store, string $key, bool $enabled): bool
     {
-        $config = StoreConfiguration::getConfiguration($store->id);
-        $value = $enabled ? 'true' : 'false';
-
-        // Store status / maintenance
-        if ($key === 'store_status' || $key === 'maintenance_mode') {
-            StoreConfiguration::updateConfiguration($store->id, $key, $value);
-            StoreConfiguration::forgetConfiguration($store->id);
-            return true;
-        }
-
         // Storefront behavior toggles
         if (in_array($key, self::BEHAVIOR_FEATURES, true)) {
-            StoreConfiguration::updateConfiguration($store->id, $key, $value);
-            StoreConfiguration::forgetConfiguration($store->id);
+            StoreConfiguration::setConfiguration($store->id, $key, $enabled ? 'true' : 'false');
             return true;
         }
 
-        // WhatsApp widget (plan-gated)
+        // WhatsApp widget (plan-gated, backward compatible)
         if (in_array($key, self::WHATSAPP_FEATURES, true)) {
             if (self::planLevel($store) === 'none') {
                 return false;
             }
-            StoreConfiguration::updateConfiguration($store->id, $key, $value);
-            StoreConfiguration::forgetConfiguration($store->id);
+            StoreConfiguration::setConfiguration($store->id, $key, $enabled ? 'true' : 'false');
             return true;
         }
 
-        // Payment gateways
+        // Payment gateways (backward compatible; primary editor is the payments page)
         if (str_starts_with($key, 'payment_')) {
             $method = substr($key, strlen('payment_'));
             if (!array_key_exists($method, self::PAYMENT_METHODS)) {
                 return false;
             }
-            $ownerId = $store->user_id;
-            PaymentSetting::updateOrCreateSetting($ownerId, 'is_' . $method . '_enabled', $enabled ? '1' : '0', $store->id);
+            PaymentSetting::updateOrCreateSetting($store->user_id, 'is_' . $method . '_enabled', $enabled ? '1' : '0', $store->id);
             return true;
         }
 
@@ -187,7 +140,7 @@ class FeatureService
     }
 
     /**
-     * Integration/status snapshots for the "التكاملات" area of the hub.
+     * Integration/status snapshots for the "التكاملات" area.
      */
     public static function integrations(Store $store): array
     {
@@ -211,7 +164,7 @@ class FeatureService
         return [
             'show_cart' => 'سلة التسوق',
             'show_search' => 'البحث في المتجر',
-            'show_auth_button' => 'زر تسجيل الدخول',
+            'show_auth_button' => 'تسجيل الدخول',
             'show_whatsapp_order_button' => 'الطلب عبر واتساب',
             'enable_customer_login' => 'تسجيل دخول العملاء',
             'enable_customer_registration' => 'تسجيل عملاء جدد',

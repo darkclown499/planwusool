@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/custom-toast';
 import { apiPut } from '@/utils/api';
-import { Loader2, Lock, Power, CreditCard, ShoppingCart, MessageCircle, LayoutGrid, Plug, ExternalLink } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import { Loader2, Lock, CreditCard, ShoppingCart, LayoutGrid, Plug, ExternalLink } from 'lucide-react';
 
 interface FeatureItem {
   key: string;
@@ -37,43 +38,51 @@ interface Props {
 }
 
 const GROUP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  status: Power,
   storefront: ShoppingCart,
-  whatsapp: MessageCircle,
-  payments: CreditCard,
 };
 
 export default function StoreFeatures({ store, groups: initialGroups = [], integrations: initialIntegrations = [] }: Props) {
   const [groups, setGroups] = useState<FeatureGroup[]>(initialGroups);
   const [integrations, setIntegrations] = useState<IntegrationItem[]>(initialIntegrations);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const apiUrl = `/api/stores/${store.id}/features`;
 
-  const toggle = async (group: FeatureGroup, item: FeatureItem, enabled: boolean) => {
+  useEffect(() => {
+    const timersRef = timers.current;
+    return () => Object.values(timersRef).forEach((t) => clearTimeout(t));
+  }, []);
+
+  // Debounced toggle: rapid switches only fire the latest value per key.
+  const toggle = (group: FeatureGroup, item: FeatureItem, enabled: boolean) => {
     if (item.locked) {
       toast.error(item.lockReason || 'هذه الميزة غير متاحة في باقتك الحالية.');
       return;
     }
-    setSavingKey(item.key);
-    const prev = groups;
+
     setGroups((gs) =>
       gs.map((g) =>
         g.id === group.id ? { ...g, features: g.features.map((f) => (f.key === item.key ? { ...f, enabled } : f)) } : g
       )
     );
-    try {
-      const res = await apiPut(apiUrl, { key: item.key, enabled });
-      if (res.groups) setGroups(res.groups);
-      if (res.integrations) setIntegrations(res.integrations);
-      toast.success(enabled ? `تم تفعيل «${item.label}»` : `تم إيقاف «${item.label}»`);
-    } catch (e: any) {
-      setGroups(prev);
-      const msg = e?.data?.error || 'تعذر حفظ التغيير. حاول مرة أخرى.';
-      toast.error(msg);
-    } finally {
-      setSavingKey(null);
-    }
+
+    setSavingKey(item.key);
+    if (timers.current[item.key]) clearTimeout(timers.current[item.key]);
+
+    timers.current[item.key] = setTimeout(async () => {
+      try {
+        const res = await apiPut(apiUrl, { key: item.key, enabled });
+        if (res.groups) setGroups(res.groups);
+        if (res.integrations) setIntegrations(res.integrations);
+        toast.success('تم الحفظ بنجاح');
+      } catch {
+        toast.error('تعذر حفظ التغيير. حاول مرة أخرى.');
+        setGroups(initialGroups);
+      } finally {
+        setSavingKey(null);
+      }
+    }, 400);
   };
 
   return (
@@ -81,12 +90,18 @@ export default function StoreFeatures({ store, groups: initialGroups = [], integ
       title="الميزات"
       description="فعّل أو أوقف كل نظام في متجرك بضغطة واحدة"
       url={`/stores/${store.id}/features`}
-      backUrl={`/stores/${store.id}/settings?tab=template`}
+      backUrl={`/stores/${store.id}/settings`}
       action={
-        <Button type="button" variant="outline" size="sm" onClick={() => window.open(`https://${store.slug}.${window.location.host.split(':')[0]}`, '_blank')}>
-          <ExternalLink className="h-4 w-4 me-1.5" />
-          عرض المتجر
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => router.visit(`/stores/${store.id}/payments`)}>
+            <CreditCard className="h-4 w-4 me-1.5" />
+            إعدادات الدفع
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => window.open(`https://${store.slug}.${window.location.host.split(':')[0]}`, '_blank')}>
+            <ExternalLink className="h-4 w-4 me-1.5" />
+            عرض المتجر
+          </Button>
+        </div>
       }
     >
       <div className="mx-auto max-w-4xl space-y-6">
