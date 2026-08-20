@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
    Save, Facebook, Instagram, X, Youtube, Mail, Globe, Clock, Coins, Languages, Search,
-   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, Wrench, TrendingUp, FileText, LayoutTemplate, Package, Warehouse, Code2, Pencil, Power,
+   BarChart3, XCircle, Info, Loader2, Trash2, Plus, Share2, Palette, Phone, History, CheckCircle2, Building2, MapPin, PenLine, TrendingUp, FileText, Package, Warehouse, Code2, Power, Paintbrush,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,6 @@ import { SearchableSelect } from '@/components/searchable-select';
 import { AccordionSection } from '@/components/accordion-section';
 import { apiPut, apiPost } from '@/utils/api';
 import DomainsTab from './components/domains-tab';
-import TemplateTab from './components/template-tab';
 
 interface Props {
   store: any;
@@ -29,9 +28,6 @@ interface Props {
   currencies: any[];
   timezones: Record<string, string>;
   locationData: any[];
-  availableThemes?: string[];
-  storeContent?: any;
-  demoStoreUrl?: string;
 }
 
 const STORE_LANGUAGES: { code: string; label: string }[] = [
@@ -158,33 +154,21 @@ function initSocialLinks(s: any): any[] {
   return legacy;
 }
 
-export default function StoreSettings({ store, settings, currencies, timezones, locationData = [], availableThemes = [], storeContent = {}, demoStoreUrl = '' }: Props) {
+export default function StoreSettings({ store, settings, currencies, timezones, locationData = [] }: Props) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (window.location.search.includes('tab=general')) {
-        return 'general';
+      if (window.location.search.includes('tab=seo')) {
+        return 'seo';
       }
-      return 'template';
+      if (window.location.search.includes('tab=domains')) {
+        return 'domains';
+      }
     }
-    return 'template';
+    return 'general';
   });
-  const [initialTemplateAction, setInitialTemplateAction] = useState<'theme' | 'editor' | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const search = window.location.search;
-    if (search.includes('action=theme')) return 'theme';
-    if (search.includes('action=editor')) return 'editor';
-    return null;
-  });
-
-  useEffect(() => {
-    if (initialTemplateAction) {
-      const timer = setTimeout(() => setInitialTemplateAction(null), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [initialTemplateAction]);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -379,22 +363,16 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
       ]}
     >
 <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-2">
-          <Button type="button" size="sm" className="gap-1.5" onClick={() => router.visit(`/stores/${store.id}/designer`)}>
-            <Pencil className="h-3.5 w-3.5" />
-            المصمم البصري
-          </Button>
-          <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => router.visit(`/stores/${store.id}/features`)}>
-            <Power className="h-3.5 w-3.5" />
-            الميزات
-          </Button>
-        </div>
         <div className="flex items-center gap-2 text-sm">
           {autoSaveState === 'saving' && <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /> <span className="text-muted-foreground">{t('Auto-saving draft...')}</span></>}
           {autoSaveState === 'saved' && <><CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> <span className="text-green-600">{t('Draft saved automatically')}</span></>}
           {autoSaveState === 'error' && <><XCircle className="h-3.5 w-3.5 text-red-500" /> <span className="text-red-500">{t('Auto-save failed, please save manually')}</span></>}
+          {dirty && !saving && <span className="text-xs text-muted-foreground">{t('Unsaved changes')}</span>}
         </div>
-        {dirty && !saving && <span className="text-xs text-muted-foreground">{t('Unsaved changes')}</span>}
+        <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => router.visit(`/stores/${store.id}/features`)}>
+          <Power className="h-3.5 w-3.5" />
+          الميزات
+        </Button>
       </div>
 
       {hasErrors && (
@@ -404,33 +382,42 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
         </div>
       )}
 
+      {/* Visual designer callout — replaces the legacy template tab */}
+      <Card className="mb-5 border-emerald-200 bg-gradient-to-l from-emerald-50 via-white to-white">
+        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200">
+              <Paintbrush className="h-6 w-6" />
+            </span>
+            <div>
+              <h3 className="text-lg font-extrabold text-slate-900">تصميم وتنسيق المتجر</h3>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                خصص قالبك، الألوان، البانرات، وترتيب السيكشنات عبر المحرر البصري الحي.
+              </p>
+            </div>
+          </div>
+          <Button type="button" size="lg" className="shrink-0 gap-2" onClick={() => router.visit(`/stores/${store.id}/designer`)}>
+            <Paintbrush className="h-4 w-4" />
+            افتح المصمم البصري
+          </Button>
+        </CardContent>
+      </Card>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 border-b border-border bg-transparent p-0">
+        <TabsList className="grid w-full grid-cols-3 border-b border-border bg-transparent p-0">
           <TabsTrigger value="general" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <PenLine className="h-4 w-4 me-2" />
             {t('General')}
           </TabsTrigger>
-          <TabsTrigger value="template" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <LayoutTemplate className="h-4 w-4 me-2" />
-            {t('Template')}
-          </TabsTrigger>
           <TabsTrigger value="seo" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Search className="h-4 w-4 me-2" />
             {t('SEO')}
-          </TabsTrigger>
-          <TabsTrigger value="advanced" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Wrench className="h-4 w-4 me-2" />
-            {t('Advanced')}
           </TabsTrigger>
           <TabsTrigger value="domains" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Globe className="h-4 w-4 me-2" />
             {t('Domains')}
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="template" className="space-y-4 mt-6">
-          <TemplateTab store={store} availableThemes={availableThemes} storeContent={storeContent} demoStoreUrl={demoStoreUrl} initialAction={initialTemplateAction} />
-        </TabsContent>
 
         <TabsContent value="general" className="space-y-4 mt-6">
           <AccordionSection
@@ -997,262 +984,6 @@ export default function StoreSettings({ store, settings, currencies, timezones, 
           </div>
         </TabsContent>
 
-        <TabsContent value="advanced" className="space-y-4 mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    {t('Tracking & Analytics')}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1 text-start">
-                    {t('Add tracking IDs to measure your store traffic and conversions.')}
-                  </p>
-                </div>
-                <SectionResetButton onReset={() => handleResetSection('tracking')} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="google_analytics_id" className="flex items-center gap-1.5">
-                    {t('Google Analytics ID')}
-                    <HelpTip text={t('Found in your GA4 property settings. Format: G-XXXXXXXXXX.')} />
-                  </Label>
-                  <Input
-                    id="google_analytics_id"
-                    dir="ltr"
-                    value={formData.google_analytics_id || ''}
-                    onChange={(e) => updateSetting('google_analytics_id', e.target.value)}
-                    placeholder="G-XXXXXXXXXX"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">{t('Example: G-XXXXXXXXXX or UA-XXXXX-X')}</p>
-                </div>
-                <div>
-                  <Label htmlFor="meta_pixel_id" className="flex items-center gap-1.5">
-                    {t('Meta Pixel ID')}
-                    <HelpTip text={t('Found in your Meta Business Suite under Events Manager.')} />
-                  </Label>
-                  <Input
-                    id="meta_pixel_id"
-                    dir="ltr"
-                    value={formData.meta_pixel_id || ''}
-                    onChange={(e) => updateSetting('meta_pixel_id', e.target.value)}
-                    placeholder="123456789012345"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">{t('Example: 123456789012345')}</p>
-                </div>
-                <div>
-                  <Label htmlFor="tiktok_pixel_id" className="flex items-center gap-1.5">
-                    {t('TikTok Pixel ID')}
-                    <HelpTip text={t('Found in TikTok Ads Manager under Events Manager.')} />
-                  </Label>
-                  <Input
-                    id="tiktok_pixel_id"
-                    dir="ltr"
-                    value={formData.tiktok_pixel_id || ''}
-                    onChange={(e) => updateSetting('tiktok_pixel_id', e.target.value)}
-                    placeholder="TIK-XXXX-XXXX-XXXX"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">{t('Example: TIK-XXXX-XXXX-XXXX')}</p>
-                </div>
-                <div>
-                  <Label htmlFor="snapchat_pixel_id" className="flex items-center gap-1.5">
-                    {t('Snapchat Pixel ID')}
-                    <HelpTip text={t('Found in Snapchat Business Manager under Event Manager.')} />
-                  </Label>
-                  <Input
-                    id="snapchat_pixel_id"
-                    dir="ltr"
-                    value={formData.snapchat_pixel_id || ''}
-                    onChange={(e) => updateSetting('snapchat_pixel_id', e.target.value)}
-                    placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">{t('Example: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')}</p>
-                </div>
-                <div>
-                  <Label htmlFor="gtm_id" className="flex items-center gap-1.5">
-                    {t('Google Tag Manager (GTM) ID')}
-                    <HelpTip text={t('Found in your GTM container dashboard. Format: GTM-XXXXXXX.')} />
-                  </Label>
-                  <Input
-                    id="gtm_id"
-                    dir="ltr"
-                    value={formData.gtm_id || ''}
-                    onChange={(e) => updateSetting('gtm_id', e.target.value)}
-                    placeholder="GTM-XXXXXXX"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">{t('Example: GTM-XXXXXXX')}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {t('WhatsApp Widget')}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground text-start">
-                {t('Add a floating WhatsApp button to your store for customer support. This is separate from order notifications.')}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>{t('Enable WhatsApp Widget')}</Label>
-                  <p className="text-sm text-muted-foreground">{t('Show floating WhatsApp button on storefront')}</p>
-                </div>
-                <Switch
-                  checked={whatsappOn}
-                  onCheckedChange={(checked) => updateSetting('whatsapp_widget_enabled', checked)}
-                />
-              </div>
-
-              <div
-                className={`grid transition-all duration-300 ease-in-out ${
-                  whatsappOn ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                }`}
-              >
-                <div className="min-h-0 overflow-hidden">
-                  <div className="space-y-4 border-t border-border pt-4">
-                    <div>
-                      <Label htmlFor="whatsapp_widget_phone" className="flex items-center gap-1.5">
-                        {t('WhatsApp Number')}
-                        <HelpTip text={t('Include the country code, e.g. +970599123456')} />
-                      </Label>
-                      <Input
-                        id="whatsapp_widget_phone"
-                        dir="ltr"
-                        value={formData.whatsapp_widget_phone || ''}
-                        onChange={(e) => updateSetting('whatsapp_widget_phone', e.target.value)}
-                        placeholder="+970599123456"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {t('Enter phone number with country code (e.g., +919876543210, +1234567890)')}
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="whatsapp_widget_message" className="flex items-center gap-1.5">
-                        {t('Default Welcome Message')}
-                        <HelpTip text={t('This message is pre-filled when a customer opens the chat.')} />
-                      </Label>
-                      <Textarea
-                        id="whatsapp_widget_message"
-                        value={formData.whatsapp_widget_message || ''}
-                        onChange={(e) => updateSetting('whatsapp_widget_message', e.target.value)}
-                        placeholder={t('Hello! I need help with...')}
-                        rows={3}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {t('Pre-filled message when customers click the widget')}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="whatsapp_widget_position">{t('Button Position')}</Label>
-                        <Select
-                          value={formData.whatsapp_widget_position || 'right'}
-                          onValueChange={(value) => updateSetting('whatsapp_widget_position', value)}
-                        >
-                          <SelectTrigger id="whatsapp_widget_position">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="right">{t('Bottom Right')}</SelectItem>
-                            <SelectItem value="left">{t('Bottom Left')}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label>{t('Display Options')}</Label>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>{t('Show on Mobile')}</Label>
-                          <p className="text-sm text-muted-foreground">{t('Display widget on mobile devices')}</p>
-                        </div>
-                        <Switch
-                          checked={formData.whatsapp_widget_show_on_mobile === true || formData.whatsapp_widget_show_on_mobile === 'true'}
-                          onCheckedChange={(checked) => updateSetting('whatsapp_widget_show_on_mobile', checked)}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>{t('Show on Desktop')}</Label>
-                          <p className="text-sm text-muted-foreground">{t('Display widget on desktop devices')}</p>
-                        </div>
-                        <Switch
-                          checked={formData.whatsapp_widget_show_on_desktop === true || formData.whatsapp_widget_show_on_desktop === 'true'}
-                          onCheckedChange={(checked) => updateSetting('whatsapp_widget_show_on_desktop', checked)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Code2 className="h-4 w-4" />
-                    {t('Custom Scripts')}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1 text-start">
-                    {t('Insert custom scripts (analytics, chat, tracking) into your store pages.')}
-                  </p>
-                </div>
-                <SectionResetButton onReset={() => handleResetSection('custom_scripts')} />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="custom_head_scripts" className="flex items-center gap-1.5">
-                  {t('Head Scripts (<head>)')}
-                  <HelpTip text={t('HTML or JavaScript injected into the <head> of every store page.')} />
-                </Label>
-                <Textarea
-                  id="custom_head_scripts"
-                  dir="ltr"
-                  className="font-mono text-xs"
-                  value={formData.custom_head_scripts || ''}
-                  onChange={(e) => updateSetting('custom_head_scripts', e.target.value)}
-                  placeholder={t('<!-- e.g. <script>...</script> -->')}
-                  rows={6}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('HTML or JavaScript injected into the <head> of every store page.')}
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="custom_body_scripts" className="flex items-center gap-1.5">
-                  {t('Body Scripts (</body>)')}
-                  <HelpTip text={t('HTML or JavaScript injected before the closing </body> tag.')} />
-                </Label>
-                <Textarea
-                  id="custom_body_scripts"
-                  dir="ltr"
-                  className="font-mono text-xs"
-                  value={formData.custom_body_scripts || ''}
-                  onChange={(e) => updateSetting('custom_body_scripts', e.target.value)}
-                  placeholder={t('<!-- e.g. <script>...</script> -->')}
-                  rows={6}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('HTML or JavaScript injected before the closing </body> tag.')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="domains" className="space-y-4 mt-0">
           <DomainsTab storeId={Number(store?.id)} />

@@ -221,17 +221,17 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                         <DropdownMenuContent align="end">
                           {hasPermission('settings-stores') && (
                             <>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleActionClick('settings', 'settings-stores', store.id); }}>
-                                <Settings className="h-4 w-4" />
-                                {t('Settings')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=theme'); }}>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.designer', store.id)); }}>
                                 <Paintbrush className="h-4 w-4" />
-                                {t('Choose Template')}
+                                تصميم المتجر
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id) + '?tab=template&action=editor'); }}>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.features', store.id)); }}>
                                 <LayoutTemplate className="h-4 w-4" />
-                                {t('Edit Template')}
+                                ميزات المتجر
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.settings', store.id)); }}>
+                                <Settings className="h-4 w-4" />
+                                إعدادات المتجر
                               </DropdownMenuItem>
                             </>
                           )}

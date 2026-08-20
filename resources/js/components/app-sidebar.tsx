@@ -7,7 +7,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell } from 'lucide-react';
+import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell, Paintbrush, LayoutTemplate } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -260,7 +260,9 @@ export function AppSidebar() {
             storeChildren.push({ title: t('Stores'), href: route('stores.index') });
         }
         if (hasPermission('settings-stores') && currentStoreId) {
-            storeChildren.push({ title: t('Store Settings'), href: route('stores.settings', currentStoreId) });
+            storeChildren.push({ title: 'تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush });
+            storeChildren.push({ title: 'ميزات المتجر', href: route('stores.features', currentStoreId), icon: LayoutTemplate });
+            storeChildren.push({ title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings });
         }
         if (storeChildren.length > 0) {
             items.push({

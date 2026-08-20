@@ -1,8 +1,10 @@
 import React from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Edit, Settings, Globe } from 'lucide-react';
+import { ArrowLeft, Edit, Settings, Globe, Paintbrush, LayoutTemplate, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
@@ -58,6 +60,30 @@ export default function ViewStore({ store, stats }: any) {
       title={t(`Store Details`)}
       url={`/stores/${store.id}`}
       actions={pageActions}
+      action={
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5">
+              <MoreVertical className="h-4 w-4" />
+              إدارة المتجر
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => router.visit(route('stores.designer', store.id))}>
+              <Paintbrush className="h-4 w-4" />
+              تصميم المتجر
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.visit(route('stores.features', store.id))}>
+              <LayoutTemplate className="h-4 w-4" />
+              ميزات المتجر
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.visit(route('stores.settings', store.id))}>
+              <Settings className="h-4 w-4" />
+              إعدادات المتجر
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      }
       backUrl={route('stores.index')}
       breadcrumbs={[
         { title: t('Dashboard'), href: route('dashboard') },
