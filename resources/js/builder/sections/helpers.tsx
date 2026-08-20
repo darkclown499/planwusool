@@ -230,11 +230,11 @@ export const sectionDefaults = (type: string): Record<string, any> => {
   const map: Record<string, Record<string, any>> = {
     announcement: { enabled: true, text: '🎉 شحن سريع لجميع مناطق المملكة', link: '' },
     header: { sticky: true, show_search: true, show_cart: true, show_auth: true, show_whatsapp: true, variant: 'classic' },
-    hero: { title: '', subtitle: '', badge: '', image: '', video: '', button_text: 'تسوّق الآن', button_link: '#template-products', layout: 'split', hero_variant: 'split_banner' },
+    hero: { title: '', subtitle: '', badge: '', image: '', video: '', button_text: 'تسوّق الآن', button_link: '#template-products', layout: 'split', hero_variant: 'split_banner', slides: [] },
     categories: { style: 'cards', show_all: true, columns: 4, category_variant: 'card_pills' },
     products: { layout: 'grid', per_page: 12, columns: 4, featured_only: false, section_title: '', product_variant: 'detailed_cards_with_badges' },
     offers: { section_title: '', columns: 3 },
-    banners: { type: 'single', variant: 'carousel' },
+    banners: { type: 'single', variant: 'carousel', slides: [] },
     features: { section_title: '' },
     reviews: { section_title: '' },
     faq: { section_title: 'الأسئلة الشائعة' },

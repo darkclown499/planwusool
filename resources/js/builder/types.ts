@@ -45,7 +45,9 @@ export type BuilderPropType =
   | 'select'
   | 'boolean'
   | 'number'
-  | 'link';
+  | 'link'
+  | 'video'
+  | 'slides';
 
 export interface BuilderPropSchema {
   key: string;

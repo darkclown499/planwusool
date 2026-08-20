@@ -32,6 +32,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>('desktop');
   const [loaded, setLoaded] = useState(false);
+  const [seedDefaults, setSeedDefaults] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSave = useRef(false);
@@ -51,6 +52,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
           : (tpl?.sections || []).map((s) => ({ ...s }))
       );
       setDesignTokens({ colors: { ...(tpl?.tokens?.colors || {}), ...(data.design_tokens?.colors || {}) }, typography: { ...(data.design_tokens?.typography || {}) }, radius: data.design_tokens?.radius });
+      setSeedDefaults(!data.sections?.length);
       setLoaded(true);
     } catch (e) {
       console.error('Failed to load designer state', e);
@@ -79,6 +81,14 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
     },
     [apiUrl, theme, sections, designTokens]
   );
+
+  // Task 1 — persist the template's default schema on first load when the
+  // store has no custom overrides yet, so the live store is never a blank canvas.
+  useEffect(() => {
+    if (!loaded || !seedDefaults) return;
+    setSeedDefaults(false);
+    persist();
+  }, [loaded, seedDefaults, persist]);
 
   // Debounced autosave
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Megaphone,
   Layout,
@@ -15,10 +15,19 @@ import {
   Phone,
   PanelBottom,
   Code,
+  Film,
+  Link2,
+  Plus,
+  Trash2,
+  UploadCloud,
+  Loader2,
+  MoveUp,
+  MoveDown,
   type LucideIcon,
 } from 'lucide-react';
 import MediaPicker from '@/components/MediaPicker';
 import type { BuilderPropSchema } from '@/builder/types';
+import { toast } from 'sonner';
 
 export const SECTION_ICONS: Record<string, LucideIcon> = {
   megaphone: Megaphone,
@@ -166,6 +175,22 @@ export const PropField: React.FC<{
         </div>
       );
 
+    case 'video':
+      return (
+        <div className="mb-4">
+          <FieldLabel label={prop.label} hint={prop.hint} />
+          <VideoField value={value || ''} onChange={set} />
+        </div>
+      );
+
+    case 'slides':
+      return (
+        <div className="mb-4">
+          <FieldLabel label={prop.label} hint={prop.hint} />
+          <SlidesEditor value={Array.isArray(value) ? value : []} onChange={set} />
+        </div>
+      );
+
     case 'link':
     case 'text':
     default:
@@ -187,4 +212,249 @@ export const PropField: React.FC<{
 export const normalizeColor = (v: string): string => {
   if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
   return '#0f8a5f';
+};
+
+/* ------------------------------------------------------------------ */
+/* Video source control — YouTube / Vimeo / MP4 upload or direct URL   */
+/* ------------------------------------------------------------------ */
+
+export const videoKind = (url: string): 'youtube' | 'vimeo' | 'mp4' | 'link' => {
+  const v = (url || '').trim().toLowerCase();
+  if (/(youtube\.com|youtu\.be)/.test(v)) return 'youtube';
+  if (/vimeo\.com/.test(v)) return 'vimeo';
+  if (/\.(mp4|webm|ogv|mov|m4v)(\?.*)?$/.test(v) || v.startsWith('/storage/')) return 'mp4';
+  return v ? 'link' : 'link';
+};
+
+export const youtubeId = (url: string): string => {
+  const m = (url || '').match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  return m ? m[1] : '';
+};
+
+export const vimeoId = (url: string): string => {
+  const m = (url || '').match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return m ? m[1] : '';
+};
+
+const VideoField: React.FC<{ value: string; onChange: (v: string) => void }> = ({ value, onChange }) => {
+  const [uploading, setUploading] = useState(false);
+  const kind = videoKind(value);
+
+  const uploadVideo = async (files: FileList | File[]) => {
+    const file = Array.from(files).find((f) => f.type.startsWith('video/'));
+    if (!file) {
+      toast.warning('الرجاء اختيار ملف فيديو');
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('files[]', file);
+      const res = await fetch(route('api.media.batch'), {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+      });
+      const result = await res.json();
+      if (res.ok && result.data && result.data.length > 0) {
+        onChange(result.data[0].url);
+        toast.success('تم رفع الفيديو');
+      } else {
+        toast.error(result.message || 'فشل رفع الفيديو');
+      }
+    } catch {
+      toast.error('حدث خطأ أثناء رفع الفيديو');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://... أو رابط يوتيوب/فيميو"
+          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+        />
+        <label
+          className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600"
+          title="رفع ملف فيديو"
+        >
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+          رفع
+          <input
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files) uploadVideo(e.target.files);
+              e.target.value = '';
+            }}
+          />
+        </label>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="flex shrink-0 items-center justify-center rounded-lg border border-slate-200 px-2.5 text-slate-400 transition hover:border-red-300 hover:text-red-500"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      {value && (
+        <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-2">
+          <span className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-800">
+            {kind === 'youtube' && youtubeId(value) ? (
+              <img src={`https://img.youtube.com/vi/${youtubeId(value)}/hqdefault.jpg`} alt="" className="h-full w-full object-cover" />
+            ) : kind === 'vimeo' && vimeoId(value) ? (
+              <img src={`https://vumbnail.com/${vimeoId(value)}.jpg`} alt="" className="h-full w-full object-cover" />
+            ) : kind === 'mp4' ? (
+              <Film className="h-5 w-5 text-white" />
+            ) : (
+              <Link2 className="h-5 w-5 text-white" />
+            )}
+          </span>
+          <div className="min-w-0">
+            <span className="block text-[11px] font-bold text-slate-700">
+              {kind === 'youtube' ? 'YouTube' : kind === 'vimeo' ? 'Vimeo' : kind === 'mp4' ? 'فيديو MP4' : 'رابط'}
+            </span>
+            <span className="block truncate text-[11px] text-slate-400">{value}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Slides list editor — images + headline + CTA per banner / hero slide */
+/* ------------------------------------------------------------------ */
+
+interface SlideItem {
+  title?: string;
+  subtitle?: string;
+  badge?: string;
+  image?: string;
+  button_text?: string;
+  button_link?: string;
+  video?: string;
+  background?: string;
+}
+
+const EMPTY_SLIDE: SlideItem = {
+  title: '',
+  subtitle: '',
+  badge: '',
+  image: '',
+  button_text: 'اكتشف المزيد',
+  button_link: '#template-products',
+  video: '',
+};
+
+const SlidesEditor: React.FC<{ value: SlideItem[]; onChange: (next: SlideItem[]) => void }> = ({ value, onChange }) => {
+  const slides = Array.isArray(value) ? value : [];
+
+  const update = (index: number, key: keyof SlideItem, v: any) => {
+    const next = slides.map((s, i) => (i === index ? { ...s, [key]: v } : s));
+    onChange(next);
+  };
+
+  const remove = (index: number) => onChange(slides.filter((_, i) => i !== index));
+
+  const move = (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= slides.length) return;
+    const next = [...slides];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      {slides.length === 0 && (
+        <p className="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center text-[11px] text-slate-400">
+          لا توجد شرائح. أضف شريحة لعرض بانر/بطاقة جديدة.
+        </p>
+      )}
+
+      {slides.map((slide, index) => (
+        <div key={index} className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="flex items-center gap-2 text-[11px] font-extrabold text-slate-600">
+              <Film className="h-3.5 w-3.5 text-emerald-600" />
+              شريحة {index + 1}
+            </span>
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => move(index, -1)} className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:text-emerald-600" aria-label="تحريك لأعلى">
+                <MoveUp className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={() => move(index, 1)} className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:text-emerald-600" aria-label="تحريك لأسفل">
+                <MoveDown className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={() => remove(index)} className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:border-red-300 hover:text-red-500" aria-label="حذف الشريحة">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <MediaPicker label="" inputId={`slide-image-${index}`} value={slide.image || ''} onChange={(v) => update(index, 'image', v)} placeholder="صورة الشريحة (اختر أو ألصق رابطاً)" />
+
+          <input
+            type="text"
+            value={slide.title || ''}
+            onChange={(e) => update(index, 'title', e.target.value)}
+            placeholder="العنوان"
+            className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+          />
+          <textarea
+            value={slide.subtitle || ''}
+            onChange={(e) => update(index, 'subtitle', e.target.value)}
+            placeholder="النص الفرعي"
+            rows={2}
+            className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+          />
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              value={slide.button_text || ''}
+              onChange={(e) => update(index, 'button_text', e.target.value)}
+              placeholder="نص الزر"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+            />
+            <input
+              type="text"
+              value={slide.button_link || ''}
+              onChange={(e) => update(index, 'button_link', e.target.value)}
+              placeholder="رابط الزر (#identifier)"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+            />
+          </div>
+          <input
+            type="text"
+            value={slide.video || ''}
+            onChange={(e) => update(index, 'video', e.target.value)}
+            placeholder="رابط فيديو لهذه الشريحة (اختياري)"
+            className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+          />
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={() => onChange([...slides, { ...EMPTY_SLIDE }])}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-300 bg-emerald-50/50 px-3 py-2.5 text-xs font-bold text-emerald-600 transition hover:bg-emerald-50"
+      >
+        <Plus className="h-4 w-4" />
+        إضافة شريحة
+      </button>
+    </div>
+  );
 };

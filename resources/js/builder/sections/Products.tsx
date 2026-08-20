@@ -118,13 +118,94 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
     );
   }
 
+  /* -------- bento_products (featured spotlight + side grid) -------- */
+  if (variant === 'bento_products') {
+    const [featured, ...rest] = visibleProducts;
+    return (
+      <section id="template-products" className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
+        <div className="mx-auto max-w-7xl">
+          <SectionHeading title={title} subtitle={'اكتشف منتجاتنا المميزة أولاً.'} />
+          <div className="grid gap-5 lg:grid-cols-2">
+            {featured && (
+              <div className="h-full">
+                <DetailedProductCard product={featured} />
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-2">
+              {rest.slice(0, 4).map((p: any) => (
+                <ProductCard key={p.id} product={p} compact />
+              ))}
+            </div>
+          </div>
+          {filtered.length > visibleCount && (
+            <div className="mt-10 text-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((v) => v + perPage)}
+                className="inline-flex items-center gap-2 rounded-full border px-8 py-3 text-sm font-bold transition hover:opacity-80"
+                style={{ borderColor: css('--twc-primary', '#0f8a5f'), color: css('--twc-primary', '#0f8a5f') }}
+              >
+                عرض المزيد
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  /* -------- tabbed_categories (products grouped by category tabs) -------- */
+  if (variant === 'tabbed_categories') {
+    const catTabs = productCtx.categories?.length ? productCtx.categories : [];
+    return (
+      <section id="template-products" className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-surface', '#f8fafc') }}>
+        <div className="mx-auto max-w-7xl">
+          <SectionHeading title={title} subtitle={'تصفّح المنتجات حسب التصنيف.'} />
+          <div className="mb-7 flex flex-wrap items-center justify-center gap-2">
+            <CatTabButton
+              label="الكل"
+              active={!activeCat || String(activeCat) === 'all'}
+              onClick={() => productCtx.handleCategoryClick('all')}
+            />
+            {catTabs.map((c: any) => (
+              <CatTabButton
+                key={c.id}
+                label={c.name}
+                active={String(activeCat) === String(c.id)}
+                onClick={() => productCtx.handleCategoryClick(c.id)}
+              />
+            ))}
+          </div>
+          <div className={GRID_COLS[Math.min(columns, 4)] || GRID_COLS[4]}>
+            {visibleProducts.map((product: any) => (
+              <ProductCard key={product.id} product={product} compact />
+            ))}
+          </div>
+          {filtered.length > visibleCount && (
+            <div className="mt-10 text-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((v) => v + perPage)}
+                className="inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-bold text-white transition hover:opacity-90"
+                style={{ background: css('--twc-primary', '#0f8a5f') }}
+              >
+                عرض المزيد
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   /* -------- horizontal_scroll -------- */
   if (variant === 'horizontal_scroll') {
     return <HorizontalProductRow products={visibleProducts} title={title} columns={columns} onMore={filtered.length > visibleCount ? () => setVisibleCount((v) => v + perPage) : undefined} />;
   }
 
-  /* -------- compact_cards / detailed_cards_with_badges -------- */
-  const compact = variant === 'compact_cards';
+  /* -------- compact_cards / compact_grid / detailed_cards_with_badges -------- */
+  const compact = variant === 'compact_cards' || variant === 'compact_grid';
   return (
     <section
       id="template-products"
@@ -133,7 +214,7 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
     >
       <div className="mx-auto max-w-7xl">
         <SectionHeading title={title} subtitle={'أحدث ما وصل حديثاً إلى متجرنا.'} />
-        <div className={GRID_COLS[columns] || GRID_COLS[4]}>
+        <div className={GRID_COLS[variant === 'compact_grid' ? Math.min(columns, 6) : columns] || GRID_COLS[4]}>
           {visibleProducts.map((product: any) =>
             compact ? (
               <ProductCard key={product.id} product={product} compact />
@@ -297,3 +378,20 @@ const HorizontalProductRow: React.FC<{ products: any[]; title: string; columns: 
     </section>
   );
 };
+
+const CatTabButton: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ label, active, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`rounded-full px-5 py-2.5 text-sm font-bold transition hover:-translate-y-0.5 ${
+      active ? 'text-white' : 'border'
+    }`}
+    style={
+      active
+        ? { background: css('--twc-primary', '#0f8a5f'), color: css('--twc-primary-foreground', '#ffffff') }
+        : { borderColor: css('--twc-border', '#e2e8f0'), background: '#ffffff', color: css('--twc-text-secondary', '#475569') }
+    }
+  >
+    {label}
+  </button>
+);

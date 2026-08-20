@@ -9,6 +9,26 @@ const toYouTube = (url?: string): string => {
   return m ? `https://www.youtube.com/embed/${m[1]}` : url;
 };
 
+/** Convert any video URL into a playable embed (YouTube / Vimeo) or pass MP4 through. */
+const toEmbed = (url?: string): { src: string; kind: 'mp4' | 'embed' | '' } => {
+  const v = url || '';
+  const yt = v.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  if (yt) {
+    return {
+      src: `https://www.youtube.com/embed/${yt[1]}?autoplay=1&mute=1&loop=1&playlist=${yt[1]}&controls=0&rel=0&playsinline=1&modestbranding=1`,
+      kind: 'embed',
+    };
+  }
+  const vm = v.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vm) {
+    return {
+      src: `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0`,
+      kind: 'embed',
+    };
+  }
+  return { src: v, kind: /\.(mp4|webm|ogv|mov|m4v)(\?.*)?$/i.test(v) ? 'mp4' : '' };
+};
+
 interface HeroSlide {
   title?: string;
   subtitle?: string;
@@ -38,8 +58,76 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
 
   const gradient = `linear-gradient(135deg, ${css('--twc-primary', '#0f8a5f')} 0%, ${css('--twc-secondary', '#0e7490')} 100%)`;
 
-  /* -------- slider_full -------- */
-  if (variant === 'slider_full') {
+  /* -------- video_bg (background video loop + text overlay) -------- */
+  if (variant === 'video_bg' || variant === 'video_background') {
+    const embed = toEmbed(videoUrl);
+    return (
+      <section id="template-hero" className="relative w-full overflow-hidden">
+        <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden px-4 py-24 sm:min-h-[600px]">
+          {embed.kind === 'mp4' && embed.src ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster={image || undefined}
+              className="absolute inset-0 h-full w-full object-cover"
+            >
+              <source src={embed.src} type="video/mp4" />
+            </video>
+          ) : embed.kind === 'embed' && embed.src ? (
+            <iframe
+              src={embed.src}
+              title="Hero video"
+              frameBorder={0}
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ pointerEvents: 'none', transform: 'scale(1.05)' }}
+            />
+          ) : image ? (
+            <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          ) : null}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(2,6,23,.55) 0%, rgba(2,6,23,.35) 50%, rgba(2,6,23,.65) 100%)' }} />
+          <div className="relative z-10 mx-auto max-w-3xl text-center">
+            {badge && (
+              <span className="mb-5 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-white/30 backdrop-blur">
+                {badge}
+              </span>
+            )}
+            <h1 className="text-3xl font-black leading-tight text-white drop-shadow-md sm:text-5xl" style={{ fontFamily: css('--twf-heading-font', 'inherit') }}>
+              {title}
+            </h1>
+            {subtitle && <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/90 drop-shadow sm:text-lg">{subtitle}</p>}
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={buttonLink}
+                className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white shadow-lg transition hover:opacity-90"
+                style={{ background: gradient }}
+              >
+                {buttonText}
+                <ArrowLeft className="h-4 w-4" />
+              </a>
+              {videoUrl && (
+                <a
+                  href={toYouTube(videoUrl) || videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/25"
+                >
+                  <PlayCircle className="h-4 w-4" />
+                  شاهد الفيديو
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  /* -------- slider_full / full_slider (swipeable high-res banners) -------- */
+  if (variant === 'slider_full' || variant === 'full_slider') {
     const extraSlides: HeroSlide[] = Array.isArray(props.slides)
       ? props.slides
       : Array.isArray(storeData?.content?.banners)

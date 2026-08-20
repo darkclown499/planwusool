@@ -18,6 +18,7 @@ interface MediaPickerProps {
   showPreview?: boolean;
   required?: boolean;
   dragDrop?: boolean;
+  inputId?: string;
 }
 
 export default function MediaPicker({
@@ -30,6 +31,7 @@ export default function MediaPicker({
   showPreview = true,
   required = false,
   dragDrop = false,
+  inputId,
 }: MediaPickerProps) {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -140,7 +142,7 @@ export default function MediaPicker({
               variant="outline"
               size="sm"
               disabled={uploading}
-              onClick={() => document.getElementById(`file-input-${label}`)?.click()}
+              onClick={() => document.getElementById(`file-input-${inputId ?? label}`)?.click()}
             >
               <ImageIcon className="h-4 w-4 me-2" />
               {t('Browse files')}
@@ -156,7 +158,7 @@ export default function MediaPicker({
             </Button>
           </div>
           <input
-            id={`file-input-${label}`}
+            id={`file-input-${inputId ?? label}`}
             type="file"
             accept="image/*"
             multiple={multiple}
