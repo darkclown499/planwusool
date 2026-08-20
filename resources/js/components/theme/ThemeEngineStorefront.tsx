@@ -78,22 +78,26 @@ export const ThemeEngineStorefront: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const isStickyCart = config.layout.cartType === 'sticky_bottom_bar';
+  const customCartSlot = config.layout.customCartSlot === true;
   const showCartOverlay = ui.showCart && !isStickyCart;
 
   return (
     <>
       {children}
 
-      {/* Sticky bar always sits on the page; other cart types appear on demand. */}
-      <DynamicCart
-        type={config.layout.cartType}
-        open={showCartOverlay}
-        config={config}
-        core={core}
-        onClose={ui.handleCloseCart}
-        onCheckout={handleCheckoutClick}
-        onProductClick={product.handleProductClick}
-      />
+      {/* The module renders its own cart UI (e.g. market-fast floating bar) ->
+          skip the default DynamicCart overlay slot entirely to avoid duplicates. */}
+      {!customCartSlot && (
+        <DynamicCart
+          type={config.layout.cartType}
+          open={showCartOverlay}
+          config={config}
+          core={core}
+          onClose={ui.handleCloseCart}
+          onCheckout={handleCheckoutClick}
+          onProductClick={product.handleProductClick}
+        />
+      )}
 
       {product.showProductDetail && product.selectedProduct && (
         <TemplateProductDetailModal

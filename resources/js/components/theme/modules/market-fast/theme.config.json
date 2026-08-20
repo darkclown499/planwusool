@@ -3,11 +3,11 @@
   "name": "سوق سريع",
   "sector": "سوبر ماركت وبقالة",
   "styling": {
-    "primaryColor": "#16a34a",
-    "primaryDark": "#15803d",
-    "primarySoft": "#dcfce7",
+    "primaryColor": "#059669",
+    "primaryDark": "#047857",
+    "primarySoft": "#d1fae5",
     "onPrimary": "#ffffff",
-    "borderRadius": "0.5rem",
+    "borderRadius": "0.75rem",
     "fontFamily": "cairo",
     "colorMode": "light"
   },
@@ -15,9 +15,10 @@
     "heroType": "compact_tabs",
     "cartType": "sticky_bottom_bar",
     "productCardStyle": "bulk_add",
-    "gridColumns": 5,
+    "gridColumns": 4,
     "compactHeroMobileOnly": true,
     "stickyCategoryBar": true,
+    "customCartSlot": true,
     "swatchStyle": "round"
   },
   "commerce": {
@@ -37,6 +38,9 @@
     "heroSubtitle": "منتجات طازجة بأسعار منافسة، تصلك في نفس اليوم",
     "heroCtaText": "تسوّق الآن",
     "announcementText": "توصيل مجاني للطلبات فوق 50 شيكل",
+    "bannerTitle": "عروض هذا الأسبوع",
+    "bannerSubtitle": "خصومات حتى 40% على المنتجات الطازجة",
+    "bannerImage": "",
     "bannerCtaText": "تسوّق الآن"
   }
 }

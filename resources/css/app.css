@@ -340,6 +340,15 @@ a[style*="background-color"]:hover:not(.social-auth-btn) {
     border: 2px solid #f9fafb;
   }
 
+/* Hide scrollbars on horizontal pill/category rails (e.g. market-fast storefront). */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hide native scrollbars when the page is embedded in a device preview
    (onboarding phone/desktop previews) so it feels like an app screen. */
 html.in-iframe,

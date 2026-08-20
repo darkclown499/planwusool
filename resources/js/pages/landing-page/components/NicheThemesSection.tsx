@@ -37,8 +37,8 @@ const NICHES: Niche[] = [
     id: 'market-fast',
     label: 'السوبر ماركت والبقالة',
     emoji: '🛒',
-    color: '#16a34a',
-    gradient: 'from-green-500 to-emerald-600',
+    color: '#059669',
+    gradient: 'from-emerald-600 to-green-700',
     title: 'طلبات سريعة بدون احتكاك',
     tagline: 'سلة عائمة تعرض الإجمالي لحظياً، وإضافة بالكميات مباشرة من بطاقة المنتج.',
     highlights: [

@@ -1085,7 +1085,7 @@ const marketFastEngine: TemplateConfig = engineTmpl(
     'سوق سريع',
     'Market Fast',
     'سوبر ماركت وبقالة بسلّة سريعة وتوصيل فوري',
-    '#16a34a',
+    '#059669',
 );
 
 const fashionLuxeEngine: TemplateConfig = engineTmpl(

@@ -58,6 +58,9 @@ export interface ThemeLayoutConfig {
   compactHeroMobileOnly: boolean;
   /** Keep a sticky category bar under the header. */
   stickyCategoryBar: boolean;
+  /** When true, the module renders its own cart UI (e.g. market-fast floating
+   *  bar) and the engine skips the default DynamicCart overlay slot. */
+  customCartSlot?: boolean;
   swatchStyle: 'round' | 'square';
 }
 
@@ -139,6 +142,7 @@ export const DEFAULT_THEME_CONFIG: ThemeConfig = {
     gridColumns: 4,
     compactHeroMobileOnly: false,
     stickyCategoryBar: true,
+    customCartSlot: false,
     swatchStyle: 'round',
   },
   commerce: {
@@ -329,11 +333,11 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
     name: 'سوق سريع',
     sector: 'سوبر ماركت وبقالة',
     styling: {
-      primaryColor: '#16a34a',
-      primaryDark: '#15803d',
-      primarySoft: '#dcfce7',
+      primaryColor: '#059669',
+      primaryDark: '#047857',
+      primarySoft: '#d1fae5',
       onPrimary: '#ffffff',
-      borderRadius: '0.5rem',
+      borderRadius: '0.75rem',
       fontFamily: 'cairo',
       colorMode: 'light',
     },
@@ -341,9 +345,10 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
       heroType: 'compact_tabs',
       cartType: 'sticky_bottom_bar',
       productCardStyle: 'bulk_add',
-      gridColumns: 5,
+      gridColumns: 4,
       compactHeroMobileOnly: true,
       stickyCategoryBar: true,
+      customCartSlot: true,
       swatchStyle: 'round',
     },
     commerce: {
