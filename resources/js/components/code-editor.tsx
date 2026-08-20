@@ -5,7 +5,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { EditorView } from '@codemirror/view';
 
-type EditorLanguage = 'css' | 'javascript' | 'json';
+type EditorLanguage = 'css' | 'javascript' | 'json' | 'html';
 
 interface CodeEditorProps {
   value: string;
@@ -36,7 +36,7 @@ export function CodeEditor({
         readOnly={readOnly}
         placeholder={placeholder}
         extensions={[
-          language === 'css' ? css() : language === 'json' ? json() : javascript(),
+          language === 'css' ? css() : language === 'json' ? json() : language === 'html' ? [] : javascript(),
           EditorView.lineWrapping,
         ]}
         basicSetup={{

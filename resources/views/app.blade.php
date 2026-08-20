@@ -299,6 +299,25 @@
             @endif
         @endif
 
+        {{-- Merchant custom theme assets (designer "code editor" mode):
+             head_inject.html + custom.css are injected server-side so they
+             apply on first paint of the public storefront. --}}
+        @php
+            $storeCustomOverrides = null;
+            if ($isStoreRoute && isset($store) && $store) {
+                $storeOverridesRaw = $store->template_overrides ?? null;
+                $storeCustomOverrides = is_array($storeOverridesRaw)
+                    ? $storeOverridesRaw
+                    : (is_string($storeOverridesRaw) ? json_decode($storeOverridesRaw, true) : null);
+            }
+        @endphp
+        @if($storeCustomOverrides)
+            {!! \App\Support\ThemeAssetSanitizer::html($storeCustomOverrides['head_inject'] ?? '') !!}
+            @if(!empty($storeCustomOverrides['custom_css']))
+                <style data-store-custom-css>{!! \App\Support\ThemeAssetSanitizer::css($storeCustomOverrides['custom_css']) !!}</style>
+            @endif
+        @endif
+
         {{-- Fallback title for non-landing/non-store routes --}}
         @if(!$isLandingRoute && !$isStoreRoute && !$isStaticRoute)
             <title inertia>{{ getSetting('titleText', config('app.name', 'Wusool')) }}</title>
@@ -372,5 +391,8 @@
     </head>
     <body class="font-sans antialiased bg-gray-100">
         @inertia
+        @if($isStoreRoute && $storeCustomOverrides && !empty($storeCustomOverrides['custom_js']))
+            <script{!! $nonceAttr !!}>{!! \App\Support\ThemeAssetSanitizer::js($storeCustomOverrides['custom_js']) !!}</script>
+        @endif
     </body>
 </html>

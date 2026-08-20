@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
-import { Loader2, Check, Save, Monitor, Tablet, Smartphone, ExternalLink, XCircle, AlertTriangle } from 'lucide-react';
+import { Loader2, Check, Save, Monitor, Tablet, Smartphone, ExternalLink, XCircle, AlertTriangle, Code2, LayoutGrid } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { apiGet, apiPut } from '@/utils/api';
@@ -10,6 +10,7 @@ import type { BuilderDesignTokens, BuilderSectionConfig, BuilderSectionType } fr
 import { SectionLibrary } from './designer/components/SectionLibrary';
 import { Canvas } from './designer/components/Canvas';
 import { Inspector } from './designer/components/Inspector';
+import CodeEditorPanel, { type DesignerMode, type ThemeJsonPayload } from './designer/components/CodeEditorPanel';
 
 type Device = 'desktop' | 'tablet' | 'mobile';
 
@@ -31,6 +32,10 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   const [designTokens, setDesignTokens] = useState<BuilderDesignTokens>({ colors: {} });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>('desktop');
+  const [mode, setMode] = useState<DesignerMode>('visual');
+  const [customCss, setCustomCss] = useState('');
+  const [customJs, setCustomJs] = useState('');
+  const [headInject, setHeadInject] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [seedDefaults, setSeedDefaults] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -52,6 +57,9 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
           : (tpl?.sections || []).map((s) => ({ ...s }))
       );
       setDesignTokens({ colors: { ...(tpl?.tokens?.colors || {}), ...(data.design_tokens?.colors || {}) }, typography: { ...(data.design_tokens?.typography || {}) }, radius: data.design_tokens?.radius });
+      setCustomCss(typeof data.custom_css === 'string' ? data.custom_css : '');
+      setCustomJs(typeof data.custom_js === 'string' ? data.custom_js : '');
+      setHeadInject(typeof data.head_inject === 'string' ? data.head_inject : '');
       setSeedDefaults(!data.sections?.length);
       setLoaded(true);
     } catch (e) {
@@ -72,6 +80,9 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
           theme: nextTheme ?? theme,
           sections: nextSections ?? sections,
           design_tokens: nextTokens ?? designTokens,
+          custom_css: customCss,
+          custom_js: customJs,
+          head_inject: headInject,
         });
         setSaveState('saved');
       } catch (e) {
@@ -79,7 +90,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
         setSaveState('error');
       }
     },
-    [apiUrl, theme, sections, designTokens]
+    [apiUrl, theme, sections, designTokens, customCss, customJs, headInject]
   );
 
   // Task 1 — persist the template's default schema on first load when the
@@ -103,6 +114,31 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections, designTokens, theme, loaded]);
+
+  // Debounced autosave for the code-editor assets (css/js/head).
+  useEffect(() => {
+    if (!loaded || skipNextSave.current) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => persist(), 700);
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customCss, customJs, headInject, loaded]);
+
+  // Live-apply the merchant's custom CSS inside the designer preview.
+  useEffect(() => {
+    let el = document.getElementById('wusool-store-custom-css') as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement('style');
+      el.id = 'wusool-store-custom-css';
+      document.head.appendChild(el);
+    }
+    el.textContent = customCss || '';
+    return () => {
+      el?.remove();
+    };
+  }, [customCss]);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -166,6 +202,37 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
     persist(slug, tpl.sections.map((s) => ({ ...s })), { colors: { ...tpl.tokens.colors } });
   };
 
+  /** Apply a parsed theme.json from code-editor mode onto live designer state. */
+  const applyThemeJson = useCallback((parsed: ThemeJsonPayload) => {
+    if (!parsed || typeof parsed !== 'object') return;
+    if (typeof parsed.theme === 'string' && parsed.theme) {
+      const nextTpl = getBuilderTemplate(parsed.theme);
+      if (nextTpl) setTheme(nextTpl.slug);
+    }
+    if (Array.isArray(parsed.sections)) {
+      const normalized = parsed.sections
+        .filter((sec) => !!sec && !!sec.type)
+        .map((sec, i) => ({
+          id: String(sec.id || `${sec.type}-${i + 1}`),
+          type: sec.type as BuilderSectionType,
+          enabled: sec.enabled !== false,
+          order: Number(sec.order) || i,
+          props: { ...defaultSectionProps(sec.type as BuilderSectionType), ...(sec.props || {}) },
+        }));
+      setSections(normalized);
+      skipNextSave.current = false;
+    }
+    if (parsed.tokens && typeof parsed.tokens === 'object') {
+      setDesignTokens((prev) => ({
+        ...prev,
+        ...parsed.tokens,
+        colors: { ...(prev?.colors || {}), ...(parsed.tokens?.colors || {}) },
+        typography: { ...(prev?.typography || {}), ...(parsed.tokens?.typography || {}) },
+        radius: parsed.tokens?.radius ?? prev?.radius,
+      }));
+    }
+  }, []);
+
   const storeData = React.useMemo(
     () => ({
       ...store,
@@ -221,6 +288,27 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
       noPadding
       action={
         <div className="flex items-center gap-3">
+          {/* Designer mode switcher — visual builder / code editor */}
+          <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+            {(
+              [
+                ['visual', 'المصمم البصري', LayoutGrid],
+                ['code', 'محرر الكود', Code2],
+              ] as Array<[DesignerMode, string, React.ComponentType<{ className?: string }>]>
+            ).map(([key, label, Icon]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setMode(key)}
+                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+                  mode === key ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:text-emerald-600'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+          </div>
           {statusEl}
           <Button
             size="sm"
@@ -244,6 +332,47 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
         </div>
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
+          {mode === 'code' && (
+            <div className="flex h-[calc(100vh-112px)] gap-4">
+              {/* Code editor */}
+              <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <CodeEditorPanel
+                  theme={theme}
+                  tokens={designTokens}
+                  sections={sections}
+                  customCss={customCss}
+                  customJs={customJs}
+                  headInject={headInject}
+                  onApplyThemeJson={applyThemeJson}
+                  onCssChange={setCustomCss}
+                  onJsChange={setCustomJs}
+                  onHeadChange={setHeadInject}
+                />
+              </main>
+
+              {/* Live preview stays mounted beside the editor */}
+              <aside className="hidden w-[460px] shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-100 xl:flex">
+                <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5">
+                  <span className="text-xs font-extrabold text-slate-600">معاينة حيّة</span>
+                  <span className="text-[11px] text-slate-400">تتحدث فوراً مع كل تعديل</span>
+                </div>
+                <div className="min-h-0 flex-1 overflow-auto p-4">
+                  <div className="mx-auto min-h-[600px] w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                    <Canvas
+                      sections={sections}
+                      storeData={storeData}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      onToggleEnabled={toggleSection}
+                      onDelete={deleteSection}
+                    />
+                  </div>
+                </div>
+              </aside>
+            </div>
+          )}
+
+          {mode === 'visual' && (
           <div className="flex h-[calc(100vh-112px)] gap-4">
             {/* Section library */}
             <aside className="w-[280px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -309,6 +438,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
               />
             </aside>
           </div>
+          )}
         </DragDropContext>
       )}
       {saveState === 'error' && (

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Store;
+use App\Support\ThemeAssetSanitizer;
 use Illuminate\Http\Request;
 
 /**
@@ -23,11 +24,16 @@ class DesignerController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        $overrides = $store->template_overrides ?? [];
+
         return response()->json([
             'success' => true,
             'theme' => $store->getTemplateSlug(),
-            'sections' => ($store->template_overrides ?? [])['sections'] ?? [],
+            'sections' => $overrides['sections'] ?? [],
             'design_tokens' => $store->design_tokens ?? [],
+            'custom_css' => $overrides['custom_css'] ?? '',
+            'custom_js' => $overrides['custom_js'] ?? '',
+            'head_inject' => $overrides['head_inject'] ?? '',
             'availableThemes' => $request->user()->getAvailableThemes(),
         ]);
     }
@@ -44,6 +50,9 @@ class DesignerController extends Controller
             'theme' => 'sometimes|string',
             'sections' => 'sometimes|array',
             'design_tokens' => 'sometimes|array',
+            'custom_css' => 'sometimes|nullable|string|max:100000',
+            'custom_js' => 'sometimes|nullable|string|max:100000',
+            'head_inject' => 'sometimes|nullable|string|max:100000',
         ]);
 
         if (isset($validated['theme'])) {
@@ -65,14 +74,36 @@ class DesignerController extends Controller
             $store->design_tokens = $validated['design_tokens'];
         }
 
+        // Custom code assets (code editor mode) — sanitized before storage so
+        // the storefront injection can never break out of its container.
+        $customAssetKeys = ['custom_css', 'custom_js', 'head_inject'];
+        if (collect($customAssetKeys)->contains(fn ($key) => array_key_exists($key, $validated))) {
+            $overrides = $store->template_overrides ?? [];
+            foreach ($customAssetKeys as $key) {
+                if (array_key_exists($key, $validated)) {
+                    $overrides[$key] = match ($key) {
+                        'custom_css' => ThemeAssetSanitizer::css($validated[$key]),
+                        'custom_js' => ThemeAssetSanitizer::js($validated[$key]),
+                        default => ThemeAssetSanitizer::html($validated[$key]),
+                    };
+                }
+            }
+            $store->template_overrides = $overrides;
+        }
+
         $store->save();
         $store->refresh();
+
+        $overrides = $store->template_overrides ?? [];
 
         return response()->json([
             'success' => true,
             'theme' => $store->getTemplateSlug(),
-            'sections' => ($store->template_overrides ?? [])['sections'] ?? [],
+            'sections' => $overrides['sections'] ?? [],
             'design_tokens' => $store->design_tokens ?? [],
+            'custom_css' => $overrides['custom_css'] ?? '',
+            'custom_js' => $overrides['custom_js'] ?? '',
+            'head_inject' => $overrides['head_inject'] ?? '',
         ]);
     }
 
