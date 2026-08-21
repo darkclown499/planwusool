@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
-import { Loader2, Check, Save, Monitor, Tablet, Smartphone, ExternalLink, XCircle, AlertTriangle, Code2, LayoutGrid } from 'lucide-react';
-import { PageTemplate } from '@/components/page-template';
+import { Head } from '@inertiajs/react';
+import { Loader2, Check, Save, Monitor, Tablet, Smartphone, ExternalLink, XCircle, AlertTriangle, Code2, LayoutGrid, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiGet, apiPut } from '@/utils/api';
 import { getBuilderTemplate } from '@/builder';
@@ -85,6 +85,15 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
           head_inject: headInject,
         });
         setSaveState('saved');
+        savedSnapshot.current = JSON.stringify({
+          theme: nextTheme ?? theme,
+          sections: nextSections ?? sections,
+          designTokens: nextTokens ?? designTokens,
+          customCss,
+          customJs,
+          headInject,
+        });
+        setIsDirty(false);
       } catch (e) {
         console.error('Save failed', e);
         setSaveState('error');
@@ -139,6 +148,33 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
       el?.remove();
     };
   }, [customCss]);
+
+  /* ---- Unsaved-changes tracking (full-screen editor) ---- */
+  const savedSnapshot = useRef<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+  const stateSnapshot = JSON.stringify({ theme, sections, designTokens, customCss, customJs, headInject });
+
+  useEffect(() => {
+    if (!loaded) return;
+    if (savedSnapshot.current === null) {
+      // First snapshot after hydration = the persisted baseline.
+      savedSnapshot.current = stateSnapshot;
+      setIsDirty(false);
+      return;
+    }
+    setIsDirty(stateSnapshot !== savedSnapshot.current);
+  }, [stateSnapshot, loaded]);
+
+  // Prompt before closing/refreshing the tab with unsaved changes.
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -240,6 +276,14 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   const previewUrl = `https://${store.slug}.${window.location.host.split(':')[0]}`;
 
   const statusEl = (() => {
+    if (isDirty && saveState !== 'saving' && saveState !== 'error') {
+      return (
+        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          تغييرات غير محفوظة
+        </span>
+      );
+    }
     switch (saveState) {
       case 'saving':
         return (
@@ -268,16 +312,30 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   })();
 
   return (
-    <PageTemplate
-      title="مصمم المتجر"
-      description="اسحب وأفلت الأقسام وصمّم متجرك بحرية كاملة"
-      url={`/stores/${store.id}/designer`}
-      backUrl={`/stores/${store.id}/settings?tab=template`}
-      noPadding
-      action={
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-gray-100">
+      <Head title={`مصمم المتجر — ${store.name}`} />
+
+      {/* Full-screen editor top bar */}
+      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4">
+        {/* Right (RTL start): back to dashboard */}
+        <div className="flex min-w-0 items-center gap-3">
+          <a
+            href={`/stores/${store.id}`}
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-emerald-300 hover:text-emerald-600"
+          >
+            <ArrowRight className="h-4 w-4" />
+            العودة للوحة التحكم
+          </a>
+          <div className="hidden min-w-0 md:block">
+            <p className="truncate text-sm font-black text-slate-800">{store.name}</p>
+            <p className="text-[11px] leading-tight text-slate-400">مصمم المتجر المرئي</p>
+          </div>
+        </div>
+
+        {/* Center: mode switcher + viewport switcher + auto-save indicator */}
         <div className="flex items-center gap-3">
           {/* Designer mode switcher — visual builder / code editor */}
-          <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="hidden items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm lg:flex">
             {(
               [
                 ['visual', 'المصمم البصري', LayoutGrid],
@@ -297,7 +355,36 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
               </button>
             ))}
           </div>
+
+          {/* Viewport switcher */}
+          <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+            {(
+              [
+                ['desktop', 'ديسكتوب', Monitor],
+                ['tablet', 'تابلت', Tablet],
+                ['mobile', 'موبايل', Smartphone],
+              ] as Array<[Device, string, React.ComponentType<{ className?: string }>]>
+            ).map(([key, label, Icon]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setDevice(key)}
+                title={label}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${
+                  device === key ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:text-emerald-600'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                <span className="hidden xl:inline">{label}</span>
+              </button>
+            ))}
+          </div>
+
           {statusEl}
+        </div>
+
+        {/* Left (RTL end): live store preview + manual save */}
+        <div className="flex shrink-0 items-center gap-2">
           <Button
             size="sm"
             variant="outline"
@@ -305,23 +392,25 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
             onClick={() => window.open(previewUrl, '_blank')}
           >
             <ExternalLink className="h-4 w-4" />
-            عرض المتجر
+            <span className="hidden sm:inline">معاينة المتجر الحية</span>
           </Button>
           <Button size="sm" className="h-8 gap-2" onClick={() => persist()} disabled={saveState === 'saving'}>
             {saveState === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            حفظ
+            حفظ التغييرات
           </Button>
         </div>
-      }
-    >
+      </header>
+
+      {/* Editor body fills the remaining viewport */}
       {!loaded ? (
-        <div className="flex h-[70vh] items-center justify-center">
+        <div className="flex min-h-0 flex-1 items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
         </div>
       ) : (
+        <main className="min-h-0 flex-1 overflow-hidden p-4">
         <DragDropContext onDragEnd={onDragEnd}>
           {mode === 'code' && (
-            <div className="flex h-[calc(100vh-112px)] gap-4">
+            <div className="flex h-full gap-4">
               {/* Code editor */}
               <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
                 <CodeEditorPanel
@@ -361,7 +450,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
           )}
 
           {mode === 'visual' && (
-          <div className="flex h-[calc(100vh-112px)] gap-4">
+          <div className="flex h-full gap-4">
             {/* Section library */}
             <aside className="w-[280px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
               <SectionLibrary onAdd={addSection} />
@@ -370,27 +459,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
             {/* Live canvas */}
             <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
               <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5">
-                <div className="flex items-center gap-1.5 rounded-full bg-slate-100 p-1">
-                  {(
-                    [
-                      ['desktop', 'ديسكتوب', Monitor],
-                      ['tablet', 'تابلت', Tablet],
-                      ['mobile', 'موبايل', Smartphone],
-                    ] as Array<[Device, string, React.ComponentType<{ className?: string }>]>
-                  ).map(([key, label, Icon]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setDevice(key)}
-                      className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
-                        device === key ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'
-                      }`}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">{label}</span>
-                    </button>
-                  ))}
-                </div>
+                <span className="text-xs font-extrabold text-slate-600">معاينة حيّة — تتحدث فوراً مع كل تعديل</span>
                 <span className="text-[11px] text-slate-400">
                   {sections.filter((s) => s.enabled).length} سيكشن ظاهر من {sections.length}
                 </span>
@@ -427,13 +496,14 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
           </div>
           )}
         </DragDropContext>
+        </main>
       )}
       {saveState === 'error' && (
         <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-lg">
           <AlertTriangle className="h-4 w-4" />
-          تعذّر حفظ التصميم. تحقق من اتصالك ثم اضغط حفظ.
+          تعذر الحفظ تلقائياً. تأكد من اتصالك بالإنترنت ثم اضغط زر الحفظ يدوياً.
         </div>
       )}
-    </PageTemplate>
+    </div>
   );
 }
