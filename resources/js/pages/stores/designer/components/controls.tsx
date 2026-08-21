@@ -23,10 +23,12 @@ import {
   Loader2,
   MoveUp,
   MoveDown,
+  Star as StarIcon,
   type LucideIcon,
 } from 'lucide-react';
 import MediaPicker from '@/components/MediaPicker';
 import type { BuilderPropSchema } from '@/builder/types';
+import { FEATURE_ICON_MAP, FEATURE_ICON_KEYS } from '@/builder/sections/Features';
 import { toast } from 'sonner';
 
 export const SECTION_ICONS: Record<string, LucideIcon> = {
@@ -79,7 +81,8 @@ export const PropField: React.FC<{
   prop: BuilderPropSchema;
   value: any;
   onChange: (key: string, value: any) => void;
-}> = ({ prop, value, onChange }) => {
+  storeCategories?: any[];
+}> = ({ prop, value, onChange, storeCategories = [] }) => {
   const set = (v: any) => onChange(prop.key, v);
 
   switch (prop.type) {
@@ -138,7 +141,7 @@ export const PropField: React.FC<{
     case 'image':
       return (
         <div className="mb-4">
-          <FieldLabel label={prop.label} />
+          <FieldLabel label={prop.label} hint={prop.hint} />
           <MediaPicker
             label={prop.label}
             value={value || ''}
@@ -146,6 +149,40 @@ export const PropField: React.FC<{
             placeholder="اختر صورة..."
             dragDrop
           />
+        </div>
+      );
+
+    case 'category_multiselect':
+      return (
+        <div className="mb-4">
+          <FieldLabel label={prop.label} hint={prop.hint} />
+          {!storeCategories.length ? (
+            <p className="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-center text-[11px] text-slate-400">
+              لا توجد تصنيفات في متجرك بعد — سيتم عرض جميع التصنيفات تلقائياً.
+            </p>
+          ) : (
+            <CategoryMultiselect
+              categories={storeCategories}
+              selected={Array.isArray(value) ? value.map(String) : []}
+              onChange={(next) => set(next)}
+            />
+          )}
+        </div>
+      );
+
+    case 'list':
+      if (prop.list === 'reviews') {
+        return (
+          <div className="mb-4">
+            <FieldLabel label={prop.label} hint={prop.hint} />
+            <ReviewsEditor value={Array.isArray(value) ? value : []} onChange={set} />
+          </div>
+        );
+      }
+      return (
+        <div className="mb-4">
+          <FieldLabel label={prop.label} hint={prop.hint} />
+          <FeaturesEditor value={Array.isArray(value) ? value : []} onChange={set} />
         </div>
       );
 
@@ -343,20 +380,62 @@ interface SlideItem {
   subtitle?: string;
   badge?: string;
   image?: string;
+  image_mobile?: string;
+  content_position?: ContentPosition;
+  overlay_opacity?: number;
   button_text?: string;
   button_link?: string;
   video?: string;
   background?: string;
 }
 
+/** 9-position overlay content alignment. */
+export type ContentPosition =
+  | 'top_right'
+  | 'top_center'
+  | 'top_left'
+  | 'center_right'
+  | 'center'
+  | 'center_left'
+  | 'bottom_right'
+  | 'bottom_center'
+  | 'bottom_left';
+
 const EMPTY_SLIDE: SlideItem = {
   title: '',
   subtitle: '',
   badge: '',
   image: '',
+  image_mobile: '',
+  content_position: 'center',
+  overlay_opacity: 35,
   button_text: 'اكتشف المزيد',
   button_link: '#template-products',
   video: '',
+};
+
+/** Compact 3x3 grid picker for slide content alignment. */
+const PositionGrid: React.FC<{ value: ContentPosition; onChange: (next: ContentPosition) => void }> = ({ value, onChange }) => {
+  const rows: ContentPosition[][] = [
+    ['bottom_right', 'bottom_center', 'bottom_left'],
+    ['center_right', 'center', 'center_left'],
+    ['top_right', 'top_center', 'top_left'],
+  ];
+  return (
+    <div className="grid w-fit grid-cols-3 gap-1 rounded-lg border border-slate-200 bg-white p-1">
+      {rows.flat().map((pos) => (
+        <button
+          key={pos}
+          type="button"
+          onClick={() => onChange(pos)}
+          aria-label={pos}
+          className={`h-6 w-6 rounded-md border transition ${
+            value === pos ? 'border-emerald-500 bg-emerald-500' : 'border-slate-200 bg-slate-100 hover:border-emerald-300'
+          }`}
+        />
+      ))}
+    </div>
+  );
 };
 
 const SlidesEditor: React.FC<{ value: SlideItem[]; onChange: (next: SlideItem[]) => void }> = ({ value, onChange }) => {
@@ -407,6 +486,37 @@ const SlidesEditor: React.FC<{ value: SlideItem[]; onChange: (next: SlideItem[])
 
           <MediaPicker label="" inputId={`slide-image-${index}`} value={slide.image || ''} onChange={(v) => update(index, 'image', v)} placeholder="صورة الشريحة (اختر أو ألصق رابطاً)" />
 
+          <div className="mt-2">
+            <MediaPicker
+              label=""
+              inputId={`slide-image-mobile-${index}`}
+              value={slide.image_mobile || ''}
+              onChange={(v) => update(index, 'image_mobile', v)}
+              placeholder="صورة الجوال (عمودية — تظهر تحت 768px)"
+            />
+          </div>
+
+          <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2">
+            <span className="text-[11px] font-bold text-slate-600">موضع المحتوى</span>
+            <PositionGrid value={slide.content_position || 'center'} onChange={(pos) => update(index, 'content_position', pos)} />
+          </div>
+
+          <label className="mt-2 block rounded-lg border border-slate-200 bg-white px-3 py-2">
+            <span className="mb-1 flex items-center justify-between text-[11px] font-bold text-slate-600">
+              شفافية التظليل
+              <span className="font-mono text-emerald-600">{Math.round(Number(slide.overlay_opacity ?? 35))}%</span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={90}
+              step={5}
+              value={Number(slide.overlay_opacity ?? 35)}
+              onChange={(e) => update(index, 'overlay_opacity', Number(e.target.value))}
+              className="w-full accent-emerald-500"
+            />
+          </label>
+
           <input
             type="text"
             value={slide.title || ''}
@@ -454,6 +564,219 @@ const SlidesEditor: React.FC<{ value: SlideItem[]; onChange: (next: SlideItem[])
       >
         <Plus className="h-4 w-4" />
         إضافة شريحة
+      </button>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Category multi-select — checkbox list of the store's categories.    */
+/* ------------------------------------------------------------------ */
+
+const CategoryMultiselect: React.FC<{
+  categories: any[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}> = ({ categories, selected, onChange }) => {
+  const toggle = (id: any) => {
+    const sid = String(id);
+    onChange(selected.includes(sid) ? selected.filter((v) => v !== sid) : [...selected, sid]);
+  };
+  return (
+    <div className="max-h-52 space-y-1.5 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2">
+      {categories.map((c) => {
+        const id = String(c.id);
+        const checked = selected.includes(id);
+        return (
+          <label key={id} className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-slate-50">
+            <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="h-4 w-4 rounded accent-emerald-500" />
+            {c.image ? (
+              <img src={c.image} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <Grid className="h-3 w-3" />
+              </span>
+            )}
+            <span className="truncate text-xs text-slate-700">{c.name}</span>
+          </label>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Feature list editor — Lucide icon picker + title + description.     */
+/* ------------------------------------------------------------------ */
+
+const getFeatureIcon = (key: any): React.ComponentType<{ className?: string }> =>
+  FEATURE_ICON_MAP[key] || FEATURE_ICON_MAP.sparkles;
+
+const FeaturesEditor: React.FC<{ value: any[]; onChange: (next: any[]) => void }> = ({ value, onChange }) => {
+  const items = Array.isArray(value) ? value : [];
+  const update = (index: number, key: string, v: any) =>
+    onChange(items.map((it, i) => (i === index ? { ...it, [key]: v } : it)));
+  const remove = (index: number) => onChange(items.filter((_, i) => i !== index));
+
+  return (
+    <div className="space-y-3">
+      {!items.length && (
+        <p className="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-center text-[11px] text-slate-400">
+          لا توجد مزايا مخصصة — سيتم استخدام مزايا المتجر الافتراضية.
+        </p>
+      )}
+      {items.map((item, index) => (
+        <FeatureRow key={index} item={item} onRemove={() => remove(index)} onUpdate={(k, v) => update(index, k, v)} />
+      ))}
+      <button
+        type="button"
+        onClick={() => onChange([...items, { title: '', text: '', icon: 'truck' }])}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-300 bg-emerald-50/50 px-3 py-2.5 text-xs font-bold text-emerald-600 transition hover:bg-emerald-50"
+      >
+        <Plus className="h-4 w-4" />
+        إضافة ميزة
+      </button>
+    </div>
+  );
+};
+
+const FeatureRow: React.FC<{
+  item: any;
+  onRemove: () => void;
+  onUpdate: (key: string, value: any) => void;
+}> = ({ item, onRemove, onUpdate }) => {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const IconComp = getFeatureIcon(item.icon);
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+      <div className="mb-2 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setPickerOpen((o) => !o)}
+          title="تغيير الأيقونة"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-emerald-600 transition hover:border-emerald-400"
+        >
+          <IconComp className="h-4.5 w-4.5" />
+        </button>
+        <input
+          type="text"
+          value={item.title || ''}
+          onChange={(e) => onUpdate('title', e.target.value)}
+          placeholder="عنوان الميزة"
+          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+        />
+        <button
+          type="button"
+          onClick={onRemove}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:border-red-300 hover:text-red-500"
+          aria-label="حذف الميزة"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+
+      <textarea
+        rows={2}
+        value={item.text || ''}
+        onChange={(e) => onUpdate('text', e.target.value)}
+        placeholder="وصف قصير للميزة"
+        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+      />
+
+      {pickerOpen && (
+        <div className="mt-2 grid grid-cols-6 gap-1.5 rounded-lg border border-slate-200 bg-white p-2">
+          {FEATURE_ICON_KEYS.map((key) => {
+            const Comp = getFeatureIcon(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => {
+                  onUpdate('icon', key);
+                  setPickerOpen(false);
+                }}
+                title={key}
+                className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
+                  item.icon === key ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-400' : 'text-slate-500 hover:bg-slate-100'
+                }`}
+              >
+                <Comp className="h-4 w-4" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Reviews list editor — name + text + rating (1-5) + avatar.          */
+/* ------------------------------------------------------------------ */
+
+const ReviewsEditor: React.FC<{ value: any[]; onChange: (next: any[]) => void }> = ({ value, onChange }) => {
+  const items = Array.isArray(value) ? value : [];
+  const update = (index: number, key: string, v: any) =>
+    onChange(items.map((it, i) => (i === index ? { ...it, [key]: v } : it)));
+  const remove = (index: number) => onChange(items.filter((_, i) => i !== index));
+  const setRating = (index: number, rating: number) => update(index, 'rating', rating);
+
+  return (
+    <div className="space-y-3">
+      {!items.length && (
+        <p className="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-center text-[11px] text-slate-400">
+          لا توجد تقييمات مخصصة — سيتم استخدام تقييمات المتجر الافتراضية.
+        </p>
+      )}
+      {items.map((item, index) => (
+        <div key={index} className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
+          <div className="mb-2 flex items-start gap-2">
+            <MediaPicker label="" inputId={`review-avatar-${index}`} value={item.avatar || ''} onChange={(v) => update(index, 'avatar', v)} placeholder="صورة العميل" showPreview />
+            <div className="min-w-0 flex-1 space-y-2">
+              <input
+                type="text"
+                value={item.name || ''}
+                onChange={(e) => update(index, 'name', e.target.value)}
+                placeholder="اسم العميل"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+              />
+              <textarea
+                rows={2}
+                value={item.text || ''}
+                onChange={(e) => update(index, 'text', e.target.value)}
+                placeholder="نص التقييم"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => remove(index)}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:border-red-300 hover:text-red-500"
+              aria-label="حذف التقييم"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="mr-1 text-[11px] font-bold text-slate-500">التقييم:</span>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button key={star} type="button" onClick={() => setRating(index, star)} aria-label={`${star} نجوم`}>
+                <StarIcon
+                  className={`h-5 w-5 transition ${star <= Number(item.rating ?? 5) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}`}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => onChange([...items, { name: '', text: '', rating: 5, avatar: '' }])}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-emerald-300 bg-emerald-50/50 px-3 py-2.5 text-xs font-bold text-emerald-600 transition hover:bg-emerald-50"
+      >
+        <Plus className="h-4 w-4" />
+        إضافة تقييم
       </button>
     </div>
   );

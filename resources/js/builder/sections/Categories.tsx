@@ -15,7 +15,11 @@ const GRID_COLS: Record<number, string> = {
 export const CategoriesSection: React.FC<BuilderSectionProps> = ({ section }) => {
   const props = section.props || {};
   const { product } = useStorefrontCore();
-  const categories = product.categories?.length ? product.categories : [];
+  const allCategories = product.categories?.length ? product.categories : [];
+
+  // Phase 4: merchant-selected subset (designer multi-select). Empty → all.
+  const selectedIds = Array.isArray(props.selected_categories) ? props.selected_categories.map(String) : [];
+  const categories = selectedIds.length ? allCategories.filter((c: any) => selectedIds.includes(String(c.id))) : allCategories;
 
   const cols = Math.max(Number(props.columns) || 4, 2);
   const gridClass = GRID_COLS[cols] || GRID_COLS[4];
@@ -167,8 +171,112 @@ export const CategoriesSection: React.FC<BuilderSectionProps> = ({ section }) =>
           </div>
         )}
 
-        {variant === 'horizontal_scroll' && (
+                {variant === 'horizontal_scroll' && (
           <HorizontalCategoryRow categories={categories} activeCat={product.activeCategory} onClick={product.handleCategoryClick} />
+        )}
+
+        {/* Phase 4: circular snap-scroll slider */}
+        {variant === 'circle_slider' && (
+          <div className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {props.show_all !== false && (
+              <span className="shrink-0 snap-start">
+                <CategoryCircle
+                  label="الكل"
+                  active={String(product.activeCategory) === 'all'}
+                  onClick={() => product.handleCategoryClick('all')}
+                />
+              </span>
+            )}
+            {categories.map((c: any) => (
+              <span key={c.id} className="shrink-0 snap-start">
+                <CategoryCircle
+                  image={c.image}
+                  label={c.name}
+                  active={String(product.activeCategory) === String(c.id)}
+                  onClick={() => product.handleCategoryClick(c.id)}
+                />
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Phase 4: masonry grid — staggered tile heights via row spans */}
+        {variant === 'masonry_grid' && (
+          <div className="grid auto-rows-[110px] grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {categories.slice(0, 10).map((c: any, i: number) => {
+              const spans = ['row-span-2', 'row-span-3', 'row-span-2', 'row-span-2', 'row-span-3', 'row-span-2'];
+              const span = spans[i % spans.length];
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => product.handleCategoryClick(c.id)}
+                  className={`group relative overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${span}`}
+                  style={{ borderRadius: css('--twx-radius', '1rem') }}
+                >
+                  {c.image ? (
+                    <img src={c.image} alt={c.name} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  ) : (
+                    <span
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ background: `linear-gradient(${140 + (i % 4) * 25}deg, ${css('--twc-primary', '#0f8a5f')}, ${css('--twc-secondary', '#0e7490')})` }}
+                    >
+                      <Store className="h-8 w-8 text-white/40" />
+                    </span>
+                  )}
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                  <span className="absolute inset-x-0 bottom-0 p-3 text-start text-sm font-bold text-white drop-shadow sm:text-base">
+                    {c.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Phase 4: minimalist overlay — typographic tiles, reveal on hover */}
+        {variant === 'minimalist_overlay' && (
+          <div className="divide-y" style={{ borderColor: css('--twc-border', '#e2e8f0') }}>
+            {categories.map((c: any, i: number) => {
+              const active = String(product.activeCategory) === String(c.id);
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => product.handleCategoryClick(c.id)}
+                  className="group relative flex w-full items-center justify-between overflow-hidden px-2 py-6 text-start transition-colors sm:py-8"
+                  style={{ borderColor: css('--twc-border', '#e2e8f0') }}
+                >
+                  <span
+                    className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                    style={{
+                      background:
+                        i % 2 === 0
+                          ? `linear-gradient(90deg, ${css('--twc-primary', '#0f8a5f')}14 0%, transparent 70%)`
+                          : `linear-gradient(270deg, ${css('--twc-primary', '#0f8a5f')}14 0%, transparent 70%)`,
+                      ...(active ? { opacity: 1 } : {}),
+                    }}
+                  />
+                  <span className="relative z-10 flex items-baseline gap-4">
+                    <span className="font-mono text-xs text-slate-300">{String(i + 1).padStart(2, '0')}</span>
+                    <span
+                      className="text-xl font-black tracking-tight transition-transform duration-300 group-hover:-translate-y-0.5 sm:text-3xl"
+                      style={{ color: css('--twc-text-primary', '#0f172a') }}
+                    >
+                      {c.name}
+                    </span>
+                  </span>
+                  {c.image && (
+                    <img
+                      src={c.image}
+                      alt=""
+                      className="relative z-10 h-12 w-12 rounded-lg object-cover opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:shadow-md"
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         )}
 
         {variant === 'icon_grid' && (

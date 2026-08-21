@@ -1,5 +1,12 @@
-import React, { useEffect, useState } from 'react';
+﻿import React from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight, PlayCircle } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
+import type { SwiperOptions } from 'swiper/types';
+import type { Swiper as SwiperClass } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-fade';
 import { css } from './helpers';
 import type { BuilderSectionProps } from './helpers';
 
@@ -34,16 +41,47 @@ interface HeroSlide {
   subtitle?: string;
   badge?: string;
   image?: string;
+  image_mobile?: string;
+  content_position?: string;
+  overlay_opacity?: number;
   button_text?: string;
   button_link?: string;
 }
 
+/** 9-position overlay alignment â†’ flex classes (RTL aware). */
+const SLIDE_ALIGN: Record<string, string> = {
+  top_right: 'items-start justify-start text-start',
+  top_center: 'items-start justify-center text-center',
+  top_left: 'items-start justify-end text-end',
+  center_right: 'items-center justify-start text-start',
+  center: 'items-center justify-center text-center',
+  center_left: 'items-center justify-end text-end',
+  bottom_right: 'items-end justify-start text-start',
+  bottom_center: 'items-end justify-center text-center',
+  bottom_left: 'items-end justify-end text-end',
+};
+
+const slideAlignClass = (pos?: string): string => SLIDE_ALIGN[pos || 'center'] || SLIDE_ALIGN.center;
+
+/** Desktop/mobile dual-image via <picture> (mobile source under 768px). */
+const SlidePicture: React.FC<{ slide: HeroSlide }> = ({ slide }) => {
+  const desktop = slide.image || '';
+  const mobile = slide.image_mobile || '';
+  if (!desktop && !mobile) return null;
+  return (
+    <picture>
+      {mobile ? <source media="(max-width:768px)" srcSet={mobile} /> : null}
+      {desktop ? <img src={desktop} alt="" loading="lazy" className="h-full w-full object-cover" /> : null}
+    </picture>
+  );
+};
+
 export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData }) => {
   const props = section.props || {};
   const content = storeData?.content?.hero || storeData?.content?.banner || {};
-  const storeName = storeData?.config?.storeName || storeData?.name || 'متجرنا';
+  const storeName = storeData?.config?.storeName || storeData?.name || 'Ù…ØªØ¬Ø±Ù†Ø§';
 
-  // Strict conditional resolution: a key present in props is authoritative —
+  // Strict conditional resolution: a key present in props is authoritative â€”
   // clearing it in the designer hides the element instead of falling back to
   // generic placeholder text (no empty text artifacts).
   const has = (k: string) => Object.prototype.hasOwnProperty.call(props, k);
@@ -52,12 +90,12 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
     return fallback;
   };
 
-  const title = pick('title', String(content.title || '').trim() || `مرحباً بك في ${storeName}`);
+  const title = pick('title', String(content.title || '').trim() || `Ù…Ø±Ø­Ø¨Ø§Ù‹ Ø¨Ùƒ ÙÙŠ ${storeName}`);
   const subtitle = pick('subtitle', String(content.subtitle || '').trim());
   const badge = pick('badge', String(content.badge || '').trim());
   const image = pick('image', String(content.image || '').trim());
   const videoUrl = pick('video', String(content.video || '').trim());
-  const buttonText = pick('button_text', String(content.button_text || '').trim() || 'تسوّق الآن');
+  const buttonText = pick('button_text', String(content.button_text || '').trim() || 'ØªØ³ÙˆÙ‘Ù‚ Ø§Ù„Ø¢Ù†');
   const buttonLink = pick('button_link', String(content.button_link || '').trim() || '#template-products');
 
   const variant = (props.hero_variant as string) || (props.layout === 'full' ? 'full' : 'split_banner');
@@ -71,7 +109,7 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
 
     return (
       <section id="template-hero" className="relative w-full overflow-hidden">
-        {/* Fixed responsive stage — no letterboxing: media always covers */}
+        {/* Fixed responsive stage â€” no letterboxing: media always covers */}
         <div className="relative h-[500px] w-full overflow-hidden md:h-[650px]">
           {embed.kind === 'mp4' && embed.src ? (
             <video
@@ -150,11 +188,31 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
         ? storeData.content.banners
         : [];
     const slides: HeroSlide[] = [
-      { title, subtitle, badge, image, button_text: buttonText, button_link: buttonLink },
-      ...extraSlides.slice(0, 2),
+      {
+        title,
+        subtitle,
+        badge,
+        image,
+        image_mobile: String(props.image_mobile || ''),
+        content_position: (props.content_position as string) || 'center',
+        overlay_opacity: typeof props.overlay_opacity === 'number' ? props.overlay_opacity : undefined,
+        button_text: buttonText,
+        button_link: buttonLink,
+      },
+      ...extraSlides,
     ].filter((s) => s.title);
 
-    return <HeroSlider slides={slides} gradient={gradient} videoUrl={videoUrl} />;
+    return (
+      <HeroSlider
+        slides={slides}
+        gradient={gradient}
+        videoUrl={videoUrl}
+        autoplay={props.autoplay !== false}
+        autoplayDelay={Math.min(Math.max(Number(props.autoplay_delay) || 5000, 2000), 15000)}
+        effect={(props.effect as string) === 'fade' ? 'fade' : 'slide'}
+        showDots={props.show_dots !== false}
+      />
+    );
   }
 
   /* -------- bento_grid -------- */
@@ -211,7 +269,7 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
                       className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 transition hover:bg-white/25"
                     >
                       <PlayCircle className="h-4 w-4" />
-                      شاهد الفيديو
+                      Ø´Ø§Ù‡Ø¯ Ø§Ù„ÙÙŠØ¯ÙŠÙˆ
                     </a>
                   )}
                 </div>
@@ -241,7 +299,7 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
     );
   }
 
-  /* -------- split_banner (text left, image right — RTL awareness) -------- */
+  /* -------- split_banner (text left, image right â€” RTL awareness) -------- */
   if (variant === 'split_banner' && image) {
     return (
       <section id="template-hero" className="relative w-full overflow-hidden">
@@ -290,7 +348,7 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
                       style={{ borderColor: css('--twc-border', '#e2e8f0'), color: css('--twc-text-secondary', '#475569') }}
                     >
                       <PlayCircle className="h-4 w-4" />
-                      شاهد الفيديو
+                      Ø´Ø§Ù‡Ø¯ Ø§Ù„ÙÙŠØ¯ÙŠÙˆ
                     </a>
                   )}
                 </div>
@@ -352,7 +410,7 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
                   className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 transition hover:bg-white/25"
                 >
                   <PlayCircle className="h-4 w-4" />
-                  شاهد الفيديو
+                  Ø´Ø§Ù‡Ø¯ Ø§Ù„ÙÙŠØ¯ÙŠÙˆ
                 </a>
               )}
             </div>
@@ -363,78 +421,141 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
   );
 };
 
-/* Lightweight auto-advancing full-width hero slider. */
-const HeroSlider: React.FC<{ slides: HeroSlide[]; gradient: string; videoUrl: string }> = ({
-  slides,
-  gradient,
-  videoUrl,
-}) => {
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const count = Math.max(slides.length, 1);
+/* Swiper-powered full-width hero slider (autoplay, fade/slide, dots, fully clickable slides). */
+const HeroSlider: React.FC<{
+  slides: HeroSlide[];
+  gradient: string;
+  videoUrl: string;
+  autoplay: boolean;
+  autoplayDelay: number;
+  effect: 'slide' | 'fade';
+  showDots: boolean;
+}> = ({ slides, gradient, videoUrl, autoplay, autoplayDelay, effect, showDots }) => {
+  const count = slides.length;
+  const swiperRef = React.useRef<SwiperClass | null>(null);
 
-  useEffect(() => {
-    if (paused || count <= 1) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % count), 5000);
-    return () => clearInterval(t);
-  }, [paused, count]);
+  if (count === 0) {
+    return (
+      <section id="template-hero" className="relative w-full overflow-hidden">
+        <div className="relative flex min-h-[440px] items-center justify-center px-4 py-20 text-center" style={{ background: gradient }}>
+          <div className="pointer-events-none absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 30% 20%, rgba(255,255,255,.5) 0, transparent 45%), radial-gradient(circle at 70% 75%, rgba(255,255,255,.35) 0, transparent 40%)' }} />
+          <div className="relative z-10 mx-auto max-w-3xl" />
+        </div>
+      </section>
+    );
+  }
 
-  const slide = slides[index] || { title: '', subtitle: '', badge: '', image: '' };
-  const link = slide.button_link || '#template-products';
-  const title = slide.title || '';
-  const subtitle = slide.subtitle || '';
-  const badge = slide.badge || '';
-  const image = slide.image || '';
-  const buttonText = slide.button_text || '';
+  const swiperParams: SwiperOptions & { dir?: string } = {
+    modules: [Autoplay, Pagination, EffectFade],
+    dir: 'rtl',
+    effect,
+    fadeEffect: { crossFade: true },
+    speed: effect === 'fade' ? 800 : 600,
+    loop: count > 1,
+    watchSlidesProgress: true,
+    pagination:
+      showDots && count > 1
+        ? {
+            clickable: true,
+            el: '.hero-swiper-dots',
+            bulletClass: 'hero-dot',
+            bulletActiveClass: 'hero-dot-active',
+            renderBullet: (index: number, className: string) =>
+              `<button type="button" class="${className}" aria-label="${index + 1}"></button>`,
+          }
+        : false,
+    autoplay:
+      autoplay && count > 1
+        ? { delay: autoplayDelay, disableOnInteraction: false, pauseOnMouseEnter: true }
+        : false,
+  };
 
   return (
-    <section
-      id="template-hero"
-      className="relative w-full overflow-hidden"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      <div className="relative flex min-h-[440px] items-center justify-center px-4 py-20 text-center" style={{ background: gradient }}>
-        {image && <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />}
-        <div className="pointer-events-none absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 30% 20%, rgba(255,255,255,.5) 0, transparent 45%), radial-gradient(circle at 70% 75%, rgba(255,255,255,.35) 0, transparent 40%)' }} />
-        <div key={index} className="relative z-10 mx-auto max-w-3xl animate-fade-slide">
-          {badge && <span className="mb-5 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-white/30">{badge}</span>}
-          {title && <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm sm:text-5xl">{title}</h1>}
-          {subtitle && <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">{subtitle}</p>}
-          {(buttonText || videoUrl) && (
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              {buttonText && (
-                <a href={link} className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-bold transition hover:shadow-lg" style={{ color: css('--twc-primary', '#0f8a5f') }}>
-                  {buttonText}
-                  <ArrowLeft className="h-4 w-4" />
-                </a>
-              )}
-              {videoUrl && (
-                <a href={toYouTube(videoUrl) || videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30">
-                  <PlayCircle className="h-4 w-4" />
-                  شاهد الفيديو
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-        {/* Prev / Next + dots */}
-        {count > 1 && (
-          <>
-            <button type="button" aria-label="السابق" onClick={() => setIndex((i) => (i - 1 + count) % count)} className="absolute start-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/30">
-              <ChevronRight className="h-5 w-5" />
-            </button>
-            <button type="button" aria-label="التالي" onClick={() => setIndex((i) => (i + 1) % count)} className="absolute end-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/30">
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <div className="absolute inset-x-0 bottom-6 z-20 flex items-center justify-center gap-2">
-              {slides.map((_, i) => (
-                <button key={i} type="button" aria-label={`شريحة ${i + 1}`} onClick={() => setIndex(i)} className={`h-2.5 rounded-full transition-all ${i === index ? 'w-8 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/70'}`} />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+    <section id="template-hero" className="relative w-full overflow-hidden">
+      <style>{`
+        .hero-swiper-dots{position:absolute;inset-inline:0;bottom:1.5rem;z-index:30;display:flex;align-items:center;justify-content:center;gap:.5rem}
+        .hero-dot{height:.625rem;width:.625rem;border-radius:9999px;background:rgba(255,255,255,.45);transition:all .3s}
+        .hero-dot:hover{background:rgba(255,255,255,.75)}
+        .hero-dot-active{width:2rem!important;background:#fff}
+      `}</style>
+      <Swiper
+        {...swiperParams}
+        onSwiper={(sw) => {
+          swiperRef.current = sw;
+        }}
+        className="h-[440px] w-full md:h-[520px]"
+      >
+        {slides.map((slide, i) => {
+          const opacity = Math.min(Math.max(Number(slide.overlay_opacity ?? 35), 0), 90) / 100;
+          const link = slide.button_link || '#template-products';
+          return (
+            <SwiperSlide key={i} className="relative overflow-hidden" style={{ background: gradient }}>
+              {/* Fully clickable slide — the whole card navigates. */}
+              <a href={link} className="group absolute inset-0 block" aria-label={slide.title || 'شريحة ترويجية'}>
+                {/* Dual-image background (desktop + vertical mobile via <picture>) */}
+                <span className="absolute inset-0 block">
+                  <SlidePicture slide={slide} />
+                </span>
+                {/* Dark scrim with per-slide configurable opacity */}
+                <span
+                  className="absolute inset-0 block transition-opacity duration-300"
+                  style={{ background: `linear-gradient(180deg, rgba(2,6,23,${opacity}) 0%, rgba(2,6,23,${Math.min(opacity + 0.1, 0.95)}) 100%)` }}
+                />
+                {/* Overlay content aligned by the 9-position control */}
+                <span className={`relative z-10 flex h-full w-full px-6 py-14 sm:px-12 ${slideAlignClass(slide.content_position)}`}>
+                  <span className="block max-w-xl animate-fade-slide">
+                    {slide.badge && (
+                      <span className="mb-4 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-white/30 backdrop-blur">
+                        {slide.badge}
+                      </span>
+                    )}
+                    {slide.title && (
+                      <span
+                        className="block text-3xl font-black leading-tight text-white drop-shadow-md sm:text-5xl"
+                        style={{ fontFamily: css('--twf-heading-font', 'inherit') }}
+                      >
+                        {slide.title}
+                      </span>
+                    )}
+                    {slide.subtitle && (
+                      <span className="mt-4 block text-base leading-relaxed text-white/90 drop-shadow sm:text-lg">{slide.subtitle}</span>
+                    )}
+                    {slide.button_text && (
+                      <span className="mt-7 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white shadow-lg transition group-hover:opacity-90" style={{ background: gradient }}>
+                        {slide.button_text}
+                        <ArrowLeft className="h-4 w-4" />
+                      </span>
+                    )}
+                  </span>
+                </span>
+              </a>
+            </SwiperSlide>
+          );
+        })}
+      </Swiper>
+
+      {/* Custom navigation arrows */}
+      {count > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="السابق"
+            onClick={() => swiperRef.current?.slidePrev()}
+            className="absolute start-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/30"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="التالي"
+            onClick={() => swiperRef.current?.slideNext()}
+            className="absolute end-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/30"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          {showDots && <div className="hero-swiper-dots" />}
+        </>
+      )}
     </section>
   );
 };

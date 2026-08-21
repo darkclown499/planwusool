@@ -47,7 +47,11 @@ export type BuilderPropType =
   | 'number'
   | 'link'
   | 'video'
-  | 'slides';
+  | 'slides'
+  /** Multi-select of the store's own categories (checkbox list). */
+  | 'category_multiselect'
+  /** Repeatable item list edited by a structured editor (see `list`). */
+  | 'list';
 
 export interface BuilderPropSchema {
   key: string;
@@ -58,6 +62,12 @@ export interface BuilderPropSchema {
   options?: Array<{ value: string; label: string }>;
   group?: 'content' | 'style' | 'layout' | 'behavior';
   hint?: string;
+  /**
+   * Which structured list editor to render when `type === 'list'`.
+   * - 'features': Lucide icon picker + title + description rows.
+   * - 'reviews': name + text + rating (1-5) + avatar rows.
+   */
+  list?: 'features' | 'reviews';
 }
 
 export interface BuilderSectionMeta {

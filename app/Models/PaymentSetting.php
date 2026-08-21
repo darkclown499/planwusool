@@ -104,6 +104,8 @@ class PaymentSetting extends Model
             'is_housing_bank_jo_enabled',
             'is_cairo_amman_bank_jo_enabled',
             'is_safad_bank_jo_enabled',
+            'is_bit_enabled',
+            'is_paybox_enabled',
             'is_usdt_trc20_enabled',
             'is_usdt_erc20_enabled',
             'is_usdt_bep20_enabled',

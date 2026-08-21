@@ -30,6 +30,17 @@ class FeatureService
         'show_whatsapp_order_button',
     ];
 
+    /**
+     * Advanced checkout/store settings toggles (Phase 5):
+     * multi-currency pricing, guest checkout and automatic VAT calculation.
+     * Stored in store_configurations like every other toggle here.
+     */
+    public const SETTINGS_FEATURES = [
+        'multi_currency',
+        'guest_checkout',
+        'vat_calculation',
+    ];
+
     /** WhatsApp widget toggles — advanced plan features (kept for compat). */
     public const WHATSAPP_FEATURES = [
         'whatsapp_widget_enabled',
@@ -50,6 +61,7 @@ class FeatureService
 
     /** Payment gateways catalog (method => label). */
     public const PAYMENT_METHODS = [
+        // --- Global / universal ---
         'cod' => 'الدفع عند الاستلام',
         'bank' => 'تحويل بنكي',
         'stripe' => 'Stripe',
@@ -84,7 +96,89 @@ class FeatureService
         'easebuzz' => 'Easebuzz',
         'ozow' => 'Ozow',
         'aamarpay' => 'Aamarpay',
+
+        // --- Palestine ---
+        'jawwal_pay' => 'جوال باي (Jawwal Pay)',
+        'pal_pay' => 'PalPay',
+        'zain_cash' => 'زين كاش (فلسطين)',
+        'orange_money' => 'أورنج موني (فلسطين)',
+        'bank_palestine' => 'بنك فلسطين — تحويل',
+        'al_quds_bank' => 'بنك القدس',
+        'arab_islamic_bank' => 'البنك العربي الإسلامي',
+        'cairo_amman_bank' => 'بنك القاهرة عمان (فلسطين)',
+        'housing_bank' => 'بنك الإسكان (فلسطين)',
+        'safad_bank' => 'بنك صفد (فلسطين)',
+
+        // --- Jordan ---
+        'cliq' => 'CliQ — کلیک (الأردن)',
+        'zain_cash_jo' => 'زين كاش (الأردن)',
+        'orange_money_jo' => 'أورنج موني (الأردن)',
+        'etihad_wallet' => 'محفظة اتحاد (Etihad Wallet)',
+        'dinar_pay' => 'دينار باي (DinarPay)',
+        'jordan_kuwait_bank' => 'بنك الأردن الكويتي',
+        'arab_bank' => 'البنك العربي (الأردن)',
+        'housing_bank_jo' => 'بنك الإسكان (الأردن)',
+        'cairo_amman_bank_jo' => 'بنك القاهرة عمان (الأردن)',
+        'safad_bank_jo' => 'بنك صفد (الأردن)',
+
+        // --- Israel (1948 areas) ---
+        'bit' => 'Bit — بيت',
+        'paybox' => 'PayBox — بايبوكس',
+
+        // --- Crypto ---
         'usdt_trc20' => 'USDT (TRC20)',
+        'usdt_erc20' => 'USDT (ERC20)',
+        'usdt_bep20' => 'USDT (BEP20)',
+        'usdt_polygon' => 'USDT (Polygon)',
+        'usdt_solana' => 'USDT (Solana)',
+    ];
+
+    /**
+     * Regional payment groups for the payments page tabs (Phase 5).
+     * Methods not listed in any group fall under the "global" tab.
+     */
+    public const PAYMENT_METHOD_GROUPS = [
+        'palestine' => [
+            'label' => 'فلسطين',
+            'icon' => 'map-pin',
+            'methods' => [
+                'jawwal_pay', 'pal_pay', 'zain_cash', 'orange_money', 'bank_palestine',
+                'al_quds_bank', 'arab_islamic_bank', 'cairo_amman_bank', 'housing_bank', 'safad_bank',
+            ],
+        ],
+        'jordan' => [
+            'label' => 'الأردن',
+            'icon' => 'map-pin',
+            'methods' => [
+                'cliq', 'zain_cash_jo', 'orange_money_jo', 'etihad_wallet', 'dinar_pay',
+                'jordan_kuwait_bank', 'arab_bank', 'housing_bank_jo', 'cairo_amman_bank_jo', 'safad_bank_jo',
+            ],
+        ],
+        'israel' => [
+            'label' => 'الداخل / إسرائيل',
+            'icon' => 'map-pin',
+            'methods' => ['bit', 'paybox'],
+        ],
+        'crypto' => [
+            'label' => 'العملات الرقمية',
+            'icon' => 'coins',
+            'methods' => ['usdt_trc20', 'usdt_erc20', 'usdt_bep20', 'usdt_polygon', 'usdt_solana', 'coingate'],
+        ],
+        'global' => [
+            'label' => 'عالمي وأخرى',
+            'icon' => 'globe',
+            'methods' => [], // computed: everything else
+        ],
+    ];
+
+    /** Manual payment methods that show customer-facing instructions. */
+    public const MANUAL_PAYMENT_METHODS = [
+        'cod', 'bank', 'whatsapp', 'telegram',
+        'jawwal_pay', 'pal_pay', 'zain_cash', 'orange_money', 'bank_palestine',
+        'al_quds_bank', 'arab_islamic_bank', 'cairo_amman_bank', 'housing_bank', 'safad_bank',
+        'cliq', 'zain_cash_jo', 'orange_money_jo', 'etihad_wallet', 'dinar_pay',
+        'jordan_kuwait_bank', 'arab_bank', 'housing_bank_jo', 'cairo_amman_bank_jo', 'safad_bank_jo',
+        'bit', 'paybox',
     ];
 
     /**
@@ -100,8 +194,15 @@ class FeatureService
             $behavior[] = self::item($key, self::labelFor($key), self::descFor($key), (bool) ($config[$key] ?? $default));
         }
 
+        $settings = [];
+        foreach (self::SETTINGS_FEATURES as $key) {
+            $default = self::DEFAULT_ON[$key] ?? false;
+            $settings[] = self::item($key, self::labelFor($key), self::descFor($key), (bool) ($config[$key] ?? $default));
+        }
+
         return [
             ['id' => 'storefront', 'label' => 'واجهة المتجر', 'description' => 'أزرار ووظائف الواجهة الأمامية — تفعيل أو إيقاف بضغطة واحدة.', 'features' => $behavior],
+            ['id' => 'checkout_settings', 'label' => 'إعدادات الدفع والسلة', 'description' => 'خيارات متقدمة للدفع والعملات والضرائب.', 'features' => $settings],
         ];
     }
 
@@ -113,6 +214,12 @@ class FeatureService
     {
         // Storefront behavior toggles
         if (in_array($key, self::BEHAVIOR_FEATURES, true)) {
+            StoreConfiguration::setConfiguration($store->id, $key, $enabled ? 'true' : 'false');
+            return true;
+        }
+
+        // Advanced checkout/store settings (multi_currency, guest_checkout, vat_calculation)
+        if (in_array($key, self::SETTINGS_FEATURES, true)) {
             StoreConfiguration::setConfiguration($store->id, $key, $enabled ? 'true' : 'false');
             return true;
         }
@@ -172,6 +279,9 @@ class FeatureService
             'whatsapp_widget_enabled' => 'زر واتساب العائم',
             'whatsapp_widget_show_on_mobile' => 'إظهار في الجوال',
             'whatsapp_widget_show_on_desktop' => 'إظهار في الكمبيوتر',
+            'multi_currency' => 'عملات متعددة',
+            'guest_checkout' => 'الدفع كزائر',
+            'vat_calculation' => 'احتساب ضريبة القيمة المضافة',
         ][$key] ?? $key;
     }
 
@@ -188,6 +298,9 @@ class FeatureService
             'whatsapp_widget_enabled' => 'زر واتساب العائم في زاوية المتجر.',
             'whatsapp_widget_show_on_mobile' => 'إظهار الزر العائم على شاشات الجوال.',
             'whatsapp_widget_show_on_desktop' => 'إظهار الزر العائم على شاشات الكمبيوتر.',
+            'multi_currency' => 'السماح للعملاء بالدفع بعملات متعددة مع تحويل تلقائي.',
+            'guest_checkout' => 'إتمام الطلب دون الحاجة لإنشاء حساب.',
+            'vat_calculation' => 'احتساب ضريبة القيمة المضافة تلقائياً على الطلبات.',
         ][$key] ?? '';
     }
 

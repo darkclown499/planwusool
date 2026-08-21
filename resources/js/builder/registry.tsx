@@ -42,9 +42,11 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
     icon: 'layout',
     description: 'شريط التنقل العلوي مع الشعار والبحث والسلة.',
     props: [
+      { key: 'logo', label: 'شعار المتجر (صورة)', label_en: 'Logo image', type: 'image', default: '', group: 'content', hint: 'المقاس الموصى به: 250x100 بكسل' },
       { key: 'sticky', label: 'تثبيت أعلى الصفحة', label_en: 'Sticky', type: 'boolean', default: true, group: 'behavior' },
       { key: 'variant', label: 'نمط الترويسة', label_en: 'Header style', type: 'select', default: 'classic', group: 'layout', options: [
-          { value: 'classic', label: 'كلاسيكي' },
+          { value: 'classic', label: 'قياسي (كلاسيكي)' },
+          { value: 'floating', label: 'عائم (بطاقة مستديرة)' },
           { value: 'centered', label: 'شعار إلى المنتصف' },
           { value: 'minimal', label: 'بسيط' },
         ] },
@@ -83,6 +85,13 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
       { key: 'button_link', label: 'رابط الزر', label_en: 'Button link', type: 'link', default: '#template-products', group: 'content' },
       { key: 'video', label: 'فيديو الخلفية / رابط الفيديو', label_en: 'Video URL', type: 'video', default: '', group: 'content', hint: 'يدعم يوتيوب، فيميو، أو رفع MP4' },
       { key: 'slides', label: 'شرائح إضافية (للسلايدر والبانرات)', label_en: 'Slides', type: 'slides', default: [], group: 'content' },
+      { key: 'autoplay', label: 'تشغيل تلقائي للسلايدر', label_en: 'Autoplay', type: 'boolean', default: true, group: 'behavior' },
+      { key: 'autoplay_delay', label: 'مدة كل شريحة (مللي ثانية)', label_en: 'Slide interval (ms)', type: 'number', default: 5000, group: 'behavior', hint: '3000 - 10000' },
+      { key: 'effect', label: 'انتقال الشرائح', label_en: 'Transition', type: 'select', default: 'slide', group: 'layout', options: [
+          { value: 'slide', label: 'انزلاق' },
+          { value: 'fade', label: 'تلاشي' },
+        ] },
+      { key: 'show_dots', label: 'إظهار نقاط التنقل', label_en: 'Show pagination dots', type: 'boolean', default: true, group: 'behavior' },
     ],
   },
   categories: {
@@ -102,10 +111,14 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
           { value: 'icon_grid', label: 'شبكة أيقونات' },
           { value: 'card_pills', label: 'حبوب / بطاقات صغيرة' },
           { value: 'circle_pills', label: 'أيقونات دائرية' },
+          { value: 'circle_slider', label: 'سلايدر دائري أفقي' },
           { value: 'grid_cards', label: 'بطاقات شبكية كبيرة' },
           { value: 'image_tiles', label: 'بلاطات صور' },
+          { value: 'masonry_grid', label: 'شبكة Masonry متدرجة' },
+          { value: 'minimalist_overlay', label: 'بسطية مع تظليل عند التحويم' },
           { value: 'horizontal_scroll', label: 'تمرير أفقي' },
         ] },
+      { key: 'selected_categories', label: 'التصنيفات المعروضة', label_en: 'Shown categories', type: 'category_multiselect', default: [], group: 'content', hint: 'اتركه فارغاً لعرض جميع التصنيفات' },
       { key: 'show_all', label: 'زر الكل', label_en: 'Show all', type: 'boolean', default: true, group: 'behavior' },
       { key: 'columns', label: 'عدد الأعمدة', label_en: 'Columns', type: 'number', default: 4, group: 'layout' },
       { key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'تصنيفاتنا', group: 'content' },
@@ -180,7 +193,10 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
     group_en: 'Marketing',
     icon: 'shield',
     description: 'شبكة من الامتيازات مثل الشحن السريع والدفع الآمن.',
-    props: [{ key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'لماذا تختارنا؟', group: 'content' }],
+    props: [
+      { key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'لماذا تختارنا؟', group: 'content' },
+      { key: 'items', label: 'قائمة المزايا', label_en: 'Feature items', type: 'list', list: 'features', default: [], group: 'content', hint: 'اتركها فارغة لاستخدام مزايا المتجر الافتراضية' },
+    ],
   },
   reviews: {
     type: 'reviews',
@@ -190,7 +206,14 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
     group_en: 'Social',
     icon: 'star',
     description: 'آراء وتقييمات العملاء.',
-    props: [{ key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'آراء عملائنا', group: 'content' }],
+    props: [
+      { key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'آراء عملائنا', group: 'content' },
+      { key: 'items', label: 'قائمة التقييمات', label_en: 'Review items', type: 'list', list: 'reviews', default: [], group: 'content', hint: 'اتركها فارغة لاستخدام تقييمات المتجر الافتراضية' },
+      { key: 'display_mode', label: 'طريقة العرض', label_en: 'Display mode', type: 'select', default: 'grid', group: 'layout', options: [
+          { value: 'grid', label: 'شبكة' },
+          { value: 'slider', label: 'سلايدر أفقي' },
+        ] },
+    ],
   },
   faq: {
     type: 'faq',

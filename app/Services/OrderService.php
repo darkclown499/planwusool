@@ -249,6 +249,8 @@ class OrderService
             case 'orange_money_jo':
             case 'etihad_wallet':
             case 'dinar_pay':
+            case 'bit':
+            case 'paybox':
             case 'bank_palestine':
             case 'al_quds_bank':
             case 'arab_islamic_bank':

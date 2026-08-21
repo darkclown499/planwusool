@@ -382,12 +382,14 @@ if (! function_exists('getPaymentMethodConfig')) {
             case 'cod':
                 return [
                     'enabled' => isPaymentMethodEnabled('cod', $userId, $storeId),
+                    'instructions' => $settings['cod_instructions'] ?? null,
                 ];
-                
+            
             case 'bank':
                 return [
                     'enabled' => isPaymentMethodEnabled('bank', $userId, $storeId),
                     'details' => $settings['bank_detail'] ?? null,
+                    'instructions' => $settings['bank_instructions'] ?? null,
                 ];
                 
             case 'paytabs':
@@ -581,6 +583,8 @@ if (! function_exists('getPaymentMethodConfig')) {
             case 'orange_money_jo':
             case 'etihad_wallet':
             case 'dinar_pay':
+            case 'bit':
+            case 'paybox':
                 return [
                     'enabled' => isPaymentMethodEnabled($method, $userId, $storeId),
                     'mode' => $settings[$method . '_mode'] ?? 'offline',
@@ -625,6 +629,7 @@ if (! function_exists('getPaymentMethodConfig')) {
                     'wallet_address' => $settings[$method . '_wallet_address'] ?? null,
                     'network' => $settings[$method . '_network'] ?? str_replace('usdt_', '', $method),
                     'memo' => $settings[$method . '_memo'] ?? null,
+                    'instructions' => $settings[$method . '_instructions'] ?? null,
                     'api_key' => $settings[$method . '_api_key'] ?? null,
                     'secret_key' => $settings[$method . '_secret_key'] ?? null,
                     'merchant_id' => $settings[$method . '_merchant_id'] ?? null,
@@ -670,6 +675,7 @@ if (! function_exists('getEnabledPaymentMethods')) {
         $methods = ['stripe', 'paypal', 'razorpay', 'mercadopago', 'paystack', 'flutterwave', 'bank', 'paytabs', 'skrill', 'coingate', 'payfast', 'tap', 'xendit', 'paytr', 'mollie', 'toyyibpay', 'cashfree', 'iyzipay', 'benefit', 'ozow', 'easebuzz', 'khalti', 'authorizenet', 'fedapay', 'payhere', 'cinetpay', 'midtrans', 'yookassa', 'nepalste', 'paiement', 'aamarpay',
             'jawwal_pay', 'pal_pay', 'zain_cash', 'orange_money', 'bank_palestine', 'al_quds_bank', 'arab_islamic_bank', 'cairo_amman_bank', 'housing_bank', 'safad_bank',
             'cliq', 'zain_cash_jo', 'orange_money_jo', 'etihad_wallet', 'dinar_pay', 'jordan_kuwait_bank', 'arab_bank', 'housing_bank_jo', 'cairo_amman_bank_jo', 'safad_bank_jo',
+            'bit', 'paybox',
             'usdt_trc20', 'usdt_erc20', 'usdt_bep20', 'usdt_polygon', 'usdt_solana'
         ];
         

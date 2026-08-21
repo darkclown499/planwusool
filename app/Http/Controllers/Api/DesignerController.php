@@ -26,6 +26,21 @@ class DesignerController extends Controller
 
         $overrides = $store->template_overrides ?? [];
 
+        // Store categories power the designer's category multi-select editor.
+        // Image values follow the same /storage/... convention as the storefront.
+        $categories = \App\Models\Category::query()
+            ->where('store_id', $store->id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name', 'image'])
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'image' => $c->image,
+            ])
+            ->values();
+
         return response()->json([
             'success' => true,
             'theme' => $store->getTemplateSlug(),
@@ -35,6 +50,7 @@ class DesignerController extends Controller
             'custom_js' => $overrides['custom_js'] ?? '',
             'head_inject' => $overrides['head_inject'] ?? '',
             'availableThemes' => $request->user()->getAvailableThemes(),
+            'categories' => $categories,
         ]);
     }
 

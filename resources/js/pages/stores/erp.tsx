@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -12,6 +12,7 @@ import { toast } from '@/components/custom-toast';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/utils/api';
 import {
   Boxes, Calculator, Webhook, Loader2, Plug, RefreshCw, Trash2, ExternalLink, CheckCircle2, XCircle, Clock3,
+  Copy, Check, ChevronDown, BookOpen, Terminal,
 } from 'lucide-react';
 
 type Provider = 'odoo' | 'al_shamel' | 'custom';
@@ -76,6 +77,71 @@ const INTERVALS: Record<string, string> = {
   daily: 'يومياً (Cron)',
 };
 
+/** Step-by-step setup guides per provider (Phase 5). */
+const PROVIDER_GUIDES: Record<Provider, { title: string; steps: string[] }> = {
+  odoo: {
+    title: 'ربط Odoo خطوة بخطوة',
+    steps: [
+      'من لوحة Odoo افتح الإعدادات ثم المستخدمون، وأنشئ مستخدماً مخصصاً للتكامل بصلاحيات API (Inventory + Sales).',
+      'انسخ رابط قاعدة بيانات Odoo (مثال: https://your-company.odoo.com) والصقه في حقل «عنوان الـ API».',
+      'أدخل اسم المستخدم وكلمة المرور في الحقول المخصصة — سيتم توليد جلسة XML-RPC تلقائياً.',
+      'اختر دورية المزامنة: فوري عبر Webhook أو كل ساعة/يومياً.',
+      'اضغط «اختبار الاتصال» للتأكد من نجاح الربط، ثم «مزامنة الآن» لسحب المنتجات لأول مرة.',
+    ],
+  },
+  al_shamel: {
+    title: 'ربط الشامل خطوة بخطوة',
+    steps: [
+      'ثبّت Sync Agent على جهاز السيرفر الذي يعمل عليه برنامج الشامل.',
+      'أنشئ مفتاح API من صفحة التكامل هنا وانسخه إلى إعدادات الـ Agent.',
+      'حدد عنوان نقطة الاتصال الخاصة بالـ Agent في حقل «عنوان الـ API».',
+      'فعّل مزامنة الكميات والأسعار حسب حاجتك، وحدد المزامنة الفورية لتلقي الطلبات لحظياً.',
+      'استخدم «اختبار الاتصال» ثم راقب سجل المزامنة أسفل الصفحة للتأكد من سير البيانات.',
+    ],
+  },
+  custom: {
+    title: 'ربط نظام مخصص (Webhook / JSON) خطوة بخطوة',
+    steps: [
+      'أنشئ مفتاح API جديد من زر «إضافة تكامل» — ستحتاجه في ترويسة كل طلب.',
+      'وجّه نظامك لإرسال طلبات POST إلى نقطتي المزامنة أدناه مع الترويسات X-Store-Id و X-API-Key.',
+      'أرسل مصفوفة JSON بصيغة المنتجات أو المخزون (راجع أمثلة الحقول في بطاقة النقاط).',
+      'تحقق من رمز الاستجابة 200 ورسالة success:true، وراقب «آخر مزامنة» في البطاقة.',
+      'في حال أي فشل ستجد التفاصيل في سجل المزامنة بالأسفل.',
+    ],
+  },
+};
+
+/** Small copy-to-clipboard button with transient "copied" feedback. */
+const CopyButton: React.FC<{ text: string; className?: string }> = ({ text, className = '' }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for non-secure contexts
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    toast.success('تم نسخ الرابط');
+    setTimeout(() => setCopied(false), 1600);
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label="نسخ"
+      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-400 transition hover:text-emerald-600 ${className}`}
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  );
+};
+
 const EMPTY_FORM = {
   provider: 'custom' as Provider,
   name: '',
@@ -109,6 +175,14 @@ export default function StoreErp({ store, configs: initialConfigs = [], logs: in
     if (data.configs) setConfigs(data.configs);
     if (data.logs) setLogs(data.logs);
   }, [apiUrl]);
+
+  /* Live status badges: poll configs/logs every 30s so sync states stay fresh. */
+  useEffect(() => {
+    const t = setInterval(() => {
+      refresh().catch(() => {});
+    }, 30000);
+    return () => clearInterval(t);
+  }, [refresh]);
 
   const openNew = (provider: Provider = 'custom') => {
     setEditing(null);
@@ -306,6 +380,74 @@ export default function StoreErp({ store, configs: initialConfigs = [], logs: in
           })}
         </div>
 
+        {/* Inbound sync endpoints — copy to clipboard */}
+        <Card className="border-indigo-100">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Terminal className="h-4 w-4 text-indigo-600" />
+              نقاط الاستقبال (Inbound Endpoints)
+            </CardTitle>
+            <CardDescription>
+              استخدم هذه النقاط لدفع المنتجات والمخزون من نظامك الخارجي. الترويسات مطلوبة في كل طلب.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              { label: 'دفع/تحديث المنتجات', path: '/api/v1/store/sync/products' },
+              { label: 'تحديث المخزون والكميات', path: '/api/v1/store/sync/stock' },
+            ].map((ep) => {
+              const full = `${window.location.origin}${ep.path}`;
+              return (
+                <div key={ep.path} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+                  <p className="mb-2 text-xs font-bold text-slate-600">{ep.label}</p>
+                  <div className="flex items-center gap-2">
+                    <code dir="ltr" className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs text-slate-700 ring-1 ring-slate-200">
+                      POST {full}
+                    </code>
+                    <CopyButton text={full} />
+                  </div>
+                </div>
+              );
+            })}
+            <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 p-3">
+              <p className="mb-1.5 text-xs font-bold text-indigo-800">الترويسات المطلوبة</p>
+              <div className="space-y-1.5" dir="ltr">
+                {[
+                  `X-Store-Id: ${store.id}`,
+                  'X-API-Key: <مفتاح التكامل من بطاقة النظام أعلاه>',
+                ].map((h) => (
+                  <div key={h} className="flex items-center gap-2">
+                    <code className="min-w-0 flex-1 truncate rounded-md bg-white px-2.5 py-1.5 font-mono text-[11px] text-slate-700 ring-1 ring-indigo-100">
+                      {h}
+                    </code>
+                    <CopyButton text={h} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step-by-step provider guides */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BookOpen className="h-4 w-4 text-emerald-600" />
+              أدلة الربط خطوة بخطوة
+            </CardTitle>
+            <CardDescription>تعليمات مختصرة لكل نظام — اتبع الخطوات بالترتيب.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(Object.keys(PROVIDER_GUIDES) as Provider[]).map((provider) => (
+              <GuideAccordion
+                key={provider}
+                provider={provider}
+                guide={PROVIDER_GUIDES[provider]}
+              />
+            ))}
+          </CardContent>
+        </Card>
+
         {/* Sync log table */}
         <Card>
           <CardHeader className="pb-3">
@@ -488,3 +630,32 @@ export default function StoreErp({ store, configs: initialConfigs = [], logs: in
     </PageTemplate>
   );
 }
+/** Expandable step-by-step guide for a provider. */
+const GuideAccordion: React.FC<{ provider: Provider; guide: { title: string; steps: string[] } }> = ({ provider, guide }) => {
+  const [open, setOpen] = useState(false);
+  const Icon = PROVIDER_META[provider].icon;
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-100">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-3 bg-slate-50/60 px-4 py-3 text-start transition hover:bg-slate-100/60"
+      >
+        <span className="flex items-center gap-2.5 text-sm font-bold text-slate-700">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+            <Icon className="h-4 w-4" />
+          </span>
+          {guide.title}
+        </span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <ol className="list-inside list-decimal space-y-2 px-5 py-4 text-xs leading-relaxed text-slate-600">
+          {guide.steps.map((step, i) => (
+            <li key={i}>{step}</li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+};

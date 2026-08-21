@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Check, Eye, Loader2, Lock, Palette, X } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
@@ -184,6 +185,8 @@ export default function StoreThemesGallery({ store, availableThemes, userPlanTie
   const [confirmTpl, setConfirmTpl] = useState<BuilderTemplateConfig | null>(null);
   const [applying, setApplying] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('الكل');
+  // Locally-tracked active template so the "المفعل حالياً" badge moves instantly.
+  const [activeTheme, setActiveTheme] = useState<string>(store.theme || '');
 
   const tier: PlanTier = isSuperAdmin ? 'professional' : userPlanTier || 'starter';
   // Legacy slug lists are normalized to the new catalog before matching.
@@ -214,9 +217,19 @@ export default function StoreThemesGallery({ store, availableThemes, userPlanTie
           radius: tpl.tokens.radius,
         },
       });
-      router.visit(`/stores/${store.id}/designer`);
+      // Stay on the gallery — just move the active badge and notify.
+      setActiveTheme(tpl.slug);
+      toast.success('تم تغيير القالب بنجاح', {
+        description: `قالب «${tpl.name}» أصبح نشطاً على متجرك.`,
+        action: {
+          label: 'الذهاب للمصمم',
+          onClick: () => router.visit(`/stores/${store.id}/designer`),
+        },
+      });
     } catch (e) {
       console.error('Apply theme failed', e);
+      toast.error('تعذر تطبيق القالب. حاول مرة أخرى.');
+    } finally {
       setApplying(null);
     }
   };
@@ -266,7 +279,7 @@ export default function StoreThemesGallery({ store, availableThemes, userPlanTie
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filtered.map((tpl) => {
               const locked = isLocked(tpl);
-              const active = store.theme === tpl.slug;
+              const active = activeTheme === tpl.slug;
               return (
                 <div
                   key={tpl.slug}

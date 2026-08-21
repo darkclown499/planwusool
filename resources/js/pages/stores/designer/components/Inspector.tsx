@@ -11,6 +11,8 @@ type Props = {
   themesUrl: string;
   designTokens: BuilderDesignTokens;
   onTokensChange: (next: BuilderDesignTokens) => void;
+  /** The store's own categories — feeds the category multi-select editor. */
+  storeCategories?: any[];
 };
 
 const FONTS = [
@@ -27,6 +29,7 @@ export const Inspector: React.FC<Props> = ({
   themesUrl,
   designTokens,
   onTokensChange,
+  storeCategories = [],
 }) => {
   const [tab, setTab] = React.useState<'section' | 'global'>(section ? 'section' : 'global');
 
@@ -83,7 +86,13 @@ export const Inspector: React.FC<Props> = ({
             <>
               {(visibleProps.length || behaviorProps.length) ? (
                 visibleProps.map((prop) => (
-                  <PropField key={prop.key} prop={prop} value={sectionProps[prop.key]} onChange={onSectionPropChange} />
+                  <PropField
+                    key={prop.key}
+                    prop={prop}
+                    value={sectionProps[prop.key]}
+                    onChange={onSectionPropChange}
+                    storeCategories={storeCategories}
+                  />
                 ))
               ) : (
                 <p className="py-6 text-center text-xs text-slate-400">لا توجد خصائص قابلة للتعديل في هذا السيكشن.</p>

@@ -39,6 +39,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [seedDefaults, setSeedDefaults] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [categories, setCategories] = useState<any[]>([]);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNextSave = useRef(false);
 
@@ -47,6 +48,8 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   const load = useCallback(async () => {
     try {
       const data = await apiGet(apiUrl);
+      // Store categories power the category multi-select editor (Phase 4).
+      setCategories(Array.isArray(data.categories) ? data.categories : []);
       skipNextSave.current = true;
       const themeSlug = data.theme || store.theme || 'zen';
       const tpl = getBuilderTemplate(themeSlug);
@@ -260,7 +263,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   const storeData = React.useMemo(
     () => ({
       ...store,
-      categories: [] as any[],
+      categories,
       products: [] as any[],
       config: { ...settings, storeName: store?.name || 'متجري' },
       storeSettings: settings,
@@ -269,7 +272,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
       pages: [],
       behavior: {},
     }),
-    [store, settings]
+    [store, settings, categories]
   );
 
   const selectedSection = sections.find((s) => s.id === selectedId) || null;
@@ -491,6 +494,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
                 themesUrl={`/stores/${store.id}/templates`}
                 designTokens={designTokens}
                 onTokensChange={(next) => setDesignTokens(next)}
+                storeCategories={categories}
               />
             </aside>
           </div>

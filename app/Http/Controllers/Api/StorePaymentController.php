@@ -52,7 +52,45 @@ class StorePaymentController extends Controller
             ];
         }
 
-        return response()->json(['success' => true, 'methods' => $methods]);
+        return response()->json([
+            'success' => true,
+            'methods' => $methods,
+            'groups' => self::methodGroups($methods),
+        ]);
+    }
+
+    /**
+     * Group payment methods by region for the UI tabs (Phase 5).
+     * Anything not mapped in a regional group lands in the global tab.
+     */
+    public static function methodGroups(array $methods): array
+    {
+        $grouped = [];
+        foreach (FeatureService::PAYMENT_METHOD_GROUPS as $id => $group) {
+            $grouped[$id] = ['label' => $group['label'], 'methods' => []];
+        }
+
+        foreach ($methods as $m) {
+            $placed = false;
+            foreach (FeatureService::PAYMENT_METHOD_GROUPS as $id => $group) {
+                if (!empty($group['methods']) && in_array($m['method'], $group['methods'], true)) {
+                    $grouped[$id]['methods'][] = $m;
+                    $placed = true;
+                    break;
+                }
+            }
+            if (!$placed) {
+                $grouped['global']['methods'][] = $m;
+            }
+        }
+
+        return array_map(function ($id, $g) {
+            return [
+                'id' => $id,
+                'label' => $g['label'],
+                'methods' => array_values($g['methods']),
+            ];
+        }, array_keys($grouped), array_values($grouped));
     }
 
     /**
@@ -62,7 +100,7 @@ class StorePaymentController extends Controller
      */
     public static function credentialFields(): array
     {
-        return [
+        $fields = [
             'stripe' => [
                 ['key' => 'stripe_key', 'label' => 'المفتاح العام (Publishable Key)', 'type' => 'text'],
                 ['key' => 'stripe_secret', 'label' => 'المفتاح السري (Secret Key)', 'type' => 'password'],
@@ -203,12 +241,77 @@ class StorePaymentController extends Controller
             ],
             'whatsapp' => [
                 ['key' => 'whatsapp_number', 'label' => 'رقم واتساب', 'type' => 'text'],
+                ['key' => 'whatsapp_instructions', 'label' => 'تعليمات العميل', 'type' => 'textarea'],
             ],
             'telegram' => [
                 ['key' => 'telegram_bot_token', 'label' => 'Bot Token', 'type' => 'password'],
                 ['key' => 'telegram_chat_id', 'label' => 'Chat ID', 'type' => 'text'],
+                ['key' => 'telegram_instructions', 'label' => 'تعليمات العميل', 'type' => 'textarea'],
             ],
         ];
+
+        /*
+         * Phase 5 — manual payment methods. The keys match exactly what
+         * getPaymentMethodConfig() reads ({method}_phone_number, {method}_merchant_name,
+         * {method}_instructions) so checkout renders them out of the box.
+         */
+        $walletMethods = [
+            'jawwal_pay', 'pal_pay', 'zain_cash', 'orange_money',
+            'cliq', 'zain_cash_jo', 'orange_money_jo', 'etihad_wallet', 'dinar_pay',
+        ];
+        foreach ($walletMethods as $m) {
+            $fields[$m] = [
+                ['key' => $m . '_phone_number', 'label' => 'رقم المحفظة / الهاتف', 'type' => 'text'],
+                ['key' => $m . '_merchant_name', 'label' => 'اسم صاحب الحساب / المستفيد', 'type' => 'text'],
+                ['key' => $m . '_instructions', 'label' => 'تعليمات الدفع (تظهر للعميل عند الطلب)', 'type' => 'textarea'],
+            ];
+        }
+
+        $bankMethods = [
+            'bank_palestine', 'al_quds_bank', 'arab_islamic_bank', 'cairo_amman_bank', 'housing_bank', 'safad_bank',
+            'jordan_kuwait_bank', 'arab_bank', 'housing_bank_jo', 'cairo_amman_bank_jo', 'safad_bank_jo',
+        ];
+        foreach ($bankMethods as $m) {
+            $fields[$m] = [
+                ['key' => $m . '_phone_number', 'label' => 'رقم التواصل (واتساب/هاتف)', 'type' => 'text'],
+                ['key' => $m . '_merchant_name', 'label' => 'اسم المستفيد في الحوالة', 'type' => 'text'],
+                ['key' => $m . '_instructions', 'label' => 'تعليمات التحويل (اسم البنك، رقم الحساب، IBAN...)', 'type' => 'textarea'],
+            ];
+        }
+
+        // Israel-area manual wallets
+        $fields['bit'] = [
+            ['key' => 'bit_phone_number', 'label' => 'رقم Bit', 'type' => 'text'],
+            ['key' => 'bit_merchant_name', 'label' => 'اسم صاحب الحساب', 'type' => 'text'],
+            ['key' => 'bit_instructions', 'label' => 'تعليمات الدفع (تظهر للعميل)', 'type' => 'textarea'],
+        ];
+        $fields['paybox'] = [
+            ['key' => 'paybox_phone_number', 'label' => 'رقم PayBox', 'type' => 'text'],
+            ['key' => 'paybox_merchant_name', 'label' => 'اسم صاحب الحساب', 'type' => 'text'],
+            ['key' => 'paybox_instructions', 'label' => 'تعليمات الدفع (تظهر للعميل)', 'type' => 'textarea'],
+        ];
+
+        // Crypto — wallet address + network + memo
+        $cryptoMethods = ['usdt_trc20', 'usdt_erc20', 'usdt_bep20', 'usdt_polygon', 'usdt_solana'];
+        foreach ($cryptoMethods as $m) {
+            $network = strtoupper(str_replace('usdt_', '', $m));
+            $fields[$m] = [
+                ['key' => $m . '_wallet_address', 'label' => "عنوان المحفظة ($network)", 'type' => 'text'],
+                ['key' => $m . '_memo', 'label' => 'Memo / Tag (إن وُجد)', 'type' => 'text'],
+                ['key' => $m . '_instructions', 'label' => 'تعليمات إضافية للعميل', 'type' => 'textarea'],
+            ];
+        }
+
+        // COD + classic bank transfer instructions
+        $fields['cod'] = [
+            ['key' => 'cod_instructions', 'label' => 'تعليمات الدفع عند الاستلام', 'type' => 'textarea'],
+        ];
+        $fields['bank'] = [
+            ['key' => 'bank_detail', 'label' => 'بيانات الحساب البنكي (تظهر للعميل)', 'type' => 'textarea'],
+            ['key' => 'bank_instructions', 'label' => 'تعليمات إضافية للتحويل', 'type' => 'textarea'],
+        ];
+
+        return $fields;
     }
 
     public function update(Request $request, Store $store)
