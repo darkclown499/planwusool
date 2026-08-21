@@ -1,4 +1,5 @@
 // utils/formHelpers.ts
+import { router } from '@inertiajs/react';
 
 /**
  * Prepares form data for submission, handling file uploads properly
@@ -54,7 +55,6 @@ export const submitFormWithFiles = (
     onError?: (errors: any) => void;
   } = {}
 ) => {
-  const { router } = require('@inertiajs/react');
   const formDataObj = prepareFormDataWithFiles(formData, mode, fileFields);
   
   if (mode === 'create') {

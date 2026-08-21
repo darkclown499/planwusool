@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, MessageCircle, Search, X } from 'lucide-react';
-import { AccountButton, CartButton, useStorefrontCore } from '@/templates/storefront';
+import { AccountButton, CartButton, WhatsAppButton, useStorefrontCore } from '@/templates/storefront';
 import { css } from './helpers';
 import type { BuilderSectionProps } from './helpers';
 
@@ -328,7 +328,6 @@ export const HeaderSection: React.FC<BuilderSectionProps> = ({ section, storeDat
 };
 
 /* Inline pill kept for desktop icon rows (non-floating usage) */
-const WhatsAppInline: React.FC = () => {
-  const { WhatsAppButton } = require('@/templates/storefront') as typeof import('@/templates/storefront');
-  return <WhatsAppButton className="flex" />;
-};
+const WhatsAppInline: React.FC = () => (
+  <WhatsAppButton className="flex" />
+);
