@@ -67,6 +67,7 @@ export function AppSidebar() {
             groupLabel: t('Stores'),
             children: [
                 { title: t('Stores'), href: route('stores.index') },
+                { title: t('Theme Gallery'), href: auth.user?.current_store ? route('stores.themes', { id: auth.user.current_store }) : route('stores.index') },
             ],
         },
         {

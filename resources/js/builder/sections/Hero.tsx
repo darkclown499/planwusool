@@ -43,16 +43,22 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
   const content = storeData?.content?.hero || storeData?.content?.banner || {};
   const storeName = storeData?.config?.storeName || storeData?.name || 'متجرنا';
 
-  const title = props.title || content.title || `مرحباً بك في ${storeName}`;
-  const subtitle =
-    props.subtitle ||
-    content.subtitle ||
-    'منتجات مميزة بأسعار منافسة وشحن سريع. اكتشف أفضل ما لدينا اليوم.';
-  const badge = props.badge || content.badge || '';
-  const image = props.image || content.image || '';
-  const videoUrl = props.video || content.video || '';
-  const buttonText = props.button_text || content.button_text || 'تسوّق الآن';
-  const buttonLink = props.button_link || content.button_link || '#template-products';
+  // Strict conditional resolution: a key present in props is authoritative —
+  // clearing it in the designer hides the element instead of falling back to
+  // generic placeholder text (no empty text artifacts).
+  const has = (k: string) => Object.prototype.hasOwnProperty.call(props, k);
+  const pick = (k: string, fallback: string): string => {
+    if (has(k)) return String(props[k] ?? '').trim();
+    return fallback;
+  };
+
+  const title = pick('title', String(content.title || '').trim() || `مرحباً بك في ${storeName}`);
+  const subtitle = pick('subtitle', String(content.subtitle || '').trim());
+  const badge = pick('badge', String(content.badge || '').trim());
+  const image = pick('image', String(content.image || '').trim());
+  const videoUrl = pick('video', String(content.video || '').trim());
+  const buttonText = pick('button_text', String(content.button_text || '').trim() || 'تسوّق الآن');
+  const buttonLink = pick('button_link', String(content.button_link || '').trim() || '#template-products');
 
   const variant = (props.hero_variant as string) || (props.layout === 'full' ? 'full' : 'split_banner');
 
@@ -61,9 +67,12 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
   /* -------- video_bg (background video loop + text overlay) -------- */
   if (variant === 'video_bg' || variant === 'video_background') {
     const embed = toEmbed(videoUrl);
+    const hasOverlayContent = !!(title || subtitle || badge || buttonText);
+
     return (
       <section id="template-hero" className="relative w-full overflow-hidden">
-        <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden px-4 py-24 sm:min-h-[600px]">
+        {/* Fixed responsive stage — no letterboxing: media always covers */}
+        <div className="relative h-[500px] w-full overflow-hidden md:h-[650px]">
           {embed.kind === 'mp4' && embed.src ? (
             <video
               autoPlay
@@ -71,56 +80,63 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
               loop
               playsInline
               poster={image || undefined}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute left-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 object-cover"
             >
               <source src={embed.src} type="video/mp4" />
             </video>
           ) : embed.kind === 'embed' && embed.src ? (
+            /* 16:9 cover trick: keeps the iframe larger than the stage on both axes */
             <iframe
               src={embed.src}
               title="Hero video"
               frameBorder={0}
               allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
               allowFullScreen
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ pointerEvents: 'none', transform: 'scale(1.05)' }}
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 border-0"
+              style={{ width: '100%', minWidth: '177.77777778vh', height: '56.25vw', minHeight: '100%' }}
             />
           ) : image ? (
             <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
           ) : null}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(2,6,23,.55) 0%, rgba(2,6,23,.35) 50%, rgba(2,6,23,.65) 100%)' }} />
-          <div className="relative z-10 mx-auto max-w-3xl text-center">
-            {badge && (
-              <span className="mb-5 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-white/30 backdrop-blur">
-                {badge}
-              </span>
-            )}
-            <h1 className="text-3xl font-black leading-tight text-white drop-shadow-md sm:text-5xl" style={{ fontFamily: css('--twf-heading-font', 'inherit') }}>
-              {title}
-            </h1>
-            {subtitle && <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/90 drop-shadow sm:text-lg">{subtitle}</p>}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <a
-                href={buttonLink}
-                className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white shadow-lg transition hover:opacity-90"
-                style={{ background: gradient }}
-              >
-                {buttonText}
-                <ArrowLeft className="h-4 w-4" />
-              </a>
-              {videoUrl && (
-                <a
-                  href={toYouTube(videoUrl) || videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 backdrop-blur transition hover:bg-white/25"
-                >
-                  <PlayCircle className="h-4 w-4" />
-                  شاهد الفيديو
-                </a>
-              )}
-            </div>
-          </div>
+
+          {hasOverlayContent && (
+            <>
+              <div
+                className="absolute inset-0"
+                style={{ background: 'linear-gradient(180deg, rgba(2,6,23,.55) 0%, rgba(2,6,23,.35) 50%, rgba(2,6,23,.65) 100%)' }}
+              />
+              <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
+                {badge && (
+                  <span className="mb-5 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-white/30 backdrop-blur">
+                    {badge}
+                  </span>
+                )}
+                {title && (
+                  <h1
+                    className="text-3xl font-black leading-tight text-white drop-shadow-md sm:text-5xl"
+                    style={{ fontFamily: css('--twf-heading-font', 'inherit') }}
+                  >
+                    {title}
+                  </h1>
+                )}
+                {subtitle && (
+                  <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/90 drop-shadow sm:text-lg">{subtitle}</p>
+                )}
+                {buttonText && (
+                  <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                    <a
+                      href={buttonLink}
+                      className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white shadow-lg transition hover:opacity-90"
+                      style={{ background: gradient }}
+                    >
+                      {buttonText}
+                      <ArrowLeft className="h-4 w-4" />
+                    </a>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </section>
     );
@@ -143,13 +159,14 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
 
   /* -------- bento_grid -------- */
   if (variant === 'bento_grid') {
-    const sideSlides: HeroSlide[] =
+    const sideSlides: HeroSlide[] = (
       Array.isArray(props.slides) && props.slides.length
         ? props.slides.slice(0, 2)
         : [
             { title: props.side_title_1 || '', subtitle: props.side_subtitle_1 || '', image: props.side_image_1 || '' },
             { title: props.side_title_2 || '', subtitle: props.side_subtitle_2 || '', image: props.side_image_2 || '' },
-          ];
+          ]
+    ).filter((s) => s.title || s.image);
     return (
       <section id="template-hero" className="relative w-full px-4 py-8 sm:py-10">
         <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
@@ -172,29 +189,33 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
                   {badge}
                 </span>
               )}
-              <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm sm:text-5xl">{title}</h1>
-              <p className="mt-4 max-w-md text-base leading-relaxed text-white/90 sm:text-lg">{subtitle}</p>
-              <div className="mt-7 flex flex-wrap items-center gap-3">
-                <a
-                  href={buttonLink}
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-bold transition hover:shadow-lg"
-                  style={{ color: css('--twc-primary', '#0f8a5f') }}
-                >
-                  {buttonText}
-                  <ArrowLeft className="h-4 w-4" />
-                </a>
-                {videoUrl && (
-                  <a
-                    href={toYouTube(videoUrl) || videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 transition hover:bg-white/25"
-                  >
-                    <PlayCircle className="h-4 w-4" />
-                    شاهد الفيديو
-                  </a>
-                )}
-              </div>
+              {title && <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm sm:text-5xl">{title}</h1>}
+              {subtitle && <p className="mt-4 max-w-md text-base leading-relaxed text-white/90 sm:text-lg">{subtitle}</p>}
+              {(buttonText || videoUrl) && (
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  {buttonText && (
+                    <a
+                      href={buttonLink}
+                      className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-bold transition hover:shadow-lg"
+                      style={{ color: css('--twc-primary', '#0f8a5f') }}
+                    >
+                      {buttonText}
+                      <ArrowLeft className="h-4 w-4" />
+                    </a>
+                  )}
+                  {videoUrl && (
+                    <a
+                      href={toYouTube(videoUrl) || videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 transition hover:bg-white/25"
+                    >
+                      <PlayCircle className="h-4 w-4" />
+                      شاهد الفيديو
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           {/* Side banners */}
@@ -209,9 +230,9 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
                 {s.image && (
                   <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40 transition group-hover:scale-105" />
                 )}
-                <span className="relative z-10 text-lg font-black text-white drop-shadow">
-                  {s.title || 'اكتشف الآن'}
-                </span>
+                {s.title && (
+                  <span className="relative z-10 text-lg font-black text-white drop-shadow">{s.title}</span>
+                )}
               </a>
             ))}
           </div>
@@ -225,47 +246,57 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
     return (
       <section id="template-hero" className="relative w-full overflow-hidden">
         <div className="grid items-center gap-8 px-4 py-14 md:grid-cols-2">
-          <div className="mx-auto max-w-xl text-center md:text-start">
-            {badge && (
-              <span
-                className="mb-4 inline-block rounded-full px-4 py-1.5 text-sm font-bold"
-                style={{ background: css('--twc-primary', '#0f8a5f'), color: css('--twc-primary-foreground', '#ffffff') }}
-              >
-                {badge}
-              </span>
-            )}
-            <h1
-              className="text-3xl font-black leading-tight sm:text-5xl"
-              style={{ color: css('--twc-text-primary', '#0f172a'), fontFamily: css('--twf-heading-font', 'inherit') }}
-            >
-              {title}
-            </h1>
-            <p className="mt-4 text-base leading-relaxed sm:text-lg" style={{ color: css('--twc-text-secondary', '#475569') }}>
-              {subtitle}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-              <a
-                href={buttonLink}
-                className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white shadow-lg transition hover:opacity-90"
-                style={{ background: gradient }}
-              >
-                {buttonText}
-                <ArrowLeft className="h-4 w-4" />
-              </a>
-              {videoUrl && (
-                <a
-                  href={toYouTube(videoUrl) || videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-bold"
-                  style={{ borderColor: css('--twc-border', '#e2e8f0'), color: css('--twc-text-secondary', '#475569') }}
+          {(badge || title || subtitle || buttonText || videoUrl) && (
+            <div className="mx-auto max-w-xl text-center md:text-start">
+              {badge && (
+                <span
+                  className="mb-4 inline-block rounded-full px-4 py-1.5 text-sm font-bold"
+                  style={{ background: css('--twc-primary', '#0f8a5f'), color: css('--twc-primary-foreground', '#ffffff') }}
                 >
-                  <PlayCircle className="h-4 w-4" />
-                  شاهد الفيديو
-                </a>
+                  {badge}
+                </span>
+              )}
+              {title && (
+                <h1
+                  className="text-3xl font-black leading-tight sm:text-5xl"
+                  style={{ color: css('--twc-text-primary', '#0f172a'), fontFamily: css('--twf-heading-font', 'inherit') }}
+                >
+                  {title}
+                </h1>
+              )}
+              {subtitle && (
+                <p className="mt-4 text-base leading-relaxed sm:text-lg" style={{ color: css('--twc-text-secondary', '#475569') }}>
+                  {subtitle}
+                </p>
+              )}
+              {(buttonText || videoUrl) && (
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+                  {buttonText && (
+                    <a
+                      href={buttonLink}
+                      className="inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-bold text-white shadow-lg transition hover:opacity-90"
+                      style={{ background: gradient }}
+                    >
+                      {buttonText}
+                      <ArrowLeft className="h-4 w-4" />
+                    </a>
+                  )}
+                  {videoUrl && (
+                    <a
+                      href={toYouTube(videoUrl) || videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-bold"
+                      style={{ borderColor: css('--twc-border', '#e2e8f0'), color: css('--twc-text-secondary', '#475569') }}
+                    >
+                      <PlayCircle className="h-4 w-4" />
+                      شاهد الفيديو
+                    </a>
+                  )}
+                </div>
               )}
             </div>
-          </div>
+          )}
           <div className="relative">
             <div className="pointer-events-none absolute -inset-4 rounded-[2.5rem] opacity-40 blur-2xl" style={{ background: gradient }} />
             <img src={image} alt="" className="relative aspect-[4/3] w-full rounded-[1.75rem] object-cover shadow-2xl" loading="eager" />
@@ -295,31 +326,37 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
               {badge}
             </span>
           )}
-          <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm sm:text-5xl" style={{ fontFamily: css('--twf-heading-font', 'inherit') }}>
-            {title}
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">{subtitle}</p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href={buttonLink}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-bold transition hover:shadow-lg"
-              style={{ color: css('--twc-primary', '#0f8a5f') }}
-            >
-              {buttonText}
-              <ArrowLeft className="h-4 w-4" />
-            </a>
-            {videoUrl && (
-              <a
-                href={toYouTube(videoUrl) || videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 transition hover:bg-white/25"
-              >
-                <PlayCircle className="h-4 w-4" />
-                شاهد الفيديو
-              </a>
-            )}
-          </div>
+          {title && (
+            <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm sm:text-5xl" style={{ fontFamily: css('--twf-heading-font', 'inherit') }}>
+              {title}
+            </h1>
+          )}
+          {subtitle && <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">{subtitle}</p>}
+          {(buttonText || videoUrl) && (
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              {buttonText && (
+                <a
+                  href={buttonLink}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-bold transition hover:shadow-lg"
+                  style={{ color: css('--twc-primary', '#0f8a5f') }}
+                >
+                  {buttonText}
+                  <ArrowLeft className="h-4 w-4" />
+                </a>
+              )}
+              {videoUrl && (
+                <a
+                  href={toYouTube(videoUrl) || videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 transition hover:bg-white/25"
+                >
+                  <PlayCircle className="h-4 w-4" />
+                  شاهد الفيديو
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -348,7 +385,7 @@ const HeroSlider: React.FC<{ slides: HeroSlide[]; gradient: string; videoUrl: st
   const subtitle = slide.subtitle || '';
   const badge = slide.badge || '';
   const image = slide.image || '';
-  const buttonText = slide.button_text || 'تسوّق الآن';
+  const buttonText = slide.button_text || '';
 
   return (
     <section
@@ -362,20 +399,24 @@ const HeroSlider: React.FC<{ slides: HeroSlide[]; gradient: string; videoUrl: st
         <div className="pointer-events-none absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 30% 20%, rgba(255,255,255,.5) 0, transparent 45%), radial-gradient(circle at 70% 75%, rgba(255,255,255,.35) 0, transparent 40%)' }} />
         <div key={index} className="relative z-10 mx-auto max-w-3xl animate-fade-slide">
           {badge && <span className="mb-5 inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold text-white ring-1 ring-white/30">{badge}</span>}
-          <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm sm:text-5xl">{title}</h1>
+          {title && <h1 className="text-3xl font-black leading-tight text-white drop-shadow-sm sm:text-5xl">{title}</h1>}
           {subtitle && <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">{subtitle}</p>}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a href={link} className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-bold transition hover:shadow-lg" style={{ color: css('--twc-primary', '#0f8a5f') }}>
-              {buttonText}
-              <ArrowLeft className="h-4 w-4" />
-            </a>
-            {videoUrl && (
-              <a href={toYouTube(videoUrl) || videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30">
-                <PlayCircle className="h-4 w-4" />
-                شاهد الفيديو
-              </a>
-            )}
-          </div>
+          {(buttonText || videoUrl) && (
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              {buttonText && (
+                <a href={link} className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-bold transition hover:shadow-lg" style={{ color: css('--twc-primary', '#0f8a5f') }}>
+                  {buttonText}
+                  <ArrowLeft className="h-4 w-4" />
+                </a>
+              )}
+              {videoUrl && (
+                <a href={toYouTube(videoUrl) || videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white/15 px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30">
+                  <PlayCircle className="h-4 w-4" />
+                  شاهد الفيديو
+                </a>
+              )}
+            </div>
+          )}
         </div>
         {/* Prev / Next + dots */}
         {count > 1 && (

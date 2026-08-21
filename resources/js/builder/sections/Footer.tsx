@@ -58,9 +58,9 @@ export const FooterSection: React.FC<BuilderSectionProps> = ({ section, storeDat
                 {storeName}
               </span>
             </div>
-            <p className="max-w-sm text-sm leading-relaxed text-white/70">
-              {config?.description || 'وجهتك الأولى للتسوق عبر الإنترنت. منتجات مختارة بعناية وخدمة عملاء استثنائية.'}
-            </p>
+            {String(config?.description || '').trim() && (
+              <p className="max-w-sm text-sm leading-relaxed text-white/70">{config.description}</p>
+            )}
             {socialLinks.length > 0 && (
               <div className="mt-5 flex gap-2">
                 {socialLinks.map((s) => (

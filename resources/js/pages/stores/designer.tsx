@@ -190,18 +190,6 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
     if (selectedId === id) setSelectedId(null);
   };
 
-  const changeTheme = (slug: string) => {
-    if (slug === theme) return;
-    const tpl = getBuilderTemplate(slug);
-    if (!tpl) return;
-    if (!window.confirm('تبديل القالب سيُعيد ضبط أقسام المتجر على التصميم الجديد. هل تريد المتابعة؟')) return;
-    setTheme(slug);
-    setSections(tpl.sections.map((s) => ({ ...s })));
-    setDesignTokens({ colors: { ...tpl.tokens.colors }, typography: { ...(tpl.tokens.typography || {}) }, radius: tpl.tokens.radius });
-    setSelectedId(null);
-    persist(slug, tpl.sections.map((s) => ({ ...s })), { colors: { ...tpl.tokens.colors } });
-  };
-
   /** Apply a parsed theme.json from code-editor mode onto live designer state. */
   const applyThemeJson = useCallback((parsed: ThemeJsonPayload) => {
     if (!parsed || typeof parsed !== 'object') return;
@@ -431,8 +419,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
               <Inspector
                 section={selectedSection}
                 onSectionPropChange={(key, value) => selectedId && updateSectionProp(selectedId, key, value)}
-                currentTheme={theme}
-                onThemeChange={changeTheme}
+                themesUrl={`/stores/${store.id}/themes`}
                 designTokens={designTokens}
                 onTokensChange={(next) => setDesignTokens(next)}
               />

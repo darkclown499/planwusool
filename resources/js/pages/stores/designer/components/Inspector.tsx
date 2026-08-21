@@ -1,16 +1,14 @@
 import React from 'react';
-import { Palette, SlidersHorizontal, X, Check } from 'lucide-react';
-import { getBuilderTemplateSummaries } from '@/builder';
+import { Palette, SlidersHorizontal, X, LayoutTemplate, ChevronLeft } from 'lucide-react';
 import { DEFAULT_TOKENS } from '@/builder/design-tokens';
 import { getSectionMeta } from '@/builder';
-import type { BuilderDesignTokens, BuilderSectionConfig, BuilderTemplateSummary } from '@/builder/types';
+import type { BuilderDesignTokens, BuilderSectionConfig } from '@/builder/types';
 import { PropField, GroupLabel, Toggle } from './controls';
 
 type Props = {
   section: BuilderSectionConfig | null;
   onSectionPropChange: (key: string, value: any) => void;
-  currentTheme: string;
-  onThemeChange: (slug: string) => void;
+  themesUrl: string;
   designTokens: BuilderDesignTokens;
   onTokensChange: (next: BuilderDesignTokens) => void;
 };
@@ -26,13 +24,11 @@ const FONTS = [
 export const Inspector: React.FC<Props> = ({
   section,
   onSectionPropChange,
-  currentTheme,
-  onThemeChange,
+  themesUrl,
   designTokens,
   onTokensChange,
 }) => {
   const [tab, setTab] = React.useState<'section' | 'global'>(section ? 'section' : 'global');
-  const templates = React.useMemo(() => getBuilderTemplateSummaries(), []);
 
   React.useEffect(() => {
     if (section) setTab('section');
@@ -113,30 +109,21 @@ export const Inspector: React.FC<Props> = ({
           )
         ) : (
           <>
-            {/* Template picker */}
+            {/* Template selection lives on the dedicated gallery page */}
             <GroupLabel>القالب</GroupLabel>
-            <div className="grid grid-cols-2 gap-2">
-              {templates.map((t: BuilderTemplateSummary) => {
-                const active = t.slug === currentTheme;
-                return (
-                  <button
-                    key={t.slug}
-                    type="button"
-                    onClick={() => onThemeChange(t.slug)}
-                    className={`group relative overflow-hidden rounded-xl border text-start transition ${
-                      active ? 'border-emerald-500 ring-2 ring-emerald-200' : 'border-slate-200 hover:border-emerald-300'
-                    }`}
-                  >
-                    <span className="block h-14 w-full" style={{ background: t.preview }} />
-                    <span className="flex items-center justify-between bg-white px-2.5 py-2">
-                      <span className="text-[11px] font-bold text-slate-700">{t.name}</span>
-                      {active && <Check className="h-3.5 w-3.5 text-emerald-600" />}
-                    </span>
-                    {!t.is_free && <span className="absolute top-1 right-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-bold text-white">مميز</span>}
-                  </button>
-                );
-              })}
-            </div>
+            <a
+              href={themesUrl}
+              className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-emerald-300 hover:text-emerald-600"
+            >
+              <span className="flex items-center gap-2">
+                <LayoutTemplate className="h-4 w-4 text-emerald-500" />
+                معرض القوالب
+              </span>
+              <ChevronLeft className="h-4 w-4" />
+            </a>
+            <p className="mt-2 mb-1 text-[11px] leading-relaxed text-slate-400">
+              استعرض القوالب الجاهزة بمعاينة حية وطبّقها من صفحة القوالب المخصصة.
+            </p>
 
             <GroupLabel>الألوان</GroupLabel>
             <div className="space-y-3">

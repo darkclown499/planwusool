@@ -62,24 +62,27 @@ interface SectionHeadingProps {
   titleColor?: string;
 }
 
-export const SectionHeading: React.FC<SectionHeadingProps> = ({ title, subtitle, align = 'center', action, titleColor }) => (
-  <div className={`mb-8 flex flex-col gap-3 ${align === 'center' ? 'items-center text-center' : 'items-start text-start'}`}>
-    {title ? (
-      <h2
-        className="text-2xl font-extrabold tracking-tight sm:text-3xl"
-        style={{ color: titleColor || css('--twc-text-primary', '#0f172a'), fontFamily: css('--twf-heading-font', 'inherit') }}
-      >
-        {title}
-      </h2>
-    ) : null}
-    {subtitle ? (
-      <p className="max-w-2xl text-sm leading-relaxed sm:text-base" style={{ color: css('--twc-text-secondary', '#475569') }}>
-        {subtitle}
-      </p>
-    ) : null}
-    {action}
-  </div>
-);
+export const SectionHeading: React.FC<SectionHeadingProps> = ({ title, subtitle, align = 'center', action, titleColor }) => {
+  if (!title && !subtitle && !action) return null;
+  return (
+    <div className={`mb-8 flex flex-col gap-3 ${align === 'center' ? 'items-center text-center' : 'items-start text-start'}`}>
+      {title ? (
+        <h2
+          className="text-2xl font-extrabold tracking-tight sm:text-3xl"
+          style={{ color: titleColor || css('--twc-text-primary', '#0f172a'), fontFamily: css('--twf-heading-font', 'inherit') }}
+        >
+          {title}
+        </h2>
+      ) : null}
+      {subtitle ? (
+        <p className="max-w-2xl text-sm leading-relaxed sm:text-base" style={{ color: css('--twc-text-secondary', '#475569') }}>
+          {subtitle}
+        </p>
+      ) : null}
+      {action}
+    </div>
+  );
+};
 
 /* ------------------------------------------------------------------ */
 /* ProductCard                                                         */
