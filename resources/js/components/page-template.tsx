@@ -41,6 +41,18 @@ export function PageTemplate({
   stickyHeader = false
 }: PageTemplateProps) {
   const { t } = useTranslation();
+
+  // Embedded mode: when the page is rendered inside an iframe (e.g. the
+  // unified store-settings tabs), skip the dashboard chrome entirely.
+  if (typeof window !== 'undefined' && window.self !== window.top) {
+    return (
+      <>
+        <Head title={title} />
+        {children}
+      </>
+    );
+  }
+
   // Default breadcrumbs if none provided
   const pageBreadcrumbs: BreadcrumbItem[] = breadcrumbs || [
     {

@@ -3,6 +3,7 @@ import { PageTemplate } from '@/components/page-template';
 import {
    Save, Mail, Globe, Search,
    XCircle, Info, Loader2, Trash2, Palette, History, CheckCircle2, Building2, PenLine, Power, Paintbrush,
+   LayoutTemplate, CreditCard, Boxes,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -277,7 +278,7 @@ export default function StoreSettings({ store, settings }: Props) {
               </p>
             </div>
           </div>
-          <Button type="button" size="lg" className="shrink-0 gap-2" onClick={() => router.visit(`/stores/${store.id}/designer`)}>
+          <Button type="button" size="lg" className="shrink-0 gap-2" onClick={() => window.open(`/stores/${store.id}/designer`, '_blank')}>
             <Paintbrush className="h-4 w-4" />
             افتح المصمم البصري
           </Button>
@@ -285,7 +286,7 @@ export default function StoreSettings({ store, settings }: Props) {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 border-b border-border bg-transparent p-0">
+        <TabsList className="grid w-full grid-cols-3 border-b border-border bg-transparent p-0 md:grid-cols-6">
           <TabsTrigger value="general" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <PenLine className="h-4 w-4 me-2" />
             {t('General')}
@@ -297,6 +298,18 @@ export default function StoreSettings({ store, settings }: Props) {
           <TabsTrigger value="domains" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Globe className="h-4 w-4 me-2" />
             {t('Domains')}
+          </TabsTrigger>
+          <TabsTrigger value="features" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <LayoutTemplate className="h-4 w-4 me-2" />
+            {t('Features')}
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <CreditCard className="h-4 w-4 me-2" />
+            {t('Payment Methods')}
+          </TabsTrigger>
+          <TabsTrigger value="erp" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <Boxes className="h-4 w-4 me-2" />
+            {t('ERP & Inventory')}
           </TabsTrigger>
         </TabsList>
 
@@ -554,6 +567,30 @@ export default function StoreSettings({ store, settings }: Props) {
 
         <TabsContent value="domains" className="space-y-4 mt-0">
           <DomainsTab storeId={Number(store?.id)} />
+        </TabsContent>
+
+        {/* Unified workspace tabs — the dedicated pages render chrome-free
+            inside iframes thanks to PageTemplate's embedded mode. */}
+        <TabsContent value="features" className="mt-6">
+          <iframe
+            src={`/stores/${store?.id}/features`}
+            title={t('Features')}
+            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
+          />
+        </TabsContent>
+        <TabsContent value="payments" className="mt-6">
+          <iframe
+            src={`/stores/${store?.id}/payments`}
+            title={t('Payment Methods')}
+            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
+          />
+        </TabsContent>
+        <TabsContent value="erp" className="mt-6">
+          <iframe
+            src={`/stores/${store?.id}/integrations/erp`}
+            title={t('ERP & Inventory')}
+            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
+          />
         </TabsContent>
       </Tabs>
 

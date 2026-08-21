@@ -386,9 +386,43 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             $plan = Plan::getDefaultPlan();
         }
 
+        // Pro/professional subscribers must never be treated as free:
+        // a paid plan without an explicit theme restriction unlocks the
+        // entire catalog (bugfix — empty `themes` used to downgrade them).
+        if ($this->planHasFullCatalog($plan)) {
+            return \App\Models\Store::ALL_TEMPLATES;
+        }
+
         $themes = is_array($plan->themes) ? $plan->themes : [];
 
         return count($themes) > 0 ? $themes : \App\Models\Store::FREE_TEMPLATES;
+    }
+
+    /**
+     * A plan grants the full template catalog when its name marks it as
+     * pro/professional/premium/enterprise/business, when it explicitly
+     * opts in ('all' / '*'), or when it is a paid plan that simply has no
+     * per-theme configuration yet.
+     */
+    private function planHasFullCatalog(?Plan $plan): bool
+    {
+        if (!$plan) {
+            return false;
+        }
+
+        $name = strtolower((string) $plan->name);
+        foreach (['pro', 'professional', 'premium', 'enterprise', 'business'] as $needle) {
+            if ($needle !== '' && str_contains($name, $needle)) {
+                return true;
+            }
+        }
+
+        $themes = is_array($plan->themes) ? $plan->themes : [];
+        if (in_array('all', $themes, true) || in_array('*', $themes, true)) {
+            return true;
+        }
+
+        return ((float) $plan->price > 0 || (float) $plan->yearly_price > 0) && count($themes) === 0;
     }
 
     /**

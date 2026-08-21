@@ -142,10 +142,11 @@ export function canAccessTemplate(
 
 export function getTemplateTierFromPlanName(planName?: string | null): PlanTier {
   const name = (planName || '').toLowerCase();
-  if (name.includes('professional') || name.includes('premium') || name.includes('enterprise')) {
+  // 'pro' covers pro/professional subscribers — they get the full catalog.
+  if (name.includes('professional') || name.includes('premium') || name.includes('enterprise') || name.includes('pro')) {
     return 'professional';
   }
-  if (name.includes('growth') || name.includes('business') || name.includes('pro')) {
+  if (name.includes('growth') || name.includes('business')) {
     return 'growth';
   }
   return 'starter';

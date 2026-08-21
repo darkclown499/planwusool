@@ -488,7 +488,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
               <Inspector
                 section={selectedSection}
                 onSectionPropChange={(key, value) => selectedId && updateSectionProp(selectedId, key, value)}
-                themesUrl={`/stores/${store.id}/themes`}
+                themesUrl={`/stores/${store.id}/templates`}
                 designTokens={designTokens}
                 onTokensChange={(next) => setDesignTokens(next)}
               />

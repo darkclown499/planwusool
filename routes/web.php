@@ -681,7 +681,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/toggle-status', [\App\Http\Controllers\StoreController::class, 'toggleStatus'])->middleware('permission:edit-stores')->name('stores.toggle-status');
         Route::get('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.settings');
         Route::get('stores/{id}/designer', [\App\Http\Controllers\StoreDesignerController::class, 'show'])->middleware('permission:settings-stores')->name('stores.designer');
-        Route::get('stores/{id}/themes', [\App\Http\Controllers\StoreDesignerController::class, 'themes'])->middleware('permission:settings-stores')->name('stores.themes');
+        Route::get('stores/{id}/templates', [\App\Http\Controllers\StoreDesignerController::class, 'templates'])->middleware('permission:settings-stores')->name('stores.templates');
+        Route::get('stores/{id}/themes', fn ($id) => redirect()->route('stores.templates', ['id' => $id]))->middleware('permission:settings-stores')->name('stores.themes');
         Route::get('stores/{id}/features', [\App\Http\Controllers\StoreFeaturesController::class, 'show'])->middleware('permission:settings-stores')->name('stores.features');
         Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
         Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');

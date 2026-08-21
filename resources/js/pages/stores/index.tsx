@@ -221,7 +221,7 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                         <DropdownMenuContent align="end">
                           {hasPermission('settings-stores') && (
                             <>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.designer', store.id)); }}>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(route('stores.designer', store.id) as string, '_blank'); }}>
                                 <Paintbrush className="h-4 w-4" />
                                 تصميم المتجر
                               </DropdownMenuItem>

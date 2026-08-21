@@ -29,21 +29,24 @@ class StoreDesignerController extends Controller
     }
 
     /**
-     * Dedicated theme marketplace/gallery page (/stores/{id}/themes).
+     * Dedicated theme marketplace/gallery page (/stores/{id}/templates).
      * The template catalog itself lives client-side (resources/js/builder);
      * this only authorizes and resolves the target store.
      */
-    public function themes($storeId)
+    public function templates($storeId)
     {
         if (!Auth::user()->can('settings-stores')) {
             return redirect()->back()->with('error', __('You do not have permission to browse store themes.'));
         }
 
         $store = resolveStoreQuery(Auth::user())->findOrFail($storeId);
+        $user = Auth::user();
 
-        return Inertia::render('stores/themes', [
+        return Inertia::render('stores/templates', [
             'store' => $store,
-            'availableThemes' => Auth::user()->getAvailableThemes(),
+            'availableThemes' => $user->getAvailableThemes(),
+            'userPlanTier' => $user->plan?->getTier() ?? 'starter',
+            'isSuperAdmin' => $user->isSuperAdmin() || $user->isAdmin(),
         ]);
     }
 }

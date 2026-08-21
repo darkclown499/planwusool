@@ -7,7 +7,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell, Paintbrush, LayoutTemplate, Link2 } from 'lucide-react';
+import { BookOpen, Contact, Folder, LayoutGrid, ShoppingBag, Users, Tag, FileIcon, Settings, BarChart, Barcode, FileText, Briefcase, CheckSquare, Calendar, CreditCard, Nfc, Ticket, Gift, DollarSign, MessageSquare, CalendarDays, Palette, Image, Mail, Store, ChevronDown, Building2, Globe, Package, ShoppingCart, UserCheck, Truck, Star, Zap, Bot, Webhook, FileType, Languages, Percent, Headphones, Smartphone, Globe2, Megaphone, Search, Download, Sparkles, Bell, Paintbrush, LayoutTemplate } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import AppLogo from './app-logo';
@@ -67,7 +67,7 @@ export function AppSidebar() {
             groupLabel: t('Stores'),
             children: [
                 { title: t('Stores'), href: route('stores.index') },
-                { title: t('Theme Gallery'), href: auth.user?.current_store ? route('stores.themes', { id: auth.user.current_store }) : route('stores.index') },
+                { title: t('Theme Gallery'), href: auth.user?.current_store ? route('stores.templates', { id: auth.user.current_store }) : route('stores.index') },
             ],
         },
         {
@@ -267,18 +267,16 @@ export function AppSidebar() {
             });
         }
 
-        // إدارة المتجر الحالي — 5 روابط فقط (لا تكرار)
+        // إدارة المتجر الحالي — 3 روابط فقط (بدون تكرار القوائم الفرعية)
         if (hasPermission('settings-stores') && currentStoreId) {
             items.push({
                 title: 'إدارة المتجر',
                 icon: Building2,
                 groupLabel: t('Store'),
                 children: [
-                    { title: 'تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush },
-                    { title: 'ميزات المتجر', href: route('stores.features', currentStoreId), icon: LayoutTemplate },
-                    { title: 'طرق الدفع', href: route('stores.payments', currentStoreId), icon: CreditCard },
-                    { title: 'ربط ERP والمخزون', href: route('stores.erp', currentStoreId), icon: Link2 },
-                    { title: 'إعدادات عامة', href: route('stores.settings', currentStoreId), icon: Settings },
+                    { title: '🎨 تصميم القوالب', href: route('stores.templates', currentStoreId), icon: LayoutTemplate },
+                    { title: '⚡ المصمم البصري', href: route('stores.designer', currentStoreId), icon: Paintbrush, target: '_blank' },
+                    { title: '⚙️ إعدادات المتجر الشاملة', href: route('stores.settings', currentStoreId), icon: Settings },
                 ],
             });
         }

@@ -99,6 +99,15 @@ class Plan extends Model
      */
     public function getTier(): string
     {
+        // Pro/professional/premium/enterprise plans map to the top tier so
+        // premium templates stay unlocked for their subscribers.
+        $name = strtolower((string) $this->name);
+        foreach (['professional', 'premium', 'enterprise', 'pro'] as $needle) {
+            if ($needle !== '' && str_contains($name, $needle)) {
+                return 'professional';
+            }
+        }
+
         if ($this->price <= 0 && $this->yearly_price <= 0) {
             return 'starter';
         }

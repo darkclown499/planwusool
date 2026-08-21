@@ -4,12 +4,14 @@ import { Check, Crown, Eye, Loader2, Lock, Palette, Sparkles, X } from 'lucide-r
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { apiPut } from '@/utils/api';
-import { StoreSite, TEMPLATES } from '@/builder';
-import type { BuilderTemplateConfig } from '@/builder/types';
+import { canAccessTemplate, normalizeTemplateSlug, StoreSite, TEMPLATES } from '@/builder';
+import type { BuilderTemplateConfig, PlanTier } from '@/builder/types';
 
 type Props = {
   store: any;
   availableThemes?: string[];
+  userPlanTier?: PlanTier;
+  isSuperAdmin?: boolean;
 };
 
 /* Industry tags per template slug */
@@ -79,23 +81,26 @@ const buildDemoStoreData = (tpl: BuilderTemplateConfig) => ({
   behavior: {},
 });
 
-export default function StoreThemesGallery({ store, availableThemes }: Props) {
+export default function StoreThemesGallery({ store, availableThemes, userPlanTier, isSuperAdmin }: Props) {
   const [previewTpl, setPreviewTpl] = useState<BuilderTemplateConfig | null>(null);
+  const [confirmTpl, setConfirmTpl] = useState<BuilderTemplateConfig | null>(null);
   const [applying, setApplying] = useState<string | null>(null);
 
   const templates = useMemo(() => TEMPLATES, []);
-  const allowed = useMemo(() => new Set(availableThemes || []), [availableThemes]);
+  const tier: PlanTier = isSuperAdmin ? 'professional' : userPlanTier || 'starter';
+  // Legacy slug lists are normalized to the new catalog before matching.
+  const allowed = useMemo(
+    () => new Set((availableThemes || []).map((s) => normalizeTemplateSlug(s))),
+    [availableThemes]
+  );
 
-  const isLocked = (slug: string) => availableThemes != null && availableThemes.length > 0 && !allowed.has(slug);
+  // Unlocked when the plan tier grants it OR the backend list explicitly allows it.
+  const isLocked = (tpl: BuilderTemplateConfig) =>
+    !isSuperAdmin && !canAccessTemplate(tpl, tier) && !allowed.has(tpl.slug);
 
   const applyTheme = async (tpl: BuilderTemplateConfig) => {
-    if (
-      !window.confirm(
-        `تطبيق قالب «${tpl.name}» سيستبدل أقسام متجرك الحالية بمحتوى القالب الجاهز (صور وفيديوهات تجريبية). هل تريد المتابعة؟`
-      )
-    )
-      return;
     setApplying(tpl.slug);
+    setConfirmTpl(null);
     try {
       await apiPut(`/api/stores/${store.id}/designer`, {
         theme: tpl.slug,
@@ -115,7 +120,7 @@ export default function StoreThemesGallery({ store, availableThemes }: Props) {
 
   return (
     <>
-      <PageTemplate title="معرض القوالب" url={`/stores/${store.id}`}>
+      <PageTemplate title="معرض القوالب" url={`/stores/${store.id}/templates`}>
         <div className="mx-auto max-w-7xl px-4 py-6">
           {/* Header */}
           <div className="mb-8 flex flex-col gap-2">
@@ -130,9 +135,9 @@ export default function StoreThemesGallery({ store, availableThemes }: Props) {
           </div>
 
           {/* Cards grid */}
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {templates.map((tpl) => {
-              const locked = isLocked(tpl.slug);
+              const locked = isLocked(tpl);
               const active = store.theme === tpl.slug;
               return (
                 <div
@@ -221,16 +226,16 @@ export default function StoreThemesGallery({ store, availableThemes }: Props) {
                     <div className="mt-auto flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1" onClick={() => setPreviewTpl(tpl)}>
                         <Eye className="h-4 w-4" />
-                        معاينة القالب
+                        معاينة المباشرة
                       </Button>
                       <Button
                         size="sm"
                         className="flex-1"
                         disabled={locked || applying === tpl.slug}
-                        onClick={() => applyTheme(tpl)}
+                        onClick={() => setConfirmTpl(tpl)}
                       >
                         {applying === tpl.slug ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                        تطبيق القالب
+                        تطبيق القالب على المتجر
                       </Button>
                     </div>
                   </div>
@@ -259,7 +264,7 @@ export default function StoreThemesGallery({ store, availableThemes }: Props) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" disabled={isLocked(previewTpl.slug)} onClick={() => applyTheme(previewTpl)}>
+                <Button size="sm" disabled={isLocked(previewTpl)} onClick={() => setConfirmTpl(previewTpl)}>
                   <Check className="h-4 w-4" /> تطبيق هذا القالب
                 </Button>
                 <Button variant="outline" size="icon" onClick={() => setPreviewTpl(null)} aria-label="إغلاق">
@@ -275,6 +280,38 @@ export default function StoreThemesGallery({ store, availableThemes }: Props) {
                 storeData={buildDemoStoreData(previewTpl)}
                 isPreview
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apply-template confirmation modal */}
+      {confirmTpl && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" onClick={() => setConfirmTpl(null)}>
+          <div
+            className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 p-6">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white" style={{ background: confirmTpl.tokens.colors.primary }}>
+                {confirmTpl.name.slice(0, 1)}
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-base font-black text-slate-900">تطبيق قالب «{confirmTpl.name}» على المتجر؟</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
+                  سيتم استبدال أقسام متجرك الحالية بمحتوى القالب الجاهز (بانرات وصور وفيديوهات تجريبية)،
+                  ثم ستنتقل مباشرة إلى المصمم البصري لتخصيصه. لا يمكن التراجع تلقائياً.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4">
+              <Button variant="outline" size="sm" onClick={() => setConfirmTpl(null)}>
+                إلغاء
+              </Button>
+              <Button size="sm" disabled={applying === confirmTpl.slug} onClick={() => applyTheme(confirmTpl)}>
+                {applying === confirmTpl.slug ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                نعم، طبّق القالب
+              </Button>
             </div>
           </div>
         </div>

@@ -69,7 +69,7 @@ export default function ViewStore({ store, stats }: any) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.visit(route('stores.designer', store.id))}>
+            <DropdownMenuItem onClick={() => window.open(route('stores.designer', store.id) as string, '_blank')}>
               <Paintbrush className="h-4 w-4" />
               تصميم المتجر
             </DropdownMenuItem>
