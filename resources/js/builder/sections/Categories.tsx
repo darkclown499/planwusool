@@ -28,8 +28,8 @@ export const CategoriesSection: React.FC<BuilderSectionProps> = ({ section }) =>
   }
 
   return (
-    <section className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
-      <div className="mx-auto max-w-7xl">
+    <section className="w-full py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {props.show_title !== false && (
           <SectionHeading title={props.section_title || 'تصنيفاتنا'} subtitle={'اختر التصنيف الذي يناسبك واستكشف منتجاتنا.'} />
         )}
@@ -172,41 +172,55 @@ export const CategoriesSection: React.FC<BuilderSectionProps> = ({ section }) =>
         )}
 
         {variant === 'icon_grid' && (
-          <div className={gridClass}>
-            {categories.map((c: any) => {
-              const image = c.image;
-              const active = String(product.activeCategory) === String(c.id);
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => product.handleCategoryClick(c.id)}
-                  className="group relative flex aspect-square flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border bg-gradient-to-br transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                  style={{
-                    borderColor: css('--twc-border', '#e2e8f0'),
-                    background: `linear-gradient(160deg, ${css('--twc-primary', '#0f8a5f')} 0%, ${css('--twc-secondary', '#0e7490')} 100%)`,
-                    borderRadius: css('--twx-radius', '1rem'),
-                  }}
-                >
-                  {image ? (
-                    <img src={image} alt={c.name} className="absolute inset-0 h-full w-full object-cover opacity-40 transition group-hover:scale-105" />
-                  ) : null}
-                  <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-white ring-1 ring-white/30 backdrop-blur">
-                    <LayoutGrid className="h-6 w-6" />
-                  </span>
-                  <span className="relative z-10 px-3 text-center text-sm font-bold text-white drop-shadow sm:text-base">
-                    {c.name}
-                    {active ? ' •' : ''}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 md:grid-cols-8">
+            {(props.show_all !== false ? [{ id: 'all', name: 'الكل', image: '' }, ...categories] : categories).map((c: any, i: number) => (
+              <CategoryBadge
+                key={`${c.id}-${i}`}
+                label={c.name}
+                image={c.image}
+                active={String(product.activeCategory) === String(c.id)}
+                onClick={() => product.handleCategoryClick(c.id)}
+              />
+            ))}
           </div>
         )}
       </div>
     </section>
   );
 };
+
+/* Compact circle badge — the standard category unit (spec: w-16/20, title below) */
+const CategoryBadge: React.FC<{
+  label: string;
+  image?: string;
+  active: boolean;
+  onClick: () => void;
+}> = ({ label, image, active, onClick }) => (
+  <button type="button" onClick={onClick} className="group flex flex-col items-center text-center">
+    <span
+      className={`mx-auto mb-2 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full transition-all duration-200 group-hover:shadow-md md:h-20 md:w-20 ${
+        active ? 'ring-2 ring-offset-2' : ''
+      }`}
+      style={{
+        background: image ? undefined : `${css('--twc-primary', '#0f8a5f')}1a`,
+        color: css('--twc-primary', '#0f8a5f'),
+        ['--tw-ring-color' as any]: css('--twc-primary', '#0f8a5f'),
+      }}
+    >
+      {image ? (
+        <img src={image} alt={label} className="h-full w-full object-cover" />
+      ) : (
+        <LayoutGrid className="h-6 w-6 md:h-7 md:w-7" />
+      )}
+    </span>
+    <span
+      className="max-w-[100px] truncate text-center text-xs font-medium md:text-sm"
+      style={{ color: active ? css('--twc-primary', '#0f8a5f') : css('--twc-text-secondary', '#475569') }}
+    >
+      {label}
+    </span>
+  </button>
+);
 
 const CategoryCircle: React.FC<{
   label: string;
@@ -217,10 +231,10 @@ const CategoryCircle: React.FC<{
   <button
     type="button"
     onClick={onClick}
-    className="group flex w-24 flex-col items-center gap-2.5 text-center"
+    className="group flex flex-col items-center gap-0 text-center"
   >
     <span
-      className="flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-full border-2 bg-white transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl"
+      className="mx-auto mb-2 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 bg-white transition-all duration-200 group-hover:shadow-md md:h-20 md:w-20"
       style={{
         borderColor: active ? css('--twc-primary', '#0f8a5f') : css('--twc-border', '#e2e8f0'),
         boxShadow: active ? `0 0 0 4px ${css('--twc-primary', '#0f8a5f')}22` : undefined,
@@ -231,14 +245,14 @@ const CategoryCircle: React.FC<{
       ) : (
         <span
           className="flex h-full w-full items-center justify-center"
-          style={{ background: `linear-gradient(160deg, ${css('--twc-primary', '#0f8a5f')}, ${css('--twc-secondary', '#0e7490')})` }}
+          style={{ background: `${css('--twc-primary', '#0f8a5f')}1a`, color: css('--twc-primary', '#0f8a5f') }}
         >
-          <Store className="h-7 w-7 text-white" />
+          <Store className="h-6 w-6 md:h-7 md:w-7" />
         </span>
       )}
     </span>
     <span
-      className="max-w-full truncate text-sm font-bold transition"
+      className="max-w-[100px] truncate text-xs font-medium transition md:text-sm"
       style={{ color: active ? css('--twc-primary', '#0f8a5f') : css('--twc-text-secondary', '#475569') }}
     >
       {label}
@@ -250,43 +264,29 @@ const HorizontalCategoryRow: React.FC<{
   categories: any[];
   activeCat: string;
   onClick: (id: any) => void;
-}> = ({ categories, activeCat, onClick }) => {
+  showAll?: boolean;
+}> = ({ categories, activeCat, onClick, showAll = true }) => {
   const ref = useRef<HTMLDivElement>(null);
   const scrollBy = (dir: number) => ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
+  const items = showAll ? [{ id: 'all', name: 'الكل', image: '' }, ...categories] : categories;
 
   return (
     <div className="relative">
-      <div ref={ref} className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-        {categories.map((c: any) => {
-          const active = String(activeCat) === String(c.id);
-          const image = c.image;
-          return (
-            <button
-              key={c.id}
-              type="button"
+      <div
+        ref={ref}
+        className="scrollbar-none flex snap-x gap-4 overflow-x-auto py-2 [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {items.map((c: any, i: number) => (
+          <div key={`${c.id}-${i}`} className="shrink-0 snap-start">
+            <CategoryBadge
+              label={c.name}
+              image={c.image}
+              active={String(activeCat) === String(c.id)}
               onClick={() => onClick(c.id)}
-              className={`group relative my-1 flex w-52 shrink-0 snap-start flex-col items-center justify-end overflow-hidden rounded-2xl pt-12 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                active ? 'ring-2' : ''
-              }`}
-              style={{
-                ['--tw-ring-color' as any]: css('--twc-primary', '#0f8a5f'),
-                background: `linear-gradient(170deg, ${css('--twc-primary', '#0f8a5f')}, ${css('--twc-secondary', '#0e7490')})`,
-              }}
-            >
-              {image ? (
-                <img src={image} alt={c.name} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-              ) : (
-                <span className="absolute inset-0 flex items-center justify-center text-white/40">
-                  <Store className="h-10 w-10" />
-                </span>
-              )}
-              <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
-              <span className="relative z-10 w-full p-4 text-start text-sm font-bold text-white drop-shadow sm:text-base">
-                {c.name}
-              </span>
-            </button>
-          );
-        })}
+            />
+          </div>
+        ))}
       </div>
       <button
         type="button"

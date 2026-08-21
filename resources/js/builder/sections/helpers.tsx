@@ -106,60 +106,59 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
 
   return (
     <article
-      className="group relative flex w-full flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+      className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:shadow-md"
       style={{
-        borderColor: css('--twc-border', '#e2e8f0'),
-        boxShadow: css('--twx-shadow-card', '0 4px 16px -6px rgba(2,6,23,0.1)'),
+        borderColor: css('--twc-border', '#f3f4f6'),
         borderRadius: css('--twx-radius', '1rem'),
       }}
     >
-      <button
-        type="button"
-        onClick={() => productCtx.handleProductClick(product)}
-        className="relative block aspect-square w-full overflow-hidden bg-slate-100 text-start"
-        aria-label={product.name}
-      >
+      {/* Product image — full-bleed square, no clipping or circular wrappers */}
+      <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-slate-50">
         {image ? (
           <img
             src={image}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-300">
+          <div className="flex h-full w-full items-center justify-center text-slate-300">
             <PackageX className="h-10 w-10" />
           </div>
         )}
         {hasSale && (
           <span
-            className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-xs font-bold text-white"
+            className="absolute top-3 right-3 z-10 rounded-full px-2.5 py-1 text-xs font-bold text-white"
             style={{ background: css('--twc-danger', '#dc2626') }}
           >
             -{saleOff}%
           </span>
         )}
         {!inStock && (
-          <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-bold text-white">
+          <span className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 text-sm font-bold text-white">
             نفد المخزون
           </span>
         )}
-      </button>
-
-      <button
-        type="button"
-        onClick={() => wishlist.toggle(product.id)}
-        aria-label="المفضلة"
-        className="absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-400 shadow transition hover:text-red-500"
-      >
-        <Heart className="h-4 w-4" />
-      </button>
-
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <h3
-          className="line-clamp-2 min-h-[2.6em] text-sm font-bold leading-snug sm:text-base"
-          style={{ color: css('--twc-text-primary', '#0f172a') }}
+        {/* Click layer for product details */}
+        <button
+          type="button"
+          onClick={() => productCtx.handleProductClick(product)}
+          className="absolute inset-0 z-[1] cursor-pointer"
+          aria-label={product.name}
+        />
+        <button
+          type="button"
+          onClick={() => wishlist.toggle(product.id)}
+          aria-label="المفضلة"
+          className="absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-400 shadow transition hover:text-red-500"
         >
+          <Heart className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-grow flex-col justify-between gap-2 p-4">
+        <h3 className="line-clamp-2 text-sm font-semibold leading-snug" style={{ color: css('--twc-text-primary', '#111827') }}>
           <button type="button" onClick={() => productCtx.handleProductClick(product)} className="text-start">
             {product.name}
           </button>
@@ -169,19 +168,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             <Star className="h-3.5 w-3.5 fill-current" />
             <Star className="h-3.5 w-3.5 fill-current" />
             <Star className="h-3.5 w-3.5 fill-current" />
-            <Star className="h-3.5 w-3.5 fill-current" />
             <StarHalf className="h-3.5 w-3.5 fill-current" />
             <span className="text-xs text-slate-400">(4.5)</span>
           </div>
         )}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-2">
-          <div className="flex flex-col">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+          <div className="flex min-w-0 flex-col">
             {hasSale && <span className="text-xs text-slate-400 line-through">{priceOf(product)}</span>}
-            <span className="text-base font-extrabold" style={{ color: css('--twc-primary', '#0f8a5f') }}>
+            <span className="truncate text-base font-bold" style={{ color: css('--twc-primary', '#0f8a5f') }}>
               {salePriceOf(product)}
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1.5">
             {whatsapp && (
               <a
                 href={whatsapp}

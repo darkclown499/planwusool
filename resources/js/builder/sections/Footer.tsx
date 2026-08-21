@@ -31,9 +31,23 @@ export const FooterSection: React.FC<BuilderSectionProps> = ({ section, storeDat
   const social =
     config?.socialMedia && typeof config.socialMedia === 'object' ? (config.socialMedia as Record<string, string>) : {};
 
+  /** Clean merchant-entered social URLs: trim, strip stray leading slashes
+   *  ("/https://..." artifacts), force https://, and normalize phone-only
+   *  WhatsApp entries to wa.me links. */
+  const toSocialUrl = (key: string, raw?: string): string => {
+    let v = String(raw || '').trim().replace(/^\/+/, '');
+    if (!v) return '';
+    if (key === 'whatsapp' && !/^https?:\/\//i.test(v)) {
+      const digits = v.replace(/\D/g, '');
+      return digits ? `https://wa.me/${digits}` : '';
+    }
+    if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+    return v;
+  };
+
   const socialLinks = platformKeys
-    .map((k) => ({ key: k, url: social[k] || social[`${k}_url`] }))
-    .filter((s) => s.url && typeof s.url === 'string' && s.url.length > 0);
+    .map((k) => ({ key: k, url: toSocialUrl(k, social[k] || social[`${k}_url`]) }))
+    .filter((s) => s.url.length > 0);
 
   return (
     <footer
@@ -43,7 +57,7 @@ export const FooterSection: React.FC<BuilderSectionProps> = ({ section, storeDat
         borderColor: 'rgba(255,255,255,.08)',
       }}
     >
-      <div className="mx-auto max-w-7xl px-4 py-12 text-white">
+      <div className="container mx-auto max-w-7xl px-4 py-12 text-white sm:px-6 lg:px-8">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="mb-3 flex items-center gap-2">

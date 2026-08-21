@@ -18,8 +18,8 @@ export const ReviewsSection: React.FC<BuilderSectionProps> = ({ section, storeDa
   }
 
   return (
-    <section className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-surface', '#f8fafc') }}>
-      <div className="mx-auto max-w-7xl">
+    <section className="w-full py-10 sm:py-14" style={{ background: css('--twc-surface', '#f8fafc') }}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading title={props.section_title || 'آراء عملائنا'} subtitle={'ماذا قالوا عن تجربتهم معنا.'} />
         <div className="grid gap-4 md:grid-cols-3">
           {list.map((r: any, i: number) => (

@@ -53,7 +53,7 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
   /* -------- list -------- */
   if (variant === 'list') {
     return (
-      <section id="template-products" className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
+      <section id="template-products" className="w-full py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
         <div className="mx-auto max-w-5xl">
           <SectionHeading title={title} subtitle={'أحدث ما وصل حديثاً إلى متجرنا.'} />
           <div className="space-y-4">
@@ -122,8 +122,8 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
   if (variant === 'bento_products') {
     const [featured, ...rest] = visibleProducts;
     return (
-      <section id="template-products" className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
-        <div className="mx-auto max-w-7xl">
+      <section id="template-products" className="w-full py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading title={title} subtitle={'اكتشف منتجاتنا المميزة أولاً.'} />
           <div className="grid gap-5 lg:grid-cols-2">
             {featured && (
@@ -158,8 +158,8 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
   if (variant === 'tabbed_categories') {
     const catTabs = productCtx.categories?.length ? productCtx.categories : [];
     return (
-      <section id="template-products" className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-surface', '#f8fafc') }}>
-        <div className="mx-auto max-w-7xl">
+      <section id="template-products" className="w-full py-10 sm:py-14" style={{ background: css('--twc-surface', '#f8fafc') }}>
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading title={title} subtitle={'تصفّح المنتجات حسب التصنيف.'} />
           <div className="mb-7 flex flex-wrap items-center justify-center gap-2">
             <CatTabButton
@@ -209,10 +209,10 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
   return (
     <section
       id="template-products"
-      className="w-full px-4 py-10 sm:py-14"
+      className="w-full py-10 sm:py-14"
       style={{ background: compact ? css('--twc-background', '#ffffff') : css('--twc-surface', '#f8fafc') }}
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading title={title} subtitle={'أحدث ما وصل حديثاً إلى متجرنا.'} />
         <div className={GRID_COLS[variant === 'compact_grid' ? Math.min(columns, 6) : columns] || GRID_COLS[4]}>
           {visibleProducts.map((product: any) =>
@@ -342,8 +342,8 @@ const HorizontalProductRow: React.FC<{ products: any[]; title: string; columns: 
   const scrollBy = (dir: number) => ref.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
 
   return (
-    <section id="template-products" className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
-      <div className="mx-auto max-w-7xl">
+    <section id="template-products" className="w-full py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-end justify-between gap-4">
           <SectionHeading title={title} subtitle={'اكتشف أحدث المنتجات.'} align="start" />
           <div className="flex shrink-0 items-center gap-2">

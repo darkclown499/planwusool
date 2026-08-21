@@ -168,8 +168,8 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
           ]
     ).filter((s) => s.title || s.image);
     return (
-      <section id="template-hero" className="relative w-full px-4 py-8 sm:py-10">
-        <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
+      <section id="template-hero" className="relative w-full py-8 sm:py-10">
+        <div className="container mx-auto grid max-w-7xl gap-4 px-4 sm:px-6 md:grid-cols-3 lg:px-8">
           {/* Main banner */}
           <div
             className="relative flex min-h-[340px] flex-col justify-center overflow-hidden rounded-[1.75rem] p-8 sm:p-12 md:col-span-2"
@@ -245,7 +245,7 @@ export const HeroSection: React.FC<BuilderSectionProps> = ({ section, storeData 
   if (variant === 'split_banner' && image) {
     return (
       <section id="template-hero" className="relative w-full overflow-hidden">
-        <div className="grid items-center gap-8 px-4 py-14 md:grid-cols-2">
+        <div className="container mx-auto grid max-w-7xl items-center gap-8 px-4 py-14 sm:px-6 md:grid-cols-2 lg:px-8">
           {(badge || title || subtitle || buttonText || videoUrl) && (
             <div className="mx-auto max-w-xl text-center md:text-start">
               {badge && (

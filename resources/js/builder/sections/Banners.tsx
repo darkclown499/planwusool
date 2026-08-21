@@ -21,8 +21,8 @@ export const BannersSection: React.FC<BuilderSectionProps> = ({ section }) => {
   if (!slides.length) return null;
 
   return (
-    <section className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-surface', '#f8fafc') }}>
-      <div className="mx-auto max-w-7xl">
+    <section className="w-full py-10 sm:py-14" style={{ background: css('--twc-surface', '#f8fafc') }}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {variant === 'carousel' && slides.length > 1 ? (
           <BannerCarousel slides={slides} />
         ) : variant === 'grid' ? (

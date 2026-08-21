@@ -12,8 +12,8 @@ export const OffersSection: React.FC<BuilderSectionProps> = ({ section, storeDat
   }
 
   return (
-    <section className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
-      <div className="mx-auto max-w-7xl">
+    <section className="w-full py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading title={props.section_title || 'عروض خاصة'} subtitle={'خصومات لفترة محدودة لا تفوّتها.'} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {offers.map((offer: any) => {

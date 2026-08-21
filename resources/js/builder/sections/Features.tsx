@@ -28,8 +28,8 @@ export const FeaturesSection: React.FC<BuilderSectionProps> = ({ section, storeD
   const headingSubtitle = String(props.section_subtitle || '').trim();
 
   return (
-    <section className="w-full px-4 py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
-      <div className="mx-auto max-w-7xl">
+    <section className="w-full py-10 sm:py-14" style={{ background: css('--twc-background', '#ffffff') }}>
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading title={headingTitle} subtitle={headingSubtitle} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {list.filter((f: any) => f?.title || f?.text).map((f: any, i: number) => (
