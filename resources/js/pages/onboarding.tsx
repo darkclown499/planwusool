@@ -721,46 +721,57 @@ export default function Onboarding({
                                                     <Label htmlFor="store_subdomain" className="text-sm font-medium">
                                                         {t('Subdomain')}
                                                     </Label>
-                                                    <p className="mt-1 mb-2 text-sm text-gray-500">
+                                                    <p className="mt-1.5 text-xs text-gray-500">
                                                         {t('Your store will be available at')}
                                                     </p>
-                                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                                        <div className="relative flex-1">
-                                                            <Input
-                                                                id="store_subdomain"
-                                                                value={data.store_subdomain}
-                                                                onChange={(e) => {
-                                                                    setData('store_subdomain', e.target.value.toLowerCase());
-                                                                    setAvailability(null);
-                                                                }}
-                                                                placeholder="my-store"
-                                                                className="h-12 w-full rounded-xl border border-gray-200 pe-16 ps-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-                                                                dir="ltr"
-                                                            />
-                                                            <span
-                                                                className="absolute inset-y-0 end-3 flex items-center text-sm text-gray-400"
-                                                                dir="ltr"
-                                                            >
-                                                                .{storeDomain}
-                                                            </span>
-                                                        </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            onClick={runAvailabilityCheck}
-                                                            disabled={checking || !data.store_subdomain}
-                                                            className="h-12 shrink-0 rounded-xl"
+
+                                                    {/* Unified URL group: slug + domain suffix + inline check */}
+                                                    <div
+                                                        className={`mt-3 flex items-stretch overflow-hidden rounded-xl border bg-white transition-all ${
+                                                            availability && !availability.available
+                                                                ? 'border-red-300 focus-within:border-red-400 focus-within:ring-2 focus-within:ring-red-500/15'
+                                                                : 'border-gray-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20'
+                                                        }`}
+                                                    >
+                                                        <Input
+                                                            id="store_subdomain"
+                                                            value={data.store_subdomain}
+                                                            onChange={(e) => {
+                                                                setData('store_subdomain', e.target.value.toLowerCase());
+                                                                setAvailability(null);
+                                                            }}
+                                                            placeholder="my-store"
+                                                            className="h-12 min-w-0 flex-1 rounded-none border-0 bg-transparent px-4 text-sm shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0"
+                                                            dir="ltr"
+                                                        />
+                                                        <span
+                                                            className="flex items-center border-x border-gray-200 bg-gray-50 px-3 font-mono text-sm text-gray-500"
+                                                            dir="ltr"
                                                         >
-                                                            {checking ? (
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                            ) : (
-                                                                t('Check availability')
+                                                            .{storeDomain}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={runAvailabilityCheck}
+                                                            disabled={checking || !data.store_subdomain.trim()}
+                                                            className={`flex shrink-0 items-center gap-1.5 px-3 text-sm font-semibold transition-colors sm:px-4 ${
+                                                                availability?.available
+                                                                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                                                                    : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                                            } ${checking || !data.store_subdomain.trim() ? 'cursor-not-allowed opacity-60' : ''}`}
+                                                        >
+                                                            {checking && <Loader2 className="h-4 w-4 animate-spin" />}
+                                                            {!checking && availability?.available && (
+                                                                <Check className="h-4 w-4" />
                                                             )}
-                                                        </Button>
+                                                            <span className="hidden sm:inline">
+                                                                {t('Check availability')}
+                                                            </span>
+                                                        </button>
                                                     </div>
                                                     {availability && (
                                                         <p
-                                                            className={`mt-3 flex items-center gap-1.5 text-sm animate-pop ${
+                                                            className={`mt-2 flex items-center gap-1.5 text-sm animate-pop ${
                                                                 availability.available
                                                                     ? 'text-emerald-600'
                                                                     : 'text-red-600'
@@ -779,13 +790,19 @@ export default function Onboarding({
                                                             {errors.store_subdomain}
                                                         </p>
                                                     )}
+
+                                                    {/* Live URL badge */}
                                                     <div
-                                                        className="mt-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
                                                         dir="ltr"
-                                                        style={{ backgroundColor: `${primaryColor}12`, color: primaryColor }}
+                                                        className="mt-4 inline-flex max-w-full items-center gap-2 rounded-full bg-emerald-50 py-1.5 pe-3.5 ps-2.5 ring-1 ring-emerald-200 animate-pop"
                                                     >
-                                                        <Globe className="h-3.5 w-3.5" />
-                                                        {data.store_subdomain || 'your-store'}.{storeDomain}
+                                                        <span className="relative flex h-2 w-2 shrink-0">
+                                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                                                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                                                        </span>
+                                                        <span className="truncate font-mono text-xs font-semibold text-emerald-700">
+                                                            https://{data.store_subdomain.trim() || 'your-store'}.{storeDomain}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
