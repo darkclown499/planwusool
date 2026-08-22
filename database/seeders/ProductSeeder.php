@@ -74,28 +74,12 @@ class ProductSeeder extends Seeder
     {
         $store = Store::find($storeId);
         $prefix = match($store->getTemplateSlug()) {
-            'gadgets', 'tech', 'electronics-pro' => 'TV',
-            'fashion', 'fashion-premium' => 'TT',
-            'home-decor', 'furniture' => 'CC',
-            'bakery', 'food', 'food-premium', 'restaurant' => 'SD',
-            'supermarket', 'grocery-delivery' => 'DE',
-            'car-accessories', 'auto-parts' => 'AE',
-            'toy', 'kids' => 'WT',
-            'books' => 'BN',
-            'coffee-shop' => 'CH',
-            'pharmacy' => 'PC',
-            'pet-store' => 'PF',
-            'perfumes' => 'ES',
-            'flowers-gifts' => 'BG',
-            'home-tools' => 'TD',
-            'handcrafted' => 'HH',
-            'stationery' => 'PS',
-            'luxury-jewelry' => 'GL',
-            'luxury-watches' => 'TE',
-            'b2b-wholesale' => 'WC',
-            'sports' => 'AG',
-            'beauty', 'beauty-premium' => 'BT',
-            'basic', 'single-product', 'digital' => 'DS',
+            'e-storefront', 'mega-store-woocommerce', 'ecommece-marketplace', 'marketplace-shop' => 'TV',
+            'ecommerce-clothing', 'fashion-designer-mart', 'kids-fashion' => 'TT',
+            'classic', 'grocery-shopping', 'super-mart-store' => 'DE',
+            'fresh-bakers' => 'SD',
+            'restaurant-food-delivery' => 'RS',
+            'cosmetic-store', 'ecommerce-mega-store' => 'BT',
             default => 'TV'
         };
         return $prefix . $storeId . 'C' . $categoryId . 'P' . rand(1000, 9999);
@@ -3805,6 +3789,90 @@ class ProductSeeder extends Seeder
             'Best Sellers' => [
                 ['name' => 'Customer Favourite', 'description' => 'The most loved product in this store.', 'price' => 49.99, 'cover_image' => '/storage/demo/p6.svg', 'images' => '/storage/demo/p6.svg'],
                 ['name' => 'Most Wanted', 'description' => 'Back in stock after high demand.', 'price' => 34.99, 'sale_price' => 29.99, 'cover_image' => '/storage/demo/p7.svg', 'images' => '/storage/demo/p7.svg'],
+            ],
+            /* ========================================================== */
+            /* Arabic niche products — back the new template blueprints   */
+            /* (fresh-bakers, designer, cosmetics, restaurant…). Photos    */
+            /* are served locally from /images/store.                     */
+            /* ========================================================== */
+            'قهوة ومشروبات' => [
+                ['name' => 'قهوة عربية مطحونة 500غ', 'description' => 'تحميص فاتح برائحة الهيل والزعفران، تُطحن عند الطلب.', 'price' => 38, 'sale_price' => 32, 'stock' => 50, 'cover_image' => '/images/store/coffee.jpg', 'images' => '/images/store/coffee.jpg'],
+                ['name' => 'قهوة مختصة إثيوبية 250غ', 'description' => 'حبوب سنجل أوريجين بنوتات الفواكه الحمضية.', 'price' => 45, 'stock' => 35, 'cover_image' => '/images/store/coffee.jpg', 'images' => '/images/store/coffee.jpg'],
+                ['name' => 'شاي أخضر بالنعناع (علبة)', 'description' => 'أوراق شاي كاملة مع نعناع مجفف طبيعياً.', 'price' => 22, 'sale_price' => null, 'stock' => 60, 'cover_image' => '/images/store/coffee.jpg', 'images' => '/images/store/coffee.jpg'],
+                ['name' => 'كبسولات إسبريسو (30 كبسولة)', 'description' => 'خلطة إيطالية متوازنة تناسب جميع الآلات.', 'price' => 55, 'sale_price' => 48, 'stock' => 40, 'cover_image' => '/images/store/coffee.jpg', 'images' => '/images/store/coffee.jpg'],
+            ],
+            'كوتور نسائي' => [
+                ['name' => 'فستان سهرة بتطريز يدوي', 'description' => 'تول فرنسي وتطريز يدوي يستغرق 40 ساعة عمل، بإصدار محدود.', 'price' => 1250, 'sale_price' => null, 'stock' => 8, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'فستان زفاف بقصة أميرة', 'description' => 'ساتان حريري مع ذيل قابل للفصل وتفاصيل دانتيل.', 'price' => 3200, 'sale_price' => 2850, 'stock' => 5, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'فستان كوكتيل ميدٍ مخملي', 'description' => 'مخمل إيطالي بقصة انسيابية تناسب المناسبات المسائية.', 'price' => 780, 'stock' => 12, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+            ],
+            'عبايات وقفاطين' => [
+                ['name' => 'قفطان مغربي بموشى حريري', 'description' => 'تطريز سفيفة يدوي وأزرار عقاد فاخرة.', 'price' => 890, 'sale_price' => 790, 'stock' => 10, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'عباية كلوش كريب ياباني', 'description' => 'كريب ثقيل لا يشف مع بطانة داخلية ناعمة.', 'price' => 520, 'sale_price' => null, 'stock' => 18, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'عباية سواريه مطرزة بالكريستال', 'description' => 'تفاصيل كريستال على الأكمام مثالية للمناسبات.', 'price' => 940, 'sale_price' => 820, 'stock' => 7, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'عباية يومية كتان صيفي', 'description' => 'كتان طبيعي خفيف بألوان محايدة هادئة.', 'price' => 310, 'stock' => 25, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+            ],
+            'حقائب فاخرة' => [
+                ['name' => 'حقيبة يد جلد بإصدار محدود', 'description' => 'جلد طبيعي مدبوغ نباتياً بخياطة يدوية دقيقة.', 'price' => 980, 'sale_price' => null, 'stock' => 6, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'حقيبة كتف بسلسلة ذهبية', 'description' => 'تصميم عملي أنيق يناسب اليوم والسهرة.', 'price' => 640, 'sale_price' => 560, 'stock' => 11, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'كلتش سهرة مرصع', 'description' => 'تصعيد لؤلؤي يدوي مع سلسلة قابلة للإخفاء.', 'price' => 430, 'stock' => 14, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+            ],
+            'مجوهرات وإكسسوارات' => [
+                ['name' => 'طقم ألماس مقلد فاخر', 'description' => 'قلائد وحلق بلمعة الألماز على قاعدة نحاسية مذهبة.', 'price' => 450, 'sale_price' => 380, 'stock' => 20, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'سوار ذهبي 18 قيراط', 'description' => 'ذهب عيار 18 بتصميم مضفور كلاسيكي.', 'price' => 1850, 'sale_price' => null, 'stock' => 4, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+                ['name' => 'شال حرير طبيعي مطبوع', 'description' => 'حرير 100% بحواف مدونة يدوياً ورسومات حصرية.', 'price' => 210, 'stock' => 16, 'cover_image' => '/images/store/clothes.jpg', 'images' => '/images/store/clothes.jpg'],
+            ],
+            'العناية بالبشرة' => [
+                ['name' => 'سيروم فيتامين سي المركز', 'description' => 'تركيز 15% لتوحيد اللون وإشراقة فورية، مناسب لكل أنواع البشرة.', 'price' => 165, 'sale_price' => 139, 'stock' => 45, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'كريم مرطب بحمض الهيالورونيك', 'description' => 'ترطيب عميق يدوم 72 ساعة بقوام خفيف غير دهني.', 'price' => 120, 'sale_price' => null, 'stock' => 52, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'واقي شمس SPF50+ بدون أثر أبيض', 'description' => 'حماية عالية من UVA/UVB بقوام يذوب فوراً.', 'price' => 98, 'sale_price' => 84, 'stock' => 70, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'غسول رغوي لطيف بالسيراميد', 'description' => 'ينظف دون أن يجرد البشرة من زيوتها الطبيعية.', 'price' => 65, 'sale_price' => null, 'stock' => 80, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+            ],
+            'المكياج' => [
+                ['name' => 'باليت ظلال ترابية 16 لون', 'description' => 'درجات محايدة بدرجة تصبيج عالية تدوم 12 ساعة.', 'price' => 145, 'sale_price' => 118, 'stock' => 38, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'أحمر شفاه مطفي ثابت طويل', 'description' => 'تركيبة مريحة غير ناشفة بتغطية كاملة بلمسة واحدة.', 'price' => 68, 'sale_price' => null, 'stock' => 90, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'فاونديشن تغطية عالية 30 مل', 'description' => 'درجات شاملة تناسب البشرة العربية بلمسة نهائية ساتانية.', 'price' => 135, 'sale_price' => 112, 'stock' => 42, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'ماسكارا تكثيف وتطويل', 'description' => 'فرشاة مخروطية تفصل الرموش وتضاعف كثافتها.', 'price' => 78, 'stock' => 66, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+            ],
+            'العطور' => [
+                ['name' => 'عطر شرقي فاخر 100 مل', 'description' => 'عود وعنبر وفانيلا بثبات يتجاوز 10 ساعات.', 'price' => 380, 'sale_price' => 310, 'stock' => 24, 'cover_image' => '/images/store/perfume.jpg', 'images' => '/images/store/perfume.jpg'],
+                ['name' => 'مسك أبيض مركّز (رول أون)', 'description' => 'مسك نظيف ناعم خالٍ من الكحول، مثالي للاستخدام اليومي.', 'price' => 75, 'sale_price' => null, 'stock' => 95, 'cover_image' => '/images/store/perfume.jpg', 'images' => '/images/store/perfume.jpg'],
+                ['name' => 'عطر زهري فرنسي للنساء', 'description' => 'ورد طائفي وليتشي بقاعدة مسكية دافئة.', 'price' => 290, 'sale_price' => 245, 'stock' => 30, 'cover_image' => '/images/store/perfume.jpg', 'images' => '/images/store/perfume.jpg'],
+                ['name' => 'دهن عود كمبودي 3 مل', 'description' => 'دهن عود أصلي معتمد برائحة نفاذة عميقة.', 'price' => 850, 'stock' => 8, 'cover_image' => '/images/store/perfume.jpg', 'images' => '/images/store/perfume.jpg'],
+            ],
+            'العناية بالشعر' => [
+                ['name' => 'زيت أرجان مغربي أصلي', 'description' => 'معصور على البارد، يعيد اللمعان ويقوي الأطراف المتضررة.', 'price' => 90, 'sale_price' => null, 'stock' => 58, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'ماسك كيراتين للشعر التالف', 'description' => 'يعالج التقصف خلال 3 استعمالات بروتين الكيراتين النباتي.', 'price' => 110, 'sale_price' => 92, 'stock' => 47, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+                ['name' => 'سيروم واقٍ للحرارة', 'description' => 'يحمي حتى 230 درجة أثناء الاستشوار والفرد.', 'price' => 72, 'stock' => 63, 'cover_image' => '/images/store/cosmetics.jpg', 'images' => '/images/store/cosmetics.jpg'],
+            ],
+            'المشاوي' => [
+                ['name' => 'نصف دجاجة مشوية على الفحم', 'description' => 'متتبلة 12 ساعة بخلطة سرية تُشوى على جمر الطبيعي.', 'price' => 38, 'sale_price' => null, 'stock' => 100, 'cover_image' => '/images/store/grills.jpg', 'images' => '/images/store/grills.jpg'],
+                ['name' => 'مشاوي مشكل عائلي', 'description' => 'كباب وشيش طاووق وريش لحم تكفي 4-5 أشخاص.', 'price' => 145, 'sale_price' => 125, 'stock' => 60, 'cover_image' => '/images/store/grills.jpg', 'images' => '/images/store/grills.jpg'],
+                ['name' => 'كباب حلبي (12 سيخ)', 'description' => 'لحم غنم مفروم طازج مع بهارات حلبية أصلية.', 'price' => 95, 'stock' => 45, 'cover_image' => '/images/store/grills.jpg', 'images' => '/images/store/grills.jpg'],
+                ['name' => 'ريش غنم مشوية', 'description' => 'قطع مختصة طرية تُشوى على الطلب مباشرة.', 'price' => 120, 'sale_price' => 105, 'stock' => 35, 'cover_image' => '/images/store/grills.jpg', 'images' => '/images/store/grills.jpg'],
+            ],
+            'الوجبات السريعة' => [
+                ['name' => 'برجر لحم أنغوس مزدوج', 'description' => 'قطعتا لحم أنغوس 100% مع صوص الشيدر الخاص.', 'price' => 42, 'sale_price' => null, 'stock' => 120, 'cover_image' => '/images/store/fast-food.jpg', 'images' => '/images/store/fast-food.jpg'],
+                ['name' => 'وجبة عائلية (برجر + بطاطس + مشروبات)', 'description' => '4 برجر وبطاطس كبيرة و4 مشروبات بسعر موفر.', 'price' => 119, 'sale_price' => 99, 'stock' => 50, 'cover_image' => '/images/store/fast-food.jpg', 'images' => '/images/store/fast-food.jpg'],
+                ['name' => 'شرائح دجاج مقرمشة (8 قطع)', 'description' => 'دجاج متبل 24 ساعة بخبزة مقرمشة ذهبية.', 'price' => 36, 'stock' => 90, 'cover_image' => '/images/store/fast-food.jpg', 'images' => '/images/store/fast-food.jpg'],
+                ['name' => 'بطاطس ودجز بالجبن', 'description' => 'بطاطس سميكة مع صوص الجبن الساخن.', 'price' => 18, 'sale_price' => null, 'stock' => 150, 'cover_image' => '/images/store/fast-food.jpg', 'images' => '/images/store/fast-food.jpg'],
+            ],
+            'الأطباق الرئيسية' => [
+                ['name' => 'كبسة لحم ضاني', 'description' => 'أرز بسمتي بهاري ولحم ضاني طري مع الصلصة الحارة.', 'price' => 89, 'sale_price' => null, 'stock' => 70, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+                ['name' => 'مندي دجاج بالفرن الحجري', 'description' => 'دجاج يُطهى في التنور الحجري بنكهة دخان أصيلة.', 'price' => 65, 'sale_price' => 55, 'stock' => 85, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+                ['name' => 'برياني دجاج هندي', 'description' => 'أرز بسمتي بالزعفران مع الدجاج والتوابل الهندية.', 'price' => 62, 'stock' => 75, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+                ['name' => 'صينية سمك حمور بالفريكة', 'description' => 'سمك حمور طازج فوق فريكة مدخنة بالصنوبر.', 'price' => 135, 'sale_price' => null, 'stock' => 25, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+            ],
+            'المقبلات والسلطات' => [
+                ['name' => 'سلطة سيزر بالدجاج المشوي', 'description' => 'خس روماني وصوص سيزر محضّر يومياً وخبز محمص.', 'price' => 32, 'sale_price' => null, 'stock' => 110, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+                ['name' => 'حمص بالطحينة وزيت الزيتون', 'description' => 'حمص كريمي مع زيت زيتون بكر وحبة البركة.', 'price' => 18, 'stock' => 140, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+                ['name' => 'متبل باذنجان مشوي', 'description' => 'باذنجان مشوي على الفحم مع الزبادي والثوم.', 'price' => 20, 'sale_price' => 16, 'stock' => 95, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+                ['name' => 'سمبوسة خضار (10 قطع)', 'description' => 'حشوة خضار موسمية مع صوص النعناع.', 'price' => 22, 'stock' => 120, 'cover_image' => '/images/store/restaurant-dish.jpg', 'images' => '/images/store/restaurant-dish.jpg'],
+            ],
+            'الحلويات' => [
+                ['name' => 'كنافة بالقشطة (طبق)', 'description' => 'كنافة ناعمة بالقشطة البلدية وقطر الزهر.', 'price' => 28, 'sale_price' => null, 'stock' => 80, 'cover_image' => '/images/store/sweets.jpg', 'images' => '/images/store/sweets.jpg'],
+                ['name' => 'أم علي بالمكسرات', 'description' => 'تُقدم ساخنة مع القشطة والمكسرات المحمصة.', 'price' => 25, 'sale_price' => 21, 'stock' => 65, 'cover_image' => '/images/store/sweets.jpg', 'images' => '/images/store/sweets.jpg'],
+                ['name' => 'مهلبية بماء الزهر (4 أكواب)', 'description' => 'مهلبية ناعمة تقليدية مع فستق مجروش.', 'price' => 20, 'stock' => 90, 'cover_image' => '/images/store/sweets.jpg', 'images' => '/images/store/sweets.jpg'],
             ],
         ];
 

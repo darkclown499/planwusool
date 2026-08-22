@@ -4,12 +4,16 @@ export { StoreSkeleton } from './skeleton';
 export { CategoryListing, type CategoryPageData } from './CategoryListing';
 export {
   TEMPLATES,
+  TEMPLATE_SLUGS,
   getBuilderTemplate,
   getBuilderTemplateSummaries,
   getFreeBuilderTemplates,
   getBuilderTemplatesByCategory,
+  getTemplateCategories,
   normalizeTemplateSlug,
 } from './templates';
+export { DEMO_CATALOGS, getDemoCatalog } from './demo-catalogs';
+export type { DemoCatalog, DemoCategory, DemoProduct } from './demo-catalogs';
 export {
   SECTION_TYPES,
   getSectionMeta,
