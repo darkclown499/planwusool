@@ -441,6 +441,9 @@ export default function Onboarding({
         { icon: Globe, label: t('Customizable store design') },
     ];
 
+    // Sync the sticky showcase with the wizard: 1) create  2) customize  3) sell
+    const showcaseGroup = step <= 2 ? 0 : step <= 7 ? 1 : 2;
+
     const isStoreNameNonLatin = data.store_name.trim() !== '' && slugify(data.store_name) === '';
 
     return (
@@ -514,23 +517,44 @@ export default function Onboarding({
                                     title: t('Start selling'),
                                     desc: t('Share your store link and take orders through WhatsApp.'),
                                 },
-                            ].map((item, i) => (
-                                <div
-                                    key={i}
-                                    className="onboarding-stagger flex items-start gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur"
-                                >
-                                    <span
-                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold"
-                                        style={{ color: primaryColor }}
+                            ].map((item, i) => {
+                                const isActive = i === showcaseGroup;
+                                return (
+                                    <div
+                                        key={i}
+                                        className={`onboarding-stagger flex items-start gap-3 rounded-2xl border p-4 backdrop-blur transition-all duration-300 ${
+                                            isActive
+                                                ? 'border-white/40 bg-white/20 shadow-lg shadow-black/10'
+                                                : 'border-white/10 bg-white/10'
+                                        }`}
                                     >
-                                        {i + 1}
-                                    </span>
-                                    <div className="min-w-0">
-                                        <div className="text-sm font-semibold text-white">{item.title}</div>
-                                        <div className="mt-0.5 text-xs leading-relaxed text-white/70">{item.desc}</div>
+                                        <span
+                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors duration-300 ${
+                                                isActive ? 'bg-white' : 'bg-white/20 text-white'
+                                            }`}
+                                            style={isActive ? { color: primaryColor } : undefined}
+                                        >
+                                            {i + 1}
+                                        </span>
+                                        <div className="min-w-0">
+                                            <div
+                                                className={`text-sm font-semibold transition-opacity duration-300 ${
+                                                    isActive ? 'text-white' : 'text-white/60'
+                                                }`}
+                                            >
+                                                {item.title}
+                                            </div>
+                                            <div
+                                                className={`mt-0.5 text-xs leading-relaxed transition-opacity duration-300 ${
+                                                    isActive ? 'text-white/70' : 'text-white/40'
+                                                }`}
+                                            >
+                                                {item.desc}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Feature chips */}
@@ -568,39 +592,11 @@ export default function Onboarding({
                                 {t('Step {{current}} of {{total}}', { current: step + 1, total: STEP_META.length })}
                             </span>
                         </div>
-
-                        {/* Compact desktop dot indicator */}
-                        <div className="mt-4 hidden items-center justify-center gap-1.5 sm:flex">
-                            {STEP_META.map((meta, i) => {
-                                const isDone = i < step;
-                                const isCurrent = i === step;
-                                return (
-                                    <button
-                                        key={meta.key}
-                                        type="button"
-                                        disabled={!isDone}
-                                        onClick={() => setStep(i)}
-                                        aria-label={t('Go back to previous step')}
-                                        className={`h-2 rounded-full transition-all duration-300 ${
-                                            isCurrent
-                                                ? 'w-7 bg-emerald-500'
-                                                : isDone
-                                                  ? 'w-2 cursor-pointer bg-emerald-500 hover:w-4'
-                                                  : 'w-2 bg-gray-200'
-                                        }`}
-                                    />
-                                );
-                            })}
-                        </div>
                     </div>
 
                     {/* Step card */}
                     <div className="flex flex-1 items-start justify-center py-8 md:items-center md:py-10">
                         <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-gray-200/70">
-                            <span
-                                className="absolute inset-x-0 top-0 h-1"
-                                style={{ background: `linear-gradient(90deg, ${primaryColor}b3, ${primaryColor})` }}
-                            />
                             {generalError && (
                                 <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-8 py-3 text-sm font-medium text-red-700 md:px-12">
                                     <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
@@ -651,12 +647,9 @@ export default function Onboarding({
 
                                         {stepKey === 'name' && (
                                             <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <User className="h-5 w-5" style={{ color: primaryColor }} />
+                                                <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                                                        <User className="h-5 w-5 text-emerald-600" />
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
@@ -675,7 +668,7 @@ export default function Onboarding({
                                                     value={data.name}
                                                     onChange={(e) => setData('name', e.target.value)}
                                                     placeholder={t('Full name')}
-                                                    className="mt-2 h-12 rounded-xl"
+                                                    className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                     autoFocus
                                                 />
                                                 {errors.name && (
@@ -686,12 +679,9 @@ export default function Onboarding({
 
                                         {stepKey === 'store' && (
                                             <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <Store className="h-5 w-5" style={{ color: primaryColor }} />
+                                                <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                                                        <Store className="h-5 w-5 text-emerald-600" />
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
@@ -714,7 +704,7 @@ export default function Onboarding({
                                                         updateSubdomainFromStoreName(e.target.value);
                                                     }}
                                                     placeholder={t('Store name')}
-                                                    className="mt-2 h-12 rounded-xl"
+                                                    className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                     autoFocus
                                                 />
                                                 {isStoreNameNonLatin && (
@@ -744,7 +734,7 @@ export default function Onboarding({
                                                                     setAvailability(null);
                                                                 }}
                                                                 placeholder="my-store"
-                                                                className="h-12 rounded-xl pe-16 text-sm"
+                                                                className="h-12 w-full rounded-xl border border-gray-200 pe-16 ps-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                                 dir="ltr"
                                                             />
                                                             <span
@@ -803,12 +793,9 @@ export default function Onboarding({
 
                                         {stepKey === 'details' && (
                                             <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <Contact className="h-5 w-5" style={{ color: primaryColor }} />
+                                                <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                                                        <Contact className="h-5 w-5 text-emerald-600" />
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
@@ -839,7 +826,7 @@ export default function Onboarding({
                                                                 value={data.store_email}
                                                                 onChange={(e) => setData('store_email', e.target.value)}
                                                                 placeholder="store@example.com"
-                                                                className="h-12 rounded-xl ps-9"
+                                                                className="h-12 w-full rounded-xl border border-gray-200 px-4 py-3 ps-9 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                                 dir="ltr"
                                                             />
                                                         </div>
@@ -859,7 +846,7 @@ export default function Onboarding({
                                                                 value={data.whatsapp_phone}
                                                                 onChange={(e) => setData('whatsapp_phone', e.target.value)}
                                                                 placeholder="+9705"
-                                                                className="h-12 rounded-xl ps-9"
+                                                                className="h-12 w-full rounded-xl border border-gray-200 px-4 py-3 ps-9 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                                 dir="ltr"
                                                             />
                                                         </div>
@@ -894,12 +881,9 @@ export default function Onboarding({
 
                                         {stepKey === 'branding' && (
                                             <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <Brush className="h-5 w-5" style={{ color: primaryColor }} />
+                                                <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                                                        <Brush className="h-5 w-5 text-emerald-600" />
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
@@ -927,7 +911,7 @@ export default function Onboarding({
                                                             value={data.welcome_message}
                                                             onChange={(e) => setData('welcome_message', e.target.value)}
                                                             placeholder={t('E.g. Welcome to our store!')}
-                                                            className="mt-2 h-12 rounded-xl"
+                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                         />
                                                         {errors.welcome_message && (
                                                             <p className="mt-2 text-sm text-red-600">{errors.welcome_message}</p>
@@ -943,7 +927,7 @@ export default function Onboarding({
                                                             value={data.store_description}
                                                             onChange={(e) => setData('store_description', e.target.value)}
                                                             placeholder={t('A short description of your store and what you sell.')}
-                                                            className="mt-2 min-h-[80px] rounded-xl"
+                                                            className="mt-2 min-h-[80px] w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                         />
                                                         {errors.store_description && (
                                                             <p className="mt-2 text-sm text-red-600">{errors.store_description}</p>
@@ -986,7 +970,7 @@ export default function Onboarding({
                                                                 value={data.address}
                                                                 onChange={(e) => setData('address', e.target.value)}
                                                                 placeholder={t('Salah al-Din Street 291')}
-                                                                className="h-12 rounded-xl ps-9"
+                                                                className="h-12 w-full rounded-xl border border-gray-200 px-4 py-3 ps-9 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                             />
                                                         </div>
                                                         {errors.address && (
@@ -1003,7 +987,7 @@ export default function Onboarding({
                                                             value={data.city}
                                                             onChange={(e) => setData('city', e.target.value)}
                                                             placeholder={t('Ramallah')}
-                                                            className="mt-2 h-12 rounded-xl"
+                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                         />
                                                         {errors.city && (
                                                             <p className="mt-2 text-sm text-red-600">{errors.city}</p>
@@ -1019,7 +1003,7 @@ export default function Onboarding({
                                                             value={data.country}
                                                             onChange={(e) => setData('country', e.target.value)}
                                                             placeholder={t('Palestine')}
-                                                            className="mt-2 h-12 rounded-xl"
+                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                         />
                                                         {errors.country && (
                                                             <p className="mt-2 text-sm text-red-600">{errors.country}</p>
@@ -1055,7 +1039,7 @@ export default function Onboarding({
                                                                 id="timezone"
                                                                 value={data.timezone}
                                                                 onChange={(e) => setData('timezone', e.target.value)}
-                                                                className="h-12 w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-3 pe-9 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                                                className="h-12 w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-3 pe-9 text-sm text-gray-900 outline-none transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                                                 dir="ltr"
                                                             >
                                                                 {Object.entries(timezones).map(([value, label]) => (
@@ -1093,12 +1077,9 @@ export default function Onboarding({
 
                                         {stepKey === 'language' && (
                                             <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <Languages className="h-5 w-5" style={{ color: primaryColor }} />
+                                                <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                                                        <Languages className="h-5 w-5 text-emerald-600" />
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
@@ -1143,12 +1124,9 @@ export default function Onboarding({
 
                                         {stepKey === 'currency' && (
                                             <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <Coins className="h-5 w-5" style={{ color: primaryColor }} />
+                                                <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                                                        <Coins className="h-5 w-5 text-emerald-600" />
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
@@ -1198,12 +1176,9 @@ export default function Onboarding({
 
                                         {stepKey === 'theme' && (
                                             <div className="onboarding-stagger py-4">
-                                                <div className="mb-6 flex items-center gap-3">
-                                                    <div
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
-                                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                                    >
-                                                        <Palette className="h-5 w-5" style={{ color: primaryColor }} />
+                                                <div className="mb-6 flex items-center gap-3 border-b border-gray-100 pb-4">
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
+                                                        <Palette className="h-5 w-5 text-emerald-600" />
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
@@ -1459,8 +1434,8 @@ export default function Onboarding({
 
                                     {/* Footer navigation */}
                                     {stepKey !== 'welcome' && (
-                                        <div className="mt-8 flex items-center justify-between gap-3 border-t border-gray-100 pt-6">
-                                            <Button type="button" variant="ghost" onClick={back} className="h-11 gap-1 rounded-xl px-4">
+                                        <div className="mt-8 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
+                                            <Button type="button" variant="outline" onClick={back} className="h-11 gap-1 rounded-xl px-4">
                                                 <ChevronRight className="h-4 w-4" />
                                                 {t('Back')}
                                             </Button>
