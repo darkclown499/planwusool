@@ -1,6 +1,6 @@
 ﻿import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlagIcon } from '@/components/FlagIcon';
 import {
     Banknote,
@@ -38,7 +38,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
@@ -448,9 +447,9 @@ export default function Onboarding({
         <div className="relative min-h-screen overflow-x-hidden bg-white font-sans">
             <Head title={t('Onboarding')} />
 
-            <div className="flex min-h-screen">
-                {/* Left panel â€” brand showcase */}
-                <aside className="hidden lg:flex lg:w-[46%] xl:w-[48%] relative overflow-hidden">
+            <div className="grid min-h-screen grid-cols-1 lg:grid-cols-12">
+                {/* Showcase panel — sticky green banner */}
+                <aside className="relative hidden overflow-hidden lg:col-span-5 lg:block">
                     <div
                         className="absolute inset-0"
                         style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}d9)` }}
@@ -466,24 +465,25 @@ export default function Onboarding({
                         }} />
                     </div>
 
-                    {/* Floating decorative icons */}
-                    <div className="absolute top-28 start-14 text-white/25 animate-float">
-                        <ShoppingBag className="h-10 w-10" />
-                    </div>
-                    <div
-                        className="absolute bottom-36 end-12 text-white/25 animate-float-slow"
-                        style={{ animationDelay: '0.8s' }}
-                    >
-                        <Banknote className="h-10 w-10" />
-                    </div>
-                    <div
-                        className="absolute top-1/2 end-8 text-white/20 animate-float"
-                        style={{ animationDelay: '1.8s' }}
-                    >
-                        <ShieldCheck className="h-9 w-9" />
-                    </div>
+                    {/* Sticky showcase content — stays pinned while the wizard column scrolls */}
+                    <div className="sticky top-0 z-10 flex h-screen w-full flex-col items-center justify-center overflow-y-auto px-10 py-8 scrollbar-custom">
+                        {/* Floating decorative icons */}
+                        <div className="absolute top-28 start-14 text-white/25 animate-float">
+                            <ShoppingBag className="h-10 w-10" />
+                        </div>
+                        <div
+                            className="absolute bottom-36 end-12 text-white/25 animate-float-slow"
+                            style={{ animationDelay: '0.8s' }}
+                        >
+                            <Banknote className="h-10 w-10" />
+                        </div>
+                        <div
+                            className="absolute top-1/2 end-8 text-white/20 animate-float"
+                            style={{ animationDelay: '1.8s' }}
+                        >
+                            <ShieldCheck className="h-9 w-9" />
+                        </div>
 
-                    <div className="relative z-10 flex w-full flex-col items-center justify-center overflow-y-auto px-10 py-8 scrollbar-custom">
                         <div className="mb-4 flex items-center gap-2.5">
                             <img
                                 src="/images/logos/wusool-logo.png"
@@ -548,148 +548,104 @@ export default function Onboarding({
                     </div>
                 </aside>
 
-                {/* Right panel â€” wizard */}
-                <main className="flex flex-1 flex-col">
-                    <div className="flex items-center justify-between p-5">
-                        <div className="flex items-center gap-2 lg:hidden">
+                {/* Wizard column — clean step-by-step forms */}
+                <main className="flex flex-col px-4 py-8 lg:col-span-7 lg:px-10 xl:px-16">
+                    {/* Progress header — bar + step counter */}
+                    <div className="mx-auto w-full max-w-xl">
+                        <div className="flex items-center gap-3">
                             <img
                                 src="/images/logos/wusool-logo.png"
                                 alt={titleText}
-                                className="h-8 w-auto"
+                                className="h-8 w-auto shrink-0 lg:hidden"
                             />
+                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                <div
+                                    className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                                    style={{ width: `${progress}%` }}
+                                />
+                            </div>
+                            <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-500">
+                                {t('Step {{current}} of {{total}}', { current: step + 1, total: STEP_META.length })}
+                            </span>
                         </div>
-                        <div className="ms-auto flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
-                            <span
-                                className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                                style={{ backgroundColor: primaryColor }}
-                            >
-                                {step + 1}
-                            </span>
-                            <span className="text-xs font-semibold text-gray-500">
-                                / {STEP_META.length}
-                            </span>
+
+                        {/* Compact desktop dot indicator */}
+                        <div className="mt-4 hidden items-center justify-center gap-1.5 sm:flex">
+                            {STEP_META.map((meta, i) => {
+                                const isDone = i < step;
+                                const isCurrent = i === step;
+                                return (
+                                    <button
+                                        key={meta.key}
+                                        type="button"
+                                        disabled={!isDone}
+                                        onClick={() => setStep(i)}
+                                        aria-label={t('Go back to previous step')}
+                                        className={`h-2 rounded-full transition-all duration-300 ${
+                                            isCurrent
+                                                ? 'w-7 bg-emerald-500'
+                                                : isDone
+                                                  ? 'w-2 cursor-pointer bg-emerald-500 hover:w-4'
+                                                  : 'w-2 bg-gray-200'
+                                        }`}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
 
-                    <div className="flex flex-1 flex-col justify-start px-4 pb-10 pt-2 md:justify-center">
-                        <div className="mx-auto w-full max-w-xl">
-                            {/* Step indicators */}
-                            <div className="mb-5 overflow-x-auto scrollbar-custom">
-                                <div className="mx-auto flex w-max items-center justify-center gap-1 sm:gap-1.5">
-                                    {STEP_META.map((meta, i) => {
-                                        const Icon = meta.icon;
-                                        const isDone = i < step;
-                                        const isCurrent = i === step;
-                                        return (
-                                            <div key={meta.key} className="flex items-center gap-1 sm:gap-1.5">
-                                                {i > 0 && (
-                                                    <div
-                                                        className={`h-0.5 rounded-full transition-all duration-500 sm:w-8 ${
-                                                            i <= step ? 'w-4 sm:w-8' : 'w-3 sm:w-4'
-                                                        } ${i <= step ? '' : 'bg-gray-200'}`}
-                                                        style={i <= step ? { backgroundColor: primaryColor } : undefined}
-                                                    />
-                                                )}
-                                                {isDone ? (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setStep(i)}
-                                                        className="flex h-7 w-7 items-center justify-center rounded-full text-white transition-transform duration-300 hover:scale-110 sm:h-8 sm:w-8"
-                                                        style={{ backgroundColor: primaryColor }}
-                                                        aria-label={t('Go back to previous step')}
-                                                    >
-                                                        <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                                    </button>
-                                                ) : (
-                                                    <div
-                                                        className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] transition-all duration-300 sm:h-8 sm:w-8 ${
-                                                            isCurrent
-                                                                ? 'scale-105 text-white ring-4'
-                                                                : 'border border-gray-300 text-gray-400'
-                                                        }`}
-                                                        style={{
-                                                            backgroundColor: isCurrent ? primaryColor : undefined,
-                                                            ...(isCurrent
-                                                                ? ({ ['--tw-ring-color']: `${primaryColor}40` } as CSSProperties)
-                                                                : {}),
-                                                        }}
-                                                    >
-                                                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                    {/* Step card */}
+                    <div className="flex flex-1 items-start justify-center py-8 md:items-center md:py-10">
+                        <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-gray-200/70">
+                            <span
+                                className="absolute inset-x-0 top-0 h-1"
+                                style={{ background: `linear-gradient(90deg, ${primaryColor}b3, ${primaryColor})` }}
+                            />
+                            {generalError && (
+                                <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-8 py-3 text-sm font-medium text-red-700 md:px-12">
+                                    <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                                    {generalError}
                                 </div>
-                            </div>
-
-                            {/* Progress bar */}
-                            <div className="mb-8 h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                                <div
-                                    className="relative h-full overflow-hidden rounded-full transition-all duration-700"
-                                    style={{
-                                        width: `${progress}%`,
-                                        background: `linear-gradient(90deg, ${primaryColor}b3, ${primaryColor})`,
-                                    }}
-                                >
-                                    <div
-                                        className="absolute inset-0 animate-shimmer"
-                                        style={{
-                                            background:
-                                                'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)',
-                                            backgroundSize: '200% 100%',
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <Card className="relative overflow-hidden rounded-2xl border-gray-100 shadow-xl shadow-gray-200/70">
-                                <span
-                                    className="absolute inset-x-0 top-0 h-1"
-                                    style={{ background: `linear-gradient(90deg, ${primaryColor}b3, ${primaryColor})` }}
-                                />
-                                {generalError && (
-                                    <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-6 py-3 text-sm font-medium text-red-700">
-                                        <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                                        {generalError}
-                                    </div>
-                                )}
-                                <CardContent className="p-6 sm:p-9">
-                                    <div key={step} className="animate-fade-slide">
+                            )}
+                            <div className="p-8 md:p-12">
+                                    <div key={step} className="animate-step-in">
                                         {stepKey === 'welcome' && (
-                                            <div className="onboarding-stagger py-6 text-center">
-                                                <div
-                                                    className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl shadow-lg animate-pop"
-                                                    style={{ backgroundColor: primaryColor }}
-                                                >
-                                                    <Sparkles className="h-10 w-10 text-white" />
+                                            <div className="onboarding-stagger py-2 text-center">
+                                                <div className="relative mx-auto mb-8 h-28 w-28 animate-pop">
+                                                    <span
+                                                        className="absolute inset-0 scale-110 rounded-[2rem]"
+                                                        style={{ backgroundColor: `${primaryColor}14` }}
+                                                    />
+                                                    <div
+                                                        className="relative flex h-full w-full items-center justify-center rounded-[2rem] shadow-lg"
+                                                        style={{ backgroundColor: primaryColor }}
+                                                    >
+                                                        <Sparkles className="h-12 w-12 text-white" />
+                                                    </div>
                                                 </div>
                                                 <h2 className="mb-3 text-2xl font-bold text-gray-900">
                                                     {t('Welcome to Wusool')}
                                                 </h2>
-                                                <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-gray-500">
+                                                <p className="mx-auto mb-10 max-w-md text-sm leading-relaxed text-gray-500 sm:text-base">
                                                     {t("Let's get your store up and running in a few simple steps.")}
                                                 </p>
                                                 <Button
                                                     onClick={() => setStep(1)}
-                                                    className="gap-2 animate-pulse-ring"
+                                                    className="h-12 w-full gap-2 rounded-xl text-base animate-pulse-ring"
                                                     style={{ backgroundColor: primaryColor }}
                                                 >
-                                                    {t('Start')}
-                                                    <ChevronLeft className="h-4 w-4" />
+                                                    {t('Start setting up your store now')}
+                                                    <ChevronLeft className="h-5 w-5" />
                                                 </Button>
-                                                <div className="mt-4">
-                                                    <a
-                                                        href={demoStoreUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-80"
-                                                        style={{ color: primaryColor }}
-                                                    >
-                                                        <ExternalLink className="h-4 w-4" />
-                                                        {t('See a live demo store')}
-                                                    </a>
-                                                </div>
+                                                <a
+                                                    href={demoStoreUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="mt-3 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-transparent px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                                                >
+                                                    <ExternalLink className="h-4 w-4" />
+                                                    {t('Watch an accompanying demo store')}
+                                                </a>
                                             </div>
                                         )}
 
@@ -1537,8 +1493,7 @@ export default function Onboarding({
                                             )}
                                         </div>
                                     )}
-                                </CardContent>
-                            </Card>
+                            </div>
                         </div>
                     </div>
                 </main>

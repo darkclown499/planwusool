@@ -2177,7 +2177,7 @@
     "Let earned points expire after a period of time": "دع النقاط المكتسبة تنتهي صلاحيتها بعد فترة من الوقت",
     "Let me choose": "دعيني أختار",
     "Let's get started": "لنبدأ",
-    "Let's get your store up and running in a few simple steps.": "لنبدأ بإنشاء متجرك في خطوات بسيطة.",
+    "Let's get your store up and running in a few simple steps.": "لنبدأ بإنشاء متجرك الإلكتروني واختيار الإعدادات المناسبة في دقائق معدودة.",
     "Lifetime": "مدة الحياة",
     "Light": "ضوء",
     "Lightning Fast": "بسرعة البرق",
@@ -5408,5 +5408,7 @@
     "Live preview of the checkout button": "معاينة حية لزر الدفع السريع",
     "Apply Template Now": "تطبيق القالب الآن",
     "Mobile View": "عرض الجوال",
-    "Desktop View": "عرض سطح المكتب"
+    "Desktop View": "عرض سطح المكتب",
+    "Start setting up your store now": "ابدأ تجهيز المتجر الان",
+    "Watch an accompanying demo store": "شاهد متجراً تجريبياً مرافقاً"
 }
