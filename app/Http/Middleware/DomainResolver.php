@@ -200,9 +200,9 @@ class DomainResolver
             $request->merge(['action' => 'product', 'product_id' => $segments[1]]);
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
         } elseif ($segments[0] === 'category' && isset($segments[1])) {
-            // Category page (single-page storefront: render the homepage)
-            $request->merge(['action' => 'category', 'category_id' => $segments[1]]);
-            return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+            // Dedicated category listing page (server-side pagination + SEO).
+            // Accepts both the category slug and legacy numeric ids.
+            return app(\App\Http\Controllers\ThemeController::class)->category($store->slug, $segments[1], $request);
         } elseif ($segments[0] === 'cart') {
             // Cart page
             $request->merge(['action' => 'cart']);

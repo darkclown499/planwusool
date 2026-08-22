@@ -417,9 +417,14 @@ class ThemeController extends Controller
         $storeData = $this->getStoreConfig($store);
         $storeModel = Store::find($store['id']);
 
+        // Accept both the category slug and legacy numeric ids (/category/{id}).
         $category = Category::where('store_id', $store['id'])
             ->where('is_active', true)
-            ->where('slug', $slug)
+            ->when(
+                ctype_digit((string) $slug),
+                fn ($q) => $q->where(fn ($qq) => $qq->where('slug', $slug)->orWhere('id', (int) $slug)),
+                fn ($q) => $q->where('slug', $slug),
+            )
             ->first();
         if (!$category) {
             abort(404);
