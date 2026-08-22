@@ -43,33 +43,43 @@ const s = (type: BuilderSectionType, order: number, props: Record<string, any> =
   props: { ...sectionDefaults(type), ...(props || {}) },
 });
 
-/* Arabic font stacks — limited to families actually loaded via bunny.net */
+/* ===================================================================== */
+/* Arabic font stacks mapped to each theme's original Latin font.        */
+/* Baloo Chettan 2 → Baloo Bhaijaan 2 · DM Serif Display → Amiri         */
+/* Inter → IBM Plex Sans Arabic · Poppins/Jost/Questrial/Overpass →      */
+/* Tajawal. All loaded via bunny.net in app.blade.php.                   */
+/* ===================================================================== */
 const FONT_TAJAWAL = "'Tajawal', 'Cairo', ui-sans-serif, system-ui, sans-serif";
-const FONT_CAIRO = "'Cairo', 'Tajawal', ui-sans-serif, system-ui, sans-serif";
 const FONT_PLEX = "'IBM Plex Sans Arabic', 'Tajawal', ui-sans-serif, system-ui, sans-serif";
+const FONT_BALOO = "'Baloo Bhaijaan 2', 'Tajawal', ui-sans-serif, system-ui, sans-serif";
+const FONT_AMIRI_BODY = "'Cairo', 'Tajawal', ui-sans-serif, system-ui, sans-serif";
+const FONT_AMIRI_HEADING = "'Amiri', 'Cairo', serif";
 
 const tokens = (
   colors: Record<string, string>,
   radius = '1rem',
-  font: string = FONT_TAJAWAL,
+  bodyFont: string = FONT_TAJAWAL,
+  headingFont?: string,
 ): BuilderDesignTokens => ({
   colors: {
     primary_foreground: '#ffffff',
     ...colors,
   },
   typography: {
-    body_font: font,
-    heading_font: font,
+    body_font: bodyFont,
+    heading_font: headingFont || bodyFont,
     base_size: '16px',
   },
   radius,
 });
 
 /* ===================================================================== */
-/* Template Catalog — 14 batteries-included Arabic storefront templates.  */
-/* Each template = identity tokens + its own section chain, rebuilt from  */
-/* the visual DNA of a proven WordPress/WooCommerce theme and localized   */
-/* for Arabic RTL + WhatsApp ordering. All are free for every plan.       */
+/* Template Catalog — 14 Arabic storefront templates rebuilt from the    */
+/* real WordPress/WooCommerce themes in Downloads/Compressed/themes.     */
+/* Every palette below is copied verbatim from --first-color /           */
+/* --second-color of each theme's style.css, and every section chain     */
+/* mirrors that theme's core/sections front-page order (owl slider       */
+/* first). All are free for every plan.                                  */
 /* ===================================================================== */
 
 /* ---------------------------------------------------------------- 1 */
@@ -124,30 +134,38 @@ const CLASSIC: BuilderTemplateConfig = {
 };
 
 /* ---------------------------------------------------------------- 2 */
+/* fresh-bakers/style.css → --first:#F88C91 --second:#EA5D5C text:#001025
+   core/sections: slider → testimonial → additional-content              */
 const FRESH_BAKERS: BuilderTemplateConfig = {
   slug: 'fresh-bakers',
   name: 'المخبز الطازج',
   name_en: 'Fresh Bakers',
-  description: 'قالب مخبز وحلويات بهوية دافئة كريمية: خبز ومعجنات تُعرض ببطاقات شهية، آراء عملاء وقسم اشتراك بنشرة.',
+  description: 'قالب المخبز الوردي الشهير: سلايدر عريض ثم آراء العملاء مباشرة كما في التصميم الأصلي — مخبز وحلويات وكيك.',
   category: 'مخبوزات',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { variant: 'classic', show_nav: false }),
     s('hero', 2, {
-      hero_variant: 'split_banner',
-      badge: 'طازج من الفرن كل صباح',
+      hero_variant: 'slider_full',
       title: 'خبز ومعجنات تصنع الفرق',
-      subtitle: 'مكونات طبيعية 100% وأيدي خبّاز محترفة — اطلب الآن عبر واتساب واستلم طلبك ساخناً.',
+      subtitle: 'مكونات طبيعية 100% وأيدي خبّاز محترفة — اطلب الآن واستلم طلبك ساخناً.',
       image: STORE_MEDIA.bakery,
       button_text: 'اطلب طلبك الآن',
       button_link: '#template-categories',
+      slides: [
+        { title: 'حلويات ومناسبات بلمسة بيتية', subtitle: 'كيك وتورتات تُحضَّر عند الطلب', image: STORE_MEDIA.sweets, button_text: 'شاهد الحلويات', button_link: '#template-categories' },
+        { title: 'قهوة ترافق لحظاتك', subtitle: 'محمصة يومياً بنكهة أصيلة', image: STORE_MEDIA.coffee, button_text: 'تصفح المشروبات', button_link: '#template-categories' },
+      ],
     }),
-    s('categories', 3, {
-      category_variant: 'circle_pills',
-      columns: 6,
-      section_title: 'من مخبزنا',
-      show_all: false,
+    s('reviews', 3, {
+      section_title: 'آراء زبائن المخبز',
+      display_mode: 'grid',
+      items: [
+        { name: 'أم عبدالله', rating: 5, text: 'أفضل خبز عربي جرّبته! يصل ساخناً وطرياً كل يوم.' },
+        { name: 'فهد العتيبي', rating: 5, text: 'الكنافة والمعجنات مستوى آخر. الطلب سهل جداً.' },
+        { name: 'سارة م.', rating: 4, text: 'كيك المناسبة كان رائعاً والتغليف أنيق جداً.' },
+      ],
     }),
     s('products_by_category', 4, { per_category: 4, columns: 4, show_view_all: true }),
     s('features', 5, {
@@ -159,37 +177,30 @@ const FRESH_BAKERS: BuilderTemplateConfig = {
         { title: 'طلبات المناسبات', text: 'كيك وتورتات مخصصة لمناسباتك الخاصة.', icon: 'gift' },
       ],
     }),
-    s('reviews', 6, {
-      section_title: 'آراء زبائن المخبز',
-      display_mode: 'grid',
-      items: [
-        { name: 'أم عبدالله', rating: 5, text: 'أفضل خبز عربي جرّبته! يصل ساخناً وطرياً كل يوم.' },
-        { name: 'فهد العتيبي', rating: 5, text: 'الكنافة والمعجنات مستوى آخر. الطلب عبر واتساب سهل جداً.' },
-        { name: 'سارة م.', rating: 4, text: 'كيك المناسبة كان رائعاً والتغليف أنيق جداً.' },
-      ],
-    }),
-    s('newsletter', 7, { section_title: 'اشترك لتصلك عروض اليوم الأول' }),
-    s('footer', 8),
+    s('newsletter', 6, { section_title: 'اشترك لتصلك عروض اليوم الأول' }),
+    s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#c2410c',
-    secondary: '#92400e',
-    accent: '#f59e0b',
-    background: '#fffaf2',
-    surface: '#fdf3e7',
-    text_primary: '#402a16',
-    text_secondary: '#8a6a4f',
-    border: '#f0e0cb',
-  }, '1.25rem', FONT_CAIRO),
-  preview: 'linear-gradient(135deg,#fdf3e7,#f3d9b8)',
+    primary: '#F88C91',
+    secondary: '#EA5D5C',
+    accent: '#EA5D5C',
+    background: '#ffffff',
+    surface: '#fdf1f2',
+    text_primary: '#001025',
+    text_secondary: '#5b6572',
+    border: '#f8dcde',
+  }, '1rem', FONT_PLEX),
+  preview: 'linear-gradient(135deg,#fdf1f2,#F88C91)',
 };
 
 /* ---------------------------------------------------------------- 3 */
+/* grocery-shopping/style.css → --first:#ed1d3b --second:#EA5D5C
+   core/sections: slider → deal-of-day → additional-content             */
 const GROCERY_SHOPPING: BuilderTemplateConfig = {
   slug: 'grocery-shopping',
   name: 'بقالتك',
   name_en: 'Grocery Shopping',
-  description: 'قالب بقالة وخضار وفواكه بأخضر طازج: شبكة أيقونات للأقسام ومنتجات مجمّعة مع شريط إعلانات للتوصيل المجاني.',
+  description: 'قالب البقالة الأحمر الجريء: سلايدر عريض ثم بانر «عرض اليوم» كما في الأصل — خضار وفواكه ومواد تموينية.',
   category: 'بقالة',
   is_free: true,
   plan_required: 'starter',
@@ -197,51 +208,63 @@ const GROCERY_SHOPPING: BuilderTemplateConfig = {
     s('announcement', 1, { text: '🚚 توصيل مجاني للطلبات فوق 100 ريال داخل المدينة' }),
     s('header', 2, { show_nav: false }),
     s('hero', 3, {
-      hero_variant: 'split_banner',
-      badge: 'طازج كل يوم',
+      hero_variant: 'slider_full',
       title: 'بقالتك الكاملة تصل حتى بابك',
-      subtitle: 'خضار وفواكه ومواد غذائية بأسعار الجملة — اطلب عبر واتساب خلال دقيقة.',
+      subtitle: 'خضار وفواكه ومواد غذائية بأسعار الجملة — اطلب خلال دقيقة.',
       image: STORE_MEDIA.grocery,
       button_text: 'اطلب بقالتك',
       button_link: '#template-categories',
+      slides: [
+        { title: 'طازج كل صباح', subtitle: 'منتقاة يدوياً من أفضل الأسواق', image: STORE_MEDIA.vegetables, button_text: 'اطلب الخضار', button_link: '#template-categories' },
+        { title: 'فواكه الموسم', subtitle: 'ألذ وأوفّر في وقتها', image: STORE_MEDIA.fruits, button_text: 'شاهد الفواكه', button_link: '#template-categories' },
+      ],
     }),
-    s('categories', 4, {
+    s('banners', 4, {
+      variant: 'grid',
+      section_title: 'عرض اليوم',
+      slides: [
+        { title: '🔥 عرض اليوم — سلة الخضار الأسبوعية', subtitle: 'وفّر 30% على سلة موسمية كاملة، اليوم فقط!', image: STORE_MEDIA.vegetables, button_text: 'اغتنم العرض', button_link: '#template-products' },
+      ],
+    }),
+    s('categories', 5, {
       category_variant: 'icon_grid',
       columns: 6,
       section_title: 'أقسام البقالة',
       show_all: true,
     }),
-    s('products_by_category', 5, { per_category: 4, columns: 4, show_view_all: true }),
-    s('features', 6, {
+    s('products_by_category', 6, { per_category: 4, columns: 4, show_view_all: true }),
+    s('features', 7, {
       section_title: 'خدمة تستحق الثقة',
       items: [
         { title: 'توصيل في نفس اليوم', text: 'اطلب قبل الساعة 6 مساءً ويصلك طلبك اليوم.', icon: 'truck' },
         { title: 'انتقاء يدوي', text: 'نختار الخضار والفواكه طازجة بعناية.', icon: 'badge_check' },
         { title: 'أسعار الجملة', text: 'أوفر لك أفضل سعر يومياً على السلع الأساسية.', icon: 'wallet' },
-        { title: 'دعم فوري', text: 'فريق خدمة العملاء يرد عليك عبر واتساب فوراً.', icon: 'support' },
+        { title: 'دعم فوري', text: 'فريق خدمة العملاء يرد عليك فوراً.', icon: 'support' },
       ],
     }),
-    s('footer', 7),
+    s('footer', 8),
   ],
   tokens: tokens({
-    primary: '#15803d',
-    secondary: '#065f46',
-    accent: '#84cc16',
+    primary: '#ed1d3b',
+    secondary: '#b8122a',
+    accent: '#EA5D5C',
     background: '#ffffff',
-    surface: '#f2faf3',
-    text_primary: '#12271a',
-    text_secondary: '#4d6a58',
-    border: '#dcefe0',
+    surface: '#fdf1f2',
+    text_primary: '#000000',
+    text_secondary: '#555555',
+    border: '#f8dbde',
   }),
-  preview: 'linear-gradient(135deg,#f2faf3,#c8ecd0)',
+  preview: 'linear-gradient(135deg,#fdf1f2,#ed1d3b)',
 };
 
 /* ---------------------------------------------------------------- 4 */
+/* super-mart-store shares restaurant's palette (#d31b27/#e5a500);
+   theme ships no frontpage.php → standard shop grid after the slider   */
 const SUPER_MART_STORE: BuilderTemplateConfig = {
   slug: 'super-mart-store',
   name: 'سوبر مارت',
   name_en: 'Super Mart Store',
-  description: 'قالب سوبرماركت بالأحمر والأبيض: هيرو سلايدر عريض للعروض، بطاقات أقسام كبيرة وشريط بانرات ترويجي.',
+  description: 'قالب السوبرماركت بالأحمر والأصفر: سلايدر عروض عريض وشبكة متجر كاملة لكل احتياجات المنزل.',
   category: 'سوبرماركت',
   is_free: true,
   plan_required: 'starter',
@@ -260,61 +283,55 @@ const SUPER_MART_STORE: BuilderTemplateConfig = {
         { title: 'جملة المواد الغذائية', subtitle: 'وفّر أكثر عند شراء كميات أكبر', image: STORE_MEDIA.grocery, button_text: 'تصفح الأقسام', button_link: '#template-categories' },
       ],
     }),
-    s('categories', 4, {
-      category_variant: 'grid_cards',
-      columns: 5,
-      section_title: 'الأقسام الرئيسية',
-      show_all: false,
-    }),
-    s('products_by_category', 5, { per_category: 4, columns: 4, show_view_all: true }),
-    s('banners', 6, {
+    s('products_by_category', 4, { per_category: 4, columns: 4, show_view_all: true }),
+    s('banners', 5, {
       variant: 'carousel',
       slides: [
         { title: 'خصومات نهاية الأسبوع', subtitle: 'حتى 40% على المواد الغذائية', image: STORE_MEDIA.fruits, button_text: 'اغتنم العرض', button_link: '#template-products' },
         { title: 'سلة الإفطار الكاملة', subtitle: 'كل ما تحتاجه بسلة واحدة موفرة', image: STORE_MEDIA.dairy, button_text: 'اطلب السلة', button_link: '#template-products' },
       ],
     }),
-    s('features', 7),
-    s('footer', 8),
+    s('features', 6),
+    s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#dc2626',
-    secondary: '#991b1b',
-    accent: '#f59e0b',
+    primary: '#d31b27',
+    secondary: '#a5121c',
+    accent: '#e5a500',
     background: '#ffffff',
-    surface: '#faf6f5',
-    text_primary: '#231415',
-    text_secondary: '#6b5254',
-    border: '#f3dedd',
+    surface: '#fdf2f2',
+    text_primary: '#000000',
+    text_secondary: '#555555',
+    border: '#f6dcdc',
   }, '0.75rem'),
-  preview: 'linear-gradient(135deg,#faf6f5,#f5cfcb)',
+  preview: 'linear-gradient(135deg,#fdf2f2,#d31b27)',
 };
 
 /* ---------------------------------------------------------------- 5 */
+/* mega-store-woocommerce/style.css → --first:#0069df --second:#e5a500
+   core/sections: slider → product-category → tab-products              */
 const MEGA_STORE_WOOCOMMERCE: BuilderTemplateConfig = {
   slug: 'mega-store-woocommerce',
   name: 'هايبر مارت',
   name_en: 'Hyper Mart',
-  description: 'قالب متجر شامل بالأصفر والأسود: هيرو bento متعدد الصور، تبويبات منتجات وأسئلة شائعة — مثالي للمتاجر الكبيرة.',
+  description: 'قالب الهايبر بالأزرق والأصفر: سلايدر ثم شبكة تصنيفات ثم تبويبات منتجات — نفس ترتيب الأصل حرفياً.',
   category: 'متجر شامل',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { show_nav: true }),
     s('hero', 2, {
-      hero_variant: 'bento_grid',
+      hero_variant: 'slider_full',
       badge: 'هايبر مارت',
       title: 'كل شيء تحت سقف واحد',
       subtitle: 'إلكترونيات وأزياء ومنزل وبقالة — عروض يومية لا تفوتك.',
       image: STORE_MEDIA.hypermarket,
       button_text: 'ابدأ التسوق',
       button_link: '#template-categories',
-      side_title_1: 'أحدث الأجهزة',
-      side_subtitle_1: 'إلكترونيات بأفضل الأسعار',
-      side_image_1: STORE_MEDIA.electronics,
-      side_title_2: 'أزياء العائلة',
-      side_subtitle_2: 'تشكيلات جديدة أسبوعياً',
-      side_image_2: STORE_MEDIA.clothes,
+      slides: [
+        { title: 'أحدث الأجهزة التقنية', subtitle: 'إلكترونيات أصلية بأفضل الأسعار', image: STORE_MEDIA.electronics, button_text: 'تسوق التقنية', button_link: '#template-categories' },
+        { title: 'أزياء العائلة', subtitle: 'تشكيلات جديدة أسبوعياً', image: STORE_MEDIA.clothes, button_text: 'تسوق الأزياء', button_link: '#template-categories' },
+      ],
     }),
     s('categories', 3, {
       category_variant: 'card_pills',
@@ -322,8 +339,13 @@ const MEGA_STORE_WOOCOMMERCE: BuilderTemplateConfig = {
       section_title: 'تسوق حسب القسم',
       show_all: true,
     }),
-    s('products_by_category', 4, { per_category: 4, columns: 4, show_view_all: true }),
-    s('features', 5, {
+    s('products', 4, {
+      product_variant: 'tabbed_categories',
+      section_title: 'الأكثر رواجاً في كل قسم',
+      columns: 4,
+    }),
+    s('faq', 5, { section_title: 'أسئلة يتكرر طرحها' }),
+    s('features', 6, {
       items: [
         { title: 'شحن لجميع المدن', text: 'شبكة توصيل تغطي كافة المناطق.', icon: 'truck' },
         { title: 'دفع آمن', text: 'خيارات دفع متعددة ومحمية بالكامل.', icon: 'card' },
@@ -331,28 +353,29 @@ const MEGA_STORE_WOOCOMMERCE: BuilderTemplateConfig = {
         { title: 'عروض يومية', text: 'صفقات جديدة كل يوم على تشكيلة واسعة.', icon: 'zap' },
       ],
     }),
-    s('faq', 6, { section_title: 'أسئلة يتكرر طرحها' }),
     s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#d97706',
-    secondary: '#111827',
-    accent: '#ffd146',
+    primary: '#0069df',
+    secondary: '#0051ad',
+    accent: '#e5a500',
     background: '#ffffff',
-    surface: '#fffaeb',
-    text_primary: '#1f1a10',
-    text_secondary: '#6b6046',
-    border: '#f3e5bd',
+    surface: '#f2f7fd',
+    text_primary: '#000000',
+    text_secondary: '#4f5866',
+    border: '#dbe8f7',
   }, '0.75rem'),
-  preview: 'linear-gradient(135deg,#fffaeb,#ffe9a8)',
+  preview: 'linear-gradient(135deg,#f2f7fd,#0069df)',
 };
 
 /* ---------------------------------------------------------------- 6 */
+/* ecommerce-mega-store/style.css → --first:#22233f --second:#f15f3d
+   core/sections: slider → tab-products                                 */
 const ECOMMERCE_MEGA_STORE: BuilderTemplateConfig = {
   slug: 'ecommerce-mega-store',
   name: 'ميغا ستور',
   name_en: 'Mega Store',
-  description: 'قالب عروض وتخفيضات بالبرتقالي الناري: شريط إعلانات صارخ، صف أفقي للأكثر مبيعاً وبانر عرض بارز.',
+  description: 'قالب العروض بالكحلي والبرتقالي: سلايدر صارخ ثم تبويبات منتجات — هوية «ميغا ستور» الأصلية.',
   category: 'عروض كبيرة',
   is_free: true,
   plan_required: 'starter',
@@ -360,79 +383,79 @@ const ECOMMERCE_MEGA_STORE: BuilderTemplateConfig = {
     s('announcement', 1, { text: '⚡ تخفيضات كبرى — خصومات تصل إلى 50% لفترة محدودة' }),
     s('header', 2, { show_nav: false }),
     s('hero', 3, {
-      hero_variant: 'split_banner',
+      hero_variant: 'slider_full',
       badge: 'عروض لا تتكرر',
       title: 'ميغا ستور — وفّر أكثر',
       subtitle: 'أجهزة وأزياء ومنتجات مختارة بأقل الأسعار مع ضمان الاسترجاع.',
       image: STORE_MEDIA.electronics,
       button_text: 'تسوّق التخفيضات',
       button_link: '#template-products',
-    }),
-    s('products', 4, {
-      product_variant: 'horizontal_scroll',
-      section_title: 'الأكثر مبيعاً هذا الأسبوع',
-      columns: 4,
-      featured_only: false,
-    }),
-    s('categories', 5, {
-      category_variant: 'image_tiles',
-      columns: 4,
-      section_title: 'أقسام المتجر',
-      show_all: true,
-    }),
-    s('banners', 6, {
-      variant: 'grid',
       slides: [
-        { title: 'جمعة البرتقالي', subtitle: 'خصم إضافي 15% بكود MEGA15', image: STORE_MEDIA.hypermarket, button_text: 'تسوق الآن', button_link: '#template-products' },
+        { title: 'تقنية تغيّر يومك', subtitle: 'أجهزة ذكية بأسعار الجملة', image: STORE_MEDIA.hypermarket, button_text: 'تسوق الآن', button_link: '#template-products' },
       ],
     }),
-    s('features', 7),
-    s('footer', 8),
+    s('products', 4, {
+      product_variant: 'tabbed_categories',
+      section_title: 'تصفح حسب القسم',
+      columns: 4,
+    }),
+    s('banners', 5, {
+      variant: 'grid',
+      slides: [
+        { title: 'عرض الكود البرتقالي', subtitle: 'خصم إضافي 15% بكود MEGA15', image: STORE_MEDIA.hypermarket, button_text: 'تسوق الآن', button_link: '#template-products' },
+      ],
+    }),
+    s('features', 6),
+    s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#f1603e',
-    secondary: '#c2410c',
-    accent: '#fbbf24',
+    primary: '#22233f',
+    secondary: '#171830',
+    accent: '#f15f3d',
     background: '#ffffff',
-    surface: '#fff4f0',
-    text_primary: '#2b1710',
-    text_secondary: '#7c5a4d',
-    border: '#fadfd5',
+    surface: '#f4f4f8',
+    text_primary: '#22233f',
+    text_secondary: '#5c5d70',
+    border: '#e3e3ec',
   }, '0.75rem'),
-  preview: 'linear-gradient(135deg,#fff4f0,#ffcdb8)',
+  preview: 'linear-gradient(135deg,#f4f4f8,#22233f)',
 };
 
 /* ---------------------------------------------------------------- 7 */
+/* ecommerce-clothing shares marketplace's palette (#11248f/#c4ec26);
+   ships no frontpage.php → standard shop grid after the slider         */
 const ECOMMERCE_CLOTHING: BuilderTemplateConfig = {
   slug: 'ecommerce-clothing',
   name: 'أناقة',
   name_en: 'Elegance',
-  description: 'قالب ملابس بالأبيض والأسود الحاد وزوايا حادة: ترويسة ممركزة، هيرو بصورة كاملة وأقسام بتغطية نصية فوق الصور.',
+  description: 'قالب الملابس بالأزرق الملكي والليموني: سلايدر أزياء عريض وشبكة متجر أنيقة لتشكيلات الموسم.',
   category: 'ملابس',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { variant: 'centered', sticky: true, show_nav: true }),
     s('hero', 2, {
-      hero_variant: 'full',
-      layout: 'full',
+      hero_variant: 'slider_full',
       title: 'تشكيلة الموسم الجديدة',
       subtitle: 'قطع مختارة بعناية تعكس ذوقك الرفيع — إصدار محدود.',
       image: STORE_MEDIA.clothes,
       button_text: 'استعرض التشكيلة',
-      button_link: '#template-categories',
+      button_link: '#template-products',
       overlay_opacity: 0.55,
+      slides: [
+        { title: 'إطلالات المساء', subtitle: 'فساتين سهرة بتفاصيل استثنائية', image: STORE_MEDIA.clothes, button_text: 'اكتشفي السهرة', button_link: '#template-products' },
+      ],
     }),
-    s('categories', 3, {
+    s('products', 3, {
+      product_variant: 'detailed_cards_with_badges',
+      section_title: 'وصل حديثاً',
+      columns: 4,
+    }),
+    s('categories', 4, {
       category_variant: 'minimalist_overlay',
       columns: 4,
       section_title: 'الأقسام',
       show_all: false,
-    }),
-    s('products', 4, {
-      product_variant: 'detailed_cards_with_badges',
-      section_title: 'وصل حديثاً',
-      columns: 4,
     }),
     s('reviews', 5, {
       section_title: 'ماذا قالت عميلاتنا؟',
@@ -446,109 +469,116 @@ const ECOMMERCE_CLOTHING: BuilderTemplateConfig = {
     s('footer', 7, { show_newsletter: false }),
   ],
   tokens: tokens({
-    primary: '#111827',
-    secondary: '#374151',
-    accent: '#b91c1c',
+    primary: '#11248f',
+    secondary: '#0d1c6e',
+    accent: '#c4ec26',
     background: '#ffffff',
-    surface: '#f7f7f8',
-    text_primary: '#0b0b0d',
-    text_secondary: '#55555e',
-    border: '#e6e6ea',
-  }, '0.25rem', FONT_PLEX),
-  preview: 'linear-gradient(135deg,#ffffff,#111827)',
+    surface: '#f3f5fc',
+    text_primary: '#000000',
+    text_secondary: '#555566',
+    border: '#e2e6f4',
+  }, '0.5rem'),
+  preview: 'linear-gradient(135deg,#f3f5fc,#11248f)',
 };
 
 /* ---------------------------------------------------------------- 8 */
+/* fashion-designer-mart/style.css → --first:#f1657d --second:#1a1c22
+   Fonts: DM Serif Display → mapped to Amiri headings.
+   core/sections: slider → hot-products                                 */
 const FASHION_DESIGNER_MART: BuilderTemplateConfig = {
   slug: 'fashion-designer-mart',
   name: 'ديزاينر',
   name_en: 'Designer Mart',
-  description: 'قالب أزياء راقية بهوية فاخرة هادئة: درجات البيج والذهبي، شبكة masonry للأقسام وصف تواصل مباشر.',
+  description: 'قالب المصممين بالوردي والأسود مع خط أميري الفاخر للعناوين — سلايدر ثم المنتجات الساخنة كما في الأصل.',
   category: 'أزياء راقية',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { variant: 'minimal', show_search: false, show_nav: true }),
     s('hero', 2, {
-      hero_variant: 'split_banner',
+      hero_variant: 'slider_full',
       badge: 'كوليكشن المصممين',
       title: 'الفخامة في أدق التفاصيل',
       subtitle: 'قطع حصرية بإنتاج محدود لمن تميز حضوره.',
       image: STORE_MEDIA.clothes,
       button_text: 'اكتشف الكوليكشن',
-      button_link: '#template-categories',
+      button_link: '#template-products',
+      slides: [
+        { title: 'عبايات وقفاطين المناسبات', subtitle: 'أقمشة فاخرة وخياطة يدوية', image: STORE_MEDIA.clothes, button_text: 'شاهد التشكيلة', button_link: '#template-products' },
+      ],
     }),
-    s('categories', 3, {
+    s('products', 3, {
+      product_variant: 'horizontal_scroll',
+      section_title: 'القطع الأكثر طلباً',
+      columns: 4,
+    }),
+    s('categories', 4, {
       category_variant: 'masonry_grid',
       columns: 3,
       section_title: 'عالم الديزاينر',
       show_all: false,
     }),
-    s('products', 4, {
-      product_variant: 'detailed_cards_with_badges',
-      section_title: 'قطع مختارة',
-      columns: 3,
-    }),
     s('reviews', 5, {
       section_title: 'شهادات عملائنا',
       display_mode: 'grid',
       items: [
-        { name: 'لطيفة المطيري', rating: 5, text: 'تفاصيل الخياطة تليق بعلامة عالمية. ستعود لتجربة ثانية.' },
+        { name: 'لطيفة المطيري', rating: 5, text: 'تفاصيل الخياطة تليق بعلامة عالمية. سأعود لتجربة ثانية.' },
         { name: 'عبدالعزيز الشمري', rating: 5, text: 'خدمة شخصية راقية — ساعدوني باختيار الهدية المثالية.' },
       ],
     }),
-    s('contact', 6, { section_title: 'تواصلي مع مستشارة الأزياء' }),
+    s('contact', 6, { section_title: 'تواصل مع مستشار الأزياء' }),
     s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#9a7b4f',
-    secondary: '#54452e',
-    accent: '#c9a86a',
-    background: '#faf7f1',
-    surface: '#f3ede2',
-    text_primary: '#29211a',
-    text_secondary: '#7a6c58',
-    border: '#e6dcc8',
-  }, '0.375rem', FONT_PLEX),
-  preview: 'linear-gradient(135deg,#faf7f1,#ddc9a3)',
+    primary: '#f1657d',
+    secondary: '#1a1c22',
+    accent: '#f9a8b8',
+    background: '#ffffff',
+    surface: '#fdf2f4',
+    text_primary: '#1a1c22',
+    text_secondary: '#6d7078',
+    border: '#f6dde2',
+  }, '0.375rem', FONT_AMIRI_BODY, FONT_AMIRI_HEADING),
+  preview: 'linear-gradient(135deg,#fdf2f4,#f1657d)',
 };
 
 /* ---------------------------------------------------------------- 9 */
+/* kids-fashion/style.css → --first:#f98496 --second:#9085f9
+   Fonts: Baloo Chettan 2 → Baloo Bhaijaan 2.
+   core/sections: slider → hot-products                                 */
 const KIDS_FASHION: BuilderTemplateConfig = {
   slug: 'kids-fashion',
   name: 'عالم الأطفال',
   name_en: 'Kids World',
-  description: 'قالب أطفال مرِح بالوردي والرمادي: هيرو bento ملوّن، أقسام دوائر منزلقة وبطاقات منتجات bento — ملابس وألعاب.',
+  description: 'قالب الأطفال بالوردي والبنفسجي وخط «بالو» المرِح: سلايدر ملوّن ثم المنتجات الساخنة — ملابس وألعاب.',
   category: 'أطفال',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { show_nav: false }),
     s('hero', 2, {
-      hero_variant: 'bento_grid',
+      hero_variant: 'slider_full',
       badge: '🎉 عالم من المرح',
       title: 'كل ما يبهج طفلك هنا',
       subtitle: 'ملابس مريحة وألعاب آمنة وممتعة — بأسعار تدلّل الأهل.',
       image: STORE_MEDIA.kidsToys,
       button_text: 'دخلوا العالم',
       button_link: '#template-categories',
-      side_title_1: 'ملابس البنات والأولاد',
-      side_subtitle_1: 'قطن مريح 100%',
-      side_image_1: STORE_MEDIA.kidsClothes,
-      side_title_2: 'ألعاب تعليمية',
-      side_subtitle_2: 'تلعب وتتعلم',
-      side_image_2: STORE_MEDIA.kidsToys,
+      slides: [
+        { title: 'ملابس البنات والأولاد', subtitle: 'قطن مريح 100% لكل الحركات', image: STORE_MEDIA.kidsClothes, button_text: 'شاهد الملابس', button_link: '#template-categories' },
+        { title: 'ألعاب تلعب وتتعلم', subtitle: 'مجموعة تعليمية آمنة ومعتمدة', image: STORE_MEDIA.kidsToys, button_text: 'شاهد الألعاب', button_link: '#template-products' },
+      ],
     }),
-    s('categories', 3, {
+    s('products', 3, {
+      product_variant: 'horizontal_scroll',
+      section_title: 'الأكثر محبةً عند الصغار',
+      columns: 4,
+    }),
+    s('categories', 4, {
       category_variant: 'circle_slider',
       columns: 5,
       section_title: 'أقسام عالم الأطفال',
       show_all: true,
-    }),
-    s('products', 4, {
-      product_variant: 'bento_products',
-      section_title: 'الأكثر محبةً عند الصغار',
-      columns: 4,
     }),
     s('features', 5, {
       section_title: 'لماذا الأمهات يحبنّا؟',
@@ -563,51 +593,56 @@ const KIDS_FASHION: BuilderTemplateConfig = {
     s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#f98596',
-    secondary: '#3d4651',
-    accent: '#fbbf24',
-    background: '#fffafa',
-    surface: '#fdeef0',
-    text_primary: '#33272b',
-    text_secondary: '#8a7076',
-    border: '#f8dbe0',
-  }, '1.5rem', FONT_CAIRO),
-  preview: 'linear-gradient(135deg,#fdeef0,#fbc4cd)',
+    primary: '#f98496',
+    secondary: '#9085f9',
+    accent: '#b9b0ff',
+    background: '#fffbfb',
+    surface: '#fdf0f3',
+    text_primary: '#3d4651',
+    text_secondary: '#79808c',
+    border: '#f7dbe2',
+  }, '1.5rem', FONT_BALOO),
+  preview: 'linear-gradient(135deg,#fdf0f3,#f98496)',
 };
 
 /* --------------------------------------------------------------- 10 */
+/* cosmetic-store/style.css → --first:#5fcb91 (no second color)
+   Fonts: Poppins → Tajawal.
+   core/sections: slider → hot-products                                 */
 const COSMETIC_STORE: BuilderTemplateConfig = {
   slug: 'cosmetic-store',
   name: 'جماليات',
   name_en: 'Cosmetic Store',
-  description: 'قالب تجميل وعناية بالبنفسجي الباهت الهادئ: ترويسة ممركزة، أقسام بلاطات صورية وصف منتجات أفقي أنيق.',
+  description: 'قالب التجميل الأخضر المنعش: سلايدر أنيق ثم صف المنتجات الساخنة — مكياج وعطور وعناية أصلية.',
   category: 'تجميل وعناية',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { variant: 'centered', show_nav: false }),
     s('hero', 2, {
-      hero_variant: 'split_banner',
+      hero_variant: 'slider_full',
       badge: 'جمالك يستحق الأفضل',
       title: 'روتين عناية مصمم لكِ',
       subtitle: 'مكياج وعطور ومنتجات عناية أصلية 100% من علامات موثوقة.',
       image: STORE_MEDIA.cosmetics,
       button_text: 'اكتشفي منتجاتك',
-      button_link: '#template-categories',
+      button_link: '#template-products',
+      slides: [
+        { title: 'عطور تبقى في الذاكرة', subtitle: 'شرقي وفرنسي بثبات استثنائي', image: STORE_MEDIA.perfume, button_text: 'شاهدي العطور', button_link: '#template-products' },
+      ],
     }),
-    s('categories', 3, {
+    s('products', 3, {
+      product_variant: 'horizontal_scroll',
+      section_title: 'الأكثر طلباً هذا الشهر',
+      columns: 4,
+    }),
+    s('categories', 4, {
       category_variant: 'image_tiles',
       columns: 4,
       section_title: 'أقسام الجمال',
       show_all: false,
     }),
-    s('products', 4, {
-      product_variant: 'horizontal_scroll',
-      section_title: 'الأكثر طلباً هذا الشهر',
-      columns: 4,
-    }),
-    s('products_by_category', 5, { per_category: 4, columns: 4, show_view_all: true }),
-    s('reviews', 6, {
+    s('reviews', 5, {
       section_title: 'تجارب عميلاتنا',
       display_mode: 'grid',
       items: [
@@ -615,28 +650,31 @@ const COSMETIC_STORE: BuilderTemplateConfig = {
         { name: 'جواهر سالم', rating: 5, text: 'العطر رائع وثباته طويل. التغليف أنيق جداً للهدايا.' },
       ],
     }),
-    s('newsletter', 7, { section_title: 'انضمي لنادي الجمال — نصائح وعروض حصرية' }),
-    s('footer', 8),
+    s('newsletter', 6, { section_title: 'انضمي لنادي الجمال — نصائح وعروض حصرية' }),
+    s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#8d8ca4',
-    secondary: '#6d6c88',
-    accent: '#d98ca6',
-    background: '#fcfbfe',
-    surface: '#f4f2fa',
-    text_primary: '#2d2a3e',
-    text_secondary: '#6f6c85',
-    border: '#e7e3f2',
-  }, '1.25rem', FONT_PLEX),
-  preview: 'linear-gradient(135deg,#f4f2fa,#d9d5ea)',
+    primary: '#5fcb91',
+    secondary: '#3fa06a',
+    accent: '#a5e3c3',
+    background: '#ffffff',
+    surface: '#f2faf5',
+    text_primary: '#000000',
+    text_secondary: '#595959',
+    border: '#e3f2e8',
+  }, '1.25rem'),
+  preview: 'linear-gradient(135deg,#f2faf5,#5fcb91)',
 };
 
 /* --------------------------------------------------------------- 11 */
+/* restaurant-food-delivery/style.css → --first:#d31b27 --second:#e5a500
+   Fonts: Poppins → Tajawal.
+   core/sections: slider → special-meal                                 */
 const RESTAURANT_FOOD_DELIVERY: BuilderTemplateConfig = {
   slug: 'restaurant-food-delivery',
   name: 'المطعم',
   name_en: 'Restaurant & Delivery',
-  description: 'قالب مطعم وتوصيل بهوية دافئة شهية: سلايدر أطباق عريض، قائمة طعام بتبويبات وبيانات تواصل للحجز والطلبات.',
+  description: 'قالب المطعم بالأحمر والأصفر الشهيان: سلايدر أطباق عريض ثم بانر «الوجبة المميزة» وقائمة بتبويبات.',
   category: 'مطعم وتوصيل',
   is_free: true,
   plan_required: 'starter',
@@ -655,61 +693,65 @@ const RESTAURANT_FOOD_DELIVERY: BuilderTemplateConfig = {
         { title: 'وجبات سريعة للعائلة', subtitle: 'وجبات عائلية موفرة ولذيذة', image: STORE_MEDIA.fastFood, button_text: 'شاهد الوجبات', button_link: '#template-categories' },
       ],
     }),
-    s('categories', 4, {
+    s('banners', 4, {
+      variant: 'grid',
+      section_title: 'وجبة اليوم المميزة',
+      slides: [
+        { title: '⭐ وجبة اليوم — مشاوي مشكل عائلي', subtitle: 'تكفي 4-5 أشخاص بسعر خاص اليوم فقط!', image: STORE_MEDIA.grills, button_text: 'اطلبها الآن', button_link: '#template-products' },
+      ],
+    }),
+    s('categories', 5, {
       category_variant: 'circle_pills',
       columns: 5,
       section_title: 'قائمتنا',
       show_all: false,
     }),
-    s('products', 5, {
+    s('products', 6, {
       product_variant: 'tabbed_categories',
       section_title: 'تصفح القائمة',
       columns: 4,
-    }),
-    s('features', 6, {
-      section_title: 'لماذا مطعمنا؟',
-      items: [
-        { title: 'توصيل سريع', text: 'وجبتك تصل ساخنة خلال 30 دقيقة.', icon: 'truck' },
-        { title: 'مكونات طازجة', text: 'نشتري طازجاً كل صباح من السوق.', icon: 'sparkles' },
-        { title: 'حجز طاولات', text: 'احجز طاولتك هاتفياً أو عبر واتساب.', icon: 'clock' },
-        { title: 'عروض الغداء', text: 'وجبات عمل بسعر خاص يومياً.', icon: 'award' },
-      ],
     }),
     s('contact', 7, { section_title: 'زورونا أو اتصلوا بنا' }),
     s('footer', 8, { show_newsletter: false }),
   ],
   tokens: tokens({
-    primary: '#ea580c',
-    secondary: '#7c2d12',
-    accent: '#facc15',
-    background: '#fffdf6',
-    surface: '#fbf3e4',
-    text_primary: '#2f1c0e',
-    text_secondary: '#7d6549',
-    border: '#f1e2c8',
-  }, '1rem', FONT_CAIRO),
-  preview: 'linear-gradient(135deg,#fbf3e4,#ffd9ae)',
+    primary: '#d31b27',
+    secondary: '#a5121c',
+    accent: '#e5a500',
+    background: '#ffffff',
+    surface: '#fdf2f2',
+    text_primary: '#000000',
+    text_secondary: '#555555',
+    border: '#f6dcdc',
+  }, '1rem'),
+  preview: 'linear-gradient(135deg,#fdf2f2,#d31b27)',
 };
 
 /* --------------------------------------------------------------- 12 */
+/* e-storefront/style.css → --first:#1ABA1A (no second), text:#001025
+   Fonts: Inter → IBM Plex Sans Arabic.
+   core/sections: slider → categories                                   */
 const E_STOREFRONT: BuilderTemplateConfig = {
   slug: 'e-storefront',
   name: 'واجهة',
   name_en: 'E-Storefront',
-  description: 'قالب إلكترونيات داكن فاخر بأزرق تقني: هوية ليلية مميزة تناسب متاجر الأجهزة والتقنية مع شبكة أيقونات للأقسام.',
+  description: 'قالب الإلكترونيات الأخضر النابض بخط Inter العربي: سلايدر تقني ثم شبكة التصنيفات مباشرة كالأصل.',
   category: 'إلكترونيات',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { show_nav: false }),
     s('hero', 2, {
-      hero_variant: 'split_banner',
+      hero_variant: 'slider_full',
       badge: 'تقنية 2026',
       title: 'أحدث الأجهزة بين يديك',
       subtitle: 'هواتف وسماعات وإكسسوارات أصلية بضمان معتمد وتوصيل سريع.',
       image: STORE_MEDIA.electronics,
       button_text: 'استعرض المنتجات',
       button_link: '#template-categories',
+      slides: [
+        { title: 'صوت يحيط بك من كل جانب', subtitle: 'سماعات ومكبرات بأحدث التقنيات', image: STORE_MEDIA.electronics, button_text: 'تسوق الصوتيات', button_link: '#template-products' },
+      ],
     }),
     s('categories', 3, {
       category_variant: 'icon_grid',
@@ -730,24 +772,27 @@ const E_STOREFRONT: BuilderTemplateConfig = {
     s('footer', 6),
   ],
   tokens: tokens({
-    primary: '#3b82f6',
-    secondary: '#0ea5e9',
-    accent: '#22d3ee',
-    background: '#001025',
-    surface: '#07203c',
-    text_primary: '#e6edf5',
-    text_secondary: '#93a5bc',
-    border: '#123354',
-  }, '0.75rem'),
-  preview: 'linear-gradient(135deg,#001025,#123354)',
+    primary: '#1ABA1A',
+    secondary: '#128a12',
+    accent: '#7ee87e',
+    background: '#ffffff',
+    surface: '#f1fbf1',
+    text_primary: '#001025',
+    text_secondary: '#4d5a66',
+    border: '#dff3df',
+  }, '0.75rem', FONT_PLEX),
+  preview: 'linear-gradient(135deg,#f1fbf1,#1ABA1A)',
 };
 
 /* --------------------------------------------------------------- 13 */
+/* ecommece-marketplace/style.css → --first:#11248f --second:#c4ec26
+   Fonts: Questrial → Tajawal.
+   core/sections: slider → featured-product                             */
 const ECOMMECE_MARKETPLACE: BuilderTemplateConfig = {
   slug: 'ecommece-marketplace',
   name: 'السوق',
   name_en: 'Marketplace',
-  description: 'قالب سوق عام محايد متعدد البائعين: أخضر تركوازي هادئ، بطاقات أقسام واسعة وأسئلة شائعة لبناء الثقة.',
+  description: 'قالب السوق بالأزرق الملكي والليموني الحاد: سلايدر ثم شبكة «منتجات مميزة» كما في التصميم الأصلي.',
   category: 'سوق عام',
   is_free: true,
   plan_required: 'starter',
@@ -755,21 +800,29 @@ const ECOMMECE_MARKETPLACE: BuilderTemplateConfig = {
     s('announcement', 1, { text: '🛍️ تسوّق من مئات البائعين الموثوقين في مكان واحد' }),
     s('header', 2, { show_nav: true }),
     s('hero', 3, {
-      hero_variant: 'split_banner',
+      hero_variant: 'slider_full',
       badge: 'سوق كل شيء',
       title: 'كل ما تحتاجه… من بائعين تثق بهم',
       subtitle: 'منتجات متنوعة بأسعار منافسة ومراجعات حقيقية من مشترين فعليين.',
       image: STORE_MEDIA.bannerStore,
       button_text: 'ابدأ الاستكشاف',
       button_link: '#template-categories',
+      slides: [
+        { title: 'صفقات هذا الأسبوع', subtitle: 'أسعار لن تجدها في مكان آخر', image: STORE_MEDIA.hypermarket, button_text: 'شاهد الصفقات', button_link: '#template-products' },
+      ],
     }),
-    s('categories', 4, {
+    s('products', 4, {
+      product_variant: 'detailed_cards_with_badges',
+      section_title: 'منتجات مميزة',
+      columns: 4,
+      featured_only: true,
+    }),
+    s('categories', 5, {
       category_variant: 'card_pills',
       columns: 6,
       section_title: 'تصفح السوق',
       show_all: true,
     }),
-    s('products_by_category', 5, { per_category: 4, columns: 4, show_view_all: true }),
     s('faq', 6, { section_title: 'كل ما تريد معرفته عن الشراء' }),
     s('features', 7, {
       items: [
@@ -782,48 +835,53 @@ const ECOMMECE_MARKETPLACE: BuilderTemplateConfig = {
     s('footer', 8),
   ],
   tokens: tokens({
-    primary: '#0d9488',
-    secondary: '#115e59',
-    accent: '#f59e0b',
+    primary: '#11248f',
+    secondary: '#0d1c6e',
+    accent: '#c4ec26',
     background: '#ffffff',
-    surface: '#f4f9f8',
-    text_primary: '#10201d',
-    text_secondary: '#4f6660',
-    border: '#ddecea',
+    surface: '#f3f5fc',
+    text_primary: '#000000',
+    text_secondary: '#555566',
+    border: '#e2e6f4',
   }),
-  preview: 'linear-gradient(135deg,#f4f9f8,#bfe3dc)',
+  preview: 'linear-gradient(135deg,#f3f5fc,#11248f)',
 };
 
 /* --------------------------------------------------------------- 14 */
+/* marketplace-shop clones kids-fashion's palette (#f98496/#9085f9);
+   ships no frontpage.php → standard shop grid after the slider         */
 const MARKETPLACE_SHOP: BuilderTemplateConfig = {
   slug: 'marketplace-shop',
   name: 'بازار',
   name_en: 'Bazaar Shop',
-  description: 'قالب متنوع أنيق بالرمادي الرصين: ترويسة بسيطة، شريط أقسام منزلق وقائمة منتجات بتبويبات — يناسب كل التجارات.',
+  description: 'قالب البازار الوردي الدافئ: سلايدر ترحيبي وشبكة متجر متنوعة — منزل وهدايا وإكسسوارات.',
   category: 'متنوع',
   is_free: true,
   plan_required: 'starter',
   sections: [
     s('header', 1, { variant: 'minimal', show_nav: true }),
     s('hero', 2, {
-      hero_variant: 'split_banner',
+      hero_variant: 'slider_full',
       badge: 'بازار العائلة',
       title: 'منتجات مختارة بعناية',
       subtitle: 'تشكيلة متنوعة من الأفضل — منزل وأزياء وهدايا وإلكترونيات.',
       image: STORE_MEDIA.bannerStore,
       button_text: 'تصفح البازار',
       button_link: '#template-categories',
+      slides: [
+        { title: 'هدايا تُسعد من تحب', subtitle: 'بوكسات جاهزة لكل المناسبات', image: STORE_MEDIA.sweets, button_text: 'شاهد الهدايا', button_link: '#template-products' },
+      ],
     }),
-    s('categories', 3, {
+    s('products', 3, {
+      product_variant: 'detailed_cards_with_badges',
+      section_title: 'تسوق البازار',
+      columns: 4,
+    }),
+    s('categories', 4, {
       category_variant: 'horizontal_scroll',
       columns: 6,
       section_title: 'أقسام البازار',
       show_all: true,
-    }),
-    s('products', 4, {
-      product_variant: 'tabbed_categories',
-      section_title: 'تسوق حسب التصنيف',
-      columns: 4,
     }),
     s('features', 5, {
       items: [
@@ -844,16 +902,16 @@ const MARKETPLACE_SHOP: BuilderTemplateConfig = {
     s('footer', 7),
   ],
   tokens: tokens({
-    primary: '#334155',
-    secondary: '#1e293b',
-    accent: '#64748b',
+    primary: '#f98496',
+    secondary: '#9085f9',
+    accent: '#b9b0ff',
     background: '#ffffff',
-    surface: '#f4f6f9',
-    text_primary: '#131720',
-    text_secondary: '#5c6675',
-    border: '#e3e8ef',
-  }, '0.75rem'),
-  preview: 'linear-gradient(135deg,#f4f6f9,#c3ccd9)',
+    surface: '#fdf2f4',
+    text_primary: '#3d4651',
+    text_secondary: '#79808c',
+    border: '#f7dbe2',
+  }),
+  preview: 'linear-gradient(135deg,#fdf2f4,#9085f9)',
 };
 
 export const TEMPLATES: BuilderTemplateConfig[] = [

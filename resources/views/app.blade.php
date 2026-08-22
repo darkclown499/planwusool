@@ -352,7 +352,7 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&family=tajawal:400,500,700,800,900&family=cairo:400,500,600,700,800,900&family=ibm-plex-sans-arabic:400,500,600,700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&family=tajawal:400,500,700,800,900&family=cairo:400,500,600,700,800,900&family=ibm-plex-sans-arabic:400,500,600,700&family=baloo-bhaijaan-2:400,500,600,700,800&family=amiri:400,700&display=swap" rel="stylesheet" />
         <script src="{{ asset('js/jquery.min.js') }}"></script>
 
         <script{!! $nonceAttr !!}>
