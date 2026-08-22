@@ -23,7 +23,6 @@ import {
     MessageCircle,
     Palette,
     PartyPopper,
-    Phone,
     ShieldCheck,
     ShoppingBag,
     Sparkles,
@@ -40,6 +39,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import MediaPicker from '@/components/MediaPicker';
+import { PhoneCountryInput } from '@/components/PhoneCountryInput';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { getBuilderTemplate, getBuilderTemplateSummaries } from '@/builder';
@@ -860,18 +860,11 @@ export default function Onboarding({
                                                         <Label htmlFor="whatsapp_phone" className="block text-sm font-medium text-gray-700">
                                                             {t('WhatsApp number')}
                                                         </Label>
-                                                        <div className="relative flex items-center" dir="ltr">
-                                                            <Phone className="pointer-events-none absolute left-3.5 h-5 w-5 text-gray-400" />
-                                                            <Input
-                                                                id="whatsapp_phone"
-                                                                type="tel"
-                                                                value={data.whatsapp_phone}
-                                                                onChange={(e) => setData('whatsapp_phone', e.target.value)}
-                                                                placeholder="+970 599 000 000"
-                                                                className="h-12 w-full rounded-xl border border-gray-200 pl-11 pr-4 text-left font-mono text-sm text-gray-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-                                                                dir="ltr"
-                                                            />
-                                                        </div>
+                                                        <PhoneCountryInput
+                                                            id="whatsapp_phone"
+                                                            value={data.whatsapp_phone}
+                                                            onChange={(v) => setData('whatsapp_phone', v)}
+                                                        />
                                                         {data.whatsapp_enabled && data.whatsapp_phone.trim() !== '' && !WHATSAPP_PATTERN.test(data.whatsapp_phone.trim()) && (
                                                             <p className="text-sm text-red-600">
                                                                 {t('Use the international format, e.g. +9705...')}

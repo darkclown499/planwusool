@@ -276,6 +276,11 @@ a[style*="background-color"]:hover:not(.social-auth-btn) {
   direction: ltr;
 }
 
+/* Force RTL content (dropdown lists, labels) inside LTR layouts */
+.dir-rtl {
+  direction: rtl;
+}
+
 /* Onboarding wizard animations */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
