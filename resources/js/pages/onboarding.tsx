@@ -912,130 +912,124 @@ export default function Onboarding({
                                                     </div>
                                                 </div>
 
-                                                {/* About your store */}
-                                                <div className="mb-3 mt-6 flex items-center gap-2">
-                                                    <Store className="h-4 w-4" style={{ color: primaryColor }} />
-                                                    <span className="text-sm font-semibold text-gray-700">{t('About your store')}</span>
-                                                    <span className="h-px flex-1 bg-gray-100" />
-                                                </div>
-                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                                    <div className="sm:col-span-2">
-                                                        <Label htmlFor="welcome_message" className="text-sm font-medium">
-                                                            {t('Welcome message')}
-                                                        </Label>
-                                                        <Input
-                                                            id="welcome_message"
-                                                            value={data.welcome_message}
-                                                            onChange={(e) => setData('welcome_message', e.target.value)}
-                                                            placeholder={t('E.g. Welcome to our store!')}
-                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-                                                        />
-                                                        {errors.welcome_message && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.welcome_message}</p>
-                                                        )}
-                                                    </div>
+                                                <div className="space-y-6 w-full">
+                                                    {/* Section 1: Brand info */}
+                                                    <div className="space-y-4">
+                                                        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                                            {t('About your store')}
+                                                        </h4>
+                                                        <div className="space-y-1.5">
+                                                            <Label htmlFor="welcome_message" className="block text-sm font-medium text-gray-700">
+                                                                {t('Welcome message')}
+                                                            </Label>
+                                                            <Input
+                                                                id="welcome_message"
+                                                                value={data.welcome_message}
+                                                                onChange={(e) => setData('welcome_message', e.target.value)}
+                                                                placeholder={t('E.g. Welcome to our store!')}
+                                                                className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                            />
+                                                            {errors.welcome_message && (
+                                                                <p className="text-sm text-red-600">{errors.welcome_message}</p>
+                                                            )}
+                                                        </div>
 
-                                                    <div className="sm:col-span-2">
-                                                        <Label htmlFor="store_description" className="text-sm font-medium">
-                                                            {t('Store description')}
-                                                        </Label>
+                                                        <div className="space-y-1.5">
+                                                            <Label htmlFor="store_description" className="block text-sm font-medium text-gray-700">
+                                                                {t('Store description')}
+                                                            </Label>
                                                         <Textarea
                                                             id="store_description"
+                                                            rows={2}
                                                             value={data.store_description}
                                                             onChange={(e) => setData('store_description', e.target.value)}
                                                             placeholder={t('A short description of your store and what you sell.')}
-                                                            className="mt-2 min-h-[80px] w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                            className="w-full resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                         />
                                                         {errors.store_description && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.store_description}</p>
+                                                            <p className="text-sm text-red-600">{errors.store_description}</p>
                                                         )}
                                                     </div>
 
-                                                    <div className="sm:col-span-2">
-                                                        <Label className="text-sm font-medium">
+                                                    {/* Logo dropzone */}
+                                                    <div className="space-y-1.5">
+                                                        <Label className="block text-sm font-medium text-gray-700">
                                                             {t('Store logo')}
                                                         </Label>
-                                                        <div className="mt-2">
-                                                            <MediaPicker
-                                                                value={data.logo}
-                                                                onChange={(v) => setData('logo', v)}
-                                                                placeholder={t('Select a logo image')}
-                                                                showPreview
-                                                            />
-                                                        </div>
+                                                        <MediaPicker
+                                                            value={data.logo}
+                                                            onChange={(v) => setData('logo', v)}
+                                                            placeholder={t('Select a logo image')}
+                                                            dropzoneLabel={t('Store logo')}
+                                                            showPreview
+                                                            dragDrop
+                                                            inputId="onboarding-logo"
+                                                        />
                                                         {errors.logo && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.logo}</p>
+                                                            <p className="text-sm text-red-600">{errors.logo}</p>
                                                         )}
                                                     </div>
                                                 </div>
 
-                                                {/* Location */}
-                                                <div className="mb-3 mt-6 flex items-center gap-2">
-                                                    <MapPin className="h-4 w-4" style={{ color: primaryColor }} />
-                                                    <span className="text-sm font-semibold text-gray-700">{t('Location (optional)')}</span>
-                                                    <span className="h-px flex-1 bg-gray-100" />
-                                                </div>
-                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                                    <div className="sm:col-span-2">
-                                                        <Label htmlFor="address" className="text-sm font-medium">
-                                                            {t('Address')}
-                                                        </Label>
-                                                        <div className="relative mt-2">
-                                                            <MapPin className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                    {/* Section 2: Location */}
+                                                    <div className="space-y-4 border-t border-gray-100 pt-4">
+                                                        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                                            {t('Location (optional)')}
+                                                        </h4>
+                                                        <div className="space-y-1.5">
+                                                            <Label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                                                                {t('Address')}
+                                                            </Label>
                                                             <Input
                                                                 id="address"
                                                                 value={data.address}
                                                                 onChange={(e) => setData('address', e.target.value)}
                                                                 placeholder={t('Salah al-Din Street 291')}
-                                                                className="h-12 w-full rounded-xl border border-gray-200 px-4 py-3 ps-9 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                                className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                             />
+                                                            {errors.address && (
+                                                                <p className="text-sm text-red-600">{errors.address}</p>
+                                                            )}
                                                         </div>
-                                                        {errors.address && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.address}</p>
-                                                        )}
+
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div className="space-y-1.5">
+                                                                <Label htmlFor="country" className="block text-sm font-medium text-gray-700">
+                                                                    {t('Country')}
+                                                                </Label>
+                                                                <Input
+                                                                    id="country"
+                                                                    value={data.country}
+                                                                    onChange={(e) => setData('country', e.target.value)}
+                                                                    placeholder={t('Palestine')}
+                                                                    className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                                />
+                                                                {errors.country && (
+                                                                    <p className="text-sm text-red-600">{errors.country}</p>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="space-y-1.5">
+                                                                <Label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                                                                    {t('City')}
+                                                                </Label>
+                                                                <Input
+                                                                    id="city"
+                                                                    value={data.city}
+                                                                    onChange={(e) => setData('city', e.target.value)}
+                                                                    placeholder={t('Ramallah')}
+                                                                    className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                                />
+                                                                {errors.city && (
+                                                                    <p className="text-sm text-red-600">{errors.city}</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
 
-                                                    <div>
-                                                        <Label htmlFor="city" className="text-sm font-medium">
-                                                            {t('City')}
-                                                        </Label>
-                                                        <Input
-                                                            id="city"
-                                                            value={data.city}
-                                                            onChange={(e) => setData('city', e.target.value)}
-                                                            placeholder={t('Ramallah')}
-                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-                                                        />
-                                                        {errors.city && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.city}</p>
-                                                        )}
-                                                    </div>
-
-                                                    <div>
-                                                        <Label htmlFor="country" className="text-sm font-medium">
-                                                            {t('Country')}
-                                                        </Label>
-                                                        <Input
-                                                            id="country"
-                                                            value={data.country}
-                                                            onChange={(e) => setData('country', e.target.value)}
-                                                            placeholder={t('Palestine')}
-                                                            className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-                                                        />
-                                                        {errors.country && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.country}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Preferences */}
-                                                <div className="mb-3 mt-6 flex items-center gap-2">
-                                                    <Globe className="h-4 w-4" style={{ color: primaryColor }} />
-                                                    <span className="text-sm font-semibold text-gray-700">{t('Preferences')}</span>
-                                                    <span className="h-px flex-1 bg-gray-100" />
-                                                </div>
-                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                                    <div className="sm:col-span-2">
+                                                    {/* Section 3: Timezone & publish */}
+                                                    <div className="space-y-4 border-t border-gray-100 pt-4">
+                                                        <div className="space-y-1.5">
                                                         <div className="flex items-center justify-between gap-3">
                                                             <Label htmlFor="timezone" className="text-sm font-medium">
                                                                 {t('Timezone')}
@@ -1044,8 +1038,7 @@ export default function Onboarding({
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setData('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone)}
-                                                                    className="text-xs font-medium transition-colors hover:opacity-80"
-                                                                    style={{ color: primaryColor }}
+                                                                    className="text-xs font-medium text-emerald-600 transition-colors hover:underline"
                                                                 >
                                                                     {t('Detect automatically')}
                                                                 </button>
@@ -1056,7 +1049,7 @@ export default function Onboarding({
                                                                 id="timezone"
                                                                 value={data.timezone}
                                                                 onChange={(e) => setData('timezone', e.target.value)}
-                                                                className="h-12 w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-3 pe-9 text-sm text-gray-900 outline-none transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                                                                className="h-auto w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                                                 dir="ltr"
                                                             >
                                                                 {Object.entries(timezones).map(([value, label]) => (
@@ -1068,23 +1061,24 @@ export default function Onboarding({
                                                             <ChevronDown className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                                         </div>
                                                         {errors.timezone && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.timezone}</p>
+                                                            <p className="text-sm text-red-600">{errors.timezone}</p>
                                                         )}
-                                                    </div>
+                                                        </div>
 
-                                                    <div className="sm:col-span-2 rounded-2xl border border-gray-200 p-4">
-                                                        <div className="flex items-center justify-between gap-4">
-                                                            <div>
-                                                                <div className="text-sm font-semibold text-gray-900">
+                                                        {/* Publish now */}
+                                                        <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 bg-gray-50 p-3.5">
+                                                            <div className="min-w-0">
+                                                                <p className="text-sm font-medium text-gray-800">
                                                                     {t('Publish my store now')}
-                                                                </div>
-                                                                <p className="mt-1 text-xs text-gray-500">
+                                                                </p>
+                                                                <p className="mt-0.5 text-xs text-gray-500">
                                                                     {t('Your store goes live on your subdomain as soon as you finish. Turn this off to build quietly first.')}
                                                                 </p>
                                                             </div>
                                                             <Switch
                                                                 checked={data.publish_store}
                                                                 onCheckedChange={(v) => setData('publish_store', !!v)}
+                                                                className="data-[state=checked]:bg-emerald-500"
                                                             />
                                                         </div>
                                                     </div>
