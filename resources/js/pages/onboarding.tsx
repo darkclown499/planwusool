@@ -631,7 +631,7 @@ export default function Onboarding({
                                                     style={{ backgroundColor: primaryColor }}
                                                 >
                                                     {t('Start setting up your store now')}
-                                                    <ChevronLeft className="h-5 w-5" />
+                                                    <ChevronLeft className="h-5 w-5 ltr:[transform:scaleX(-1)]" />
                                                 </Button>
                                                 <a
                                                     href={demoStoreUrl}
@@ -733,41 +733,43 @@ export default function Onboarding({
                                                                 : 'border-gray-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20'
                                                         }`}
                                                     >
-                                                        <Input
-                                                            id="store_subdomain"
-                                                            value={data.store_subdomain}
-                                                            onChange={(e) => {
-                                                                setData('store_subdomain', e.target.value.toLowerCase());
-                                                                setAvailability(null);
-                                                            }}
-                                                            placeholder="my-store"
-                                                            className="dir-ltr min-w-0 flex-1 rounded-none border-0 bg-transparent px-4 py-3 text-left text-sm shadow-none outline-none focus:ring-0 focus-visible:border-transparent focus-visible:ring-0"
-                                                            dir="ltr"
-                                                        />
-                                                        <span
-                                                            className="dir-ltr flex select-none items-center border-x border-gray-100 bg-gray-50 px-3 py-3 font-mono text-sm text-gray-500"
-                                                            dir="ltr"
-                                                        >
-                                                            .{storeDomain}
-                                                        </span>
+                                                        {/* Check availability — trailing action */}
                                                         <button
                                                             type="button"
                                                             onClick={runAvailabilityCheck}
                                                             disabled={checking || !data.store_subdomain.trim()}
-                                                            className={`cursor-pointer border-none px-4 py-3 text-sm font-medium transition-colors ${
-                                                                availability?.available
-                                                                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                                                                    : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                                            } ${checking || !data.store_subdomain.trim() ? 'cursor-not-allowed opacity-60' : ''}`}
+                                                            className={`flex shrink-0 cursor-pointer items-center gap-1.5 border-none bg-emerald-500 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-emerald-600 ${
+                                                                checking || !data.store_subdomain.trim() ? 'cursor-not-allowed opacity-60' : ''
+                                                            }`}
                                                         >
-                                                            {checking && <Loader2 className="h-4 w-4 animate-spin" />}
-                                                            {!checking && availability?.available && (
+                                                            {checking ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
                                                                 <Check className="h-4 w-4" />
                                                             )}
-                                                            <span className="hidden sm:inline">
-                                                                {t('Check availability')}
-                                                            </span>
+                                                            <span>{t('Check availability')}</span>
                                                         </button>
+
+                                                        {/* LTR domain group — reads naturally: my-store.wusool.ps */}
+                                                        <div className="dir-ltr flex flex-1 items-center border-r border-gray-100">
+                                                            <Input
+                                                                id="store_subdomain"
+                                                                value={data.store_subdomain}
+                                                                onChange={(e) => {
+                                                                    setData('store_subdomain', e.target.value.toLowerCase());
+                                                                    setAvailability(null);
+                                                                }}
+                                                                placeholder="my-store"
+                                                                className="dir-ltr min-w-0 flex-1 rounded-none border-0 bg-transparent px-4 py-3 text-left font-mono text-sm text-gray-900 shadow-none outline-none focus:ring-0 focus-visible:border-transparent focus-visible:ring-0"
+                                                                dir="ltr"
+                                                            />
+                                                            <span
+                                                                className="flex shrink-0 select-none items-center border-l border-gray-100 bg-gray-50 px-3 py-3 font-mono text-sm text-gray-500"
+                                                                dir="ltr"
+                                                            >
+                                                                .{storeDomain}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                     {availability && (
                                                         <p
@@ -1449,8 +1451,8 @@ export default function Onboarding({
                                     {/* Footer navigation */}
                                     {stepKey !== 'welcome' && (
                                         <div className="mt-8 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
-                                            <Button type="button" variant="outline" onClick={back} className="h-11 gap-1 rounded-xl px-4">
-                                                <ChevronRight className="h-4 w-4" />
+                                            <Button type="button" variant="outline" onClick={back} className="flex h-11 items-center gap-1 rounded-xl px-4">
+                                                <ChevronRight className="h-4 w-4 ltr:[transform:scaleX(-1)]" />
                                                 {t('Back')}
                                             </Button>
 
@@ -1473,11 +1475,10 @@ export default function Onboarding({
                                                     type="button"
                                                     onClick={next}
                                                     disabled={!canProceed()}
-                                                    className="h-11 gap-1 rounded-xl px-6 hover:-translate-y-0.5 transition-transform"
-                                                    style={{ backgroundColor: primaryColor }}
+                                                    className="flex h-11 items-center gap-1 rounded-xl bg-emerald-500 px-6 text-white transition-all hover:-translate-y-0.5 hover:bg-emerald-600 disabled:pointer-events-none disabled:opacity-50"
                                                 >
                                                     {t('Next')}
-                                                    <ChevronLeft className="h-4 w-4" />
+                                                    <ChevronLeft className="h-4 w-4 ltr:[transform:scaleX(-1)]" />
                                                 </Button>
                                             )}
                                         </div>
