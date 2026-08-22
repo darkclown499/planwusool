@@ -393,7 +393,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             return \App\Models\Store::ALL_TEMPLATES;
         }
 
-        $themes = is_array($plan->themes) ? $plan->themes : [];
+        $themes = \App\Models\Store::normalizeThemeList($plan->themes);
 
         return count($themes) > 0 ? $themes : \App\Models\Store::FREE_TEMPLATES;
     }

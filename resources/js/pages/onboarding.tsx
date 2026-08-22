@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+﻿import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { FlagIcon } from '@/components/FlagIcon';
@@ -12,6 +12,7 @@ import {
     Coins,
     Contact,
     CreditCard,
+    Brush,
     ExternalLink,
     Globe,
     Languages,
@@ -42,8 +43,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import MediaPicker from '@/components/MediaPicker';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
-import { getTemplateConfig, getTemplateSummaries } from '@/templates/registry';
-import type { PlanTier, TemplateSummary } from '@/templates/types';
+import { getBuilderTemplate, getBuilderTemplateSummaries } from '@/builder';
+import { TemplateThumb } from '@/builder/TemplateThumb';
+import type { BuilderTemplateSummary } from '@/builder/types';
+import type { PlanTier } from '@/templates/types';
 
 interface Currency {
     code: string;
@@ -82,6 +85,7 @@ const STEP_META: { key: string; icon: LucideIcon }[] = [
     { key: 'name', icon: User },
     { key: 'store', icon: Store },
     { key: 'details', icon: Contact },
+    { key: 'branding', icon: Brush },
     { key: 'language', icon: Languages },
     { key: 'currency', icon: Coins },
     { key: 'theme', icon: Palette },
@@ -94,79 +98,25 @@ const FIELD_STEP: Record<string, number> = {
     name: 1,
     store_name: 2,
     store_subdomain: 2,
-    store_email: 3,
-    store_description: 3,
-    welcome_message: 3,
+    // Contact step
     whatsapp_enabled: 3,
     whatsapp_phone: 3,
-    address: 3,
-    city: 3,
-    country: 3,
-    logo: 3,
-    timezone: 3,
-    publish_store: 3,
-    language: 4,
-    currency: 5,
-    theme: 6,
+    store_email: 3,
+    // Branding step (all optional)
+    store_description: 4,
+    welcome_message: 4,
+    address: 4,
+    city: 4,
+    country: 4,
+    logo: 4,
+    timezone: 4,
+    publish_store: 4,
+    language: 5,
+    currency: 6,
+    theme: 7,
 };
 
 const CONFETTI_COLORS = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ec4899', '#8b5cf6'];
-
-/**
- * Mini storefront mockup rendered from a template's design tokens so each card
- * shows the template's real colour identity (hero, header, product grid).
- */
-function TemplateMiniPreview({ colors }: { colors: Record<string, string> }) {
-    const bg = colors?.background || '#ffffff';
-    const surface = colors?.surface || '#f9fafb';
-    const primary = colors?.['primary-500'] || '#10b77f';
-    const primarySoft = colors?.['primary-50'] || `${primary}14`;
-    const primaryDeep = colors?.['primary-700'] || '#047857';
-    const text = colors?.['text-primary'] || '#111827';
-    const muted = colors?.['text-muted'] || '#6b7280';
-
-    return (
-        <div className="pointer-events-none h-28 w-full select-none overflow-hidden rounded-xl border border-black/5"
-            style={{ backgroundColor: bg }}>
-            {/* Header bar */}
-            <div className="flex items-center justify-between px-3 pb-1 pt-2"
-                style={{ backgroundColor: `${bg}f2`, borderBottom: `1px solid ${surface}` }}>
-                <span className="flex items-center gap-1.5">
-                    <span className="block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: primary }} />
-                    <span className="block h-1.5 w-12 rounded-full" style={{ backgroundColor: primaryDeep, opacity: 0.55 }} />
-                </span>
-                <span className="flex items-center gap-1">
-                    <span className="block h-1.5 w-5 rounded-full" style={{ backgroundColor: muted, opacity: 0.5 }} />
-                    <span className="block h-1.5 w-5 rounded-full" style={{ backgroundColor: primary }} />
-                </span>
-            </div>
-
-            {/* Hero banner */}
-            <div className="mx-3 mt-2 flex items-center justify-between rounded-lg px-3 py-2.5"
-                style={{ backgroundColor: primary, backgroundImage: `linear-gradient(120deg, ${primary}, ${primaryDeep})` }}>
-                <span className="space-y-1">
-                    <span className="block h-1.5 w-16 rounded-full bg-white/90" />
-                    <span className="block h-1.5 w-10 rounded-full bg-white/50" />
-                    <span className="mt-1 block h-2.5 w-8 rounded-full bg-white" />
-                </span>
-                <span className="block h-7 w-7 rounded-lg bg-white/25" />
-            </div>
-
-            {/* Product grid */}
-            <div className="grid grid-cols-4 gap-1.5 px-3 pb-3 pt-2">
-                {[0, 1, 2, 3].map((i) => (
-                    <span key={i} className="space-y-1 rounded-md p-1.5"
-                        style={{ backgroundColor: surface }}>
-                        <span className="block h-7 w-full rounded-md"
-                            style={{ backgroundColor: `${primarySoft}` }} />
-                        <span className="block h-1 w-3/4 rounded-full" style={{ backgroundColor: muted, opacity: 0.55 }} />
-                        <span className="block h-1 w-1/2 rounded-full" style={{ backgroundColor: primary, opacity: 0.8 }} />
-                    </span>
-                ))}
-            </div>
-        </div>
-    );
-}
 
 function slugify(value: string): string {
     const latin = value
@@ -214,7 +164,7 @@ export default function Onboarding({
         import_demo_products: true,
         language: defaults.language || 'ar',
         currency: defaults.currency || 'ILS',
-        theme: defaults.theme || 'core-minimal',
+        theme: defaults.theme || 'classic',
     });
 
     const [step, setStep] = useState(() =>
@@ -228,7 +178,7 @@ export default function Onboarding({
 
     // During onboarding the merchant is on the free plan until they finish,
     // so any template above the Starter tier is locked behind an upgrade.
-    const isLockedTemplate = (tmpl: TemplateSummary): boolean => tmpl.plan_required !== 'starter';
+    const isLockedTemplate = (tmpl: BuilderTemplateSummary): boolean => tmpl.plan_required !== 'starter';
 
     const openUpgrade = (slug: string) => {
         setPendingUpgradeTemplate(slug);
@@ -404,7 +354,7 @@ export default function Onboarding({
     };
 
     const submit = () => {
-        // Never send a paid template for a free-tire merchant — open the
+        // Never send a paid template for a free-tire merchant â€” open the
         // upgrade prompt instead of letting the server bounce back to step 6.
         if (data.theme && themeBySlug.get(data.theme) && isLockedTemplate(themeBySlug.get(data.theme)!)) {
             openUpgrade(data.theme);
@@ -463,7 +413,10 @@ export default function Onboarding({
         { code: 'en', name: t('English'), countryCode: 'GB' },
     ];
 
-    const themeCatalog: TemplateSummary[] = useMemo(() => getTemplateSummaries(), []);
+    // Offer exactly the catalog the backend validates against (the 14
+    // builder templates) so a choice made in the wizard can never be
+    // rejected at submit time by slug drift between registries.
+    const themeCatalog: BuilderTemplateSummary[] = useMemo(() => getBuilderTemplateSummaries(), []);
     const themeBySlug = useMemo(() => new Map(themeCatalog.map((tmpl) => [tmpl.slug, tmpl])), [themeCatalog]);
 
     const TIER_LABEL: Record<PlanTier, string> = {
@@ -476,11 +429,6 @@ export default function Onboarding({
         starter: 'bg-emerald-100 text-emerald-700 border-emerald-200',
         growth: 'bg-sky-100 text-sky-700 border-sky-200',
         professional: 'bg-violet-100 text-violet-700 border-violet-200',
-    };
-
-    const themeColors = (slug: string): Record<string, string> => {
-        const cfg = getTemplateConfig(slug);
-        return (cfg?.design_tokens?.colors as Record<string, string>) || {};
     };
 
     const previewUrlFor = (slug: string): string =>
@@ -501,7 +449,7 @@ export default function Onboarding({
             <Head title={t('Onboarding')} />
 
             <div className="flex min-h-screen">
-                {/* Left panel — brand showcase */}
+                {/* Left panel â€” brand showcase */}
                 <aside className="hidden lg:flex lg:w-[46%] xl:w-[48%] relative overflow-hidden">
                     <div
                         className="absolute inset-0"
@@ -600,7 +548,7 @@ export default function Onboarding({
                     </div>
                 </aside>
 
-                {/* Right panel — wizard */}
+                {/* Right panel â€” wizard */}
                 <main className="flex flex-1 flex-col">
                     <div className="flex items-center justify-between p-5">
                         <div className="flex items-center gap-2 lg:hidden">
@@ -908,10 +856,10 @@ export default function Onboarding({
                                                     </div>
                                                     <div>
                                                         <h2 className="text-xl font-bold text-gray-900">
-                                                            {t('Store details & contact')}
+                                                            {t('How customers reach you')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Add the details customers need to reach you. You can edit them anytime.')}
+                                                            {t('Add your WhatsApp number and contact email. You can edit them anytime.')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -983,6 +931,27 @@ export default function Onboarding({
                                                         {errors.whatsapp_phone && (
                                                             <p className="mt-2 text-sm text-red-600">{errors.whatsapp_phone}</p>
                                                         )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {stepKey === 'branding' && (
+                                            <div className="onboarding-stagger py-4">
+                                                <div className="mb-6 flex items-center gap-3">
+                                                    <div
+                                                        className="flex h-11 w-11 items-center justify-center rounded-xl"
+                                                        style={{ backgroundColor: `${primaryColor}1a` }}
+                                                    >
+                                                        <Brush className="h-5 w-5" style={{ color: primaryColor }} />
+                                                    </div>
+                                                    <div>
+                                                        <h2 className="text-xl font-bold text-gray-900">
+                                                            {t('Brand your store')}
+                                                        </h2>
+                                                        <p className="text-sm text-gray-500">
+                                                            {t('Describe your business and make it yours — everything here is optional.')}
+                                                        </p>
                                                     </div>
                                                 </div>
 
@@ -1285,7 +1254,7 @@ export default function Onboarding({
                                                             {t('Choose a design')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Pick the look of your store. Preview any design live — you can change it anytime.')}
+                                                            {t('Pick the look of your store. Preview any design live â€” you can change it anytime.')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1311,7 +1280,7 @@ export default function Onboarding({
                                                                 >
                                                                     <div className="relative">
                                                                         <div className={locked ? 'opacity-40' : ''}>
-                                                                            <TemplateMiniPreview colors={themeColors(tmpl.slug)} />
+                                                                            <TemplateThumb tpl={getBuilderTemplate(tmpl.slug)} className="h-36 w-full" />
                                                                         </div>
                                                                         <span
                                                                             className={`absolute end-2.5 top-2.5 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${TIER_BADGE[tmpl.plan_required]}`}
@@ -1454,7 +1423,7 @@ export default function Onboarding({
                                                             {
                                                                 icon: Mail,
                                                                 label: t('Store Email'),
-                                                                value: data.store_email || '—',
+                                                                value: data.store_email || 'â€”',
                                                                 ltr: true,
                                                             },
                                                             ...(data.whatsapp_enabled && data.whatsapp_phone
@@ -1580,7 +1549,7 @@ export default function Onboarding({
                     <DialogHeader>
                         <DialogTitle>{t('Upgrade to Pro')}</DialogTitle>
                         <DialogDescription>
-                            {t('التصميم')} «{pendingUpgradeTemplate ? themeBySlug.get(pendingUpgradeTemplate)?.name ?? '' : ''}» {t('متوفر في الباقة الاحترافية (Pro). قم بالترقية لفتحه وجميع المزايا.')}
+                            {t('Ø§Ù„ØªØµÙ…ÙŠÙ…')} Â«{pendingUpgradeTemplate ? themeBySlug.get(pendingUpgradeTemplate)?.name ?? '' : ''}Â» {t('Ù…ØªÙˆÙØ± ÙÙŠ Ø§Ù„Ø¨Ø§Ù‚Ø© Ø§Ù„Ø§Ø­ØªØ±Ø§ÙÙŠØ© (Pro). Ù‚Ù… Ø¨Ø§Ù„ØªØ±Ù‚ÙŠØ© Ù„ÙØªØ­Ù‡ ÙˆØ¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø²Ø§ÙŠØ§.')}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-2">

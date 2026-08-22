@@ -522,6 +522,53 @@ protected $fillable = [
     }
 
     /**
+     * Translate a plan's stored theme list into the current template catalog.
+     * Plans seeded before the catalog consolidation carry legacy slugs
+     * ("basic", "core-minimal", ...); mapping them through the legacy table
+     * keeps those subscriptions valid instead of silently locking their owners
+     * out of every template. Returns a de-duplicated list in catalog order.
+     *
+     * @param  mixed  $themes  Raw plan themes column (array|null).
+     * @return list<string>
+     */
+    public static function normalizeThemeList(mixed $themes): array
+    {
+        if (!is_array($themes)) {
+            return [];
+        }
+
+        // Full-catalog markers pass through untouched so callers can detect them.
+        foreach (['all', '*'] as $marker) {
+            if (in_array($marker, $themes, true)) {
+                return [$marker];
+            }
+        }
+
+        $resolved = [];
+        $meaningful = false;
+        foreach ($themes as $slug) {
+            $raw = is_string($slug) ? trim($slug) : '';
+            if ($raw === '') {
+                continue;
+            }
+            // Only entries that are either current-catalog slugs or recognised
+            // legacy slugs carry intent; anything else is dead seed data.
+            if (!in_array($raw, self::ALL_TEMPLATES, true) && !isset(self::LEGACY_TEMPLATE_MAP[$raw])) {
+                continue;
+            }
+            $meaningful = true;
+            $normalized = self::LEGACY_TEMPLATE_MAP[$raw] ?? $raw;
+            if (!in_array($normalized, $resolved, true)) {
+                $resolved[] = $normalized;
+            }
+        }
+
+        // A list with no recognisable entries restricts nothing — let callers
+        // apply their default (free catalog) instead of locking users out.
+        return $meaningful ? $resolved : [];
+    }
+
+    /**
      * Structural defaults for the store content blob. Empty collections mean
      * "not configured" — the storefront components fall back to their own
      * built-in Arabic defaults until the owner saves real content.

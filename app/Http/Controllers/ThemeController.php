@@ -63,7 +63,7 @@ class ThemeController extends Controller
         $slug = Store::normalizeThemeSlug($candidate);
 
         if ($ownerPlan && !empty($ownerPlan->themes)) {
-            $available = is_array($ownerPlan->themes) ? $ownerPlan->themes : [];
+            $available = Store::normalizeThemeList($ownerPlan->themes);
             if (count($available) > 0 && !in_array($slug, $available, true)) {
                 return $currentTheme;
             }

@@ -26,7 +26,10 @@ $plans = [
                 'max_users_per_store' => 1,
                 'max_products_per_store' => 18,
                 'max_warehouses' => 1,
-'themes' => ['core-minimal', 'core-bold', 'core-sidebar', 'core-dark', 'core-bazaar', 'core-elegant', 'core-showcase'],
+                // The template catalog was consolidated into the 14 builder
+                // templates (all free). "all" unlocks the full catalog; a
+                // legacy slug list here would silently lock merchants out.
+                'themes' => ['all'],
                     'enable_custdomain' => 'off',
                     'enable_custsubdomain' => 'on',
                     'enable_branding' => 'off',
@@ -58,7 +61,7 @@ $plans = [
                 'max_users_per_store' => 1,
                 'max_products_per_store' => 500,
                 'max_warehouses' => 2,
-'themes' => ['core-minimal', 'core-bold', 'core-sidebar', 'core-dark', 'core-bazaar', 'core-elegant', 'core-showcase', 'growth-electronics', 'growth-fashion', 'growth-food', 'growth-cosmetics', 'growth-supermarket', 'growth-home-decor', 'growth-pharmacy'],
+                'themes' => ['all'],
                     'enable_custdomain' => 'off',
                     'enable_custsubdomain' => 'on',
                     'enable_branding' => 'off',
@@ -90,7 +93,7 @@ $plans = [
                 'max_users_per_store' => 5,
                 'max_products_per_store' => 10000,
                 'max_warehouses' => 3,
-'themes' => ['core-minimal', 'core-bold', 'core-sidebar', 'core-dark', 'core-bazaar', 'core-elegant', 'core-showcase', 'growth-electronics', 'growth-fashion', 'growth-food', 'growth-cosmetics', 'growth-supermarket', 'growth-home-decor', 'growth-pharmacy', 'pro-tech', 'pro-beauty', 'pro-books', 'pro-sport', 'pro-pets', 'pro-flowers', 'pro-coffee', 'pro-stationery', 'pro-spices', 'pro-clothing', 'pro-fragrances', 'pro-home-tools', 'pro-kids', 'pro-sports', 'pro-boutique'],
+                'themes' => ['all'],
                     'enable_custdomain' => 'on',
                     'enable_custsubdomain' => 'on',
                     'enable_branding' => 'on',

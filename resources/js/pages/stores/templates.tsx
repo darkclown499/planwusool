@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { apiPut } from '@/utils/api';
 import { StoreSite, TEMPLATES, getTemplateCategories } from '@/builder';
+import { TemplateThumb } from '@/builder/TemplateThumb';
 import { getDemoCatalog } from '@/builder/demo-catalogs';
 import type { BuilderTemplateConfig } from '@/builder/types';
 
@@ -155,37 +156,28 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
                   active ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-slate-200'
                 }`}
               >
-                {/* CSS mini-thumbnail from the template's own gradient */}
+                {/* Realistic mini-storefront rendered from the template's own
+                    tokens and niche demo imagery. */}
                 <button
                   type="button"
                   onClick={() => setPreviewSlug(tpl.slug)}
-                  className="relative block h-40 w-full overflow-hidden text-start"
-                  style={{ background: tpl.preview }}
+                  className="relative block h-48 w-full overflow-hidden text-start"
                   aria-label={`معاينة قالب ${tpl.name}`}
                 >
-                  <span
-                    className="absolute inset-x-6 top-5 h-3 rounded-full bg-white/60"
-                    aria-hidden="true"
-                  />
-                  <span
-                    className="absolute inset-x-6 top-11 grid grid-cols-3 gap-2"
-                    aria-hidden="true"
-                  >
-                    {[0, 1, 2].map((i) => (
-                      <span key={i} className="block h-14 rounded-xl bg-white/45" />
-                    ))}
-                  </span>
-                  <span className="absolute bottom-4 right-5 text-xl font-black text-white drop-shadow-md">
+                  <TemplateThumb tpl={tpl} storeName={storeBranding?.name || undefined} className="h-full w-full" />
+                  <span className="absolute bottom-2 right-3 rounded-lg bg-black/45 px-2 py-0.5 text-sm font-black text-white backdrop-blur-sm">
                     {tpl.name}
                   </span>
-                  <span className="absolute left-4 top-4 flex items-center gap-1 rounded-full bg-black/25 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
-                    <Eye className="h-3 w-3" />
-                    معاينة حية
+                  <span className="absolute inset-0 flex items-center justify-center bg-emerald-900/0 opacity-0 transition-all group-hover:bg-emerald-900/25 group-hover:opacity-100">
+                    <span className="flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-lg">
+                      <Eye className="h-4 w-4" />
+                      معاينة حية
+                    </span>
                   </span>
                   {active && (
-                    <span className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-extrabold text-white shadow">
+                    <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
                       <BadgeCheck className="h-3 w-3" />
-                      الحالي
+                      نشط
                     </span>
                   )}
                 </button>
