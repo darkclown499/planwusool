@@ -831,73 +831,73 @@ export default function Onboarding({
                                                     </div>
                                                 </div>
 
-                                                {/* Contact */}
-                                                <div className="mb-3 flex items-center gap-2">
-                                                    <MessageCircle className="h-4 w-4" style={{ color: primaryColor }} />
-                                                    <span className="text-sm font-semibold text-gray-700">{t('Contact')}</span>
-                                                    <span className="h-px flex-1 bg-gray-100" />
-                                                </div>
-                                                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                                                    <div>
-                                                        <Label htmlFor="store_email" className="text-sm font-medium">
+                                                {/* Contact fields — clean vertical stack */}
+                                                <div className="space-y-5 w-full">
+                                                    {/* Email */}
+                                                    <div className="space-y-1.5">
+                                                        <Label htmlFor="store_email" className="block text-sm font-medium text-gray-700">
                                                             {t('Store email')}
                                                         </Label>
-                                                        <div className="relative mt-2">
-                                                            <Mail className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <div className="relative flex items-center" dir="ltr">
                                                             <Input
                                                                 id="store_email"
                                                                 type="email"
                                                                 value={data.store_email}
                                                                 onChange={(e) => setData('store_email', e.target.value)}
-                                                                placeholder="store@example.com"
-                                                                className="h-12 w-full rounded-xl border border-gray-200 px-4 py-3 ps-9 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                                placeholder="name@example.com"
+                                                                className="h-12 w-full rounded-xl border border-gray-200 pl-11 pr-4 text-left font-mono text-sm text-gray-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                                 dir="ltr"
                                                             />
+                                                            <Mail className="pointer-events-none absolute left-3.5 h-5 w-5 text-gray-400" />
                                                         </div>
                                                         {errors.store_email && (
                                                             <p className="mt-2 text-sm text-red-600">{errors.store_email}</p>
                                                         )}
                                                     </div>
 
-                                                    <div>
-                                                        <Label className="text-sm font-medium">
+                                                    {/* WhatsApp / Phone */}
+                                                    <div className="space-y-1.5">
+                                                        <Label htmlFor="whatsapp_phone" className="block text-sm font-medium text-gray-700">
                                                             {t('WhatsApp number')}
                                                         </Label>
-                                                        <div className="relative mt-2">
-                                                            <Phone className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                        <div className="relative flex items-center" dir="ltr">
+                                                            <Phone className="pointer-events-none absolute left-3.5 h-5 w-5 text-gray-400" />
                                                             <Input
                                                                 id="whatsapp_phone"
+                                                                type="tel"
                                                                 value={data.whatsapp_phone}
                                                                 onChange={(e) => setData('whatsapp_phone', e.target.value)}
-                                                                placeholder="+9705"
-                                                                className="h-12 w-full rounded-xl border border-gray-200 px-4 py-3 ps-9 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                                placeholder="+970 599 000 000"
+                                                                className="h-12 w-full rounded-xl border border-gray-200 pl-11 pr-4 text-left font-mono text-sm text-gray-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                                 dir="ltr"
                                                             />
                                                         </div>
-                                                        <div className="mt-2 flex items-center gap-2">
-                                                            <Switch
-                                                                id="whatsapp_enabled"
-                                                                checked={data.whatsapp_enabled}
-                                                                onCheckedChange={(v) => setData('whatsapp_enabled', !!v)}
-                                                                className="data-[state=checked]:bg-[#25D366]"
-                                                            />
-                                                            <Label htmlFor="whatsapp_enabled" className="text-xs text-gray-500">
-                                                                {t('Show the WhatsApp button on my store')}
-                                                            </Label>
-                                                        </div>
                                                         {data.whatsapp_enabled && data.whatsapp_phone.trim() !== '' && !WHATSAPP_PATTERN.test(data.whatsapp_phone.trim()) && (
-                                                            <p className="mt-2 text-sm text-red-600">
+                                                            <p className="text-sm text-red-600">
                                                                 {t('Use the international format, e.g. +9705...')}
                                                             </p>
                                                         )}
                                                         {data.whatsapp_enabled && data.whatsapp_phone.trim() === '' && (
-                                                            <p className="mt-2 text-sm text-amber-600">
+                                                            <p className="text-sm text-amber-600">
                                                                 {t('Enter a WhatsApp number to show the button.')}
                                                             </p>
                                                         )}
                                                         {errors.whatsapp_phone && (
-                                                            <p className="mt-2 text-sm text-red-600">{errors.whatsapp_phone}</p>
+                                                            <p className="text-sm text-red-600">{errors.whatsapp_phone}</p>
                                                         )}
+                                                    </div>
+
+                                                    {/* WhatsApp toggle */}
+                                                    <div className="mt-2 flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3.5">
+                                                        <Label htmlFor="whatsapp_enabled" className="text-sm font-medium text-gray-700">
+                                                            {t('Show the WhatsApp button on my store')}
+                                                        </Label>
+                                                        <Switch
+                                                            id="whatsapp_enabled"
+                                                            checked={data.whatsapp_enabled}
+                                                            onCheckedChange={(v) => setData('whatsapp_enabled', !!v)}
+                                                            className="data-[state=checked]:bg-emerald-500"
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
