@@ -1,6 +1,6 @@
 ﻿import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { FlagIcon } from '@/components/FlagIcon';
 import {
     Banknote,
@@ -251,6 +251,17 @@ export default function Onboarding({
             setData('store_subdomain', slug);
             setAvailability(null);
         }
+    };
+
+    // Subdomain slug: only lowercase latin letters, numbers and single hyphens.
+    // Arabic text, spaces, uppercase and symbols are stripped as you type.
+    const handleSlugChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const sanitized = e.target.value
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, '') // Remove invalid characters instantly
+            .replace(/--+/g, '-'); // Prevent double hyphens
+        setData('store_subdomain', sanitized);
+        setAvailability(null);
     };
 
     const runAvailabilityCheck = async () => {
@@ -755,10 +766,7 @@ export default function Onboarding({
                                                             <Input
                                                                 id="store_subdomain"
                                                                 value={data.store_subdomain}
-                                                                onChange={(e) => {
-                                                                    setData('store_subdomain', e.target.value.toLowerCase());
-                                                                    setAvailability(null);
-                                                                }}
+                                                                onChange={handleSlugChange}
                                                                 placeholder="my-store"
                                                                 className="dir-ltr min-w-0 flex-1 rounded-none border-0 bg-transparent px-4 py-3 text-left font-mono text-sm text-gray-900 shadow-none outline-none focus:ring-0 focus-visible:border-transparent focus-visible:ring-0"
                                                                 dir="ltr"
