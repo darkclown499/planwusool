@@ -271,6 +271,11 @@ a[style*="background-color"]:hover:not(.social-auth-btn) {
   100% { transform: rotate(360deg); }
 }
 
+/* Force LTR content (URLs, phones, codes) inside RTL layouts */
+.dir-ltr {
+  direction: ltr;
+}
+
 /* Onboarding wizard animations */
 @keyframes float {
   0%, 100% { transform: translateY(0); }

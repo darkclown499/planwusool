@@ -727,7 +727,7 @@ export default function Onboarding({
 
                                                     {/* Unified URL group: slug + domain suffix + inline check */}
                                                     <div
-                                                        className={`mt-3 flex items-stretch overflow-hidden rounded-xl border bg-white transition-all ${
+                                                        className={`flex w-full items-center overflow-hidden rounded-xl border bg-white transition-all ${
                                                             availability && !availability.available
                                                                 ? 'border-red-300 focus-within:border-red-400 focus-within:ring-2 focus-within:ring-red-500/15'
                                                                 : 'border-gray-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20'
@@ -741,11 +741,11 @@ export default function Onboarding({
                                                                 setAvailability(null);
                                                             }}
                                                             placeholder="my-store"
-                                                            className="h-12 min-w-0 flex-1 rounded-none border-0 bg-transparent px-4 text-sm shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0"
+                                                            className="dir-ltr min-w-0 flex-1 rounded-none border-0 bg-transparent px-4 py-3 text-left text-sm shadow-none outline-none focus:ring-0 focus-visible:border-transparent focus-visible:ring-0"
                                                             dir="ltr"
                                                         />
                                                         <span
-                                                            className="flex items-center border-x border-gray-200 bg-gray-50 px-3 font-mono text-sm text-gray-500"
+                                                            className="dir-ltr flex select-none items-center border-x border-gray-100 bg-gray-50 px-3 py-3 font-mono text-sm text-gray-500"
                                                             dir="ltr"
                                                         >
                                                             .{storeDomain}
@@ -754,7 +754,7 @@ export default function Onboarding({
                                                             type="button"
                                                             onClick={runAvailabilityCheck}
                                                             disabled={checking || !data.store_subdomain.trim()}
-                                                            className={`flex shrink-0 items-center gap-1.5 px-3 text-sm font-semibold transition-colors sm:px-4 ${
+                                                            className={`cursor-pointer border-none px-4 py-3 text-sm font-medium transition-colors ${
                                                                 availability?.available
                                                                     ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                                                                     : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
@@ -794,13 +794,10 @@ export default function Onboarding({
                                                     {/* Live URL badge */}
                                                     <div
                                                         dir="ltr"
-                                                        className="mt-4 inline-flex max-w-full items-center gap-2 rounded-full bg-emerald-50 py-1.5 pe-3.5 ps-2.5 ring-1 ring-emerald-200 animate-pop"
+                                                        className="dir-ltr mt-4 inline-flex max-w-full animate-pop items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 font-mono text-xs text-emerald-700"
                                                     >
-                                                        <span className="relative flex h-2 w-2 shrink-0">
-                                                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                                                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                                                        </span>
-                                                        <span className="truncate font-mono text-xs font-semibold text-emerald-700">
+                                                        <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-500" />
+                                                        <span className="truncate">
                                                             https://{data.store_subdomain.trim() || 'your-store'}.{storeDomain}
                                                         </span>
                                                     </div>
