@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ArrowLeft, Headset, RotateCcw, ShieldCheck, Truck, Wallet } from 'lucide-react';
 import { WpProductCard } from './WpProductCard';
 import { useReveal } from './useReveal';
+import { getImageUrl } from '@/utils/image-helper';
 
 export interface WpProductsData {
   products: any[];
@@ -30,16 +31,22 @@ const filterByCategory = (products: any[], categorySlug?: string) =>
 export const WpHotProducts: React.FC<WpProductsData & { title: string }> = ({ products, title }) => {
   const ref = useReveal([products]);
   const list = products.slice(0, 8);
-  if (!list.length) return null;
   return (
     <section className="wpt-section" id="wpt-products" ref={ref}>
       <div className="wpt-container">
         <SectionHead title={title} />
-        <div className="wpt-grid">
-          {list.map((p, i) => (
-            <WpProductCard key={p.id} product={p} addToCartLabel="أضف إلى السلة" revealClass={i % 2 ? 'wow-zoomIn' : ''} />
-          ))}
-        </div>
+        {list.length ? (
+          <div className="wpt-grid">
+            {list.map((p, i) => (
+              <WpProductCard key={p.id} product={p} addToCartLabel="أضف إلى السلة" revealClass={i % 2 ? 'wow-zoomIn' : ''} />
+            ))}
+          </div>
+        ) : (
+          <div className="wpt-empty">
+            <b>لا توجد منتجات بعد</b>
+            أضف منتجاتك من لوحة التحكم وستظهر هنا فوراً.
+          </div>
+        )}
       </div>
     </section>
   );
@@ -110,7 +117,7 @@ export const WpDealOfDay: React.FC<
         <SectionHead title={title} />
         <div className="wpt-deal wpt-reveal wow-fadeInRight">
           <div className="wpt-deal__media">
-            <img src={deal.image} alt={deal.name} loading="lazy" />
+            <img src={getImageUrl(deal.image)} alt={deal.name} loading="lazy" />
           </div>
           <div className="wpt-deal__body">
             <span className="wpt-deal__badge">عرض اليوم فقط</span>
@@ -174,7 +181,7 @@ export const WpCategoriesBox: React.FC<
             <div className="wpt-cats-circle">
               {categories.slice(0, 6).map((c) => (
                 <a key={c.id} href="#wpt-products" className="wpt-circle no-underline wpt-reveal">
-                  <img src={c.image} alt={c.name} loading="lazy" />
+                  <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" />
                   <span>{c.name}</span>
                 </a>
               ))}
@@ -183,7 +190,7 @@ export const WpCategoriesBox: React.FC<
             <div className="wpt-cats-grid">
               {categories.slice(0, 8).map((c) => (
                 <a key={c.id} href="#wpt-products" className="wpt-cat-card no-underline wpt-reveal">
-                  <img src={c.image} alt={c.name} loading="lazy" />
+                  <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" />
                   <span>{c.name}</span>
                 </a>
               ))}

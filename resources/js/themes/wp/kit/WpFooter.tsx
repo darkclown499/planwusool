@@ -4,6 +4,8 @@ import type { WpThemeConfig } from '../types';
 
 interface WpFooterProps {
   config: WpThemeConfig;
+  /** Real store name — wins over the theme placeholder. */
+  storeName?: string;
   categories: any[];
 }
 
@@ -12,8 +14,9 @@ interface WpFooterProps {
  * contact) over a copyright bar — the originals' footer.php layout,
  * translated to Arabic.
  */
-export const WpFooter: React.FC<WpFooterProps> = ({ config, categories }) => {
+export const WpFooter: React.FC<WpFooterProps> = ({ config, storeName, categories }) => {
   const { footer, header } = config;
+  const brandName = storeName || config.name;
 
   return (
     <footer className="wpt-footer">
@@ -89,7 +92,7 @@ export const WpFooter: React.FC<WpFooterProps> = ({ config, categories }) => {
       </div>
 
       <div className="wpt-footer__bar">
-        © {new Date().getFullYear()} {config.name} — جميع الحقوق محفوظة · يعمل بواسطة وصول
+        © {new Date().getFullYear()} {brandName} — جميع الحقوق محفوظة · يعمل بواسطة وصول
       </div>
     </footer>
   );

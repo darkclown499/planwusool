@@ -46,6 +46,23 @@
   border: none;
 }
 .wpt-btn:hover { color: #000 !important; filter: brightness(.94); }
+.wpt-btn:focus-visible,
+.wpt-tab:focus-visible,
+.wpt-dot:focus-visible {
+  outline: 2px solid var(--twc-primary);
+  outline-offset: 2px;
+}
+
+/* empty state when a store has no products yet */
+.wpt-empty {
+  text-align: center;
+  padding: 56px 20px;
+  background: var(--twc-surface);
+  border: 1px dashed var(--twc-border);
+  border-radius: calc(var(--twx-radius, 10px) * 1.4);
+  color: var(--twc-text-secondary);
+}
+.wpt-empty b { display: block; font-size: 18px; margin-bottom: 6px; color: var(--twc-text-primary); }
 
 .wpt-btn--ghost {
   background: transparent;
@@ -168,6 +185,15 @@
 .wpt-slide.is-active { display: block; animation: wptFade .7s ease; }
 @keyframes wptFade { from { opacity: 0; } to { opacity: 1; } }
 
+/* readability gradient behind the slide copy */
+.wpt-slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to left, rgba(0,0,0,.62) 0%, rgba(0,0,0,.34) 45%, rgba(0,0,0,.08) 100%);
+  pointer-events: none;
+}
 .wpt-slide > img {
   height: clamp(340px, 52vw, 800px);
   width: 100%;
@@ -178,6 +204,7 @@
   top: 50%;
   inset-inline: 0;
   transform: translateY(-50%);
+  z-index: 2;
 }
 .wpt-slide__box { max-width: 60%; }
 .wpt-slide__title {
@@ -264,7 +291,13 @@
 }
 
 /* ------------------------------------------- product card (.tab-product) */
-.wpt-product { position: relative; }
+.wpt-product {
+  position: relative;
+  border-radius: var(--twx-radius, 10px);
+  background: var(--twc-background, #fff);
+  transition: transform .3s ease, filter .3s ease;
+}
+.wpt-product:hover { transform: translateY(-4px); filter: drop-shadow(0 14px 22px rgba(0,0,0,.10)); }
 .wpt-product__image {
   position: relative;
   overflow: hidden;
@@ -319,11 +352,12 @@
   min-width: 48px; height: 48px;
   display: inline-flex; align-items: center; justify-content: center;
   padding-inline: 6px;
-  background: var(--twc-secondary, #d31b27);
+  background: linear-gradient(135deg, var(--twc-secondary, #d31b27), var(--twc-primary));
   color: #fff;
   font-size: 12px;
   font-weight: 800;
   border-radius: 50%;
+  box-shadow: 0 6px 14px rgba(0,0,0,.25);
 }
 
 .wpt-product__details { text-align: center; padding: 14px 6px 4px; }
@@ -425,7 +459,9 @@
   aspect-ratio: 4 / 3;
   object-fit: cover;
   display: block;
+  transition: transform .45s ease;
 }
+.wpt-cat-card:hover img { transform: scale(1.07); }
 .wpt-cat-card span {
   display: block;
   padding: 12px 8px;

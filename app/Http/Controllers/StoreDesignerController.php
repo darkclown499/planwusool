@@ -42,8 +42,17 @@ class StoreDesignerController extends Controller
         $store = resolveStoreQuery(Auth::user())->findOrFail($storeId);
         $user = Auth::user();
 
+        // Real branding so the template preview shows the merchant's own
+        // logo/name instead of placeholder text.
+        $configuration = StoreConfiguration::getConfiguration($store->id);
+
         return Inertia::render('stores/templates', [
             'store' => $store,
+            'storeBranding' => [
+                'name' => $store->name,
+                'logo' => $configuration['logo'] ?? null,
+                'phone' => $configuration['phone_number'] ?? null,
+            ],
             'availableThemes' => $user->getAvailableThemes(),
             'userPlanTier' => $user->plan?->getTier() ?? 'starter',
             'isSuperAdmin' => $user->isSuperAdmin() || $user->isAdmin(),

@@ -4,6 +4,10 @@ import type { WpThemeConfig } from '../types';
 
 interface WpHeaderProps {
   config: WpThemeConfig;
+  /** Real store name — wins over the theme placeholder name. */
+  displayName?: string;
+  /** Real store logo URL — shown instead of the text logo when present. */
+  logoSrc?: string | null;
   cartCount: number;
   onCartClick: () => void;
   whatsappHref?: string;
@@ -14,7 +18,7 @@ interface WpHeaderProps {
  * above a sticky row with logo, menu and round cart button — exactly the
  * structure of the originals' header.php, translated to Arabic.
  */
-export const WpHeader: React.FC<WpHeaderProps> = ({ config, cartCount, onCartClick, whatsappHref }) => {
+export const WpHeader: React.FC<WpHeaderProps> = ({ config, displayName, logoSrc, cartCount, onCartClick, whatsappHref }) => {
   const [open, setOpen] = useState(false);
   const { header } = config;
 
@@ -54,7 +58,11 @@ export const WpHeader: React.FC<WpHeaderProps> = ({ config, cartCount, onCartCli
           </button>
 
           <a className="wpt-logo no-underline" href="#">
-            {config.name}
+            {logoSrc ? (
+              <img src={logoSrc} alt={displayName || config.name} />
+            ) : (
+              displayName || config.name
+            )}
           </a>
 
           <nav className={`wpt-nav ${open ? 'is-open' : ''}`}>

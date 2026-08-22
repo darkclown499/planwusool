@@ -16,21 +16,45 @@ import { StoreSite, TEMPLATES, getTemplateCategories } from '@/builder';
 import { getDemoCatalog } from '@/builder/demo-catalogs';
 import type { BuilderTemplateConfig } from '@/builder/types';
 
-type Props = {
-  store: any;
-  availableThemes?: string[];
-};
+interface StoreBranding {
+  name?: string;
+  logo?: string | null;
+  phone?: string | null;
+}
 
-/** Build a fake store payload so previews render real niche content. */
-const buildDemoStoreData = (tpl: BuilderTemplateConfig) => {
+interface Props {
+  store: any;
+  /** Real merchant branding resolved server-side for realistic previews. */
+  storeBranding?: StoreBranding;
+  availableThemes?: string[];
+}
+
+/** Build a realistic preview payload: the merchant's real branding and
+ *  actual categories/products when present, filled up with niche demo
+ *  content so every template preview always looks fully stocked. */
+const buildPreviewStoreData = (
+  tpl: BuilderTemplateConfig,
+  store: any,
+  branding?: StoreBranding
+) => {
   const catalog = getDemoCatalog(tpl.slug);
+  const realCategories = (store?.categories || []).filter((c: any) => c?.name);
+  const realProducts = (store?.products || []).filter((p: any) => p?.name);
+  const logo = branding?.logo || null;
   return {
-    id: 0,
-    name: `معاينة ${tpl.name}`,
-    slug: 'theme-preview',
-    categories: catalog.categories,
-    products: catalog.products,
-    config: { storeName: tpl.name },
+    id: store?.id ?? 0,
+    name: store?.name || `معاينة ${tpl.name}`,
+    slug: store?.slug || 'theme-preview',
+    logo,
+    categories: realCategories.length ? realCategories : catalog.categories,
+    products: realProducts.length ? realProducts : catalog.products,
+    config: {
+      ...(store?.config || {}),
+      storeName: store?.name || tpl.name,
+      logo,
+      phoneNumber: branding?.phone || undefined,
+      whatsapp_widget_phone: branding?.phone || undefined,
+    },
     content: {},
     offers: [],
     pages: [],
@@ -38,7 +62,7 @@ const buildDemoStoreData = (tpl: BuilderTemplateConfig) => {
   };
 };
 
-export default function StoreThemesGallery({ store }: Props) {
+export default function StoreThemesGallery({ store, storeBranding }: Props) {
   const [applying, setApplying] = useState<string | null>(null);
   const [previewSlug, setPreviewSlug] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('الكل');
@@ -267,7 +291,7 @@ export default function StoreThemesGallery({ store }: Props) {
               <div className="max-h-[78vh] overflow-y-auto bg-slate-50">
                 <StoreSite
                   template={previewTpl.slug}
-                  storeData={buildDemoStoreData(previewTpl)}
+                  storeData={buildPreviewStoreData(previewTpl, store, storeBranding)}
                   mode="home"
                 />
               </div>

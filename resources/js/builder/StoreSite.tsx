@@ -89,9 +89,18 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
 
   // Bespoke ported WordPress themes render their own faithful storefront
   // (original markup/CSS/section order, Arabic copy) instead of the generic
-  // section pipeline. Page/category modes still use the shared chrome below.
+  // section pipeline. Merchant designer tokens and section show/hide
+  // overrides flow through so live edits appear on these themes too.
+  // Page/category modes still use the shared chrome below.
   if (wpTheme && mode === 'home') {
-    return <WpStorefront theme={wpTheme} storeData={storeData} />;
+    return (
+      <WpStorefront
+        theme={wpTheme}
+        storeData={storeData}
+        designTokens={designTokens as BuilderDesignTokens | null | undefined}
+        templateOverrides={templateOverrides}
+      />
+    );
   }
 
   if (!tpl) {
