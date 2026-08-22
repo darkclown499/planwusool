@@ -3,7 +3,7 @@ import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { usePage } from '@inertiajs/react';
-import { Heart, MessageCircle, Minus, PackageCheck, Plus, ShoppingCart, X } from 'lucide-react';
+import { Heart, MessageCircle, Minus, PackageCheck, Plus, Share2, ShoppingCart, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useStorefrontCore } from './contexts';
 
@@ -251,6 +251,18 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
                                 >
                                     <Heart className="h-5 w-5 text-red-500" />
                                 </button>
+                                {/* Share this product on WhatsApp */}
+                                <a
+                                    href={`https://wa.me/?text=${encodeURIComponent(`${product?.name} — ${window.location.origin}/product/${product?.seoUrlSlug || product?.id}`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="شارك المنتج على واتساب"
+                                    title="شارك المنتج على واتساب"
+                                    className="flex h-12 w-12 items-center justify-center rounded-full border text-white transition hover:opacity-90"
+                                    style={{ borderColor: '#25D366', background: '#25D366' }}
+                                >
+                                    <Share2 className="h-5 w-5" />
+                                </a>
                             </div>
                             {whatsappUrl && (
                                 <a

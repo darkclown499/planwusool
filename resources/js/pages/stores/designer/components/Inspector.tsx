@@ -50,8 +50,18 @@ export const Inspector: React.FC<Props> = ({
 
   const meta = section ? getSectionMeta(section.type) : null;
   const sectionProps = section?.props || {};
-  const visibleProps = meta?.props.filter((p) => p.group !== 'behavior') || [];
+  // "أساسي" = everyday content fields (title/image/count). Everything else
+  // (layout/style) plus behavior switches lives in "متقدم".
+  const basicProps = meta?.props.filter((p) => p.group === 'content') || [];
+  const advancedProps = meta?.props.filter((p) => p.group !== 'content' && p.group !== 'behavior') || [];
   const behaviorProps = meta?.props.filter((p) => p.group === 'behavior') || [];
+  const [propTab, setPropTab] = React.useState<'basic' | 'advanced'>('basic');
+
+  React.useEffect(() => {
+    if (section) {
+      setPropTab('basic');
+    }
+  }, [section?.id]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden border-slate-200 bg-white">
@@ -84,29 +94,65 @@ export const Inspector: React.FC<Props> = ({
         {tab === 'section' ? (
           section && meta ? (
             <>
-              {(visibleProps.length || behaviorProps.length) ? (
-                visibleProps.map((prop) => (
-                  <PropField
-                    key={prop.key}
-                    prop={prop}
-                    value={sectionProps[prop.key]}
-                    onChange={onSectionPropChange}
-                    storeCategories={storeCategories}
-                  />
-                ))
-              ) : (
-                <p className="py-6 text-center text-xs text-slate-400">لا توجد خصائص قابلة للتعديل في هذا السيكشن.</p>
-              )}
+              {/* أساسي / متقدم sub-tabs */}
+              <div className="my-3 flex rounded-full bg-slate-100 p-1 text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setPropTab('basic')}
+                  className={`flex-1 rounded-full py-1.5 transition ${propTab === 'basic' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}
+                >
+                  أساسي
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPropTab('advanced')}
+                  className={`flex-1 rounded-full py-1.5 transition ${propTab === 'advanced' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400'}`}
+                >
+                  متقدم
+                </button>
+              </div>
 
-              {behaviorProps.length > 0 && (
+              {propTab === 'basic' ? (
+                basicProps.length ? (
+                  basicProps.map((prop) => (
+                    <PropField
+                      key={prop.key}
+                      prop={prop}
+                      value={sectionProps[prop.key]}
+                      onChange={onSectionPropChange}
+                      storeCategories={storeCategories}
+                    />
+                  ))
+                ) : (
+                  <p className="py-6 text-center text-xs text-slate-400">لا توجد خصائص أساسية لهذا القسم — جرّب تبويب «متقدم».</p>
+                )
+              ) : (
                 <>
-                  <GroupLabel>السلوك</GroupLabel>
-                  {behaviorProps.map((prop) => (
-                    <div key={prop.key} className="mb-3 flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
-                      <span className="text-xs font-bold text-slate-700">{prop.label}</span>
-                      <Toggle checked={sectionProps[prop.key] !== false} onChange={(v) => onSectionPropChange(prop.key, v)} />
-                    </div>
-                  ))}
+                  {advancedProps.length || behaviorProps.length ? (
+                    advancedProps.map((prop) => (
+                      <PropField
+                        key={prop.key}
+                        prop={prop}
+                        value={sectionProps[prop.key]}
+                        onChange={onSectionPropChange}
+                        storeCategories={storeCategories}
+                      />
+                    ))
+                  ) : (
+                    <p className="py-6 text-center text-xs text-slate-400">لا توجد إعدادات متقدمة في هذا القسم.</p>
+                  )}
+
+                  {behaviorProps.length > 0 && (
+                    <>
+                      <GroupLabel>السلوك</GroupLabel>
+                      {behaviorProps.map((prop) => (
+                        <div key={prop.key} className="mb-3 flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2">
+                          <span className="text-xs font-bold text-slate-700">{prop.label}</span>
+                          <Toggle checked={sectionProps[prop.key] !== false} onChange={(v) => onSectionPropChange(prop.key, v)} />
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </>
               )}
             </>

@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Check,
   MessageCircle,
   Heart,
   ShoppingCart,
@@ -7,6 +8,7 @@ import {
   Star,
   StarHalf,
 } from 'lucide-react';
+import { toast } from '@/components/custom-toast';
 import { useStorefrontCore } from '@/templates/storefront';
 import type { BuilderSectionConfig } from '@/builder/types';
 import { formatCurrency } from '@/utils/currency-formatter';
@@ -85,8 +87,31 @@ export const SectionHeading: React.FC<SectionHeadingProps> = ({ title, subtitle,
 };
 
 /* ------------------------------------------------------------------ */
-/* ProductCard                                                         */
+/* ProductCard — the single unified card used across every section.     */
+/* Features: wishlist ❤, quick-add 🛒 with "in cart" state, variant      */
+/* chips (weights/sizes), discount % badge + out-of-stock overlay.      */
 /* ------------------------------------------------------------------ */
+
+/** Normalize product.variants (JSON column) into [{name, values}] pairs. */
+export const variantsOf = (product: any): Array<{ name: string; values: string[] }> => {
+  const raw = product?.variants;
+  if (!raw) return [];
+  let parsed = raw;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .map((v: any) => ({
+      name: String(v?.name || ''),
+      values: (Array.isArray(v?.values) ? v.values : Array.isArray(v?.options) ? v.options : []).map(String).filter(Boolean),
+    }))
+    .filter((v) => v.values.length > 0);
+};
 
 interface ProductCardProps {
   product: any;
@@ -103,6 +128,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
     : 0;
   const inStock = product.stock === null || product.stock === undefined || Number(product.stock) > 0;
   const whatsapp = productWhatsAppUrl(config, product);
+  const inWishlist = wishlist.isInWishlist?.(product.id) ?? false;
+  const inCart = (cart.cartItems || []).some((i: any) => String(i.id) === String(product.id));
+  const variantChips = compact ? [] : variantsOf(product);
+
+  const handleWishlist = async () => {
+    const added = await wishlist.toggle(product.id);
+    if (added !== null && added !== undefined) {
+      toast.success(added ? 'أُضيف إلى المفضلة ❤️' : 'أُزيل من المفضلة');
+    }
+  };
+
+  const handleQuickAdd = () => {
+    if (!inStock) return;
+    cart.addToCart(product);
+  };
 
   return (
     <article
@@ -146,13 +186,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
           className="absolute inset-0 z-[1] cursor-pointer"
           aria-label={product.name}
         />
+        {/* Wishlist heart — filled when saved */}
         <button
           type="button"
-          onClick={() => wishlist.toggle(product.id)}
-          aria-label="المفضلة"
-          className="absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-400 shadow transition hover:text-red-500"
+          onClick={handleWishlist}
+          aria-label={inWishlist ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
+          className={`absolute top-3 left-3 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow transition active:scale-90 ${
+            inWishlist ? 'bg-red-50 text-red-500' : 'bg-white/90 text-slate-400 hover:text-red-500'
+          }`}
         >
-          <Heart className="h-4 w-4" />
+          <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
         </button>
       </div>
 
@@ -170,6 +213,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             <Star className="h-3.5 w-3.5 fill-current" />
             <StarHalf className="h-3.5 w-3.5 fill-current" />
             <span className="text-xs text-slate-400">(4.5)</span>
+          </div>
+        )}
+        {/* Weight/size slices from product variants */}
+        {!compact && variantChips.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {variantChips[0].values.slice(0, 4).map((v) => (
+              <span
+                key={v}
+                className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                style={{ background: `${css('--twc-primary', '#0f8a5f')}12`, color: css('--twc-text-secondary', '#475569') }}
+              >
+                {v}
+              </span>
+            ))}
           </div>
         )}
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
@@ -194,15 +251,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             )}
             <button
               type="button"
-              onClick={() => cart.addToCart(product)}
-              aria-label="أضف للسلة"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:opacity-90 active:scale-95"
-              style={{ background: css('--twc-primary', '#0f8a5f') }}
+              onClick={handleQuickAdd}
+              disabled={!inStock}
+              title={inCart ? 'في سلتك ✓' : 'أضف للسلة'}
+              aria-label={inCart ? 'في سلتك' : 'أضف للسلة'}
+              className={`flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:opacity-90 active:scale-95 ${
+                !inStock ? 'cursor-not-allowed opacity-40' : ''
+              }`}
+              style={{ background: inCart ? css('--twc-secondary', '#16a34a') : css('--twc-primary', '#0f8a5f') }}
             >
-              <ShoppingCart className="h-4 w-4" />
+              {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
             </button>
           </div>
         </div>
+        {inCart && (
+          <p className="text-[11px] font-bold" style={{ color: css('--twc-secondary', '#16a34a') }}>
+            في سلتك ✓
+          </p>
+        )}
       </div>
     </article>
   );
@@ -230,10 +296,11 @@ export const EmptySection: React.FC<{ title?: string; hint?: string }> = ({ titl
 export const sectionDefaults = (type: string): Record<string, any> => {
   const map: Record<string, Record<string, any>> = {
     announcement: { enabled: true, text: '🎉 شحن سريع لجميع مناطق المملكة', link: '' },
-    header: { sticky: true, show_search: true, show_cart: true, show_auth: true, show_whatsapp: true, variant: 'classic' },
+    header: { sticky: true, show_search: true, show_cart: true, show_auth: true, show_whatsapp: true, variant: 'classic', show_nav: true },
     hero: { title: '', subtitle: '', badge: '', image: '', video: '', button_text: 'تسوّق الآن', button_link: '#template-products', layout: 'split', hero_variant: 'split_banner', slides: [], autoplay: true, autoplay_delay: 5000, effect: 'slide', show_dots: true },
     categories: { style: 'cards', show_all: true, columns: 4, category_variant: 'card_pills', selected_categories: [] },
     products: { layout: 'grid', per_page: 12, columns: 4, featured_only: false, section_title: '', product_variant: 'detailed_cards_with_badges' },
+    products_by_category: { section_title: 'تسوّق حسب القسم', per_category: 4, columns: 4, sort_default: 'newest', show_view_all: true },
     offers: { section_title: '', columns: 3 },
     banners: { type: 'single', variant: 'carousel', slides: [] },
     features: { section_title: '', items: [] },

@@ -67,7 +67,9 @@ export function useStorefrontCore() {
     };
 
     const wishlist = useContext(WishlistContext) || {
+        items: [] as any[],
         count: 0,
+        isInWishlist: () => false,
         toggle: async () => false,
     };
 

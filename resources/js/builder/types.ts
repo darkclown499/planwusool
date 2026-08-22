@@ -12,6 +12,7 @@ export type BuilderSectionType =
   | 'hero'
   | 'categories'
   | 'products'
+  | 'products_by_category'
   | 'offers'
   | 'banners'
   | 'features'

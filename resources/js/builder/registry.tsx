@@ -5,6 +5,7 @@ import { HeaderSection } from './sections/Header';
 import { HeroSection } from './sections/Hero';
 import { CategoriesSection } from './sections/Categories';
 import { ProductsSection } from './sections/Products';
+import { ProductsByCategorySection } from './sections/ProductsByCategory';
 import { OffersSection } from './sections/Offers';
 import { BannersSection } from './sections/Banners';
 import { FeaturesSection } from './sections/Features';
@@ -54,6 +55,7 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
       { key: 'show_cart', label: 'إظهار السلة', label_en: 'Show cart', type: 'boolean', default: true, group: 'behavior' },
       { key: 'show_auth', label: 'إظهار الدخول', label_en: 'Show login', type: 'boolean', default: true, group: 'behavior' },
       { key: 'show_whatsapp', label: 'إظهار زر واتساب', label_en: 'Show WhatsApp', type: 'boolean', default: true, group: 'behavior' },
+      { key: 'show_nav', label: 'إظهار شريط الروابط', label_en: 'Show nav bar', type: 'boolean', default: true, group: 'behavior' },
     ],
   },
   hero: {
@@ -150,6 +152,27 @@ const metas: Record<BuilderSectionType, BuilderSectionMeta> = {
       { key: 'per_page', label: 'منتج لكل تحميل', label_en: 'Per page', type: 'number', default: 12, group: 'layout' },
       { key: 'featured_only', label: 'المميزة فقط', label_en: 'Featured only', type: 'boolean', default: false, group: 'content' },
       { key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'منتجاتنا', group: 'content' },
+    ],
+  },
+  products_by_category: {
+    type: 'products_by_category',
+    name: 'منتجات حسب التصنيف',
+    name_en: 'Products by category',
+    group: 'منتجات',
+    group_en: 'Products',
+    icon: 'layers',
+    description: 'منتجات مجمّعة تحت عنوان كل تصنيف مع فرز وزر عرض الكل.',
+    props: [
+      { key: 'section_title', label: 'عنوان القسم', label_en: 'Title', type: 'text', default: 'تسوّق حسب القسم', group: 'content' },
+      { key: 'per_category', label: 'منتجات لكل تصنيف', label_en: 'Products per category', type: 'number', default: 4, group: 'content' },
+      { key: 'show_view_all', label: 'زر «عرض الكل»', label_en: 'View all button', type: 'boolean', default: true, group: 'behavior' },
+      { key: 'sort_default', label: 'الترتيب الافتراضي', label_en: 'Default sort', type: 'select', default: 'newest', group: 'layout', options: [
+          { value: 'newest', label: 'الأحدث' },
+          { value: 'price_asc', label: 'السعر تصاعدياً' },
+          { value: 'price_desc', label: 'السعر تنازلياً' },
+          { value: 'name', label: 'أبجدي' },
+        ] },
+      { key: 'columns', label: 'عدد الأعمدة', label_en: 'Columns', type: 'number', default: 4, group: 'layout' },
     ],
   },
   offers: {
@@ -298,6 +321,7 @@ const components: Record<BuilderSectionType, BuilderSectionComponent> = {
   hero: HeroSection,
   categories: CategoriesSection,
   products: ProductsSection,
+  products_by_category: ProductsByCategorySection,
   offers: OffersSection,
   banners: BannersSection,
   features: FeaturesSection,

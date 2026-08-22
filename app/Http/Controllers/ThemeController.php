@@ -325,7 +325,7 @@ class ThemeController extends Controller
         // Cache key includes theme, locale, and active status for proper isolation.
         // Invalidated automatically when a product is saved/deleted (see
         // Product model boot()).
-        $theme = $store['theme'] ?? 'core-minimal';
+        $theme = $store['theme'] ?? 'classic';
         $locale = $storeData['config']['locale'] ?? 'ar';
         $cacheKey = "store_catalog.{$store['id']}.theme_{$theme}.locale_{$locale}.active_1";
         
@@ -372,6 +372,8 @@ class ThemeController extends Controller
                         return [
                             'id' => (string) $category->id,
                             'name' => $category->name,
+                            'slug' => $category->slug,
+                            'image' => $category->image ?: null,
                             'description' => $category->description,
                             'product_count' => $category->products_count,
                         ];
@@ -381,30 +383,170 @@ class ThemeController extends Controller
         );
 
         // Get currencies (cached for 24h - rarely changes)
-        $currencies = [];
-        if ($storeModel && $storeModel->user) {
-            $currencies = \Illuminate\Support\Facades\Cache::remember(
-                'currencies_all',
-                86400,
-                function () {
-                    return \App\Models\Currency::orderBy('name')->get()->map(function ($currency) {
-                        return [
-                            'code' => $currency->code,
-                            'symbol' => $currency->symbol,
-                            'name' => $currency->name
-                        ];
-                    })->toArray();
-                }
-            );
-        }
+        $currencies = $this->getCurrencies($storeModel);
 
-        $theme = $store['theme'] ?? 'core-minimal';
+        $theme = $store['theme'] ?? 'classic';
 
         // Live template preview: ?theme=<slug>&preview=1 overrides the store's
-        // saved theme so merchants can preview any of the 29 templates without
+        // saved theme so merchants can preview any template without
         // changing their store. The slug is validated against the catalog so an
         // arbitrary query value can never reach the renderer.
         $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
+
+        return Inertia::render('store/dynamic', array_merge(
+            $this->storefrontViewProps($store, $storeData, $storeModel, $theme, $categories, $products, $request),
+            [
+                'showResetModal' => $request ? $request->get('showResetModal', false) : false,
+                'resetToken' => $request ? $request->get('resetToken') : null,
+                'action' => $this->resolveAction(),
+                'wishlistCount' => $this->getWishlistCount($store['id']),
+                'payment_status' => session()->pull('payment_status') ?? (request() ? request()->get('payment_status') : null),
+                'order_number' => session()->pull('order_number') ?? (request() ? request()->get('order_number') : null),
+            ],
+            $this->getCommonData()
+        ));
+    }
+
+    /**
+     * Dedicated category listing page (/category/{slug}).
+     * Independent paginated query — no 300-product hard cap.
+     */
+    public function category($storeSlug, $slug, ?Request $request = null)
+    {
+        $store = $this->getStore($storeSlug, $request);
+        $storeData = $this->getStoreConfig($store);
+        $storeModel = Store::find($store['id']);
+
+        $category = Category::where('store_id', $store['id'])
+            ->where('is_active', true)
+            ->where('slug', $slug)
+            ->first();
+        if (!$category) {
+            abort(404);
+        }
+
+        $theme = $store['theme'] ?? 'classic';
+        $locale = $storeData['config']['locale'] ?? 'ar';
+
+        // Categories for header/nav chrome (same cached payload as home).
+        $categories = \Illuminate\Support\Facades\Cache::remember(
+            "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
+            300,
+            function () use ($store) {
+                return Category::where('store_id', $store['id'])
+                    ->where('is_active', true)
+                    ->whereNull('parent_id')
+                    ->withCount(['products' => function ($query) {
+                        $query->where('is_active', true);
+                    }])
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->get()
+                    ->map(function ($cat) {
+                        return [
+                            'id' => (string) $cat->id,
+                            'name' => $cat->name,
+                            'slug' => $cat->slug,
+                            'image' => $cat->image ?: null,
+                            'description' => $cat->description,
+                            'product_count' => $cat->products_count,
+                        ];
+                    })
+                    ->values();
+            }
+        );
+
+        // Sort whitelist.
+        $sort = $request->get('sort');
+        if (!in_array($sort, ['newest', 'price_asc', 'price_desc', 'name'], true)) {
+            $sort = 'newest';
+        }
+
+        $query = Product::where('store_id', $store['id'])
+            ->where('is_active', true)
+            ->where('category_id', $category->id);
+
+        switch ($sort) {
+            case 'price_asc':
+                $query->orderByRaw('COALESCE(NULLIF(sale_price, 0), price) ASC');
+                break;
+            case 'price_desc':
+                $query->orderByRaw('COALESCE(NULLIF(sale_price, 0), price) DESC');
+                break;
+            case 'name':
+                $query->orderBy('name');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+        }
+
+        $perPage = 12;
+        $paginator = $query->paginate($perPage)->withQueryString();
+
+        $products = collect($paginator->items())
+            ->map(function ($product) {
+                $catalog = $this->formatFullProduct($product);
+                unset($catalog['description'], $catalog['customFields'], $catalog['taxName'], $catalog['taxPercentage']);
+                return $catalog;
+            })
+            ->values();
+
+        $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
+
+        return Inertia::render('store/category', array_merge(
+            $this->storefrontViewProps($store, $storeData, $storeModel, $theme, $categories, $products, $request),
+            [
+                'action' => $this->resolveAction(),
+                'wishlistCount' => $this->getWishlistCount($store['id']),
+                'categoryPage' => [
+                    'category' => [
+                        'id' => (string) $category->id,
+                        'name' => $category->name,
+                        'slug' => $category->slug,
+                        'image' => $category->image ?: null,
+                        'description' => $category->description,
+                        'product_count' => (int) $category->products()->where('is_active', true)->count(),
+                    ],
+                    'total' => $paginator->total(),
+                    'perPage' => $paginator->perPage(),
+                    'currentPage' => $paginator->currentPage(),
+                    'lastPage' => $paginator->lastPage(),
+                    'sort' => $sort,
+                ],
+            ],
+            $this->getCommonData()
+        ));
+    }
+
+    /** Currencies payload shared by storefront views (cached 24h). */
+    private function getCurrencies($storeModel): array
+    {
+        if (!$storeModel || !$storeModel->user) {
+            return [];
+        }
+        return \Illuminate\Support\Facades\Cache::remember(
+            'currencies_all',
+            86400,
+            function () {
+                return \App\Models\Currency::orderBy('name')->get()->map(function ($currency) {
+                    return [
+                        'code' => $currency->code,
+                        'symbol' => $currency->symbol,
+                        'name' => $currency->name
+                    ];
+                })->toArray();
+            }
+        );
+    }
+
+    /**
+     * Shared prop payload for every storefront view (home + category page).
+     * Keeps the two controllers in lockstep so the store chrome renders
+     * identically on both.
+     */
+    private function storefrontViewProps(array $store, array $storeData, $storeModel, string $theme, $categories, $products, ?Request $request = null): array
+    {
+        $currencies = $this->getCurrencies($storeModel);
 
         // Get countries for checkout modal (cached for 24h)
         $countries = \Illuminate\Support\Facades\Cache::remember(
@@ -420,7 +562,7 @@ class ThemeController extends Controller
                 })->toArray();
             }
         );
-        
+
         $props = array_merge([
             'config' => $storeData['config'],
             'categories' => $categories,
@@ -431,12 +573,8 @@ class ThemeController extends Controller
             'storeContent' => $storeModel && $storeModel->exists
                 ? $storeModel->getMergedStoreContent()
                 : [],
-            // Schema-driven theme engine: the store's saved theme.config.json
-            // (or the bundled preset) plus the uploaded banner slides, so an
-            // applied engine theme fully reflects on the live subdomain.
-            'themeConfig' => \App\Services\ThemeConfigService::isEngineTheme($theme)
-                ? ($storeModel->theme_config ?? \App\Services\ThemeConfigService::resolve($theme))
-                : null,
+            // Schema-driven theme engine: retired — always null now.
+            'themeConfig' => null,
             'bannerSlides' => $storeModel && $storeModel->exists
                 ? \App\Services\ThemeConfigService::bannerSlides($storeModel->theme_config)
                     ?: ($storeModel->store_content['banners'] ?? [])
@@ -492,14 +630,7 @@ class ThemeController extends Controller
         $props['userPlanTier'] = $this->planTierFor($ownerPlan);
         $props['isPreview'] = $request ? $request->boolean('preview') : false;
 
-        return Inertia::render('store/dynamic', array_merge($props, [
-            'showResetModal' => $request ? $request->get('showResetModal', false) : false,
-            'resetToken' => $request ? $request->get('resetToken') : null,
-            'action' => $this->resolveAction(),
-            'wishlistCount' => $this->getWishlistCount($store['id']),
-            'payment_status' => session()->pull('payment_status') ?? (request() ? request()->get('payment_status') : null),
-            'order_number' => session()->pull('order_number') ?? (request() ? request()->get('order_number') : null),
-        ], $this->getCommonData()));
+        return $props;
     }
 
     /**

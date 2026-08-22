@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { Head } from '@inertiajs/react';
-import { Loader2, Check, Save, Monitor, Tablet, Smartphone, ExternalLink, XCircle, AlertTriangle, Code2, LayoutGrid, ArrowRight } from 'lucide-react';
+import { Loader2, Check, Save, Monitor, Tablet, Smartphone, ExternalLink, XCircle, AlertTriangle, Code2, LayoutGrid, ArrowRight, Undo2, Redo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiGet, apiPut } from '@/utils/api';
 import { getBuilderTemplate } from '@/builder';
@@ -51,7 +51,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
       // Store categories power the category multi-select editor (Phase 4).
       setCategories(Array.isArray(data.categories) ? data.categories : []);
       skipNextSave.current = true;
-      const themeSlug = data.theme || store.theme || 'zen';
+      const themeSlug = data.theme || store.theme || 'classic';
       const tpl = getBuilderTemplate(themeSlug);
       setTheme(themeSlug);
       setSections(
@@ -178,6 +178,95 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
   }, [isDirty]);
+
+  /* ---- Undo / Redo (step history over theme + sections + tokens) ---- */
+  type DesignerSnapshot = { theme: string; sections: BuilderSectionConfig[]; designTokens: BuilderDesignTokens };
+  const [past, setPast] = useState<DesignerSnapshot[]>([]);
+  const [future, setFuture] = useState<DesignerSnapshot[]>([]);
+  const committedRef = useRef<DesignerSnapshot | null>(null);
+  const restoringRef = useRef(false);
+  const lastEditAt = useRef(0);
+
+  // Record every committed change (bursts within 600ms merge into one step).
+  useEffect(() => {
+    if (!loaded || restoringRef.current) return;
+    const next: DesignerSnapshot = { theme, sections, designTokens };
+    const prev = committedRef.current;
+    if (!prev) {
+      committedRef.current = next;
+      return;
+    }
+    if (JSON.stringify(prev) === JSON.stringify(next)) return;
+    const now = Date.now();
+    const coalesce = now - lastEditAt.current < 600 && lastEditAt.current > 0;
+    if (!coalesce) setPast((p) => [...p.slice(-49), prev]);
+    setFuture([]);
+    lastEditAt.current = now;
+    committedRef.current = next;
+  }, [loaded, theme, sections, designTokens]);
+
+  const applySnapshot = useCallback((snap: DesignerSnapshot) => {
+    restoringRef.current = true;
+    setTheme(snap.theme);
+    setSections(snap.sections.map((s) => ({ ...s, props: { ...s.props } })));
+    setDesignTokens({
+      colors: { ...(snap.designTokens?.colors || {}) },
+      typography: snap.designTokens?.typography ? { ...snap.designTokens.typography } : undefined,
+      radius: snap.designTokens?.radius,
+    });
+    setTimeout(() => {
+      restoringRef.current = false;
+      lastEditAt.current = 0;
+    }, 50);
+  }, []);
+
+  const undo = useCallback(() => {
+    if (!past.length || !committedRef.current) return;
+    const cur = committedRef.current;
+    const prev = past[past.length - 1];
+    committedRef.current = prev;
+    setPast(past.slice(0, -1));
+    setFuture([...future.slice(-49), cur]);
+    applySnapshot(prev);
+  }, [past, future, applySnapshot]);
+
+  const redo = useCallback(() => {
+    if (!future.length || !committedRef.current) return;
+    const cur = committedRef.current;
+    const nextSnap = future[future.length - 1];
+    committedRef.current = nextSnap;
+    setPast([...past.slice(-49), cur]);
+    setFuture(future.slice(0, -1));
+    applySnapshot(nextSnap);
+  }, [past, future, applySnapshot]);
+
+  // Ctrl+Z / Ctrl+Shift+Z (and Ctrl+Y) — ignored while typing in inputs.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      } else if (key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [undo, redo]);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -397,6 +486,31 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
             <ExternalLink className="h-4 w-4" />
             <span className="hidden sm:inline">معاينة المتجر الحية</span>
           </Button>
+          {/* Undo / Redo step history */}
+          <div className="hidden items-center rounded-full border border-slate-200 bg-white shadow-sm sm:flex">
+            <button
+              type="button"
+              onClick={undo}
+              disabled={!past.length}
+              title="تراجع (Ctrl+Z)"
+              aria-label="تراجع"
+              className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:text-slate-300"
+            >
+              <Undo2 className="h-4 w-4" />
+            </button>
+            <span className="h-4 w-px bg-slate-200" />
+            <button
+              type="button"
+              onClick={redo}
+              disabled={!future.length}
+              title="إعادة (Ctrl+Shift+Z)"
+              aria-label="إعادة"
+              className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:text-slate-300"
+            >
+              <Redo2 className="h-4 w-4" />
+            </button>
+          </div>
+
           <Button size="sm" className="h-8 gap-2" onClick={() => persist()} disabled={saveState === 'saving'}>
             {saveState === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             حفظ التغييرات

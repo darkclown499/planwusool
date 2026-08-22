@@ -128,7 +128,7 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
           <div className="grid gap-5 lg:grid-cols-2">
             {featured && (
               <div className="h-full">
-                <DetailedProductCard product={featured} />
+                <ProductCard product={featured} />
               </div>
             )}
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-2">
@@ -215,13 +215,9 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading title={title} subtitle={'أحدث ما وصل حديثاً إلى متجرنا.'} />
         <div className={GRID_COLS[variant === 'compact_grid' ? Math.min(columns, 6) : columns] || GRID_COLS[4]}>
-          {visibleProducts.map((product: any) =>
-            compact ? (
-              <ProductCard key={product.id} product={product} compact />
-            ) : (
-              <DetailedProductCard key={product.id} product={product} />
-            )
-          )}
+          {visibleProducts.map((product: any) => (
+            <ProductCard key={product.id} product={product} compact={compact} />
+          ))}
         </div>
         {filtered.length > visibleCount && (
           <div className="mt-10 text-center">
@@ -238,96 +234,6 @@ export const ProductsSection: React.FC<BuilderSectionProps> = ({ section, storeD
         )}
       </div>
     </section>
-  );
-};
-
-/* Richer card: bigger imagery, badges (sale / out-of-stock / new), description. */
-const DetailedProductCard: React.FC<{ product: any }> = ({ product }) => {
-  const { product: productCtx, cart, config } = useStorefrontCore();
-  const image = getImageUrl(product.image);
-  const hasSale = Number(product.sale_price) > 0 && Number(product.sale_price) < Number(product.price);
-  const saleOff = hasSale ? Math.round(((Number(product.price) - Number(product.sale_price)) / Number(product.price)) * 100) : 0;
-  const inStock = product.stock === null || product.stock === undefined || Number(product.stock) > 0;
-  const isNew = product.is_new === true || product.featured === true;
-  const whatsapp = productWhatsAppUrl(config, product);
-
-  return (
-    <article
-      className="group relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-      style={{ borderColor: css('--twc-border', '#e2e8f0'), borderRadius: css('--twx-radius', '1rem') }}
-    >
-      <button
-        type="button"
-        onClick={() => productCtx.handleProductClick(product)}
-        className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-100 text-start"
-        aria-label={product.name}
-      >
-        {image ? (
-          <img src={image} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-300" />
-        )}
-        <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
-          {hasSale && (
-            <span className="rounded-full px-2.5 py-1 text-[11px] font-bold text-white" style={{ background: css('--twc-danger', '#dc2626') }}>
-              خصم {saleOff}%
-            </span>
-          )}
-          {isNew && (
-            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-emerald-700 shadow ring-1 ring-emerald-100">
-              جديد
-            </span>
-          )}
-        </div>
-        {!inStock && (
-          <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-sm font-bold text-white">
-            نفد المخزون
-          </span>
-        )}
-      </button>
-
-      <div className="flex flex-1 flex-col p-4">
-        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="text-start">
-          <h3 className="line-clamp-1 text-sm font-bold sm:text-base" style={{ color: css('--twc-text-primary', '#0f172a') }}>
-            {product.name}
-          </h3>
-        </button>
-        {product.short_description && (
-          <p className="mt-1 line-clamp-2 text-xs text-slate-500">{product.short_description}</p>
-        )}
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-2 border-t pt-3" style={{ borderColor: css('--twc-border', '#e2e8f0') }}>
-          <div className="flex flex-col">
-            {hasSale && <span className="text-xs text-slate-400 line-through">{priceOf(product)}</span>}
-            <span className="text-lg font-extrabold" style={{ color: css('--twc-primary', '#0f8a5f') }}>
-              {priceOf(product)}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {whatsapp && (
-              <a
-                href={whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="اطلب عبر واتساب"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:opacity-90"
-                style={{ background: '#25D366' }}
-              >
-                <MessageCircle className="h-4 w-4" />
-              </a>
-            )}
-            <button
-              type="button"
-              onClick={() => cart.addToCart(product)}
-              aria-label="أضف للسلة"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:opacity-90 active:scale-95"
-              style={{ background: css('--twc-primary', '#0f8a5f') }}
-            >
-              أضف
-            </button>
-          </div>
-        </div>
-      </div>
-    </article>
   );
 };
 

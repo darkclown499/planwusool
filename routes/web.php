@@ -205,6 +205,9 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // On-demand product details (keeps heavy fields out of the storefront payload)
     Route::get('/product/{product}', [ThemeController::class, 'productDetail'])->name('store.product-detail');
 
+    // Dedicated category listing page with server-side pagination
+    Route::get('/category/{slug}', [ThemeController::class, 'category'])->name('store.category');
+
     // Custom store pages (Professional plan feature): /page/{slug}
     Route::get('/page/{slug}', [ThemeController::class, 'page'])->name('store.page');
 

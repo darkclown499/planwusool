@@ -407,69 +407,97 @@ protected $fillable = [
     }
 
     /**
-     * The 29-template catalog. One core design system branching into seven
-     * free variations, plus premium "ready-made" layouts for Growth (7 more)
-     * and Professional (all 29).
+     * The single-template catalog. One batteries-included Arabic storefront
+     * ("classic") that every store — new or legacy — renders with.
      */
-    public const FREE_TEMPLATES = [
-        'core-minimal', 'core-bold', 'core-sidebar', 'core-dark',
-        'core-bazaar', 'core-elegant', 'core-showcase',
-    ];
+    public const FREE_TEMPLATES = ['classic'];
 
-    public const GROWTH_TEMPLATES = [
-        'growth-electronics', 'growth-fashion', 'growth-food',
-        'growth-cosmetics', 'growth-supermarket', 'growth-home-decor',
-        'growth-pharmacy',
-    ];
+    public const GROWTH_TEMPLATES = [];
 
-    public const PRO_TEMPLATES = [
-        'pro-tech', 'pro-beauty', 'pro-books', 'pro-sport', 'pro-pets',
-        'pro-flowers', 'pro-coffee', 'pro-stationery', 'pro-spices',
-        'pro-clothing', 'pro-fragrances', 'pro-home-tools', 'pro-kids',
-        'pro-sports', 'pro-boutique',
-    ];
+    public const PRO_TEMPLATES = [];
 
     /**
-     * Schema-driven "engine" themes (see resources/js/components/theme).
-     * These are rendered by the ThemeEngine (theme.config.json driven) instead
-     * of the JSON template renderer, but are still valid theme slugs.
+     * Schema-driven "engine" themes are retired: the slugs below normalize to
+     * classic like every other legacy value.
      */
-    public const ENGINE_THEMES = [
-        'market-fast', 'fashion-luxe', 'fresh-produce',
-    ];
+    public const ENGINE_THEMES = [];
 
-    public const ALL_TEMPLATES = [
-        ...self::FREE_TEMPLATES,
-        ...self::GROWTH_TEMPLATES,
-        ...self::PRO_TEMPLATES,
-        ...self::ENGINE_THEMES,
-    ];
+    public const ALL_TEMPLATES = self::FREE_TEMPLATES;
 
-    /** Legacy slugs → canonical core template mapping for one-time migration. */
+    /**
+     * Legacy slugs → classic mapping so old stores migrate automatically with
+     * zero database changes (the value is normalized at read time).
+     */
     public const LEGACY_TEMPLATE_MAP = [
-        'basic' => 'core-minimal',
-        'gadgets' => 'core-bold',
-        'arabic-gadgets' => 'core-bold',
-        'home-decor' => 'core-elegant',
-        'bakery' => 'core-bazaar',
-        'supermarket' => 'core-bazaar',
-        'wefaq' => 'core-sidebar',
+        // new-catalog slugs that existed before the consolidation
+        'zen' => 'classic',
+        'bazaar' => 'classic',
+        'elegant' => 'classic',
+        'ocean' => 'classic',
+        'rose' => 'classic',
+        'fresh' => 'classic',
+        'night' => 'classic',
+        'luxe' => 'classic',
+        // old core templates
+        'core-minimal' => 'classic',
+        'core-bold' => 'classic',
+        'core-sidebar' => 'classic',
+        'core-dark' => 'classic',
+        'core-bazaar' => 'classic',
+        'core-elegant' => 'classic',
+        'core-showcase' => 'classic',
+        // growth
+        'growth-electronics' => 'classic',
+        'growth-fashion' => 'classic',
+        'growth-food' => 'classic',
+        'growth-cosmetics' => 'classic',
+        'growth-supermarket' => 'classic',
+        'growth-home-decor' => 'classic',
+        'growth-pharmacy' => 'classic',
+        // pro
+        'pro-tech' => 'classic',
+        'pro-beauty' => 'classic',
+        'pro-books' => 'classic',
+        'pro-sport' => 'classic',
+        'pro-pets' => 'classic',
+        'pro-flowers' => 'classic',
+        'pro-coffee' => 'classic',
+        'pro-stationery' => 'classic',
+        'pro-spices' => 'classic',
+        'pro-clothing' => 'classic',
+        'pro-fragrances' => 'classic',
+        'pro-home-tools' => 'classic',
+        'pro-kids' => 'classic',
+        'pro-sports' => 'classic',
+        'pro-boutique' => 'classic',
+        // schema-driven engine themes
+        'market-fast' => 'classic',
+        'fashion-luxe' => 'classic',
+        'fresh-produce' => 'classic',
+        // pre-canonic legacy sector slugs
+        'basic' => 'classic',
+        'gadgets' => 'classic',
+        'arabic-gadgets' => 'classic',
+        'home-decor' => 'classic',
+        'bakery' => 'classic',
+        'supermarket' => 'classic',
+        'wefaq' => 'classic',
     ];
 
     /**
      * Normalize a theme/template value into a valid known slug.
-     * Unknown/legacy values map to a canonical core template.
+     * Every known/unknown/legacy value resolves to "classic".
      */
     public static function normalizeThemeSlug(?string $slug): string
     {
         $slug = trim((string) $slug);
         if ($slug === '') {
-            return 'core-minimal';
+            return 'classic';
         }
         if (in_array($slug, self::ALL_TEMPLATES, true)) {
             return $slug;
         }
-        return self::LEGACY_TEMPLATE_MAP[$slug] ?? 'core-minimal';
+        return self::LEGACY_TEMPLATE_MAP[$slug] ?? 'classic';
     }
 
     /**

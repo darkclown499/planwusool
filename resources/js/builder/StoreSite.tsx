@@ -6,6 +6,7 @@ import { canAccessTemplate, getTemplateTierFromPlanName } from './types';
 import type { BuilderDesignTokens, PlanTier } from './types';
 import { CustomSection } from './sections/Custom';
 import { EmptySection, css, sectionDefaults } from './sections/helpers';
+import { CategoryListing, type CategoryPageData } from './CategoryListing';
 
 export interface StoreSiteProps {
   /** Store theme slug (may be legacy/engine — gets normalized). */
@@ -17,8 +18,10 @@ export interface StoreSiteProps {
   userPlanName?: string | null;
   isSuperAdmin?: boolean;
   isPreview?: boolean;
-  mode?: 'home' | 'page';
+  mode?: 'home' | 'page' | 'category';
   page?: any;
+  /** Payload for the dedicated /category/{slug} listing page (mode="category"). */
+  categoryData?: CategoryPageData | null;
 }
 
 /**
@@ -39,6 +42,7 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
   isPreview = false,
   mode = 'home',
   page = null,
+  categoryData = null,
 }) => {
   const slug = useMemo(() => normalizeTemplateSlug(template), [template]);
   const tpl = useMemo(() => getBuilderTemplate(slug), [slug]);
@@ -102,6 +106,36 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
     return (
       <div className="min-h-screen overflow-x-hidden" style={{ ...tokensToStyle(mergedTokens), background: css('--twc-background', '#ffffff'), color: css('--twc-text-primary', '#0f172a') }} dir="rtl">
         <CustomSection section={{ id: '__page__', type: 'custom', enabled: true, order: 0, props: {} }} storeData={storeData} mode="page" page={page} />
+      </div>
+    );
+  }
+
+  // Category listing mode: store chrome (announcement/header) → category
+  // listing (breadcrumb, sort, grid, pagination, WhatsApp share) → footer.
+  if (mode === 'category' && categoryData) {
+    const chromeBefore = sections.filter((sec: any) => ['announcement', 'header'].includes(sec.type));
+    const footer = sections.filter((sec: any) => sec.type === 'footer');
+    return (
+      <div
+        className="min-h-screen overflow-x-hidden"
+        style={{
+          ...tokensToStyle(mergedTokens),
+          background: css('--twc-background', '#ffffff'),
+          color: css('--twc-text-primary', '#0f172a'),
+        }}
+        dir="rtl"
+      >
+        {chromeBefore.map((sec: any) => {
+          const Component = getSectionComponent(sec.type);
+          if (!Component) return null;
+          return <Component key={sec.id} section={sec} storeData={storeData} mode="home" />;
+        })}
+        <CategoryListing categoryPage={categoryData} storeData={storeData} />
+        {footer.map((sec: any) => {
+          const Component = getSectionComponent(sec.type);
+          if (!Component) return null;
+          return <Component key={sec.id} section={sec} storeData={storeData} mode="home" />;
+        })}
       </div>
     );
   }

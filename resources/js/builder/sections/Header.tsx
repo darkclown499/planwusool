@@ -115,20 +115,24 @@ export const HeaderSection: React.FC<BuilderSectionProps> = ({ section, storeDat
     </div>
   );
 
-  const NavBar = ({ centeredNav = false }: { centeredNav?: boolean }) => (
-    <nav className="hidden border-t md:block" style={{ borderColor: css('--twc-border', '#e2e8f0') }}>
-      <div className={`mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 ${centeredNav ? 'justify-center' : ''}`}>
-        <a href="/" className="px-3 py-2.5 text-sm font-semibold" style={{ color: css('--twc-primary', '#0f8a5f') }}>
-          الرئيسية
-        </a>
-        {pages.map((p) => (
-          <a key={p.slug} href={`/page/${p.slug}`} className="px-3 py-2.5 text-sm font-medium transition hover:opacity-75" style={{ color: css('--twc-text-secondary', '#475569') }}>
-            {p.title}
+  const NavBar = ({ centeredNav = false }: { centeredNav?: boolean }) => {
+    // Merchants can hide the links strip entirely (classic single-bar look).
+    if (props.show_nav === false) return null;
+    return (
+      <nav className="hidden border-t md:block" style={{ borderColor: css('--twc-border', '#e2e8f0') }}>
+        <div className={`mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 ${centeredNav ? 'justify-center' : ''}`}>
+          <a href="/" className="px-3 py-2.5 text-sm font-semibold" style={{ color: css('--twc-primary', '#0f8a5f') }}>
+            الرئيسية
           </a>
-        ))}
-      </div>
-    </nav>
-  );
+          {pages.map((p) => (
+            <a key={p.slug} href={`/page/${p.slug}`} className="px-3 py-2.5 text-sm font-medium transition hover:opacity-75" style={{ color: css('--twc-text-secondary', '#475569') }}>
+              {p.title}
+            </a>
+          ))}
+        </div>
+      </nav>
+    );
+  };
 
   /* ---------- Mobile slide-in drawer ---------- */
   const Drawer = drawerOpen ? (

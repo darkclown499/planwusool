@@ -1,6 +1,7 @@
 export * from './types';
 export { StoreSite } from './StoreSite';
 export { StoreSkeleton } from './skeleton';
+export { CategoryListing, type CategoryPageData } from './CategoryListing';
 export {
   TEMPLATES,
   getBuilderTemplate,

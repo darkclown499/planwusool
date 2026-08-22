@@ -49,177 +49,22 @@ class CategorySeeder extends Seeder
     }
 
     /**
-     * Resolve the category blueprint for a store based on its active template.
+     * The single classic-template blueprint: an Arabic local-store catalog
+     * (spices, produce, Arabic sweets, fashion...) backed by real photos
+     * served locally from /images/store.
      */
     private function categoriesForStore($store): array
     {
-        $template = $store->getTemplateSlug();
+        $img = fn (string $name) => "/images/store/{$name}.jpg";
 
-        $demo = fn ($slug, $name, $desc, $sort) => [
-            'name' => $name,
-            'description' => $desc,
-            'image' => '/storage/demo/' . $slug . '.svg',
-            'sort_order' => $sort,
+        return [
+            ['name' => 'عطارة وتوابل', 'description' => 'بهارات وأعشاب وتوابل طازجة بروائحها الأصيلة', 'image' => $img('spices'), 'sort_order' => 1],
+            ['name' => 'الفواكه والخضروات', 'description' => 'خضار وفواكه موسمية طازجة تصل يومياً', 'image' => $img('vegetables'), 'sort_order' => 2],
+            ['name' => 'حلويات عربية', 'description' => 'بقلاوة وكنافة وحلويات شرقية بلمسة أصيلة', 'image' => $img('sweets'), 'sort_order' => 3],
+            ['name' => 'أزياء وملابس', 'description' => 'ملابس وأزياء عصرية لكل أفراد العائلة', 'image' => $img('clothes'), 'sort_order' => 4],
+            ['name' => 'قهوة وأعشاب', 'description' => 'قهوة مختصة وأعشاب طبيعية ومحمصات فاخرة', 'image' => $img('coffee'), 'sort_order' => 5],
+            ['name' => 'مخبز ومعجنات', 'description' => 'خبز ومعجنات تخرج من الفرن مباشرة إليك', 'image' => $img('bakery'), 'sort_order' => 6],
+            ['name' => 'ألبان وأجبان', 'description' => 'ألبان وأجبان طازجة يومياً', 'image' => $img('dairy'), 'sort_order' => 7],
         ];
-
-        // Legacy themes are still supported (e.g. stores created before the
-        // template system). New templates get a fresh blueprint below.
-        $legacy = [
-            'gadgets' => [
-                ['name' => 'Mobile Accessories', 'description' => 'Phone cases, screen protectors, chargers, and mobile device accessories', 'image' => 'https://images.unsplash.com/photo-265093?w=800&h=800&fit=crop&crop=center', 'sort_order' => 1],
-                ['name' => 'Audio Devices', 'description' => 'Headphones, earbuds, speakers, and premium audio equipment', 'image' => 'https://images.unsplash.com/photo-127806?w=800&h=800&fit=crop&crop=center', 'sort_order' => 2],
-                ['name' => 'Wearable Tech', 'description' => 'Smartwatches, fitness trackers, and wearable technology devices', 'image' => 'https://images.unsplash.com/photo-388606?w=800&h=800&fit=crop&crop=center', 'sort_order' => 3],
-                ['name' => 'Power & Charging', 'description' => 'Power banks, wireless chargers, cables, and charging accessories', 'image' => 'https://images.unsplash.com/photo-001785?w=800&h=800&fit=crop&crop=center', 'sort_order' => 4],
-                ['name' => 'Computer Accessories', 'description' => 'Keyboards, mice, webcams, and computer peripheral devices', 'image' => 'https://images.unsplash.com/photo-627747?w=800&h=800&fit=crop&crop=center', 'sort_order' => 5],
-            ],
-            'fashion' => [
-                ['name' => "Men's Fashion", 'description' => 'Stylish clothing, shirts, pants, jackets, and casual wear for men', 'image' => 'https://images.unsplash.com/photo-287696?w=800&h=800&fit=crop&crop=center', 'sort_order' => 1],
-                ['name' => "Women's Fashion", 'description' => 'Trendy dresses, tops, bottoms, and outerwear for women', 'image' => 'https://images.unsplash.com/photo-378093?w=800&h=800&fit=crop&crop=center', 'sort_order' => 2],
-                ['name' => "Kid's Fashion", 'description' => 'Comfortable and stylish clothing for children and toddlers', 'image' => 'https://images.unsplash.com/photo-782147?w=800&h=800&fit=crop&crop=center', 'sort_order' => 3],
-                ['name' => 'Footwear', 'description' => 'Designer shoes, sneakers, boots, and sandals for all occasions', 'image' => 'https://images.unsplash.com/photo-964514?w=800&h=800&fit=crop&crop=center', 'sort_order' => 4],
-                ['name' => 'Accessories', 'description' => 'Bags, jewelry, watches, and fashion accessories', 'image' => 'https://images.unsplash.com/photo-993109?w=800&h=800&fit=crop&crop=center', 'sort_order' => 5],
-            ],
-            'home-decor' => [
-                ['name' => 'Wall Decor', 'description' => 'Wall art, mirrors, frames, and decorative wall accessories', 'image' => 'https://images.unsplash.com/photo-719332?w=800&h=800&fit=crop&crop=center', 'sort_order' => 1],
-                ['name' => 'Lighting & Lamps', 'description' => 'Table lamps, floor lamps, ceiling lights, and lighting fixtures', 'image' => 'https://images.unsplash.com/photo-160538?w=800&h=800&fit=crop&crop=center', 'sort_order' => 2],
-                ['name' => 'Home Furnishings', 'description' => 'Cushions, curtains, rugs, and soft furnishing accessories', 'image' => 'https://images.unsplash.com/photo-992029?w=800&h=800&fit=crop&crop=center', 'sort_order' => 3],
-                ['name' => 'Decorative Accents', 'description' => 'Vases, candles, sculptures, and decorative home accessories', 'image' => 'https://images.unsplash.com/photo-306443?w=800&h=800&fit=crop&crop=center', 'sort_order' => 4],
-                ['name' => 'Storage & Organizers', 'description' => 'Storage boxes, baskets, shelving, and organization solutions', 'image' => 'https://images.unsplash.com/photo-445376?w=800&h=800&fit=crop&crop=center', 'sort_order' => 5],
-            ],
-            'bakery' => [
-                ['name' => 'Cakes', 'description' => 'Custom cakes, birthday cakes, celebration cakes, and specialty desserts', 'image' => 'https://images.unsplash.com/photo-215700?w=800&h=800&fit=crop&crop=center', 'sort_order' => 1],
-                ['name' => 'Pastries', 'description' => 'Flaky pastries, croissants, danishes, and morning treats', 'image' => 'https://images.unsplash.com/photo-971795?w=800&h=800&fit=crop&crop=center', 'sort_order' => 2],
-                ['name' => 'Breads & Loaves', 'description' => 'Artisan breads, baguettes, sourdough, and daily fresh loaves', 'image' => 'https://images.unsplash.com/photo-406138?w=800&h=800&fit=crop&crop=center', 'sort_order' => 3],
-                ['name' => 'Cookies & Biscuits', 'description' => 'Homemade cookies, biscuits, macarons, and sweet treats', 'image' => 'https://images.unsplash.com/photo-766371?w=800&h=800&fit=crop&crop=center', 'sort_order' => 4],
-                ['name' => 'Savory Bakes', 'description' => 'Savory pies, quiches, sandwiches, and baked snacks', 'image' => 'https://images.unsplash.com/photo-418428?w=800&h=800&fit=crop&crop=center', 'sort_order' => 5],
-            ],
-            'supermarket' => [
-                ['name' => 'Fruits & Vegetables', 'description' => 'Fresh fruits, vegetables, herbs, and organic produce', 'image' => 'https://images.unsplash.com/photo-801377?w=800&h=800&fit=crop&crop=center', 'sort_order' => 1],
-                ['name' => 'Dairy & Eggs', 'description' => 'Milk, cheese, yogurt, eggs, and dairy products', 'image' => 'https://images.unsplash.com/photo-716874?w=800&h=800&fit=crop&crop=center', 'sort_order' => 2],
-                ['name' => 'Grocery & Staples', 'description' => 'Canned goods, pasta, rice, oils, and cooking essentials', 'image' => 'https://images.unsplash.com/photo-077360?w=800&h=800&fit=crop&crop=center', 'sort_order' => 3],
-                ['name' => 'Snacks & Beverages', 'description' => 'Snacks, drinks, beverages, and refreshments', 'image' => 'https://images.unsplash.com/photo-962030?w=800&h=800&fit=crop&crop=center', 'sort_order' => 4],
-                ['name' => 'Household & Personal Care', 'description' => 'Cleaning supplies, personal care, and household necessities', 'image' => 'https://images.unsplash.com/photo-376880?w=800&h=800&fit=crop&crop=center', 'sort_order' => 5],
-            ],
-            'car-accessories' => [
-                ['name' => 'Interior Accessories', 'description' => 'Seat covers, floor mats, organizers, and comfort items', 'image' => 'https://images.unsplash.com/photo-597918?w=800&h=800&fit=crop&crop=center', 'sort_order' => 1],
-                ['name' => 'Exterior Accessories', 'description' => 'Body kits, lights, mirrors, and exterior styling accessories', 'image' => 'https://images.unsplash.com/photo-045738?w=800&h=800&fit=crop&crop=center', 'sort_order' => 2],
-                ['name' => 'Car Electronics', 'description' => 'Audio systems, navigation, dash cams, and electronic accessories', 'image' => 'https://images.unsplash.com/photo-452255?w=800&h=800&fit=crop&crop=center', 'sort_order' => 3],
-                ['name' => 'Safety & Security', 'description' => 'Alarms, locks, safety equipment, and security accessories', 'image' => 'https://images.unsplash.com/photo-563050?w=800&h=800&fit=crop&crop=center', 'sort_order' => 4],
-                ['name' => 'Cleaning & Maintenance', 'description' => 'Car wash supplies, wax, cleaners, and maintenance products', 'image' => 'https://images.unsplash.com/photo-495047?w=800&h=800&fit=crop&crop=center', 'sort_order' => 5],
-            ],
-            'toy' => [
-                ['name' => 'Soft Toys & Plush', 'description' => 'Cuddly soft toys, plush animals, teddy bears, and comfort toys', 'image' => 'https://images.unsplash.com/photo-376028?w=800&h=800&fit=crop&crop=center', 'sort_order' => 1],
-                ['name' => 'Educational Toys', 'description' => 'Learning toys, STEM kits, puzzles, and brain development games', 'image' => 'https://images.unsplash.com/photo-259944?w=800&h=800&fit=crop&crop=center', 'sort_order' => 2],
-                ['name' => 'Action Figures & Playsets', 'description' => 'Action figures, playsets, collectibles, and adventure toys', 'image' => 'https://images.unsplash.com/photo-235329?w=800&h=800&fit=crop&crop=center', 'sort_order' => 3],
-                ['name' => 'Outdoor & Sports Toys', 'description' => 'Outdoor toys, sports equipment, bikes, and active play items', 'image' => 'https://images.unsplash.com/photo-571126?w=800&h=800&fit=crop&crop=center', 'sort_order' => 4],
-                ['name' => 'Electronic & Remote Toys', 'description' => 'Electronic toys, remote control vehicles, and interactive gadgets', 'image' => 'https://images.unsplash.com/photo-995403?w=800&h=800&fit=crop&crop=center', 'sort_order' => 5],
-            ],
-        ];
-
-        if (isset($legacy[$template])) {
-            return $legacy[$template];
-        }
-
-        $new = [
-            'books' => [
-                $demo('cat-books', 'Fiction & Literature', 'Novels and literary works selected with care', 1),
-                $demo('cat-books', 'Self Development', 'Growth, philosophy and personal development books', 2),
-                $demo('cat-books', 'Science & History', 'Richly illustrated science and history references', 3),
-            ],
-            'coffee-shop' => [
-                $demo('cat-coffee', 'Hot Drinks', 'Espresso, specialty coffee and hot beverages', 1),
-                $demo('cat-coffee', 'Cold Drinks', 'Iced coffee, cold brew and refreshers', 2),
-                $demo('cat-coffee', 'Fresh Pastries', 'Croissants and baked goods from our own kitchen', 3),
-            ],
-            'pharmacy' => [
-                $demo('cat-pharmacy', 'Vitamins & Supplements', 'Trusted daily supplements and vitamins', 1),
-                $demo('cat-pharmacy', 'Skin Care', 'Gentle, effective skincare products', 2),
-                $demo('cat-pharmacy', 'Medical Devices', 'Home health devices and measuring tools', 3),
-            ],
-            'pet-store' => [
-                $demo('cat-pets', 'Pet Food', 'Balanced premium food for dogs and cats', 1),
-                $demo('cat-pets', 'Toys & Play', 'Fun and durable toys for your furry friend', 2),
-                $demo('cat-pets', 'Bedding & Comfort', 'Cozy beds and comfort accessories', 3),
-            ],
-            'perfumes' => [
-                $demo('cat-perfumes', 'Men Fragrances', 'Rich masculine scents that last all day', 1),
-                $demo('cat-perfumes', 'Women Fragrances', 'Elegant floral and oriental perfumes', 2),
-                $demo('cat-perfumes', 'Gift Sets', 'Curated fragrance gift collections', 3),
-            ],
-            'flowers-gifts' => [
-                $demo('cat-flowers', 'Bouquets', 'Fresh flowers arranged by hand daily', 1),
-                $demo('cat-flowers', 'Gifts', 'Thoughtful gifts for every occasion', 2),
-                $demo('cat-flowers', 'Plants', 'Easy-care indoor plants and greenery', 3),
-            ],
-            'home-tools' => [
-                $demo('cat-home-tools', 'Hand Tools', 'Durable hand tools for every job', 1),
-                $demo('cat-home-tools', 'Power Tools', 'Reliable power tools for workshops', 2),
-                $demo('cat-home-tools', 'Safety & Hardware', 'Safety gear and hardware supplies', 3),
-            ],
-            'handcrafted' => [
-                $demo('cat-handcrafted', 'Woven & Textile', 'Hand-woven baskets and textiles', 1),
-                $demo('cat-handcrafted', 'Pottery & Ceramics', 'Artisan pottery and glazed ceramics', 2),
-                $demo('cat-handcrafted', 'Wood Crafts', 'Hand-carved wooden pieces', 3),
-            ],
-            'grocery-delivery' => [
-                $demo('cat-grocery', 'Fresh Produce', 'Daily-picked fruits and vegetables', 1),
-                $demo('cat-grocery', 'Dairy & Eggs', 'Fresh dairy, eggs and breakfast staples', 2),
-                $demo('cat-grocery', 'Pantry Staples', 'Oils, grains and everyday essentials', 3),
-            ],
-            'stationery' => [
-                $demo('cat-stationery', 'Pens & Writing', 'Smooth writing instruments', 1),
-                $demo('cat-stationery', 'Notebooks', 'Premium notebooks and journals', 2),
-                $demo('cat-stationery', 'Art Supplies', 'Colors, paints and creative tools', 3),
-            ],
-            'electronics-pro' => [
-                $demo('cat-electronics-pro', 'Computers', 'High-performance laptops and desktops', 1),
-                $demo('cat-electronics-pro', 'Displays & Audio', 'Professional 4K displays and audio', 2),
-                $demo('cat-electronics-pro', 'Cameras', 'Cameras and video equipment for creators', 3),
-            ],
-            'luxury-jewelry' => [
-                $demo('cat-jewelry', 'Rings', 'Fine gold and diamond rings', 1),
-                $demo('cat-jewelry', 'Necklaces', 'Elegant necklaces and pendants', 2),
-                $demo('cat-jewelry', 'Bracelets', 'Hand-finished bracelets and bangles', 3),
-            ],
-            'luxury-watches' => [
-                $demo('cat-watches', 'Classic Watches', 'Timeless classic timepieces', 1),
-                $demo('cat-watches', 'Sports Watches', 'Durable watches built for action', 2),
-                $demo('cat-watches', 'Limited Edition', 'Exclusive limited runs', 3),
-            ],
-            'b2b-wholesale' => [
-                $demo('cat-b2b', 'Packaging', 'Bulk packaging supplies for businesses', 1),
-                $demo('cat-b2b', 'Office Bulk', 'Office essentials in wholesale quantities', 2),
-                $demo('cat-b2b', 'Business Supplies', 'Commercial supplies and equipment', 3),
-            ],
-            'sports' => [
-                $demo('cat-sports', 'Football & Balls', 'Match-grade balls and equipment', 1),
-                $demo('cat-sports', 'Fitness', 'Home and gym fitness gear', 2),
-                $demo('cat-sports', 'Athletic Wear', 'Performance sportswear', 3),
-            ],
-            'beauty-premium' => [
-                $demo('cat-beauty', 'Skincare Rituals', 'Rituals for every skin type', 1),
-                $demo('cat-beauty', 'Makeup', 'Premium makeup collection', 2),
-                $demo('cat-beauty', 'Hair Care', 'Nourishing hair care formulas', 3),
-            ],
-            'fashion-premium' => [
-                $demo('cat-fashion', 'Dresses', 'Editorial dresses and evening wear', 1),
-                $demo('cat-fashion', 'Outerwear', 'Tailored coats and jackets', 2),
-                $demo('cat-fashion', 'Accessories', 'Refined accessories and bags', 3),
-            ],
-            'food-premium' => [
-                $demo('cat-restaurant', 'Main Courses', 'Chef signature main courses', 1),
-                $demo('cat-restaurant', 'Starters', 'Refined appetizers and starters', 2),
-                $demo('cat-restaurant', 'Desserts', 'Artisanal desserts and sweets', 3),
-            ],
-        ];
-
-        // Templates without a dedicated blueprint fall back to a general set.
-        $general = [
-            $demo('cat-electronics', 'Featured Products', 'Hand-picked bestsellers for this store', 1),
-            $demo('cat-electronics', 'New Arrivals', 'The latest products in our catalog', 2),
-            $demo('cat-home', 'Best Sellers', 'Customer favourites this month', 3),
-        ];
-
-        return $new[$template] ?? $general;
     }
 }
