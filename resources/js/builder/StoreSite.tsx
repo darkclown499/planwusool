@@ -7,6 +7,8 @@ import type { BuilderDesignTokens, PlanTier } from './types';
 import { CustomSection } from './sections/Custom';
 import { EmptySection, css, sectionDefaults } from './sections/helpers';
 import { CategoryListing, type CategoryPageData } from './CategoryListing';
+import { getWpTheme } from '@/themes/wp/configs';
+import { WpStorefront } from '@/themes/wp/WpStorefront';
 
 export interface StoreSiteProps {
   /** Store theme slug (may be legacy/engine — gets normalized). */
@@ -45,6 +47,7 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
   categoryData = null,
 }) => {
   const slug = useMemo(() => normalizeTemplateSlug(template), [template]);
+  const wpTheme = useMemo(() => getWpTheme(slug), [slug]);
   const tpl = useMemo(() => getBuilderTemplate(slug), [slug]);
 
   const mergedTokens = useMemo(
@@ -83,6 +86,13 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
       .filter((sec: any) => !!getSectionComponent(sec.type))
       .sort((a: any, b: any) => a.order - b.order);
   }, [tpl, templateOverrides]);
+
+  // Bespoke ported WordPress themes render their own faithful storefront
+  // (original markup/CSS/section order, Arabic copy) instead of the generic
+  // section pipeline. Page/category modes still use the shared chrome below.
+  if (wpTheme && mode === 'home') {
+    return <WpStorefront theme={wpTheme} storeData={storeData} />;
+  }
 
   if (!tpl) {
     return (
