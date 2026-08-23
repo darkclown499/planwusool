@@ -628,3 +628,224 @@
   .wpt-reveal { opacity: 1; transform: none; transition: none; }
   .wpt-slide.is-active { animation: none; }
 }
+
+/* =====================================================================
+ * «أناقة» (ecommerce-clothing) — Minimog-style boutique skin.
+ * Modeled on ilaboutique.com: blush #F6D7D5 buttons with black text,
+ * pure-black typography, hairline #ededed borders, square-ish corners,
+ * portrait product shots with a full-width slide-up cart bar, circle
+ * category tiles, underline tabs and white caption cards on the slider.
+ * Scoped strictly under [data-theme='ecommerce-clothing'] so no other
+ * template shares these shapes.
+ * ===================================================================== */
+
+[data-theme='ecommerce-clothing'] {
+  --anaqa-blush: var(--twc-primary, #f6d7d5);
+  --anaqa-blush-deep: #e9bcb8;
+  --anaqa-line: var(--twc-border, #ededed);
+}
+
+/* ------------------------------------------------- buttons (blush→ink) */
+[data-theme='ecommerce-clothing'] .wpt-btn {
+  color: #000 !important;
+  background: var(--anaqa-blush);
+  border-radius: 4px;
+  padding: 10px 38px;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+[data-theme='ecommerce-clothing'] .wpt-btn:hover {
+  background: #000;
+  color: #fff !important;
+  filter: none;
+}
+[data-theme='ecommerce-clothing'] .wpt-btn--ghost {
+  border: 1px solid #000;
+  color: #000 !important;
+}
+[data-theme='ecommerce-clothing'] .wpt-btn--ghost:hover {
+  background: var(--anaqa-blush);
+  border-color: var(--anaqa-blush-deep);
+  color: #000 !important;
+}
+
+/* ---------------------------------------------------- topbar & header */
+[data-theme='ecommerce-clothing'] .wpt-topbar {
+  background: var(--anaqa-blush);
+  color: rgba(0,0,0,.78);
+  letter-spacing: .2px;
+}
+[data-theme='ecommerce-clothing'] .wpt-topbar a { color: rgba(0,0,0,.78); }
+[data-theme='ecommerce-clothing'] .wpt-topbar a:hover { color: #000; }
+[data-theme='ecommerce-clothing'] .wpt-header {
+  box-shadow: none;
+  border-bottom: 1px solid var(--anaqa-line);
+}
+[data-theme='ecommerce-clothing'] .wpt-logo { font-weight: 800; letter-spacing: 1px; }
+[data-theme='ecommerce-clothing'] .wpt-nav a {
+  position: relative;
+  padding-block: 6px;
+}
+[data-theme='ecommerce-clothing'] .wpt-nav a::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0; bottom: 0;
+  height: 2px;
+  background: var(--anaqa-blush-deep);
+  transform: scaleX(0);
+  transition: transform .25s ease;
+}
+[data-theme='ecommerce-clothing'] .wpt-nav a:hover::after { transform: scaleX(1); }
+[data-theme='ecommerce-clothing'] .wpt-cart-count { background: #000; }
+
+/* ------------------------------------------------------- slider cards */
+[data-theme='ecommerce-clothing'] .wpt-slide::before { display: none; }
+[data-theme='ecommerce-clothing'] .wpt-slide__box {
+  max-width: 46%;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(6px);
+  padding: 34px 38px;
+  border-radius: 4px;
+  border: 1px solid rgba(237,237,237,.9);
+}
+[data-theme='ecommerce-clothing'] .wpt-slide__title,
+[data-theme='ecommerce-clothing'] .wpt-slide__text { color: #000; }
+[data-theme='ecommerce-clothing'] .wpt-slide__text { color: rgba(0,0,0,.72); }
+[data-theme='ecommerce-clothing'] .wpt-arrow {
+  background: #fff;
+  border: 1px solid var(--anaqa-line);
+  color: #000;
+}
+[data-theme='ecommerce-clothing'] .wpt-arrow:hover {
+  background: var(--anaqa-blush);
+  border-color: var(--anaqa-blush-deep);
+  color: #000;
+}
+[data-theme='ecommerce-clothing'] .wpt-dot { background: rgba(0,0,0,.28); }
+[data-theme='ecommerce-clothing'] .wpt-dot.is-active { background: #000; }
+
+/* ------------------------------------------------------- section head */
+[data-theme='ecommerce-clothing'] .wpt-section__head h2 {
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+[data-theme='ecommerce-clothing'] .wpt-hr {
+  width: 46px;
+  height: 2px;
+  background: #000;
+  opacity: .85;
+}
+
+/* -------------------------------------------------- product cards */
+[data-theme='ecommerce-clothing'] .wpt-product {
+  background: #fff;
+  border: 1px solid var(--anaqa-line);
+  border-radius: 4px;
+}
+[data-theme='ecommerce-clothing'] .wpt-product:hover {
+  transform: none;
+  filter: none;
+  box-shadow: 0 10px 24px rgba(0,0,0,.07);
+}
+[data-theme='ecommerce-clothing'] .wpt-product__image {
+  border-radius: 3px 3px 0 0;
+}
+[data-theme='ecommerce-clothing'] .wpt-product__image img {
+  aspect-ratio: 3 / 4;
+}
+/* Minimog signature: zoom stays vivid — no whitewash fade */
+[data-theme='ecommerce-clothing'] .wpt-product:hover .wpt-product__image img {
+  transform: scale(1.06);
+  opacity: 1;
+}
+/* full-width ink cart bar sliding over the image bottom */
+[data-theme='ecommerce-clothing'] .wpt-product__cart {
+  bottom: 0;
+  transform: translateY(100%);
+}
+[data-theme='ecommerce-clothing'] .wpt-product:hover .wpt-product__cart,
+[data-theme='ecommerce-clothing'] .wpt-product:focus-within .wpt-product__cart {
+  transform: translateY(0);
+}
+[data-theme='ecommerce-clothing'] .wpt-product__cart button {
+  width: 100%;
+  justify-content: center;
+  background: #000;
+  color: #fff;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 12px 18px;
+}
+[data-theme='ecommerce-clothing'] .wpt-product__cart button:hover {
+  color: #fff;
+  background: var(--anaqa-blush-deep);
+  filter: none;
+}
+/* sale label = small ink rectangle, top-start */
+[data-theme='ecommerce-clothing'] .wpt-onsale {
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+  top: 0;
+  min-width: 54px;
+  height: 30px;
+  border-radius: 0 0 4px 0;
+  background: #000;
+  color: #fff;
+  box-shadow: none;
+  font-size: 12px;
+}
+[data-theme='ecommerce-clothing'] .wpt-product__details { text-align: center; }
+[data-theme='ecommerce-clothing'] .wpt-product__name:hover { color: #000; text-decoration: underline; text-underline-offset: 3px; }
+[data-theme='ecommerce-clothing'] .wpt-product__price ins { color: inherit; }
+
+/* --------------------------------------------------- underline tabs */
+[data-theme='ecommerce-clothing'] .wpt-tabs { gap: 26px; }
+[data-theme='ecommerce-clothing'] .wpt-tab {
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  padding: 8px 4px;
+  font-weight: 700;
+  color: rgba(0,0,0,.55);
+}
+[data-theme='ecommerce-clothing'] .wpt-tab:hover { color: #000; }
+[data-theme='ecommerce-clothing'] .wpt-tab.is-active {
+  background: transparent;
+  border-bottom-color: var(--anaqa-blush-deep);
+  color: #000;
+}
+
+/* ------------------------------------- category circles (تصنيفات) */
+[data-theme='ecommerce-clothing'] .wpt-cats-box {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+[data-theme='ecommerce-clothing'] .wpt-circle img {
+  border-color: var(--anaqa-line);
+}
+[data-theme='ecommerce-clothing'] .wpt-circle:hover img {
+  border-color: var(--anaqa-blush-deep);
+  transform: scale(1.05);
+}
+[data-theme='ecommerce-clothing'] .wpt-circle span {
+  font-weight: 700;
+  color: #000;
+}
+
+/* ------------------------------------------------------ services row */
+[data-theme='ecommerce-clothing'] .wpt-services {
+  border-block: 1px solid var(--anaqa-line);
+}
+[data-theme='ecommerce-clothing'] .wpt-service__icon {
+  background: var(--anaqa-blush);
+  color: #000;
+}
+
+/* ------------------------------------------------------ testimonials */
+[data-theme='ecommerce-clothing'] .wpt-testimonial {
+  border-radius: 4px;
+  background: #fff;
+}
+[data-theme='ecommerce-clothing'] .wpt-testimonial__avatar { border-color: var(--anaqa-blush); }

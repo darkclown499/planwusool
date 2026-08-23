@@ -54,6 +54,7 @@ const FONT_PLEX = "'IBM Plex Sans Arabic', 'Tajawal', ui-sans-serif, system-ui, 
 const FONT_BALOO = "'Baloo Bhaijaan 2', 'Tajawal', ui-sans-serif, system-ui, sans-serif";
 const FONT_AMIRI_BODY = "'Cairo', 'Tajawal', ui-sans-serif, system-ui, sans-serif";
 const FONT_AMIRI_HEADING = "'Amiri', 'Cairo', serif";
+const FONT_ZAIN = "'Zain', 'IBM Plex Sans Arabic', 'Tajawal', ui-sans-serif, system-ui, sans-serif";
 
 const tokens = (
   colors: Record<string, string>,
@@ -422,13 +423,15 @@ const ECOMMERCE_MEGA_STORE: BuilderTemplateConfig = {
 };
 
 /* ---------------------------------------------------------------- 7 */
-/* ecommerce-clothing shares marketplace's palette (#11248f/#c4ec26);
-   ships no frontpage.php → standard shop grid after the slider         */
+/* «أناقة» — Minimog-style boutique modeled on ilaboutique.com:
+   blush #f6d7d5 buttons with black text, pure-black type on white,
+   hairline #ededed borders, portrait product cards, circle categories.
+   Unique shapes live in the [data-theme='ecommerce-clothing'] skin.  */
 const ECOMMERCE_CLOTHING: BuilderTemplateConfig = {
   slug: 'ecommerce-clothing',
   name: 'أناقة',
   name_en: 'Elegance',
-  description: 'قالب الملابس بالأزرق الملكي والليموني: سلايدر أزياء عريض وشبكة متجر أنيقة لتشكيلات الموسم.',
+  description: 'بوتيك أنثوي فاخر بلمسة وردية هادئة وأسود أنيق: سلايدر صور كامل، تصنيفات دائرية، الأكثر مبيعاً وأحدث التشكيلات — على طريقة متاجر الموضة العالمية.',
   category: 'ملابس',
   is_free: true,
   plan_required: 'starter',
@@ -438,26 +441,43 @@ const ECOMMERCE_CLOTHING: BuilderTemplateConfig = {
       hero_variant: 'slider_full',
       title: 'تشكيلة الموسم الجديدة',
       subtitle: 'قطع مختارة بعناية تعكس ذوقك الرفيع — إصدار محدود.',
-      image: STORE_MEDIA.clothes,
-      button_text: 'استعرض التشكيلة',
+      image: '/themes/ecommerce-clothing/slider-1.jpg',
+      button_text: 'اكتشفي التشكيلة',
       button_link: '#template-products',
-      overlay_opacity: 0.55,
+      overlay_opacity: 0.35,
       slides: [
-        { title: 'إطلالات المساء', subtitle: 'فساتين سهرة بتفاصيل استثنائية', image: STORE_MEDIA.clothes, button_text: 'اكتشفي السهرة', button_link: '#template-products' },
+        { title: 'إطلالات المساء', subtitle: 'فساتين سهرة بتفاصيل استثنائية', image: '/themes/ecommerce-clothing/slider-2.jpg', button_text: 'اكتشفي السهرة', button_link: '#template-products' },
+        { title: 'أساسيات كل يوم', subtitle: 'قطع مريحة بأناقة لا تُقاوم', image: '/themes/ecommerce-clothing/slider-3.jpg', button_text: 'تسوقي الآن', button_link: '#template-products' },
       ],
     }),
-    s('products', 3, {
-      product_variant: 'detailed_cards_with_badges',
-      section_title: 'وصل حديثاً',
+    s('categories', 3, {
+      category_variant: 'circle_pills',
       columns: 4,
-    }),
-    s('categories', 4, {
-      category_variant: 'minimalist_overlay',
-      columns: 4,
-      section_title: 'الأقسام',
+      section_title: 'جميع التصنيفات',
       show_all: false,
     }),
-    s('reviews', 5, {
+    s('products', 4, {
+      product_variant: 'detailed_cards_with_badges',
+      section_title: 'الأكثر مبيعاً',
+      columns: 4,
+    }),
+    s('products_by_category', 5, {
+      section_title: 'تسوقي حسب قسمك المفضل',
+      per_category: 4,
+      columns: 4,
+      sort_default: 'newest',
+      show_view_all: true,
+    }),
+    s('features', 6, {
+      section_title: '',
+      items: [
+        { icon: 'tag', title: 'أسعار تنافسية', text: 'أفضل قيمة مقابل جودة لا تقبل المساومة' },
+        { icon: 'headset', title: 'خدمة عملاء', text: 'فريقنا معك خطوة بخطوة عبر واتساب' },
+        { icon: 'shield', title: 'جودة ممتازة', text: 'أقمشة مختارة بعناية وخياطة متينة' },
+        { icon: 'wallet', title: 'طرق دفع متعددة', text: 'ادفعي بالطريقة الأنسب لك بكل أمان' },
+      ],
+    }),
+    s('reviews', 7, {
       section_title: 'ماذا قالت عميلاتنا؟',
       display_mode: 'slider',
       items: [
@@ -465,20 +485,20 @@ const ECOMMERCE_CLOTHING: BuilderTemplateConfig = {
         { name: 'ريم الدوسري', rating: 5, text: 'التغليف فخم والتوصيل كان أسرع من المتوقع. تجربة راقية.' },
       ],
     }),
-    s('newsletter', 6, { section_title: 'كوني أول من يعرف عن التشكيلات الجديدة' }),
-    s('footer', 7, { show_newsletter: false }),
+    s('newsletter', 8, { section_title: 'كوني أول من يعرف عن التشكيلات الجديدة' }),
+    s('footer', 9, { show_newsletter: false }),
   ],
   tokens: tokens({
-    primary: '#11248f',
-    secondary: '#0d1c6e',
-    accent: '#c4ec26',
+    primary: '#f6d7d5',
+    secondary: '#e9bcb8',
+    accent: '#c94f4f',
     background: '#ffffff',
-    surface: '#f3f5fc',
+    surface: '#f8f8f8',
     text_primary: '#000000',
-    text_secondary: '#555566',
-    border: '#e2e6f4',
-  }, '0.5rem'),
-  preview: 'linear-gradient(135deg,#f3f5fc,#11248f)',
+    text_secondary: '#7e7e7e',
+    border: '#ededed',
+  }, '4px', FONT_ZAIN),
+  preview: 'linear-gradient(135deg,#fdf1f0,#f6d7d5 55%,#1a1a1a)',
 };
 
 /* ---------------------------------------------------------------- 8 */

@@ -247,13 +247,25 @@ const SERVICES = [
   { icon: Headset, title: 'دعم فوري', text: 'نرد عليك خلال دقائق' },
 ];
 
-export const WpServices: React.FC = () => {
+const SERVICE_ICONS: Record<string, typeof Truck> = {
+  truck: Truck,
+  shield: ShieldCheck,
+  wallet: Wallet,
+  headset: Headset,
+  tag: RotateCcw,
+};
+
+export const WpServices: React.FC<{ items?: Array<{ title: string; text: string; icon?: string }> }> = ({ items }) => {
   const ref = useReveal([]);
+  const list = (items?.length ? items : SERVICES).map((s) => ({
+    ...s,
+    icon: SERVICE_ICONS[s.icon as string] || Headset,
+  }));
   return (
     <section className="wpt-section" style={{ paddingBlock: '28px' }} ref={ref}>
       <div className="wpt-container">
         <div className="wpt-services">
-          {SERVICES.map(({ icon: Icon, ...s }) => (
+          {list.map(({ icon: Icon, ...s }) => (
             <div key={s.title} className="wpt-service wpt-reveal">
               <span className="wpt-service__icon">
                 <Icon size={22} />

@@ -11,7 +11,10 @@ import type { BuilderDesignTokens } from './types';
  */
 
 export const toKebab = (str: string): string =>
-  str.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase()).toLowerCase();
+  str
+    .replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())
+    .replace(/_/g, '-')
+    .toLowerCase();
 
 export const DEFAULT_TOKENS: BuilderDesignTokens = {
   colors: {

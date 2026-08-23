@@ -147,11 +147,11 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
             products={data.products}
             categories={data.categories}
             title={title || 'أقسامنا'}
-            circle={theme.slug === 'kids-fashion'}
+            circle={theme.slug === 'kids-fashion' || theme.slug === 'ecommerce-clothing'}
           />
         );
       case 'services':
-        return <WpServices key={key} />;
+        return <WpServices key={key} items={theme.services} />;
       case 'contact-strip':
         return (
           <WpContactStrip key={key} title={title || 'تواصل معنا'} whatsappHref={whatsappHref} />
@@ -162,7 +162,7 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
   };
 
   return (
-    <div className="wpt-root" dir="rtl">
+    <div className="wpt-root" dir="rtl" data-theme={theme.slug}>
       <WpHeader
         config={theme}
         displayName={brand.name}

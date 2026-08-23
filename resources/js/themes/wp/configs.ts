@@ -46,6 +46,7 @@ const FONT_PLEX = "'IBM Plex Sans Arabic', 'Tajawal', sans-serif";
 const FONT_BALOO = "'Baloo Bhaijaan 2', 'Tajawal', sans-serif";
 const FONT_CAIRO = "'Cairo', 'Tajawal', sans-serif";
 const FONT_AMIRI = "'Amiri', 'Cairo', serif";
+const FONT_ZAIN = "'Zain', 'IBM Plex Sans Arabic', 'Tajawal', sans-serif";
 
 const MENU = ['الرئيسية', 'المتجر', 'الأقسام', 'تواصل معنا'];
 const sec = (kind: WpSectionConfig['kind'], title?: string): WpSectionConfig => ({ kind, title });
@@ -177,34 +178,53 @@ export const WP_THEMES: Record<string, WpThemeConfig> = {
     },
   },
 
-  /* -------------------------------------------- ecommerce-clothing */
+  /* -------------------------------------------- ecommerce-clothing
+   * «أناقة» — Minimog-style women's boutique modeled on ilaboutique.com:
+   * blush #F6D7D5 buttons with black text, pure-black typography on white,
+   * hairline #ededed borders, square-ish cards and Zain/Jost type. */
   'ecommerce-clothing': {
     slug: 'ecommerce-clothing',
     name: 'أناقة',
     nameEn: 'Elegance',
-    tagline: 'تشكيلات أزياء تعكس ذوقك الرفيع',
-    tokens: tok('#11248f', '#0d1c6e', '#c4ec26', '#f3f5fc', '#000000', '#e2e6f4', '6px', FONT_TAJAWAL),
+    tagline: 'تشكيلات جديدة كل أسبوع',
+    tokens: tok('#f6d7d5', '#e9bcb8', '#c94f4f', '#f8f8f8', '#000000', '#ededed', '4px', FONT_ZAIN, FONT_ZAIN),
     header: {
-      topbarText: 'تشكيلة الموسم الجديدة وصلت — إصدار محدود',
-      phone: '+966 55 777 8888',
-      email: 'style@anaqa.sa',
+      topbarText: 'إصدارات محدودة — تشكيلات جديدة كل أسبوع ✦ شحن سريع لجميع المدن',
+      phone: '+972559886886',
+      email: 'hello@anaqa.store',
       socials: true,
       logoText: 'أناقة',
       menu: MENU,
     },
     footer: {
-      about: 'متجر أزياء يقدم قطعاً مختارة بعناية من أفخم الأقمشة وأرقى القصات.',
+      about: 'بوتيك أزياء نسائية يقدّم قطعاً مختارة بعناية من أفخم الأقمشة وأرقى القصّات — إطلالة تليق بك في كل مناسبة.',
       copyright: 'أناقة',
     },
-    strings: { sliderButton: 'استعرض التشكيلة', addToCart: 'أضف إلى السلة', readMore: 'اقرأ المزيد', viewAll: 'عرض الكل' },
+    strings: { sliderButton: 'اكتشفي التشكيلة', addToCart: 'أضف إلى السلة', readMore: 'اقرأ المزيد', viewAll: 'عرض الكل' },
+    services: [
+      { title: 'أسعار تنافسية', text: 'أفضل قيمة مقابل جودة لا تقبل المساومة', icon: 'tag' },
+      { title: 'خدمة عملاء', text: 'فريقنا معك خطوة بخطوة عبر واتساب', icon: 'headset' },
+      { title: 'جودة ممتازة', text: 'أقمشة مختارة وخياطة متينة', icon: 'shield' },
+      { title: 'طرق دفع متعددة', text: 'ادفعي بالطريقة الأنسب لك بكل أمان', icon: 'wallet' },
+    ],
     sections: [
       sec('slider'),
-      sec('shop-grid', 'وصل حديثاً'),
+      sec('categories-box', 'جميع التصنيفات'),
+      sec('hot-products', 'الأكثر مبيعاً'),
+      sec('tab-products', 'أحدث المنتجات'),
+      sec('featured-carousel', 'منتجات مميزة'),
       sec('services'),
     ],
     media: {
-      sliderMain: '/themes/ecommerce-clothing/banner.png',
-      slideClothes: '/images/store/clothes.jpg',
+      sliderMain: '/themes/ecommerce-clothing/slider-1.jpg',
+      slideTwo: '/themes/ecommerce-clothing/slider-2.jpg',
+      slideThree: '/themes/ecommerce-clothing/slider-3.jpg',
+      bannerOne: '/themes/ecommerce-clothing/banner-1.jpg',
+      bannerTwo: '/themes/ecommerce-clothing/banner-2.jpg',
+      catDresses: '/themes/ecommerce-clothing/cat-dresses.jpg',
+      catRack: '/themes/ecommerce-clothing/cat-rack.jpg',
+      catStyle: '/themes/ecommerce-clothing/cat-style.jpg',
+      catFlatlay: '/themes/ecommerce-clothing/cat-flatlay.jpg',
     },
   },
 

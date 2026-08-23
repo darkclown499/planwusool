@@ -171,18 +171,20 @@ const ECOMMERCE_MEGA_CATALOG: DemoCatalog = {
 /* ---------------------------------- ecommerce-clothing أناقة */
 const ECOMMERCE_CLOTHING_CATALOG: DemoCatalog = {
   categories: [
-    cat('1', 'أزياء النساء', 'women', '/images/store/clothes.jpg', 18),
-    cat('2', 'أزياء الرجال', 'men', '/images/store/clothes.jpg', 14),
-    cat('3', 'الأحذية', 'shoes', '/images/store/clothes.jpg', 10),
-    cat('4', 'الإكسسوارات', 'accessories', '/images/store/clothes.jpg', 12),
+    cat('1', 'فساتين', 'dresses', '/themes/ecommerce-clothing/cat-dresses.jpg', 18),
+    cat('2', 'بيجامات ولانجيري', 'pajamas', '/themes/ecommerce-clothing/cat-rack.jpg', 14),
+    cat('3', 'إطلالات يومية', 'daily', '/themes/ecommerce-clothing/cat-style.jpg', 10),
+    cat('4', 'إكسسوارات', 'accessories', '/themes/ecommerce-clothing/cat-flatlay.jpg', 12),
   ],
   products: [
-    prod('p1', 'فستان ميدي كلاسيك أسود', 260, 210, '/images/store/clothes.jpg', '1'),
-    prod('p2', 'بلوزة حرير بقصة إيطالية', 180, null, '/images/store/clothes.jpg', '1'),
-    prod('p3', 'بدلة رسمية قماش إيطالي', 750, 640, '/images/store/clothes.jpg', '2'),
-    prod('p4', 'قميص قطن مصري أبيض', 145, null, '/images/store/clothes.jpg', '2'),
-    prod('p5', 'حذاء جلد طبيعي كلاسيك', 320, 280, '/images/store/clothes.jpg', '3'),
-    prod('p6', 'حزام جلد إيطالي فاخر', 120, null, '/images/store/clothes.jpg', '4'),
+    prod('p1', 'فستان ميدي كلاسيك أسود', 260, 210, '/themes/ecommerce-clothing/slider-1.jpg', '1'),
+    prod('p2', 'بلوزة حرير بقصة إيطالية', 180, null, '/themes/ecommerce-clothing/slider-2.jpg', '1'),
+    prod('p3', 'فستان سهرة دانتيل مطرز', 750, 640, '/themes/ecommerce-clothing/cat-dresses.jpg', '1'),
+    prod('p4', 'طقم منزلي قطن فاخر', 145, null, '/themes/ecommerce-clothing/cat-rack.jpg', '2'),
+    prod('p5', 'تنورة ميدي بليسيه انسيابية', 320, 280, '/themes/ecommerce-clothing/cat-style.jpg', '3'),
+    prod('p6', 'حقيبة يد جلد طبيعي صغيرة', 120, null, '/themes/ecommerce-clothing/banner-1.jpg', '4'),
+    prod('p7', 'معطف صوف طويل بحزام', 479, 559, '/themes/ecommerce-clothing/slider-3.jpg', '3'),
+    prod('p8', 'قلادة لؤلؤ طبيعي بكلاسب آمن', 319, null, '/themes/ecommerce-clothing/cat-flatlay.jpg', '4'),
   ],
 };
 

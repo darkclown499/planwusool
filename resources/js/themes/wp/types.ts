@@ -47,6 +47,8 @@ export interface WpThemeConfig {
     readMore: string;
     viewAll: string;
   };
+  /** Optional per-theme services strip copy (falls back to platform defaults). */
+  services?: Array<{ title: string; text: string }>;
   sections: WpSectionConfig[];
   /** demo media used when the store has no real data yet */
   media: Record<string, string>;
