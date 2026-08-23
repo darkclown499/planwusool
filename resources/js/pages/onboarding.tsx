@@ -55,6 +55,14 @@ interface Currency {
     name: string;
 }
 
+/** Template registry categories grouped under the wizard filter tabs. */
+const THEME_CATEGORY_MATCH: Record<string, string[]> = {
+    grocery: ['سوبرماركت', 'بقالة', 'متجر شامل', 'سوق عام'],
+    restaurants: ['مطاعم ومقاهي', 'مطعم وتوصيل', 'مخبوزات'],
+    fashion: ['ملابس', 'أزياء راقية', 'أطفال', 'تجميل وعناية'],
+    electronics: ['إلكترونيات'],
+};
+
 interface OnboardingProps {
     demoStoreUrl: string;
     storeDomain: string;
@@ -176,6 +184,7 @@ export default function Onboarding({
     const [currencySearch, setCurrencySearch] = useState('');
     const [countryOpen, setCountryOpen] = useState(false);
     const [countrySearchQuery, setCountrySearchQuery] = useState('');
+    const [themeCategory, setThemeCategory] = useState('all');
     const [generalError, setGeneralError] = useState<string | null>(null);
     const [upgradeOpen, setUpgradeOpen] = useState(false);
     const [pendingUpgradeTemplate, setPendingUpgradeTemplate] = useState<string | null>(null);
@@ -395,7 +404,7 @@ export default function Onboarding({
     };
 
     const submit = () => {
-        // Never send a paid template for a free-tire merchant â€” open the
+        // Never send a paid template for a free-tier merchant - open the
         // upgrade prompt instead of letting the server bounce back to step 6.
         if (data.theme && themeBySlug.get(data.theme) && isLockedTemplate(themeBySlug.get(data.theme)!)) {
             openUpgrade(data.theme);
@@ -453,6 +462,10 @@ export default function Onboarding({
     // builder templates) so a choice made in the wizard can never be
     // rejected at submit time by slug drift between registries.
     const themeCatalog: BuilderTemplateSummary[] = useMemo(() => getBuilderTemplateSummaries(), []);
+    const visibleTemplates = useMemo(() => {
+        if (themeCategory === 'all') return themeCatalog;
+        return themeCatalog.filter((tmpl) => (THEME_CATEGORY_MATCH[themeCategory] ?? []).includes(tmpl.category));
+    }, [themeCatalog, themeCategory]);
     const themeBySlug = useMemo(() => new Map(themeCatalog.map((tmpl) => [tmpl.slug, tmpl])), [themeCatalog]);
 
     const TIER_LABEL: Record<PlanTier, string> = {
@@ -1326,12 +1339,38 @@ export default function Onboarding({
                                                             {t('Choose a design')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Pick the look of your store. Preview any design live â€” you can change it anytime.')}
+                                                            {t('Pick the perfect look for your store — preview any design live or change it anytime later.')}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                    {themeCatalog.map((tmpl) => {
+                                                {/* Category filter pills */}
+                                                <div className="scrollbar-none flex items-center gap-1.5 overflow-x-auto pb-1">
+                                                    {([
+                                                        ['all', t('All')],
+                                                        ['grocery', t('Supermarket')],
+                                                        ['restaurants', t('Restaurants')],
+                                                        ['fashion', t('Fashion & beauty')],
+                                                        ['electronics', t('Electronics')],
+                                                    ] as Array<[string, string]>).map(([id, label]) => (
+                                                        <button
+                                                            key={id}
+                                                            type="button"
+                                                            onClick={() => setThemeCategory(id)}
+                                                            className={`cursor-pointer whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                                                                themeCategory === id
+                                                                    ? 'bg-emerald-500 text-white shadow-sm'
+                                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                            }`}
+                                                        >
+                                                            {label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {/* Scrollable templates grid */}
+                                                <div className="scrollbar-thin scrollbar-thumb-gray-200 max-h-[480px] overflow-y-auto p-1">
+                                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                        {visibleTemplates.map((tmpl) => {
                                                         const selected = data.theme === tmpl.slug;
                                                         const locked = isLockedTemplate(tmpl);
                                                         return (
@@ -1413,9 +1452,15 @@ export default function Onboarding({
                                                                 </div>
                                                             </div>
                                                         );
-                                                    })}
+                                                        })}
+                                                        {visibleTemplates.length === 0 && (
+                                                            <p className="col-span-full py-10 text-center text-sm text-gray-400">
+                                                                {t('No designs in this category')}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
+                                             </div>
                                         )}
 
                                         {stepKey === 'confirm' && (
@@ -1495,7 +1540,7 @@ export default function Onboarding({
                                                             {
                                                                 icon: Mail,
                                                                 label: t('Store Email'),
-                                                                value: data.store_email || 'â€”',
+                                                                value: data.store_email || '\u2014',
                                                                 ltr: true,
                                                             },
                                                             ...(data.whatsapp_enabled && data.whatsapp_phone
