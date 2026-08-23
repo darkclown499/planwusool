@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Megaphone, RefreshCw, Star, Zap } from 'lucide-react';
-import HeroPcSimulator from '@/components/HeroPcSimulator';
+import HeroPcSimulator, { type DemoStorePreview } from '@/components/HeroPcSimulator';
 
 interface HeroSectionProps {
   brandColor?: string;
   settings: { company_name?: string };
   demoStoreUrl?: string;
+  demoStorePreview?: DemoStorePreview | null;
   superadminLogoLight?: string;
   sectionData: {
     title?: string;
@@ -25,6 +26,7 @@ export default function HeroSection({
   sectionData,
   brandColor = '#22c55e',
   demoStoreUrl,
+  demoStorePreview,
 }: HeroSectionProps) {
   const title = sectionData.title || 'ابدأ متجرك خلال دقائق';
   const subtitle = sectionData.subtitle || 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع';
@@ -194,7 +196,7 @@ export default function HeroSection({
 
           {/* ── Interactive PC simulator — directly under the CTA buttons ── */}
           <div className="mt-14 w-full">
-            <HeroPcSimulator demoUrl={demoStoreUrl} />
+            <HeroPcSimulator demoUrl={demoStoreUrl} preview={demoStorePreview} />
           </div>
         </div>
       </div>

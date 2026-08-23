@@ -132,6 +132,7 @@ class LandingPageController extends Controller
             'settings' => $landingSettings,
             'featuredStores' => $featuredStores,
             'demoStoreUrl' => app(DemoStoreService::class)->demoStoreUrl(),
+            'demoStorePreview' => app(DemoStoreService::class)->demoStorePreview(),
             'superadminLogoDark' => \App\Models\Setting::getSetting('logoDark', getSuperadminId(), null),
             'superadminLogoLight' => \App\Models\Setting::getSetting('logoLight', getSuperadminId(), null)
         ]);

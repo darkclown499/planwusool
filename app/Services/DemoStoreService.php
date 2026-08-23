@@ -7,6 +7,7 @@ use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class DemoStoreService
@@ -107,6 +108,70 @@ class DemoStoreService
         $store = $this->ensureDemoStore();
 
         return $store->getStoreSubdomainUrl();
+    }
+
+    /**
+     * Compact live snapshot of the REAL demo store for the landing-page PC
+     * simulator: a few actual products (name/price/image) plus root
+     * categories, straight from the database. Cached for 5 minutes using
+     * the same pattern as ThemeController::home().
+     */
+    public function demoStorePreview(int $productLimit = 8, int $categoryLimit = 6): array
+    {
+        return Cache::remember(
+            "demo_store_preview.{$productLimit}.{$categoryLimit}",
+            300,
+            function () use ($productLimit, $categoryLimit) {
+                $store = $this->ensureDemoStore();
+
+                $products = Product::where('store_id', $store->id)
+                    ->where('is_active', true)
+                    ->with('category:id,name')
+                    ->orderBy('created_at')
+                    ->limit($productLimit)
+                    ->get()
+                    ->map(function ($product) {
+                        $price = (float) $product->price;
+                        $salePrice = (float) ($product->sale_price ?? 0);
+                        // Mirror the storefront rule: sale only counts when it is
+                        // actually cheaper than the regular price.
+                        $hasSale = $salePrice > 0 && $salePrice < $price;
+
+                        return [
+                            'name' => $product->name,
+                            'image' => $product->cover_image ?: null,
+                            'price' => $hasSale ? $salePrice : $price,
+                            'originalPrice' => $hasSale ? $price : null,
+                            'discount' => $hasSale && $price > 0 ? (int) round((1 - $salePrice / $price) * 100) : 0,
+                            'category' => $product->category?->name,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
+                $categories = Category::where('store_id', $store->id)
+                    ->where('is_active', true)
+                    ->whereNull('parent_id')
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->limit($categoryLimit)
+                    ->get()
+                    ->map(function ($category) {
+                        return [
+                            'name' => $category->name,
+                            'image' => $category->image ?: null,
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
+                return [
+                    'name' => $store->name,
+                    'products' => $products,
+                    'categories' => $categories,
+                ];
+            }
+        );
     }
 
     public function writeSvgImages(): void

@@ -20,6 +20,7 @@ import { THEME_COLORS } from '@/hooks/use-appearance';
 import { useFavicon } from '@/hooks/use-favicon';
 import AIChatWidget from '@/components/AIChatWidget';
 import { type SharedData } from '@/types';
+import { type DemoStorePreview } from '@/components/HeroPcSimulator';
 
 interface Plan {
   id: number;
@@ -100,6 +101,7 @@ interface FeaturedStore {
   logo?: string;
 }
 
+
 interface PageProps extends SharedData {
   plans: Plan[];
   testimonials: Testimonial[];
@@ -108,6 +110,7 @@ interface PageProps extends SharedData {
   settings: LandingSettings;
   featuredStores: FeaturedStore[];
   demoStoreUrl?: string;
+  demoStorePreview?: DemoStorePreview | null;
   superadminLogoDark?: string;
   superadminLogoLight?: string;
   flash?: {
@@ -117,7 +120,7 @@ interface PageProps extends SharedData {
 }
 
 export default function LandingPage() {
-  const { plans, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight, demoStoreUrl = '' } = usePage<PageProps>().props;
+  const { plans, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight, demoStoreUrl = '', demoStorePreview } = usePage<PageProps>().props;
 
   // This is the public landing page, not the admin settings page
   // No breadcrumbs needed here as it's a public page
@@ -216,6 +219,7 @@ export default function LandingPage() {
         sectionData={getSectionData('hero')}
         brandColor={primaryColor}
         demoStoreUrl={demoStoreUrl || undefined}
+        demoStorePreview={demoStorePreview}
         superadminLogoLight={superadminLogoLight}
       />
     ),
