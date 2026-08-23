@@ -128,6 +128,7 @@ class DemoStoreService
                     ->where('is_active', true)
                     ->with('category:id,name')
                     ->orderBy('created_at')
+                    ->orderBy('id')
                     ->limit($productLimit)
                     ->get()
                     ->map(function ($product) {
