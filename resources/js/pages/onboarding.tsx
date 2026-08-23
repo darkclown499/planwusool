@@ -11,10 +11,11 @@ import {
     Coins,
     Contact,
     CreditCard,
-    Brush,
-    ExternalLink,
-    Globe,
-    Languages,
+Brush,
+ExternalLink,
+Globe,
+Languages,
+Search,
     Loader2,
     Lock,
     Mail,
@@ -170,6 +171,7 @@ export default function Onboarding({
     );
     const [checking, setChecking] = useState(false);
     const [availability, setAvailability] = useState<{ available: boolean; message: string } | null>(null);
+    const [currencySearch, setCurrencySearch] = useState('');
     const [generalError, setGeneralError] = useState<string | null>(null);
     const [upgradeOpen, setUpgradeOpen] = useState(false);
     const [pendingUpgradeTemplate, setPendingUpgradeTemplate] = useState<string | null>(null);
@@ -262,6 +264,21 @@ export default function Onboarding({
         setData('store_subdomain', sanitized);
         setAvailability(null);
     };
+
+    // Popular/regional currencies float to the top; search filters by code, name or symbol.
+    const visibleCurrencies = useMemo(() => {
+        const PRIORITY = ['ILS', 'USD', 'JOD', 'EUR', 'SAR', 'AED'];
+        const rank = (code: string) => {
+            const i = PRIORITY.indexOf(code);
+            return i === -1 ? 99 : i;
+        };
+        const q = currencySearch.trim();
+        if (!q) return [...currencies].sort((a, b) => rank(a.code) - rank(b.code));
+        const lq = q.toLowerCase();
+        return currencies.filter(
+            (c) => c.code.toLowerCase().includes(lq) || c.name.includes(q) || c.symbol.includes(q),
+        );
+    }, [currencies, currencySearch]);
 
     const runAvailabilityCheck = async () => {
         if (!data.store_subdomain) {
@@ -1162,39 +1179,57 @@ export default function Onboarding({
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="grid max-h-80 grid-cols-2 gap-3 overflow-y-auto pe-1 sm:grid-cols-3">
-                                                    {currencies.map((currency) => (
-                                                        <button
-                                                            key={currency.code}
-                                                            type="button"
-                                                            onClick={() => setData('currency', currency.code)}
-                                                            className={`relative rounded-2xl border-2 p-4 text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
-                                                                data.currency === currency.code
-                                                                    ? 'border-primary bg-primary/5'
-                                                                    : 'border-gray-200 hover:border-gray-300'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xl font-bold text-gray-900">
-                                                                    {currency.symbol}
-                                                                </span>
-                                                                {data.currency === currency.code && (
-                                                                    <span
-                                                                        className="flex h-5 w-5 items-center justify-center rounded-full text-white animate-pop"
-                                                                        style={{ backgroundColor: primaryColor }}
-                                                                    >
-                                                                        <Check className="h-3 w-3" />
+                                                {/* Search */}
+                                                <div className="relative">
+                                                    <Search className="pointer-events-none absolute right-3.5 top-3.5 h-4 w-4 text-gray-400" />
+                                                    <input
+                                                        type="text"
+                                                        placeholder={t('Search currency (e.g. USD, ILS)...')}
+                                                        value={currencySearch}
+                                                        onChange={(e) => setCurrencySearch(e.target.value)}
+                                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-4 pr-10 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                                                    />
+                                                </div>
+
+                                                {/* Currency grid */}
+                                                <div className="scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent max-h-[310px] overflow-y-auto p-1">
+                                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                                        {visibleCurrencies.map((currency) => {
+                                                            const isSelected = data.currency === currency.code;
+                                                            return (
+                                                                <button
+                                                                    key={currency.code}
+                                                                    type="button"
+                                                                    onClick={() => setData('currency', currency.code)}
+                                                                    className={`relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 p-3 transition-all ${
+                                                                        isSelected
+                                                                            ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/10'
+                                                                            : 'border-gray-200 bg-white hover:border-gray-300'
+                                                                    }`}
+                                                                >
+                                                                    {isSelected && (
+                                                                        <span className="absolute left-2 top-2 flex h-4 w-4 animate-pop items-center justify-center rounded-full bg-emerald-500 text-white">
+                                                                            <Check className="h-3 w-3 stroke-[3]" />
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="mb-1 font-mono text-xl font-bold text-gray-800">
+                                                                        {currency.symbol}
                                                                     </span>
-                                                                )}
-                                                            </div>
-                                                            <div className="mt-2 text-sm font-medium text-gray-800">
-                                                                {currency.code}
-                                                            </div>
-                                                            <div className="truncate text-xs text-gray-400">
-                                                                {currency.name}
-                                                            </div>
-                                                        </button>
-                                                    ))}
+                                                                    <span className="font-mono text-xs font-bold text-emerald-700">
+                                                                        {currency.code}
+                                                                    </span>
+                                                                    <span className="mt-0.5 max-w-full truncate text-[11px] text-gray-500">
+                                                                        {currency.name}
+                                                                    </span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    {visibleCurrencies.length === 0 && (
+                                                        <p className="py-8 text-center text-sm text-gray-400">
+                                                            {t('No matching currencies')}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
