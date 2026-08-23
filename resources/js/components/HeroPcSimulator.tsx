@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import {
     Accessibility,
-    CircleArrowRight,
     ChevronLeft,
     ChevronRight,
     Globe,
     Lock,
     MessageCircle,
+    Phone,
     Power,
     RotateCw,
     Search,
     ShoppingBag,
     ShoppingCart,
+    Sparkles,
+    Truck,
     User,
     Wifi,
 } from 'lucide-react';
@@ -46,6 +48,12 @@ const FULL_QUERY = 'كيف بكون موقعي مع وصول';
 const RAM_TOTAL_KB = 65536;
 const PW_DOTS = 12;
 
+/** Real media assets of the live «fashion-designer-mart» template. */
+const HERO_SLIDES = [
+    '/themes/fashion-designer-mart/slider1.png',
+    '/themes/fashion-designer-mart/header-banner.png',
+];
+
 /** Used only until the live backend payload arrives. */
 const FALLBACK_PRODUCTS: DemoStoreProduct[] = [
     { name: 'سماعات لاسلكية Pro', price: 199, originalPrice: 249, discount: 20, category: 'إلكترونيات' },
@@ -69,7 +77,9 @@ export function HeroPcSimulator({
     const [ramKb, setRamKb] = useState(0);
     const [pwLen, setPwLen] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [slide, setSlide] = useState(0);
     const [clock, setClock] = useState('');
+    const [lockDate, setLockDate] = useState('');
     const [activeCat, setActiveCat] = useState('الكل');
 
     const storeName = preview?.name || 'متجر الديمو';
@@ -84,12 +94,15 @@ export function HeroPcSimulator({
             ? products
             : products.filter((p) => p.category === activeCat);
 
-    /* Live clock for the Windows-11 lock screen corner */
+    /* Live clock + Arabic date for the Windows-11 lock screen corner */
     useEffect(() => {
-        const tick = () =>
-            setClock(
-                new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        const tick = () => {
+            const now = new Date();
+            setClock(now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+            setLockDate(
+                now.toLocaleDateString('ar', { weekday: 'long', day: 'numeric', month: 'long' }),
             );
+        };
         tick();
         const t = setInterval(tick, 30000);
         return () => clearInterval(t);
@@ -103,6 +116,7 @@ export function HeroPcSimulator({
         setRamKb(0);
         setPwLen(0);
         setActiveCat('الكل');
+        setSlide(0);
     };
 
     /* ── BIOS: RAM count-up, then hand over to the lock screen ── */
@@ -127,7 +141,7 @@ export function HeroPcSimulator({
         if (state !== 'LOGIN') return;
         setPwLen(0);
         const typing = setInterval(() => setPwLen((p) => Math.min(p + 1, PW_DOTS)), 95);
-        const advance = setTimeout(() => setState('WELCOME'), 1750);
+        const advance = setTimeout(() => setState('WELCOME'), 2400);
         return () => {
             clearInterval(typing);
             clearTimeout(advance);
@@ -173,6 +187,13 @@ export function HeroPcSimulator({
         return () => clearTimeout(t);
     }, [state]);
 
+    /* ── DEMO: hero slider glides across the real template media ── */
+    useEffect(() => {
+        if (state !== 'DEMO' || loading) return;
+        const t = setInterval(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), 4200);
+        return () => clearInterval(t);
+    }, [state, loading]);
+
     const stageIndex = STATE_ORDER.indexOf(state);
 
     return (
@@ -201,17 +222,6 @@ export function HeroPcSimulator({
                         </div>
                     )}
 
-                    {/* Quick Skip */}
-                    {state !== 'OFF' && state !== 'DEMO' && (
-                        <button
-                            type="button"
-                            onClick={() => setState('DEMO')}
-                            className="absolute left-3 top-3 z-50 cursor-pointer rounded-lg bg-white/10 px-2.5 py-1 text-[10px] text-white backdrop-blur-md transition-colors hover:bg-white/20"
-                        >
-                            تخطي التجربة ⚡
-                        </button>
-                    )}
-
                     {/* Stage dots */}
                     {state !== 'OFF' && (
                         <div className="absolute right-1/2 top-3 z-50 flex translate-x-1/2 items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1.5 backdrop-blur-md">
@@ -230,7 +240,7 @@ export function HeroPcSimulator({
 
                     {/* STATE 1: OFF */}
                     {state === 'OFF' && (
-                        <div className="flex h-full w-full flex-col items-center justify-center space-y-4 bg-gradient-to-b from-gray-950 to-black text-white">
+                        <div className="sim-stage flex h-full w-full flex-col items-center justify-center space-y-4 bg-gradient-to-b from-gray-950 to-black text-white">
                             <button
                                 type="button"
                                 onClick={powerOn}
@@ -249,7 +259,7 @@ export function HeroPcSimulator({
                     {state === 'BIOS' && (
                         <div
                             dir="ltr"
-                            className="h-full w-full bg-black p-6 font-mono text-xs text-emerald-400"
+                            className="sim-stage h-full w-full bg-black p-6 font-mono text-xs text-emerald-400"
                             style={{ direction: 'ltr', textAlign: 'left' }}
                         >
                             <p className="mb-2 font-bold text-white">&gt; WUSOOL BIOS v4.2.0 RELEASE</p>
@@ -274,40 +284,50 @@ export function HeroPcSimulator({
                         </div>
                     )}
 
-                    {/* STATE 3: LOGIN — Windows 11 lock screen */}
+                    {/* STATE 3: LOGIN — authentic Windows 11 lock screen (no input box) */}
                     {state === 'LOGIN' && (
-                        <div className="sim-win11 relative flex h-full w-full flex-col items-center justify-center text-white">
-                            <div className="flex flex-col items-center gap-2.5">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/80 to-indigo-500/80 shadow-xl ring-2 ring-white/30 backdrop-blur">
-                                    <User className="h-8 w-8 text-white" strokeWidth={1.75} />
+                        <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => setState('WELCOME')}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') setState('WELCOME');
+                            }}
+                            aria-label="تسجيل الدخول"
+                            className="sim-stage sim-win11 relative flex h-full w-full cursor-pointer select-none flex-col items-center justify-center text-white outline-none"
+                        >
+                            {/* Big centered clock — real Win11 lock layout */}
+                            <p
+                                dir="ltr"
+                                className="text-[64px] font-light leading-none tracking-wide text-white drop-shadow-lg sm:text-[76px]"
+                            >
+                                {clock}
+                            </p>
+                            <p className="sim-lock-date mt-2 text-sm font-medium text-white/90 drop-shadow-md sm:text-base">
+                                {lockDate}
+                            </p>
+
+                            {/* Avatar + name */}
+                            <div className="mt-9 flex flex-col items-center gap-2.5">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/80 to-indigo-500/80 shadow-xl ring-2 ring-white/30 backdrop-blur transition-transform duration-500 hover:scale-105">
+                                    <User className="h-7 w-7 text-white" strokeWidth={1.75} />
                                 </div>
-                                <p className="text-base font-semibold tracking-wide drop-shadow-md">
-                                    زائر تجريبي
-                                </p>
-                                <div className="flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-2 py-1.5 shadow-lg backdrop-blur-md">
-                                    <Lock className="ml-1 h-3.5 w-3.5 shrink-0 text-white/80" />
-                                    <input
-                                        type="password"
-                                        readOnly
-                                        value={'•'.repeat(pwLen)}
-                                        placeholder="كلمة المرور"
-                                        className="w-24 bg-transparent text-center text-sm tracking-[0.25em] text-white outline-none placeholder:text-[10px] placeholder:tracking-normal placeholder:text-white/60 sm:w-32"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setState('WELCOME')}
-                                        aria-label="تسجيل الدخول"
-                                        className="shrink-0 cursor-pointer rounded-full p-0.5 transition-colors hover:bg-white/20"
-                                    >
-        <CircleArrowRight className="h-5 w-5 text-white/90" />
-                                    </button>
+                                <p className="text-sm font-semibold tracking-wide drop-shadow-md">زائر تجريبي</p>
+
+                                {/* Borderless signing-in dots (replaces the old boxed input) */}
+                                <div className="flex items-center gap-1.5" aria-hidden="true">
+                                    {Array.from({ length: PW_DOTS }).map((_, i) => (
+                                        <span
+                                            key={i}
+                                            className={`h-1 w-1 rounded-full transition-all duration-300 ${
+                                                i < pwLen ? 'scale-125 bg-white shadow-[0_0_6px_rgba(255,255,255,0.8)]' : 'bg-white/25'
+                                            }`}
+                                        />
+                                    ))}
                                 </div>
-                                <button
-                                    type="button"
-                                    className="cursor-pointer text-[10px] text-white/70 underline-offset-2 hover:text-white hover:underline"
-                                >
-                                    خيارات تسجيل الدخول
-                                </button>
+                                <span className="animate-pulse text-[10px] font-medium text-white/70">
+                                    انقر للدخول
+                                </span>
                             </div>
 
                             {/* Win11 tray: network / accessibility / power (bottom-left) */}
@@ -320,20 +340,12 @@ export function HeroPcSimulator({
                                 <Accessibility className="h-4 w-4" strokeWidth={1.75} />
                                 <Power className="h-4 w-4" strokeWidth={1.75} />
                             </div>
-                            {/* Live clock (bottom-right) */}
-                            <div
-                                dir="ltr"
-                                className="absolute bottom-2.5 right-3 text-sm font-light tracking-widest text-white/90"
-                                style={{ direction: 'ltr' }}
-                            >
-                                {clock}
-                            </div>
                         </div>
                     )}
 
                     {/* STATE 3.5: WELCOME — “مرحباً” spinner */}
                     {state === 'WELCOME' && (
-                        <div className="sim-win11 flex h-full w-full flex-col items-center justify-center gap-4 text-white">
+                        <div className="sim-stage sim-win11 flex h-full w-full flex-col items-center justify-center gap-4 text-white">
                             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/80 to-indigo-500/80 shadow-xl ring-2 ring-white/30">
                                 <User className="h-7 w-7 text-white" strokeWidth={1.75} />
                             </div>
@@ -344,7 +356,7 @@ export function HeroPcSimulator({
 
                     {/* STATE 4: GOOGLE SEARCH SIMULATION */}
                     {state === 'SEARCH' && (
-                        <div className="flex h-full w-full flex-col items-center bg-white p-6 pt-12 text-gray-800">
+                        <div className="sim-stage flex h-full w-full flex-col items-center bg-white p-6 pt-12 text-gray-800">
                             <div className="mb-5 text-3xl font-black tracking-tight" dir="ltr">
                                 <span className="text-blue-500">G</span>
                                 <span className="text-red-500">o</span>
@@ -388,9 +400,10 @@ export function HeroPcSimulator({
                         </div>
                     )}
 
-                    {/* STATE 5: LIVE STORE DEMO — real «بازار»-style storefront */}
+                    {/* STATE 5: LIVE STORE DEMO — luxury storefront inspired by the
+                        real «fashion-designer-mart» template, fed by live DB data */}
                     {state === 'DEMO' && (
-                        <div className="flex h-full w-full flex-col bg-gray-50">
+                        <div className="sim-fd-body sim-stage flex h-full w-full flex-col bg-[#fdf2f4]">
                             {/* Browser Bar */}
                             <div className="dir-ltr flex shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2 text-xs text-gray-600">
                                 <div className="flex items-center gap-1.5">
@@ -420,36 +433,44 @@ export function HeroPcSimulator({
                             {loading ? (
                                 /* Skeleton shimmer while the "page loads" — hidden scrollbar */
                                 <div className="sim-scroll dir-rtl space-y-3 overflow-y-auto p-4" style={{ direction: 'rtl' }}>
-                                    <div className="h-24 animate-pulse rounded-xl bg-gray-200" />
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {[0, 1, 2].map((i) => (
-                                            <div key={i} className="space-y-2 rounded-xl border border-gray-200 bg-white p-3">
-                                                <div className="h-16 animate-pulse rounded-lg bg-gray-200" />
-                                                <div className="h-2.5 w-3/4 animate-pulse rounded bg-gray-200" />
-                                                <div className="h-2.5 w-1/2 animate-pulse rounded bg-gray-100" />
+                                    <div className="h-28 animate-pulse rounded-sm bg-[#f6dde2]" />
+                                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                                        {[0, 1, 2, 3].map((i) => (
+                                            <div key={i} className="space-y-2 rounded-sm border border-[#f6dde2] bg-white p-2">
+                                                <div className="h-20 animate-pulse rounded-sm bg-[#f6dde2]" />
+                                                <div className="h-2.5 w-3/4 animate-pulse rounded bg-[#f9e8ec]" />
+                                                <div className="h-2.5 w-1/2 animate-pulse rounded bg-[#faf0f3]" />
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             ) : (
                                 <div className="sim-scroll flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
-                                    <div className="dir-rtl pb-10 text-right" style={{ direction: 'rtl' }}>
-                                        {/* Dark promo strip — بازار signature */}
-                                        <div className="bg-slate-900 px-3 py-1.5 text-center text-[9px] font-medium text-white/90">
-                                            🚚 توصيل مجاني للطلبات فوق 200 ₪ · ضمان استرجاع 14 يوم
+                                    <div dir="rtl" className="pb-10 text-right">
+                                        {/* Black top strip — fashion-designer-mart signature */}
+                                        <div className="flex items-center justify-between bg-[#1a1c22] px-3 py-1.5 text-[9px] font-medium text-white/85">
+                                            <span className="flex items-center gap-1">
+                                                <Sparkles className="h-2.5 w-2.5 shrink-0 text-[#f1657d]" />
+                                                إصدارات محدودة — الفخامة في أدق التفاصيل
+                                            </span>
+                                            <span dir="ltr" className="hidden shrink-0 items-center gap-1 sm:flex">
+                                                <Phone className="h-2.5 w-2.5 text-[#f1657d]" />
+                                                +966 56 121 3435
+                                            </span>
                                         </div>
 
                                         {/* Storefront header row */}
-                                        <div className="flex items-center justify-between border-b border-pink-100 bg-white px-3 py-2">
+                                        <div className="flex items-center justify-between border-b border-[#f6dde2] bg-white px-3 py-2">
                                             <div className="flex items-center gap-1.5">
-                                                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#f98496] to-[#9085f9] text-[10px] font-black text-white">
+                                                <span className="sim-fd-serif flex h-6 w-6 items-center justify-center rounded-sm bg-[#f1657d] text-[11px] font-bold text-white shadow-sm">
                                                     {storeName.slice(0, 1)}
                                                 </span>
-                                                <span className="text-[11px] font-extrabold text-slate-900">{storeName}</span>
+                                                <span className="sim-fd-serif text-xs font-bold tracking-wide text-[#1a1c22]">{storeName}</span>
                                             </div>
-                                            <nav className="hidden items-center gap-2.5 text-[9px] font-medium text-slate-500 sm:flex">
-                                                <span>الرئيسية</span>
-                                                <span>المنتجات</span>
+                                            <nav className="hidden items-center gap-3 text-[9px] font-medium text-[#5b6572] sm:flex">
+                                                <span className="font-bold text-[#f1657d]">الرئيسية</span>
+                                                <span>الكوليكشن</span>
+                                                <span>وصل حديثاً</span>
                                                 <span>تواصل</span>
                                             </nav>
                                             <div className="flex items-center gap-2">
@@ -457,51 +478,100 @@ export function HeroPcSimulator({
                                                     href={demoUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="rounded-full bg-[#25D366] px-2.5 py-1 text-[9px] font-bold text-white shadow-sm transition-transform hover:scale-105"
+                                                    className="rounded-sm bg-[#f1657d] px-2.5 py-1 text-[9px] font-bold text-white shadow-sm transition-all hover:bg-[#e4556d]"
                                                 >
                                                     تواصل معنا
                                                 </a>
-                                                <span className="relative text-slate-700">
+                                                <span className="relative text-[#1a1c22]">
                                                     <ShoppingCart className="h-3.5 w-3.5" />
-                                                    <span className="absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-[#f98496] text-[7px] font-bold text-white">
+                                                    <span className="absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-[#f1657d] text-[7px] font-bold text-white">
                                                         2
                                                     </span>
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 p-3">
-                                            {/* Real screenshot banner of demo.wusool.ps */}
-                                            <div className="group relative overflow-hidden rounded-xl border border-pink-100 shadow-sm">
+                                        {/* Hero slider — real template media, crossfading */}
+                                        <div className="relative h-36 w-full overflow-hidden bg-[#1a1c22] sm:h-44">
+                                            {HERO_SLIDES.map((src, i) => (
                                                 <img
-                                                    src="/images/demo-store-preview.webp"
-                                                    alt={`لقطة حقيقية من ${storeName}`}
-                                                    loading="lazy"
-                                                    className="anim-banner h-28 w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03] sm:h-36"
+                                                    key={src}
+                                                    src={src}
+                                                    alt={`تشكيلة ${storeName}`}
+                                                    loading={i === 0 ? 'eager' : 'lazy'}
+                                                    className={`sim-hero-img absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-out ${
+                                                        i === slide ? 'sim-hero-zoom opacity-100' : 'opacity-0'
+                                                    }`}
                                                     onError={(e) => {
                                                         e.currentTarget.style.display = 'none';
-                                                        const sibling = e.currentTarget.nextElementSibling as HTMLElement | null;
-                                                        if (sibling) sibling.style.display = 'block';
                                                     }}
                                                 />
-                                                <div
-                                                    className="hidden h-24 w-full bg-gradient-to-br from-[#f98496]/70 to-[#9085f9]/70 sm:h-32"
-                                                    aria-hidden="true"
-                                                />
-                                                <span
-                                                    className="absolute bottom-1.5 right-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur-sm"
-                                                    dir="ltr"
+                                            ))}
+                                            {/* RTL readability gradient */}
+                                            <div className="absolute inset-0 bg-gradient-to-l from-black/65 via-black/25 to-transparent" />
+
+                                            {/* Slide copy */}
+                                            <div className="absolute inset-y-0 right-0 flex max-w-[75%] flex-col items-start justify-center gap-1.5 p-4 text-right sm:p-5">
+                                                <span className="rounded-full border border-white/25 bg-white/15 px-2 py-0.5 text-[8px] font-semibold text-white backdrop-blur-sm">
+                                                    تشكيلة الموسم الجديدة وصلت
+                                                </span>
+                                                <p className="sim-fd-serif text-base font-bold leading-snug text-white drop-shadow-md sm:text-lg">
+                                                    قطع حصرية لمن تميّز حضوره
+                                                </p>
+                                                <a
+                                                    href={demoUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="mt-0.5 rounded-sm bg-[#f1657d] px-3 py-1.5 text-[9px] font-bold text-white shadow-md transition-transform hover:scale-105"
                                                 >
-                                                    {demoUrl.replace(/^https?:\/\//, '')}
-                                                </span>
-                                                <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[8px] font-bold text-emerald-700 shadow-sm">
-                                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                                                    لقطة حية
-                                                </span>
+                                                    اكتشف الكوليكشن
+                                                </a>
+                                            </div>
+
+                                            {/* Slider dots */}
+                                            <div className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-1">
+                                                {HERO_SLIDES.map((s, i) => (
+                                                    <button
+                                                        key={s}
+                                                        type="button"
+                                                        aria-label={`الشريحة ${i + 1}`}
+                                                        onClick={() => setSlide(i)}
+                                                        className={`h-1 cursor-pointer rounded-full transition-all duration-500 ${
+                                                            i === slide ? 'w-4 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
+                                                        }`}
+                                                    />
+                                                ))}
+                                            </div>
+
+                                            {/* Live badge */}
+                                            <span className="absolute left-1.5 top-1.5 z-10 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[8px] font-bold text-emerald-700 shadow-sm">
+                                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                                                متجر حقيقي يعمل الآن
+                                            </span>
+                                        </div>
+
+                                        {/* Trust strip — platform capabilities at a glance */}
+                                        <div className="grid grid-cols-3 divide-x divide-x-reverse divide-[#f6dde2] border-b border-[#f6dde2] bg-white px-2 py-2 text-[8px] font-semibold text-[#5b6572]">
+                                            <span className="flex items-center justify-center gap-1">
+                                                <Truck className="h-3 w-3 shrink-0 text-[#f1657d]" /> توصيل سريع
+                                            </span>
+                                            <span className="flex items-center justify-center gap-1">
+                                                <Sparkles className="h-3 w-3 shrink-0 text-[#f1657d]" /> قطع حصرية
+                                            </span>
+                                            <span className="flex items-center justify-center gap-1">
+                                                <MessageCircle className="h-3 w-3 shrink-0 text-[#f1657d]" /> طلب عبر واتساب
+                                            </span>
+                                        </div>
+
+                                        <div className="space-y-3 p-3">
+                                            {/* Section title — real theme pattern */}
+                                            <div className="text-center">
+                                                <h3 className="sim-fd-serif text-sm font-bold text-[#1a1c22]">القطع الأكثر طلباً</h3>
+                                                <span className="mx-auto mt-1 block h-px w-12 bg-[#f1657d]" />
                                             </div>
 
                                             {/* Category chips (real demo-store categories) */}
-                                            <div className="sim-scroll flex items-center gap-1.5 overflow-x-auto pb-0.5">
+                                            <div className="sim-scroll flex items-center justify-center gap-1.5 overflow-x-auto pb-0.5">
                                                 {['الكل', ...categories.map((c) => c.name)].map((cat) => {
                                                     const meta = categories.find((c) => c.name === cat);
                                                     const isActive = activeCat === cat;
@@ -510,10 +580,10 @@ export function HeroPcSimulator({
                                                             key={cat}
                                                             type="button"
                                                             onClick={() => setActiveCat(cat)}
-                                                            className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[10px] font-semibold transition-all ${
+                                                            className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-sm border px-2.5 py-1 text-[10px] font-semibold transition-all ${
                                                                 isActive
-                                                                    ? 'bg-gradient-to-br from-[#f98496] to-[#9085f9] text-white shadow-sm'
-                                                                    : 'cursor-pointer bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-100'
+                                                                    ? 'border-[#f1657d] bg-[#f1657d] text-white shadow-sm'
+                                                                    : 'cursor-pointer border-[#f6dde2] bg-white text-[#5b6572] hover:border-[#f1657d]/60 hover:text-[#f1657d]'
                                                             }`}
                                                         >
                                                             {meta?.image && (
@@ -525,62 +595,64 @@ export function HeroPcSimulator({
                                                 })}
                                             </div>
 
-                                            {/* Real product cards */}
+                                            {/* Real product cards — WpProductCard luxury behaviour */}
                                             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                                                 {visibleProducts.slice(0, 8).map((prod, i) => (
-                                                    <div
+                                                    <article
                                                         key={prod.name + i}
-                                                        className="group animate-fade-slide space-y-1.5 rounded-xl border border-pink-100 bg-white p-2 shadow-sm transition-shadow hover:shadow-md"
-                                                        style={{ animationDelay: `${i * 90}ms` }}
+                                                        className="group sim-stage overflow-hidden rounded-sm border border-[#f6dde2] bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg"
+                                                        style={{ animationDelay: `${i * 80}ms` }}
                                                     >
-                                                        <div className="relative overflow-hidden rounded-lg bg-gray-50">
+                                                        <div className="relative overflow-hidden bg-[#faf5f6]">
+                                                            {!!prod.discount && prod.discount > 0 && (
+                                                                <span className="absolute right-1.5 top-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-[#f1657d] text-[8px] font-bold text-white shadow">
+                                                                    -{prod.discount}%
+                                                                </span>
+                                                            )}
                                                             {prod.image ? (
                                                                 <img
                                                                     src={prod.image}
                                                                     alt={prod.name}
                                                                     loading="lazy"
-                                                                    className="h-20 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                                    className="h-20 w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                                     onError={(e) => {
                                                                         e.currentTarget.style.visibility = 'hidden';
                                                                     }}
                                                                 />
                                                             ) : (
                                                                 <div className="flex h-20 items-center justify-center">
-                                                                    <ShoppingBag className="h-6 w-6 text-gray-300" />
+                                                                    <ShoppingBag className="h-6 w-6 text-[#eecdd4]" />
                                                                 </div>
                                                             )}
-                                                            {!!prod.discount && prod.discount > 0 && (
-                                                                <span className="absolute right-1 top-1 rounded-full bg-[#f98496] px-1.5 py-0.5 text-[8px] font-bold text-white shadow">
-                                                                    -{prod.discount}%
-                                                                </span>
-                                                            )}
                                                         </div>
-                                                        <h4 className="truncate text-[10px] font-bold text-slate-800">{prod.name}</h4>
-                                                        <div className="flex items-baseline gap-1.5">
-                                                            <span className="text-[11px] font-black text-slate-900">
-                                                                {fmtPrice(prod.price)}
-                                                            </span>
-                                                            {!!prod.originalPrice && (
-                                                                <del className="no-underline text-[9px] font-medium text-gray-400 line-through">
-                                                                    {fmtPrice(prod.originalPrice)}
-                                                                </del>
-                                                            )}
+                                                        <div className="space-y-1 p-2 text-right">
+                                                            <h4 className="truncate text-[10px] font-semibold text-[#1a1c22]">{prod.name}</h4>
+                                                            <div className="flex items-baseline gap-1.5">
+                                                                <ins className="text-[11px] font-bold no-underline text-[#f1657d]">
+                                                                    {fmtPrice(prod.price)}
+                                                                </ins>
+                                                                {!!prod.originalPrice && (
+                                                                    <del className="text-[9px] text-gray-400">
+                                                                        {fmtPrice(prod.originalPrice)}
+                                                                    </del>
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                className="flex w-full items-center justify-center gap-1 rounded-sm border border-[#f6dde2] bg-[#fdf2f4] px-1.5 py-1 text-[9px] font-bold text-[#1a1c22] transition-colors hover:border-[#f1657d] hover:bg-[#f1657d] hover:text-white"
+                                                            >
+                                                                <MessageCircle className="h-2.5 w-2.5" />
+                                                                <span>اطلب واتساب</span>
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            type="button"
-                                                            className="flex w-full items-center justify-center gap-1 rounded-lg bg-[#25D366]/10 px-1.5 py-1 text-[9px] font-bold text-[#128C7E] transition-colors hover:bg-[#25D366] hover:text-white"
-                                                        >
-                                                            <MessageCircle className="h-2.5 w-2.5" />
-                                                            <span>اطلب واتساب</span>
-                                                        </button>
-                                                    </div>
+                                                    </article>
                                                 ))}
                                             </div>
 
                                             {/* Mini footer strip */}
-                                            <div className="mt-1 flex items-center justify-between rounded-xl bg-slate-900 px-3 py-2 text-[9px] text-white/85">
+                                            <div className="mt-1 flex items-center justify-between rounded-sm bg-[#1a1c22] px-3 py-2 text-[9px] text-white/85">
                                                 <span>© {new Date().getFullYear()} {storeName} — جميع الحقوق محفوظة</span>
-                                                <span className="font-bold text-emerald-300">يعمل بواسطة وصول</span>
+                                                <span className="font-bold text-[#f9a8b8]">يعمل بواسطة وصول</span>
                                             </div>
                                         </div>
                                     </div>
@@ -612,9 +684,30 @@ export function HeroPcSimulator({
             </div>
 
             <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap');
+
+                /* fashion-designer-mart typography */
+                .sim-fd-serif { font-family: 'Amiri', 'Tajawal', serif; }
+                .sim-fd-body { font-family: 'Cairo', 'Tajawal', sans-serif; }
+
                 .sim-glare {
                     background: linear-gradient(115deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 30%);
                 }
+
+                /* Smooth stage-to-stage entrance */
+                @keyframes simStageIn {
+                    from { opacity: 0; transform: scale(0.985) translateY(6px); }
+                    to   { opacity: 1; transform: scale(1) translateY(0); }
+                }
+                .sim-stage { animation: simStageIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+                /* Lock-screen date soft rise */
+                @keyframes simLockDateIn {
+                    from { opacity: 0; transform: translateY(-8px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .sim-lock-date { animation: simLockDateIn 0.7s ease-out both; }
+
                 @keyframes simBiosIn {
                     to { opacity: 1; }
                 }
@@ -658,18 +751,21 @@ export function HeroPcSimulator({
                     100% { width: 100%; }
                 }
                 .sim-loading-bar { animation: simLoadingBar 1s linear forwards; }
-                @keyframes simBannerPan {
-                    0%, 100% { object-position: 0% top; }
-                    50% { object-position: 100% top; }
+
+                /* Ken Burns drift on the active hero slide */
+                @keyframes simHeroZoom {
+                    from { transform: scale(1) translateX(0); }
+                    to   { transform: scale(1.08) translateX(-2%); }
                 }
-                .anim-banner { animation: simBannerPan 22s ease-in-out infinite; }
+                .sim-hero-zoom { animation: simHeroZoom 9s ease-in-out infinite alternate; will-change: transform; }
 
                 /* Hide the RTL scrollbar column inside the simulated page only */
                 .sim-scroll { scrollbar-width: none; -ms-overflow-style: none; }
                 .sim-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
                 @media (prefers-reduced-motion: reduce) {
-                    .anim-banner, .sim-loading-bar, .sim-bios-line, .sim-spinner { animation: none !important; opacity: 1 !important; width: 100% !important; }
+                    .sim-hero-zoom, .sim-loading-bar, .sim-bios-line, .sim-spinner, .sim-lock-date { animation: none !important; opacity: 1 !important; }
+                    .sim-stage { animation: none !important; opacity: 1 !important; transform: none !important; }
                 }
             `}</style>
         </div>
