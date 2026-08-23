@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Accessibility,
     CircleArrowRight,
@@ -7,7 +7,6 @@ import {
     Globe,
     Lock,
     MessageCircle,
-    MousePointer2,
     Power,
     RotateCw,
     Search,
@@ -61,12 +60,6 @@ const FALLBACK_CATEGORIES: Array<{ name: string; image?: string | null }> = [
 
 const fmtPrice = (n: number): string => `${n.toLocaleString('en-US')} ₪`;
 
-interface Ripple {
-    id: number;
-    x: number;
-    y: number;
-}
-
 export function HeroPcSimulator({
     demoUrl = 'https://demo.wusool.ps',
     preview,
@@ -77,9 +70,6 @@ export function HeroPcSimulator({
     const [pwLen, setPwLen] = useState(0);
     const [loading, setLoading] = useState(false);
     const [clock, setClock] = useState('');
-    const [cursorTarget, setCursorTarget] = useState<{ x: number; y: number } | null>(null);
-    const [ripples, setRipples] = useState<Ripple[]>([]);
-    const rippleId = useRef(0);
     const [activeCat, setActiveCat] = useState('الكل');
 
     const storeName = preview?.name || 'متجر الديمو';
@@ -105,30 +95,7 @@ export function HeroPcSimulator({
         return () => clearInterval(t);
     }, []);
 
-    /** Glide the cursor to (x,y), then emit a click ripple there. */
-    const moveAndClick = (x: number, y: number, glideMs = 550) => {
-        setCursorTarget({ x, y });
-        setTimeout(() => {
-            const id = ++rippleId.current;
-            setRipples((prev) => [...prev, { id, x, y }]);
-            setTimeout(
-                () => setRipples((prev) => prev.filter((r) => r.id !== id)),
-                700,
-            );
-        }, glideMs);
-    };
-
-    const powerOn = () => {
-        // Cursor mounts exactly where the user clicked, then starts its tour.
-        setCursorTarget({ x: 50, y: 44 });
-        const id = ++rippleId.current;
-        setRipples((prev) => [...prev, { id, x: 50, y: 44 }]);
-        setTimeout(
-            () => setRipples((prev) => prev.filter((r) => r.id !== id)),
-            700,
-        );
-        setTimeout(() => setState('BIOS'), 350);
-    };
+    const powerOn = () => setState('BIOS');
 
     const replay = () => {
         setState('OFF');
@@ -136,13 +103,11 @@ export function HeroPcSimulator({
         setRamKb(0);
         setPwLen(0);
         setActiveCat('الكل');
-        setCursorTarget(null);
     };
 
     /* ── BIOS: RAM count-up, then hand over to the lock screen ── */
     useEffect(() => {
         if (state !== 'BIOS') return;
-        setCursorTarget({ x: 58, y: 74 });
         setRamKb(0);
         const ramTimer = setInterval(() => {
             setRamKb((prev) => {
@@ -157,17 +122,14 @@ export function HeroPcSimulator({
         };
     }, [state]);
 
-    /* ── LOGIN (Windows 11): password fills itself, cursor presses the arrow ── */
+    /* ── LOGIN (Windows 11): password fills itself, then signs in ── */
     useEffect(() => {
         if (state !== 'LOGIN') return;
-        setCursorTarget({ x: 47, y: 51 });
         setPwLen(0);
         const typing = setInterval(() => setPwLen((p) => Math.min(p + 1, PW_DOTS)), 95);
-        const clickT = setTimeout(() => moveAndClick(59, 51), 1550);
         const advance = setTimeout(() => setState('WELCOME'), 1750);
         return () => {
             clearInterval(typing);
-            clearTimeout(clickT);
             clearTimeout(advance);
         };
     }, [state]);
@@ -175,18 +137,15 @@ export function HeroPcSimulator({
     /* ── WELCOME: brief “مرحباً” spinner, Windows-style ── */
     useEffect(() => {
         if (state !== 'WELCOME') return;
-        setCursorTarget({ x: 52, y: 62 });
         const t = setTimeout(() => setState('SEARCH'), 1150);
         return () => clearTimeout(t);
     }, [state]);
 
-    /* ── SEARCH: auto-typing, then cursor clicks the result link ── */
+    /* ── SEARCH: auto-typing the query, then opening the result ── */
     useEffect(() => {
         if (state !== 'SEARCH') return;
         let index = 0;
-        let clickT: ReturnType<typeof setTimeout> | undefined;
         setTypedQuery('');
-        setCursorTarget({ x: 48, y: 38 });
         const interval = setInterval(() => {
             if (index < FULL_QUERY.length) {
                 const ch = FULL_QUERY.charAt(index);
@@ -194,7 +153,6 @@ export function HeroPcSimulator({
                 setTypedQuery((prev) => prev + ch);
             } else {
                 clearInterval(interval);
-                moveAndClick(50, 67);
             }
         }, 70);
         const advance = setTimeout(
@@ -203,7 +161,6 @@ export function HeroPcSimulator({
         );
         return () => {
             clearInterval(interval);
-            clearTimeout(clickT);
             clearTimeout(advance);
         };
     }, [state]);
@@ -211,7 +168,6 @@ export function HeroPcSimulator({
     /* ── DEMO: brief page-load simulation (bar + skeleton) ── */
     useEffect(() => {
         if (state !== 'DEMO') return;
-        setCursorTarget({ x: 7, y: 91 });
         setLoading(true);
         const t = setTimeout(() => setLoading(false), 1100);
         return () => clearTimeout(t);
@@ -271,36 +227,6 @@ export function HeroPcSimulator({
                             ))}
                         </div>
                     )}
-
-                    {/* Simulated mouse cursor — stays mounted between stages so it GLIDES */}
-                    {cursorTarget && (
-                        <div
-                            data-testid="sim-cursor"
-                            className="pointer-events-none absolute z-[60]"
-                            style={{
-                                left: `${cursorTarget.x}%`,
-                                top: `${cursorTarget.y}%`,
-                                transition:
-                                    'left 0.65s cubic-bezier(0.22,1,0.36,1), top 0.65s cubic-bezier(0.22,1,0.36,1)',
-                            }}
-                        >
-                            <span className="anim-cursor-float block">
-                                <MousePointer2
-                                    className="h-5 w-5 fill-white text-slate-900 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
-                                    strokeWidth={1.25}
-                                />
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Click ripples */}
-                    {ripples.map((r) => (
-                        <span
-                            key={r.id}
-                            className="sim-ripple pointer-events-none absolute z-[55] h-7 w-7 rounded-full border-2 border-emerald-400"
-                            style={{ left: `${r.x}%`, top: `${r.y}%` }}
-                        />
-                    ))}
 
                     {/* STATE 1: OFF */}
                     {state === 'OFF' && (
@@ -727,16 +653,6 @@ export function HeroPcSimulator({
                 @keyframes simSpin {
                     to { transform: rotate(360deg); }
                 }
-                @keyframes simCursorFloat {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-3px); }
-                }
-                .anim-cursor-float { animation: simCursorFloat 2.6s ease-in-out infinite; }
-                @keyframes simRipple {
-                    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.9; }
-                    100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
-                }
-                .sim-ripple { animation: simRipple 0.65s ease-out forwards; }
                 @keyframes simLoadingBar {
                     0% { width: 0%; }
                     100% { width: 100%; }
@@ -753,8 +669,7 @@ export function HeroPcSimulator({
                 .sim-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
                 @media (prefers-reduced-motion: reduce) {
-                    .anim-cursor-float { animation: none !important; }
-                    .anim-banner, .sim-loading-bar, .sim-ripple, .sim-bios-line, .sim-spinner { animation: none !important; opacity: 1 !important; width: 100% !important; }
+                    .anim-banner, .sim-loading-bar, .sim-bios-line, .sim-spinner { animation: none !important; opacity: 1 !important; width: 100% !important; }
                 }
             `}</style>
         </div>

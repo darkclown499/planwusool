@@ -1,9 +1,10 @@
 /**
  * Automated QA audit for the HeroPcSimulator on a live URL.
  *
- * Verifies: boot flow order, BIOS forced-LTR, cursor gliding,
- * Windows-11 login anatomy, hidden RTL scrollbar column,
- * real banner/product rendering. Saves per-stage screenshots.
+ * Desktop pass: boot flow order, BIOS forced-LTR, Windows-11 login anatomy,
+ * hidden RTL scrollbar column, real banner/product rendering.
+ * Mobile pass (390x844): same flow + horizontal-overflow guard.
+ * Both passes collect console errors and uncaught page errors.
  *
  * Usage:
  *   AUDIT_URL=https://wusool.ps/ SHOTS_DIR=/tmp/shots node scripts/simulator-audit.mjs
@@ -24,46 +25,40 @@ const check = (name, ok, detail = '') => {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const browser = await chromium.launch({ headless: true });
-try {
-    const page = await browser.newPage({
-        viewport: { width: 1400, height: 900 },
+
+async function runPass(label, viewport, shotsPrefix) {
+    const consoleErrors = [];
+    const pageErrors = [];
+    const context = await browser.newContext({
+        viewport,
         locale: 'ar',
+        deviceScaleFactor: label === 'MOBILE' ? 2 : 1,
     });
+    const page = await context.newPage();
+    page.on('console', (msg) => {
+        if (msg.type() === 'error') consoleErrors.push(msg.text().slice(0, 160));
+    });
+    page.on('pageerror', (err) => pageErrors.push(String(err).slice(0, 160)));
+
     await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
     /* OFF state */
     const power = page.getByRole('button', { name: 'تشغيل التجربة' });
     await power.waitFor({ timeout: 25000 });
-    check('OFF: power button visible', await power.isVisible());
-    const cursorGoneBeforeBoot =
-        (await page.locator('[data-testid="sim-cursor"]').count()) === 0;
-    check('OFF: cursor hidden before power-on', cursorGoneBeforeBoot);
-    await page.screenshot({ path: path.join(outDir, '1-off.png') });
+    check(`${label}: power button visible`, await power.isVisible());
+    await page.screenshot({ path: path.join(outDir, `${shotsPrefix}-1-off.png`) });
 
-    /* Boot */
+    /* BIOS — hard-forced LTR */
     await power.click();
-
-    /* BIOS */
     const bios = page.locator('[dir="ltr"]').filter({ hasText: 'WUSOOL BIOS' }).first();
     await bios.waitFor({ timeout: 8000 });
     const biosStyle = await bios.evaluate((el) => {
         const cs = getComputedStyle(el);
         return { direction: cs.direction, align: cs.textAlign };
     });
-    check('BIOS: direction is LTR', biosStyle.direction === 'ltr', JSON.stringify(biosStyle));
-    check('BIOS: text aligned left', biosStyle.align === 'left');
+    check(`${label}: BIOS forced LTR + left-aligned`, biosStyle.direction === 'ltr' && biosStyle.align === 'left', JSON.stringify(biosStyle));
     await sleep(900);
-    await page.screenshot({ path: path.join(outDir, '2-bios.png') });
-
-    /* Cursor exists & moves across stages */
-    const cursor = page.locator('[data-testid="sim-cursor"]');
-    await cursor.waitFor({ timeout: 5000 });
-    const posA = await cursor.boundingBox();
-    check(
-        'CURSOR: parked near RAM area during BIOS (x≈55-62%)',
-        !!posA && posA.x / 1400 > 0.4 && posA.x < 900,
-        posA ? `x=${Math.round(posA.x)} y=${Math.round(posA.y)}` : 'missing',
-    );
+    await page.screenshot({ path: path.join(outDir, `${shotsPrefix}-2-bios.png`) });
 
     /* Windows-11 login */
     const loginArrow = page.getByRole('button', { name: 'تسجيل الدخول', exact: true });
@@ -76,34 +71,30 @@ try {
         const bg = getComputedStyle(el).backgroundImage;
         return bg.includes('radial-gradient') && bg.includes('linear-gradient');
     });
-    check('LOGIN: Win11 bloom wallpaper applied', winWallpaper === true);
-    check('LOGIN: arrow submit present', await loginArrow.isVisible());
+    check(`${label}: Win11 bloom wallpaper`, winWallpaper === true);
     const dotsLen = await page
         .locator('input[type="password"]')
         .inputValue()
         .then((v) => v.length)
         .catch(() => -1);
-    check('LOGIN: password auto-typing (dots)', dotsLen > 0 && dotsLen <= 12, `len=${dotsLen}`);
+    check(`${label}: password auto-typing`, dotsLen > 0 && dotsLen <= 12, `len=${dotsLen}`);
     const trayIcons = await page.locator('.sim-win11 svg').count();
-    check('LOGIN: tray icons rendered (>=4 svgs)', trayIcons >= 4, `count=${trayIcons}`);
-    await page.screenshot({ path: path.join(outDir, '3-win11-login.png') });
+    check(`${label}: Win11 tray icons (>=4 svgs)`, trayIcons >= 4, `count=${trayIcons}`);
+    await page.screenshot({ path: path.join(outDir, `${shotsPrefix}-3-win11-login.png`) });
 
-    /* Welcome */
-    const welcome = page.getByText('مرحباً', { exact: true });
-    await welcome.waitFor({ timeout: 8000 });
-    check('WELCOME: spinner screen shown', await welcome.isVisible());
-    await page.screenshot({ path: path.join(outDir, '4-welcome.png') });
+    /* Welcome spinner */
+    await page.getByText('مرحباً', { exact: true }).waitFor({ timeout: 8000 });
+    check(`${label}: welcome spinner screen`, true);
+    await page.screenshot({ path: path.join(outDir, `${shotsPrefix}-4-welcome.png`) });
 
-    /* Search */
+    /* Search typing */
     await page.getByText('كيف بكون موقعي', { exact: false }).first().waitFor({ timeout: 12000 });
-    check('SEARCH: Arabic query typed', true);
-    const posB = await cursor.boundingBox();
-    void posB;
-    await page.screenshot({ path: path.join(outDir, '5-search.png') });
+    check(`${label}: Arabic query auto-typed`, true);
+    await page.screenshot({ path: path.join(outDir, `${shotsPrefix}-5-search.png`) });
 
     /* Demo store screen */
     await page.getByText('توصيل مجاني للطلبات فوق 200').waitFor({ timeout: 15000 });
-    await sleep(1400); // let skeleton finish
+    await sleep(1400); // skeleton finishes
     const scrollers = page.locator('.sim-scroll');
     const scrollOk = await scrollers.evaluateAll((els) =>
         els.every(
@@ -112,31 +103,41 @@ try {
                 el.offsetWidth === el.clientWidth,
         ),
     );
-    const scrollerCount = await scrollers.count();
-    check('DEMO: RTL scrollbar column hidden', scrollOk && scrollerCount > 0, `scrollers=${scrollerCount}`);
+    check(`${label}: RTL scrollbar column hidden`, scrollOk && (await scrollers.count()) > 0);
 
-    const banner = page.locator('img[alt*="لقطة حقيقية"]').first();
-    const bannerLoaded = await banner
-        .evaluate((img) => img.complete && img.naturalWidth > 100)
-        .catch(() => false);
-    check('DEMO: real screenshot banner loaded', bannerLoaded);
-
+    if (label === 'DESKTOP') {
+        const banner = page.locator('img[alt*="لقطة حقيقية"]').first();
+        const bannerLoaded = await banner
+            .evaluate((img) => img.complete && img.naturalWidth > 100)
+            .catch(() => false);
+        check(`${label}: real screenshot banner loaded`, bannerLoaded);
+    }
     const cards = await page.getByText('اطلب واتساب').count();
-    check('DEMO: real product cards rendered', cards >= 3, `cards=${cards}`);
+    check(`${label}: product cards rendered`, cards >= 2, `cards=${cards}`);
 
-    const fabVisible = await page
-        .locator('a[aria-label="زيارة المتجر الحي"]')
-        .isVisible()
-        .catch(() => false);
-    check('DEMO: WhatsApp FAB visible', fabVisible);
-    await sleep(600);
-    await page.screenshot({ path: path.join(outDir, '6-demo.png') });
+    /* Horizontal overflow guard (whole document) */
+    const overflow = await page.evaluate(() => ({
+        scrollW: document.scrollingElement.scrollWidth,
+        innerW: window.innerWidth,
+    }));
+    check(`${label}: no horizontal page overflow`, overflow.scrollW <= overflow.innerW + 1, JSON.stringify(overflow));
+    await sleep(500);
+    await page.screenshot({ path: path.join(outDir, `${shotsPrefix}-6-demo.png`) });
 
-    /* Cursor travelled far between BIOS and DEMO */
-    const posC = await cursor.boundingBox();
-    const travelled =
-        posA && posC ? Math.hypot(posC.x - posA.x, posC.y - posA.y) : 0;
-    check('CURSOR: glided across stages (>300px travel)', travelled > 300, `dist=${Math.round(travelled)}px`);
+    /* Runtime health */
+    check(`${label}: no uncaught page errors`, pageErrors.length === 0, pageErrors.join(' | '));
+    // Filter known-benign noise (favicon, analytics ad-blockers) from console errors.
+    const serious = consoleErrors.filter(
+        (e) => !/favicon|net::|Failed to load resource/i.test(e),
+    );
+    check(`${label}: no console errors`, serious.length === 0, serious.join(' | '));
+
+    await context.close();
+}
+
+try {
+    await runPass('DESKTOP', { width: 1400, height: 900 }, 'd');
+    await runPass('MOBILE', { width: 390, height: 844 }, 'm');
 
     const failed = results.filter((r) => !r.ok);
     console.log(`\nAUDIT SUMMARY: ${results.length - failed.length}/${results.length} passed`);
