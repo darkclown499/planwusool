@@ -1486,40 +1486,44 @@ export default function Onboarding({
                                                 </div>
 
                                                 <div className="onboarding-stagger relative">
-                                                    <div className="mb-6 text-center">
-                                                        <div
-                                                            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl animate-pop"
-                                                            style={{ backgroundColor: primaryColor }}
-                                                        >
-                                                            <PartyPopper className="h-8 w-8 text-white" />
+                                                    <div className="mb-5 text-center">
+                                                        <div className="mx-auto mb-2 flex h-12 w-12 animate-pop items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 shadow-sm">
+                                                            <Sparkles className="h-6 w-6" />
                                                         </div>
-                                                        <h2 className="text-2xl font-bold text-gray-900">
+                                                        <h2 className="text-xl font-bold text-gray-900">
                                                             {t('Almost there! Review your details.')}
                                                         </h2>
-                                                        <p className="mt-1 text-sm text-gray-500">
+                                                        <p className="mt-1 text-xs text-gray-500">
                                                             {t('Review your selections and confirm to finish.')}
                                                         </p>
                                                     </div>
 
-                                                    <div className="mb-4 flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                                    <label
+                                                        className={`mb-3 flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3.5 transition-all ${
+                                                            data.import_demo_products
+                                                                ? 'border-emerald-500 bg-emerald-50/40'
+                                                                : 'border-gray-200 bg-white'
+                                                        }`}
+                                                    >
                                                         <input
                                                             id="import_demo"
                                                             type="checkbox"
                                                             checked={data.import_demo_products}
                                                             onChange={(e) => setData('import_demo_products', e.target.checked)}
-                                                            className="mt-1 h-4 w-4 rounded border-gray-300 accent-emerald-600"
+                                                            className="h-4 w-4 rounded border-gray-300 accent-emerald-600"
                                                         />
-                                                        <div>
-                                                            <Label htmlFor="import_demo" className="text-sm font-semibold text-gray-900">
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-bold text-gray-800">
                                                                 {t('Start with demo products')}
-                                                            </Label>
-                                                            <p className="mt-1 text-xs text-gray-500">
+                                                            </p>
+                                                            <p className="mt-0.5 text-[11px] text-gray-500">
                                                                 {t('Import a sample catalog so your store is not empty. You can edit or remove everything later.')}
                                                             </p>
                                                         </div>
-                                                    </div>
+                                                    </label>
 
-                                                    <div className="space-y-2.5 rounded-2xl border border-gray-200 p-5">
+                                                    <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-3.5">
+                                                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                                                         {[
                                                             {
                                                                 icon: User,
@@ -1536,6 +1540,7 @@ export default function Onboarding({
                                                                 label: t('Store URL'),
                                                                 value: `${data.store_subdomain}.${storeDomain}`,
                                                                 ltr: true,
+                                                                highlight: true,
                                                             },
                                                             {
                                                                 icon: Mail,
@@ -1595,23 +1600,27 @@ export default function Onboarding({
                                                         ].map((row, i) => (
                                                             <div
                                                                 key={i}
-                                                                className="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-4 py-3 text-sm"
+                                                                className="flex items-center justify-between gap-2 rounded-xl border border-gray-100 bg-white p-2.5 shadow-sm"
                                                             >
-                                                                <span className="flex items-center gap-2 text-gray-500">
-                                                                    <row.icon
-                                                                        className="h-4 w-4"
-                                                                        style={{ color: primaryColor }}
-                                                                    />
-                                                                    {row.label}
-                                                                </span>
-                                                                <span
-                                                                    className="truncate font-semibold text-gray-900"
-                                                                    dir={row.ltr ? 'ltr' : undefined}
-                                                                >
-                                                                    {row.value}
-                                                                </span>
+                                                                <div className="flex min-w-0 items-center gap-2">
+                                                                    <span className="shrink-0 rounded-lg bg-gray-50 p-1.5 text-emerald-600">
+                                                                        <row.icon className="h-3.5 w-3.5" />
+                                                                    </span>
+                                                                    <div className="min-w-0 text-start">
+                                                                        <p className="text-[10px] font-medium text-gray-400">{row.label}</p>
+                                                                        <p
+                                                                            dir={row.ltr ? 'ltr' : undefined}
+                                                                            className={`truncate text-xs font-bold ${
+                                                                                row.highlight ? 'text-emerald-700' : 'text-gray-800'
+                                                                            }`}
+                                                                        >
+                                                                            {row.value}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         ))}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
