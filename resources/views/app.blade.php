@@ -145,10 +145,13 @@
 
         @if($isLandingRoute)
             @php
-                $seoTitle = getSetting('metaTitle', '') ?: getSetting('titleText', config('app.name', 'Wusool'));
-                $seoDesc = getSetting('metaDescription', '');
-                $seoKeywords = getSetting('metaKeywords', '');
-                $seoImage = getSetting('metaImage', '');
+                // Arabic-first SEO defaults; admin settings override when filled.
+                // Brand variations (متجر وصول / متاجر وصول / وصول للمتاجر) are
+                // targeted explicitly for search dominance.
+                $seoTitle = getSetting('metaTitle', '') ?: 'وصول للمتاجر | منصة إنشاء متاجر إلكترونية ومتجر واتساب';
+                $seoDesc = getSetting('metaDescription', '') ?: 'منصة وصول للمتاجر الإلكترونية: انشئ متجر وصول الخاص بك وربطه بالواتساب خلال دقائق. استعرض أفضل متاجر وصول وابدأ البيع أونلاين بسهولة.';
+                $seoKeywords = getSetting('metaKeywords', '') ?: 'وصول, متجر وصول, متاجر وصول, وصول للمتاجر, منصة وصول, متاجر, انشاء متجر الكتروني, wusool, wusool.ps';
+                $seoImage = getSetting('metaImage', '') ?: '/assets/images/og-cover.png';
                 if ($seoImage && !str_starts_with($seoImage, 'http')) {
                     $seoImage = rtrim($appUrl, '/') . '/' . ltrim($seoImage, '/');
                 }
@@ -163,7 +166,9 @@
                 ]));
             @endphp
             <title>{{ $seoTitle }}</title>
+            <meta name="title" content="{{ $seoTitle }}">
             <meta name="description" content="{{ $seoDesc }}">
+            <meta name="language" content="Arabic">
             @if($seoKeywords)
                 <meta name="keywords" content="{{ $seoKeywords }}">
             @endif
@@ -178,7 +183,7 @@
             <meta property="og:type" content="website">
             <meta property="og:locale" content="{{ $ogLocale }}">
             @if($seoImage)
-                <meta property="og:image" content="{{ $seoImage }}">
+                <meta property="og:image" content="{{ str_starts_with($seoImage, 'http') ? $seoImage : rtrim($appUrl, '/') . '/' . ltrim($seoImage, '/') }}">
                 <meta property="og:image:width" content="1200">
                 <meta property="og:image:height" content="630">
             @endif
@@ -189,35 +194,75 @@
                 <meta name="twitter:description" content="{{ $seoDesc }}">
             @endif
             @if($seoImage)
-                <meta name="twitter:image" content="{{ $seoImage }}">
+                <meta name="twitter:image" content="{{ str_starts_with($seoImage, 'http') ? $seoImage : rtrim($appUrl, '/') . '/' . ltrim($seoImage, '/') }}">
             @endif
-            {{-- JSON-LD Organization + WebSite --}}
+            {{-- JSON-LD @graph: Organization + WebSite + FAQPage + SoftwareApplication --}}
             <script type="application/ld+json">
             {!! json_encode([
                 '@' . 'context' => 'https://schema.org',
-                '@type' => 'Organization',
-                'name' => config('app.name', 'Wusool'),
-                'alternateName' => 'وُصول',
-                'url' => $appUrl,
-                'logo' => $orgLogo,
-                'image' => $orgLogo,
-                'description' => $seoDesc,
-                'sameAs' => $orgSameAs,
-                'contactPoint' => [
-                    '@type' => 'ContactPoint',
-                    'contactType' => 'customer support',
-                    'availableLanguage' => ['Arabic', 'English'],
+                '@graph' => [
+                    [
+                        '@type' => 'Organization',
+                        '@id' => $appUrl . '/#organization',
+                        'name' => 'وصول',
+                        'alternateName' => ['متجر وصول', 'متاجر وصول', 'وصول للمتاجر', 'Wusool'],
+                        'url' => $appUrl,
+                        'logo' => $appUrl . '/assets/images/logo.png',
+                        'image' => $orgLogo,
+                        'description' => $seoDesc,
+                        'sameAs' => array_values(array_unique(array_filter(array_merge([
+                            'https://www.facebook.com/wusool.ps',
+                        ], $orgSameAs)))),
+                        'contactPoint' => [
+                            '@type' => 'ContactPoint',
+                            'contactType' => 'customer support',
+                            'availableLanguage' => ['Arabic', 'English'],
+                        ],
+                    ],
+                    [
+                        '@type' => 'WebSite',
+                        '@id' => $appUrl . '/#website',
+                        'url' => $appUrl,
+                        'name' => 'وصول للمتاجر',
+                        'alternateName' => 'متاجر وصول',
+                        'inLanguage' => 'ar',
+                        'publisher' => ['@id' => $appUrl . '/#organization'],
+                    ],
+                    [
+                        '@type' => 'FAQPage',
+                        'mainEntity' => [
+                            [
+                                '@type' => 'Question',
+                                'name' => 'ما هي منصة وصول للمتاجر؟',
+                                'acceptedAnswer' => [
+                                    '@type' => 'Answer',
+                                    'text' => 'وصول هي منصة متخصصة تُتيح لك إنشاء متجر إلكتروني احترافي (متجر وصول) وربطه مباشرة بالواتساب لاستقبال الطلبات وتسهيل عمليات البيع.',
+                                ],
+                            ],
+                            [
+                                '@type' => 'Question',
+                                'name' => 'كيف يمكنني تصفح متاجر وصول؟',
+                                'acceptedAnswer' => [
+                                    '@type' => 'Answer',
+                                    'text' => 'يمكنك استكشاف جميع متاجر وصول عبر دليل المتاجر المتاح على المنصة واختيار القالب والتصميم المناسب لمتجرك.',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        '@type' => 'SoftwareApplication',
+                        'name' => 'وصول - Wusool',
+                        'operatingSystem' => 'All',
+                        'applicationCategory' => 'BusinessApplication',
+                        'url' => $appUrl,
+                        'description' => 'منصة متقدمة متخصصة في إنشاء وإدارة المتاجر الإلكترونية المتعددة وتوفير قوالب احترافية وحلول تجارة متكاملة.',
+                        'offers' => [
+                            '@type' => 'Offer',
+                            'price' => '0',
+                            'priceCurrency' => 'ILS',
+                        ],
+                    ],
                 ],
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
-            </script>
-            <script type="application/ld+json">
-            {!! json_encode([
-                '@' . 'context' => 'https://schema.org',
-                '@type' => 'WebSite',
-                'name' => config('app.name', 'Wusool'),
-                'alternateName' => 'وُصول',
-                'url' => $appUrl,
-                'inLanguage' => 'ar',
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
             </script>
         @endif
