@@ -1,7 +1,6 @@
 ﻿import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { FlagIcon } from '@/components/FlagIcon';
 import {
     Banknote,
     Check,
@@ -417,11 +416,6 @@ export default function Onboarding({
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     });
-
-    const langOptions = [
-        { code: 'ar', name: t('Arabic'), countryCode: 'SA' },
-        { code: 'en', name: t('English'), countryCode: 'GB' },
-    ];
 
     // Offer exactly the catalog the backend validates against (the 14
     // builder templates) so a choice made in the wizard can never be
@@ -1101,34 +1095,54 @@ export default function Onboarding({
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                    {langOptions.map((lang) => (
-                                                        <button
-                                                            key={lang.code}
-                                                            type="button"
-                                                            onClick={() => selectLanguage(lang.code)}
-                                                            className={`relative flex items-center gap-3 rounded-2xl border-2 p-5 text-start transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                                                                data.language === lang.code
-                                                                    ? 'border-primary bg-primary/5'
-                                                                    : 'border-gray-200 hover:border-gray-300'
-                                                            }`}
-                                                        >
-                                                            <FlagIcon
-                                                                countryCode={lang.countryCode}
-                                                                svg
-                                                                className="text-3xl"
-                                                            />
-                                                            <span className="font-semibold text-gray-900">{lang.name}</span>
-                                                            {data.language === lang.code && (
-                                                                <span
-                                                                    className="absolute end-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-white animate-pop"
-                                                                    style={{ backgroundColor: primaryColor }}
-                                                                >
-                                                                    <Check className="h-4 w-4" />
-                                                                </span>
-                                                            )}
-                                                        </button>
-                                                    ))}
+                                                <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                                                    {/* Arabic option */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => selectLanguage('ar')}
+                                                        className={`relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all ${
+                                                            data.language === 'ar'
+                                                                ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/10'
+                                                                : 'border-gray-200 bg-white hover:border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-2xl">🇸🇦</span>
+                                                            <div className="text-start">
+                                                                <p className="text-sm font-bold text-gray-900">العربية</p>
+                                                                <p className="text-xs text-gray-500">الواجهة الرئيسية ولوحة التحكم</p>
+                                                            </div>
+                                                        </div>
+                                                        {data.language === 'ar' && (
+                                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white animate-pop">
+                                                                <Check className="h-3.5 w-3.5" />
+                                                            </span>
+                                                        )}
+                                                    </button>
+
+                                                    {/* English option */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => selectLanguage('en')}
+                                                        className={`relative flex cursor-pointer items-center justify-between rounded-xl border-2 p-4 transition-all ${
+                                                            data.language === 'en'
+                                                                ? 'border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-500/10'
+                                                                : 'border-gray-200 bg-white hover:border-gray-300'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-2xl">🇬🇧</span>
+                                                            <div className="text-start">
+                                                                <p className="text-sm font-bold text-gray-900">English</p>
+                                                                <p className="text-xs text-gray-500">Main interface &amp; dashboard</p>
+                                                            </div>
+                                                        </div>
+                                                        {data.language === 'en' && (
+                                                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white animate-pop">
+                                                                <Check className="h-3.5 w-3.5" />
+                                                            </span>
+                                                        )}
+                                                    </button>
                                                 </div>
                                             </div>
                                         )}
