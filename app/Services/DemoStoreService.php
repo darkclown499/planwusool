@@ -70,12 +70,16 @@ class DemoStoreService
 
     /**
      * Get the demo store, creating and seeding it on first request.
+     * Existing installs seeded with the old generic catalog are upgraded
+     * in place to the branded «بوتيك ماسة» boutique automatically.
      */
     public function ensureDemoStore(): Store
     {
         $store = Store::where('slug', self::SLUG)->first();
 
         if ($store) {
+            $this->upgradeLegacySeed($store);
+
             return $store;
         }
 
@@ -84,7 +88,8 @@ class DemoStoreService
             ?? User::where('type', 'company')->orderBy('id')->first();
 
         $store = Store::create([
-            'name' => __('Demo Store'),
+            // Brand names are not translated — «بوتيك ماسة» is the boutique identity.
+            'name' => 'بوتيك ماسة',
             'slug' => self::SLUG,
             'description' => __('A fully working demo store showing the capabilities of Wusool.'),
             'theme' => 'core-minimal',
@@ -98,6 +103,43 @@ class DemoStoreService
         $this->seedData($store);
 
         return $store;
+    }
+
+    /**
+     * One-time in-place upgrade: demo stores still carrying the legacy
+     * "Demo Store" branding / generic electronics-first catalog are wiped
+     * and reseeded with the branded fashion-forward catalog. No-op for any
+     * store already on (or beyond) this version, so it runs at most once.
+     */
+    private function upgradeLegacySeed(Store $store): void
+    {
+        $legacyNames = ['Demo Store', 'متجر تجريبي', 'متجر الديمو'];
+        $isLegacyBrand = in_array($store->getRawOriginal('name') ?? $store->name, $legacyNames, true);
+        $hasLegacyCatalog = Product::where('store_id', $store->id)
+            ->where('sku', 'DEMO-P1')
+            ->exists();
+
+        if (! $isLegacyBrand && ! $hasLegacyCatalog) {
+            return;
+        }
+
+        try {
+            Product::where('store_id', $store->id)->delete();
+            Category::where('store_id', $store->id)->delete();
+        } catch (\Throwable $e) {
+            // Referenced by carts/orders — keep the working store untouched.
+            return;
+        }
+
+        $store->forceFill([
+            'name' => 'بوتيك ماسة',
+            'description' => __('A fully working demo store showing the capabilities of Wusool.'),
+        ])->save();
+
+        $this->seedData($store);
+
+        Cache::forget('demo_store_preview.' . config('demo.preview_product_limit', 8) . '.' . config('demo.preview_category_limit', 6));
+        Cache::forget('demo_store_preview.8.6');
     }
 
     /**
@@ -225,15 +267,24 @@ class DemoStoreService
                     break;
                 }
 
+                // Entries may reference ready-made public assets (real theme
+                // photography) instead of the generated emoji SVG slugs.
+                $isDirectPath = str_starts_with((string) $imageSlug, '/');
+                $cover = $isDirectPath
+                    ? $imageSlug
+                    : '/storage/demo/' . $imageSlug . '.svg';
+
                 Product::create([
                     'name' => $name,
-                    'sku' => 'DEMO-' . strtoupper($imageSlug),
+                    'sku' => $isDirectPath
+                        ? 'DEMO-' . strtoupper(substr(md5($name), 0, 10))
+                        : 'DEMO-' . strtoupper($imageSlug),
                     'description' => $description,
                     'price' => $price,
                     'sale_price' => $salePrice,
                     'stock' => $stock,
-                    'cover_image' => '/storage/demo/' . $imageSlug . '.svg',
-                    'images' => json_encode(['/storage/demo/' . $imageSlug . '.svg']),
+                    'cover_image' => $cover,
+                    'images' => json_encode([$cover]),
                     'category_id' => $categoryModel->id,
                     'store_id' => $store->id,
                     'is_active' => true,
@@ -276,6 +327,34 @@ class DemoStoreService
     private function catalogArabic(): array
     {
         return [
+            /*
+             * «بوتيك ماسة» opens on its signature women's-fashion aisle so the
+             * landing simulator shows a believable ready-made boutique. The
+             * first four pieces use the real fashion-designer-mart template
+             * photography instead of placeholder art.
+             */
+            'cat-fashion' => [
+                'name' => 'أزياء نسائية',
+                'products' => [
+                    ['/themes/fashion-designer-mart/trending-products1.png', 'فستان سهرة دانتيل مطرز', 'فستان سهرة بقصّة حورية مطرّز بالدانتيل اليدوي مع بطانة ساتان ناعمة، الإطلالة المثالية لمناسباتك.', 389, 469, 12],
+                    ['/themes/fashion-designer-mart/trending-products2.png', 'عباية كلوش بقصّة خليجية', 'عباية من قماش الندى الكوري الخفيف بأكمام واسعة وتفاصيل كريستال يدوية على الأكمام.', 449, 0, 20],
+                    ['/themes/fashion-designer-mart/trending-products3.png', 'طقم تونيك وبنطلون كتان', 'طقم صيفي من الكتان الطبيعي بلون بيج هادئ، قصّة واسعة مريحة تليق بأناقتك اليومية.', 329, 389, 15],
+                    ['/themes/fashion-designer-mart/trending-products4.png', 'معطف صوف طويل بحزام', 'معطف شتوي أنيق من الصوف المخلوط بقصّة مستقيمة وحزام يبرز الخصر، دفء بلمسة فخامة.', 479, 559, 8],
+                    ['p4', 'بلوزة ساتان بأكمام منفوخة', 'بلوزة ساتان بلمعة راقية وأكمام منفوخة تناسب إطلالات العمل والمناسبات المسائية.', 159, 199, 30],
+                    ['p4', 'تنورة ميدي بليسيه انسيابية', 'تنورة بليسيه بطول منتصف الساق بحركة انسيابية تمنح مشيتك رشاقة مميزة.', 179, 0, 25],
+                    ['p5', 'بنطلون قماش واسع عالي الخصر', 'بنطلون واسع من قماش السكوبا المرن بخصرة عالية تطيّل القامة وتناسب كل الإطلالات.', 145, 175, 40],
+                ],
+            ],
+            'cat-jewelry' => [
+                'name' => 'حقائب ومجوهرات',
+                'products' => [
+                    ['p12', 'حقيبة يد جلد طبيعي فاخر', 'حقيبة يد من الجلد الطبيعي 100% بتشطيبات ذهبية وحزام كتف قابل للفصل، تأتي بغبار واقٍ.', 349, 429, 10],
+                    ['p12', 'حقيبة كتف ميني عصرية', 'حقيبة كتف مدمجة بتصميم عصري تناسب المناسبات والخروجات اليومية، بعدة جيوب داخلية.', 229, 279, 18],
+                    ['p24', 'طقم خواتم ستانلس مذهّب', 'ثلاثية خواتم ستانلس ستيل مطلية بالذهب عيار 18 مقاومة للتأكسد والماء، مقاسات متعددة.', 189, 239, 35],
+                    ['p24', 'قلادة لؤلؤ طبيعي بكلاسب آمن', 'قلادة من اللؤلؤ العذبي الطبيعي بإغلاق محكم وتأتي بكيس هدايا مخملي مجاني.', 319, 0, 14],
+                    ['p3', 'ساعة نسائية روز قولد جلد', 'ساعة بحركة كوارتز يابانية وسوار جلد بلون الذهب الوردي، مقاومة للماء بعمق 3ATM.', 459, 539, 9],
+                ],
+            ],
             'cat-electronics' => [
                 'name' => 'إلكترونيات',
                 'products' => [
@@ -401,14 +480,6 @@ class DemoStoreService
                     ['p24', 'كاميرا ميرورلس', 'كاميرا احترافية بجودة سينمائية وسرعة تركيز عالية.', 3499, 3999, 6],
                 ],
             ],
-            'cat-jewelry' => [
-                'name' => 'مجوهرات',
-                'products' => [
-                    ['p1', 'خاتم ذهب مرصع', 'خاتم من الذهب الخالص مرصع بأحجار كريمة لامعة.', 2499, 2999, 5],
-                    ['p1', 'قلادة ألماس أنيقة', 'قلادة بتصميم راقٍ من الألماس الطبيعي.', 3999, 4599, 3],
-                    ['p2', 'سوار فضة مطلي', 'سوار من الفضة الإسترليني بنقشة يدوية.', 899, 1099, 15],
-                ],
-            ],
             'cat-watches' => [
                 'name' => 'ساعات',
                 'products' => [
@@ -447,20 +518,40 @@ class DemoStoreService
     private function catalogEnglish(): array
     {
         return [
+            /*
+             * «Masah Boutique» opens on its signature women's-fashion aisle so
+             * the landing simulator shows a believable ready-made boutique.
+             * The first four pieces use the real fashion-designer-mart
+             * template photography instead of placeholder art.
+             */
+            'cat-fashion' => [
+                'name' => 'Women\'s Fashion',
+                'products' => [
+                    ['/themes/fashion-designer-mart/trending-products1.png', 'Embroidered Lace Evening Gown', 'Mermaid-cut evening gown hand-embroidered with delicate lace and a soft satin lining — the perfect look for your occasions.', 389, 469, 12],
+                    ['/themes/fashion-designer-mart/trending-products2.png', 'Gulf-Style Flared Abaya', 'Abaya in lightweight Korean nada fabric with wide sleeves and hand-set crystal detailing.', 449, 0, 20],
+                    ['/themes/fashion-designer-mart/trending-products3.png', 'Linen Tunic & Wide-Leg Set', 'Summer two-piece in natural linen with a calm beige tone — a relaxed wide cut for effortless everyday elegance.', 329, 389, 15],
+                    ['/themes/fashion-designer-mart/trending-products4.png', 'Long Belted Wool Coat', 'Elegant winter coat in blended wool with a straight cut and waist-defining belt — warmth with a touch of luxury.', 479, 559, 8],
+                    ['p4', 'Satin Blouse with Puff Sleeves', 'Lustrous satin blouse with voluminous puff sleeves that transitions from office hours to evening outings.', 159, 199, 30],
+                    ['p4', 'Flowy Pleated Midi Skirt', 'Pleated midi skirt with a graceful flowing movement that adds charm to every step.', 179, 0, 25],
+                    ['p5', 'High-Waist Wide-Leg Trousers', 'Wide-leg trousers in stretch scuba fabric with a high rise that elongates the silhouette.', 145, 175, 40],
+                ],
+            ],
+            'cat-jewelry' => [
+                'name' => 'Bags & Jewelry',
+                'products' => [
+                    ['p12', 'Premium Genuine-Leather Handbag', '100% genuine-leather handbag with gold-tone hardware and a detachable shoulder strap, dust bag included.', 349, 429, 10],
+                    ['p12', 'Mini Modern Shoulder Bag', 'Compact shoulder bag with a contemporary design for occasions and daily outings, multiple inner pockets.', 229, 279, 18],
+                    ['p24', 'Gold-Plated Stainless Ring Trio', 'Set of three stainless steel rings plated in 18K gold, tarnish- and water-resistant, in multiple sizes.', 189, 239, 35],
+                    ['p24', 'Natural Pearl Pendant Necklace', 'Natural freshwater pearl necklace with a secure clasp, complimentary velvet gift pouch included.', 319, 0, 14],
+                    ['p3', 'Rose-Gold Leather Ladies Watch', 'Japanese quartz movement with a rose-gold leather strap, water-resistant to 3ATM.', 459, 539, 9],
+                ],
+            ],
             'cat-electronics' => [
                 'name' => 'Electronics',
                 'products' => [
                     ['p1', 'Nox X1 Smartphone', 'Smartphone with a 6.7-inch AMOLED display, a 108MP camera and an all-day battery.', 1499, 1799, 25],
                     ['p2', 'Pro Wireless Earbuds', 'Wireless earbuds with active noise cancellation and crystal-clear sound.', 299, 399, 50],
                     ['p3', 'Fit T Smartwatch', 'Multi-function smartwatch with fitness and sleep tracking and smart notifications.', 499, 599, 30],
-                ],
-            ],
-            'cat-fashion' => [
-                'name' => 'Fashion',
-                'products' => [
-                    ['p4', 'Elegant Summer Dress', 'Light summer dress with a modern design that suits every occasion.', 199, 249, 15],
-                    ['p5', 'Cotton T-Shirt', '100% cotton t-shirt, comfortable and soft in all sizes and colors.', 89, 119, 80],
-                    ['p6', 'Athletic Sneakers', 'Lightweight, comfortable running shoes, perfect for jogging and daily walks.', 249, 349, 20],
                 ],
             ],
             'cat-home' => [
@@ -570,14 +661,6 @@ class DemoStoreService
                     ['p23', 'Powerful Work Laptop', 'Laptop with a modern processor and plenty of memory for heavy tasks.', 5499, 6499, 8],
                     ['p23', 'Professional 4K Monitor', '4K resolution monitor with accurate colors, ideal for designers.', 1899, 2299, 12],
                     ['p24', 'Mirrorless Camera', 'Professional camera with cinematic quality and fast autofocus.', 3499, 3999, 6],
-                ],
-            ],
-            'cat-jewelry' => [
-                'name' => 'Jewelry',
-                'products' => [
-                    ['p1', 'Gemstone Gold Ring', 'A pure gold ring set with sparkling gemstones.', 2499, 2999, 5],
-                    ['p1', 'Elegant Diamond Pendant', 'A refined pendant made of natural diamonds.', 3999, 4599, 3],
-                    ['p2', 'Silver-Plated Bracelet', 'A sterling silver bracelet with handcrafted engraving.', 899, 1099, 15],
                 ],
             ],
             'cat-watches' => [

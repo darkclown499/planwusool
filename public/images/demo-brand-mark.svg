@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Masah Boutique">
+  <defs>
+    <linearGradient id="gem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f98ca6"/>
+      <stop offset="100%" stop-color="#e4556d"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- gem body -->
+  <polygon points="32,7 51,21 32,57 13,21" fill="url(#gem)"/>
+  <!-- left facet highlight -->
+  <polygon points="32,7 22.5,21 32,57" fill="url(#shine)" opacity=".45"/>
+  <!-- crown line -->
+  <line x1="13" y1="21" x2="51" y2="21" stroke="#1a1c22" stroke-width="3" stroke-linecap="round"/>
+  <!-- facet edges -->
+  <polyline points="22.5,21 32,57 41.5,21" fill="none" stroke="#1a1c22" stroke-width="1.8" opacity=".6"/>
+  <polyline points="22.5,21 27,7 32,21 37,7 41.5,21" fill="none" stroke="#1a1c22" stroke-width="1.4" opacity=".45" stroke-linejoin="round"/>
+  <line x1="32" y1="7" x2="32" y2="21" stroke="#1a1c22" stroke-width="1.2" opacity=".35"/>
+  <!-- sparkle -->
+  <path d="M52 8 l1.6 3.4 3.4 1.6 -3.4 1.6 -1.6 3.4 -1.6 -3.4 -3.4 -1.6 3.4 -1.6 z" fill="#f9a8b8"/>
+</svg>

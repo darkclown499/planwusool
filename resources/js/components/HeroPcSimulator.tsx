@@ -54,16 +54,20 @@ const HERO_SLIDES = [
     '/themes/fashion-designer-mart/header-banner.png',
 ];
 
+/** Brand mark of the demo boutique (elegant gem — matches fashion-designer-mart). */
+const BRAND_MARK = '/images/demo-brand-mark.svg';
+
 /** Used only until the live backend payload arrives. */
 const FALLBACK_PRODUCTS: DemoStoreProduct[] = [
-    { name: 'سماعات لاسلكية Pro', price: 199, originalPrice: 249, discount: 20, category: 'إلكترونيات' },
-    { name: 'حقيبة ظهر عصرية', price: 120, category: 'أزياء' },
-    { name: 'ساعة ذكية Fit', price: 249, originalPrice: 299, discount: 17, category: 'إلكترونيات' },
+    { name: 'فستان سهرة دانتيل مطرز', image: '/themes/fashion-designer-mart/trending-products1.png', price: 389, originalPrice: 469, discount: 17, category: 'أزياء نسائية' },
+    { name: 'عباية كلوش بقصّة خليجية', image: '/themes/fashion-designer-mart/trending-products2.png', price: 449, category: 'أزياء نسائية' },
+    { name: 'طقم تونيك وبنطلون كتان', image: '/themes/fashion-designer-mart/trending-products3.png', price: 329, originalPrice: 389, discount: 15, category: 'أزياء نسائية' },
+    { name: 'معطف صوف طويل بحزام', image: '/themes/fashion-designer-mart/trending-products4.png', price: 479, originalPrice: 559, discount: 14, category: 'أزياء نسائية' },
 ];
 
 const FALLBACK_CATEGORIES: Array<{ name: string; image?: string | null }> = [
-    { name: 'إلكترونيات' },
-    { name: 'أزياء' },
+    { name: 'أزياء نسائية' },
+    { name: 'حقائب ومجوهرات' },
 ];
 
 const fmtPrice = (n: number): string => `${n.toLocaleString('en-US')} ₪`;
@@ -82,7 +86,7 @@ export function HeroPcSimulator({
     const [lockDate, setLockDate] = useState('');
     const [activeCat, setActiveCat] = useState('الكل');
 
-    const storeName = preview?.name || 'متجر الديمو';
+    const storeName = preview?.name || 'بوتيك ماسة';
     const products =
         preview?.products && preview.products.length > 0 ? preview.products : FALLBACK_PRODUCTS;
     const rawCategories =
@@ -455,16 +459,21 @@ export function HeroPcSimulator({
                                             </span>
                                             <span dir="ltr" className="hidden shrink-0 items-center gap-1 sm:flex">
                                                 <Phone className="h-2.5 w-2.5 text-[#f1657d]" />
-                                                +966 56 121 3435
+                                                +972559886886
                                             </span>
                                         </div>
 
                                         {/* Storefront header row */}
                                         <div className="flex items-center justify-between border-b border-[#f6dde2] bg-white px-3 py-2">
                                             <div className="flex items-center gap-1.5">
-                                                <span className="sim-fd-serif flex h-6 w-6 items-center justify-center rounded-sm bg-[#f1657d] text-[11px] font-bold text-white shadow-sm">
-                                                    {storeName.slice(0, 1)}
-                                                </span>
+                                                <img
+                                                    src={BRAND_MARK}
+                                                    alt="شعار المتجر"
+                                                    className="h-6 w-6 shrink-0 object-contain drop-shadow-sm"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.visibility = 'hidden';
+                                                    }}
+                                                />
                                                 <span className="sim-fd-serif text-xs font-bold tracking-wide text-[#1a1c22]">{storeName}</span>
                                             </div>
                                             <nav className="hidden items-center gap-3 text-[9px] font-medium text-[#5b6572] sm:flex">
