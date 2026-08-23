@@ -2,18 +2,20 @@ import { Head } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import {
+    ArrowLeft,
     Check,
     Copy,
     CreditCard,
     ExternalLink,
+    Gift,
     LayoutDashboard,
     MessageCircle,
     Package,
-    Share2,
+    ShoppingBag,
+    Sparkles,
     Store,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 
@@ -27,7 +29,6 @@ interface SuccessProps {
 }
 
 export default function OnboardingSuccess({
-    storeName,
     storeId,
     storeUrl,
     publishStore,
@@ -66,55 +67,66 @@ export default function OnboardingSuccess({
                 {/* Success mark */}
                 <div className="mb-6 flex justify-center">
                     <div className="relative">
-                        <div
-                            className="flex h-20 w-20 items-center justify-center rounded-full shadow-lg animate-pop"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            <Check className="h-10 w-10 text-white" />
+                        <div className="flex h-16 w-16 animate-pop items-center justify-center rounded-full bg-emerald-100 text-emerald-600 shadow-inner">
+                            <Check className="h-8 w-8 stroke-[3]" />
                         </div>
-                        <span className="absolute -inset-2 rounded-full opacity-30 animate-ping" style={{ backgroundColor: primaryColor }} />
+                        <span className="absolute -inset-2 animate-ping rounded-full bg-emerald-400 opacity-20" />
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-xl shadow-gray-200/60">
-                    <div className="mb-4 flex justify-center">
-                            <img src="/images/logos/wusool-logo.png" alt={titleText} className="h-10 w-auto" />
-                        </div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        {t('Your store is ready!')}
-                    </h1>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-500">
-                        {t('Congratulations, your store is live at the address below. You can start adding your own products right away.')}
-                    </p>
+                <div className="space-y-5 rounded-3xl border border-gray-100 bg-white p-6 text-center shadow-sm sm:p-8">
+                    <div className="flex justify-center">
+                        <img src="/images/logos/wusool-logo.png" alt={titleText} className="h-10 w-auto" />
+                    </div>
+
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-black text-gray-900">
+                            {t('Your store is ready!')}
+                        </h1>
+                        <p className="mx-auto max-w-md text-xs leading-relaxed text-gray-500">
+                            {t('Congratulations, your store is live at the address below. You can start adding your own products right away.')}
+                        </p>
+                    </div>
 
                     {/* Store URL */}
-                    <div className="mt-6 flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3">
-                        <Store className="h-4 w-4 shrink-0" style={{ color: primaryColor }} />
-                        <a
-                            href={storeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 truncate text-sm font-semibold text-gray-900 hover:underline"
-                            dir="ltr"
-                        >
-                            {storeUrl}
-                        </a>
+                    <div className="flex items-center justify-between gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2" dir="ltr">
+                        <div className="flex min-w-0 items-center gap-2 pl-2">
+                            <span className="rounded-xl border border-gray-100 bg-white p-2 text-emerald-600 shadow-sm">
+                                <ShoppingBag className="h-4 w-4" />
+                            </span>
+                            <a
+                                href={storeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="truncate font-mono text-xs font-bold text-gray-800 hover:underline"
+                            >
+                                {storeUrl}
+                            </a>
+                        </div>
+
                         <button
                             type="button"
                             onClick={() => copyText(storeUrl, false)}
-                            className="shrink-0 rounded-lg border border-gray-200 bg-white p-1.5 text-gray-500 transition hover:bg-gray-100"
                             aria-label={t('Copy store link')}
+                            className={`flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all ${
+                                copied
+                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                    : 'border-gray-200 bg-white text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                            }`}
                         >
-                            {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                            {copied ? (
+                                <>
+                                    <Check className="h-3.5 w-3.5" />
+                                    <span>{t('Copied!')}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="h-3.5 w-3.5" />
+                                    <span>{t('Copy link')}</span>
+                                </>
+                            )}
                         </button>
                     </div>
-
-                    {/* Store name */}
-                    {storeName && (
-                        <p className="mt-3 text-xs text-gray-400">
-                            <span className="font-semibold" style={{ color: primaryColor }}>{storeName}</span>
-                        </p>
-                    )}
 
                     {!publishStore && (
                         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
@@ -123,12 +135,12 @@ export default function OnboardingSuccess({
                     )}
 
                     {/* Actions */}
-                    <div className="mt-6 grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
                         <a
                             href={storeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold text-white shadow-sm transition-colors"
                             style={{ backgroundColor: primaryColor }}
                         >
                             <ExternalLink className="h-4 w-4" />
@@ -136,7 +148,7 @@ export default function OnboardingSuccess({
                         </a>
                         <a
                             href={route('dashboard')}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 text-xs font-bold text-gray-800 transition-colors hover:bg-gray-200"
                         >
                             <LayoutDashboard className="h-4 w-4" />
                             {t('Go to dashboard')}
@@ -145,12 +157,12 @@ export default function OnboardingSuccess({
                 </div>
 
                 {/* Next steps */}
-                <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                    <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900">
-                        <LayoutDashboard className="h-4 w-4" style={{ color: primaryColor }} />
-                        {t('What next?')}
+                <div className="mt-6 space-y-4 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                    <div className="flex items-center gap-2 border-b border-gray-100 pb-3 text-sm font-bold text-gray-900">
+                        <Sparkles className="h-4 w-4 text-emerald-600" />
+                        <h3>{t('What next?')}</h3>
                     </div>
-                    <ul className="space-y-2">
+                    <ul className="space-y-2.5">
                         {[
                             {
                                 icon: Package,
@@ -183,19 +195,20 @@ export default function OnboardingSuccess({
                                     href={step.href}
                                     target={step.external ? '_blank' : undefined}
                                     rel={step.external ? 'noopener noreferrer' : undefined}
-                                    className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 transition hover:border-gray-200 hover:bg-gray-100"
+                                    className="group flex items-center justify-between rounded-2xl border border-gray-100 p-3.5 transition-all hover:border-emerald-500/40 hover:bg-emerald-50/20"
                                 >
-                                    <span
-                                        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                                        style={{ backgroundColor: `${primaryColor}1a` }}
-                                    >
-                                        <step.icon className="h-4 w-4" style={{ color: primaryColor }} />
-                                    </span>
-                                    <span className="min-w-0">
-                                        <span className="block text-sm font-semibold text-gray-900">{step.label}</span>
-                                        <span className="mt-0.5 block text-xs text-gray-500">{step.desc}</span>
-                                    </span>
-                                    <ExternalLink className="ms-auto mt-1 h-4 w-4 shrink-0 text-gray-300" />
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-500 group-hover:text-white">
+                                            <step.icon className="h-4 w-4" />
+                                        </span>
+                                        <span className="min-w-0">
+                                            <span className="block text-xs font-bold text-gray-900 transition-colors group-hover:text-emerald-700">
+                                                {step.label}
+                                            </span>
+                                            <span className="mt-0.5 block truncate text-[11px] text-gray-500">{step.desc}</span>
+                                        </span>
+                                    </div>
+                                    <ArrowLeft className="h-4 w-4 shrink-0 text-gray-300 transition-all group-hover:-translate-x-1 group-hover:text-emerald-600" />
                                 </a>
                             </li>
                         ))}
@@ -204,38 +217,33 @@ export default function OnboardingSuccess({
 
                 {/* Referral share */}
                 {referralUrl && (
-                    <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                        <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-900">
-                            <Share2 className="h-4 w-4" style={{ color: primaryColor }} />
-                            {t('Invite friends and earn commission')}
+                    <div className="mt-6 space-y-3 rounded-3xl border border-emerald-800/60 bg-gradient-to-br from-emerald-900 to-teal-900 p-6 text-white shadow-md">
+                        <div className="flex items-center gap-2">
+                            <span className="rounded-xl border border-emerald-400/20 bg-emerald-500/20 p-2 text-emerald-300">
+                                <Gift className="h-4 w-4" />
+                            </span>
+                            <h4 className="text-sm font-bold">{t('Invite friends and earn commission')}</h4>
                         </div>
-                        <p className="mb-3 text-xs text-gray-500">
+                        <p className="text-xs leading-relaxed text-emerald-100/80">
                             {t('When someone registers through your link and subscribes to a paid plan, you earn commission.')}
                         </p>
-                        <div className="flex items-center gap-2">
-                            <code
-                                className="flex-1 truncate rounded-xl bg-gray-100 px-3 py-2 text-xs text-gray-700"
-                                dir="ltr"
-                            >
+
+                        <div className="flex items-center justify-between gap-2 rounded-2xl border border-emerald-800/60 bg-emerald-950/60 p-2" dir="ltr">
+                            <code className="min-w-0 flex-1 truncate pl-2 font-mono text-xs text-emerald-200">
                                 {referralUrl}
                             </code>
-                            <Button
+                            <button
                                 type="button"
-                                variant="outline"
-                                size="sm"
                                 onClick={() => copyText(referralUrl as string, true)}
-                                className="shrink-0 gap-1"
+                                className={`shrink-0 cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-colors ${
+                                    copiedRef ? 'bg-emerald-300 text-emerald-950' : 'bg-emerald-500 text-emerald-950 hover:bg-emerald-400'
+                                }`}
                             >
-                                {copiedRef ? (
-                                    <Check className="h-4 w-4 text-emerald-600" />
-                                ) : (
-                                    <Copy className="h-4 w-4" />
-                                )}
                                 {copiedRef ? t('Copied!') : t('Copy link')}
-                            </Button>
+                            </button>
                         </div>
                         {referralCode && (
-                            <p className="mt-2 text-xs text-gray-400">
+                            <p className="text-[11px] text-emerald-200/70">
                                 {t('Code')}:{' '}
                                 <span className="font-mono" dir="ltr">
                                     {referralCode}

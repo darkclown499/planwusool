@@ -207,7 +207,7 @@
                         'name' => 'وصول',
                         'alternateName' => ['متجر وصول', 'متاجر وصول', 'وصول للمتاجر', 'Wusool'],
                         'url' => $appUrl,
-                        'logo' => $appUrl . '/assets/images/logo.png',
+                        'logo' => $appUrl . '/images/logos/wusool.png',
                         'image' => $orgLogo,
                         'description' => $seoDesc,
                         'sameAs' => array_values(array_unique(array_filter(array_merge([
