@@ -15,6 +15,7 @@ interface MediaPickerProps {
   multiple?: boolean;
   placeholder?: string;
   dropzoneLabel?: string;
+  hint?: string;
   showPreview?: boolean;
   required?: boolean;
   dragDrop?: boolean;
@@ -28,6 +29,7 @@ export default function MediaPicker({
   multiple = false,
   placeholder = 'Select image...',
   dropzoneLabel,
+  hint,
   showPreview = true,
   required = false,
   dragDrop = false,
@@ -115,13 +117,13 @@ export default function MediaPicker({
               uploadFiles(e.dataTransfer.files);
             }
           }}
-          className={`flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 text-center transition-colors ${
+          className={`flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-5 text-center transition-all group ${
             multiple
-              ? dragActive ? 'border-purple-500 bg-purple-500/10' : 'border-dashed border-purple-300 bg-purple-50/50'
-              : dragActive ? 'border-primary bg-primary/10' : 'border-primary/40 bg-primary/5'
+              ? dragActive ? 'border-purple-500 bg-purple-500/10' : 'border-purple-300 bg-purple-50/50'
+              : dragActive ? 'border-emerald-500 bg-emerald-50/60' : 'border-gray-200 bg-gray-50/50 hover:border-emerald-500/50 hover:bg-emerald-50/30'
           }`}
         >
-          <div className={`flex h-10 w-10 items-center justify-center rounded-full ${multiple ? 'bg-purple-100 text-purple-600' : 'bg-primary/10 text-primary'}`}>
+          <div className={`flex h-10 w-10 items-center justify-center rounded-full transition-transform group-hover:scale-110 ${multiple ? 'bg-purple-100 text-purple-600' : 'bg-emerald-100/60 text-emerald-600'}`}>
             {uploading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : multiple ? (
@@ -130,7 +132,7 @@ export default function MediaPicker({
               <UploadCloud className="h-5 w-5" />
             )}
           </div>
-          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${multiple ? 'bg-purple-100 text-purple-700' : 'bg-primary/10 text-primary'}`}>
+          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${multiple ? 'bg-purple-100 text-purple-700' : 'bg-emerald-50 text-emerald-600'}`}>
             {multiple ? t('Multiple images') : (dropzoneLabel || t('Cover image (one file)'))}
           </span>
           <p className="text-sm text-muted-foreground">
@@ -157,6 +159,7 @@ export default function MediaPicker({
               {t('Media Library')}
             </Button>
           </div>
+          {hint && <p className="text-[11px] text-gray-400">{hint}</p>}
           <input
             id={`file-input-${inputId ?? label}`}
             type="file"

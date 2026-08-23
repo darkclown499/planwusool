@@ -40,6 +40,8 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import MediaPicker from '@/components/MediaPicker';
 import { PhoneCountryInput } from '@/components/PhoneCountryInput';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { COUNTRIES } from '@/lib/countries';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { getBuilderTemplate, getBuilderTemplateSummaries } from '@/builder';
@@ -172,6 +174,8 @@ export default function Onboarding({
     const [checking, setChecking] = useState(false);
     const [availability, setAvailability] = useState<{ available: boolean; message: string } | null>(null);
     const [currencySearch, setCurrencySearch] = useState('');
+    const [countryOpen, setCountryOpen] = useState(false);
+    const [countrySearchQuery, setCountrySearchQuery] = useState('');
     const [generalError, setGeneralError] = useState<string | null>(null);
     const [upgradeOpen, setUpgradeOpen] = useState(false);
     const [pendingUpgradeTemplate, setPendingUpgradeTemplate] = useState<string | null>(null);
@@ -279,6 +283,17 @@ export default function Onboarding({
             (c) => c.code.toLowerCase().includes(lq) || c.name.includes(q) || c.symbol.includes(q),
         );
     }, [currencies, currencySearch]);
+
+    // Location country: resolve the stored name back to a COUNTRIES entry for flag display.
+    const selectedLocationCountry = useMemo(
+        () => COUNTRIES.find((c) => c.name === data.country || c.nameEn === data.country) ?? null,
+        [data.country],
+    );
+    const filteredLocationCountries = useMemo(() => {
+        const q = countrySearchQuery.trim().toLowerCase();
+        if (!q) return COUNTRIES;
+        return COUNTRIES.filter((c) => c.name.includes(countrySearchQuery.trim()) || c.nameEn.toLowerCase().includes(q));
+    }, [countrySearchQuery]);
 
     const runAvailabilityCheck = async () => {
         if (!data.store_subdomain) {
@@ -964,14 +979,20 @@ export default function Onboarding({
 
                                                     {/* Logo dropzone */}
                                                     <div className="space-y-1.5">
-                                                        <Label className="block text-sm font-medium text-gray-700">
-                                                            {t('Store logo')}
-                                                        </Label>
+                                                        <div className="flex items-center justify-between">
+                                                            <Label className="block text-sm font-medium text-gray-700">
+                                                                {t('Store logo')}
+                                                            </Label>
+                                                            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
+                                                                {t('Recommended size: 500 × 500 px')}
+                                                            </span>
+                                                        </div>
                                                         <MediaPicker
                                                             value={data.logo}
                                                             onChange={(v) => setData('logo', v)}
                                                             placeholder={t('Select a logo image')}
-                                                            dropzoneLabel={t('Store logo')}
+                                                            dropzoneLabel={t('Upload logo')}
+                                                            hint={t('Supports PNG, JPG, SVG (max 5MB)')}
                                                             showPreview
                                                             dragDrop
                                                             inputId="onboarding-logo"
@@ -983,43 +1004,87 @@ export default function Onboarding({
                                                 </div>
 
                                                     {/* Section 2: Location */}
-                                                    <div className="space-y-4 border-t border-gray-100 pt-4">
+                                                    <div className="space-y-3 border-t border-gray-100 pt-3">
                                                         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                                                            {t('Location (optional)')}
+                                                            {t('Store location (optional)')}
                                                         </h4>
+
+                                                        {/* Country selector */}
                                                         <div className="space-y-1.5">
-                                                            <Label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                                                                {t('Address')}
+                                                            <Label className="block text-sm font-medium text-gray-700">
+                                                                {t('Country')}
                                                             </Label>
-                                                            <Input
-                                                                id="address"
-                                                                value={data.address}
-                                                                onChange={(e) => setData('address', e.target.value)}
-                                                                placeholder={t('Salah al-Din Street 291')}
-                                                                className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-                                                            />
-                                                            {errors.address && (
-                                                                <p className="text-sm text-red-600">{errors.address}</p>
+                                                            <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                                                                <PopoverTrigger asChild>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm transition-colors hover:border-gray-300"
+                                                                    >
+                                                                        <span className="flex items-center gap-2">
+                                                                            {selectedLocationCountry ? (
+                                                                                <>
+                                                                                    <span className="text-lg">{selectedLocationCountry.flag}</span>
+                                                                                    <span className="font-medium text-gray-800">
+                                                                                        {selectedLocationCountry.name}
+                                                                                    </span>
+                                                                                </>
+                                                                            ) : (
+                                                                                <span className="text-gray-400">{t('Select your country')}</span>
+                                                                            )}
+                                                                        </span>
+                                                                        <ChevronDown className="h-4 w-4 text-gray-400" />
+                                                                    </button>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent
+                                                                    align="start"
+                                                                    dir="rtl"
+                                                                    className="z-50 min-w-[280px] rounded-xl border border-gray-100 bg-white p-2 shadow-lg"
+                                                                >
+                                                                    <div className="relative mb-2">
+                                                                        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder={t('Search for a country...')}
+                                                                            value={countrySearchQuery}
+                                                                            onChange={(e) => setCountrySearchQuery(e.target.value)}
+                                                                            className="w-full rounded-lg bg-gray-50 py-2 pl-3 pr-9 text-right text-xs outline-none focus:ring-1 focus:ring-emerald-500"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="scrollbar-thin scrollbar-thumb-gray-200 max-h-48 space-y-0.5 overflow-y-auto">
+                                                                        {filteredLocationCountries.length === 0 && (
+                                                                            <p className="py-6 text-center text-xs text-gray-400">
+                                                                                {t('No matching countries')}
+                                                                            </p>
+                                                                        )}
+                                                                        {filteredLocationCountries.map((c) => (
+                                                                            <button
+                                                                                key={c.code}
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    setData('country', c.name);
+                                                                                    setCountryOpen(false);
+                                                                                    setCountrySearchQuery('');
+                                                                                }}
+                                                                                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-right text-xs transition-colors hover:bg-emerald-50 ${
+                                                                                    selectedLocationCountry?.code === c.code
+                                                                                        ? 'bg-emerald-50 font-semibold text-emerald-700'
+                                                                                        : 'text-gray-800'
+                                                                                }`}
+                                                                            >
+                                                                                <span className="text-base">{c.flag}</span>
+                                                                                <span className="font-medium">{c.name}</span>
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                            {errors.country && (
+                                                                <p className="text-sm text-red-600">{errors.country}</p>
                                                             )}
                                                         </div>
 
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <div className="space-y-1.5">
-                                                                <Label htmlFor="country" className="block text-sm font-medium text-gray-700">
-                                                                    {t('Country')}
-                                                                </Label>
-                                                                <Input
-                                                                    id="country"
-                                                                    value={data.country}
-                                                                    onChange={(e) => setData('country', e.target.value)}
-                                                                    placeholder={t('Palestine')}
-                                                                    className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
-                                                                />
-                                                                {errors.country && (
-                                                                    <p className="text-sm text-red-600">{errors.country}</p>
-                                                                )}
-                                                            </div>
-
+                                                        {/* City & street */}
+                                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                                             <div className="space-y-1.5">
                                                                 <Label htmlFor="city" className="block text-sm font-medium text-gray-700">
                                                                     {t('City')}
@@ -1028,11 +1093,27 @@ export default function Onboarding({
                                                                     id="city"
                                                                     value={data.city}
                                                                     onChange={(e) => setData('city', e.target.value)}
-                                                                    placeholder={t('Ramallah')}
+                                                                    placeholder={t('e.g. Ramallah / Qalqilya')}
                                                                     className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
                                                                 />
                                                                 {errors.city && (
                                                                     <p className="text-sm text-red-600">{errors.city}</p>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="space-y-1.5">
+                                                                <Label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                                                                    {t('Street address')}
+                                                                </Label>
+                                                                <Input
+                                                                    id="address"
+                                                                    value={data.address}
+                                                                    onChange={(e) => setData('address', e.target.value)}
+                                                                    placeholder={t('e.g. Salah al-Din Street')}
+                                                                    className="h-auto w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/20"
+                                                                />
+                                                                {errors.address && (
+                                                                    <p className="text-sm text-red-600">{errors.address}</p>
                                                                 )}
                                                             </div>
                                                         </div>

@@ -3953,7 +3953,7 @@
     "Story Content": "محتوى القصة",
     "Story Title": "عنوان القصة",
     "Street Address": "عنوان الشارع",
-    "Street address": "عنوان الشارع",
+    "Street address": "العنوان التفصيلي / الشارع",
     "Strictly Cookie Description": "وصف الكوكيز فقط",
     "Strictly Cookie Title": "عنوان الكوكي فقط",
     "Strictly Necessary Cookies": "الكوكيز الضرورية",
@@ -5412,5 +5412,14 @@
     "Start setting up your store now": "ابدأ تجهيز المتجر الان",
     "Watch an accompanying demo store": "شاهد متجراً تجريبياً مرافقاً",
     "Search currency (e.g. USD, ILS)...": "ابحث عن العملة (مثال: USD، شيكل)...",
-    "No matching currencies": "لا توجد عملات مطابقة"
+    "No matching currencies": "لا توجد عملات مطابقة",
+    "Recommended size: 500 × 500 px": "المقاس الموصى به: 500 × 500 px",
+    "Upload logo": "اضغط لرفع الشعار",
+    "Supports PNG, JPG, SVG (max 5MB)": "يدعم PNG، JPG، SVG (بحد أقصى 5MB)",
+    "Store location (optional)": "موقع المتجر (اختياري)",
+    "Select your country": "اختر دولتك",
+    "Search for a country...": "ابحث عن الدولة...",
+    "No matching countries": "لا توجد دول مطابقة",
+    "e.g. Ramallah / Qalqilya": "مثال: رام الله / قلقيلية",
+    "e.g. Salah al-Din Street": "مثال: شارع صلاح الدين"
 }
