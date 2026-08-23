@@ -15,12 +15,9 @@ import FaqSection from './components/FaqSection';
 import NewsletterSection from './components/NewsletterSection';
 import ContactSection from './components/ContactSection';
 import Footer from './components/Footer';
-import ActiveCampaignsSection from './components/ActiveCampaignsSection';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { useFavicon } from '@/hooks/use-favicon';
-import { useTranslation } from 'react-i18next';
-import languageData from '@/../../resources/lang/language.json';
 import AIChatWidget from '@/components/AIChatWidget';
 import { type SharedData } from '@/types';
 
@@ -60,7 +57,7 @@ interface LandingSettings {
   config_sections?: {
     sections: Array<{
       key: string;
-      [key: string]: any;
+      [key: string]: unknown;
     }>;
     theme?: {
       primary_color?: string;
@@ -120,9 +117,7 @@ interface PageProps extends SharedData {
 }
 
 export default function LandingPage() {
-  const { t } = useTranslation();
   const { plans, faqs, customPages = [], settings, featuredStores = [], flash, superadminLogoDark, superadminLogoLight, demoStoreUrl = '' } = usePage<PageProps>().props;
-  const { i18n } = useTranslation();
 
   // This is the public landing page, not the admin settings page
   // No breadcrumbs needed here as it's a public page
@@ -135,7 +130,7 @@ export default function LandingPage() {
   const primaryColor = configColors?.primary || (themeColor === 'custom' ? customColor : THEME_COLORS[themeColor as keyof typeof THEME_COLORS]) || '#10b77f';
   const secondaryColor = configColors?.secondary || '#059669';
   const accentColor = configColors?.accent || '#065f46';
-  const page = usePage<any>();
+  const page = usePage<PageProps>();
   const { auth, superadminSettings } = page.props;
 
   // Arabic-first design: the whole interface is always right-to-left.
@@ -220,6 +215,7 @@ export default function LandingPage() {
         settings={settings}
         sectionData={getSectionData('hero')}
         brandColor={primaryColor}
+        demoStoreUrl={demoStoreUrl || undefined}
         superadminLogoLight={superadminLogoLight}
       />
     ),

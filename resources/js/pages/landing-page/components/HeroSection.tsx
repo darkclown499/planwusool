@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Megaphone, RefreshCw, Star, Zap } from 'lucide-react';
-import ProductShowcase from './ProductShowcase';
+import HeroPcSimulator from '@/components/HeroPcSimulator';
 
 interface HeroSectionProps {
   brandColor?: string;
   settings: { company_name?: string };
+  demoStoreUrl?: string;
   superadminLogoLight?: string;
   sectionData: {
     title?: string;
@@ -23,6 +24,7 @@ export default function HeroSection({
   settings,
   sectionData,
   brandColor = '#22c55e',
+  demoStoreUrl,
 }: HeroSectionProps) {
   const title = sectionData.title || 'ابدأ متجرك خلال دقائق';
   const subtitle = sectionData.subtitle || 'منصة متقدمة لبناء وإدارة متجرك على واتساب بسهولة وأدوات احترافية تساعدك على النمو والتوسع';
@@ -190,9 +192,9 @@ export default function HeroSection({
             </span>
           </div>
 
-          {/* ── Product showcase — directly under the CTA buttons ── */}
+          {/* ── Interactive PC simulator — directly under the CTA buttons ── */}
           <div className="mt-14 w-full">
-            <ProductShowcase brandColor={brandColor} appName={settings.company_name || 'وصول'} />
+            <HeroPcSimulator demoUrl={demoStoreUrl} />
           </div>
         </div>
       </div>
