@@ -66,7 +66,7 @@ try {
     );
 
     /* Windows-11 login */
-    const loginArrow = page.getByRole('button', { name: 'تسجيل الدخول' });
+    const loginArrow = page.getByRole('button', { name: 'تسجيل الدخول', exact: true });
     await loginArrow.waitFor({ timeout: 10000 });
     const winWallpaper = await page.evaluate(() => {
         const el = [...document.querySelectorAll('div')].find((d) =>
