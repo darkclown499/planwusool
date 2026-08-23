@@ -10,6 +10,7 @@
         "lint": "eslint . --fix",
         "types": "tsc --noEmit",
         "preview:demo": "node scripts/generate-demo-preview.mjs",
+        "audit:simulator": "node scripts/simulator-audit.mjs",
         "audit": "node scripts/audit.mjs"
     },
     "devDependencies": {

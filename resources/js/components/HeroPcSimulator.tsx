@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+    Accessibility,
+    CircleArrowRight,
     ChevronLeft,
     ChevronRight,
     Globe,
@@ -11,11 +13,13 @@ import {
     Search,
     ShoppingBag,
     ShoppingCart,
+    User,
+    Wifi,
 } from 'lucide-react';
 
-type ScreenState = 'OFF' | 'BIOS' | 'LOGIN' | 'SEARCH' | 'DEMO';
+type ScreenState = 'OFF' | 'BIOS' | 'LOGIN' | 'WELCOME' | 'SEARCH' | 'DEMO';
 
-const STATE_ORDER: ScreenState[] = ['OFF', 'BIOS', 'LOGIN', 'SEARCH', 'DEMO'];
+const STATE_ORDER: ScreenState[] = ['OFF', 'BIOS', 'LOGIN', 'WELCOME', 'SEARCH', 'DEMO'];
 
 export interface DemoStoreProduct {
     name: string;
@@ -72,6 +76,7 @@ export function HeroPcSimulator({
     const [ramKb, setRamKb] = useState(0);
     const [pwLen, setPwLen] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [clock, setClock] = useState('');
     const [cursorTarget, setCursorTarget] = useState<{ x: number; y: number } | null>(null);
     const [ripples, setRipples] = useState<Ripple[]>([]);
     const rippleId = useRef(0);
@@ -82,7 +87,6 @@ export function HeroPcSimulator({
         preview?.products && preview.products.length > 0 ? preview.products : FALLBACK_PRODUCTS;
     const rawCategories =
         preview?.categories && preview.categories.length > 0 ? preview.categories : FALLBACK_CATEGORIES;
-    // Drop a literal "الكل" coming from data so the chip never duplicates.
     const categories = rawCategories.filter((c) => c.name !== 'الكل');
 
     const visibleProducts =
@@ -90,15 +94,40 @@ export function HeroPcSimulator({
             ? products
             : products.filter((p) => p.category === activeCat);
 
-    const simulateClick = (x: number, y: number) => {
-        const id = ++rippleId.current;
-        setRipples((prev) => [...prev, { id, x, y }]);
-        setTimeout(() => setRipples((prev) => prev.filter((r) => r.id !== id)), 700);
+    /* Live clock for the Windows-11 lock screen corner */
+    useEffect(() => {
+        const tick = () =>
+            setClock(
+                new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+            );
+        tick();
+        const t = setInterval(tick, 30000);
+        return () => clearInterval(t);
+    }, []);
+
+    /** Glide the cursor to (x,y), then emit a click ripple there. */
+    const moveAndClick = (x: number, y: number, glideMs = 550) => {
+        setCursorTarget({ x, y });
+        setTimeout(() => {
+            const id = ++rippleId.current;
+            setRipples((prev) => [...prev, { id, x, y }]);
+            setTimeout(
+                () => setRipples((prev) => prev.filter((r) => r.id !== id)),
+                700,
+            );
+        }, glideMs);
     };
 
     const powerOn = () => {
-        simulateClick(50, 46);
-        setTimeout(() => setState('BIOS'), 250);
+        // Cursor mounts exactly where the user clicked, then starts its tour.
+        setCursorTarget({ x: 50, y: 44 });
+        const id = ++rippleId.current;
+        setRipples((prev) => [...prev, { id, x: 50, y: 44 }]);
+        setTimeout(
+            () => setRipples((prev) => prev.filter((r) => r.id !== id)),
+            700,
+        );
+        setTimeout(() => setState('BIOS'), 350);
     };
 
     const replay = () => {
@@ -110,10 +139,10 @@ export function HeroPcSimulator({
         setCursorTarget(null);
     };
 
-    /* ── BIOS: RAM count-up, then auto-advance ── */
+    /* ── BIOS: RAM count-up, then hand over to the lock screen ── */
     useEffect(() => {
         if (state !== 'BIOS') return;
-        setCursorTarget({ x: 84, y: 82 });
+        setCursorTarget({ x: 58, y: 74 });
         setRamKb(0);
         const ramTimer = setInterval(() => {
             setRamKb((prev) => {
@@ -128,27 +157,36 @@ export function HeroPcSimulator({
         };
     }, [state]);
 
-    /* ── LOGIN: password fills itself, cursor clicks دخول ── */
+    /* ── LOGIN (Windows 11): password fills itself, cursor presses the arrow ── */
     useEffect(() => {
         if (state !== 'LOGIN') return;
-        setCursorTarget({ x: 63, y: 63 });
+        setCursorTarget({ x: 47, y: 51 });
         setPwLen(0);
-        const typing = setInterval(() => setPwLen((p) => Math.min(p + 1, PW_DOTS)), 80);
-        const click = setTimeout(() => simulateClick(63, 63), 1800);
-        const advance = setTimeout(() => setState('SEARCH'), 2000);
+        const typing = setInterval(() => setPwLen((p) => Math.min(p + 1, PW_DOTS)), 95);
+        const clickT = setTimeout(() => moveAndClick(59, 51), 1550);
+        const advance = setTimeout(() => setState('WELCOME'), 1750);
         return () => {
             clearInterval(typing);
-            clearTimeout(click);
+            clearTimeout(clickT);
             clearTimeout(advance);
         };
+    }, [state]);
+
+    /* ── WELCOME: brief “مرحباً” spinner, Windows-style ── */
+    useEffect(() => {
+        if (state !== 'WELCOME') return;
+        setCursorTarget({ x: 52, y: 62 });
+        const t = setTimeout(() => setState('SEARCH'), 1150);
+        return () => clearTimeout(t);
     }, [state]);
 
     /* ── SEARCH: auto-typing, then cursor clicks the result link ── */
     useEffect(() => {
         if (state !== 'SEARCH') return;
         let index = 0;
+        let clickT: ReturnType<typeof setTimeout> | undefined;
         setTypedQuery('');
-        setCursorTarget({ x: 50, y: 40 });
+        setCursorTarget({ x: 48, y: 38 });
         const interval = setInterval(() => {
             if (index < FULL_QUERY.length) {
                 const ch = FULL_QUERY.charAt(index);
@@ -156,8 +194,7 @@ export function HeroPcSimulator({
                 setTypedQuery((prev) => prev + ch);
             } else {
                 clearInterval(interval);
-                setCursorTarget({ x: 50, y: 68 });
-                setTimeout(() => simulateClick(50, 68), 550);
+                moveAndClick(50, 67);
             }
         }, 70);
         const advance = setTimeout(
@@ -166,6 +203,7 @@ export function HeroPcSimulator({
         );
         return () => {
             clearInterval(interval);
+            clearTimeout(clickT);
             clearTimeout(advance);
         };
     }, [state]);
@@ -173,7 +211,7 @@ export function HeroPcSimulator({
     /* ── DEMO: brief page-load simulation (bar + skeleton) ── */
     useEffect(() => {
         if (state !== 'DEMO') return;
-        setCursorTarget({ x: 14, y: 88 });
+        setCursorTarget({ x: 7, y: 91 });
         setLoading(true);
         const t = setTimeout(() => setLoading(false), 1100);
         return () => clearTimeout(t);
@@ -225,7 +263,7 @@ export function HeroPcSimulator({
                                 <span
                                     key={s}
                                     className={`h-1.5 w-1.5 rounded-full transition-colors duration-300 ${
-                                        STATE_ORDER.indexOf(s) <= stageIndex && s !== 'OFF'
+                                        STATE_ORDER.indexOf(s) <= stageIndex
                                             ? 'bg-emerald-400'
                                             : 'bg-white/25'
                                     }`}
@@ -234,21 +272,24 @@ export function HeroPcSimulator({
                         </div>
                     )}
 
-                    {/* Simulated mouse cursor */}
+                    {/* Simulated mouse cursor — stays mounted between stages so it GLIDES */}
                     {cursorTarget && (
                         <div
-                            className="anim-cursor pointer-events-none absolute z-[60]"
+                            data-testid="sim-cursor"
+                            className="pointer-events-none absolute z-[60]"
                             style={{
                                 left: `${cursorTarget.x}%`,
                                 top: `${cursorTarget.y}%`,
                                 transition:
-                                    'left 0.7s cubic-bezier(0.22,1,0.36,1), top 0.7s cubic-bezier(0.22,1,0.36,1)',
+                                    'left 0.65s cubic-bezier(0.22,1,0.36,1), top 0.65s cubic-bezier(0.22,1,0.36,1)',
                             }}
                         >
-                            <MousePointer2
-                                className="h-4 w-4 fill-white text-slate-900 drop-shadow-md"
-                                strokeWidth={1.5}
-                            />
+                            <span className="anim-cursor-float block">
+                                <MousePointer2
+                                    className="h-5 w-5 fill-white text-slate-900 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
+                                    strokeWidth={1.25}
+                                />
+                            </span>
                         </div>
                     )}
 
@@ -256,7 +297,7 @@ export function HeroPcSimulator({
                     {ripples.map((r) => (
                         <span
                             key={r.id}
-                            className="sim-ripple pointer-events-none absolute z-[55] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-emerald-400"
+                            className="sim-ripple pointer-events-none absolute z-[55] h-7 w-7 rounded-full border-2 border-emerald-400"
                             style={{ left: `${r.x}%`, top: `${r.y}%` }}
                         />
                     ))}
@@ -278,60 +319,107 @@ export function HeroPcSimulator({
                         </div>
                     )}
 
-                    {/* STATE 2: BIOS BOOT */}
+                    {/* STATE 2: BIOS BOOT — hard-forced LTR */}
                     {state === 'BIOS' && (
-                        <div className="dir-ltr h-full w-full space-y-2 bg-black p-6 text-left font-mono text-xs text-emerald-400">
-                            <p className="font-bold text-white">&gt; WUSOOL BIOS v4.2.0 RELEASE</p>
+                        <div
+                            dir="ltr"
+                            className="h-full w-full bg-black p-6 font-mono text-xs text-emerald-400"
+                            style={{ direction: 'ltr', textAlign: 'left' }}
+                        >
+                            <p className="mb-2 font-bold text-white">&gt; WUSOOL BIOS v4.2.0 RELEASE</p>
                             <p className="sim-bios-line" style={{ animationDelay: '0.15s' }}>
-                                &gt; Checking System Memory... {ramKb.toLocaleString('en-US')} KB{' '}
-                                {ramKb >= RAM_TOTAL_KB ? 'OK' : ''}
+                                &gt;&nbsp;Checking System Memory ...{' '}
+                                {ramKb.toLocaleString('en-US')} KB {ramKb >= RAM_TOTAL_KB ? 'OK' : ''}
+                                {ramKb < RAM_TOTAL_KB && <span className="sim-caret">▊</span>}
                             </p>
                             <p className="sim-bios-line" style={{ animationDelay: '0.55s' }}>
-                                &gt; Initializing Store Engine &amp; Dynamic Routing...
+                                &gt;&nbsp;Initializing Store Engine &amp; Dynamic Routing ...
                             </p>
                             <p className="sim-bios-line" style={{ animationDelay: '1.05s' }}>
-                                &gt; Connecting WhatsApp Gateway... READY
+                                &gt;&nbsp;Connecting WhatsApp Gateway ............ READY
                             </p>
-                            <p className="sim-bios-line animate-pulse text-gray-500" style={{ animationDelay: '1.55s' }}>
-                                &gt; Loading User Desktop Environment...
+                            <p
+                                className="sim-bios-line animate-pulse text-gray-500"
+                                style={{ animationDelay: '1.55s' }}
+                            >
+                                &gt;&nbsp;Loading Desktop Environment
+                                <span className="sim-caret">▊</span>
                             </p>
                         </div>
                     )}
 
-                    {/* STATE 3: LOGIN SCREEN */}
+                    {/* STATE 3: LOGIN — Windows 11 lock screen */}
                     {state === 'LOGIN' && (
-                        <div className="flex h-full w-full flex-col items-center justify-center space-y-4 bg-gradient-to-br from-slate-900 via-teal-950 to-emerald-950 text-white">
-                            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-emerald-400/40 bg-emerald-500/20 shadow-inner">
-                                <Lock className="h-7 w-7 text-emerald-300" />
-                            </div>
-                            <div className="space-y-1 text-center">
-                                <h4 className="text-sm font-bold">زائر تجريبي</h4>
-                                <p className="text-[11px] text-emerald-200/70">
-                                    أدخل كلمة المرور لاستكشاف متجرك المستقبلي
+                        <div className="sim-win11 relative flex h-full w-full flex-col items-center justify-center text-white">
+                            <div className="flex flex-col items-center gap-2.5">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/80 to-indigo-500/80 shadow-xl ring-2 ring-white/30 backdrop-blur">
+                                    <User className="h-8 w-8 text-white" strokeWidth={1.75} />
+                                </div>
+                                <p className="text-base font-semibold tracking-wide drop-shadow-md">
+                                    زائر تجريبي
                                 </p>
-                            </div>
-                            <div className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 p-1.5 backdrop-blur-md">
-                                <input
-                                    type="password"
-                                    readOnly
-                                    value={'•'.repeat(pwLen)}
-                                    className="w-32 bg-transparent text-center text-xs tracking-widest text-white outline-none"
-                                />
+                                <div className="flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-2 py-1.5 shadow-lg backdrop-blur-md">
+                                    <Lock className="ml-1 h-3.5 w-3.5 shrink-0 text-white/80" />
+                                    <input
+                                        type="password"
+                                        readOnly
+                                        value={'•'.repeat(pwLen)}
+                                        placeholder="كلمة المرور"
+                                        className="w-24 bg-transparent text-center text-sm tracking-[0.25em] text-white outline-none placeholder:text-[10px] placeholder:tracking-normal placeholder:text-white/60 sm:w-32"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setState('WELCOME')}
+                                        aria-label="تسجيل الدخول"
+                                        className="shrink-0 cursor-pointer rounded-full p-0.5 transition-colors hover:bg-white/20"
+                                    >
+        <CircleArrowRight className="h-5 w-5 text-white/90" />
+                                    </button>
+                                </div>
                                 <button
                                     type="button"
-                                    onClick={() => setState('SEARCH')}
-                                    className="cursor-pointer rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-gray-950 transition-colors hover:bg-emerald-400"
+                                    className="cursor-pointer text-[10px] text-white/70 underline-offset-2 hover:text-white hover:underline"
                                 >
-                                    دخول
+                                    خيارات تسجيل الدخول
                                 </button>
                             </div>
+
+                            {/* Win11 tray: network / accessibility / power (bottom-left) */}
+                            <div
+                                dir="ltr"
+                                className="absolute bottom-3 left-3 flex items-center gap-3 text-white/85"
+                                style={{ direction: 'ltr' }}
+                            >
+                                <Wifi className="h-4 w-4" strokeWidth={1.75} />
+                                <Accessibility className="h-4 w-4" strokeWidth={1.75} />
+                                <Power className="h-4 w-4" strokeWidth={1.75} />
+                            </div>
+                            {/* Live clock (bottom-right) */}
+                            <div
+                                dir="ltr"
+                                className="absolute bottom-2.5 right-3 text-sm font-light tracking-widest text-white/90"
+                                style={{ direction: 'ltr' }}
+                            >
+                                {clock}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STATE 3.5: WELCOME — “مرحباً” spinner */}
+                    {state === 'WELCOME' && (
+                        <div className="sim-win11 flex h-full w-full flex-col items-center justify-center gap-4 text-white">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/80 to-indigo-500/80 shadow-xl ring-2 ring-white/30">
+                                <User className="h-7 w-7 text-white" strokeWidth={1.75} />
+                            </div>
+                            <p className="text-lg font-medium drop-shadow-md">مرحباً</p>
+                            <div className="sim-spinner" />
                         </div>
                     )}
 
                     {/* STATE 4: GOOGLE SEARCH SIMULATION */}
                     {state === 'SEARCH' && (
-                        <div className="flex h-full w-full flex-col items-center bg-white p-6 pt-14 text-gray-800">
-                            <div className="mb-6 text-3xl font-black tracking-tight">
+                        <div className="flex h-full w-full flex-col items-center bg-white p-6 pt-12 text-gray-800">
+                            <div className="mb-5 text-3xl font-black tracking-tight" dir="ltr">
                                 <span className="text-blue-500">G</span>
                                 <span className="text-red-500">o</span>
                                 <span className="text-yellow-500">o</span>
@@ -344,14 +432,16 @@ export function HeroPcSimulator({
                                 <Search className="h-4 w-4 shrink-0 text-gray-400" />
                                 <span className="min-h-[18px] text-xs font-medium text-gray-900">
                                     {typedQuery}
-                                    <span className="mr-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-emerald-600" />
+                                    <span className="mr-0.5 inline-block h-3.5 w-0.5 animate-pulse bg-emerald-600 align-middle" />
                                 </span>
                             </div>
 
                             {typedQuery.length > 8 && (
                                 <div className="animate-fade-slide mt-4 w-full max-w-md space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-3 text-right">
                                     <div className="rounded-xl border border-emerald-100 bg-white p-2.5 shadow-sm">
-                                        <p className="text-[10px] text-gray-400">wusool.ps › store-preview</p>
+                                        <p className="text-[10px] text-gray-400" dir="ltr">
+                                            wusool.ps › store-preview
+                                        </p>
                                         <p className="text-xs font-bold text-blue-700 hover:underline">
                                             متجرك المستقبلي - منصة وصول للمتاجر
                                         </p>
@@ -360,8 +450,12 @@ export function HeroPcSimulator({
                                         </p>
                                     </div>
                                     <div className="rounded-xl p-2.5 opacity-60">
-                                        <p className="text-[10px] text-gray-400">example.com › stores</p>
-                                        <p className="text-xs font-semibold text-blue-700">أفضل منصات المتاجر الإلكترونية</p>
+                                        <p className="text-[10px] text-gray-400" dir="ltr">
+                                            example.com › stores
+                                        </p>
+                                        <p className="text-xs font-semibold text-blue-700">
+                                            أفضل منصات المتاجر الإلكترونية
+                                        </p>
                                     </div>
                                 </div>
                             )}
@@ -370,7 +464,7 @@ export function HeroPcSimulator({
 
                     {/* STATE 5: LIVE STORE DEMO — real «بازار»-style storefront */}
                     {state === 'DEMO' && (
-                        <div className="flex h-full w-full flex-col overflow-y-auto bg-gray-50">
+                        <div className="flex h-full w-full flex-col bg-gray-50">
                             {/* Browser Bar */}
                             <div className="dir-ltr flex shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2 text-xs text-gray-600">
                                 <div className="flex items-center gap-1.5">
@@ -398,8 +492,8 @@ export function HeroPcSimulator({
                             </div>
 
                             {loading ? (
-                                /* Skeleton shimmer while the "page loads" */
-                                <div className="dir-rtl space-y-3 p-4">
+                                /* Skeleton shimmer while the "page loads" — hidden scrollbar */
+                                <div className="sim-scroll dir-rtl space-y-3 overflow-y-auto p-4" style={{ direction: 'rtl' }}>
                                     <div className="h-24 animate-pulse rounded-xl bg-gray-200" />
                                     <div className="grid grid-cols-3 gap-3">
                                         {[0, 1, 2].map((i) => (
@@ -412,151 +506,156 @@ export function HeroPcSimulator({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="dir-rtl pb-10 text-right">
-                                    {/* Dark promo strip — بازار signature */}
-                                    <div className="bg-slate-900 px-3 py-1.5 text-center text-[9px] font-medium text-white/90">
-                                        🚚 توصيل مجاني للطلبات فوق 200 ₪ · ضمان استرجاع 14 يوم
-                                    </div>
-
-                                    {/* Storefront header row */}
-                                    <div className="flex items-center justify-between border-b border-pink-100 bg-white px-3 py-2">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#f98496] to-[#9085f9] text-[10px] font-black text-white">
-                                                {storeName.slice(0, 1)}
-                                            </span>
-                                            <span className="text-[11px] font-extrabold text-slate-900">{storeName}</span>
+                                <div className="sim-scroll flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+                                    <div className="dir-rtl pb-10 text-right" style={{ direction: 'rtl' }}>
+                                        {/* Dark promo strip — بازار signature */}
+                                        <div className="bg-slate-900 px-3 py-1.5 text-center text-[9px] font-medium text-white/90">
+                                            🚚 توصيل مجاني للطلبات فوق 200 ₪ · ضمان استرجاع 14 يوم
                                         </div>
-                                        <nav className="hidden items-center gap-2.5 text-[9px] font-medium text-slate-500 sm:flex">
-                                            <span>الرئيسية</span>
-                                            <span>المنتجات</span>
-                                            <span>تواصل</span>
-                                        </nav>
-                                        <div className="flex items-center gap-2">
-                                            <a
-                                                href={demoUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="rounded-full bg-[#25D366] px-2.5 py-1 text-[9px] font-bold text-white shadow-sm transition-transform hover:scale-105"
-                                            >
-                                                تواصل معنا
-                                            </a>
-                                            <span className="relative text-slate-700">
-                                                <ShoppingCart className="h-3.5 w-3.5" />
-                                                <span className="absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-[#f98496] text-[7px] font-bold text-white">
-                                                    2
+
+                                        {/* Storefront header row */}
+                                        <div className="flex items-center justify-between border-b border-pink-100 bg-white px-3 py-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#f98496] to-[#9085f9] text-[10px] font-black text-white">
+                                                    {storeName.slice(0, 1)}
                                                 </span>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3 p-3">
-                                        {/* Real screenshot banner of demo.wusool.ps */}
-                                        <div className="group relative overflow-hidden rounded-xl border border-pink-100 shadow-sm">
-                                            <img
-                                                src="/images/demo-store-preview.webp"
-                                                alt={`لقطة حقيقية من ${storeName}`}
-                                                loading="lazy"
-                                                className="anim-banner h-28 w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03] sm:h-36"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none';
-                                                    const sibling = e.currentTarget.nextElementSibling as HTMLElement | null;
-                                                    if (sibling) sibling.style.display = 'block';
-                                                }}
-                                            />
-                                            <div
-                                                className="hidden h-24 w-full bg-gradient-to-br from-[#f98496]/70 to-[#9085f9]/70 sm:h-32"
-                                                aria-hidden="true"
-                                            />
-                                            <span className="absolute bottom-1.5 right-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur-sm" dir="ltr">
-                                                {demoUrl.replace(/^https?:\/\//, '')}
-                                            </span>
-                                            <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[8px] font-bold text-emerald-700 shadow-sm">
-                                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                                                لقطة حية
-                                            </span>
-                                        </div>
-
-                                        {/* Category chips (real demo-store categories) */}
-                                        <div className="scrollbar-none flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                                            {['الكل', ...categories.map((c) => c.name)].map((cat) => {
-                                                const meta = categories.find((c) => c.name === cat);
-                                                const isActive = activeCat === cat;
-                                                return (
-                                                    <button
-                                                        key={cat}
-                                                        type="button"
-                                                        onClick={() => setActiveCat(cat)}
-                                                        className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[10px] font-semibold transition-all ${
-                                                            isActive
-                                                                ? 'bg-gradient-to-br from-[#f98496] to-[#9085f9] text-white shadow-sm'
-                                                                : 'cursor-pointer bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                        {meta?.image && (
-                                                            <img src={meta.image} alt="" className="h-3.5 w-3.5 rounded-full" />
-                                                        )}
-                                                        {cat}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-
-                                        {/* Real product cards */}
-                                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-                                            {visibleProducts.slice(0, 8).map((prod, i) => (
-                                                <div
-                                                    key={prod.name + i}
-                                                    className="group animate-fade-slide space-y-1.5 rounded-xl border border-pink-100 bg-white p-2 shadow-sm transition-shadow hover:shadow-md"
-                                                    style={{ animationDelay: `${i * 90}ms` }}
+                                                <span className="text-[11px] font-extrabold text-slate-900">{storeName}</span>
+                                            </div>
+                                            <nav className="hidden items-center gap-2.5 text-[9px] font-medium text-slate-500 sm:flex">
+                                                <span>الرئيسية</span>
+                                                <span>المنتجات</span>
+                                                <span>تواصل</span>
+                                            </nav>
+                                            <div className="flex items-center gap-2">
+                                                <a
+                                                    href={demoUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="rounded-full bg-[#25D366] px-2.5 py-1 text-[9px] font-bold text-white shadow-sm transition-transform hover:scale-105"
                                                 >
-                                                    <div className="relative overflow-hidden rounded-lg bg-gray-50">
-                                                        {prod.image ? (
-                                                            <img
-                                                                src={prod.image}
-                                                                alt={prod.name}
-                                                                loading="lazy"
-                                                                className="h-20 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                                                onError={(e) => {
-                                                                    e.currentTarget.style.visibility = 'hidden';
-                                                                }}
-                                                            />
-                                                        ) : (
-                                                            <div className="flex h-20 items-center justify-center">
-                                                                <ShoppingBag className="h-6 w-6 text-gray-300" />
-                                                            </div>
-                                                        )}
-                                                        {!!prod.discount && prod.discount > 0 && (
-                                                            <span className="absolute right-1 top-1 rounded-full bg-[#f98496] px-1.5 py-0.5 text-[8px] font-bold text-white shadow">
-                                                                -{prod.discount}%
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <h4 className="truncate text-[10px] font-bold text-slate-800">{prod.name}</h4>
-                                                    <div className="flex items-baseline gap-1.5">
-                                                        <span className="text-[11px] font-black text-slate-900">
-                                                            {fmtPrice(prod.price)}
-                                                        </span>
-                                                        {!!prod.originalPrice && (
-                                                            <del className="no-underline text-[9px] font-medium text-gray-400 line-through">
-                                                                {fmtPrice(prod.originalPrice)}
-                                                            </del>
-                                                        )}
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        className="flex w-full items-center justify-center gap-1 rounded-lg bg-[#25D366]/10 px-1.5 py-1 text-[9px] font-bold text-[#128C7E] transition-colors hover:bg-[#25D366] hover:text-white"
-                                                    >
-                                                        <MessageCircle className="h-2.5 w-2.5" />
-                                                        <span>اطلب واتساب</span>
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                    تواصل معنا
+                                                </a>
+                                                <span className="relative text-slate-700">
+                                                    <ShoppingCart className="h-3.5 w-3.5" />
+                                                    <span className="absolute -right-1.5 -top-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-[#f98496] text-[7px] font-bold text-white">
+                                                        2
+                                                    </span>
+                                                </span>
+                                            </div>
                                         </div>
 
-                                        {/* Mini footer strip */}
-                                        <div className="mt-1 flex items-center justify-between rounded-xl bg-slate-900 px-3 py-2 text-[9px] text-white/85">
-                                            <span>© {new Date().getFullYear()} {storeName} — جميع الحقوق محفوظة</span>
-                                            <span className="font-bold text-emerald-300">يعمل بواسطة وصول</span>
+                                        <div className="space-y-3 p-3">
+                                            {/* Real screenshot banner of demo.wusool.ps */}
+                                            <div className="group relative overflow-hidden rounded-xl border border-pink-100 shadow-sm">
+                                                <img
+                                                    src="/images/demo-store-preview.webp"
+                                                    alt={`لقطة حقيقية من ${storeName}`}
+                                                    loading="lazy"
+                                                    className="anim-banner h-28 w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03] sm:h-36"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none';
+                                                        const sibling = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                                        if (sibling) sibling.style.display = 'block';
+                                                    }}
+                                                />
+                                                <div
+                                                    className="hidden h-24 w-full bg-gradient-to-br from-[#f98496]/70 to-[#9085f9]/70 sm:h-32"
+                                                    aria-hidden="true"
+                                                />
+                                                <span
+                                                    className="absolute bottom-1.5 right-1.5 rounded-full bg-black/55 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur-sm"
+                                                    dir="ltr"
+                                                >
+                                                    {demoUrl.replace(/^https?:\/\//, '')}
+                                                </span>
+                                                <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[8px] font-bold text-emerald-700 shadow-sm">
+                                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                                                    لقطة حية
+                                                </span>
+                                            </div>
+
+                                            {/* Category chips (real demo-store categories) */}
+                                            <div className="sim-scroll flex items-center gap-1.5 overflow-x-auto pb-0.5">
+                                                {['الكل', ...categories.map((c) => c.name)].map((cat) => {
+                                                    const meta = categories.find((c) => c.name === cat);
+                                                    const isActive = activeCat === cat;
+                                                    return (
+                                                        <button
+                                                            key={cat}
+                                                            type="button"
+                                                            onClick={() => setActiveCat(cat)}
+                                                            className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[10px] font-semibold transition-all ${
+                                                                isActive
+                                                                    ? 'bg-gradient-to-br from-[#f98496] to-[#9085f9] text-white shadow-sm'
+                                                                    : 'cursor-pointer bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-100'
+                                                            }`}
+                                                        >
+                                                            {meta?.image && (
+                                                                <img src={meta.image} alt="" className="h-3.5 w-3.5 rounded-full" />
+                                                            )}
+                                                            {cat}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            {/* Real product cards */}
+                                            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                                                {visibleProducts.slice(0, 8).map((prod, i) => (
+                                                    <div
+                                                        key={prod.name + i}
+                                                        className="group animate-fade-slide space-y-1.5 rounded-xl border border-pink-100 bg-white p-2 shadow-sm transition-shadow hover:shadow-md"
+                                                        style={{ animationDelay: `${i * 90}ms` }}
+                                                    >
+                                                        <div className="relative overflow-hidden rounded-lg bg-gray-50">
+                                                            {prod.image ? (
+                                                                <img
+                                                                    src={prod.image}
+                                                                    alt={prod.name}
+                                                                    loading="lazy"
+                                                                    className="h-20 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                                    onError={(e) => {
+                                                                        e.currentTarget.style.visibility = 'hidden';
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="flex h-20 items-center justify-center">
+                                                                    <ShoppingBag className="h-6 w-6 text-gray-300" />
+                                                                </div>
+                                                            )}
+                                                            {!!prod.discount && prod.discount > 0 && (
+                                                                <span className="absolute right-1 top-1 rounded-full bg-[#f98496] px-1.5 py-0.5 text-[8px] font-bold text-white shadow">
+                                                                    -{prod.discount}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <h4 className="truncate text-[10px] font-bold text-slate-800">{prod.name}</h4>
+                                                        <div className="flex items-baseline gap-1.5">
+                                                            <span className="text-[11px] font-black text-slate-900">
+                                                                {fmtPrice(prod.price)}
+                                                            </span>
+                                                            {!!prod.originalPrice && (
+                                                                <del className="no-underline text-[9px] font-medium text-gray-400 line-through">
+                                                                    {fmtPrice(prod.originalPrice)}
+                                                                </del>
+                                                            )}
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            className="flex w-full items-center justify-center gap-1 rounded-lg bg-[#25D366]/10 px-1.5 py-1 text-[9px] font-bold text-[#128C7E] transition-colors hover:bg-[#25D366] hover:text-white"
+                                                        >
+                                                            <MessageCircle className="h-2.5 w-2.5" />
+                                                            <span>اطلب واتساب</span>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Mini footer strip */}
+                                            <div className="mt-1 flex items-center justify-between rounded-xl bg-slate-900 px-3 py-2 text-[9px] text-white/85">
+                                                <span>© {new Date().getFullYear()} {storeName} — جميع الحقوق محفوظة</span>
+                                                <span className="font-bold text-emerald-300">يعمل بواسطة وصول</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -571,7 +670,7 @@ export function HeroPcSimulator({
                                     aria-label="زيارة المتجر الحي"
                                     className="group absolute bottom-3 left-3 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-[#25D366]/40 transition-transform hover:scale-110"
                                 >
-                                    <MessageCircle className="h-4.5 w-4.5" />
+                                    <MessageCircle className="h-4 w-4" />
                                     <span className="pointer-events-none absolute left-11 hidden whitespace-nowrap rounded-lg bg-slate-900/90 px-2 py-1 text-[9px] font-semibold text-white backdrop-blur-sm group-hover:block">
                                         زيارة المتجر الحي
                                     </span>
@@ -594,9 +693,45 @@ export function HeroPcSimulator({
                     to { opacity: 1; }
                 }
                 .sim-bios-line {
+                    display: block;
                     opacity: 0;
+                    text-align: left;
                     animation: simBiosIn 0.15s linear forwards;
                 }
+                .sim-caret {
+                    display: inline-block;
+                    margin-left: 2px;
+                    animation: simCaretBlink 0.9s steps(1) infinite;
+                }
+                @keyframes simCaretBlink {
+                    50% { opacity: 0; }
+                }
+
+                /* Windows 11 bloom-style wallpaper */
+                .sim-win11 {
+                    background:
+                        radial-gradient(at 28% 26%, rgba(86,120,255,0.85) 0px, transparent 55%),
+                        radial-gradient(at 74% 34%, rgba(56,189,248,0.55) 0px, transparent 50%),
+                        radial-gradient(at 52% 82%, rgba(139,92,246,0.6) 0px, transparent 55%),
+                        radial-gradient(at 84% 78%, rgba(37,99,235,0.45) 0px, transparent 45%),
+                        linear-gradient(135deg, #071633 0%, #0d2c5c 55%, #123a6b 100%);
+                }
+                .sim-spinner {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 9999px;
+                    border: 3px solid rgba(255,255,255,0.22);
+                    border-top-color: #ffffff;
+                    animation: simSpin 0.9s linear infinite;
+                }
+                @keyframes simSpin {
+                    to { transform: rotate(360deg); }
+                }
+                @keyframes simCursorFloat {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-3px); }
+                }
+                .anim-cursor-float { animation: simCursorFloat 2.6s ease-in-out infinite; }
                 @keyframes simRipple {
                     0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0.9; }
                     100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
@@ -612,9 +747,14 @@ export function HeroPcSimulator({
                     50% { object-position: 100% top; }
                 }
                 .anim-banner { animation: simBannerPan 22s ease-in-out infinite; }
+
+                /* Hide the RTL scrollbar column inside the simulated page only */
+                .sim-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+                .sim-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
                 @media (prefers-reduced-motion: reduce) {
-                    .anim-cursor { transition: none !important; }
-                    .anim-banner, .sim-loading-bar, .sim-ripple, .sim-bios-line { animation: none !important; opacity: 1 !important; width: 100% !important; }
+                    .anim-cursor-float { animation: none !important; }
+                    .anim-banner, .sim-loading-bar, .sim-ripple, .sim-bios-line, .sim-spinner { animation: none !important; opacity: 1 !important; width: 100% !important; }
                 }
             `}</style>
         </div>
