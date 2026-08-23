@@ -170,7 +170,7 @@ export default function Onboarding({
         logo: defaults.logo || '',
         timezone: defaults.timezone || 'Asia/Gaza',
         publish_store: defaults.publishStore !== undefined ? defaults.publishStore : true,
-        import_demo_products: true,
+        import_demo_products: false,
         language: defaults.language || 'ar',
         currency: defaults.currency || 'ILS',
         theme: defaults.theme || 'classic',
@@ -1497,30 +1497,6 @@ export default function Onboarding({
                                                             {t('Review your selections and confirm to finish.')}
                                                         </p>
                                                     </div>
-
-                                                    <label
-                                                        className={`mb-3 flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3.5 transition-all ${
-                                                            data.import_demo_products
-                                                                ? 'border-emerald-500 bg-emerald-50/40'
-                                                                : 'border-gray-200 bg-white'
-                                                        }`}
-                                                    >
-                                                        <input
-                                                            id="import_demo"
-                                                            type="checkbox"
-                                                            checked={data.import_demo_products}
-                                                            onChange={(e) => setData('import_demo_products', e.target.checked)}
-                                                            className="h-4 w-4 rounded border-gray-300 accent-emerald-600"
-                                                        />
-                                                        <div className="min-w-0">
-                                                            <p className="text-xs font-bold text-gray-800">
-                                                                {t('Start with demo products')}
-                                                            </p>
-                                                            <p className="mt-0.5 text-[11px] text-gray-500">
-                                                                {t('Import a sample catalog so your store is not empty. You can edit or remove everything later.')}
-                                                            </p>
-                                                        </div>
-                                                    </label>
 
                                                     <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-3.5">
                                                         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
