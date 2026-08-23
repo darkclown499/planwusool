@@ -113,15 +113,29 @@ class DemoStoreService
      */
     private function upgradeLegacySeed(Store $store): void
     {
-        $legacyNames = ['Demo Store', 'متجر تجريبي', 'متجر الديمو'];
-        $isLegacyBrand = in_array($store->getRawOriginal('name') ?? $store->name, $legacyNames, true);
-        $hasLegacyCatalog = Product::where('store_id', $store->id)
-            ->where('sku', 'DEMO-P1')
+        $name = $store->getRawOriginal('name') ?? $store->name;
+        $isLegacyBrand = in_array($name, ['Demo Store', 'متجر تجريبي', 'متجر الديمو'], true);
+
+        // The branded catalog seeds real template photography; its absence
+        // alongside a legacy DEMO-P1 sku means the generic catalog is live.
+        $products = Product::where('store_id', $store->id);
+        $hasLegacyCatalog = (clone $products)->where('sku', 'DEMO-P1')->exists();
+        $hasBrandedCatalog = (clone $products)
+            ->where('cover_image', 'like', '/themes/fashion-designer-mart/%')
             ->exists();
 
-        if (! $isLegacyBrand && ! $hasLegacyCatalog) {
+        $needsUpgrade = $isLegacyBrand || ($hasLegacyCatalog && ! $hasBrandedCatalog);
+
+        if (! $needsUpgrade) {
             return;
         }
+
+        // Hourly guard against pathological loops (e.g. a plan cap too small
+        // to ever seed the four photography products).
+        if (Cache::has('demo_seed_upgrade.lock')) {
+            return;
+        }
+        Cache::put('demo_seed_upgrade.lock', 1, 3600);
 
         try {
             Product::where('store_id', $store->id)->delete();
@@ -138,7 +152,6 @@ class DemoStoreService
 
         $this->seedData($store);
 
-        Cache::forget('demo_store_preview.' . config('demo.preview_product_limit', 8) . '.' . config('demo.preview_category_limit', 6));
         Cache::forget('demo_store_preview.8.6');
     }
 
@@ -361,14 +374,6 @@ class DemoStoreService
                     ['p1', 'هاتف نوكس X1 الذكي', 'هاتف ذكي بشاشة AMOLED 6.7 بوصة وكاميرا 108 ميجابكسل وبطارية تدوم طوال اليوم.', 1499, 1799, 25],
                     ['p2', 'سماعات لاسلكية برو', 'سماعات أذن لاسلكية مع عزل الضوضاء النشط ونقاء صوت عالي الجودة.', 299, 399, 50],
                     ['p3', 'ساعة ذكية فيت تي', 'ساعة ذكية متعددة الوظائف مع تتبع اللياقة والنوم والإشعارات الذكية.', 499, 599, 30],
-                ],
-            ],
-            'cat-fashion' => [
-                'name' => 'أزياء',
-                'products' => [
-                    ['p4', 'فستان صيفي أنيق', 'فستان صيفي خفيف بتصميم عصري يناسب جميع المناسبات.', 199, 249, 15],
-                    ['p5', 'تيشيرت قطني', 'تيشيرت قطن 100% مريح وناعم بجميع المقاسات والألوان.', 89, 119, 80],
-                    ['p6', 'حذاء رياضي رياضي', 'حذاء رياضي خفيف ومريح مثالي للجري والمشي اليومي.', 249, 349, 20],
                 ],
             ],
             'cat-home' => [
