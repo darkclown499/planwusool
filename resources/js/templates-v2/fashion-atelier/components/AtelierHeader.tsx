@@ -63,8 +63,18 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          <nav className="hidden items-center gap-1 md:flex">
-            <a href={homeHref} className={navLink}>الرئيسية</a>
+          <nav className="hidden items-center gap-4 md:flex text-sm font-medium">
+            <a href={homeHref} className="text-sm font-medium hover:text-[#9d7463] transition-colors">الرئيسية</a>
+            {POLICY_LINKS.map((link) => (
+              <button
+                key={link.key}
+                type="button"
+                onClick={() => setPolicyOpen(link.key)}
+                className="text-sm font-medium hover:text-[#9d7463] transition-colors"
+              >
+                {link.label}
+              </button>
+            ))}
           </nav>
         </div>
 

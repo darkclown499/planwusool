@@ -727,6 +727,28 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         </div>
                       </div>
                     </div>
+
+                    {/* Helper guidelines */}
+                    <div className="mt-4 grid gap-3">
+                      <div className="rounded-xl border border-blue-100 bg-blue-50 p-3">
+                        <p className="flex items-center gap-1.5 text-xs font-black text-blue-800">📷 صورة البنر</p>
+                        <p className="mt-1 text-xs leading-relaxed text-blue-700">
+                          المقاس الموصى به: 1920×1080 بكسل للشاشات الكبيرة، و 1080×1350 بكسل للهواتف. أقصى حجم: 2MB (صيغة WebP أو JPG).
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+                        <p className="flex items-center gap-1.5 text-xs font-black text-emerald-800">🎬 الفيديو المباشر</p>
+                        <p className="mt-1 text-xs leading-relaxed text-emerald-700">
+                          صيغة MP4 بحجم لا يتجاوز 15MB لضمان سرعة التحميل على الهواتف.
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-purple-100 bg-purple-50 p-3">
+                        <p className="flex items-center gap-1.5 text-xs font-black text-purple-800">▶️ يوتيوب</p>
+                        <p className="mt-1 text-xs leading-relaxed text-purple-700">
+                          أدخل رابط الفيديو المباشر وستتم معالجته للتشغيل التلقائي الصامت.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

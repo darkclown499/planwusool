@@ -48,25 +48,42 @@ function extractYouTubeId(url: string): string | null {
  * Pure CSS transitions — no slider library.
  */
 export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
-  // Dynamic hero_banner from designer (store_content.hero_banner) — overrides static slides when present.
+  // Dynamic hero_banner from designer — supports both nested hero_banner.* and flat hero_* keys for DB sync robustness.
   let storeHero: any = null;
+  let rawContent: any = null;
   try {
     const core = useStorefrontCore();
-    storeHero = (core as any)?.content?.hero_banner ?? (core as any)?.content?.hero ?? null;
+    rawContent = (core as any)?.content ?? {};
+    storeHero = rawContent.hero_banner ?? rawContent.hero ?? null;
+    // Fallback flat keys (hero_type, hero_images, etc.) as specified in task
+    if (!storeHero || (!storeHero.type && !rawContent.hero_type)) {
+      const flat = {
+        type: rawContent.hero_type ?? rawContent.heroType ?? null,
+        images: rawContent.hero_images ?? rawContent.heroImages ?? null,
+        video_url: rawContent.hero_video_url ?? rawContent.heroVideoUrl ?? null,
+        youtube_url: rawContent.hero_youtube_url ?? rawContent.heroYoutubeUrl ?? null,
+        overlay_opacity: rawContent.overlay_opacity ?? rawContent.overlayOpacity ?? null,
+        heading: rawContent.hero_heading ?? rawContent.heroHeading ?? null,
+        subtitle: rawContent.hero_subtitle ?? rawContent.heroSubtitle ?? null,
+        cta_label: rawContent.hero_cta_label ?? rawContent.heroCtaLabel ?? null,
+        cta_link: rawContent.hero_cta_link ?? rawContent.heroCtaLink ?? null,
+      };
+      const hasFlat = Object.values(flat).some((v) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0));
+      if (hasFlat) storeHero = { ...(storeHero || {}), ...Object.fromEntries(Object.entries(flat).filter(([, v]) => v !== null && v !== undefined)) };
+    }
   } catch {
     storeHero = null;
+    rawContent = {};
   }
 
   const heroType: string | null = storeHero?.type ? String(storeHero.type).toLowerCase() : null;
-  const overlayOpacityRaw = storeHero?.overlay_opacity ?? storeHero?.overlayOpacity ?? storeHero?.overlay ?? 35;
-  const overlayOpacity = Math.min(1, Math.max(0, Number(overlayOpacityRaw) / (Number(overlayOpacityRaw) > 1 ? 100 : 1)));
-  // When overlay is 0-100 integer, divide by 100. If already 0-1, keep as is.
+  const overlayOpacityRaw = storeHero?.overlay_opacity ?? storeHero?.overlayOpacity ?? storeHero?.overlay ?? rawContent?.overlay_opacity ?? 35;
   const normalizedOverlay = Number(overlayOpacityRaw) > 1 ? Number(overlayOpacityRaw) / 100 : Number(overlayOpacityRaw);
 
-  const heroHeading = storeHero?.heading ?? storeHero?.title ?? null;
-  const heroSubtitle = storeHero?.subtitle ?? null;
-  const heroCtaLabel = storeHero?.cta_label ?? storeHero?.button_text ?? null;
-  const heroCtaLink = storeHero?.cta_link ?? storeHero?.button_link ?? null;
+  const heroHeading = storeHero?.heading ?? storeHero?.title ?? rawContent?.hero_heading ?? null;
+  const heroSubtitle = storeHero?.subtitle ?? rawContent?.hero_subtitle ?? null;
+  const heroCtaLabel = storeHero?.cta_label ?? storeHero?.button_text ?? rawContent?.hero_cta_label ?? null;
+  const heroCtaLink = storeHero?.cta_link ?? storeHero?.button_link ?? rawContent?.hero_cta_link ?? null;
 
   // Build dynamic image list for slider mode
   const heroImages: string[] = (() => {

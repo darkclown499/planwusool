@@ -9,19 +9,24 @@ interface AtelierSearchOverlayProps {
 }
 
 /**
- * Full-screen atelier search: a centered serif prompt over ivory, live
- * results as elegant rows with portrait thumbs. Esc closes.
+ * Compact header search modal — replaces the previous full-screen opaque
+ * overlay. Floating centered card with backdrop blur, dynamic branding, and
+ * inline autocomplete grid.
  */
 export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onClose, onProductClick }) => {
-  const { product } = useStorefrontCore();
+  const { product, store, config } = useStorefrontCore();
   const formatPrice = usePriceFormatter();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const storeName = (config as any)?.storeName || (store as any)?.name || 'المتجر';
+
   useEffect(() => {
     inputRef.current?.focus();
     document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = '';
@@ -56,68 +61,102 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
   }, [products]);
 
   return (
-    <div className="fixed inset-0 z-[80] bg-[#faf7f2]/98 backdrop-blur" dir="rtl" role="dialog" aria-modal="true">
-      <div className="mx-auto flex h-full max-w-3xl flex-col px-4 pt-16 sm:pt-24">
-        <button type="button" onClick={onClose} aria-label="إغلاق البحث"
-          className="absolute left-5 top-5 rounded-full bg-white p-2 text-stone-500 shadow-sm transition hover:text-stone-900">
-          <X className="h-5 w-5" />
-        </button>
-
-        <div className="text-center">
-          <p className="mb-6 text-[11px] font-bold tracking-[0.35em] text-[#b08d57]">ابحثي في الأتيليه</p>
-        </div>
-
-        <div className="flex items-center gap-3 border-b-2 border-stone-300 pb-3 transition focus-within:border-[#9d7463]">
-          <Search className="h-6 w-6 shrink-0 text-stone-400" strokeWidth={1.6} />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="اسم القطعة، مقاس، أو كود…"
-            className="w-full bg-transparent font-serif text-xl text-stone-800 placeholder:text-stone-400 focus:outline-none sm:text-2xl"
-          />
-          {query && (
-            <button type="button" onClick={() => setQuery('')} aria-label="مسح" className="shrink-0 rounded-full p-1 text-stone-400 hover:text-stone-700">
+    <div
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+      dir="rtl"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div className="mx-auto mt-12 max-w-2xl w-full p-4">
+        <div
+          className="bg-white rounded-2xl p-6 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <p className="text-sm font-bold text-stone-800">ابحث في {storeName}</p>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="إغلاق البحث"
+              className="rounded-full bg-stone-100 p-2 text-stone-500 transition hover:bg-stone-200 hover:text-stone-800"
+            >
               <X className="h-4 w-4" />
             </button>
-          )}
-        </div>
+          </div>
 
-        <div className="mt-6 flex-1 overflow-y-auto pb-10">
-          {query.trim().length < 2 ? (
-            suggestions.length > 0 && (
-              <div>
-                <p className="mb-3 text-xs font-bold tracking-wide text-stone-500">اقتراحات</p>
-                <div className="flex flex-wrap gap-2">
-                  {suggestions.map((s) => (
-                    <button key={s} type="button" onClick={() => setQuery(s)}
-                      className="rounded-full border border-stone-300 bg-white px-4 py-1.5 text-sm text-stone-600 transition hover:border-[#9d7463] hover:text-[#9d7463]">
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )
-          ) : results.length === 0 ? (
-            <p className="py-12 text-center font-serif text-lg text-stone-400">لا نتائج تطابق «{query}»</p>
-          ) : (
-            <ul className="divide-y divide-stone-200/80">
-              {results.map((p: any) => (
-                <li key={p.id}>
-                  <button type="button" onClick={() => { onClose(); onProductClick(p); }}
-                    className="group flex w-full items-center gap-4 py-3 text-right transition">
-                    <span className="h-20 w-16 shrink-0 overflow-hidden rounded-md bg-stone-100 ring-1 ring-stone-200">
-                      <img src={getImageUrl(p.image)} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+          {/* Search bar */}
+          <div className="flex items-center gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 transition focus-within:border-[#9d7463] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#9d7463]/20">
+            <Search className="h-5 w-5 shrink-0 text-stone-400" strokeWidth={1.7} />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="ابحث عن منتج، قسم، أو كود..."
+              className="w-full bg-transparent text-[15px] text-stone-800 placeholder:text-stone-400 focus:outline-none"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                aria-label="مسح"
+                className="shrink-0 rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Suggestion chips — compact directly below search bar */}
+          {suggestions.length > 0 && query.trim().length < 2 && (
+            <div className="my-4 flex flex-wrap gap-2">
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setQuery(s)}
+                  className="rounded-full border border-stone-200 bg-stone-50 px-3.5 py-1.5 text-xs font-medium text-stone-600 transition hover:border-[#9d7463] hover:bg-white hover:text-[#9d7463]"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Results */}
+          <div className="mt-2 max-h-[50vh] overflow-y-auto">
+            {query.trim().length >= 2 && results.length === 0 ? (
+              <p className="py-8 text-center text-sm text-stone-400">لا نتائج تطابق «{query}»</p>
+            ) : query.trim().length >= 2 && results.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {results.map((p: any) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onProductClick(p);
+                    }}
+                    className="group flex items-center gap-3 rounded-xl border border-stone-100 bg-stone-50 p-3 text-right transition hover:border-[#9d7463]/30 hover:bg-white hover:shadow-md text-start"
+                  >
+                    <span className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-stone-200">
+                      <img
+                        src={getImageUrl(p.image || p.images?.[0] || '')}
+                        alt={p.name}
+                        className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-serif text-[15px] font-semibold text-stone-800 group-hover:text-[#9d7463]">{p.name}</span>
+                      <span className="block truncate text-sm font-semibold text-stone-800 group-hover:text-[#9d7463]">{p.name}</span>
                       <span className="mt-1 block text-sm font-bold text-stone-900">{formatPrice(p.price)}</span>
                     </span>
                   </button>
-                </li>
-              ))}
-            </ul>
-          )}
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
