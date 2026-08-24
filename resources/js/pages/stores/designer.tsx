@@ -178,14 +178,14 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
   const typography = (tokens?.typography || {}) as Record<string, any>;
 
   return (
-    <PageTemplate title="مصمم المتجر" url={`/stores/${store.id}/designer`}>
+    <PageTemplate title="تخصيص تصميم المتجر" url={`/stores/${store.id}/designer`}>
       <div className="mx-auto max-w-6xl px-4 py-6">
         {/* Header */}
         <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-black text-gray-900">
               <Store className="h-7 w-7 text-emerald-500" />
-              مصمم المتجر
+              تخصيص تصميم المتجر
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               كل قالب تطبيق متجر متكامل — بدّل القالب، عدّل محتواه، واضبط هويتك البصرية.

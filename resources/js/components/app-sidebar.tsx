@@ -274,9 +274,9 @@ export function AppSidebar() {
                 icon: Building2,
                 groupLabel: t('Store'),
                 children: [
-                    { title: '🎨 تصميم القوالب', href: route('stores.templates', currentStoreId), icon: LayoutTemplate },
-                    { title: '⚡ المصمم البصري', href: route('stores.designer', currentStoreId), icon: Paintbrush, target: '_blank' },
-                    { title: '⚙️ إعدادات المتجر الشاملة', href: route('stores.settings', currentStoreId), icon: Settings },
+                    { title: 'قوالب المتجر', href: route('stores.templates', currentStoreId), icon: LayoutTemplate },
+                    { title: 'تخصيص تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush, target: '_blank' },
+                    { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
                 ],
             });
         }

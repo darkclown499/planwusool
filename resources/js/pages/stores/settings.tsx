@@ -274,13 +274,13 @@ export default function StoreSettings({ store, settings }: Props) {
             <div>
               <h3 className="text-lg font-extrabold text-slate-900">تصميم وتنسيق المتجر</h3>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                خصص قالبك، الألوان، البانرات، وترتيب السيكشنات عبر المحرر البصري الحي.
+                اختر قالب متجرك وخصص الألوان والبانرات وترتيب الأقسام بكل سهولة.
               </p>
             </div>
           </div>
           <Button type="button" size="lg" className="shrink-0 gap-2" onClick={() => window.open(`/stores/${store.id}/designer`, '_blank')}>
             <Paintbrush className="h-4 w-4" />
-            افتح المصمم البصري
+            تخصيص تصميم المتجر
           </Button>
         </CardContent>
       </Card>

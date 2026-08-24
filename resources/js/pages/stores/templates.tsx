@@ -55,7 +55,7 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
       toast.success('تم تطبيق القالب بنجاح', {
         description: `قالب «${tpl.meta.name}» أصبح نشطاً على متجرك.`,
         action: {
-          label: 'فتح المصمم',
+          label: 'فتح تخصيص التصميم',
           onClick: () => window.open(`/stores/${store.id}/designer`, '_blank', 'noopener'),
         },
       });
