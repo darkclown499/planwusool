@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { ChevronLeft, Flame, Minus, PackageSearch, Plus, ShoppingBag, Star, UtensilsCrossed } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
   discountPercent,
   isVariableProduct,
@@ -41,6 +42,9 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
             className="rounded-full border border-[#4a3e33] p-2.5 text-[#d8c9a8] transition hover:border-[#f59e0b] hover:text-[#f59e0b]">
             🔍
           </button>
+          <div className="hidden sm:block">
+            <HeaderLoyaltyBadge />
+          </div>
           <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} aria-label="حسابي"
             className="hidden rounded-full border border-[#4a3e33] px-4 py-2 text-sm font-bold text-[#d8c9a8] transition hover:border-[#f59e0b] hover:text-[#f59e0b] sm:block">
             حسابي

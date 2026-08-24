@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { BadgeCheck, ChevronLeft, Cpu, Headphones, Laptop, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
   discountPercent,
   isVariableProduct,
@@ -95,6 +96,9 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          <div className="hidden sm:block">
+            <HeaderLoyaltyBadge />
+          </div>
           <button
             type="button"
             onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))}

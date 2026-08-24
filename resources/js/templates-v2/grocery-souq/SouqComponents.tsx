@@ -11,6 +11,7 @@ import {
   useStorefrontCore,
   type V2Product,
 } from '../shared/hooks';
+import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 
 /* ===================================================================== */
 /* Souq grocery — components.                                             */
@@ -80,6 +81,9 @@ export function SouqHeader() {
 
         {/* Utilities */}
         <div className="flex shrink-0 items-center gap-1">
+          <div className="hidden sm:block">
+            <HeaderLoyaltyBadge />
+          </div>
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2 transition hover:bg-white/15">
             ♥
             {!!wishlist?.count && (

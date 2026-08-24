@@ -130,7 +130,7 @@ export const TemplateCartDrawer: React.FC<TemplateCartDrawerProps> = ({ onClose,
                                                 <button
                                                     type="button"
                                                     onClick={() => cart.updateQuantity(index, -1)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full border"
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border"
                                                     style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}
                                                     aria-label="إنقاص"
                                                 >
@@ -145,7 +145,7 @@ export const TemplateCartDrawer: React.FC<TemplateCartDrawerProps> = ({ onClose,
                                                 <button
                                                     type="button"
                                                     onClick={() => cart.updateQuantity(index, 1)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full border"
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border"
                                                     style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}
                                                     aria-label="زيادة"
                                                 >
