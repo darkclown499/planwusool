@@ -48,32 +48,51 @@ function extractYouTubeId(url: string): string | null {
  * Pure CSS transitions — no slider library.
  */
 export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
-  // Dynamic hero_banner from designer — supports both nested hero_banner.* and flat hero_* keys for DB sync robustness.
+  // Dynamic hero_banner from designer — supports both nested hero_banner.* and flat hero_* keys plus store.settings for DB sync robustness.
   let storeHero: any = null;
   let rawContent: any = null;
+  let storeSettings: any = null;
   try {
     const core = useStorefrontCore();
     rawContent = (core as any)?.content ?? {};
+    storeSettings = (core as any)?.store?.settings ?? (core as any)?.config ?? {};
+    // Prefer nested hero_banner, then flat hero_* , then store.settings
     storeHero = rawContent.hero_banner ?? rawContent.hero ?? null;
-    // Fallback flat keys (hero_type, hero_images, etc.) as specified in task
-    if (!storeHero || (!storeHero.type && !rawContent.hero_type)) {
-      const flat = {
-        type: rawContent.hero_type ?? rawContent.heroType ?? null,
-        images: rawContent.hero_images ?? rawContent.heroImages ?? null,
-        video_url: rawContent.hero_video_url ?? rawContent.heroVideoUrl ?? null,
-        youtube_url: rawContent.hero_youtube_url ?? rawContent.heroYoutubeUrl ?? null,
-        overlay_opacity: rawContent.overlay_opacity ?? rawContent.overlayOpacity ?? null,
-        heading: rawContent.hero_heading ?? rawContent.heroHeading ?? null,
-        subtitle: rawContent.hero_subtitle ?? rawContent.heroSubtitle ?? null,
-        cta_label: rawContent.hero_cta_label ?? rawContent.heroCtaLabel ?? null,
-        cta_link: rawContent.hero_cta_link ?? rawContent.heroCtaLink ?? null,
-      };
-      const hasFlat = Object.values(flat).some((v) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0));
-      if (hasFlat) storeHero = { ...(storeHero || {}), ...Object.fromEntries(Object.entries(flat).filter(([, v]) => v !== null && v !== undefined)) };
+    const flatFromContent = {
+      type: rawContent.hero_type ?? rawContent.heroType ?? null,
+      images: rawContent.hero_images ?? rawContent.heroImages ?? null,
+      video_url: rawContent.hero_video_url ?? rawContent.heroVideoUrl ?? null,
+      youtube_url: rawContent.hero_youtube_url ?? rawContent.heroYoutubeUrl ?? null,
+      overlay_opacity: rawContent.overlay_opacity ?? rawContent.overlayOpacity ?? null,
+      heading: rawContent.hero_heading ?? rawContent.heroHeading ?? null,
+      subtitle: rawContent.hero_subtitle ?? rawContent.heroSubtitle ?? null,
+      cta_label: rawContent.hero_cta_label ?? rawContent.heroCtaLabel ?? null,
+      cta_link: rawContent.hero_cta_link ?? rawContent.heroCtaLink ?? null,
+    };
+    const flatFromSettings = {
+      type: storeSettings?.hero_type ?? null,
+      images: storeSettings?.hero_images ?? null,
+      video_url: storeSettings?.hero_video_url ?? null,
+      youtube_url: storeSettings?.hero_youtube_url ?? null,
+      overlay_opacity: storeSettings?.overlay_opacity ?? null,
+      heading: storeSettings?.hero_heading ?? null,
+      subtitle: storeSettings?.hero_subtitle ?? null,
+      cta_label: storeSettings?.hero_cta_label ?? null,
+      cta_link: storeSettings?.hero_cta_link ?? null,
+    };
+    const hasFlatContent = Object.values(flatFromContent).some((v) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0));
+    const hasFlatSettings = Object.values(flatFromSettings).some((v) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0));
+    if (!storeHero || hasFlatContent || hasFlatSettings) {
+      const mergedFlat = { ...flatFromContent, ...Object.fromEntries(Object.entries(flatFromSettings).filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '')) };
+      const hasAnyFlat = Object.values(mergedFlat).some((v) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0));
+      if (hasAnyFlat) {
+        storeHero = { ...(storeHero || {}), ...Object.fromEntries(Object.entries(mergedFlat).filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0))) };
+      }
     }
   } catch {
     storeHero = null;
     rawContent = {};
+    storeSettings = {};
   }
 
   const heroType: string | null = storeHero?.type ? String(storeHero.type).toLowerCase() : null;
@@ -107,6 +126,9 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
 
   const youtubeId = heroType === 'youtube' && storeHero?.youtube_url ? extractYouTubeId(String(storeHero.youtube_url)) : null;
   const videoUrl = heroType === 'video' ? String(storeHero?.video_url || '').trim() : '';
+  // Task-specified dynamic rendering hook: use store.settings.hero_images[0] as background with full URL fallback
+  const heroBg = (storeSettings as any)?.hero_images?.[0] ?? heroImages[0] ?? null;
+  const heroBgUrl = heroBg ? (() => { try { return getImageUrl(String(heroBg).trim().replace(/\/+$/, '')); } catch { return String(heroBg); } })() : null;
 
   // Fallback to static slides when no dynamic hero is configured
   const list = hasDynamicHero && heroType === 'image' && heroImages.length > 0

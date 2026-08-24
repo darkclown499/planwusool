@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
+import { getImageUrl } from '@/utils/image-helper';
 import { getTemplateModule, type TemplateModule } from '@/templates-v2';
 import StoreTemplatesGrid from './components/store-templates-grid';
 
@@ -64,6 +65,35 @@ function setDotted(obj: Record<string, any>, path: string, value: any): Record<s
 /** Read a value at a dotted path. */
 function getDotted(obj: Record<string, any>, path: string): any {
   return path.split('.').reduce((acc, k) => (acc == null ? undefined : acc[k]), obj);
+}
+
+/** Strip trailing slashes from URL/path. */
+function stripTrailingSlash(url: string): string {
+  return String(url || '').trim().replace(/\/+$/, '');
+}
+
+/** Resolve to absolute URL and strip trailing slash. */
+function normalizeImageUrl(url: string): string {
+  if (!url) return '';
+  const trimmed = stripTrailingSlash(String(url).trim());
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  try {
+    return stripTrailingSlash(getImageUrl(trimmed));
+  } catch {
+    return trimmed;
+  }
+}
+
+/** Sanitize hero_images array: strip slashes, resolve to absolute URLs, filter malformed, cap 10. */
+function sanitizeHeroImages(images: any): string[] {
+  if (!Array.isArray(images)) return [];
+  return images
+    .map((u: any) => String(u || '').trim())
+    .filter(Boolean)
+    .map((u) => normalizeImageUrl(u))
+    .filter((u) => u && u.length > 5 && u !== '/' && u !== '//' && !u.endsWith('//'))
+    .slice(0, 10);
 }
 
 function getInitialTab(): Tab {
@@ -127,7 +157,45 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
   const saveContent = async () => {
     setSaving(true);
     try {
-      await apiPut(`/api/stores/${store.id}/designer`, { content });
+      // Normalize hero_images: strip trailing slashes, resolve to absolute URLs, filter malformed
+      let payloadContent: Record<string, any> = { ...content };
+      const rawNested = getDotted(content, 'hero_banner.images');
+      const rawFlat = getDotted(content, 'hero_images');
+      const rawImages = rawNested !== undefined ? rawNested : rawFlat;
+      if (rawImages !== undefined) {
+        const clean = sanitizeHeroImages(rawImages);
+        // Persist consistently under both keys: hero_banner.images (nested) and hero_images (flat) for DB/validator/transformer consistency
+        payloadContent = setDotted(payloadContent, 'hero_banner.images', clean);
+        payloadContent = setDotted(payloadContent, 'hero_images', clean);
+        // Also ensure hero_banner object exists for other hero fields
+        const heroType = getDotted(content, 'hero_banner.type') ?? getDotted(content, 'hero_type');
+        if (heroType !== undefined) {
+          payloadContent = setDotted(payloadContent, 'hero_banner.type', String(heroType).trim().replace(/\/+$/, ''));
+          payloadContent = setDotted(payloadContent, 'hero_type', String(heroType).trim().replace(/\/+$/, ''));
+        }
+        const heroVideo = getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url');
+        if (heroVideo !== undefined) {
+          const cleanVideo = stripTrailingSlash(String(heroVideo).trim());
+          const normVideo = cleanVideo ? (cleanVideo.startsWith('http') ? cleanVideo : normalizeImageUrl(cleanVideo)) : '';
+          payloadContent = setDotted(payloadContent, 'hero_banner.video_url', normVideo);
+          payloadContent = setDotted(payloadContent, 'hero_video_url', normVideo);
+        }
+        const heroYoutube = getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url');
+        if (heroYoutube !== undefined) {
+          const cleanYt = stripTrailingSlash(String(heroYoutube).trim());
+          payloadContent = setDotted(payloadContent, 'hero_banner.youtube_url', cleanYt);
+          payloadContent = setDotted(payloadContent, 'hero_youtube_url', cleanYt);
+        }
+        const overlay = getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity');
+        if (overlay !== undefined) {
+          const num = Math.min(100, Math.max(0, Number(overlay)));
+          payloadContent = setDotted(payloadContent, 'hero_banner.overlay_opacity', num);
+          payloadContent = setDotted(payloadContent, 'overlay_opacity', num);
+        }
+        // Sync local state to normalized payload so UI reflects cleaned URLs immediately
+        setContent(payloadContent);
+      }
+      await apiPut(`/api/stores/${store.id}/designer`, { content: payloadContent });
       toast.success('تم حفظ المحتوى');
     } catch {
       toast.error('تعذر حفظ المحتوى');
@@ -379,11 +447,12 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
 
             {/* --------------------------- BRAND --------------------------- */}
             {tab === 'brand' && (() => {
-              const heroType = (getDotted(content, 'hero_banner.type') ?? 'image') as string;
-              const heroImages = (getDotted(content, 'hero_banner.images') ?? []) as string[];
-              const heroVideoUrl = (getDotted(content, 'hero_banner.video_url') ?? '') as string;
-              const heroYoutubeUrl = (getDotted(content, 'hero_banner.youtube_url') ?? '') as string;
-              const heroOverlay = Number(getDotted(content, 'hero_banner.overlay_opacity') ?? 35);
+              const heroType = (getDotted(content, 'hero_banner.type') ?? getDotted(content, 'hero_type') ?? 'image') as string;
+              const rawHeroImages = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any;
+              const heroImages = sanitizeHeroImages(rawHeroImages);
+              const heroVideoUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url') ?? ''));
+              const heroYoutubeUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url') ?? ''));
+              const heroOverlay = Number(getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity') ?? 35);
               const heroHeading = (getDotted(content, 'hero_banner.heading') ?? '') as string;
               const heroSubtitle = (getDotted(content, 'hero_banner.subtitle') ?? '') as string;
               const heroCtaLabel = (getDotted(content, 'hero_banner.cta_label') ?? '') as string;
@@ -534,7 +603,11 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <button
                           key={opt.id}
                           type="button"
-                          onClick={() => setContent(setDotted(content, 'hero_banner.type', opt.id))}
+                          onClick={() => {
+                            let tmp = setDotted(content, 'hero_banner.type', opt.id);
+                            tmp = setDotted(tmp, 'hero_type', opt.id);
+                            setContent(tmp);
+                          }}
                           className={`flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-black transition ${heroType === opt.id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                           {opt.label}
@@ -552,11 +625,14 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                             <div key={idx} className="flex items-center gap-2">
                               <div className="flex-1">
                                 <MediaPicker
-                                  value={img}
+                                  value={img ? normalizeImageUrl(img) : img}
                                   onChange={(url: string) => {
+                                    const clean = normalizeImageUrl(url);
                                     const next = [...heroImages];
-                                    next[idx] = url;
-                                    setContent(setDotted(content, 'hero_banner.images', next));
+                                    next[idx] = clean;
+                                    let tmp = setDotted(content, 'hero_banner.images', next);
+                                    tmp = setDotted(tmp, 'hero_images', next);
+                                    setContent(tmp);
                                   }}
                                 />
                               </div>
@@ -566,7 +642,9 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 size="sm"
                                 onClick={() => {
                                   const next = heroImages.filter((_: string, i: number) => i !== idx);
-                                  setContent(setDotted(content, 'hero_banner.images', next));
+                                  let tmp = setDotted(content, 'hero_banner.images', next);
+                                  tmp = setDotted(tmp, 'hero_images', next);
+                                  setContent(tmp);
                                 }}
                                 className="shrink-0 text-red-600 hover:text-red-700"
                               >
@@ -579,7 +657,12 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => setContent(setDotted(content, 'hero_banner.images', [...heroImages, '']))}
+                          onClick={() => {
+                            const next = [...heroImages, ''];
+                            let tmp = setDotted(content, 'hero_banner.images', next);
+                            tmp = setDotted(tmp, 'hero_images', next);
+                            setContent(tmp);
+                          }}
                           className="gap-1.5"
                         >
                           + إضافة صورة
@@ -592,20 +675,31 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <Label className="block text-xs font-black text-slate-600">رابط فيديو MP4 (رفع مباشر)</Label>
                         <Input
                           dir="ltr"
-                          value={heroVideoUrl}
-                          onChange={(e) => setContent(setDotted(content, 'hero_banner.video_url', e.target.value))}
+                          value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl}
+                          onChange={(e) => {
+                            const clean = stripTrailingSlash(e.target.value.trim());
+                            const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : '';
+                            let tmp = setDotted(content, 'hero_banner.video_url', norm);
+                            tmp = setDotted(tmp, 'hero_video_url', norm);
+                            setContent(tmp);
+                          }}
                           placeholder="https://example.com/video.mp4"
                           className="bg-white font-mono text-sm"
                         />
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500">أو اختر ملف فيديو:</span>
                           <MediaPicker
-                            value={heroVideoUrl}
-                            onChange={(url: string) => setContent(setDotted(content, 'hero_banner.video_url', url))}
+                            value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl}
+                            onChange={(url: string) => {
+                              const clean = normalizeImageUrl(url);
+                              let tmp = setDotted(content, 'hero_banner.video_url', clean);
+                              tmp = setDotted(tmp, 'hero_video_url', clean);
+                              setContent(tmp);
+                            }}
                           />
                         </div>
                         {heroVideoUrl && (
-                          <video src={heroVideoUrl} controls className="mt-2 max-h-48 w-full rounded-lg border object-cover" />
+                          <video src={normalizeImageUrl(heroVideoUrl)} controls className="mt-2 max-h-48 w-full rounded-lg border object-cover" />
                         )}
                       </div>
                     )}
@@ -615,8 +709,13 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <Label className="block text-xs font-black text-slate-600">رابط يوتيوب</Label>
                         <Input
                           dir="ltr"
-                          value={heroYoutubeUrl}
-                          onChange={(e) => setContent(setDotted(content, 'hero_banner.youtube_url', e.target.value))}
+                          value={heroYoutubeUrl ? stripTrailingSlash(heroYoutubeUrl) : heroYoutubeUrl}
+                          onChange={(e) => {
+                            const clean = stripTrailingSlash(e.target.value.trim());
+                            let tmp = setDotted(content, 'hero_banner.youtube_url', clean);
+                            tmp = setDotted(tmp, 'hero_youtube_url', clean);
+                            setContent(tmp);
+                          }}
                           placeholder="https://www.youtube.com/watch?v=..."
                           className="bg-white font-mono text-sm"
                         />
@@ -644,7 +743,12 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                           min={0}
                           max={100}
                           value={heroOverlay}
-                          onChange={(e) => setContent(setDotted(content, 'hero_banner.overlay_opacity', Number(e.target.value)))}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            let tmp = setDotted(content, 'hero_banner.overlay_opacity', val);
+                            tmp = setDotted(tmp, 'overlay_opacity', val);
+                            setContent(tmp);
+                          }}
                           className="flex-1 accent-emerald-600"
                           aria-label="شفافية الطبقة"
                         />
@@ -661,7 +765,11 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <Label className="mb-1.5 block text-xs font-black text-slate-600">العنوان الرئيسي</Label>
                         <Input
                           value={heroHeading}
-                          onChange={(e) => setContent(setDotted(content, 'hero_banner.heading', e.target.value))}
+                          onChange={(e) => {
+                            let tmp = setDotted(content, 'hero_banner.heading', e.target.value);
+                            tmp = setDotted(tmp, 'hero_heading', e.target.value);
+                            setContent(tmp);
+                          }}
                           placeholder="أناقة تُروى كقصة"
                           className="bg-white"
                         />
@@ -670,7 +778,11 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <Label className="mb-1.5 block text-xs font-black text-slate-600">الوصف الفرعي</Label>
                         <Input
                           value={heroSubtitle}
-                          onChange={(e) => setContent(setDotted(content, 'hero_banner.subtitle', e.target.value))}
+                          onChange={(e) => {
+                            let tmp = setDotted(content, 'hero_banner.subtitle', e.target.value);
+                            tmp = setDotted(tmp, 'hero_subtitle', e.target.value);
+                            setContent(tmp);
+                          }}
                           placeholder="تشكيلة الموسم الجديدة — قطع مختارة بعناية"
                           className="bg-white"
                         />
@@ -679,7 +791,11 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <Label className="mb-1.5 block text-xs font-black text-slate-600">نص الزر</Label>
                         <Input
                           value={heroCtaLabel}
-                          onChange={(e) => setContent(setDotted(content, 'hero_banner.cta_label', e.target.value))}
+                          onChange={(e) => {
+                            let tmp = setDotted(content, 'hero_banner.cta_label', e.target.value);
+                            tmp = setDotted(tmp, 'hero_cta_label', e.target.value);
+                            setContent(tmp);
+                          }}
                           placeholder="اكتشفي التشكيلة"
                           className="bg-white"
                         />
@@ -689,7 +805,12 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <Input
                           dir="ltr"
                           value={heroCtaLink}
-                          onChange={(e) => setContent(setDotted(content, 'hero_banner.cta_link', e.target.value))}
+                          onChange={(e) => {
+                            const clean = stripTrailingSlash(e.target.value.trim());
+                            let tmp = setDotted(content, 'hero_banner.cta_link', clean);
+                            tmp = setDotted(tmp, 'hero_cta_link', clean);
+                            setContent(tmp);
+                          }}
                           placeholder="#atelier-new أو /category/..."
                           className="bg-white font-mono text-sm"
                         />
