@@ -3,7 +3,7 @@ import { router } from '@inertiajs/react';
 import { PackageSearch } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { useStorefrontCore } from '../shared/hooks';
-import { SouqDealsRail, SouqFooter, SouqHeader, SouqHero, SouqProductCard, SouqStickyCartBar } from './SouqComponents';
+import { SouqDealsRail, SouqHeader, SouqHero, SouqProductCard, SouqStickyCartBar } from './SouqComponents';
 import { souqOverlays } from './SouqOverlays';
 
 /* ===================================================================== */
@@ -30,7 +30,6 @@ export const GrocerySouqRoot: React.FC<TemplateRootProps> = ({ storeData, mode, 
           <h1 className="mb-6 border-b border-stone-200 pb-3 text-2xl font-black text-stone-900">{page?.title}</h1>
           <article className="prose-custom2" dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
         </main>
-        <SouqFooter />
       </div>
     );
   }
@@ -101,27 +100,8 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
             </div>
           </section>
         )}
-
-        {/* Delivery promises */}
-        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { icon: '🚚', title: 'توصيل نفس اليوم', text: 'للطلبات قبل الساعة 6 مساءً' },
-              { icon: '🌿', title: 'طازج كل صباح', text: 'نختار لك الأفضل يومياً' },
-              { icon: '💳', title: 'دفع عند الاستلام', text: 'افحص طلبك قبل الدفع' },
-              { icon: '↩️', title: 'إرجاع سهل', text: 'ما عجبك؟ نستبدله فوراً' },
-            ].map(({ icon, title, text }) => (
-              <div key={title} className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-100">
-                <p className="text-2xl">{icon}</p>
-                <p className="mt-1.5 text-sm font-black text-stone-800">{title}</p>
-                <p className="text-xs text-stone-500">{text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
       <SouqStickyCartBar />
-      <SouqFooter />
     </div>
   );
 };
@@ -203,7 +183,6 @@ const SouqCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryDat
         )}
       </main>
       <SouqStickyCartBar />
-      <SouqFooter />
     </div>
   );
 };

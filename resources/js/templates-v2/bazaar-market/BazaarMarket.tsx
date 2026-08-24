@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, Heart, PackageSearch, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck, User } from 'lucide-react';
+import { ChevronLeft, Heart, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import {
-  computeCartTotals,
   discountPercent,
   isVariableProduct,
   lowStockRemaining,
@@ -202,70 +201,10 @@ export function BazaarCard({ product }: { product: V2Product }) {
 }
 
 /* --------------------------- Trust stack ---------------------------- */
-
-export function BazaarTrustStrip() {
-  return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" dir="rtl">
-      <div className="grid grid-cols-2 divide-slate-100 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-100 sm:grid-cols-4 sm:divide-x sm:divide-x-reverse">
-        {[
-          { icon: <ShieldCheck className="h-6 w-6" />, title: 'دفع آمن', text: 'حماية كاملة لبياناتك' },
-          { icon: <Truck className="h-6 w-6" />, title: 'توصيل سريع', text: 'لكل المدن والمخيمات' },
-          { icon: <RotateCcw className="h-6 w-6" />, title: 'استرجاع سهل', text: 'خلال 14 يوم من الاستلام' },
-          { icon: <ShoppingBag className="h-6 w-6" />, title: 'دعم يومي', text: 'فريقنا معك على واتساب' },
-        ].map(({ icon, title, text }, idx) => (
-          <div key={title} className={`flex items-center gap-3 p-4 ${idx >= 2 ? 'border-t border-slate-100 sm:border-t-0' : ''}`}>
-            <span className="shrink-0 text-teal-600">{icon}</span>
-            <span>
-              <span className="block text-sm font-black text-slate-800">{title}</span>
-              <span className="block text-xs text-slate-500">{text}</span>
-            </span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
+// BazaarTrustStrip removed — footer/bottom feature strip hidden across all theme families.
 
 /* ------------------------------ Footer ------------------------------ */
-
-export function BazaarFooter() {
-  const { config, store, product } = useStorefrontCore();
-  const categories = (product?.categories || []).slice(0, 6);
-  return (
-    <footer className="mt-14 bg-slate-900 pb-20 text-slate-300 sm:pb-0" dir="rtl">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6 lg:px-8">
-        <div>
-          <p className="mb-3 flex items-center gap-2 text-lg font-black text-white">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-teal-500 to-emerald-600 text-sm font-black">س</span>
-            {config?.storeName || store?.name}
-          </p>
-          <p className="text-sm leading-relaxed text-slate-400">
-            متجرك الموثوق لكل ما تحتاجه — جودة مختارة، أسعار عادلة، وخدمة تهتم بتفاصيلك.
-          </p>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black text-white">تسوّق</p>
-          <ul className="space-y-2 text-sm">
-            {categories.map((c: any) => (
-              <li key={c.id}><a href={`/category/${c.slug || c.id}`} className="transition hover:text-teal-300">{c.name}</a></li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black text-white">تواصل معنا</p>
-          <ul className="space-y-2 text-sm text-slate-400">
-            {!!config?.phoneNumber && <li dir="ltr" className="font-bold text-white">{config.phoneNumber}</li>}
-            {!!config?.address && <li>{config.address}</li>}
-            {!!config?.socialMedia?.instagram && <li>إنستغرام: @{String(config.socialMedia.instagram).replace(/^@/, '')}</li>}
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-white/10 py-4 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} {config?.storeName || store?.name} — جميع الحقوق محفوظة
-      </div>
-    </footer>
-  );
-}
+// BazaarFooter removed — footer hidden across all theme families.
 
 /* ================================ ROOT ================================ */
 
@@ -282,7 +221,6 @@ export const BazaarMarketRoot: React.FC<TemplateRootProps> = ({ storeData, mode,
           <h1 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-black text-slate-900">{page?.title}</h1>
           <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
         </main>
-        <BazaarFooter />
       </div>
     );
   }
@@ -347,8 +285,6 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        <BazaarTrustStrip />
-
         {/* Newest */}
         {newest.length > 0 && (
           <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -385,7 +321,6 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
       </main>
-      <BazaarFooter />
     </div>
   );
 };
@@ -456,7 +391,6 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
           </>
         )}
       </main>
-      <BazaarFooter />
     </div>
   );
 };

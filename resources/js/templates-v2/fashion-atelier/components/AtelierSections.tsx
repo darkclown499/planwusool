@@ -1,5 +1,4 @@
 import React from 'react';
-import { CreditCard, Headphones, ShieldCheck, Truck } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 
 /* ===================================================================== */
@@ -94,32 +93,3 @@ export const AtelierLookbook: React.FC<{ panels: [LookbookPanel?, LookbookPanel?
     </section>
   );
 };
-
-/* ------------------------------------------------------------------ */
-/* Trust strip — the four quiet promises above the footer              */
-/* ------------------------------------------------------------------ */
-
-const TRUST_ITEMS = [
-  { icon: Truck, title: 'توصيل سريع', text: 'لجميع المناطق خلال أيام' },
-  { icon: CreditCard, title: 'دفع آمن', text: 'خيارات دفع متعددة عند الاستلام' },
-  { icon: ShieldCheck, title: 'جودة مضمونة', text: 'فحص كل قطعة قبل الشحن' },
-  { icon: Headphones, title: 'خدمة شخصية', text: 'نجيب على استفساراتك عبر واتساب' },
-];
-
-export const AtelierTrustStrip: React.FC = () => (
-  <section className="border-t border-stone-200/70 bg-[#f3ece4]/60 py-10" dir="rtl">
-    <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
-      {TRUST_ITEMS.map(({ icon: Icon, title, text }) => (
-        <div key={title} className="flex items-start gap-3">
-          <span className="mt-0.5 rounded-full bg-white p-2.5 shadow-sm ring-1 ring-stone-200/80">
-            <Icon className="h-4 w-4 text-[#9d7463]" strokeWidth={1.8} />
-          </span>
-          <span>
-            <span className="block text-sm font-bold text-stone-800">{title}</span>
-            <span className="mt-0.5 block text-xs leading-relaxed text-stone-500">{text}</span>
-          </span>
-        </div>
-      ))}
-    </div>
-  </section>
-);

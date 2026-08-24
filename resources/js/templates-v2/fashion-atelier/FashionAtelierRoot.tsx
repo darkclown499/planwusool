@@ -8,8 +8,7 @@ import { AtelierHeader } from './components/AtelierHeader';
 import { AtelierHero } from './components/AtelierHero';
 import { AtelierRail } from './components/AtelierRail';
 import { AtelierProductCard } from './components/AtelierProductCard';
-import { AtelierCategoryCircles, AtelierLookbook, AtelierTrustStrip } from './components/AtelierSections';
-import { AtelierFooter } from './components/AtelierFooter';
+import { AtelierCategoryCircles, AtelierLookbook } from './components/AtelierSections';
 
 /* ===================================================================== */
 /* Fashion Atelier — أتيليه الموضة                                        */
@@ -105,9 +104,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         </div>
 
-        <AtelierTrustStrip />
       </main>
-      <AtelierFooter />
     </div>
   );
 };
@@ -212,8 +209,6 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
           </>
         )}
       </main>
-      <AtelierTrustStrip />
-      <AtelierFooter />
     </div>
   );
 };
@@ -239,7 +234,6 @@ const AtelierPageMode: React.FC<{ storeData: any; page?: any | null }> = ({ page
       )}
       <article className="prose-custom2" dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
     </main>
-    <AtelierFooter />
   </div>
 );
 

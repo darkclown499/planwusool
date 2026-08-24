@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { CakeSlice, ChevronLeft, Clock3, Croissant, Flame, Heart, PackageSearch, Plus, ShoppingBag, User, Wheat } from 'lucide-react';
+import { CakeSlice, ChevronLeft, Clock3, Croissant, Flame, Heart, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { toast } from '@/components/custom-toast';
 import {
@@ -252,46 +252,6 @@ export function BakeryLastBatch() {
   );
 }
 
-/* ------------------------------ Footer ------------------------------ */
-
-export function BakeryFooter() {
-  const { config, store, product } = useStorefrontCore();
-  const categories = (product?.categories || []).slice(0, 6);
-  return (
-    <footer className="mt-14 bg-[#422006] text-[#e7d4bd]" dir="rtl">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6">
-        <div>
-          <p className="mb-3 flex items-center gap-2 font-serif text-xl font-black text-white">
-            <Wheat className="h-5 w-5 text-[#fbbf24]" /> {config?.storeName || store?.name}
-          </p>
-          <p className="text-sm leading-relaxed text-[#d6bfa4]">
-            مخبز حرفي يعجن بالحب كل فجر، ويقدم لك الأطيب بمكونات طبيعية 100% بدون أي محسنات.
-          </p>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black text-white">تشكيلاتنا</p>
-          <ul className="space-y-2 text-sm">
-            {categories.map((c: any) => (
-              <li key={c.id}><a href={`/category/${c.slug || c.id}`} className="transition hover:text-[#fbbf24]">{c.name}</a></li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black text-white">ساعات العمل</p>
-          <ul className="space-y-2 text-sm text-[#d6bfa4]">
-            <li>الصباح: 6:00 — 11:00</li>
-            <li>المساء: 4:00 — 9:00</li>
-            {!!config?.phoneNumber && <li dir="ltr" className="text-right font-bold text-white">{config.phoneNumber}</li>}
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-white/10 py-4 text-center text-xs text-[#a1785a]">
-        © {new Date().getFullYear()} {config?.storeName || store?.name} — يُخبز بالحب يومياً
-      </div>
-    </footer>
-  );
-}
-
 /* ================================ ROOT ================================ */
 
 const SORTS = [
@@ -311,7 +271,6 @@ export const BakeryHouseRoot: React.FC<TemplateRootProps> = ({ storeData, mode, 
           <h1 className="mb-6 border-b border-[#eaddcf] pb-3 font-serif text-3xl font-black text-[#78350f]">{page?.title}</h1>
           <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
         </main>
-        <BakeryFooter />
       </div>
     );
   }
@@ -401,7 +360,6 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </div>
         </section>
       </main>
-      <BakeryFooter />
     </div>
   );
 };
@@ -484,7 +442,6 @@ const BakeryCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
           </>
         )}
       </main>
-      <BakeryFooter />
     </div>
   );
 };

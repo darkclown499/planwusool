@@ -1,16 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import {
-  Check,
-  Code2,
-  Eye,
-  LayoutTemplate,
-  Loader2,
-  Palette,
-  Save,
-  Settings2,
-  Store,
-} from 'lucide-react';
+import { Code2, Eye, LayoutTemplate, Loader2, Palette, Save, Settings2, Store } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
-import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2';
+import { getTemplateModule, type TemplateModule } from '@/templates-v2';
+import StoreTemplatesGrid from './components/store-templates-grid';
 
 /* ===================================================================== */
 /* Slots Designer — the v2 store editor.                                  */
@@ -74,10 +65,27 @@ function getDotted(obj: Record<string, any>, path: string): any {
   return path.split('.').reduce((acc, k) => (acc == null ? undefined : acc[k]), obj);
 }
 
+function getInitialTab(): Tab {
+  if (typeof window !== 'undefined') {
+    const q = new URLSearchParams(window.location.search).get('tab') as Tab | null;
+    if (q && ['templates', 'content', 'brand', 'code'].includes(q)) return q;
+  }
+  return 'templates';
+}
+
 export default function StoreDesigner({ store, availableThemes, storeUrl }: Props) {
-  const [tab, setTab] = useState<Tab>('templates');
+  const [tab, setTab] = useState<Tab>(() => getInitialTab());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const handleTabChange = (next: Tab) => {
+    setTab(next);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', next);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
 
   // Remote state (from GET designer)
   const [theme, setTheme] = useState<string>('bazaar-market');
@@ -106,7 +114,6 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     };
   }, [store.id]);
 
-  const modules = useMemo(() => listTemplateModules(), []);
   const activeModule: TemplateModule | null = useMemo(() => {
     try {
       return getTemplateModule(theme);
@@ -114,22 +121,6 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
       return null;
     }
   }, [theme]);
-
-  const isAllowed = useCallback((slug: string) => availableThemes.includes(slug), [availableThemes]);
-
-  /** Apply a template switch immediately (theme-only payload). */
-  const applyTemplate = async (slug: string, name: string) => {
-    setSaving(true);
-    try {
-      await apiPut(`/api/stores/${store.id}/designer`, { theme: slug });
-      setTheme(slug);
-      toast.success('تم تطبيق القالب', { description: `قالب «${name}» أصبح نشطاً.` });
-    } catch {
-      toast.error('تعذر تطبيق القالب');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   /** Persist the content blob (slot values). */
   const saveContent = async () => {
@@ -207,7 +198,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             <button
               key={id}
               type="button"
-              onClick={() => setTab(id)}
+              onClick={() => handleTabChange(id)}
               disabled={loading && id !== 'templates'}
               className={`flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-black transition ${
                 tab === id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'
@@ -226,60 +217,12 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
           <>
             {/* ------------------------- TEMPLATES ------------------------- */}
             {tab === 'templates' && (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {modules.map((m) => {
-                  const active = theme === m.meta.slug;
-                  const locked = !isAllowed(m.meta.slug);
-                  return (
-                    <div
-                      key={m.meta.slug}
-                      className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
-                        active ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-slate-200'
-                      } ${locked ? 'opacity-60' : ''}`}
-                    >
-                      <div className="relative h-32" style={{ background: m.meta.preview }}>
-                        <span className="absolute inset-x-5 top-5 bottom-0 flex flex-col gap-2 opacity-90">
-                          <span className="h-2.5 w-2/3 rounded-full bg-black/10" />
-                          <span className="h-10 w-full rounded-md bg-white/45" />
-                          <span className="flex gap-1.5">
-                            {[...Array(4)].map((_, i) => (
-                              <span key={i} className="aspect-[3/4] flex-1 rounded bg-white/55" />
-                            ))}
-                          </span>
-                        </span>
-                        <span className="absolute bottom-2 right-3 rounded-lg bg-black/45 px-2 py-0.5 text-sm font-black text-white backdrop-blur-sm">
-                          {m.meta.name}
-                        </span>
-                        {active && (
-                          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow">
-                            <Check className="h-3.5 w-3.5" /> نشط الآن
-                          </span>
-                        )}
-                      </div>
-                      <div className="p-3.5">
-                        <p className="mb-2 line-clamp-2 min-h-9 text-xs leading-relaxed text-gray-500">{m.meta.description}</p>
-                        <Button
-                          size="sm"
-                          variant={active ? 'ghost' : 'default'}
-                          disabled={active || locked || saving}
-                          onClick={() => applyTemplate(m.meta.slug, m.meta.name)}
-                          className={active ? 'w-full gap-1.5 text-emerald-600' : 'w-full gap-1.5'}
-                          style={!active && !locked ? { backgroundColor: m.meta.accent } : undefined}
-                        >
-                          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : active ? <Check className="h-3.5 w-3.5" /> : null}
-                          {locked ? 'غير متاح في باقتك' : active ? 'مطبَّق حالياً' : 'تطبيق القالب'}
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="rounded-2xl border-2 border-dashed border-slate-200 p-5 text-center">
-                  <p className="text-sm font-bold text-slate-500">تريد رؤية القوالب على بياناتك الحقيقية؟</p>
-                  <Button size="sm" variant="outline" className="mt-3" asChild>
-                    <a href={`/stores/${store.id}/templates`}>تصفح معرض القوالب</a>
-                  </Button>
-                </div>
-              </div>
+              <StoreTemplatesGrid
+                store={store}
+                activeTheme={theme}
+                availableThemes={availableThemes}
+                onApplied={(slug) => setTheme(slug)}
+              />
             )}
 
             {/* -------------------------- CONTENT -------------------------- */}

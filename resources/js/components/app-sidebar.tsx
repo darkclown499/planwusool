@@ -67,7 +67,7 @@ export function AppSidebar() {
             groupLabel: t('Stores'),
             children: [
                 { title: t('Stores'), href: route('stores.index') },
-                { title: t('Theme Gallery'), href: auth.user?.current_store ? route('stores.templates', { id: auth.user.current_store }) : route('stores.index') },
+                { title: t('Theme Gallery'), href: auth.user?.current_store ? `${route('stores.designer', { id: auth.user.current_store })}?tab=templates` : route('stores.index') },
             ],
         },
         {
@@ -274,8 +274,8 @@ export function AppSidebar() {
                 icon: Building2,
                 groupLabel: t('Store'),
                 children: [
-                    { title: 'قوالب المتجر', href: route('stores.templates', currentStoreId), icon: LayoutTemplate },
-                    { title: 'تخصيص تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush, target: '_blank' },
+                    { title: 'قوالب المتجر', href: `${route('stores.designer', currentStoreId)}?tab=templates`, icon: LayoutTemplate },
+                    { title: 'تخصيص تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush },
                     { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
                 ],
             });

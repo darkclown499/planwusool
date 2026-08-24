@@ -33,9 +33,9 @@ class StoreDesignerController extends Controller
     }
 
     /**
-     * Dedicated theme marketplace/gallery page (/stores/{id}/templates).
-     * The template catalog itself lives client-side (resources/js/builder);
-     * this only authorizes and resolves the target store.
+     * Legacy theme gallery route — now consolidated into the Designer.
+     * Redirects to /stores/{id}/designer?tab=templates so there is a single
+     * source of truth for the template selection UI (StoreTemplatesGrid).
      */
     public function templates($storeId)
     {
@@ -43,24 +43,10 @@ class StoreDesignerController extends Controller
             return redirect()->back()->with('error', __('You do not have permission to browse store themes.'));
         }
 
-        $store = resolveStoreQuery(Auth::user())->findOrFail($storeId);
-        $user = Auth::user();
+        // Ensure the store exists / user owns it before redirecting.
+        resolveStoreQuery(Auth::user())->findOrFail($storeId);
 
-        // Real branding so the template preview shows the merchant's own
-        // logo/name instead of placeholder text.
-        $configuration = StoreConfiguration::getConfiguration($store->id);
-
-        return Inertia::render('stores/templates', [
-            'store' => $store,
-            'storeBranding' => [
-                'name' => $store->name,
-                'logo' => $configuration['logo'] ?? null,
-                'phone' => $configuration['phone_number'] ?? null,
-            ],
-            'availableThemes' => $user->getAvailableThemes(),
-            'userPlanTier' => $user->plan?->getTier() ?? 'starter',
-            'isSuperAdmin' => $user->isSuperAdmin() || $user->isAdmin(),
-        ]);
+        return redirect()->route('stores.designer', ['id' => $storeId, 'tab' => 'templates']);
     }
 
     /**

@@ -3,7 +3,6 @@ import { router } from '@inertiajs/react';
 import { BadgeCheck, ChevronLeft, Cpu, Headphones, Laptop, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import {
-  computeCartTotals,
   discountPercent,
   isVariableProduct,
   lowStockRemaining,
@@ -270,45 +269,7 @@ export function HubDealOfTheDay({ products }: { products: V2Product[] }) {
 }
 
 /* ------------------------------ Footer ------------------------------ */
-
-export function HubFooter() {
-  const { config, store, product } = useStorefrontCore();
-  const categories = (product?.categories || []).slice(0, 6);
-  return (
-    <footer className="mt-14 border-t border-slate-800 bg-[#080d18] pb-20 text-slate-400 sm:pb-0" dir="rtl">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-3 sm:px-6 lg:px-8">
-        <div>
-          <p className="mb-3 flex items-center gap-2 text-lg font-black text-white">
-            <span className="rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 p-1"><Zap className="h-4 w-4 text-white" /></span>
-            {config?.storeName || store?.name}
-          </p>
-          <p className="text-sm leading-relaxed">
-            وكيل معتمد لأشهر العلامات العالمية — أجهزة أصلية بضمان رسمي وأسعار لا تنافس.
-          </p>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black text-white">الأقسام</p>
-          <ul className="space-y-2 text-sm">
-            {categories.map((c: any) => (
-              <li key={c.id}><a href={`/category/${c.slug || c.id}`} className="transition hover:text-blue-300">{c.name}</a></li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black text-white">الدعم الفني</p>
-          <ul className="space-y-2 text-sm">
-            {!!config?.phoneNumber && <li dir="ltr" className="font-bold text-white">{config.phoneNumber}</li>}
-            <li>الأحد — الخميس: 9 صباحاً حتى 10 مساءً</li>
-            <li>خدمة ما بعد البيع وضمان الصيانة</li>
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-slate-800/70 py-4 text-center text-xs text-slate-600">
-        © {new Date().getFullYear()} {config?.storeName || store?.name} — جميع الحقوق محفوظة
-      </div>
-    </footer>
-  );
-}
+// HubFooter removed — footer hidden across all theme families.
 
 /* ================================ ROOT ================================ */
 
@@ -325,7 +286,6 @@ export const ElectronicsHubRoot: React.FC<TemplateRootProps> = ({ storeData, mod
           <h1 className="mb-6 border-b border-slate-800 pb-3 text-2xl font-black text-white">{page?.title}</h1>
           <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
         </main>
-        <HubFooter />
       </div>
     );
   }
@@ -407,25 +367,7 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </div>
         </section>
 
-        {/* Warranty strip */}
-        <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { icon: <ShieldCheck className="h-6 w-6" />, title: 'ضمان رسمي', text: 'وكيل معتمد لكل ماركة' },
-              { icon: <Truck className="h-6 w-6" />, title: 'توصيل سريع', text: 'خلال 24 ساعة للمدينة' },
-              { icon: <BadgeCheck className="h-6 w-6" />, title: 'أجهزة أصلية', text: 'فحص جودة قبل الشحن' },
-              { icon: <Cpu className="h-6 w-6" />, title: 'دعم فني', text: 'نساعدك في الاختيار' },
-            ].map(({ icon, title, text }) => (
-              <div key={title} className="rounded-2xl border border-slate-800 bg-[#101a2e] p-4">
-                <span className="text-blue-400">{icon}</span>
-                <p className="mt-2 text-sm font-black text-white">{title}</p>
-                <p className="text-xs text-slate-500">{text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
-      <HubFooter />
     </div>
   );
 };
@@ -502,7 +444,6 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
           </>
         )}
       </main>
-      <HubFooter />
     </div>
   );
 };

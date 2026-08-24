@@ -192,43 +192,6 @@ export function ChefPicks({ products }: { products: V2Product[] }) {
   );
 }
 
-/* ------------------------------ Footer ------------------------------ */
-
-export function RestaurantFooter() {
-  const { config, store } = useStorefrontCore();
-  return (
-    <footer className="mt-14 border-t border-[#3d332b] bg-[#120e0b]" dir="rtl">
-      <div className="mx-auto grid max-w-5xl gap-8 px-4 py-12 text-center sm:grid-cols-3 sm:text-start">
-        <div>
-          <p className="mb-3 font-serif text-xl font-black text-[#f5e7c8]">{config?.storeName || store?.name}</p>
-          <p className="text-sm leading-relaxed text-[#a89478]">
-            نستقبل طلباتكم يومياً من 12 ظهراً حتى 12 منتصف الليل — التوصيل خلال 45 دقيقة أو الطلب علينا.
-          </p>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black tracking-wide text-[#f59e0b]">تواصل</p>
-          <ul className="space-y-2 text-sm text-[#d8c9a8]">
-            {!!config?.phoneNumber && <li dir="ltr" className="font-bold">{config.phoneNumber}</li>}
-            {!!config?.address && <li>{config.address}</li>}
-            <li>واتساب متاح للطلبات والاستفسارات</li>
-          </ul>
-        </div>
-        <div>
-          <p className="mb-3 text-sm font-black tracking-wide text-[#f59e0b]">ساعات الذروة</p>
-          <ul className="space-y-2 text-sm text-[#a89478]">
-            <li>الغداء: 1:00 — 4:00 عصراً</li>
-            <li>العشاء: 8:00 — 11:00 مساءً</li>
-            <li className="text-xs">ننصح بالطلب المسبق وقت الذروة</li>
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-[#2e2620] py-4 text-center text-xs text-[#6b5c48]">
-        © {new Date().getFullYear()} {config?.storeName || store?.name} — Bon Appétit
-      </div>
-    </footer>
-  );
-}
-
 /* ================================ ROOT ================================ */
 
 const SORTS = [
@@ -247,7 +210,6 @@ export const RestaurantMenuRoot: React.FC<TemplateRootProps> = ({ storeData, mod
           <h1 className="mb-6 font-serif text-3xl font-black text-[#f5e7c8]">{page?.title}</h1>
           <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
         </main>
-        <RestaurantFooter />
       </div>
     );
   }
@@ -303,7 +265,6 @@ const RestaurantHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           ))}
         </div>
       </main>
-      <RestaurantFooter />
     </div>
   );
 };
@@ -381,7 +342,6 @@ const RestaurantCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categ
           </>
         )}
       </main>
-      <RestaurantFooter />
     </div>
   );
 };
