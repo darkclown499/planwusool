@@ -325,7 +325,7 @@ class ThemeController extends Controller
         // Cache key includes theme, locale, and active status for proper isolation.
         // Invalidated automatically when a product is saved/deleted (see
         // Product model boot()).
-        $theme = $store['theme'] ?? 'classic';
+        $theme = $store['theme'] ?? \App\Models\Store::DEFAULT_TEMPLATE;
         $locale = $storeData['config']['locale'] ?? 'ar';
         $cacheKey = "store_catalog.{$store['id']}.theme_{$theme}.locale_{$locale}.active_1";
         
@@ -385,7 +385,7 @@ class ThemeController extends Controller
         // Get currencies (cached for 24h - rarely changes)
         $currencies = $this->getCurrencies($storeModel);
 
-        $theme = $store['theme'] ?? 'classic';
+        $theme = $store['theme'] ?? \App\Models\Store::DEFAULT_TEMPLATE;
 
         // Live template preview: ?theme=<slug>&preview=1 overrides the store's
         // saved theme so merchants can preview any template without
@@ -430,7 +430,7 @@ class ThemeController extends Controller
             abort(404);
         }
 
-        $theme = $store['theme'] ?? 'classic';
+        $theme = $store['theme'] ?? \App\Models\Store::DEFAULT_TEMPLATE;
         $locale = $storeData['config']['locale'] ?? 'ar';
 
         // Categories for header/nav chrome (same cached payload as home).
@@ -738,7 +738,7 @@ class ThemeController extends Controller
         }
 
         $storeData = $this->getStoreConfig($store);
-        $theme = $store['theme'] ?? 'core-minimal';
+        $theme = $store['theme'] ?? \App\Models\Store::DEFAULT_TEMPLATE;
 
         $props = [
             'config' => $storeData['config'],

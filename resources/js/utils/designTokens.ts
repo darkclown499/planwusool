@@ -1,4 +1,10 @@
-import type { DesignTokens } from '@/templates/types';
+/** Shape of the design tokens blob saved by the designer (colors/radius/typography). */
+export interface DesignTokens {
+    colors?: Record<string, string>;
+    radius?: string;
+    typography?: Record<string, any>;
+    [key: string]: any;
+}
 
 /**
  * Design Tokens Utilities

@@ -50,7 +50,7 @@ class UserObserver
                     $store = \App\Models\Store::create([
                         'name' => $user->name,
                         'slug' => \App\Models\Store::generateUniqueSlug($user->name),
-                        'theme' => 'core-minimal',
+                        'theme' => \App\Models\Store::DEFAULT_TEMPLATE,
                         'email' => $user->email,
                         'user_id' => $user->id,
                     ]);

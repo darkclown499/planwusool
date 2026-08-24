@@ -323,7 +323,7 @@ class OnboardingController extends Controller
         $store = Store::create([
             'name' => $user->name,
             'slug' => Store::generateUniqueSlug($user->name),
-            'theme' => 'core-minimal',
+            'theme' => \App\Models\Store::DEFAULT_TEMPLATE,
             'email' => $user->email,
             'user_id' => $user->id,
         ]);

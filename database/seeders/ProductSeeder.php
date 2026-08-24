@@ -73,7 +73,20 @@ class ProductSeeder extends Seeder
     private function generateSKU($storeId, $categoryId): string
     {
         $store = Store::find($storeId);
-        $prefix = match($store->getTemplateSlug()) {
+        $slug = $store->getTemplateSlug();
+        // v2 sector slugs → legacy SKU prefixes.
+        $v2Aliases = [
+            'fashion-atelier' => 'TT',
+            'grocery-souq' => 'DE',
+            'bakery-house' => 'SD',
+            'restaurant-menu' => 'RS',
+            'electronics-hub' => 'TV',
+            'bazaar-market' => 'DE',
+        ];
+        if (isset($v2Aliases[$slug])) {
+            return $v2Aliases[$slug] . $storeId . 'C' . $categoryId . 'P' . rand(1000, 9999);
+        }
+        $prefix = match($slug) {
             'e-storefront', 'mega-store-woocommerce', 'ecommece-marketplace', 'marketplace-shop' => 'TV',
             'ecommerce-clothing', 'fashion-designer-mart', 'kids-fashion' => 'TT',
             'classic', 'grocery-shopping', 'super-mart-store' => 'DE',

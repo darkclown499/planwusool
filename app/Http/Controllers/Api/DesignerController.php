@@ -46,6 +46,7 @@ class DesignerController extends Controller
             'theme' => $store->getTemplateSlug(),
             'sections' => $overrides['sections'] ?? [],
             'design_tokens' => $store->design_tokens ?? [],
+            'content' => $store->store_content ?? [],
             'custom_css' => $overrides['custom_css'] ?? '',
             'custom_js' => $overrides['custom_js'] ?? '',
             'head_inject' => $overrides['head_inject'] ?? '',
@@ -66,6 +67,7 @@ class DesignerController extends Controller
             'theme' => 'sometimes|string',
             'sections' => 'sometimes|array',
             'design_tokens' => 'sometimes|array',
+            'content' => 'sometimes|array|max:300',
             'custom_css' => 'sometimes|nullable|string|max:100000',
             'custom_js' => 'sometimes|nullable|string|max:100000',
             'head_inject' => 'sometimes|nullable|string|max:100000',
@@ -88,6 +90,29 @@ class DesignerController extends Controller
 
         if (isset($validated['design_tokens'])) {
             $store->design_tokens = $validated['design_tokens'];
+        }
+
+        // Slot content (v2 editor): dotted keys expand into the store_content
+        // blob so templates read them via the merged content object. Only
+        // scalar values and flat arrays of scalars are accepted.
+        if (isset($validated['content']) && is_array($validated['content'])) {
+            $merged = $store->store_content ?? [];
+            foreach ($validated['content'] as $key => $value) {
+                $key = (string) $key;
+                if ($key === '' || strlen($key) > 100) {
+                    continue;
+                }
+                if (is_array($value)) {
+                    if (count($value) > 50) {
+                        continue;
+                    }
+                    $value = array_values(array_filter($value, 'is_scalar'));
+                } elseif (!is_scalar($value) && $value !== null) {
+                    continue;
+                }
+                data_set($merged, $key, $value);
+            }
+            $store->store_content = $merged;
         }
 
         // Custom code assets (code editor mode) — sanitized before storage so

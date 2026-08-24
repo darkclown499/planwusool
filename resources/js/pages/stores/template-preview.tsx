@@ -1,54 +1,43 @@
 import React, { useMemo, useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { Check, Loader2, X } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPut } from '@/utils/api';
-import { StoreSite, TEMPLATES, buildPreviewStoreData, type StoreBranding } from '@/builder';
+import { requireTemplateModule, V2PreviewProviders, buildV2PreviewStoreData } from '@/templates-v2';
 
 interface Props {
   store: any;
   templateSlug: string;
-  storeBranding?: StoreBranding;
+  storeBranding?: Record<string, any>;
 }
 
 /**
- * Standalone, full-page template preview. Opened in its own browser tab
- * from the templates gallery so merchants can inspect a candidate theme
- * without losing the gallery in the original tab.
+ * Standalone full-page template preview (v2). Renders the merchant's own
+ * branding wearing the resolved template module with sector-authentic demo
+ * content — "your store, already running" — in its own browser tab.
  */
 export default function TemplatePreview({ store, templateSlug, storeBranding }: Props) {
   const [applying, setApplying] = useState(false);
-  const [activeTheme, setActiveTheme] = useState<string>(store.theme || 'classic');
+  const [activeTheme, setActiveTheme] = useState<string>(store.theme || '');
 
-  const tpl = useMemo(
-    () => TEMPLATES.find((t) => t.slug === templateSlug) || null,
-    [templateSlug]
-  );
-
-  const isActive = tpl ? (activeTheme ? activeTheme === tpl.slug : tpl.slug === 'classic') : false;
+  const tpl = useMemo(() => requireTemplateModule(templateSlug), [templateSlug]);
+  const isActive = activeTheme === tpl.meta.slug;
 
   const storeData = useMemo(
-    () => (tpl ? buildPreviewStoreData(tpl, store, storeBranding) : null),
+    () => buildV2PreviewStoreData(tpl, store, storeBranding),
     [tpl, store, storeBranding]
   );
 
   const applyTheme = async () => {
-    if (!tpl) return;
     setApplying(true);
     try {
       await apiPut(`/api/stores/${store.id}/designer`, {
-        theme: tpl.slug,
-        sections: tpl.sections,
-        design_tokens: {
-          colors: { ...tpl.tokens.colors },
-          typography: { ...(tpl.tokens.typography || {}) },
-          radius: tpl.tokens.radius,
-        },
+        theme: tpl.meta.slug,
       });
-      setActiveTheme(tpl.slug);
+      setActiveTheme(tpl.meta.slug);
       toast.success('تم تطبيق القالب بنجاح', {
-        description: `قالب «${tpl.name}» أصبح نشطاً على متجرك.`,
+        description: `قالب «${tpl.meta.name}» أصبح نشطاً على متجرك.`,
         action: {
           label: 'فتح المصمم',
           onClick: () => router.visit(`/stores/${store.id}/designer`),
@@ -62,65 +51,55 @@ export default function TemplatePreview({ store, templateSlug, storeBranding }: 
     }
   };
 
-  if (!tpl || !storeData) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-gray-500" dir="rtl">
-        القالب غير موجود.
-      </div>
-    );
-  }
-
   return (
     <div dir="rtl">
-      <Head title={`معاينة قالب ${tpl.name}`} />
+      <Head title={`معاينة قالب ${tpl.meta.name}`} />
+
       {/* Sticky action bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-stone-200 bg-white px-4 py-3 shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
           <span
             className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5"
-            style={{ background: tpl.preview }}
+            style={{ background: tpl.meta.preview }}
             aria-hidden="true"
           />
           <div className="min-w-0">
             <p className="truncate text-sm font-black text-gray-900">
-              معاينة حية — قالب «{tpl.name}»
+              معاينة حية — قالب «{tpl.meta.name}»
             </p>
             <p className="text-[11px] text-gray-400">
-              تخصص: {tpl.category} · محتوى تجريبي لأغراض الاستعراض
+              تخصص: {tpl.meta.sector} · محتوى تجريبي لأغراض الاستعراض
             </p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {isActive ? (
-            <Button variant="outline" size="sm" disabled>
-              <Check className="me-1 h-4 w-4 text-emerald-600" />
-              القالب الحالي
+            <Button size="sm" variant="outline" disabled className="gap-1.5">
+              <Check className="h-4 w-4 text-emerald-600" />
+              القالب النشط
             </Button>
           ) : (
             <Button
               size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700"
-              onClick={applyTheme}
               disabled={applying}
+              onClick={applyTheme}
+              style={{ backgroundColor: tpl.meta.accent }}
+              className="gap-1.5 text-white hover:opacity-90"
             >
-              {applying ? (
-                <Loader2 className="me-1 h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="me-1 h-4 w-4" />
-              )}
-              تطبيق هذا القالب
+              {applying && <Loader2 className="h-4 w-4 animate-spin" />}
+              تطبيق على متجري
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={() => window.close()}>
-            <X className="me-1 h-4 w-4" />
-            إغلاق
+          <Button size="sm" variant="ghost" onClick={() => window.close()}>
+            إغلاق المعاينة
           </Button>
         </div>
       </div>
-      {/* Full storefront preview */}
-      <div className="bg-slate-50">
-        <StoreSite template={tpl.slug} storeData={storeData} mode="home" />
-      </div>
+
+      {/* The template itself, wearing the merchant's brand + demo catalog */}
+      <V2PreviewProviders storeData={storeData}>
+        <tpl.Root storeData={storeData} mode="home" isPreview />
+      </V2PreviewProviders>
     </div>
   );
 }

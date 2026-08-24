@@ -154,7 +154,7 @@ class StoreController extends Controller
         }
         
         // Use the selected theme (validated against the plan's available themes).
-        $theme = \App\Models\Store::normalizeThemeSlug($request->theme ?? 'core-minimal');
+        $theme = \App\Models\Store::normalizeThemeSlug($request->theme ?? \App\Models\Store::DEFAULT_TEMPLATE);
         
         $request->validate([
             'name' => 'required|string|max:255',
@@ -349,7 +349,7 @@ class StoreController extends Controller
         }
         
         // Use the selected theme (validated against the plan's available themes).
-        $theme = \App\Models\Store::normalizeThemeSlug($request->theme ?? 'core-minimal');
+        $theme = \App\Models\Store::normalizeThemeSlug($request->theme ?? \App\Models\Store::DEFAULT_TEMPLATE);
         
         $request->validate([
             'name' => 'required|string|max:255',

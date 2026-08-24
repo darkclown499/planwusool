@@ -1,9 +1,9 @@
 import StoreBoundary from '@/components/StoreBoundary';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
-import { StoreSite, type CategoryPageData } from '@/builder';
-import { TemplateStorefront } from '@/templates/storefront';
-import React, { Suspense } from 'react';
+import type { TemplateCategoryPageData } from '@/templates-v2';
+import { requireTemplateModule, TemplateStorefrontV2 } from '@/templates-v2';
+import React from 'react';
 import { Head } from '@inertiajs/react';
 
 interface CategoryStoreProps {
@@ -27,7 +27,7 @@ interface CategoryStoreProps {
     customer?: any;
     customer_address?: any[];
     action?: string | null;
-    categoryPage: CategoryPageData;
+    categoryPage: TemplateCategoryPageData;
 }
 
 /**
@@ -38,8 +38,6 @@ interface CategoryStoreProps {
  */
 const CategoryStore: React.FC<CategoryStoreProps> = ({
     template,
-    designTokens,
-    templateOverrides,
     store,
     categories,
     products,
@@ -49,10 +47,6 @@ const CategoryStore: React.FC<CategoryStoreProps> = ({
     offers = [],
     storePages = [],
     behavior = {},
-    isPreview = false,
-    userPlanName = null,
-    userPlanTier = null,
-    isSuperAdmin = false,
     isLoggedIn = false,
     customer = null,
     customer_address = [],
@@ -60,6 +54,7 @@ const CategoryStore: React.FC<CategoryStoreProps> = ({
     categoryPage,
 }) => {
     const { category } = categoryPage;
+    const templateModule = React.useMemo(() => requireTemplateModule(template), [template]);
 
     const storeData = React.useMemo(
         () => ({
@@ -108,22 +103,13 @@ const CategoryStore: React.FC<CategoryStoreProps> = ({
                 behavior={behavior}
             >
                 <StoreBoundary>
-                    <TemplateStorefront>
-                        <Suspense fallback={null}>
-                            <StoreSite
-                                template={template}
-                                designTokens={designTokens}
-                                templateOverrides={templateOverrides}
-                                storeData={storeData}
-                                userPlanName={userPlanName}
-                                userPlanTier={userPlanTier}
-                                isSuperAdmin={isSuperAdmin}
-                                isPreview={isPreview}
-                                mode="category"
-                                categoryData={categoryPage}
-                            />
-                        </Suspense>
-                    </TemplateStorefront>
+                    <TemplateStorefrontV2 module={templateModule}>
+                        <templateModule.Root
+                            storeData={storeData}
+                            mode="category"
+                            categoryData={categoryPage}
+                        />
+                    </TemplateStorefrontV2>
                 </StoreBoundary>
             </ThemeProvider>
         </>

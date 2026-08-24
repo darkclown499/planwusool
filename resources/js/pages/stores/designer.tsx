@@ -1,633 +1,502 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
-import { Head } from '@inertiajs/react';
-import { Loader2, Check, Save, Monitor, Tablet, Smartphone, ExternalLink, XCircle, AlertTriangle, Code2, LayoutGrid, ArrowRight, Undo2, Redo2 } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import {
+  Check,
+  Code2,
+  Eye,
+  LayoutTemplate,
+  Loader2,
+  Palette,
+  Save,
+  Settings2,
+  Store,
+} from 'lucide-react';
+import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
-import { getBuilderTemplate } from '@/builder';
-import { defaultSectionProps } from '@/builder';
-import type { BuilderDesignTokens, BuilderSectionConfig, BuilderSectionType } from '@/builder/types';
-import { SectionLibrary } from './designer/components/SectionLibrary';
-import { Canvas } from './designer/components/Canvas';
-import { Inspector } from './designer/components/Inspector';
-import CodeEditorPanel, { type DesignerMode, type ThemeJsonPayload } from './designer/components/CodeEditorPanel';
+import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2';
 
-type Device = 'desktop' | 'tablet' | 'mobile';
+/* ===================================================================== */
+/* Slots Designer — the v2 store editor.                                  */
+/*                                                                        */
+/* Templates are complete storefront applications, so there is nothing to */
+/* drag & drop. The editor instead exposes what each template declares:   */
+/*   1. القوالب — switch the whole storefront application                 */
+/*   2. المحتوى — the active template's editable slots (contentSchema)    */
+/*   3. الهوية — brand tokens (colors / radius / typography)              */
+/*   4. الأكواد — custom CSS / JS / head injection                        */
+/* Everything saves through PUT /api/stores/{id}/designer.                 */
+/* ===================================================================== */
 
-interface Props {
-  store: { id: number; name: string; slug: string; theme?: string };
-  availableThemes?: string[];
-  settings?: Record<string, any>;
-  storeUrl?: string;
+interface SlotField {
+  key: string;
+  label: string;
+  type: 'text' | 'image';
+  group?: string;
+  default?: string;
 }
 
-const DEVICE_WIDTHS: Record<Device, string> = {
-  desktop: 'w-full',
-  tablet: 'w-[820px]',
-  mobile: 'w-[400px]',
-};
+interface Props {
+  store: any;
+  availableThemes: string[];
+  settings: any;
+  storeUrl: string;
+}
 
-export default function StoreDesigner({ store, settings = {}, storeUrl }: Props) {
-  const [theme, setTheme] = useState<string>('');
-  const [sections, setSections] = useState<BuilderSectionConfig[]>([]);
-  const [designTokens, setDesignTokens] = useState<BuilderDesignTokens>({ colors: {} });
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [device, setDevice] = useState<Device>('desktop');
-  const [mode, setMode] = useState<DesignerMode>('visual');
+type Tab = 'templates' | 'content' | 'brand' | 'code';
+
+const TABS: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
+  { id: 'templates', label: 'القوالب', icon: <LayoutTemplate className="h-4 w-4" /> },
+  { id: 'content', label: 'المحتوى', icon: <Settings2 className="h-4 w-4" /> },
+  { id: 'brand', label: 'الهوية', icon: <Palette className="h-4 w-4" /> },
+  { id: 'code', label: 'الأكواد المخصصة', icon: <Code2 className="h-4 w-4" /> },
+];
+
+/** Set a value at a dotted path inside a nested object (immutable). */
+function setDotted(obj: Record<string, any>, path: string, value: any): Record<string, any> {
+  const next = { ...obj };
+  const parts = path.split('.');
+  let cur: any = next;
+  for (let i = 0; i < parts.length - 1; i++) {
+    cur[parts[i]] = { ...(cur[parts[i]] || {}) };
+    cur = cur[parts[i]];
+  }
+  cur[parts[parts.length - 1]] = value;
+  return next;
+}
+
+/** Read a value at a dotted path. */
+function getDotted(obj: Record<string, any>, path: string): any {
+  return path.split('.').reduce((acc, k) => (acc == null ? undefined : acc[k]), obj);
+}
+
+export default function StoreDesigner({ store, availableThemes, storeUrl }: Props) {
+  const [tab, setTab] = useState<Tab>('templates');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Remote state (from GET designer)
+  const [theme, setTheme] = useState<string>('bazaar-market');
+  const [tokens, setTokens] = useState<Record<string, any>>({});
+  const [content, setContent] = useState<Record<string, any>>({});
   const [customCss, setCustomCss] = useState('');
   const [customJs, setCustomJs] = useState('');
   const [headInject, setHeadInject] = useState('');
-  const [loaded, setLoaded] = useState(false);
-  const [seedDefaults, setSeedDefaults] = useState(false);
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [categories, setCategories] = useState<any[]>([]);
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const skipNextSave = useRef(false);
 
-  const apiUrl = `/api/stores/${store.id}/designer`;
+  useEffect(() => {
+    let alive = true;
+    apiGet(`/api/stores/${store.id}/designer`)
+      .then((res: any) => {
+        if (!alive || !res) return;
+        setTheme(res.theme || 'bazaar-market');
+        setTokens(res.design_tokens || {});
+        setContent(res.content || {});
+        setCustomCss(res.custom_css || '');
+        setCustomJs(res.custom_js || '');
+        setHeadInject(res.head_inject || '');
+      })
+      .catch(() => toast.error('تعذر تحميل إعدادات المصمم'))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [store.id]);
 
-  const load = useCallback(async () => {
+  const modules = useMemo(() => listTemplateModules(), []);
+  const activeModule: TemplateModule | null = useMemo(() => {
     try {
-      const data = await apiGet(apiUrl);
-      // Store categories power the category multi-select editor (Phase 4).
-      setCategories(Array.isArray(data.categories) ? data.categories : []);
-      skipNextSave.current = true;
-      const themeSlug = data.theme || store.theme || 'classic';
-      const tpl = getBuilderTemplate(themeSlug);
-      setTheme(themeSlug);
-      setSections(
-        data.sections?.length
-          ? data.sections.map((s: any, i: number) => ({ id: s.id, type: s.type, enabled: s.enabled !== false, order: i, props: { ...defaultSectionProps(s.type), ...(s.props || {}) } }))
-          : (tpl?.sections || []).map((s) => ({ ...s }))
-      );
-      setDesignTokens({ colors: { ...(tpl?.tokens?.colors || {}), ...(data.design_tokens?.colors || {}) }, typography: { ...(data.design_tokens?.typography || {}) }, radius: data.design_tokens?.radius });
-      setCustomCss(typeof data.custom_css === 'string' ? data.custom_css : '');
-      setCustomJs(typeof data.custom_js === 'string' ? data.custom_js : '');
-      setHeadInject(typeof data.head_inject === 'string' ? data.head_inject : '');
-      setSeedDefaults(!data.sections?.length);
-      setLoaded(true);
-    } catch (e) {
-      console.error('Failed to load designer state', e);
-      setSaveState('error');
+      return getTemplateModule(theme);
+    } catch {
+      return null;
     }
-  }, [apiUrl, store.theme]);
+  }, [theme]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  const isAllowed = useCallback((slug: string) => availableThemes.includes(slug), [availableThemes]);
 
-  const persist = useCallback(
-    async (nextTheme?: string, nextSections?: BuilderSectionConfig[], nextTokens?: BuilderDesignTokens) => {
-      setSaveState('saving');
-      try {
-        await apiPut(apiUrl, {
-          theme: nextTheme ?? theme,
-          sections: nextSections ?? sections,
-          design_tokens: nextTokens ?? designTokens,
-          custom_css: customCss,
-          custom_js: customJs,
-          head_inject: headInject,
-        });
-        setSaveState('saved');
-        savedSnapshot.current = JSON.stringify({
-          theme: nextTheme ?? theme,
-          sections: nextSections ?? sections,
-          designTokens: nextTokens ?? designTokens,
-          customCss,
-          customJs,
-          headInject,
-        });
-        setIsDirty(false);
-      } catch (e) {
-        console.error('Save failed', e);
-        setSaveState('error');
-      }
-    },
-    [apiUrl, theme, sections, designTokens, customCss, customJs, headInject]
-  );
-
-  // Task 1 — persist the template's default schema on first load when the
-  // store has no custom overrides yet, so the live store is never a blank canvas.
-  useEffect(() => {
-    if (!loaded || !seedDefaults) return;
-    setSeedDefaults(false);
-    persist();
-  }, [loaded, seedDefaults, persist]);
-
-  // Debounced autosave
-  useEffect(() => {
-    if (!loaded || skipNextSave.current) {
-      skipNextSave.current = false;
-      return;
-    }
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => persist(), 700);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sections, designTokens, theme, loaded]);
-
-  // Debounced autosave for the code-editor assets (css/js/head).
-  useEffect(() => {
-    if (!loaded || skipNextSave.current) return;
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => persist(), 700);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customCss, customJs, headInject, loaded]);
-
-  // Live-apply the merchant's custom CSS inside the designer preview.
-  useEffect(() => {
-    let el = document.getElementById('wusool-store-custom-css') as HTMLStyleElement | null;
-    if (!el) {
-      el = document.createElement('style');
-      el.id = 'wusool-store-custom-css';
-      document.head.appendChild(el);
-    }
-    el.textContent = customCss || '';
-    return () => {
-      el?.remove();
-    };
-  }, [customCss]);
-
-  /* ---- Unsaved-changes tracking (full-screen editor) ---- */
-  const savedSnapshot = useRef<string | null>(null);
-  const [isDirty, setIsDirty] = useState(false);
-  const stateSnapshot = JSON.stringify({ theme, sections, designTokens, customCss, customJs, headInject });
-
-  useEffect(() => {
-    if (!loaded) return;
-    if (savedSnapshot.current === null) {
-      // First snapshot after hydration = the persisted baseline.
-      savedSnapshot.current = stateSnapshot;
-      setIsDirty(false);
-      return;
-    }
-    setIsDirty(stateSnapshot !== savedSnapshot.current);
-  }, [stateSnapshot, loaded]);
-
-  // Prompt before closing/refreshing the tab with unsaved changes.
-  useEffect(() => {
-    if (!isDirty) return;
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [isDirty]);
-
-  /* ---- Undo / Redo (step history over theme + sections + tokens) ---- */
-  type DesignerSnapshot = { theme: string; sections: BuilderSectionConfig[]; designTokens: BuilderDesignTokens };
-  const [past, setPast] = useState<DesignerSnapshot[]>([]);
-  const [future, setFuture] = useState<DesignerSnapshot[]>([]);
-  const committedRef = useRef<DesignerSnapshot | null>(null);
-  const restoringRef = useRef(false);
-  const lastEditAt = useRef(0);
-
-  // Record every committed change (bursts within 600ms merge into one step).
-  useEffect(() => {
-    if (!loaded || restoringRef.current) return;
-    const next: DesignerSnapshot = { theme, sections, designTokens };
-    const prev = committedRef.current;
-    if (!prev) {
-      committedRef.current = next;
-      return;
-    }
-    if (JSON.stringify(prev) === JSON.stringify(next)) return;
-    const now = Date.now();
-    const coalesce = now - lastEditAt.current < 600 && lastEditAt.current > 0;
-    if (!coalesce) setPast((p) => [...p.slice(-49), prev]);
-    setFuture([]);
-    lastEditAt.current = now;
-    committedRef.current = next;
-  }, [loaded, theme, sections, designTokens]);
-
-  const applySnapshot = useCallback((snap: DesignerSnapshot) => {
-    restoringRef.current = true;
-    setTheme(snap.theme);
-    setSections(snap.sections.map((s) => ({ ...s, props: { ...s.props } })));
-    setDesignTokens({
-      colors: { ...(snap.designTokens?.colors || {}) },
-      typography: snap.designTokens?.typography ? { ...snap.designTokens.typography } : undefined,
-      radius: snap.designTokens?.radius,
-    });
-    setTimeout(() => {
-      restoringRef.current = false;
-      lastEditAt.current = 0;
-    }, 50);
-  }, []);
-
-  const undo = useCallback(() => {
-    if (!past.length || !committedRef.current) return;
-    const cur = committedRef.current;
-    const prev = past[past.length - 1];
-    committedRef.current = prev;
-    setPast(past.slice(0, -1));
-    setFuture([...future.slice(-49), cur]);
-    applySnapshot(prev);
-  }, [past, future, applySnapshot]);
-
-  const redo = useCallback(() => {
-    if (!future.length || !committedRef.current) return;
-    const cur = committedRef.current;
-    const nextSnap = future[future.length - 1];
-    committedRef.current = nextSnap;
-    setPast([...past.slice(-49), cur]);
-    setFuture(future.slice(0, -1));
-    applySnapshot(nextSnap);
-  }, [past, future, applySnapshot]);
-
-  // Ctrl+Z / Ctrl+Shift+Z (and Ctrl+Y) — ignored while typing in inputs.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'SELECT' ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-      const key = e.key.toLowerCase();
-      if (key === 'z') {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-      } else if (key === 'y') {
-        e.preventDefault();
-        redo();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [undo, redo]);
-
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    const { source, destination, draggableId } = result;
-
-    if (source.droppableId === 'library') {
-      const type = draggableId.replace('lib:', '') as BuilderSectionType;
-      const next = [...sections];
-      const instance: BuilderSectionConfig = {
-        id: `${type}-${Date.now()}`,
-        type,
-        enabled: true,
-        order: destination.index,
-        props: defaultSectionProps(type),
-      };
-      next.splice(destination.index, 0, instance);
-      setSections(next.map((s, i) => ({ ...s, order: i })));
-      setSelectedId(instance.id);
-    } else if (source.droppableId === 'canvas') {
-      const next = [...sections];
-      const [moved] = next.splice(source.index, 1);
-      next.splice(destination.index, 0, moved);
-      setSections(next.map((s, i) => ({ ...s, order: i })));
+  /** Apply a template switch immediately (theme-only payload). */
+  const applyTemplate = async (slug: string, name: string) => {
+    setSaving(true);
+    try {
+      await apiPut(`/api/stores/${store.id}/designer`, { theme: slug });
+      setTheme(slug);
+      toast.success('تم تطبيق القالب', { description: `قالب «${name}» أصبح نشطاً.` });
+    } catch {
+      toast.error('تعذر تطبيق القالب');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const addSection = (type: string) => {
-    const instance: BuilderSectionConfig = {
-      id: `${type}-${Date.now()}`,
-      type: type as BuilderSectionType,
-      enabled: true,
-      order: sections.length,
-      props: defaultSectionProps(type as BuilderSectionType),
-    };
-    setSections([...sections, instance]);
-    setSelectedId(instance.id);
+  /** Persist the content blob (slot values). */
+  const saveContent = async () => {
+    setSaving(true);
+    try {
+      await apiPut(`/api/stores/${store.id}/designer`, { content });
+      toast.success('تم حفظ المحتوى');
+    } catch {
+      toast.error('تعذر حفظ المحتوى');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const updateSectionProp = (id: string, key: string, value: any) => {
-    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, props: { ...s.props, [key]: value } } : s)));
+  /** Persist brand tokens. */
+  const saveTokens = async () => {
+    setSaving(true);
+    try {
+      await apiPut(`/api/stores/${store.id}/designer`, { design_tokens: tokens });
+      toast.success('تم حفظ هوية المتجر');
+    } catch {
+      toast.error('تعذر حفظ الهوية');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const toggleSection = (id: string, enabled: boolean) => {
-    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, enabled } : s)));
+  /** Persist custom code assets. */
+  const saveCode = async () => {
+    setSaving(true);
+    try {
+      await apiPut(`/api/stores/${store.id}/designer`, {
+        custom_css: customCss,
+        custom_js: customJs,
+        head_inject: headInject,
+      });
+      toast.success('تم حفظ الأكواد المخصصة');
+    } catch {
+      toast.error('تعذر حفظ الأكواد — تأكد من سلامة الكود');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const deleteSection = (id: string) => {
-    setSections((prev) => prev.filter((s) => s.id !== id).map((s, i) => ({ ...s, order: i })));
-    if (selectedId === id) setSelectedId(null);
-  };
-
-  /** Apply a parsed theme.json from code-editor mode onto live designer state. */
-  const applyThemeJson = useCallback((parsed: ThemeJsonPayload) => {
-    if (!parsed || typeof parsed !== 'object') return;
-    if (typeof parsed.theme === 'string' && parsed.theme) {
-      const nextTpl = getBuilderTemplate(parsed.theme);
-      if (nextTpl) setTheme(nextTpl.slug);
-    }
-    if (Array.isArray(parsed.sections)) {
-      const normalized = parsed.sections
-        .filter((sec) => !!sec && !!sec.type)
-        .map((sec, i) => ({
-          id: String(sec.id || `${sec.type}-${i + 1}`),
-          type: sec.type as BuilderSectionType,
-          enabled: sec.enabled !== false,
-          order: Number(sec.order) || i,
-          props: { ...defaultSectionProps(sec.type as BuilderSectionType), ...(sec.props || {}) },
-        }));
-      setSections(normalized);
-      skipNextSave.current = false;
-    }
-    if (parsed.tokens && typeof parsed.tokens === 'object') {
-      setDesignTokens((prev) => ({
-        ...prev,
-        ...parsed.tokens,
-        colors: { ...(prev?.colors || {}), ...(parsed.tokens?.colors || {}) },
-        typography: { ...(prev?.typography || {}), ...(parsed.tokens?.typography || {}) },
-        radius: parsed.tokens?.radius ?? prev?.radius,
-      }));
-    }
-  }, []);
-
-  const storeData = React.useMemo(
-    () => ({
-      ...store,
-      categories,
-      products: [] as any[],
-      config: { ...settings, storeName: store?.name || 'متجري' },
-      storeSettings: settings,
-      content: {},
-      offers: [],
-      pages: [],
-      behavior: {},
-    }),
-    [store, settings, categories]
-  );
-
-  const selectedSection = sections.find((s) => s.id === selectedId) || null;
-  // Server-computed (custom domain/subdomain or the default {slug}.<domain>
-  // subdomain) with the current request's scheme/port, so it also works on
-  // local dev hosts instead of hardcoding https with no port.
-  const previewUrl = storeUrl || `${window.location.protocol}//${store.slug}.${window.location.host}`;
-
-  const statusEl = (() => {
-    if (isDirty && saveState !== 'saving' && saveState !== 'error') {
-      return (
-        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600">
-          <AlertTriangle className="h-3.5 w-3.5" />
-          تغييرات غير محفوظة
-        </span>
-      );
-    }
-    switch (saveState) {
-      case 'saving':
-        return (
-          <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            حفظ...
-          </span>
-        );
-      case 'saved':
-        return (
-          <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-            <Check className="h-3.5 w-3.5" />
-            محفوظ
-          </span>
-        );
-      case 'error':
-        return (
-          <span className="flex items-center gap-1.5 text-xs font-bold text-red-600">
-            <XCircle className="h-3.5 w-3.5" />
-            فشل الحفظ — حاول مرة أخرى
-          </span>
-        );
-      default:
-        return null;
-    }
-  })();
+  const colors = (tokens?.colors || {}) as Record<string, string>;
+  const typography = (tokens?.typography || {}) as Record<string, any>;
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-gray-100">
-      <Head title={`مصمم المتجر — ${store.name}`} />
-
-      {/* Full-screen editor top bar */}
-      <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4">
-        {/* Right (RTL start): back to dashboard */}
-        <div className="flex min-w-0 items-center gap-3">
+    <PageTemplate title="مصمم المتجر" url={`/stores/${store.id}/designer`}>
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        {/* Header */}
+        <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-black text-gray-900">
+              <Store className="h-7 w-7 text-emerald-500" />
+              مصمم المتجر
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              كل قالب تطبيق متجر متكامل — بدّل القالب، عدّل محتواه، واضبط هويتك البصرية.
+            </p>
+          </div>
           <a
-            href={`/stores/${store.id}`}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:border-emerald-300 hover:text-emerald-600"
+            href={storeUrl}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
           >
-            <ArrowRight className="h-4 w-4" />
-            العودة للوحة التحكم
+            <Eye className="h-4 w-4" /> معاينة المتجر
           </a>
-          <div className="hidden min-w-0 md:block">
-            <p className="truncate text-sm font-black text-slate-800">{store.name}</p>
-            <p className="text-[11px] leading-tight text-slate-400">مصمم المتجر المرئي</p>
-          </div>
         </div>
 
-        {/* Center: mode switcher + viewport switcher + auto-save indicator */}
-        <div className="flex items-center gap-3">
-          {/* Designer mode switcher — visual builder / code editor */}
-          <div className="hidden items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm lg:flex">
-            {(
-              [
-                ['visual', 'المصمم البصري', LayoutGrid],
-                ['code', 'محرر الكود', Code2],
-              ] as Array<[DesignerMode, string, React.ComponentType<{ className?: string }>]>
-            ).map(([key, label, Icon]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setMode(key)}
-                className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
-                  mode === key ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:text-emerald-600'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Viewport switcher */}
-          <div className="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm">
-            {(
-              [
-                ['desktop', 'ديسكتوب', Monitor],
-                ['tablet', 'تابلت', Tablet],
-                ['mobile', 'موبايل', Smartphone],
-              ] as Array<[Device, string, React.ComponentType<{ className?: string }>]>
-            ).map(([key, label, Icon]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setDevice(key)}
-                title={label}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${
-                  device === key ? 'bg-emerald-500 text-white shadow-sm' : 'text-slate-500 hover:text-emerald-600'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span className="hidden xl:inline">{label}</span>
-              </button>
-            ))}
-          </div>
-
-          {statusEl}
-        </div>
-
-        {/* Left (RTL end): live store preview + manual save */}
-        <div className="flex shrink-0 items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 gap-2"
-            onClick={() => window.open(previewUrl, '_blank')}
-          >
-            <ExternalLink className="h-4 w-4" />
-            <span className="hidden sm:inline">معاينة المتجر الحية</span>
-          </Button>
-          {/* Undo / Redo step history */}
-          <div className="hidden items-center rounded-full border border-slate-200 bg-white shadow-sm sm:flex">
+        {/* Tabs */}
+        <div className="mb-6 flex flex-wrap gap-1.5 rounded-2xl bg-slate-100 p-1.5">
+          {TABS.map(({ id, label, icon }) => (
             <button
+              key={id}
               type="button"
-              onClick={undo}
-              disabled={!past.length}
-              title="تراجع (Ctrl+Z)"
-              aria-label="تراجع"
-              className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:text-slate-300"
+              onClick={() => setTab(id)}
+              disabled={loading && id !== 'templates'}
+              className={`flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-black transition ${
+                tab === id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'
+              }`}
             >
-              <Undo2 className="h-4 w-4" />
+              {icon} {label}
             </button>
-            <span className="h-4 w-px bg-slate-200" />
-            <button
-              type="button"
-              onClick={redo}
-              disabled={!future.length}
-              title="إعادة (Ctrl+Shift+Z)"
-              aria-label="إعادة"
-              className="flex h-8 w-9 items-center justify-center text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:text-slate-300"
-            >
-              <Redo2 className="h-4 w-4" />
-            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center gap-3 py-24 text-slate-400">
+            <Loader2 className="h-6 w-6 animate-spin" /> جارٍ التحميل…
           </div>
-
-          <Button size="sm" className="h-8 gap-2" onClick={() => persist()} disabled={saveState === 'saving'}>
-            {saveState === 'saving' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            حفظ التغييرات
-          </Button>
-        </div>
-      </header>
-
-      {/* Editor body fills the remaining viewport */}
-      {!loaded ? (
-        <div className="flex min-h-0 flex-1 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-        </div>
-      ) : (
-        <main className="min-h-0 flex-1 overflow-hidden p-4">
-        <DragDropContext onDragEnd={onDragEnd}>
-          {mode === 'code' && (
-            <div className="flex h-full gap-4">
-              {/* Code editor */}
-              <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
-                <CodeEditorPanel
-                  theme={theme}
-                  tokens={designTokens}
-                  sections={sections}
-                  customCss={customCss}
-                  customJs={customJs}
-                  headInject={headInject}
-                  onApplyThemeJson={applyThemeJson}
-                  onCssChange={setCustomCss}
-                  onJsChange={setCustomJs}
-                  onHeadChange={setHeadInject}
-                />
-              </main>
-
-              {/* Live preview stays mounted beside the editor */}
-              <aside className="hidden w-[460px] shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-100 xl:flex">
-                <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5">
-                  <span className="text-xs font-extrabold text-slate-600">معاينة حيّة</span>
-                  <span className="text-[11px] text-slate-400">تتحدث فوراً مع كل تعديل</span>
+        ) : (
+          <>
+            {/* ------------------------- TEMPLATES ------------------------- */}
+            {tab === 'templates' && (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {modules.map((m) => {
+                  const active = theme === m.meta.slug;
+                  const locked = !isAllowed(m.meta.slug);
+                  return (
+                    <div
+                      key={m.meta.slug}
+                      className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
+                        active ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-slate-200'
+                      } ${locked ? 'opacity-60' : ''}`}
+                    >
+                      <div className="relative h-32" style={{ background: m.meta.preview }}>
+                        <span className="absolute inset-x-5 top-5 bottom-0 flex flex-col gap-2 opacity-90">
+                          <span className="h-2.5 w-2/3 rounded-full bg-black/10" />
+                          <span className="h-10 w-full rounded-md bg-white/45" />
+                          <span className="flex gap-1.5">
+                            {[...Array(4)].map((_, i) => (
+                              <span key={i} className="aspect-[3/4] flex-1 rounded bg-white/55" />
+                            ))}
+                          </span>
+                        </span>
+                        <span className="absolute bottom-2 right-3 rounded-lg bg-black/45 px-2 py-0.5 text-sm font-black text-white backdrop-blur-sm">
+                          {m.meta.name}
+                        </span>
+                        {active && (
+                          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow">
+                            <Check className="h-3.5 w-3.5" /> نشط الآن
+                          </span>
+                        )}
+                      </div>
+                      <div className="p-3.5">
+                        <p className="mb-2 line-clamp-2 min-h-9 text-xs leading-relaxed text-gray-500">{m.meta.description}</p>
+                        <Button
+                          size="sm"
+                          variant={active ? 'ghost' : 'default'}
+                          disabled={active || locked || saving}
+                          onClick={() => applyTemplate(m.meta.slug, m.meta.name)}
+                          className={active ? 'w-full gap-1.5 text-emerald-600' : 'w-full gap-1.5'}
+                          style={!active && !locked ? { backgroundColor: m.meta.accent } : undefined}
+                        >
+                          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : active ? <Check className="h-3.5 w-3.5" /> : null}
+                          {locked ? 'غير متاح في باقتك' : active ? 'مطبَّق حالياً' : 'تطبيق القالب'}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="rounded-2xl border-2 border-dashed border-slate-200 p-5 text-center">
+                  <p className="text-sm font-bold text-slate-500">تريد رؤية القوالب على بياناتك الحقيقية؟</p>
+                  <Button size="sm" variant="outline" className="mt-3" asChild>
+                    <a href={`/stores/${store.id}/templates`}>تصفح معرض القوالب</a>
+                  </Button>
                 </div>
-                <div className="min-h-0 flex-1 overflow-auto p-4">
-                  <div className="mx-auto min-h-[600px] w-full max-w-[420px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-                    <Canvas
-                      sections={sections}
-                      storeData={storeData}
-                      family={getBuilderTemplate(theme)?.family}
-                      selectedId={selectedId}
-                      onSelect={setSelectedId}
-                      onToggleEnabled={toggleSection}
-                      onDelete={deleteSection}
+              </div>
+            )}
+
+            {/* -------------------------- CONTENT -------------------------- */}
+            {tab === 'content' && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="font-black text-slate-900">محتوى قالب «{activeModule?.meta.name ?? theme}»</h2>
+                    <p className="mt-0.5 text-xs text-gray-500">عدّل نصوص وصور الواجهة التي يعرضها قالبك.</p>
+                  </div>
+                  {!!activeModule?.contentSchema?.length && (
+                    <Button size="sm" onClick={saveContent} disabled={saving} className="gap-1.5">
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                    </Button>
+                  )}
+                </div>
+
+                {!activeModule?.contentSchema?.length ? (
+                  <p className="py-10 text-center text-sm text-gray-400">
+                    هذا القالب لا يعرض حقول محتوى قابلة للتعديل حالياً.
+                  </p>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {(activeModule.contentSchema as SlotField[]).map((field) => {
+                      const value = getDotted(content, field.key) ?? field.default ?? '';
+                      return (
+                        <div key={field.key}>
+                          <Label className="mb-1.5 block text-xs font-black text-slate-600">{field.label}</Label>
+                          {field.type === 'image' ? (
+                            <MediaPicker
+                              value={value}
+                              onChange={(url: string) => setContent(setDotted(content, field.key, url))}
+                            />
+                          ) : (
+                            <Input
+                              value={String(value)}
+                              onChange={(e) => setContent(setDotted(content, field.key, e.target.value))}
+                              placeholder={field.default}
+                              className="bg-white"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* --------------------------- BRAND --------------------------- */}
+            {tab === 'brand' && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="font-black text-slate-900">هوية المتجر البصرية</h2>
+                    <p className="mt-0.5 text-xs text-gray-500">الألوان والاستدارة والخط — تُطبَّق فوق أي قالب.</p>
+                  </div>
+                  <Button size="sm" onClick={saveTokens} disabled={saving} className="gap-1.5">
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                  </Button>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-black text-slate-600">اللون الأساسي</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={colors.primary || '#0d9488'}
+                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, primary: e.target.value } })}
+                        className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                        aria-label="اختيار اللون الأساسي"
+                      />
+                      <Input
+                        dir="ltr"
+                        value={colors.primary || '#0d9488'}
+                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, primary: e.target.value } })}
+                        className="max-w-32 bg-white font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-black text-slate-600">اللون الثانوي</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={colors.secondary || '#f59e0b'}
+                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, secondary: e.target.value } })}
+                        className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                        aria-label="اختيار اللون الثانوي"
+                      />
+                      <Input
+                        dir="ltr"
+                        value={colors.secondary || '#f59e0b'}
+                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, secondary: e.target.value } })}
+                        className="max-w-32 bg-white font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-black text-slate-600">استدارة الزوايا</Label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={0}
+                        max={32}
+                        value={parseInt(String(tokens.radius ?? 16), 10) || 0}
+                        onChange={(e) => setTokens({ ...tokens, radius: `${e.target.value}px` })}
+                        className="flex-1 accent-emerald-600"
+                        aria-label="استدارة الزوايا"
+                      />
+                      <span className="min-w-12 rounded-lg bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">
+                        {String(tokens.radius ?? '16px')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-black text-slate-600">عائلة الخط</Label>
+                    <select
+                      value={typography.font_family || ''}
+                      onChange={(e) => setTokens({ ...tokens, typography: { ...typography, font_family: e.target.value } })}
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                    >
+                      <option value="">افتراضي القالب</option>
+                      <option value="Cairo">Cairo</option>
+                      <option value="Tajawal">Tajawal</option>
+                      <option value="Almarai">Almarai</option>
+                      <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Live token preview */}
+                <div className="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-100">
+                  <p className="mb-3 text-xs font-black text-slate-400">معاينة سريعة</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span
+                      className="px-5 py-2 text-sm font-black text-white shadow"
+                      style={{ backgroundColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}
+                    >
+                      زر أساسي
+                    </span>
+                    <span
+                      className="px-5 py-2 text-sm font-black text-white shadow"
+                      style={{ backgroundColor: colors.secondary || '#f59e0b', borderRadius: tokens.radius || '16px' }}
+                    >
+                      زر ثانوي
+                    </span>
+                    <span
+                      className="border px-5 py-2 text-sm font-bold text-slate-700"
+                      style={{ borderColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}
+                    >
+                      عنصر محدد
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------------------- CODE ---------------------------- */}
+            {tab === 'code' && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="font-black text-slate-900">أكواد مخصصة</h2>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      CSS و JS يُحقنان داخل واجهة متجرك فقط — في بيئة معزولة ومنقّاة من الأكواد الخطرة.
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={saveCode} disabled={saving} className="gap-1.5">
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                  </Button>
+                </div>
+
+                <div className="space-y-5">
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-black text-slate-600">CSS مخصص</Label>
+                    <Textarea
+                      dir="ltr"
+                      rows={8}
+                      value={customCss}
+                      onChange={(e) => setCustomCss(e.target.value)}
+                      placeholder=".my-store-button { background: #0d9488; }"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-black text-slate-600">JavaScript مخصص</Label>
+                    <Textarea
+                      dir="ltr"
+                      rows={8}
+                      value={customJs}
+                      onChange={(e) => setCustomJs(e.target.value)}
+                      placeholder="// يعمل بعد اكتمال تحميل الصفحة"
+                      className="font-mono text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-black text-slate-600">وسوم الرأس (Head Inject)</Label>
+                    <Textarea
+                      dir="ltr"
+                      rows={4}
+                      value={headInject}
+                      onChange={(e) => setHeadInject(e.target.value)}
+                      placeholder='<meta name="..." content="..." />'
+                      className="font-mono text-sm"
                     />
                   </div>
                 </div>
-              </aside>
-            </div>
-          )}
-
-          {mode === 'visual' && (
-          <div className="flex h-full gap-4">
-            {/* Section library */}
-            <aside className="w-[280px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <SectionLibrary onAdd={addSection} />
-            </aside>
-
-            {/* Live canvas */}
-            <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-              <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2.5">
-                <span className="text-xs font-extrabold text-slate-600">معاينة حيّة — تتحدث فوراً مع كل تعديل</span>
-                <span className="text-[11px] text-slate-400">
-                  {sections.filter((s) => s.enabled).length} سيكشن ظاهر من {sections.length}
-                </span>
               </div>
-              <div className="flex-1 overflow-auto">
-                <div className="mx-auto p-8">
-                  <div
-                    className={`mx-auto ${DEVICE_WIDTHS[device]} min-h-[600px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-300`}
-                    style={{ maxWidth: '100%' }}
-                  >
-                    <Canvas
-                      sections={sections}
-                      storeData={storeData}
-                      family={getBuilderTemplate(theme)?.family}
-                      selectedId={selectedId}
-                      onSelect={setSelectedId}
-                      onToggleEnabled={toggleSection}
-                      onDelete={deleteSection}
-                    />
-                  </div>
-                </div>
-              </div>
-            </main>
-
-            {/* Inspector */}
-            <aside className="w-[320px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <Inspector
-                section={selectedSection}
-                onSectionPropChange={(key, value) => selectedId && updateSectionProp(selectedId, key, value)}
-                themesUrl={`/stores/${store.id}/templates`}
-                designTokens={designTokens}
-                onTokensChange={(next) => setDesignTokens(next)}
-                storeCategories={categories}
-              />
-            </aside>
-          </div>
-          )}
-        </DragDropContext>
-        </main>
-      )}
-      {saveState === 'error' && (
-        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-lg">
-          <AlertTriangle className="h-4 w-4" />
-          تعذر الحفظ تلقائياً. تأكد من اتصالك بالإنترنت ثم اضغط زر الحفظ يدوياً.
-        </div>
-      )}
-    </div>
+            )}
+          </>
+        )}
+      </div>
+    </PageTemplate>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StoreProvider } from '../../contexts/StoreContext';
-import { UnifiedInvoice } from '../../templates/components/UnifiedInvoice';
+import { UnifiedInvoice } from '@/components/storefront/UnifiedInvoice';
 
 interface OrderInvoiceProps {
   orderNumber: string;

@@ -2,9 +2,7 @@ import StoreHead from '@/components/StoreHead';
 import StoreBoundary from '@/components/StoreBoundary';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
-import { StoreSite, StoreSkeleton, getBuilderTemplate, normalizeTemplateSlug } from '@/builder';
-import { TemplateStorefront } from '@/templates/storefront';
-import '@/themes/load-families';
+import { requireTemplateModule, TemplateStorefrontV2 } from '@/templates-v2';
 import React, { Suspense } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -38,16 +36,14 @@ interface DynamicStoreProps {
 }
 
 /**
- * DynamicStore — the single storefront entry of the new Wusool design system.
- * Every template (legacy, engine or new) is normalized to the new builder
- * catalog and rendered by StoreSite, wrapped in the full storefront feature
- * stack (ThemeProvider + TemplateStorefront) so cart, checkout, login,
- * orders and payments work on every store.
+ * DynamicStore — the single storefront entry of the Wusool template system
+ * v2. Every store (legacy slug included) resolves through normalizeV2Slug to
+ * one fully bespoke template module; the module's own Root renders every
+ * pixel while TemplateStorefrontV2 hosts its overlays on top of the shared
+ * headless feature stack (cart, checkout, login, orders and payments).
  */
 const DynamicStore: React.FC<DynamicStoreProps> = ({
     template,
-    designTokens,
-    templateOverrides,
     store,
     categories,
     products,
@@ -59,9 +55,6 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     behavior = {},
     page = null,
     isPreview = false,
-    userPlanName = null,
-    userPlanTier = null,
-    isSuperAdmin = false,
     isLoggedIn = false,
     customer = null,
     customer_address = [],
@@ -69,7 +62,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    const family = React.useMemo(() => getBuilderTemplate(normalizeTemplateSlug(template))?.family ?? null, [template]);
+    const templateModule = React.useMemo(() => requireTemplateModule(template), [template]);
 
     const storeData = React.useMemo(
         () => ({
@@ -96,7 +89,6 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             />
             <StoreHead store={store} products={products} defaultTitle={config?.storeName || store?.name || 'متجري'} defaultDescription={config?.description} />
             <ThemeProvider
-                family={family}
                 config={config ?? {}}
                 store={store}
                 categories={categories}
@@ -109,7 +101,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 behavior={behavior}
             >
                 <StoreBoundary>
-                    <TemplateStorefront family={family}>
+                    <TemplateStorefrontV2 module={templateModule}>
                         {/* Exit Preview Toolbar */}
                         {isPreview && (
                             <div className="sticky top-0 z-50 w-full bg-amber-600 text-white shadow-md border-b border-amber-700">
@@ -131,21 +123,14 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                                 </div>
                             </div>
                         )}
-                        <Suspense fallback={<StoreSkeleton />}>
-                            <StoreSite
-                                template={template}
-                                designTokens={designTokens}
-                                templateOverrides={templateOverrides}
+                        <Suspense fallback={null}>
+                            <templateModule.Root
                                 storeData={storeData}
-                                userPlanName={userPlanName}
-                                userPlanTier={userPlanTier}
-                                isSuperAdmin={isSuperAdmin}
-                                isPreview={isPreview}
                                 mode={page ? 'page' : 'home'}
                                 page={page}
                             />
                         </Suspense>
-                    </TemplateStorefront>
+                    </TemplateStorefrontV2>
                 </StoreBoundary>
             </ThemeProvider>
         </>

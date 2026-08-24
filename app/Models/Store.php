@@ -407,35 +407,26 @@ protected $fillable = [
     }
 
     /**
-     * The multi-template catalog. Fourteen batteries-included Arabic
-     * storefront templates (general, bakery, grocery, supermarket, hyper,
-     * mega-deals, clothing, designer fashion, kids, cosmetics, restaurant,
-     * electronics, marketplace, bazaar) that every store renders with.
-     * Mirrors resources/js/builder/templates.ts.
+     * The v2 template system — six fully bespoke sector templates. Every
+     * template is its own self-contained storefront application (own layout,
+     * product cards and shopping-flow overlays); nothing visual is shared.
+     * Mirrors resources/js/templates-v2/registry.tsx.
      */
     public const FREE_TEMPLATES = [
-        'classic',
-        'fresh-bakers',
-        'grocery-shopping',
-        'super-mart-store',
-        'mega-store-woocommerce',
-        'ecommerce-mega-store',
-        'ecommerce-clothing',
-        'fashion-designer-mart',
-        'kids-fashion',
-        'cosmetic-store',
-        'restaurant-food-delivery',
-        'e-storefront',
-        'ecommece-marketplace',
-        'marketplace-shop',
-        'toys-school-store',
-        'auto-garage-store',
-        'baby-buds-store',
+        'fashion-atelier',
+        'grocery-souq',
+        'bakery-house',
+        'restaurant-menu',
+        'electronics-hub',
+        'bazaar-market',
     ];
 
     public const GROWTH_TEMPLATES = [];
 
     public const PRO_TEMPLATES = [];
+
+    /** Default template for brand-new stores and unknown slugs. */
+    public const DEFAULT_TEMPLATE = 'bazaar-market';
 
     /**
      * Schema-driven "engine" themes are retired: the slugs below normalize to
@@ -451,77 +442,106 @@ protected $fillable = [
      * so old stores migrate automatically with zero database changes (the
      * value is normalized at read time).
      */
+    /**
+     * Legacy slugs → closest v2 sector template. Covers every slug the
+     * platform has ever shipped (pre-consolidation names, the 17-template
+     * catalog, growth/pro sector themes and schema-engine themes) so old
+     * stores migrate automatically with zero database changes — the value
+     * is normalized at read time.
+     */
     public const LEGACY_TEMPLATE_MAP = [
-        // new-catalog slugs that existed before the consolidation
-        'zen' => 'fashion-designer-mart',
-        'bazaar' => 'ecommece-marketplace',
-        'elegant' => 'ecommerce-clothing',
-        'ocean' => 'e-storefront',
-        'rose' => 'cosmetic-store',
-        'fresh' => 'grocery-shopping',
-        'night' => 'e-storefront',
-        'luxe' => 'fashion-designer-mart',
-        // old core templates
-        'core-minimal' => 'marketplace-shop',
-        'core-bold' => 'super-mart-store',
-        'core-sidebar' => 'ecommece-marketplace',
-        'core-dark' => 'e-storefront',
-        'core-bazaar' => 'ecommece-marketplace',
-        'core-elegant' => 'ecommerce-clothing',
-        'core-showcase' => 'ecommerce-mega-store',
-        // growth
-        'growth-electronics' => 'e-storefront',
-        'growth-fashion' => 'ecommerce-clothing',
-        'growth-food' => 'restaurant-food-delivery',
-        'growth-cosmetics' => 'cosmetic-store',
-        'growth-supermarket' => 'super-mart-store',
-        'growth-home-decor' => 'marketplace-shop',
-        'growth-pharmacy' => 'cosmetic-store',
-        // pro
-        'pro-tech' => 'e-storefront',
-        'pro-beauty' => 'cosmetic-store',
-        'pro-books' => 'marketplace-shop',
-        'pro-sport' => 'ecommerce-mega-store',
-        'pro-pets' => 'kids-fashion',
-        'pro-flowers' => 'cosmetic-store',
-        'pro-coffee' => 'fresh-bakers',
-        'pro-stationery' => 'marketplace-shop',
-        'pro-spices' => 'grocery-shopping',
-        'pro-clothing' => 'ecommerce-clothing',
-        'pro-fragrances' => 'cosmetic-store',
-        'pro-home-tools' => 'mega-store-woocommerce',
-        'pro-kids' => 'kids-fashion',
-        'pro-sports' => 'ecommerce-mega-store',
-        'pro-boutique' => 'fashion-designer-mart',
-        // schema-driven engine themes
-        'market-fast' => 'super-mart-store',
-        'fashion-luxe' => 'fashion-designer-mart',
-        'fresh-produce' => 'grocery-shopping',
-        // pre-canonic legacy sector slugs
-        'basic' => 'classic',
-        'gadgets' => 'e-storefront',
-        'arabic-gadgets' => 'e-storefront',
-        'home-decor' => 'marketplace-shop',
-        'bakery' => 'fresh-bakers',
-        'supermarket' => 'super-mart-store',
-        'wefaq' => 'ecommece-marketplace',
+        // ---- Fashion / boutique / beauty / kids → fashion-atelier ----
+        'zen' => 'fashion-atelier',
+        'elegant' => 'fashion-atelier',
+        'rose' => 'fashion-atelier',
+        'luxe' => 'fashion-atelier',
+        'fashion-designer-mart' => 'fashion-atelier',
+        'ecommerce-clothing' => 'fashion-atelier',
+        'kids-fashion' => 'fashion-atelier',
+        'cosmetic-store' => 'fashion-atelier',
+        'toys-school-store' => 'fashion-atelier',
+        'baby-buds-store' => 'fashion-atelier',
+        'growth-fashion' => 'fashion-atelier',
+        'growth-cosmetics' => 'fashion-atelier',
+        'growth-pharmacy' => 'fashion-atelier',
+        'pro-beauty' => 'fashion-atelier',
+        'pro-flowers' => 'fashion-atelier',
+        'pro-fragrances' => 'fashion-atelier',
+        'pro-kids' => 'fashion-atelier',
+        'pro-pets' => 'fashion-atelier',
+        'pro-boutique' => 'fashion-atelier',
+        'pro-clothing' => 'fashion-atelier',
+        'fashion-luxe' => 'fashion-atelier',
+
+        // ---- Grocery / supermarket / spices → grocery-souq ----
+        'fresh' => 'grocery-souq',
+        'grocery-shopping' => 'grocery-souq',
+        'super-mart-store' => 'grocery-souq',
+        'core-bold' => 'grocery-souq',
+        'growth-supermarket' => 'grocery-souq',
+        'market-fast' => 'grocery-souq',
+        'fresh-produce' => 'grocery-souq',
+        'supermarket' => 'grocery-souq',
+        'pro-spices' => 'grocery-souq',
+
+        // ---- Bakery / coffee / fresh → bakery-house ----
+        'fresh-bakers' => 'bakery-house',
+        'bakery' => 'bakery-house',
+        'pro-coffee' => 'bakery-house',
+
+        // ---- Restaurant / food delivery → restaurant-menu ----
+        'restaurant-food-delivery' => 'restaurant-menu',
+        'growth-food' => 'restaurant-menu',
+
+        // ---- Electronics / tech / garage → electronics-hub ----
+        'ocean' => 'electronics-hub',
+        'night' => 'electronics-hub',
+        'e-storefront' => 'electronics-hub',
+        'auto-garage-store' => 'electronics-hub',
+        'core-dark' => 'electronics-hub',
+        'growth-electronics' => 'electronics-hub',
+        'pro-tech' => 'electronics-hub',
+        'gadgets' => 'electronics-hub',
+        'arabic-gadgets' => 'electronics-hub',
+
+        // ---- General marketplace → bazaar-market (default) ----
+        'classic' => 'bazaar-market',
+        'basic' => 'bazaar-market',
+        'bazaar' => 'bazaar-market',
+        'wefaq' => 'bazaar-market',
+        'ecommece-marketplace' => 'bazaar-market',
+        'marketplace-shop' => 'bazaar-market',
+        'ecommerce-mega-store' => 'bazaar-market',
+        'mega-store-woocommerce' => 'bazaar-market',
+        'core-minimal' => 'bazaar-market',
+        'core-sidebar' => 'bazaar-market',
+        'core-bazaar' => 'bazaar-market',
+        'core-elegant' => 'bazaar-market',
+        'core-showcase' => 'bazaar-market',
+        'home-decor' => 'bazaar-market',
+        'growth-home-decor' => 'bazaar-market',
+        'pro-books' => 'bazaar-market',
+        'pro-stationery' => 'bazaar-market',
+        'pro-home-tools' => 'bazaar-market',
+        'pro-sport' => 'bazaar-market',
+        'pro-sports' => 'bazaar-market',
     ];
 
     /**
      * Normalize a theme/template value into a valid known slug. Known slugs
      * pass through; unknown/legacy values resolve via LEGACY_TEMPLATE_MAP to
-     * their closest personality match, defaulting to "classic".
+     * their closest sector template, defaulting to the general bazaar.
      */
     public static function normalizeThemeSlug(?string $slug): string
     {
         $slug = trim((string) $slug);
         if ($slug === '') {
-            return 'classic';
+            return self::DEFAULT_TEMPLATE;
         }
         if (in_array($slug, self::ALL_TEMPLATES, true)) {
             return $slug;
         }
-        return self::LEGACY_TEMPLATE_MAP[$slug] ?? 'classic';
+        return self::LEGACY_TEMPLATE_MAP[$slug] ?? self::DEFAULT_TEMPLATE;
     }
 
     /**

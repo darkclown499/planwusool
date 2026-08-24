@@ -1,13 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { BadgeCheck, Check, Eye, LayoutGrid, Loader2, Palette } from 'lucide-react';
+import { Check, Eye, LayoutGrid, Loader2, Palette } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
 import { apiPut } from '@/utils/api';
-import { TEMPLATES, getTemplateCategories } from '@/builder';
-import { TemplateThumb } from '@/builder/TemplateThumb';
-import type { BuilderTemplateConfig } from '@/builder/types';
+import { listTemplateModules, type TemplateModule } from '@/templates-v2';
 
 interface StoreBranding {
   name?: string;
@@ -22,42 +20,41 @@ interface Props {
   availableThemes?: string[];
 }
 
+/**
+ * The v2 templates gallery — six sector-bespoke storefront applications.
+ * Every card opens a full live preview (the merchant's own branding wearing
+ * the template with authentic demo content) in a separate tab.
+ */
 export default function StoreThemesGallery({ store, storeBranding }: Props) {
   const [applying, setApplying] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('الكل');
   // Locally-tracked active template so badges move instantly after apply.
-  const [activeTheme, setActiveTheme] = useState<string>(store.theme || 'classic');
-
-  const categories = useMemo(() => ['الكل', ...getTemplateCategories()], []);
-  const templates = useMemo(
-    () => (filter === 'الكل' ? TEMPLATES : TEMPLATES.filter((t) => t.category === filter)),
-    [filter]
+  const [activeTheme, setActiveTheme] = useState<string>(
+    () => (store.theme || '').trim().toLowerCase()
   );
 
-  const isActive = (slug: string) =>
-    activeTheme ? activeTheme === slug : slug === 'classic';
+  const modules = useMemo(() => listTemplateModules(), []);
+  const sectors = useMemo(() => ['الكل', ...Array.from(new Set(modules.map((m) => m.meta.sector)))], [modules]);
+  const visible = useMemo(
+    () => (filter === 'الكل' ? modules : modules.filter((m) => m.meta.sector === filter)),
+    [modules, filter]
+  );
 
-  // Opens the full live preview in a new browser tab instead of an
-  // in-page modal, so merchants can compare templates side by side.
+  const isActive = (slug: string) => activeTheme === slug;
+
   const openPreview = (slug: string) => {
     window.open(`/stores/${store.id}/templates/${slug}/preview`, '_blank', 'noopener');
   };
 
-  const applyTheme = async (tpl: BuilderTemplateConfig) => {
-    setApplying(tpl.slug);
+  const applyTheme = async (tpl: TemplateModule) => {
+    setApplying(tpl.meta.slug);
     try {
       await apiPut(`/api/stores/${store.id}/designer`, {
-        theme: tpl.slug,
-        sections: tpl.sections,
-        design_tokens: {
-          colors: { ...tpl.tokens.colors },
-          typography: { ...(tpl.tokens.typography || {}) },
-          radius: tpl.tokens.radius,
-        },
+        theme: tpl.meta.slug,
       });
-      setActiveTheme(tpl.slug);
+      setActiveTheme(tpl.meta.slug);
       toast.success('تم تطبيق القالب بنجاح', {
-        description: `قالب «${tpl.name}» أصبح نشطاً على متجرك.`,
+        description: `قالب «${tpl.meta.name}» أصبح نشطاً على متجرك.`,
         action: {
           label: 'فتح المصمم',
           onClick: () => router.visit(`/stores/${store.id}/designer`),
@@ -80,15 +77,16 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
             <Palette className="h-7 w-7 text-emerald-500" />
             قوالب المتجر
           </h1>
-          <p className="text-sm leading-relaxed text-gray-500">
-            اختر من {TEMPLATES.length} قالباً عربياً متخصصاً — كلها مجانية وقابلة للتخصيص بالكامل من المصمم المرئي.
+          <p className="max-w-3xl text-sm leading-relaxed text-gray-500">
+            ستة قوالب مستقلة بالكامل — كل واحد متجر مصمَّم لمجاله: هوية بصرية خاصة، طريقة عرض مختلفة،
+            وحتى السلة وصفحة المنتج مختلفة تماماً بين القوالب. جرّب المعاينة الحية قبل التطبيق.
           </p>
         </div>
 
-        {/* Specialty filter chips */}
+        {/* Sector filter chips */}
         <div className="mb-6 flex flex-wrap items-center gap-2">
           <LayoutGrid className="me-1 h-4 w-4 text-gray-400" />
-          {categories.map((c) => (
+          {sectors.map((c) => (
             <button
               key={c}
               type="button"
@@ -106,83 +104,77 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
 
         {/* Gallery grid */}
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {templates.map((tpl) => {
-            const active = isActive(tpl.slug);
+          {visible.map((tpl) => {
+            const active = isActive(tpl.meta.slug);
             return (
               <div
-                key={tpl.slug}
+                key={tpl.meta.slug}
                 className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ${
                   active ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-slate-200'
                 }`}
               >
-                {/* Realistic mini-storefront rendered from the template's own
-                    tokens and niche demo imagery. */}
+                {/* Cover */}
                 <button
                   type="button"
-                  onClick={() => openPreview(tpl.slug)}
+                  onClick={() => openPreview(tpl.meta.slug)}
                   className="relative block h-48 w-full overflow-hidden text-start"
-                  aria-label={`معاينة قالب ${tpl.name}`}
+                  aria-label={`معاينة ${tpl.meta.name}`}
                 >
-                  <TemplateThumb tpl={tpl} storeName={storeBranding?.name || undefined} className="h-full w-full" />
-                  <span className="absolute bottom-2 right-3 rounded-lg bg-black/45 px-2 py-0.5 text-sm font-black text-white backdrop-blur-sm">
-                    {tpl.name}
-                  </span>
-                  <span className="absolute inset-0 flex items-center justify-center bg-emerald-900/0 opacity-0 transition-all group-hover:bg-emerald-900/25 group-hover:opacity-100">
-                    <span className="flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-extrabold text-emerald-700 shadow-lg">
-                      <Eye className="h-4 w-4" />
-                      معاينة حية
+                  <span className="absolute inset-0" style={{ background: tpl.meta.preview }} />
+                  {/* Mini layout mock — suggests each template's own structure */}
+                  <span className="absolute inset-x-5 top-5 bottom-0 flex flex-col gap-2 opacity-90 transition-transform duration-300 group-hover:-translate-y-1">
+                    <span className="h-3 w-2/3 rounded-full bg-black/10" />
+                    <span className="h-14 w-full rounded-lg bg-white/45 shadow-inner" />
+                    <span className="flex gap-2">
+                      {[...Array(4)].map((_, i) => (
+                        <span key={i} className="aspect-[3/4] flex-1 rounded-md bg-white/55 shadow-sm" />
+                      ))}
+                    </span>
+                    <span className="flex gap-2">
+                      {[...Array(4)].map((_, i) => (
+                        <span key={i} className="aspect-[3/4] flex-1 rounded-md bg-white/35 shadow-sm" />
+                      ))}
                     </span>
                   </span>
                   {active && (
-                    <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white shadow">
-                      <BadgeCheck className="h-3 w-3" />
-                      نشط
+                    <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-md">
+                      <Check className="h-3.5 w-3.5" /> نشط الآن
                     </span>
                   )}
+                  <span className="absolute bottom-2 right-3 rounded-lg bg-black/45 px-2 py-0.5 text-sm font-black text-white backdrop-blur-sm">
+                    {tpl.meta.name}
+                  </span>
                 </button>
 
-                {/* Card body */}
-                <div className="flex flex-grow flex-col p-4">
-                  <div className="mb-1.5 flex items-center justify-between gap-2">
-                    <h3 className="text-base font-black text-gray-900">{tpl.name}</h3>
-                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-500">
-                      {tpl.category}
-                    </span>
+                {/* Body */}
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <p className="text-xs font-bold tracking-wide text-emerald-600">{tpl.meta.sector}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">{tpl.meta.name_en}</p>
                   </div>
-                  <p className="line-clamp-2 text-xs leading-relaxed text-gray-500">
-                    {tpl.description}
+                  <p className="mb-4 line-clamp-2 min-h-10 text-xs leading-relaxed text-gray-500">
+                    {tpl.meta.description}
                   </p>
-
-                  <div className="mt-auto flex items-center gap-2 pt-4">
+                  <div className="mt-auto flex items-center gap-2">
+                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => openPreview(tpl.meta.slug)}>
+                      <Eye className="h-3.5 w-3.5" /> معاينة حية
+                    </Button>
                     {active ? (
-                      <Button variant="outline" size="sm" className="flex-1" disabled>
-                        <Check className="me-1 h-3.5 w-3.5 text-emerald-600" />
-                        القالب الحالي
+                      <Button size="sm" variant="ghost" disabled className="gap-1.5 text-emerald-600">
+                        <Check className="h-3.5 w-3.5" /> مطبَّق
                       </Button>
                     ) : (
                       <Button
                         size="sm"
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                        disabled={applying === tpl.meta.slug}
                         onClick={() => applyTheme(tpl)}
-                        disabled={applying !== null}
+                        style={{ backgroundColor: tpl.meta.accent }}
+                        className="gap-1.5 text-white hover:opacity-90"
                       >
-                        {applying === tpl.slug ? (
-                          <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Check className="me-1 h-3.5 w-3.5" />
-                        )}
-                        تطبيق القالب
+                        {applying === tpl.meta.slug && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                        تطبيق
                       </Button>
                     )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openPreview(tpl.slug)}
-                      disabled={applying !== null}
-                    >
-                      <Eye className="me-1 h-3.5 w-3.5" />
-                      معاينة
-                    </Button>
                   </div>
                 </div>
               </div>

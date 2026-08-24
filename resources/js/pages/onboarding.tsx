@@ -1,4 +1,4 @@
-﻿import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import {
@@ -44,10 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { COUNTRIES } from '@/lib/countries';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
-import { getBuilderTemplate, getBuilderTemplateSummaries } from '@/builder';
-import { TemplateThumb } from '@/builder/TemplateThumb';
-import type { BuilderTemplateSummary } from '@/builder/types';
-import type { PlanTier } from '@/templates/types';
+import { listTemplateModules, type PlanTier } from '@/templates-v2';
 
 interface Currency {
     code: string;
@@ -55,12 +52,13 @@ interface Currency {
     name: string;
 }
 
-/** Template registry categories grouped under the wizard filter tabs. */
-const THEME_CATEGORY_MATCH: Record<string, string[]> = {
-    grocery: ['سوبرماركت', 'بقالة', 'متجر شامل', 'سوق عام'],
-    restaurants: ['مطاعم ومقاهي', 'مطعم وتوصيل', 'مخبوزات'],
-    fashion: ['ملابس', 'أزياء راقية', 'أطفال', 'تجميل وعناية'],
-    electronics: ['إلكترونيات'],
+/** Wizard filter tabs → v2 template sectors. */
+const THEME_CATEGORY_MATCH: Record<string, string[] | null> = {
+    grocery: ['بقالة وسوبرماركت'],
+    restaurants: ['مطاعم', 'مخبز وحلويات'],
+    fashion: ['أزياء ومحجبات'],
+    electronics: ['إلكترونيات وتقنية'],
+    general: ['سوق عام'],
 };
 
 interface OnboardingProps {
@@ -173,7 +171,7 @@ export default function Onboarding({
         import_demo_products: false,
         language: defaults.language || 'ar',
         currency: defaults.currency || 'ILS',
-        theme: defaults.theme || 'classic',
+        theme: defaults.theme || 'bazaar-market',
     });
 
     const [step, setStep] = useState(() =>
@@ -191,7 +189,7 @@ export default function Onboarding({
 
     // During onboarding the merchant is on the free plan until they finish,
     // so any template above the Starter tier is locked behind an upgrade.
-    const isLockedTemplate = (tmpl: BuilderTemplateSummary): boolean => tmpl.plan_required !== 'starter';
+    const isLockedTemplate = (tmpl: { plan_required: PlanTier }): boolean => tmpl.plan_required !== 'starter';
 
     const openUpgrade = (slug: string) => {
         setPendingUpgradeTemplate(slug);
@@ -461,10 +459,25 @@ export default function Onboarding({
     // Offer exactly the catalog the backend validates against (the 14
     // builder templates) so a choice made in the wizard can never be
     // rejected at submit time by slug drift between registries.
-    const themeCatalog: BuilderTemplateSummary[] = useMemo(() => getBuilderTemplateSummaries(), []);
+    const themeCatalog = useMemo(
+        () =>
+            listTemplateModules().map((m) => ({
+                slug: m.meta.slug as string,
+                name: m.meta.name,
+                name_en: m.meta.name_en,
+                description: m.meta.description,
+                category: m.meta.sector,
+                plan_required: m.meta.plan_required,
+                preview: m.meta.preview,
+                accent: m.meta.accent,
+            })),
+        []
+    );
     const visibleTemplates = useMemo(() => {
         if (themeCategory === 'all') return themeCatalog;
-        return themeCatalog.filter((tmpl) => (THEME_CATEGORY_MATCH[themeCategory] ?? []).includes(tmpl.category));
+        const sectors = THEME_CATEGORY_MATCH[themeCategory];
+        if (!sectors) return themeCatalog;
+        return themeCatalog.filter((tmpl) => sectors.includes(tmpl.category));
     }, [themeCatalog, themeCategory]);
     const themeBySlug = useMemo(() => new Map(themeCatalog.map((tmpl) => [tmpl.slug, tmpl])), [themeCatalog]);
 
@@ -501,7 +514,7 @@ export default function Onboarding({
             <Head title={t('Onboarding')} />
 
             <div className="grid min-h-screen grid-cols-1 lg:grid-cols-12">
-                {/* Showcase panel — sticky green banner */}
+                {/* Showcase panel � sticky green banner */}
                 <aside className="relative hidden overflow-hidden lg:col-span-5 lg:block">
                     <div
                         className="absolute inset-0"
@@ -518,7 +531,7 @@ export default function Onboarding({
                         }} />
                     </div>
 
-                    {/* Sticky showcase content — stays pinned while the wizard column scrolls */}
+                    {/* Sticky showcase content � stays pinned while the wizard column scrolls */}
                     <div className="sticky top-0 z-10 flex h-screen w-full flex-col items-center justify-center overflow-y-auto px-10 py-8 scrollbar-custom">
                         {/* Floating decorative icons */}
                         <div className="absolute top-28 start-14 text-white/25 animate-float">
@@ -622,9 +635,9 @@ export default function Onboarding({
                     </div>
                 </aside>
 
-                {/* Wizard column — clean step-by-step forms */}
+                {/* Wizard column � clean step-by-step forms */}
                 <main className="flex flex-col px-4 py-8 lg:col-span-7 lg:px-10 xl:px-16">
-                    {/* Progress header — bar + step counter */}
+                    {/* Progress header � bar + step counter */}
                     <div className="mx-auto w-full max-w-xl">
                         <div className="flex items-center gap-3">
                             <img
@@ -783,7 +796,7 @@ export default function Onboarding({
                                                                 : 'border-gray-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20'
                                                         }`}
                                                     >
-                                                        {/* Check availability — trailing action */}
+                                                        {/* Check availability � trailing action */}
                                                         <button
                                                             type="button"
                                                             onClick={runAvailabilityCheck}
@@ -800,7 +813,7 @@ export default function Onboarding({
                                                             <span>{t('Check availability')}</span>
                                                         </button>
 
-                                                        {/* LTR domain group — reads naturally: my-store.wusool.ps */}
+                                                        {/* LTR domain group � reads naturally: my-store.wusool.ps */}
                                                         <div className="dir-ltr flex flex-1 items-center border-r border-gray-100">
                                                             <Input
                                                                 id="store_subdomain"
@@ -870,7 +883,7 @@ export default function Onboarding({
                                                     </div>
                                                 </div>
 
-                                                {/* Contact fields — clean vertical stack */}
+                                                {/* Contact fields � clean vertical stack */}
                                                 <div className="space-y-5 w-full">
                                                     {/* Email */}
                                                     <div className="space-y-1.5">
@@ -946,7 +959,7 @@ export default function Onboarding({
                                                             {t('Brand your store')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Describe your business and make it yours — everything here is optional.')}
+                                                            {t('Describe your business and make it yours � everything here is optional.')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -997,7 +1010,7 @@ export default function Onboarding({
                                                                 {t('Store logo')}
                                                             </Label>
                                                             <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
-                                                                {t('Recommended size: 500 × 500 px')}
+                                                                {t('Recommended size: 500 � 500 px')}
                                                             </span>
                                                         </div>
                                                         <MediaPicker
@@ -1339,7 +1352,7 @@ export default function Onboarding({
                                                             {t('Choose a design')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Pick the perfect look for your store — preview any design live or change it anytime later.')}
+                                                            {t('Pick the perfect look for your store � preview any design live or change it anytime later.')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1351,6 +1364,7 @@ export default function Onboarding({
                                                         ['restaurants', t('Restaurants')],
                                                         ['fashion', t('Fashion & beauty')],
                                                         ['electronics', t('Electronics')],
+                                                        ['general', t('General market')],
                                                     ] as Array<[string, string]>).map(([id, label]) => (
                                                         <button
                                                             key={id}
@@ -1391,7 +1405,27 @@ export default function Onboarding({
                                                                 >
                                                                     <div className="relative">
                                                                         <div className={locked ? 'opacity-40' : ''}>
-                                                                            <TemplateThumb tpl={getBuilderTemplate(tmpl.slug)} className="h-36 w-full" />
+                                                                            {/* v2 sector cover � the template's own preview identity */}
+                                                                            <div
+                                                                                className="relative flex h-36 w-full items-end overflow-hidden"
+                                                                                style={{ background: tmpl.preview }}
+                                                                            >
+                                                                                <span className="absolute inset-x-4 top-4 bottom-0 flex flex-col gap-2 opacity-90">
+                                                                                    <span className="h-2.5 w-2/3 rounded-full bg-black/10" />
+                                                                                    <span className="h-9 w-full rounded-md bg-white/45" />
+                                                                                    <span className="flex gap-1.5">
+                                                                                        {[...Array(4)].map((_, i) => (
+                                                                                            <span key={i} className="aspect-[3/4] flex-1 rounded bg-white/55 shadow-sm" />
+                                                                                        ))}
+                                                                                    </span>
+                                                                                </span>
+                                                                                <span
+                                                                                    className="absolute end-2.5 top-2.5 rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+                                                                                    style={{ backgroundColor: tmpl.accent }}
+                                                                                >
+                                                                                    {tmpl.name}
+                                                                                </span>
+                                                                            </div>
                                                                         </div>
                                                                         <span
                                                                             className={`absolute end-2.5 top-2.5 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${TIER_BADGE[tmpl.plan_required]}`}
@@ -1649,7 +1683,7 @@ export default function Onboarding({
                     <DialogHeader>
                         <DialogTitle>{t('Upgrade to Pro')}</DialogTitle>
                         <DialogDescription>
-                            {t('Ø§Ù„ØªØµÙ…ÙŠÙ…')} Â«{pendingUpgradeTemplate ? themeBySlug.get(pendingUpgradeTemplate)?.name ?? '' : ''}Â» {t('Ù…ØªÙˆÙØ± ÙÙŠ Ø§Ù„Ø¨Ø§Ù‚Ø© Ø§Ù„Ø§Ø­ØªØ±Ø§ÙÙŠØ© (Pro). Ù‚Ù… Ø¨Ø§Ù„ØªØ±Ù‚ÙŠØ© Ù„ÙØªØ­Ù‡ ÙˆØ¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ø²Ø§ÙŠØ§.')}
+                            {t('التصميم')} «{pendingUpgradeTemplate ? themeBySlug.get(pendingUpgradeTemplate)?.name ?? '' : ''}» {t('متوفر في الباقة الاحترافية (Pro). قم بالترقية لفتحه وجميع المزايا.')}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="gap-2">

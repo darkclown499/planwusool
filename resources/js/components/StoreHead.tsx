@@ -72,6 +72,40 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
     };
   }, [products, title, store?.currency_code]);
 
+  useEffect(() => {
+    // Store (Organization) schema so search engines can attach the merchant
+    // identity — name, logo, contact — to every storefront page.
+    const existing = document.getElementById('store-org-schema');
+    if (existing) existing.remove();
+
+    if (!store?.name) return;
+
+    const baseUrl = window.location.origin;
+    const org: Record<string, any> = {
+      '@context': 'https://schema.org',
+      '@type': 'OnlineStore',
+      name: store.name,
+      url: store.store_url || baseUrl,
+    };
+    if (store.logo) org.logo = `${baseUrl}${String(store.logo).startsWith('/') ? '' : '/'}${store.logo}`;
+    if (description) org.description = description;
+    const phone = store.phone || store.whatsapp_number;
+    if (phone) org.telephone = String(phone).replace(/[^0-9+]/g, '');
+    if (store.city || store.country) {
+      org.address = { '@type': 'PostalAddress', addressLocality: store.city || undefined, addressCountry: store.country || undefined };
+    }
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'store-org-schema';
+    script.textContent = JSON.stringify(org);
+    document.head.appendChild(script);
+
+    return () => {
+      document.getElementById('store-org-schema')?.remove();
+    };
+  }, [store?.name, store?.logo, store?.phone, store?.city, store?.country, store?.store_url, store?.whatsapp_number, description]);
+
   return (
     <Head title={title}>
       <meta name="description" content={description} />

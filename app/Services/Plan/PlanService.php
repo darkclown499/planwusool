@@ -213,7 +213,7 @@ class PlanService
         if (is_array($availableThemes) && count($availableThemes) > 0) {
             $user->stores()
                 ->whereNotIn('theme', $availableThemes)
-                ->update(['theme' => 'core-minimal']);
+                ->update(['theme' => \App\Models\Store::DEFAULT_TEMPLATE]);
         }
     }
 }

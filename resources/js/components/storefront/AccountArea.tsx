@@ -1,25 +1,21 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUI } from '@/contexts/UIContext';
 import { DownloadsModal } from '@/components/storefront/DownloadsModal';
 import { LoyaltyModal } from '@/components/storefront/LoyaltyModal';
-import { getFamilyPageComponent } from '@/themes/registry';
-import '@/themes/load-families';
-import type { TemplateFamily } from '@/builder/types';
+import { WishlistModal } from '@/components/storefront/WishlistModal';
 
 /**
  * Central account-area host.
  *
- * Rendered once inside ThemeProvider so the new shared account features
- * (wishlist, digital downloads, loyalty points) work on every theme.
- * It also consumes the `action` prop (query string or URL path deep links
- * such as /my-orders, /my-profile, /wishlist, /my-downloads) and opens the
- * matching modal — the per-theme Profile/Orders modals are driven through
- * the same AuthContext state. `wishlist` resolves through the family page
- * registry so a family can ship its own on-brand wishlist; downloads/loyalty
- * stay generic (niche features, no per-family variants yet).
+ * Rendered once inside ThemeProvider so the account features (wishlist,
+ * digital downloads, loyalty points) work on every template. It also
+ * consumes the `action` prop (query string or URL path deep links such as
+ * /my-orders, /my-profile, /wishlist, /my-downloads) and opens the matching
+ * modal — the per-template Profile/Orders modals are driven through the
+ * same AuthContext state.
  */
-export const AccountArea: React.FC<{ family?: TemplateFamily | null }> = ({ family = null }) => {
+export const AccountArea: React.FC = () => {
   const {
     isLoggedIn,
     showWishlistModal,
@@ -33,7 +29,6 @@ export const AccountArea: React.FC<{ family?: TemplateFamily | null }> = ({ fami
     setShowLoginModal
   } = useAuth();
   const { action } = useUI();
-  const WishlistModal = useMemo(() => getFamilyPageComponent(family, 'wishlist')!, [family]);
 
   useEffect(() => {
     if (!action) return;

@@ -58,6 +58,17 @@ class CategorySeeder extends Seeder
     {
         $img = fn (string $name) => "/images/store/{$name}.jpg";
 
+        // v2 sector templates reuse the closest legacy blueprint catalog.
+        $v2Aliases = [
+            'fashion-atelier' => 'ecommerce-clothing',
+            'grocery-souq' => 'grocery-shopping',
+            'bakery-house' => 'fresh-bakers',
+            'restaurant-menu' => 'restaurant-food-delivery',
+            'electronics-hub' => 'e-storefront',
+            'bazaar-market' => 'classic',
+        ];
+        $template = $v2Aliases[$template] ?? $template;
+
         $blueprints = [
             'classic' => [
                 ['name' => 'عطارة وتوابل', 'description' => 'بهارات وأعشاب وتوابل طازجة بروائحها الأصيلة', 'image' => $img('spices')],
