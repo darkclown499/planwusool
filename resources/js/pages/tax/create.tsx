@@ -104,7 +104,7 @@ export default function CreateTax() {
                 </Select>
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="rate" required>{t('Tax Rate')} ({formData.type === 'percentage' ? '%' : (currencySymbol || '$')})</Label>
+                <Label htmlFor="rate" required>{t('Tax Rate')} ({formData.type === 'percentage' ? '%' : (currencySymbol || '₪')})</Label>
                 <Input
                   id="rate"
                   name="rate"

@@ -35,9 +35,9 @@ class StoreConfiguration extends Model
             function () use ($storeId) {
                 $configs = self::where('store_id', $storeId)->pluck('value', 'key')->toArray();
 
-                // Default values (original + plan management)
+                // Default values (original + plan management) — platform default is ILS / ₪
                 $defaults = [
-                    'default_currency' => 'ils',
+                    'default_currency' => 'ILS',
                     'timezone' => 'utc',
                     'language' => 'ar',
                     'meta_title' => '',

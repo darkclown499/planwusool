@@ -14,6 +14,7 @@ protected $fillable = [
         'slug',
         'description',
         'theme',
+        'currency',
         'theme_config',
         'design_tokens',
         'template_overrides',
@@ -60,7 +61,23 @@ protected $fillable = [
         'theme_config' => 'array',
         'design_tokens' => 'array',
         'template_overrides' => 'array',
+        'currency' => 'string',
     ];
+
+    /**
+     * Ensure currency always falls back to ILS / ₪ when null.
+     */
+    public function getCurrencyAttribute($value): string
+    {
+        return $value ? strtoupper($value) : 'ILS';
+    }
+
+    public function getCurrencySymbolAttribute(): string
+    {
+        $code = $this->currency ?? 'ILS';
+        $currency = \App\Models\Currency::where('code', $code)->first();
+        return $currency ? $currency->symbol : '₪';
+    }
 
     /**
      * Storefront behavior toggles stored in store_configurations.

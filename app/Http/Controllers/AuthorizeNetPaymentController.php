@@ -12,7 +12,7 @@ class AuthorizeNetPaymentController extends Controller
     // Supported countries and currencies for AuthorizeNet
     private const SUPPORTED_COUNTRIES = ['US', 'CA', 'GB', 'AU'];
     private const SUPPORTED_CURRENCIES = [
-        'USD', 'CAD', 'CHF', 'DKK', 'EUR', 'GBP', 'NOK', 'PLN', 'SEK', 'AUD', 'NZD'
+        'ILS', 'CAD', 'CHF', 'DKK', 'EUR', 'GBP', 'NOK', 'PLN', 'SEK', 'AUD', 'NZD'
     ];
 
     public function createPaymentForm(Request $request)
@@ -30,11 +30,11 @@ class AuthorizeNetPaymentController extends Controller
             }
 
             // Get currency from settings or default to USD
-            $currency = $settings['general_settings']['currency'] ?? 'USD';
+            $currency = $settings['general_settings']['currency'] ?? 'ILS';
             
             // Validate currency support
             if (!in_array($currency, self::SUPPORTED_CURRENCIES)) {
-                $currency = 'USD';
+                $currency = 'ILS';
             }
 
             return response()->json([

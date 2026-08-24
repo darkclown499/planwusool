@@ -44,7 +44,7 @@ class OnboardingController extends Controller
             'name' => $user->name,
             'storeName' => $store->name,
             'language' => 'ar',
-            'currency' => strtoupper($configuration['default_currency'] ?? 'ils'),
+            'currency' => strtoupper($configuration['default_currency'] ?? 'ILS'),
             'theme' => $store->getTemplateSlug(),
             // The onboarding wizard always starts clean: detail fields are
             // NOT pre-filled from previously saved store data so old values

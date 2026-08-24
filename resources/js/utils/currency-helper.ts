@@ -26,13 +26,13 @@ export function formatCurrency(amount: number | string): string {
             const settings = props.globalSettings || {};
             
             const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-            if (isNaN(numAmount)) return '$0.00';
+            if (isNaN(numAmount)) return '₪0.00';
             
             const decimals = parseInt(settings.decimalFormat || '2');
             const decimalSeparator = settings.decimalSeparator || '.';
             const thousandsSeparator = settings.thousandsSeparator || ',';
             const position = settings.currencySymbolPosition || 'before';
-            const symbol = settings.currencySymbol || '$';
+            const symbol = settings.currencySymbol || '₪';
             const space = (settings.currencySymbolSpace === true || settings.currencySymbolSpace === '1') ? ' ' : '';
             
             const formattedNumber = numAmount.toFixed(decimals);
@@ -52,13 +52,13 @@ export function formatCurrency(amount: number | string): string {
             const storeCurrency = props.storeCurrency || {};
             
             const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-            if (isNaN(numAmount)) return '$0.00';
+            if (isNaN(numAmount)) return '₪0.00';
             
             const decimals = storeCurrency.decimals || 2;
             const decimalSeparator = storeCurrency.decimal_separator || '.';
             const thousandsSeparator = storeCurrency.thousands_separator || ',';
             const position = storeCurrency.position || 'before';
-            const symbol = storeCurrency.symbol || '$';
+            const symbol = storeCurrency.symbol || '₪';
             
             const formattedNumber = numAmount.toFixed(decimals);
             const parts = formattedNumber.split('.');
@@ -77,7 +77,7 @@ export function formatCurrency(amount: number | string): string {
         }
             
     } catch (error) {
-        return `$${Number(amount).toFixed(2)}`;
+        return `₪${Number(amount).toFixed(2)}`;
     }
 }
 
@@ -94,13 +94,13 @@ export function formatSuperadminCurrency(amount: number | string): string {
 
         
         const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-        if (isNaN(numAmount)) return '$0.00';
+        if (isNaN(numAmount)) return '₪0.00';
         
         const decimals = parseInt(settings.decimalFormat || '2');
         const decimalSeparator = settings.decimalSeparator || '.';
         const thousandsSeparator = settings.thousandsSeparator || ',';
         const position = settings.currencySymbolPosition || 'before';
-        const symbol = settings.currencySymbol || '$';
+        const symbol = settings.currencySymbol || '₪';
         const space = (settings.currencySymbolSpace === true || settings.currencySymbolSpace === '1') ? ' ' : '';
         
         const formattedNumber = numAmount.toFixed(decimals);
@@ -117,7 +117,7 @@ export function formatSuperadminCurrency(amount: number | string): string {
             : `${symbol}${space}${finalNumber}`;
             
     } catch (error) {
-        return `$${Number(amount).toFixed(2)}`;
+        return `₪${Number(amount).toFixed(2)}`;
     }
 }
 

@@ -67,7 +67,7 @@ interface PriceColumnProps {
 
 export const PriceColumn: React.FC<PriceColumnProps> = ({ 
   value, 
-  currency = 'USD', 
+  currency = 'ILS', 
   locale = 'en-US' 
 }) => {
   if (!value && value !== 0) return <span>-</span>;

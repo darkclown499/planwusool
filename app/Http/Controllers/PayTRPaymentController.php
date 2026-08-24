@@ -18,7 +18,7 @@ class PayTRPaymentController extends Controller
             'merchant_id' => $settings['payment_settings']['paytr_merchant_id'] ?? null,
             'merchant_key' => $settings['payment_settings']['paytr_merchant_key'] ?? null,
             'merchant_salt' => $settings['payment_settings']['paytr_merchant_salt'] ?? null,
-            'currency' => $settings['general_settings']['defaultCurrency'] ?? 'TRY'
+            'currency' => $settings['general_settings']['defaultCurrency'] ?? 'ILS'
         ];
     }
 

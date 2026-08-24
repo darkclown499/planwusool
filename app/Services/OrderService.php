@@ -479,7 +479,7 @@ class OrderService
                     'purchase_units' => [
                         [
                             'amount' => [
-                                'currency_code' => strtoupper($order->currency ?: 'USD'),
+                                'currency_code' => strtoupper($order->currency ?: 'ILS'),
                                 'value' => number_format($order->total_amount, 2, '.', ''),
                             ],
                             'description' => "Order #{$order->order_number}",
@@ -710,7 +710,7 @@ class OrderService
             
             // Get store currency
             $storeSettings = \App\Models\Setting::getUserSettings($storeModel->user->id, $order->store_id);
-            $currencyCode = $storeSettings['defaultCurrency'] ?? 'BRL';
+            $currencyCode = $storeSettings['defaultCurrency'] ?? 'ILS';
 
             // Auto-detect mode from token prefix
             $accessToken = $mercadoConfig['access_token'];
@@ -1095,7 +1095,7 @@ class OrderService
             }
 
             $cartId = 'STORE_PT_' . $order->id . '_' . time();
-            $currency = settings($storeModel->user->id, $order->store_id)['defaultCurrency'] ?? 'USD';
+            $currency = settings($storeModel->user->id, $order->store_id)['defaultCurrency'] ?? 'ILS';
 
             config([
                 'paytabs.profile_id' => $paytabsConfig['profile_id'],
@@ -1342,7 +1342,7 @@ class OrderService
                 'status_url'         => $storeModel->route('skrill/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : '')),
                 'language'           => 'EN',
                 'amount'             => number_format((float) $order->total_amount, 2, '.', ''),
-                'currency'           => getPaymentSettings($storeModel->user->id, $order->store_id)['currency'] ?? 'USD',
+                'currency'           => getPaymentSettings($storeModel->user->id, $order->store_id)['currency'] ?? 'ILS',
                 'detail1_description' => 'Order #' . $order->order_number,
                 'detail1_text'       => 'Order #' . $order->order_number,
             ];
@@ -1392,7 +1392,7 @@ class OrderService
             $callbackUrl = $storeModel->route('coingate/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : ''));
 
             $storeSettings = settings($storeModel->user->id, $order->store_id);
-            $currencyCode  = $storeSettings['defaultCurrency'] ?? 'USD';
+            $currencyCode  = $storeSettings['defaultCurrency'] ?? 'ILS';
 
             $orderParams = [
                 'order_id'          => $orderId,
@@ -1535,7 +1535,7 @@ class OrderService
             $mollie->setApiKey($mollieConfig['api_key']);
 
             $amount      = [
-                'currency' => $mollieConfig['currency'] ?? 'EUR',
+                'currency' => $mollieConfig['currency'] ?? 'ILS',
                 'value'    => number_format((float) $order->total_amount, 2, '.', ''),
             ];
             $redirectUrl  = $storeModel->route('mollie/success' . (strpos('success', 'success') !== false ? '/' . $order->order_number : ''));
@@ -1602,7 +1602,7 @@ class OrderService
             $callbackUrl = $storeModel->route('benefit/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : ''));
 
             $storeSettings = settings($storeModel->user->id, $order->store_id);
-            $currencyCode  = $storeSettings['defaultCurrency'] ?? 'BHD';
+            $currencyCode  = $storeSettings['defaultCurrency'] ?? 'ILS';
 
             $userData = [
                 'amount'            => (float) $order->total_amount,
@@ -1750,7 +1750,7 @@ class OrderService
             $tap = new \App\Package\Payment(['company_tap_secret_key' => $config['secret_key']]);
             $chargeData = [
                 'amount' => $order->total_amount,
-                'currency' => $order->currency ?: 'USD',
+                'currency' => $order->currency ?: 'ILS',
                 'threeDSecure' => 'true',
                 'save_card' => 'false',
                 'description' => 'Order #' . $order->order_number,
@@ -1954,7 +1954,7 @@ class OrderService
             $conversationId = 'store_' . $order->id . '_' . time();
             $amount = number_format($order->total_amount, 2, '.', '');
             $currency = strtoupper($order->currency ?: 'TRY');
-            $currency = in_array($currency, ['TRY', 'USD', 'EUR', 'GBP'], true) ? $currency : 'TRY';
+            $currency = in_array($currency, ['TRY', 'ILS', 'ILS', 'GBP'], true) ? $currency : 'TRY';
 
             $checkoutRequest = new \Iyzipay\Request\CreateCheckoutFormInitializeRequest();
             $checkoutRequest->setLocale(\Iyzipay\Model\Locale::EN);
@@ -2237,7 +2237,7 @@ class OrderService
             $transactionRequestType = new \net\authorize\api\contract\v1\TransactionRequestType();
             $transactionRequestType->setTransactionType('authCaptureTransaction');
             $transactionRequestType->setAmount(number_format($order->total_amount, 2, '.', ''));
-            $transactionRequestType->setCurrencyCode(strtoupper($order->currency ?: 'USD'));
+            $transactionRequestType->setCurrencyCode(strtoupper($order->currency ?: 'ILS'));
 
             $hostedRequest = new \net\authorize\api\contract\v1\GetHostedPaymentPageRequest();
             $hostedRequest->setMerchantAuthentication($merchantAuth);

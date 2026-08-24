@@ -49,15 +49,11 @@ class TaxController extends Controller
             }
         }
         
-        // Get store currency settings
+        // Get store currency settings — default platform currency is ILS / ₪
         $storeSettings = settings($user->creatorId(), $currentStoreId);
-        $currencyCode = $storeSettings['defaultCurrency'] ?? 'USD';
+        $currencyCode = $storeSettings['defaultCurrency'] ?? 'ILS';
         $currency = \App\Models\Currency::where('code', $currencyCode)->first();
-        $currencySymbol = $currency ? $currency->symbol : '$';
-        
-        $pricesIncludeTax = ($storeSettings['prices_include_tax'] ?? true) !== false
-            && ($storeSettings['prices_include_tax'] ?? '1') !== '0'
-            && ($storeSettings['prices_include_tax'] ?? '1') !== 'false';
+        $currencySymbol = $currency ? $currency->symbol : '₪';
         
         return Inertia::render('tax/index', [
             'taxes' => $taxes,
@@ -105,11 +101,11 @@ class TaxController extends Controller
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
         
-        // Get store currency settings
+        // Get store currency settings — default ILS
         $storeSettings = settings($user->creatorId(), $currentStoreId);
-        $currencyCode = $storeSettings['defaultCurrency'] ?? 'USD';
+        $currencyCode = $storeSettings['defaultCurrency'] ?? 'ILS';
         $currency = \App\Models\Currency::where('code', $currencyCode)->first();
-        $currencySymbol = $currency ? $currency->symbol : '$';
+        $currencySymbol = $currency ? $currency->symbol : '₪';
 
         return Inertia::render('tax/create', [
             'currencySymbol' => $currencySymbol
@@ -213,9 +209,9 @@ class TaxController extends Controller
         
         // Get store currency settings
         $storeSettings = settings($user->creatorId(), $currentStoreId);
-        $currencyCode = $storeSettings['defaultCurrency'] ?? 'USD';
+        $currencyCode = $storeSettings['defaultCurrency'] ?? 'ILS';
         $currency = \App\Models\Currency::where('code', $currencyCode)->first();
-        $currencySymbol = $currency ? $currency->symbol : '$';
+        $currencySymbol = $currency ? $currency->symbol : '₪';
         
         return Inertia::render('tax/show', [
             'tax' => $tax,
@@ -237,9 +233,9 @@ class TaxController extends Controller
 
         // Get store currency settings
         $storeSettings = settings($user->creatorId(), $currentStoreId);
-        $currencyCode = $storeSettings['defaultCurrency'] ?? 'USD';
+        $currencyCode = $storeSettings['defaultCurrency'] ?? 'ILS';
         $currency = \App\Models\Currency::where('code', $currencyCode)->first();
-        $currencySymbol = $currency ? $currency->symbol : '$';
+        $currencySymbol = $currency ? $currency->symbol : '₪';
         
         return Inertia::render('tax/edit', [
             'tax' => $tax,

@@ -587,7 +587,7 @@ export function CrudFormModal({
               <div className="bg-gray-50 p-4 rounded-lg mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-gray-600">{t("Unit Price")}:</span>
-                  <span className="font-medium">${formConfig.priceSummary.unitPrice.toFixed(2)}</span>
+                  <span className="font-medium">₪${formConfig.priceSummary.unitPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-gray-600">{t("Quantity")}:</span>
@@ -597,7 +597,7 @@ export function CrudFormModal({
                   <div className="flex justify-between items-center">
                     <span className="font-semibold">{t("Total Price")}:</span>
                     <span className="font-bold text-lg text-primary">
-                      {window?.appSettings?.currencySettings?.currencySymbol || '$'}{calculateTotal().toFixed(2)}
+                      {window?.appSettings?.currencySettings?.currencySymbol || '₪'}{calculateTotal().toFixed(2)}
                     </span>
                   </div>
                 </div>

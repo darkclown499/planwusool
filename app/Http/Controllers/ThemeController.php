@@ -617,9 +617,9 @@ class ThemeController extends Controller
             'vat' => $storeData['config']['vat'],
             'locale' => $storeData['config']['locale'],
             'storeCurrency' => [
-                'code' => $storeData['config']['secondaryCurrency'] ?? 'USD',
-                'symbol' => '$',
-                'name' => 'USD'
+                'code' => $storeData['config']['secondaryCurrency'] ?? 'ILS',
+                'symbol' => '₪',
+                'name' => 'ILS'
             ],
         ]);
 

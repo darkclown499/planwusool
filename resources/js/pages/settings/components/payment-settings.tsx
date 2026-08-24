@@ -235,8 +235,8 @@ export default function PaymentSettings({ settings = {}, messagingVariables = {}
 
   // Form state
   const { data, setData, post, processing, errors, isDirty } = useForm<PaymentSettings>({
-    currency: settings.currency || 'USD',
-    currency_symbol: settings.currency_symbol || '$',
+    currency: settings.currency || 'ILS',
+    currency_symbol: settings.currency_symbol || '₪',
     is_manually_enabled: settings.is_manually_enabled === true || settings.is_manually_enabled === '1',
     is_bank_enabled: settings.is_bank_enabled === true || settings.is_bank_enabled === '1',
     bank_detail: settings.bank_detail || '',

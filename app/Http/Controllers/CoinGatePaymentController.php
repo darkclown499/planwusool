@@ -64,8 +64,8 @@ class CoinGatePaymentController extends Controller
             $orderParams = [
                 'order_id' => $orderId,
                 'price_amount' => $pricing['final_price'],
-                'price_currency' => $settings['general_settings']['defaultCurrency'] ?? 'USD',
-                'receive_currency' => $settings['general_settings']['defaultCurrency'] ?? 'USD',
+                'price_currency' => $settings['general_settings']['defaultCurrency'] ?? 'ILS',
+                'receive_currency' => $settings['general_settings']['defaultCurrency'] ?? 'ILS',
                 'callback_url' => route('coingate.callback'),
                 'cancel_url' => route('plans.index'),
                 'success_url' => route('coingate.callback'),

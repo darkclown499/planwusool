@@ -69,14 +69,14 @@ class HandleInertiaRequests extends Middleware
         // Skip database queries during installation
         if ($request->is('install*') || $request->is('update*') || $request->is('installer*') || !file_exists(storage_path('installed'))) {
             $globalSettings = [
-                'currencySymbol' => '$',
-                'currencyNname' => 'US Dollar',
+                'currencySymbol' => '₪',
+                'currencyNname' => 'Israeli Shekel',
                 'base_url' => $request->getSchemeAndHttpHost()
             ];
             $storeCurrency = [
-                'code' => 'USD',
-                'symbol' => '$',
-                'name' => 'US Dollar',
+                'code' => 'ILS',
+                'symbol' => '₪',
+                'name' => 'Israeli Shekel',
                 'position' => 'before',
                 'decimals' => 2,
                 'decimal_separator' => '.',

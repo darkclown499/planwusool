@@ -161,7 +161,7 @@ class PaymentSettingController extends Controller
         
         // Add superadmin settings for plan subscriptions
         $settings = settings($superAdminId);
-        $paymentSettings['defaultCurrency'] = $settings['defaultCurrency'] ?? 'usd';
+        $paymentSettings['defaultCurrency'] = $settings['defaultCurrency'] ?? 'ILS';
         $paymentSettings['titleText'] = $settings['titleText'] ?? 'Wusool';
         
         // Add demo mode flag for frontend handling

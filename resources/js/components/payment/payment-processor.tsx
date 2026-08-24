@@ -90,7 +90,7 @@ export function PaymentProcessor({
       const isSymbolBefore = formattedOriginal.indexOf(symbol) < formattedOriginal.search(/\d/);
       return isSymbolBefore ? `${symbol}${amount.toFixed(2)}` : `${amount.toFixed(2)}${symbol}`;
     }
-    return `$${amount.toFixed(2)}`; // Fallback
+    return `₪${amount.toFixed(2)}`; // Fallback - default platform currency is ILS / ₪
   };
 
   const handleApplyCoupon = async () => {
@@ -175,7 +175,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             paypalClientId={plan.paymentMethods?.paypal_client_id || ''}
-            currency={plan.paymentMethods?.defaultCurrency || 'usd'}
+            currency={plan.paymentMethods?.defaultCurrency || 'ILS'}
           />
         );
       case 'bank':
@@ -191,7 +191,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             razorpayKey={plan.paymentMethods?.razorpay_key || ''}
-            currency={plan.paymentMethods?.currency || 'INR'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
             titleText={plan.paymentMethods?.titleText}
           />
         );
@@ -201,7 +201,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             accessToken={plan.paymentMethods?.mercadopago_access_token || ''}
-            currency={plan.paymentMethods?.currency || 'BRL'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'paystack':
@@ -228,7 +228,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             paytabsClientKey={''}
-            currency={plan.paymentMethods?.currency || 'USD'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'skrill':
@@ -237,7 +237,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             skrillMerchantId={plan.paymentMethods?.skrill_merchant_id || ''}
-            currency={plan.paymentMethods?.currency || 'USD'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'coingate':
@@ -245,7 +245,7 @@ export function PaymentProcessor({
           <CoinGatePaymentForm
             {...commonProps}
             planPrice={finalPrice}
-            currency={plan.paymentMethods?.currency || 'USD'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'payfast':
@@ -291,7 +291,7 @@ export function PaymentProcessor({
             planPrice={finalPrice}
             cashfreeAppId={plan.paymentMethods?.cashfree_public_key || ''}
             mode={plan.paymentMethods?.cashfree_mode || 'sandbox'}
-            currency={plan.paymentMethods?.currency || 'INR'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'iyzipay':
@@ -300,7 +300,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             iyzipayPublicKey={plan.paymentMethods?.iyzipay_public_key || ''}
-            currency={plan.paymentMethods?.currency || 'USD'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'benefit':
@@ -327,7 +327,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             easebuzzMerchantKey={plan.paymentMethods?.easebuzz_merchant_key || ''}
-            currency={plan.paymentMethods?.currency || 'INR'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'khalti':
@@ -345,7 +345,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             authorizenetMerchantId={plan.paymentMethods?.authorizenet_merchant_id || ''}
-            currency={plan.paymentMethods?.currency || 'USD'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'fedapay':
@@ -426,7 +426,7 @@ export function PaymentProcessor({
             {...commonProps}
             planPrice={finalPrice}
             tapSecretKey={plan.paymentMethods?.tap_secret_key || ''}
-            currency={plan.paymentMethods?.currency || 'USD'}
+            currency={plan.paymentMethods?.currency || 'ILS'}
           />
         );
       case 'xendit':
@@ -560,7 +560,7 @@ export function PaymentProcessor({
                 {t('Coupon Applied')}: {appliedCoupon.code}
               </span>
               <span className="text-green-600">
-                -{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : `$${appliedCoupon.value}`}
+                -{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : `₪${appliedCoupon.value}`}
               </span>
             </div>
           </div>

@@ -30,7 +30,7 @@ class PayTabsPaymentController extends Controller
             $user = auth()->user();
             $pricing = calculatePlanPricing($plan, $validated['coupon_code'] ?? null, $validated['billing_cycle']);
             $cartId = 'PT_' . time() . '_' . $user->id;
-            $currency = settings($superAdmin->id)['defaultCurrency'] ?? 'USD';
+            $currency = settings($superAdmin->id)['defaultCurrency'] ?? 'ILS';
             
             createPlanOrder([
                 'user_id' => $user->id,

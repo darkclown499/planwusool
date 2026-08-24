@@ -51,6 +51,8 @@ class Product extends Model
         'variants' => 'array',
         'custom_fields' => 'array',
     ];
+
+    protected $appends = ['thumbnail'];
     
     /**
      * Get the variants as an array
@@ -111,6 +113,29 @@ class Product extends Model
     {
         if (empty($this->images)) return [];
         return explode(',', $this->images);
+    }
+
+    /**
+     * Accessor: cover_image returns images[0] for backward compatibility
+     * when cover_image column is empty (new flow uses only images).
+     */
+    public function getCoverImageAttribute($value)
+    {
+        if (!empty($value)) return $value;
+        if (!empty($this->attributes['images'])) {
+            $parts = explode(',', $this->attributes['images']);
+            $first = trim($parts[0] ?? '');
+            if ($first !== '') return $first;
+        }
+        return $value;
+    }
+
+    /**
+     * Accessor: thumbnail alias for cover_image (images[0])
+     */
+    public function getThumbnailAttribute()
+    {
+        return $this->cover_image;
     }
     
     /**
