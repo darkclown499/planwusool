@@ -96,9 +96,9 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                 <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">الأكثر مبيعاً</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
+            <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
               {bestsellers.map((p) => (
-                <AtelierProductCard key={p.id} product={p} />
+                <AtelierProductCard key={p.id} product={p} className="h-full" />
               ))}
             </div>
           </section>
@@ -181,9 +181,9 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-4 xl:grid-cols-5">
               {products.map((p: any) => (
-                <AtelierProductCard key={p.id} product={p} />
+                <AtelierProductCard key={p.id} product={p} className="h-full" />
               ))}
             </div>
 

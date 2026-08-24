@@ -1,4 +1,5 @@
 import React from 'react';
+import { Shirt, Sparkles, ShoppingBag, Gem, Baby, Footprints } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 
 /* ===================================================================== */
@@ -16,6 +17,19 @@ interface CategoryCircleItem {
   image?: string | null;
 }
 
+const CATEGORY_FALLBACK_ICONS: Array<{ test: RegExp; icon: React.ReactNode }> = [
+  { test: /فستان|عباية|حجاب|ملابس|أزياء|موضة/i, icon: <Shirt className="h-6 w-6" /> },
+  { test: /أطفال|طفل|بيبي|ولادي|بناتي/i, icon: <Baby className="h-6 w-6" /> },
+  { test: /حقيبة|شنطة|bag/i, icon: <ShoppingBag className="h-6 w-6" /> },
+  { test: /حذاء|شوز|foot|shoe/i, icon: <Footprints className="h-6 w-6" /> },
+  { test: /اكسسوار|مجوهرات|ذهب|jewel|gem/i, icon: <Gem className="h-6 w-6" /> },
+];
+
+function getCategoryFallbackIcon(name: string): React.ReactNode {
+  const hit = CATEGORY_FALLBACK_ICONS.find((c) => c.test.test(name));
+  return hit?.icon ?? <Sparkles className="h-6 w-6" />;
+}
+
 export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[] }> = ({ categories }) => {
   if (!categories || categories.length === 0) return null;
 
@@ -26,23 +40,23 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
           <span className="mx-auto mb-3 block h-px w-10 bg-[#b08d57]" />
           <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">تسوقي حسب الفئة</h2>
         </div>
-        <div className="-mx-2 flex snap-x gap-5 overflow-x-auto px-2 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
+        <div className="-mx-2 flex snap-x snap-mandatory gap-5 overflow-x-auto px-2 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
           {categories.slice(0, 10).map((c) => (
             <a
               key={c.id}
               href={`/category/${c.slug || c.id}`}
               className="group flex w-[88px] shrink-0 snap-start flex-col items-center gap-3 sm:w-[104px]"
             >
-              <span className="relative block h-[88px] w-[88px] overflow-hidden rounded-full ring-1 ring-stone-200 transition-all duration-300 group-hover:ring-[#9d7463] group-hover:ring-offset-2 group-hover:ring-offset-white sm:h-[104px] sm:w-[104px]">
+              <span className="relative block h-[88px] w-[88px] shrink-0 overflow-hidden rounded-full bg-stone-50 ring-1 ring-stone-200 transition-all duration-300 group-hover:ring-[#9d7463] group-hover:ring-offset-2 group-hover:ring-offset-white sm:h-[104px] sm:w-[104px]">
                 {c.image ? (
-                  <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f3ece4] to-[#e7d8c9] font-serif text-xl text-[#9d7463]">
-                    {c.name.charAt(0)}
+                  <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f3ece4] to-[#e7d8c9] text-[#9d7463]" aria-hidden>
+                    {getCategoryFallbackIcon(c.name)}
                   </span>
                 )}
               </span>
-              <span className="line-clamp-1 text-[13px] font-medium text-stone-700 transition-colors group-hover:text-[#9d7463]">{c.name}</span>
+              <span className="line-clamp-1 w-full text-center text-[13px] font-medium text-stone-700 transition-colors group-hover:text-[#9d7463]">{c.name}</span>
             </a>
           ))}
         </div>

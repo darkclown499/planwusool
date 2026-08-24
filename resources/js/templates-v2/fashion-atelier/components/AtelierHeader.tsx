@@ -32,7 +32,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
     else if (auth?.setShowLoginModal) auth.setShowLoginModal(true);
   };
 
-  const navLink = 'relative whitespace-nowrap px-3 py-2 text-[13px] font-medium tracking-wide text-stone-700 transition-colors hover:text-[#9d7463]';
+  const navLink = 'relative shrink-0 whitespace-nowrap px-3 py-2 text-[13px] font-medium tracking-wide text-stone-700 transition-colors hover:text-[#9d7463]';
 
   return (
     <header
@@ -55,11 +55,6 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
           </button>
           <nav className="hidden items-center gap-1 md:flex">
             <a href={homeHref} className={navLink}>الرئيسية</a>
-            {categories.slice(0, 4).map((c: any) => (
-              <a key={c.id} href={`/category/${c.slug || c.id}`} className={navLink}>
-                {c.name}
-              </a>
-            ))}
           </nav>
         </div>
 
@@ -106,10 +101,10 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
         </div>
       </div>
 
-      {/* Hairline nav (desktop, full list) */}
+      {/* Hairline nav (desktop, full list) — single scroll row, never wraps */}
       <div className="hidden border-t border-stone-200/70 md:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-center gap-6 px-6 py-2.5 lg:px-8">
-          {categories.slice(4, 9).map((c: any) => (
+        <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-6 py-2.5 lg:gap-3 lg:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {categories.map((c: any) => (
             <a key={c.id} href={`/category/${c.slug || c.id}`} className={navLink}>
               {c.name}
             </a>

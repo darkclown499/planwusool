@@ -68,17 +68,17 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
   };
 
   return (
-    <div className={`group relative flex flex-col ${className}`} dir="rtl">
-      {/* Image */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-sm bg-stone-100">
+    <div className={`group relative flex w-full min-w-0 flex-col overflow-hidden rounded-sm border border-stone-100 bg-white ${className}`} dir="rtl">
+      {/* Image — fixed portrait ratio so every grid cell aligns */}
+      <div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-stone-100">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }} aria-label={product.name} className="block h-full w-full">
           <img src={mainImage} alt={product.name} loading="lazy"
-            className="h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover object-center transition-all duration-700 group-hover:scale-[1.03]"
             style={{ opacity: hoverImage ? 1 : undefined }}
             onError={(e) => { (e.currentTarget.style.opacity = '0'); }} />
           {hoverImage && (
             <img src={hoverImage} alt="" loading="lazy" aria-hidden
-              className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+              className="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
           )}
         </a>
 
@@ -167,16 +167,16 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
         )}
       </div>
 
-      {/* Meta */}
-      <div className="flex flex-col gap-1 pt-3 text-center sm:text-start">
+      {/* Meta — self-contained flex-col inside the card, never floats */}
+      <div className="flex w-full min-w-0 flex-1 flex-col gap-1 bg-white px-3 pb-3 pt-3 text-center sm:text-start">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }}
-          className="line-clamp-1 font-serif text-[15px] font-semibold text-stone-800 transition-colors hover:text-[#9d7463]">
+          className="line-clamp-2 min-h-[2.6em] w-full font-serif text-[15px] font-semibold leading-snug text-stone-800 transition-colors hover:text-[#9d7463]">
           {product.name}
         </a>
-        <div className="flex items-baseline justify-center gap-2 sm:justify-start">
-          <span className="text-[15px] font-bold text-stone-900">{formatPrice(product.price)}</span>
+        <div className="mt-auto flex w-full items-baseline justify-center gap-2 sm:justify-start">
+          <span className="shrink-0 text-[15px] font-bold text-stone-900">{formatPrice(product.price)}</span>
           {discount > 0 && !!product.originalPrice && (
-            <span className="text-xs text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
+            <span className="min-w-0 truncate text-xs text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
           )}
         </div>
       </div>
