@@ -93,8 +93,10 @@ class DesignerController extends Controller
         }
 
         // Slot content (v2 editor): dotted keys expand into the store_content
-        // blob so templates read them via the merged content object. Only
-        // scalar values and flat arrays of scalars are accepted.
+        // blob so templates read them via the merged content object.
+        // FIX: correctly persist nested structures like hero_banner (type, images[], video_url, overlay_opacity)
+        // without dropping them on refresh. Previous logic used array_values(array_filter(is_scalar)) which
+        // stripped associative keys and nested arrays (e.g., hero_images).
         if (isset($validated['content']) && is_array($validated['content'])) {
             $merged = $store->store_content ?? [];
             foreach ($validated['content'] as $key => $value) {
@@ -102,15 +104,12 @@ class DesignerController extends Controller
                 if ($key === '' || strlen($key) > 100) {
                     continue;
                 }
-                if (is_array($value)) {
-                    if (count($value) > 50) {
-                        continue;
-                    }
-                    $value = array_values(array_filter($value, 'is_scalar'));
-                } elseif (!is_scalar($value) && $value !== null) {
+                $sanitized = $this->sanitizeContentValue($value);
+                // Allow null to clear a key, but skip invalid structures
+                if ($sanitized === null && $value !== null && !is_scalar($value) && !is_array($value)) {
                     continue;
                 }
-                data_set($merged, $key, $value);
+                data_set($merged, $key, $sanitized);
             }
             $store->store_content = $merged;
         }
@@ -170,6 +169,62 @@ class DesignerController extends Controller
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * Recursively sanitize content values so hero_banner and other nested
+     * structures persist correctly.
+     * - Scalars and null pass through (with length cap for strings).
+     * - Indexed arrays are filtered to scalars (for hero_images as string[]).
+     * - Associative arrays (like hero_banner) are preserved with their keys,
+     *   recursing into nested values (e.g., hero_banner.images => string[]).
+     * This fixes the previous bug where array_values(array_filter(is_scalar))
+     * dropped hero_images and converted hero_banner into an indexed array,
+     * causing saved hero_type/hero_images/overlay settings to disappear on refresh.
+     */
+    private function sanitizeContentValue(mixed $value): mixed
+    {
+        if (is_null($value) || is_scalar($value)) {
+            if (is_string($value) && strlen($value) > 100000) {
+                return substr($value, 0, 100000);
+            }
+            return $value;
+        }
+
+        if (is_array($value)) {
+            if (count($value) > 100) {
+                $value = array_slice($value, 0, 100, true);
+            }
+
+            $isAssoc = array_keys($value) !== range(0, count($value) - 1);
+
+            if ($isAssoc) {
+                $result = [];
+                foreach ($value as $k => $v) {
+                    $k = (string) $k;
+                    if ($k === '' || strlen($k) > 100) {
+                        continue;
+                    }
+                    $sanitized = $this->sanitizeContentValue($v);
+                    // Keep nulls to allow clearing, skip only truly invalid
+                    if ($sanitized !== null || $v === null) {
+                        $result[$k] = $sanitized;
+                    } elseif (is_array($v)) {
+                        // If sanitize returned null for an array, skip that key
+                        continue;
+                    }
+                }
+                return $result;
+            }
+
+            // Indexed array — keep only scalar strings (e.g., hero_images: string[])
+            $filtered = array_values(array_filter($value, fn ($v) => is_scalar($v) && $v !== '' && $v !== null));
+            // Cap each string length
+            $filtered = array_map(fn ($v) => is_string($v) && strlen($v) > 5000 ? substr($v, 0, 5000) : $v, $filtered);
+            return array_slice($filtered, 0, 50);
+        }
+
+        return null;
     }
 
     protected function authorizeStoreAccess(Request $request, Store $store): bool
