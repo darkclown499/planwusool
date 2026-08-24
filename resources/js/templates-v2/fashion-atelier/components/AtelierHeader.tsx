@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useStorefrontCore } from '../../shared/hooks';
 import { getImageUrl } from '@/utils/image-helper';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { POLICY_LINKS, getPolicyContent } from './PolicyContent';
 
 interface AtelierHeaderProps {
   /** Extra links prepended to the category navigation (e.g. الرئيسية). */
@@ -17,6 +19,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
   const { config, store, cart, auth, ui, wishlist, product } = useStorefrontCore();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [policyOpen, setPolicyOpen] = useState<null | 'about' | 'shipping' | 'privacy'>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -33,6 +36,13 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
   };
 
   const navLink = 'relative shrink-0 whitespace-nowrap px-3 py-2 text-[13px] font-medium tracking-wide text-stone-700 transition-colors hover:text-[#9d7463]';
+
+  const policyVars = {
+    STORE_NAME: String(config?.storeName || store?.name || 'متجرنا'),
+    STORE_PHONE: String((config as any)?.phoneNumber || (config as any)?.phone || (store as any)?.phone || ''),
+    STORE_CITY: String((config as any)?.city || (config as any)?.address || (store as any)?.city || ''),
+  };
+  const activePolicy = policyOpen ? getPolicyContent(policyOpen, policyVars) : null;
 
   return (
     <header
@@ -137,6 +147,22 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
                   {c.name}
                 </a>
               ))}
+              <div className="mt-4 border-t border-stone-200 pt-4">
+                <p className="mb-2 px-4 text-xs font-black tracking-wide text-stone-500">معلومات المتجر</p>
+                {POLICY_LINKS.map((link) => (
+                  <button
+                    key={link.key}
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setTimeout(() => setPolicyOpen(link.key), 150);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-4 py-3 text-start text-[15px] text-stone-600 hover:bg-stone-100 hover:text-[#9d7463]"
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
             </nav>
             <div className="border-t border-stone-200 p-4">
               <button
@@ -151,6 +177,24 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
           </div>
         </div>
       )}
+      {/* Policy modals — shared for mobile drawer (desktop top bar uses AnnouncementBar dialogs) */}
+      {POLICY_LINKS.map((link) => {
+        if (policyOpen !== link.key || !activePolicy) return null;
+        const content = getPolicyContent(link.key, policyVars);
+        return (
+          <Dialog key={link.key} open={policyOpen === link.key} onOpenChange={(o) => !o && setPolicyOpen(null)}>
+            <DialogContent dir="rtl" className="max-h-[80vh] overflow-y-auto bg-white">
+              <DialogHeader>
+                <DialogTitle className="font-serif text-xl font-bold text-stone-900">{content.title}</DialogTitle>
+                <DialogDescription className="sr-only">{content.title}</DialogDescription>
+              </DialogHeader>
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-stone-600">
+                {content.body}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      })}
     </header>
   );
 };

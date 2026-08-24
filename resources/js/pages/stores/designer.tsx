@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
 import { getTemplateModule, type TemplateModule } from '@/templates-v2';
@@ -226,164 +227,510 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             )}
 
             {/* -------------------------- CONTENT -------------------------- */}
-            {tab === 'content' && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h2 className="font-black text-slate-900">محتوى قالب «{activeModule?.meta.name ?? theme}»</h2>
-                    <p className="mt-0.5 text-xs text-gray-500">عدّل نصوص وصور الواجهة التي يعرضها قالبك.</p>
-                  </div>
-                  {!!activeModule?.contentSchema?.length && (
-                    <Button size="sm" onClick={saveContent} disabled={saving} className="gap-1.5">
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
-                    </Button>
-                  )}
-                </div>
+            {tab === 'content' && (() => {
+              const announcementText = (getDotted(content, 'announcement.text') ?? '') as string;
+              const announcementBg = (getDotted(content, 'announcement.bg_color') ?? '') as string;
+              const announcementColor = (getDotted(content, 'announcement.text_color') ?? '') as string;
+              const showAnnouncementRaw = getDotted(content, 'announcement.enabled');
+              const showAnnouncement = showAnnouncementRaw === undefined ? true : !!showAnnouncementRaw;
+              const previewBg = announcementBg.trim() ? announcementBg.trim() : 'linear-gradient(90deg,#2b2320,#4a3a33 50%,#2b2320)';
+              const previewColor = announcementColor.trim() ? announcementColor.trim() : '#f5ede2';
+              const isGradient = previewBg.includes('gradient');
+              const previewText = announcementText.trim() || 'توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح';
+              return (
+                <div className="space-y-5">
+                  {/* Announcement Bar Controls */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <h2 className="font-black text-slate-900">شريط الإعلانات العلوي</h2>
+                        <p className="mt-0.5 text-xs text-gray-500">نص ولون الشريط المتحرك فوق الهيدر — يظهر في معاينة المتجر فور الحفظ.</p>
+                      </div>
+                      <Button size="sm" onClick={saveContent} disabled={saving} className="gap-1.5">
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                      </Button>
+                    </div>
 
-                {!activeModule?.contentSchema?.length ? (
-                  <p className="py-10 text-center text-sm text-gray-400">
-                    هذا القالب لا يعرض حقول محتوى قابلة للتعديل حالياً.
-                  </p>
-                ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {(activeModule.contentSchema as SlotField[]).map((field) => {
-                      const value = getDotted(content, field.key) ?? field.default ?? '';
-                      return (
-                        <div key={field.key}>
-                          <Label className="mb-1.5 block text-xs font-black text-slate-600">{field.label}</Label>
-                          {field.type === 'image' ? (
-                            <MediaPicker
-                              value={value}
-                              onChange={(url: string) => setContent(setDotted(content, field.key, url))}
-                            />
-                          ) : (
-                            <Input
-                              value={String(value)}
-                              onChange={(e) => setContent(setDotted(content, field.key, e.target.value))}
-                              placeholder={field.default}
-                              className="bg-white"
-                            />
-                          )}
+                    {/* Live preview */}
+                    <div className="mb-5 overflow-hidden rounded-xl ring-1 ring-slate-200">
+                      <div
+                        dir="rtl"
+                        className="flex items-center justify-center gap-2 px-4 py-2 text-center"
+                        style={isGradient ? { background: previewBg, color: previewColor } : { backgroundColor: previewBg, color: previewColor }}
+                      >
+                        <span aria-hidden>✦</span>
+                        <span className="text-xs font-medium tracking-wide" style={{ color: previewColor }}>{previewText}</span>
+                        <span aria-hidden>✦</span>
+                      </div>
+                      {!showAnnouncement && (
+                        <p className="bg-amber-50 px-3 py-1.5 text-center text-xs font-bold text-amber-700">مخفي — لن يظهر في المتجر حتى تفعّل الإظهار</p>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">نص شريط الإعلانات</Label>
+                        <Input
+                          value={announcementText}
+                          onChange={(e) => setContent(setDotted(content, 'announcement.text', e.target.value))}
+                          placeholder="توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح"
+                          className="bg-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">لون خلفية الشريط</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={announcementBg && /^#[0-9a-fA-F]{6}$/.test(announcementBg.trim()) ? announcementBg.trim() : '#2b2320'}
+                            onChange={(e) => setContent(setDotted(content, 'announcement.bg_color', e.target.value))}
+                            className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                            aria-label="لون خلفية الشريط"
+                          />
+                          <Input
+                            dir="ltr"
+                            value={announcementBg}
+                            onChange={(e) => setContent(setDotted(content, 'announcement.bg_color', e.target.value))}
+                            placeholder="#2b2320 أو linear-gradient(...)"
+                            className="flex-1 bg-white font-mono text-sm"
+                          />
                         </div>
-                      );
-                    })}
+                      </div>
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">لون النص</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={announcementColor && /^#[0-9a-fA-F]{6}$/.test(announcementColor.trim()) ? announcementColor.trim() : '#f5ede2'}
+                            onChange={(e) => setContent(setDotted(content, 'announcement.text_color', e.target.value))}
+                            className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                            aria-label="لون النص"
+                          />
+                          <Input
+                            dir="ltr"
+                            value={announcementColor}
+                            onChange={(e) => setContent(setDotted(content, 'announcement.text_color', e.target.value))}
+                            placeholder="#f5ede2"
+                            className="flex-1 bg-white font-mono text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div className="sm:col-span-2 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+                        <div>
+                          <p className="text-sm font-black text-slate-800">إظهار/إخفاء الشريط العلوي</p>
+                          <p className="text-xs text-gray-500">عند الإخفاء لا يظهر الشريط في أي صفحة بالمتجر</p>
+                        </div>
+                        <Switch
+                          checked={showAnnouncement}
+                          onCheckedChange={(v) => setContent(setDotted(content, 'announcement.enabled', v))}
+                          aria-label="إظهار شريط الإعلانات"
+                        />
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* Template slots */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <h2 className="font-black text-slate-900">محتوى قالب «{activeModule?.meta.name ?? theme}»</h2>
+                        <p className="mt-0.5 text-xs text-gray-500">عدّل نصوص وصور الواجهة التي يعرضها قالبك.</p>
+                      </div>
+                      {!!activeModule?.contentSchema?.length && (
+                        <Button size="sm" onClick={saveContent} disabled={saving} className="gap-1.5">
+                          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                        </Button>
+                      )}
+                    </div>
+
+                    {!activeModule?.contentSchema?.length ? (
+                      <p className="py-10 text-center text-sm text-gray-400">
+                        هذا القالب لا يعرض حقول محتوى قابلة للتعديل حالياً.
+                      </p>
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {(activeModule.contentSchema as SlotField[]).map((field) => {
+                          const value = getDotted(content, field.key) ?? field.default ?? '';
+                          return (
+                            <div key={field.key}>
+                              <Label className="mb-1.5 block text-xs font-black text-slate-600">{field.label}</Label>
+                              {field.type === 'image' ? (
+                                <MediaPicker
+                                  value={value}
+                                  onChange={(url: string) => setContent(setDotted(content, field.key, url))}
+                                />
+                              ) : (
+                                <Input
+                                  value={String(value)}
+                                  onChange={(e) => setContent(setDotted(content, field.key, e.target.value))}
+                                  placeholder={field.default}
+                                  className="bg-white"
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* --------------------------- BRAND --------------------------- */}
-            {tab === 'brand' && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h2 className="font-black text-slate-900">هوية المتجر البصرية</h2>
-                    <p className="mt-0.5 text-xs text-gray-500">الألوان والاستدارة والخط — تُطبَّق فوق أي قالب.</p>
-                  </div>
-                  <Button size="sm" onClick={saveTokens} disabled={saving} className="gap-1.5">
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
-                  </Button>
-                </div>
+            {tab === 'brand' && (() => {
+              const heroType = (getDotted(content, 'hero_banner.type') ?? 'image') as string;
+              const heroImages = (getDotted(content, 'hero_banner.images') ?? []) as string[];
+              const heroVideoUrl = (getDotted(content, 'hero_banner.video_url') ?? '') as string;
+              const heroYoutubeUrl = (getDotted(content, 'hero_banner.youtube_url') ?? '') as string;
+              const heroOverlay = Number(getDotted(content, 'hero_banner.overlay_opacity') ?? 35);
+              const heroHeading = (getDotted(content, 'hero_banner.heading') ?? '') as string;
+              const heroSubtitle = (getDotted(content, 'hero_banner.subtitle') ?? '') as string;
+              const heroCtaLabel = (getDotted(content, 'hero_banner.cta_label') ?? '') as string;
+              const heroCtaLink = (getDotted(content, 'hero_banner.cta_link') ?? '') as string;
+              const getYoutubeId = (url: string) => {
+                try {
+                  const u = new URL(url);
+                  if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0];
+                  if (u.searchParams.get('v')) return u.searchParams.get('v')!.split('&')[0];
+                  const parts = u.pathname.split('/').filter(Boolean);
+                  const idx = parts.indexOf('embed');
+                  if (idx !== -1 && parts[idx + 1]) return parts[idx + 1].split('?')[0];
+                  return parts[parts.length - 1]?.split('?')[0] ?? null;
+                } catch { const m = url.match(/[a-zA-Z0-9_-]{11}/); return m ? m[0] : null; }
+              };
+              const youtubeId = heroYoutubeUrl ? getYoutubeId(heroYoutubeUrl) : null;
+              return (
+                <div className="space-y-5">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div>
+                        <h2 className="font-black text-slate-900">هوية المتجر البصرية</h2>
+                        <p className="mt-0.5 text-xs text-gray-500">الألوان والاستدارة والخط — تُطبَّق فوق أي قالب.</p>
+                      </div>
+                      <Button size="sm" onClick={saveTokens} disabled={saving} className="gap-1.5">
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                      </Button>
+                    </div>
 
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <Label className="mb-1.5 block text-xs font-black text-slate-600">اللون الأساسي</Label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colors.primary || '#0d9488'}
-                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, primary: e.target.value } })}
-                        className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
-                        aria-label="اختيار اللون الأساسي"
-                      />
-                      <Input
-                        dir="ltr"
-                        value={colors.primary || '#0d9488'}
-                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, primary: e.target.value } })}
-                        className="max-w-32 bg-white font-mono text-sm"
-                      />
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">اللون الأساسي</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={colors.primary || '#0d9488'}
+                            onChange={(e) => setTokens({ ...tokens, colors: { ...colors, primary: e.target.value } })}
+                            className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                            aria-label="اختيار اللون الأساسي"
+                          />
+                          <Input
+                            dir="ltr"
+                            value={colors.primary || '#0d9488'}
+                            onChange={(e) => setTokens({ ...tokens, colors: { ...colors, primary: e.target.value } })}
+                            className="max-w-32 bg-white font-mono text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">اللون الثانوي</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={colors.secondary || '#f59e0b'}
+                            onChange={(e) => setTokens({ ...tokens, colors: { ...colors, secondary: e.target.value } })}
+                            className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                            aria-label="اختيار اللون الثانوي"
+                          />
+                          <Input
+                            dir="ltr"
+                            value={colors.secondary || '#f59e0b'}
+                            onChange={(e) => setTokens({ ...tokens, colors: { ...colors, secondary: e.target.value } })}
+                            className="max-w-32 bg-white font-mono text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">استدارة الزوايا</Label>
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="range"
+                            min={0}
+                            max={32}
+                            value={parseInt(String(tokens.radius ?? 16), 10) || 0}
+                            onChange={(e) => setTokens({ ...tokens, radius: `${e.target.value}px` })}
+                            className="flex-1 accent-emerald-600"
+                            aria-label="استدارة الزوايا"
+                          />
+                          <span className="min-w-12 rounded-lg bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">
+                            {String(tokens.radius ?? '16px')}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">عائلة الخط</Label>
+                        <select
+                          value={typography.font_family || ''}
+                          onChange={(e) => setTokens({ ...tokens, typography: { ...typography, font_family: e.target.value } })}
+                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+                        >
+                          <option value="">افتراضي القالب</option>
+                          <option value="Cairo">Cairo</option>
+                          <option value="Tajawal">Tajawal</option>
+                          <option value="Almarai">Almarai</option>
+                          <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Live token preview */}
+                    <div className="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-100">
+                      <p className="mb-3 text-xs font-black text-slate-400">معاينة سريعة</p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span
+                          className="px-5 py-2 text-sm font-black text-white shadow"
+                          style={{ backgroundColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}
+                        >
+                          زر أساسي
+                        </span>
+                        <span
+                          className="px-5 py-2 text-sm font-black text-white shadow"
+                          style={{ backgroundColor: colors.secondary || '#f59e0b', borderRadius: tokens.radius || '16px' }}
+                        >
+                          زر ثانوي
+                        </span>
+                        <span
+                          className="border px-5 py-2 text-sm font-bold text-slate-700"
+                          style={{ borderColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}
+                        >
+                          عنصر محدد
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="mb-1.5 block text-xs font-black text-slate-600">اللون الثانوي</Label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colors.secondary || '#f59e0b'}
-                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, secondary: e.target.value } })}
-                        className="h-10 w-14 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
-                        aria-label="اختيار اللون الثانوي"
-                      />
-                      <Input
-                        dir="ltr"
-                        value={colors.secondary || '#f59e0b'}
-                        onChange={(e) => setTokens({ ...tokens, colors: { ...colors, secondary: e.target.value } })}
-                        className="max-w-32 bg-white font-mono text-sm"
-                      />
+                  {/* Hero Banner Settings */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <h2 className="font-black text-slate-900">إعدادات البنر الرئيسي (Hero Banner)</h2>
+                        <p className="mt-0.5 text-xs text-gray-500">اختر نوع الوسائط، اضبط الطبقة الداكنة والمحتوى النصي للبنر.</p>
+                      </div>
+                      <Button size="sm" onClick={saveContent} disabled={saving} className="gap-1.5">
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
+                      </Button>
+                    </div>
+
+                    {/* Banner Type Toggle */}
+                    <div className="mb-4 flex flex-wrap gap-2 rounded-xl bg-slate-100 p-1.5">
+                      {[
+                        { id: 'image', label: 'معرض صور' },
+                        { id: 'video', label: 'فيديو مباشر' },
+                        { id: 'youtube', label: 'يوتيوب' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setContent(setDotted(content, 'hero_banner.type', opt.id))}
+                          className={`flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-black transition ${heroType === opt.id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Media Inputs */}
+                    {heroType === 'image' && (
+                      <div className="mb-4 space-y-3">
+                        <Label className="block text-xs font-black text-slate-600">صور السلايدر (معرض الصور)</Label>
+                        {heroImages.length === 0 && <p className="text-xs text-gray-400">لم تضف أي صورة بعد — سيتم استخدام الصور الافتراضية للقالب.</p>}
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {heroImages.map((img: string, idx: number) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <div className="flex-1">
+                                <MediaPicker
+                                  value={img}
+                                  onChange={(url: string) => {
+                                    const next = [...heroImages];
+                                    next[idx] = url;
+                                    setContent(setDotted(content, 'hero_banner.images', next));
+                                  }}
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const next = heroImages.filter((_: string, i: number) => i !== idx);
+                                  setContent(setDotted(content, 'hero_banner.images', next));
+                                }}
+                                className="shrink-0 text-red-600 hover:text-red-700"
+                              >
+                                حذف
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setContent(setDotted(content, 'hero_banner.images', [...heroImages, '']))}
+                          className="gap-1.5"
+                        >
+                          + إضافة صورة
+                        </Button>
+                      </div>
+                    )}
+
+                    {heroType === 'video' && (
+                      <div className="mb-4 space-y-3">
+                        <Label className="block text-xs font-black text-slate-600">رابط فيديو MP4 (رفع مباشر)</Label>
+                        <Input
+                          dir="ltr"
+                          value={heroVideoUrl}
+                          onChange={(e) => setContent(setDotted(content, 'hero_banner.video_url', e.target.value))}
+                          placeholder="https://example.com/video.mp4"
+                          className="bg-white font-mono text-sm"
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">أو اختر ملف فيديو:</span>
+                          <MediaPicker
+                            value={heroVideoUrl}
+                            onChange={(url: string) => setContent(setDotted(content, 'hero_banner.video_url', url))}
+                          />
+                        </div>
+                        {heroVideoUrl && (
+                          <video src={heroVideoUrl} controls className="mt-2 max-h-48 w-full rounded-lg border object-cover" />
+                        )}
+                      </div>
+                    )}
+
+                    {heroType === 'youtube' && (
+                      <div className="mb-4 space-y-3">
+                        <Label className="block text-xs font-black text-slate-600">رابط يوتيوب</Label>
+                        <Input
+                          dir="ltr"
+                          value={heroYoutubeUrl}
+                          onChange={(e) => setContent(setDotted(content, 'hero_banner.youtube_url', e.target.value))}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          className="bg-white font-mono text-sm"
+                        />
+                        {youtubeId && (
+                          <div className="overflow-hidden rounded-xl border">
+                            <iframe
+                              className="aspect-video w-full"
+                              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`}
+                              title="YouTube preview"
+                              frameBorder="0"
+                              allow="autoplay; fullscreen"
+                              allowFullScreen
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Overlay Opacity */}
+                    <div className="mb-4">
+                      <Label className="mb-1.5 block text-xs font-black text-slate-600">شفافية الطبقة الداكنة ({heroOverlay}%)</Label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={heroOverlay}
+                          onChange={(e) => setContent(setDotted(content, 'hero_banner.overlay_opacity', Number(e.target.value)))}
+                          className="flex-1 accent-emerald-600"
+                          aria-label="شفافية الطبقة"
+                        />
+                        <span className="min-w-12 rounded-lg bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">
+                          {heroOverlay}%
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2 w-full rounded-full bg-gradient-to-r from-transparent to-black" style={{ opacity: heroOverlay / 100 }} />
+                    </div>
+
+                    {/* Content & Action Fields */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">العنوان الرئيسي</Label>
+                        <Input
+                          value={heroHeading}
+                          onChange={(e) => setContent(setDotted(content, 'hero_banner.heading', e.target.value))}
+                          placeholder="أناقة تُروى كقصة"
+                          className="bg-white"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">الوصف الفرعي</Label>
+                        <Input
+                          value={heroSubtitle}
+                          onChange={(e) => setContent(setDotted(content, 'hero_banner.subtitle', e.target.value))}
+                          placeholder="تشكيلة الموسم الجديدة — قطع مختارة بعناية"
+                          className="bg-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">نص الزر</Label>
+                        <Input
+                          value={heroCtaLabel}
+                          onChange={(e) => setContent(setDotted(content, 'hero_banner.cta_label', e.target.value))}
+                          placeholder="اكتشفي التشكيلة"
+                          className="bg-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="mb-1.5 block text-xs font-black text-slate-600">رابط الزر</Label>
+                        <Input
+                          dir="ltr"
+                          value={heroCtaLink}
+                          onChange={(e) => setContent(setDotted(content, 'hero_banner.cta_link', e.target.value))}
+                          placeholder="#atelier-new أو /category/..."
+                          className="bg-white font-mono text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Live hero preview */}
+                    <div className="mt-6 overflow-hidden rounded-xl border">
+                      <p className="bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-400">معاينة البنر (حية)</p>
+                      <div className="relative flex min-h-[260px] items-center bg-stone-900 p-6 text-white">
+                        {heroType === 'video' && heroVideoUrl ? (
+                          <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover" src={heroVideoUrl} />
+                        ) : heroType === 'youtube' && youtubeId ? (
+                          <iframe
+                            className="absolute inset-0 h-full w-full object-cover"
+                            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${youtubeId}`}
+                            title="YouTube preview"
+                            frameBorder="0"
+                            allow="autoplay; fullscreen"
+                          />
+                        ) : heroImages.length > 0 ? (
+                          <img src={heroImages[0]} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-l from-stone-800 to-stone-900" />
+                        )}
+                        <div className="absolute inset-0 bg-black" style={{ opacity: heroOverlay / 100 }} />
+                        <div className="relative z-10 max-w-md">
+                          <h3 className="font-serif text-2xl font-bold leading-tight sm:text-3xl">{heroHeading || 'العنوان الرئيسي'}</h3>
+                          <p className="mt-2 text-sm text-white/80">{heroSubtitle || 'الوصف الفرعي للبنر'}</p>
+                          {(heroCtaLabel || 'اكتشفي') && (
+                            <span className="mt-3 inline-block rounded border border-white/70 px-5 py-2 text-xs font-bold text-white">
+                              {heroCtaLabel || 'نص الزر'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div>
-                    <Label className="mb-1.5 block text-xs font-black text-slate-600">استدارة الزوايا</Label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range"
-                        min={0}
-                        max={32}
-                        value={parseInt(String(tokens.radius ?? 16), 10) || 0}
-                        onChange={(e) => setTokens({ ...tokens, radius: `${e.target.value}px` })}
-                        className="flex-1 accent-emerald-600"
-                        aria-label="استدارة الزوايا"
-                      />
-                      <span className="min-w-12 rounded-lg bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">
-                        {String(tokens.radius ?? '16px')}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="mb-1.5 block text-xs font-black text-slate-600">عائلة الخط</Label>
-                    <select
-                      value={typography.font_family || ''}
-                      onChange={(e) => setTokens({ ...tokens, typography: { ...typography, font_family: e.target.value } })}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
-                    >
-                      <option value="">افتراضي القالب</option>
-                      <option value="Cairo">Cairo</option>
-                      <option value="Tajawal">Tajawal</option>
-                      <option value="Almarai">Almarai</option>
-                      <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
-                    </select>
-                  </div>
                 </div>
-
-                {/* Live token preview */}
-                <div className="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-100">
-                  <p className="mb-3 text-xs font-black text-slate-400">معاينة سريعة</p>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span
-                      className="px-5 py-2 text-sm font-black text-white shadow"
-                      style={{ backgroundColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}
-                    >
-                      زر أساسي
-                    </span>
-                    <span
-                      className="px-5 py-2 text-sm font-black text-white shadow"
-                      style={{ backgroundColor: colors.secondary || '#f59e0b', borderRadius: tokens.radius || '16px' }}
-                    >
-                      زر ثانوي
-                    </span>
-                    <span
-                      className="border px-5 py-2 text-sm font-bold text-slate-700"
-                      style={{ borderColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}
-                    >
-                      عنصر محدد
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* ---------------------------- CODE ---------------------------- */}
             {tab === 'code' && (
