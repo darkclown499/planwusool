@@ -220,7 +220,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const [availableCategories, setAvailableCategories] = useState<Array<{ id: string | number; name: string; image?: string | null; slug?: string }>>([]);
     const [initialSnapshot, setInitialSnapshot] = useState<string>('');
 
-    // Sync tab state with URL query param ?tab= (templates / identity)
+    // Sync tab state with URL query param ?tab= (templates / identity) — task: Fix URL Query Param (`tab=identity`) Syncing
     const page = usePage<any>();
     const getTabFromUrl = () => {
         if (typeof window !== 'undefined') {
@@ -228,13 +228,36 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
         }
         return '';
     };
-    const [activeTab, setActiveTab] = useState<string>(() => getTabFromUrl());
+    // searchParams as required by task spec (parse searchParams.get('tab'))
+    const searchParams = useMemo(() => {
+        if (typeof window !== 'undefined') return new URLSearchParams(window.location.search);
+        const q = page.url?.split('?')[1] || '';
+        return new URLSearchParams(q);
+    }, [page.url]);
+    const [activeTab, setActiveTab] = useState<string>(() => searchParams.get('tab') || getTabFromUrl());
     const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
-        const tab = getTabFromUrl();
+        const tab = searchParams.get('tab') || getTabFromUrl();
         if (tab === 'templates') return { templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false };
-        // identity (or base) is the default for تخصيص تصميم المتجر
+        // identity (or base) is the default for تخصيص تصميم المتجر — expand "الهوية والألوان" and collapse "القوالب"
         return { templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false };
     });
+    // activeSection mirrors activeTab for task spec compliance (setActiveSection)
+    const [activeSection, setActiveSectionState] = useState<string>(() => {
+        const t = searchParams.get('tab') || getTabFromUrl();
+        return t === 'templates' ? 'templates' : 'identity';
+    });
+    const setActiveSection = (section: string) => {
+        setActiveSectionState(section);
+        setActiveTab(section);
+        if (section === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false });
+        else if (section === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false });
+    };
+
+    useEffect(() => {
+      const activeTab = searchParams.get('tab');
+      if (activeTab === 'identity') setActiveSection('identity');
+      else if (activeTab === 'templates') setActiveSection('templates');
+    }, [searchParams]);
 
     useEffect(() => {
         const tab = new URLSearchParams(page.url?.split('?')[1] || window.location.search.replace(/^\?/, '')).get('tab') || new URLSearchParams(window.location.search).get('tab') || '';
@@ -660,10 +683,10 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             </header>
 
             {/* ───────────── Split Layout: Sidebar + Live Canvas ───────────── */}
-            <div className="mx-auto flex max-w-[1600px] flex-col lg:h-[calc(100vh-64px)] lg:flex-row">
+            <div className="h-full flex flex-col overflow-hidden mx-auto max-w-[1600px] lg:h-[calc(100vh-64px)] lg:flex-row">
                 {/* Left Panel – Settings Sidebar */}
-                <aside className="order-2 w-full shrink-0 overflow-y-auto border-t bg-white p-4 lg:order-1 lg:w-[400px] lg:border-e lg:border-t-0 xl:w-[420px]">
-                    <div className="space-y-3">
+                <aside className="h-full flex flex-col overflow-hidden order-2 w-full shrink-0 border-t bg-white lg:order-1 lg:w-[400px] lg:border-e lg:border-t-0 xl:w-[420px]">
+                    <div className="flex-1 overflow-y-auto max-h-[calc(100vh-100px)] px-4 py-2 custom-scrollbar space-y-3">
                         {/* ── Templates quick picker ── */}
                         <AccordionSection title="القوالب" icon={<Sparkles className="h-3.5 w-3.5" />} open={openSections.templates} onOpenChange={(v) => setOpenSections((s) => ({ ...s, templates: v }))}>
                             <p className="text-xs leading-relaxed text-slate-500">اختر قالب متجرك — سيُطبَّق مباشرةً عند الاختيار.</p>

@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:8000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -36,10 +36,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost',
+    command: 'concurrently "php artisan serve --host=:: --port=8000 --env=testing" "npm run dev -- --host :: --port 5173"',
+    url: 'http://127.0.0.1:8000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 180000,
   },
   timeout: 60000,
   expect: {

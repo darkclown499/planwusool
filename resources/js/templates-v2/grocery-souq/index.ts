@@ -4,9 +4,9 @@ import { GrocerySouqRoot } from './GrocerySouqRoot';
 import { souqOverlays } from './SouqOverlays';
 
 /**
- * سوق البقالة — Grocery Souq
- * قالب البقالة والمواد الغذائية: بحث مباشر داخل الهيدر، شريط أقسام،
- * عروض بعدّاد تنازلي، إضافة فورية من البطاقة وشريط سلة ثابت على الجوال.
+ * سوق البقالة — Grocery Souq (نسخة BiddiMarket)
+ * نسخة مطابقة لـ biddimarket.ps/orders: هيدر كريمي + بحث pill + سلة سوداء،
+ * هيرو فاتح، تصنيفات مربعة 3/5/6، كروت pill سوداء. الألوان قابلة للتعديل من المصمم.
  */
 const grocerySouq: TemplateModule = {
   meta: {
@@ -16,9 +16,9 @@ const grocerySouq: TemplateModule = {
     sector: 'بقالة وسوبرماركت',
     sector_en: 'Grocery & Supermarket',
     description:
-      'قالب السوبرماركت: بحث فوري في الهيدر، عروض يومية بعدّاد تنازلي، إضافة بضغطة واحدة مع عدّاد كميات، وشريط سلة ثابت أسفل الجوال.',
-    preview: 'linear-gradient(135deg,#f7f8f5 0%,#bbf7d0 55%,#16a34a 140%)',
-    accent: '#16a34a',
+      'قالب السوبرماركت بنسخة Biddi: بحث pill، تصنيفات مربعة، هيرو فاتح وكروت سوداء. قابل للتعديل بالكامل من المصمم.',
+    preview: 'linear-gradient(135deg,#FDF9F1 0%,#FFEC99 55%,#FFC20E 140%)',
+    accent: '#FFC20E',
     is_free: true,
     plan_required: 'starter',
   },
@@ -28,9 +28,10 @@ const grocerySouq: TemplateModule = {
     ...souqOverlays,
   },
   contentSchema: [
-    { key: 'banners', label: 'شرائح الواجهة', type: 'image', group: 'الواجهة' },
-    { key: 'deals.hours', label: 'مدة عدّاد العروض (ساعات)', type: 'text', group: 'العروض', default: '4' },
-    { key: 'free_shipping_threshold', label: 'حد التوصيل المجاني', type: 'text', group: 'السلة', default: '150' },
+    { key: 'banners', label: 'شرائح الواجهة (صور الهيرو)', type: 'image', group: 'الواجهة' },
+    { key: 'accent_color', label: 'اللون الأساسي (أصفر Biddi)', type: 'color', group: 'الألوان', default: '#FFC20E' },
+    { key: 'header_bg', label: 'لون خلفية الهيدر', type: 'color', group: 'الألوان', default: '#FDF9F1' },
+    { key: 'free_shipping_threshold', label: 'حد التوصيل المجاني (₪)', type: 'text', group: 'السلة', default: '150' },
   ],
 };
 

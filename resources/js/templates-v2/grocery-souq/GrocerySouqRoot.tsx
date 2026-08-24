@@ -22,13 +22,13 @@ const SORTS = [
 ];
 
 export const GrocerySouqRoot: React.FC<TemplateRootProps> = ({ storeData, mode, page, categoryData }) => {
-  if (mode === 'category') return <SouqCategoryMode categoryData={categoryData} />;
+  if (mode === 'category') return <SouqCategoryMode categoryData={categoryData} storeData={storeData} />;
   if (mode === 'page') {
     return (
-      <div dir="rtl" className="min-h-screen bg-[#f7f8f5]">
+      <div dir="rtl" className="min-h-screen bg-[#FDF9F1]">
         <SouqHeader />
         <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-          <h1 className="mb-6 border-b border-stone-200 pb-3 text-2xl font-black text-stone-900">{page?.title}</h1>
+          <h1 className="mb-6 border-b border-black/5 pb-3 text-2xl font-black text-stone-900">{page?.title}</h1>
           <article className="prose-custom2" dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
         </main>
       </div>
@@ -53,25 +53,29 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const pantry = useMemo(() => [...products].sort(byPriceAsc).slice(0, 10), [products]);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#f7f8f5] text-stone-800 antialiased">
+    <div dir="rtl" className="min-h-screen bg-[#FDF9F1] text-stone-800 antialiased">
       <SouqHeader />
       <main>
         <SouqHero banners={banners} />
 
-        {/* Category tiles */}
+        {/* Category tiles — Biddi square 3/5/6 all categories */}
         {categories.length > 0 && (
-          <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-3 lg:grid-cols-8">
-              {categories.slice(0, 8).map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-xl bg-white p-2 shadow-sm ring-1 ring-stone-100 transition hover:-translate-y-0.5 hover:shadow-md sm:gap-2 sm:p-2.5">
-                  <span className="h-12 w-12 overflow-hidden rounded-full bg-[#f0fdf4] ring-2 ring-transparent transition group-hover:ring-[#16a34a] sm:h-14 sm:w-14">
+          <section className="mx-auto max-w-[1600px] px-3 py-5 lg:px-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-black text-stone-900">التصنيفات</h2>
+              <span className="text-xs text-stone-500">{categories.length} قسم</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 sm:gap-3 md:grid-cols-5 xl:grid-cols-6">
+              {categories.map((c: any) => (
+                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-[18px] bg-white p-2 shadow-sm ring-1 ring-black/5 transition hover:shadow-md">
+                  <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-[14px] bg-[#F5F5F4]">
                     {c.image ? (
                       <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="flex h-full w-full items-center justify-center text-lg sm:text-xl">🥬</span>
+                      <span className="flex h-full w-full items-center justify-center bg-[#FDF9F1] text-lg">🥬</span>
                     )}
                   </span>
-                  <span className="max-w-[80px] break-words text-center text-xs font-bold leading-tight text-stone-700 group-hover:text-[#16a34a] line-clamp-2">{c.name}</span>
+                  <span className="line-clamp-2 min-h-[28px] max-w-full break-words px-1 text-center text-xs font-bold leading-tight text-stone-700 group-hover:text-black">{c.name}</span>
                 </a>
               ))}
             </div>
@@ -82,9 +86,12 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Fresh arrivals — toggle show_latest_products */}
         {showLatest && (
-          <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
-            <h2 className="mb-4 text-xl font-black text-stone-900">وصل طازج اليوم 🥕</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:gap-4">
+          <section className="mx-auto max-w-[1600px] px-3 pb-6 lg:px-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-black text-stone-900">وصل طازج اليوم 🥕</h2>
+              <span className="text-xs text-stone-500">{fresh.length} منتج</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {fresh.map((p) => (
                 <SouqProductCard key={p.id} product={p} />
               ))}
@@ -94,10 +101,13 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Pantry essentials — toggle show_best_sellers */}
         {showBest && pantry.length > 0 && (
-          <section className="bg-white py-8">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h2 className="mb-4 text-xl font-black text-stone-900">أساسيات المؤونة 🏺</h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4">
+          <section className="bg-white py-6">
+            <div className="mx-auto max-w-[1600px] px-3 lg:px-6">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-base font-black text-stone-900">أساسيات المؤونة 🏺</h2>
+                <span className="text-xs text-stone-500">{pantry.length} منتج</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {pantry.map((p) => (
                   <SouqProductCard key={p.id} product={p} />
                 ))}
@@ -108,19 +118,19 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Dynamic category sections */}
         {homepageCategories.length > 0 && (
-          <div className="space-y-8 bg-white py-8">
+          <div className="space-y-6 bg-white py-6">
             {homepageCategories.map((catId: string) => {
               const cat = categories.find((c: any) => String(c.id) === String(catId));
               if (!cat) return null;
               const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
               if (!catProducts.length) return null;
               return (
-                <section key={cat.id} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-black text-stone-900">{cat.name}</h2>
-                    <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-emerald-600 hover:text-emerald-700">عرض الكل ←</a>
+                <section key={cat.id} className="mx-auto max-w-[1600px] px-3 lg:px-6">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-base font-black text-stone-900">{cat.name}</h2>
+                    <a href={`/category/${cat.slug || cat.id}`} className="text-xs font-bold text-stone-600 hover:text-black">عرض الكل ←</a>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                     {catProducts.map((p: any) => (
                       <SouqProductCard key={p.id} product={p} />
                     ))}
@@ -136,7 +146,7 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   );
 };
 
-const SouqCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData }) => {
+const SouqCategoryMode: React.FC<{ categoryData?: any | null; storeData?: any }> = ({ categoryData, storeData }) => {
   const { product } = useStorefrontCore();
   const products = useMemo(() => {
     const list: any[] = [...(product?.products || [])];
@@ -155,24 +165,49 @@ const SouqCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryDat
     router.get(window.location.pathname, next, { preserveScroll: true, preserveState: true });
   };
 
+  // All categories for top pill bar (Biddi style horizontal scroll)
+  const allCategories: any[] = (product?.categories || storeData?.categories || []).slice(0, 30);
+
   return (
-    <div dir="rtl" className="min-h-screen bg-[#f7f8f5] text-stone-800 antialiased">
+    <div dir="rtl" className="min-h-screen bg-[#FDF9F1] text-stone-800 antialiased">
       <SouqHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-4 flex items-center gap-1.5 text-sm text-stone-500" aria-label="مسار التنقل">
-          <a href="/" className="font-semibold hover:text-[#16a34a]">الرئيسية</a>
+      <main className="mx-auto max-w-[1600px] px-3 py-4 lg:px-6">
+        {/* Biddi-like horizontal category icon bar */}
+        {allCategories.length > 0 && (
+          <div className="scrollbar-none -mx-3 mb-4 flex gap-2 overflow-x-auto px-3 pb-2 lg:mx-0 lg:px-0">
+            <a href="/" className="flex shrink-0 flex-col items-center gap-1">
+              <span className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-[#FFC20E] text-xs font-black text-black shadow-sm">الكل</span>
+              <span className="text-xs font-bold text-black">الكل</span>
+            </a>
+            {allCategories.map((c: any) => {
+              const active = String(c.id) === String(cat.id) || String(c.slug) === String(cat.slug);
+              return (
+                <a key={c.id} href={`/category/${c.slug || c.id}`} className="flex shrink-0 flex-col items-center gap-1">
+                  <span className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] shadow-sm ring-1 ${active ? 'bg-[#FFC20E] ring-[#FFC20E] text-black' : 'bg-white ring-black/5'}`}>
+                    {c.image ? <img src={c.image} alt={c.name} className="h-full w-full object-cover" /> : <span className="text-lg">🥬</span>}
+                  </span>
+                  <span className={`max-w-[64px] truncate text-xs ${active ? 'font-black text-black' : 'font-semibold text-stone-600'}`}>{c.name}</span>
+                </a>
+              );
+            })}
+          </div>
+        )}
+
+        <nav className="mb-3 flex items-center gap-1.5 text-xs text-stone-500" aria-label="مسار التنقل">
+          <a href="/" className="font-bold hover:text-black">الرئيسية</a>
           <span>/</span>
           <span className="font-black text-stone-800">{cat.name}</span>
+          <span className="ms-auto rounded-full bg-white px-2 py-1 text-xs font-bold text-stone-600 ring-1 ring-black/5">{categoryData.total ?? products.length} نتيجة</span>
         </nav>
-        <header className="mb-5 flex items-end justify-between gap-4">
+        <header className="mb-4 flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-stone-900">{cat.name}</h1>
-            <p className="mt-1 text-sm text-stone-500">{categoryData.total} منتج متوفر</p>
+            <h1 className="text-xl font-black text-stone-900 lg:text-2xl">{cat.name}</h1>
+            <p className="mt-1 text-xs text-stone-500">{categoryData.total} منتج متوفر</p>
           </div>
           <select
-            value={categoryData.sort}
+            value={categoryData.sort || 'newest'}
             onChange={(e) => navigate({ sort: e.target.value })}
-            className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-bold focus:border-[#16a34a] focus:outline-none"
+            className="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold focus:border-[#FFC20E] focus:outline-none focus:ring-1 focus:ring-[#FFC20E]"
           >
             {SORTS.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -184,24 +219,24 @@ const SouqCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryDat
           <div className="flex flex-col items-center gap-4 py-24 text-center">
             <PackageSearch className="h-12 w-12 text-stone-300" />
             <p className="text-lg font-bold text-stone-600">ما في منتجات بهذا القسم حالياً</p>
-            <a href="/" className="rounded-full bg-[#16a34a] px-6 py-2.5 text-sm font-black text-white hover:bg-[#15803d]">تصفح باقي الأقسام</a>
+            <a href="/" className="rounded-full bg-[#0F1620] px-6 py-2.5 text-sm font-black text-white hover:bg-black">تصفح باقي الأقسام</a>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {products.map((p: any) => (
                 <SouqProductCard key={p.id} product={p} />
               ))}
             </div>
             {categoryData.lastPage > 1 && (
-              <nav className="mt-10 flex items-center justify-center gap-1.5">
+              <nav className="mt-8 flex items-center justify-center gap-1.5">
                 {Array.from({ length: categoryData.lastPage }, (_, i) => i + 1).map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => navigate({ page: n })}
-                    className={`h-9 min-w-9 rounded-lg px-2 text-sm font-black transition ${
-                      n === categoryData.currentPage ? 'bg-[#16a34a] text-white' : 'bg-white text-stone-600 ring-1 ring-stone-200 hover:text-[#16a34a]'
+                    className={`h-9 min-w-9 rounded-full px-2 text-sm font-black transition ${
+                      n === categoryData.currentPage ? 'bg-[#0F1620] text-white shadow' : 'bg-white text-stone-600 ring-1 ring-black/5 hover:bg-[#FFC20E] hover:text-black'
                     }`}
                   >
                     {n}

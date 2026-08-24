@@ -102,7 +102,7 @@ export function MerchantNotificationBell() {
             if (storeId) query.set('store_id', String(storeId));
             if (unreadOnly) query.set('unread_only', '1');
             const res = await fetch(`${route('api.merchant-notifications.index')}?${query.toString()}`, {
-                headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+                headers: { 'X-CSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             });
             const data = await res.json();
             if (data.success) {
@@ -121,7 +121,7 @@ export function MerchantNotificationBell() {
             const query = new URLSearchParams();
             if (storeId) query.set('store_id', String(storeId));
             const res = await fetch(`${route('api.merchant-notifications.unread-count')}?${query.toString()}`, {
-                headers: { 'X-CSRF-TOKEN': getCsrfToken() },
+                headers: { 'X-CSRF-TOKEN': getCsrfToken(), 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             });
             const data = await res.json();
             if (data.success) {

@@ -83,7 +83,7 @@ export default function StoreTemplatesGrid({
                 </div>
             )}
 
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid gap-5 pb-12 sm:grid-cols-2 xl:grid-cols-3">
                 {visible.map((tpl) => {
                     const active = isActive(tpl.meta.slug);
                     const allowed = isAllowed(tpl.meta.slug);

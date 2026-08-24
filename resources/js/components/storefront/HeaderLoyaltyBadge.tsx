@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Gift } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useStore } from '@/contexts/StoreContext';
+import { AuthContext } from '@/contexts/AuthContext';
+import { StoreContext } from '@/contexts/StoreContext';
 import { fetchLoyaltyBalance } from '@/utils/loyalty';
 
 export const HeaderLoyaltyBadge: React.FC<{ className?: string; compactOnMobile?: boolean }> = ({ className = '', compactOnMobile = true }) => {
-  const { isLoggedIn, setShowLoyaltyModal } = useAuth();
-  const { store } = useStore();
+  // Safe outside AuthProvider/StoreProvider (e.g. template gallery preview `V2PreviewProviders`)
+  // — use raw contexts with fallback instead of useAuth()/useStore() which throw.
+  const authCtx = useContext(AuthContext);
+  const storeCtx = useContext(StoreContext);
+  if (!authCtx || !storeCtx) return null;
+  const { isLoggedIn, setShowLoyaltyModal } = authCtx;
+  const { store } = storeCtx;
   const [balance, setBalance] = useState<number | null>(null);
 
   useEffect(() => {

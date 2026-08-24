@@ -12,6 +12,22 @@ use App\Models\Setting;
 class HandleInertiaRequests extends Middleware
 {
     /**
+     * Bypass Inertia handling for pure JSON API routes — they must never
+     * trigger "All Inertia requests must receive a valid Inertia response".
+     * fetch/axios callers hit /api/* with Accept: application/json and no
+     * X-Inertia header, but if any caller accidentally sends X-Inertia
+     * (e.g. router.visit to an API URL) we still want plain JSON, not an
+     * Inertia error overlay.
+     */
+    public function handle(Request $request, \Closure $next)
+    {
+        if ($request->is('api/*')) {
+            return $next($request);
+        }
+        return parent::handle($request, $next);
+    }
+
+    /**
      * The root template that's loaded on the first page visit.
      *
      * @see https://inertiajs.com/server-side-setup#root-template
