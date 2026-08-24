@@ -54,6 +54,8 @@ class TaxController extends Controller
         $currencyCode = $storeSettings['defaultCurrency'] ?? 'ILS';
         $currency = \App\Models\Currency::where('code', $currencyCode)->first();
         $currencySymbol = $currency ? $currency->symbol : '₪';
+        $userId = $user->type === 'company' ? $user->id : $user->created_by;
+        $pricesIncludeTax = \App\Models\Setting::getSetting('prices_include_tax', $userId, $currentStoreId) === '1';
         
         return Inertia::render('tax/index', [
             'taxes' => $taxes,
