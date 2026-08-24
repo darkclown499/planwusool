@@ -1,17 +1,35 @@
-/* Local demo photography — served from public/images/store so previews
-   never depend on external hosts or the legacy builder catalog. */
+/* Local demo photography — served from public/images so previews never
+   depend on external hosts or the legacy builder catalog. */
 const IMG = {
   clothes: '/images/store/clothes.jpg',
   kidsClothes: '/images/store/kids-clothes.jpg',
-  cosmetics: '/images/store/cosmetics.jpg',
-  perfume: '/images/store/perfume.jpg',
   banner: '/images/store/banner-store.jpg',
 };
 
-/** Deterministic pseudo-front/back image pair from the local media pool. */
-function pair(a: string, b?: string): { image: string; images: string[] } {
-  return b ? { image: a, images: [a, b] } : { image: a, images: [a] };
-}
+/* One photo per product, matched to catalog order (abayas → dresses → tops
+   → skirts → scarves → jackets → activewear → bags) so the gallery never
+   shows the same picture twice in a row across the 19-item catalog. */
+const PHOTOS = [
+  '/images/store/clothes.jpg',
+  '/images/demo/products/store1_p7.jpg',
+  '/images/demo/products/store1_p1.jpg',
+  '/images/demo/products/store1_p4.jpg',
+  '/images/demo/products/store1_p12.jpg',
+  '/images/demo/products/store4_p1.jpg',
+  '/images/demo/products/store1_p2.jpg',
+  '/images/store/kids-clothes.jpg',
+  '/images/demo/products/store1_p9.jpg',
+  '/images/demo/products/store1_p3.jpg',
+  '/images/demo/products/store5_p11.jpg',
+  '/images/demo/products/store1_p8.jpg',
+  '/images/demo/products/store1_p11.jpg',
+  '/images/demo/products/store1_p10.jpg',
+  '/images/demo/products/store1_p6.jpg',
+  '/images/demo/products/store1_p5.jpg',
+  '/images/store/clothes.jpg',
+  '/images/demo/products/store1_p6.jpg',
+  '/images/demo/products/store5_p11.jpg',
+];
 
 const SIZES = ['S', 'M', 'L', 'XL'];
 const COLORS = ['أسود', 'بيج', 'زيتي', 'نبيتي'];
@@ -44,7 +62,8 @@ const P = (
   stockQuantity: 12,
   categoryId,
   availability: 'in_stock' as const,
-  ...pair(IMG.clothes, IMG.kidsClothes),
+  image: PHOTOS[(seq - 1) % PHOTOS.length],
+  images: [PHOTOS[(seq - 1) % PHOTOS.length]],
   description:
     'قطعة مميزة من تشكيلة الأتيليه بخامة عالية وجودة خياطة دقيقة، مناسبة للمناسبات والاستخدام اليومي. متوفرة بعدة مقاسات وألوان.',
   ...opts,

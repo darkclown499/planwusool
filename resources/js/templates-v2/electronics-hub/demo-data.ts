@@ -6,21 +6,43 @@ const IMG = {
   banner: '/images/store/banner-store.jpg',
 };
 
+/* A distinct photo per product (cycled by catalog order) — phones, laptops,
+   audio and gaming gear each show their own real device shot. */
+const PHOTOS = [
+  '/images/demo/products/store2_p2.jpg',
+  '/images/demo/products/store2_p1.jpg',
+  '/images/demo/products/store2_p3.jpg',
+  '/images/demo/products/store2_p4.jpg',
+  '/images/demo/products/store2_p6.jpg',
+  '/images/demo/products/store2_p7.jpg',
+  '/images/demo/products/store2_p8.jpg',
+  '/images/demo/products/store2_p9.jpg',
+  '/images/demo/products/store2_p10.jpg',
+  '/images/demo/products/store2_p11.jpg',
+  '/images/demo/products/store2_p12.jpg',
+  '/images/demo/products/store2_p5.jpg',
+  '/images/store/electronics.jpg',
+];
+
 let seq = 0;
-const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => ({
-  id: `el-${++seq}`,
-  name,
-  price,
-  originalPrice: null,
-  sku: `EL-${String(seq).padStart(3, '0')}`,
-  stockQuantity: opts.stockQuantity ?? 12,
-  categoryId,
-  availability: 'in_stock' as const,
-  image: IMG.electronics,
-  images: [IMG.electronics],
-  description: 'جهاز أصلي بضمان الوكيل الرسمي، بعلبته الكاملة وكامل ملحقاته.',
-  ...opts,
-});
+const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => {
+  const photo = PHOTOS[seq % PHOTOS.length];
+  seq++;
+  return {
+    id: `el-${seq}`,
+    name,
+    price,
+    originalPrice: null,
+    sku: `EL-${String(seq).padStart(3, '0')}`,
+    stockQuantity: opts.stockQuantity ?? 12,
+    categoryId,
+    availability: 'in_stock' as const,
+    image: photo,
+    images: [photo],
+    description: 'جهاز أصلي بضمان الوكيل الرسمي، بعلبته الكاملة وكامل ملحقاته.',
+    ...opts,
+  };
+};
 
 export const ELECTRONICS_DEMO = {
   categories: [

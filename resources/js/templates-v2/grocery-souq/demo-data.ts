@@ -10,21 +10,48 @@ const IMG = {
   banner: '/images/store/banner-store.jpg',
 };
 
+/* A distinct photo per product (cycled by catalog order) so 29 items never
+   collapse into one repeated vegetables photo. */
+const PHOTOS = [
+  '/images/demo/products/store3_p1.jpg',
+  '/images/demo/products/store3_p5.jpg',
+  '/images/store/vegetables.jpg',
+  '/images/store/fruits.jpg',
+  '/images/demo/products/store3_p2.jpg',
+  '/images/demo/products/store3_p4.jpg',
+  '/images/store/dairy.jpg',
+  '/images/demo/products/store3_p3.jpg',
+  '/images/store/bakery.jpg',
+  '/images/demo/products/store3_p9.jpg',
+  '/images/store/coffee.jpg',
+  '/images/demo/products/store3_p12.jpg',
+  '/images/store/spices.jpg',
+  '/images/demo/products/store3_p10.jpg',
+  '/images/demo/products/store3_p11.jpg',
+  '/images/store/hypermarket.jpg',
+  '/images/store/grocery.jpg',
+  '/images/demo/products/store5_p6.jpg',
+];
+
 let seq = 0;
-const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => ({
-  id: `gq-${++seq}`,
-  name,
-  price,
-  originalPrice: null,
-  sku: `GR-${String(seq).padStart(3, '0')}`,
-  stockQuantity: opts.stockQuantity ?? 50,
-  categoryId,
-  availability: 'in_stock' as const,
-  image: IMG.vegetables,
-  images: [IMG.vegetables],
-  description: 'منتج طازج يُختار يومياً بأفضل جودة وأسعار منافسة.',
-  ...opts,
-});
+const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => {
+  const photo = PHOTOS[seq % PHOTOS.length];
+  seq++;
+  return {
+    id: `gq-${seq}`,
+    name,
+    price,
+    originalPrice: null,
+    sku: `GR-${String(seq).padStart(3, '0')}`,
+    stockQuantity: opts.stockQuantity ?? 50,
+    categoryId,
+    availability: 'in_stock' as const,
+    image: photo,
+    images: [photo],
+    description: 'منتج طازج يُختار يومياً بأفضل جودة وأسعار منافسة.',
+    ...opts,
+  };
+};
 
 export const GROCERY_DEMO = {
   categories: [

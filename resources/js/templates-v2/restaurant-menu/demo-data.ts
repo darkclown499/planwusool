@@ -8,21 +8,41 @@ const IMG = {
   banner: '/images/store/banner-store.jpg',
 };
 
+/* A distinct photo per product (cycled by catalog order) so grills, mains,
+   desserts and drinks each get their own shot instead of one dish photo. */
+const PHOTOS = [
+  '/images/store/restaurant-dish.jpg',
+  '/images/store/grills.jpg',
+  '/images/demo/products/store3_p6.jpg',
+  '/images/store/fast-food.jpg',
+  '/images/demo/products/store5_p4.jpg',
+  '/images/store/spices.jpg',
+  '/images/demo/products/store3_p7.jpg',
+  '/images/store/sweets.jpg',
+  '/images/demo/products/store3_p9.jpg',
+  '/images/store/coffee.jpg',
+  '/images/demo/products/store3_p12.jpg',
+];
+
 let seq = 0;
-const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => ({
-  id: `rs-${++seq}`,
-  name,
-  price,
-  originalPrice: null,
-  sku: `RS-${String(seq).padStart(3, '0')}`,
-  stockQuantity: opts.stockQuantity ?? 30,
-  categoryId,
-  availability: 'in_stock' as const,
-  image: IMG.restaurant,
-  images: [IMG.restaurant],
-  description: 'يُحضّر طازجاً عند الطلب بمكونات مختارة وتوابل بيتية.',
-  ...opts,
-});
+const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => {
+  const photo = PHOTOS[seq % PHOTOS.length];
+  seq++;
+  return {
+    id: `rs-${seq}`,
+    name,
+    price,
+    originalPrice: null,
+    sku: `RS-${String(seq).padStart(3, '0')}`,
+    stockQuantity: opts.stockQuantity ?? 30,
+    categoryId,
+    availability: 'in_stock' as const,
+    image: photo,
+    images: [photo],
+    description: 'يُحضّر طازجاً عند الطلب بمكونات مختارة وتوابل بيتية.',
+    ...opts,
+  };
+};
 
 export const RESTAURANT_DEMO = {
   categories: [

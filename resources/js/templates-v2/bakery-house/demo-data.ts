@@ -8,21 +8,41 @@ const IMG = {
   banner: '/images/store/banner-store.jpg',
 };
 
+/* A distinct photo per product (cycled by catalog order) so bread, cake and
+   coffee items each show their own picture instead of one shared loaf shot. */
+const PHOTOS = [
+  '/images/demo/products/store3_p3.jpg',
+  '/images/store/bakery.jpg',
+  '/images/demo/products/store3_p7.jpg',
+  '/images/store/sweets.jpg',
+  '/images/demo/products/store3_p11.jpg',
+  '/images/demo/products/store3_p2.jpg',
+  '/images/demo/products/store3_p4.jpg',
+  '/images/demo/products/store3_p10.jpg',
+  '/images/store/coffee.jpg',
+  '/images/demo/products/store3_p9.jpg',
+  '/images/demo/products/store5_p7.jpg',
+];
+
 let seq = 0;
-const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => ({
-  id: `bk-${++seq}`,
-  name,
-  price,
-  originalPrice: null,
-  sku: `BK-${String(seq).padStart(3, '0')}`,
-  stockQuantity: opts.stockQuantity ?? 20,
-  categoryId,
-  availability: 'in_stock' as const,
-  image: IMG.bakery,
-  images: [IMG.bakery],
-  description: 'مخبوزات طازجة من فرننا الحجري — دقيق مختار وخميرة طبيعية وبلا مواد حافظة.',
-  ...opts,
-});
+const P = (name: string, price: number, categoryId: string, opts: Record<string, any> = {}): any => {
+  const photo = PHOTOS[seq % PHOTOS.length];
+  seq++;
+  return {
+    id: `bk-${seq}`,
+    name,
+    price,
+    originalPrice: null,
+    sku: `BK-${String(seq).padStart(3, '0')}`,
+    stockQuantity: opts.stockQuantity ?? 20,
+    categoryId,
+    availability: 'in_stock' as const,
+    image: photo,
+    images: [photo],
+    description: 'مخبوزات طازجة من فرننا الحجري — دقيق مختار وخميرة طبيعية وبلا مواد حافظة.',
+    ...opts,
+  };
+};
 
 const WEIGHTS = ['نصف كيلو', 'كيلو'];
 const SIZES = ['صغير', 'وسط', 'كبير'];
