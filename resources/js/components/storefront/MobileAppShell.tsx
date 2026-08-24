@@ -113,10 +113,10 @@ export const MobileAppShell: React.FC = () => {
 
   return (
     <>
-      {/* App header — single clean top header for mobile (Logo right / Search middle / Cart left) */}
-      <header dir="rtl" data-app-shell="header" className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm md:hidden">
+      {/* App header — single compact top header for mobile (Logo right / collapsed Search trigger left) — secondary icon bar (bag/heart/search) hidden, BottomNav handles primary actions */}
+      <header dir="rtl" data-app-shell="header" className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md shadow-sm md:hidden">
         <div className="flex items-center gap-2 px-3 py-2.5">
-          {/* Logo on right (RTL start) */}
+          {/* Logo on right (RTL start) — single brand mark */}
           <div className="flex shrink-0 items-center gap-2">
             {config.logo ? (
               <img src={getImageUrl(config.logo)} alt={config.storeName} className="h-8 w-auto max-w-24 object-contain" />
@@ -127,7 +127,7 @@ export const MobileAppShell: React.FC = () => {
             )}
             <h1 className="hidden max-w-24 truncate text-[13px] font-bold text-gray-900 sm:block">{config.storeName}</h1>
           </div>
-          {/* Search in middle — single trigger, no duplication */}
+          {/* Collapsed Search trigger in middle — single, no duplication with secondary bar */}
           <div className="relative min-w-0 flex-1">
             <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -149,19 +149,17 @@ export const MobileAppShell: React.FC = () => {
               </button>
             )}
           </div>
-          {/* Cart/Menu on left (RTL end) — hidden when BottomNav cart is primary to avoid duplication, keep single trigger */}
+          {/* Collapsed Search trigger icon on left (RTL end) — secondary bar (bag/heart) hidden on mobile, handled by BottomNav */}
           <button
             type="button"
-            onClick={handleCartClick}
-            aria-label={t('السلة')}
-            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100"
+            onClick={() => {
+              const el = document.querySelector<HTMLInputElement>('header[data-app-shell="header"] input[type="text"]');
+              el?.focus();
+            }}
+            aria-label={t('بحث')}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100"
           >
-            <ShoppingCart className="h-5 w-5" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-0.5 -end-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                {cartItems.length > 99 ? '99+' : cartItems.length}
-              </span>
-            )}
+            <Search className="h-5 w-5" />
           </button>
         </div>
       </header>
@@ -211,7 +209,13 @@ export const MobileAppShell: React.FC = () => {
             icon={User}
             active={activeTab === 'account'}
             accent={accent}
-            onClick={() => openAccount(() => setShowProfileModal(true))}
+            onClick={() => {
+              if (isLoggedIn) {
+                window.location.href = '/account';
+              } else {
+                setShowLoginModal(true);
+              }
+            }}
           />
         </div>
       </nav>

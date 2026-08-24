@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Check, Heart, Plus } from 'lucide-react';
+import { Check, Gift, Heart, Plus } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { toast } from '@/components/custom-toast';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore, type V2Product } from '../../shared/hooks';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
+import { usePage } from '@inertiajs/react';
 
 interface AtelierProductCardProps {
   product: V2Product;
@@ -179,6 +181,14 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
             <span className="min-w-0 truncate text-xs text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
           )}
         </div>
+        {(() => {
+          const pts = calcEarnedPoints(Number(product.price) || 0, getLoyaltySettingsFromPage());
+          return pts > 0 ? (
+            <span className="mt-1 inline-flex items-center justify-center gap-1 text-xs font-bold text-amber-600 sm:justify-start">
+              <Gift className="h-3 w-3" /> كسب {pts} نقطة
+            </span>
+          ) : null;
+        })()}
       </div>
     </div>
   );

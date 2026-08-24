@@ -5,12 +5,15 @@ namespace App\Services;
 use App\Models\AbandonedCart;
 use App\Models\Store;
 use App\Models\CartItem;
+use App\Services\WhatsAppService;
+use App\Services\HotsmsService;
 use Illuminate\Support\Facades\Log;
 
 class AbandonedCartService
 {
     /**
-     * Track or update an abandoned cart.
+     * Track or update an abandoned cart (draft capture).
+     * Ensures recovery_token is generated for /checkout?recover_token flow.
      */
     public function trackCart(int $storeId, string $sessionId, ?int $customerId = null, ?string $customerEmail = null, ?string $customerPhone = null, ?string $customerName = null, array $cartItems = [], float $cartTotal = 0): AbandonedCart
     {
@@ -25,7 +28,7 @@ class AbandonedCartService
             ->first();
 
         if ($cart) {
-            $cart->update([
+            $update = [
                 'customer_id' => $customerId ?: $cart->customer_id,
                 'customer_email' => $customerEmail ?: $cart->customer_email,
                 'customer_phone' => $customerPhone ?: $cart->customer_phone,
@@ -33,7 +36,12 @@ class AbandonedCartService
                 'cart_items' => $cartItems,
                 'cart_total' => $cartTotal,
                 'last_activity_at' => now(),
-            ]);
+            ];
+            if (empty($cart->recovery_token)) {
+                $update['recovery_token'] = bin2hex(random_bytes(32));
+                $update['expires_at'] = now()->addDays(7);
+            }
+            $cart->update($update);
         } else {
             $cart = AbandonedCart::create([
                 'store_id' => $storeId,
@@ -45,11 +53,85 @@ class AbandonedCartService
                 'cart_items' => $cartItems,
                 'cart_total' => $cartTotal,
                 'last_activity_at' => now(),
-                'status' => 'new',
+                'status' => 'draft',
+                'recovery_token' => bin2hex(random_bytes(32)),
+                'expires_at' => now()->addDays(7),
             ]);
         }
 
         return $cart;
+    }
+
+    /**
+     * Scheduled worker: mark draft carts as ABANDONED if idle >30 minutes.
+     * Runs every 15 minutes, generates recovery token & triggers WhatsApp automation.
+     */
+    public function markStaleDraftsAsAbandoned(int $minutes = 30): int
+    {
+        $cutoff = now()->subMinutes($minutes);
+        $carts = AbandonedCart::whereIn('status', ['new', 'draft'])
+            ->where('last_activity_at', '<=', $cutoff)
+            ->where(function ($q) {
+                $q->whereNotNull('customer_email')->orWhereNotNull('customer_phone');
+            })
+            ->get();
+
+        $count = 0;
+        foreach ($carts as $cart) {
+            if (empty($cart->recovery_token)) {
+                $cart->recovery_token = bin2hex(random_bytes(32));
+                $cart->expires_at = now()->addDays(7);
+            }
+            $cart->update([
+                'status' => 'abandoned',
+                'abandoned_at' => now(),
+                'recovery_token' => $cart->recovery_token,
+                'expires_at' => $cart->expires_at,
+            ]);
+            $count++;
+            // WhatsApp Automation Gateway — ضبط أوتوماتيكية التذكير
+            $this->triggerAbandonedAutomation($cart);
+        }
+
+        return $count;
+    }
+
+    protected function triggerAbandonedAutomation(AbandonedCart $cart): void
+    {
+        // Check store setting for automation trigger: ضبط أوتوماتيكية التذكير
+        try {
+            $store = Store::find($cart->store_id);
+            if (!$store || !$store->user) return;
+            $settings = \App\Models\Setting::getUserSettings($store->user->id, $cart->store_id);
+            $autoEnabled = $settings['abandoned_cart_automation'] ?? $settings['whatsapp_automation'] ?? $settings['hotsms_automation'] ?? true;
+            // If explicitly disabled, skip
+            if ($autoEnabled === false || $autoEnabled === 'off' || $autoEnabled === 0 || $autoEnabled === '0') {
+                return;
+            }
+            $hasPhone = !empty($cart->customer_phone);
+            if ($hasPhone && $this->canSendWhatsApp($cart->store_id)) {
+                $token = $cart->recovery_token ?: $cart->ensureRecoveryToken();
+                $recoverUrl = url('/checkout?recover_token=' . $token);
+                $message = "مرحباً! تركت منتجات في سلتك 🛒\nأكمل طلبك الآن: {$recoverUrl}\nالمجموع: " . number_format($cart->cart_total, 2);
+                // Try WhatsApp API first
+                try {
+                    $whatsappService = app(WhatsAppService::class);
+                    $whatsappService->sendMessage($cart->customer_phone, $message);
+                } catch (\Throwable $e) {
+                    // Fallback to HotSMS
+                    try {
+                        $smsService = app(HotsmsService::class);
+                        if (method_exists($smsService, 'sendSms')) {
+                            $smsService->sendSms($cart->customer_phone, $message);
+                        }
+                    } catch (\Throwable $ee) {
+                        Log::warning('Abandoned automation fallback failed', ['cart_id' => $cart->id, 'error' => $ee->getMessage()]);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error('Abandoned automation trigger failed: ' . $e->getMessage(), ['cart_id' => $cart->id]);
+        }
     }
 
     /**

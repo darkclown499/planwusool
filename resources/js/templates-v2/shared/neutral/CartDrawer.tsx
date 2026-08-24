@@ -1,9 +1,10 @@
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePage } from '@inertiajs/react';
-import { Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react';
+import { Gift, Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useStorefrontCore } from '@/templates-v2/shared/contexts';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 
 interface TemplateCartDrawerProps {
     onClose: () => void;
@@ -179,7 +180,7 @@ export const TemplateCartDrawer: React.FC<TemplateCartDrawerProps> = ({ onClose,
                                 </span>
                             </div>
                         )}
-                        <div className="mb-4 flex items-center justify-between">
+                        <div className="mb-2 flex items-center justify-between">
                             <span className="font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
                                 الإجمالي
                             </span>
@@ -187,6 +188,15 @@ export const TemplateCartDrawer: React.FC<TemplateCartDrawerProps> = ({ onClose,
                                 {formatCurrency(total, storeSettings, currencies)}
                             </span>
                         </div>
+                        {(() => {
+                            const ls: any = (storeSettings as any)?.loyalty;
+                            const pts = ls ? calcEarnedPoints(subtotal, { is_enabled: !!ls.is_enabled, points_per_currency: Number(ls.points_per_currency ?? 1), points_value: Number(ls.points_value ?? 0.01), minimum_redemption_points: Number(ls.minimum_redemption_points ?? 100), maximum_discount_percentage: Number(ls.maximum_discount_percentage ?? 50) }) : calcEarnedPoints(subtotal, getLoyaltySettingsFromPage());
+                            return pts > 0 ? (
+                                <p className="mb-3 flex items-center justify-center gap-1 rounded-full bg-amber-50 py-1.5 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
+                                    <Gift className="h-3 w-3" /> كسب {pts} نقطة عند إتمام الطلب
+                                </p>
+                            ) : null;
+                        })()}
                         <button
                             type="button"
                             onClick={onCheckout}

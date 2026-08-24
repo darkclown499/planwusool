@@ -158,8 +158,42 @@ class OrderController extends Controller
                 ];
             })->toArray();
 
+            // Apply loyalty points redemption (if requested) before order creation – cap discount to max allowed
+            $loyaltyPointsRequested = (float) ($request->input('loyalty_points') ?? $request->input('loyalty_points_used') ?? 0);
+            $loyaltyDiscount = 0;
+            if ($loyaltyPointsRequested > 0 && Auth::guard('customer')->check()) {
+                try {
+                    $tmpLoyalty = app(\App\Models\LoyaltySetting::class)::forStore($request->store_id);
+                    $tmpBalance = \App\Models\LoyaltyTransaction::balanceFor($request->store_id, Auth::guard('customer')->id());
+                    $canUse = $tmpBalance >= (float) $tmpLoyalty->minimum_redemption_points && $tmpLoyalty->is_enabled;
+                    if ($canUse) {
+                        $balanceCash = $tmpLoyalty->calculateRedemptionValue($tmpBalance);
+                        $maxDiscount = $calculation['total'] * ((float) $tmpLoyalty->maximum_discount_percentage / 100);
+                        $pts = min($loyaltyPointsRequested, $tmpBalance);
+                        $discount = $tmpLoyalty->calculateRedemptionValue($pts);
+                        $discount = min($discount, $maxDiscount, $balanceCash, $calculation['total']);
+                        $loyaltyDiscount = round($discount, 2);
+                        if ($loyaltyDiscount > 0) {
+                            $orderData['discount_amount'] = ($orderData['discount_amount'] ?? 0) + $loyaltyDiscount;
+                            $orderData['total_amount'] = max(0, $calculation['total'] - $loyaltyDiscount);
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Log::warning('Loyalty pre-check failed', ['error' => $e->getMessage()]);
+                }
+            }
+
             // Create order
             $order = $this->orderService->createOrder($orderData, $cartItems);
+
+            // Persist loyalty redemption transaction after order is created
+            if ($loyaltyDiscount > 0 && $loyaltyPointsRequested > 0) {
+                try {
+                    app(\App\Services\LoyaltyService::class)->redeemPoints($order, $loyaltyPointsRequested);
+                } catch (\Throwable $e) {
+                    \Log::warning('Loyalty redeem failed', ['order_id' => $order->id ?? null, 'error' => $e->getMessage()]);
+                }
+            }
             
             // Update coupon usage if coupon was used.
             // $calculation['coupon'] is an Eloquent StoreCoupon model for legacy

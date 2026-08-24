@@ -1,10 +1,11 @@
 import React from 'react';
-import { Eye, Plus } from 'lucide-react';
+import { Eye, Gift, Plus } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { WishlistButton } from './WishlistButton';
 import { WhatsAppOrderButton } from './WhatsAppOrderButton';
 import { createSafeHtml } from '@/utils/xss-protection';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 
 export interface Product {
   id: string;
@@ -116,6 +117,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
 
+        {(() => {
+          const pts = calcEarnedPoints(Number(product.price) || 0, getLoyaltySettingsFromPage());
+          return pts > 0 ? (
+            <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-amber-600">
+              <Gift className="h-3 w-3" /> كسب {pts} نقطة
+            </span>
+          ) : null;
+        })()}
         {isInStock ? (
           <button
             onClick={() => onAddToCart(product)}

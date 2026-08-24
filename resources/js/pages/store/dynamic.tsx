@@ -102,22 +102,22 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             >
                 <StoreBoundary>
                     <TemplateStorefrontV2 module={templateModule}>
-                        {/* Exit Preview Toolbar */}
+                        {/* Preview Mode banner — subtle so it doesn't shift store header */}
                         {isPreview && (
-                            <div className="sticky top-0 z-50 w-full bg-amber-600 text-white shadow-md border-b border-amber-700">
-                                <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5">
-                                    <div className="flex items-center gap-2.5">
-                                        <span className="h-2 w-2 shrink-0 rounded-full bg-white" />
-                                        <span className="text-sm font-medium">{t('Preview Mode')}</span>
-                                        <span className="hidden sm:inline text-xs opacity-90">
+                            <div className="sticky top-0 z-50 w-full bg-amber-500/90 text-white opacity-80 backdrop-blur border-b border-amber-600">
+                                <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1 text-xs">
+                                    <div className="flex items-center gap-2">
+                                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white" />
+                                        <span className="font-medium">{t('Preview Mode')}</span>
+                                        <span className="hidden sm:inline opacity-90">
                                             {t('You are viewing a live template preview. Changes are not saved.')}
                                         </span>
                                     </div>
                                     <a
                                         href={window.location.pathname}
-                                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+                                        className="inline-flex shrink-0 items-center gap-1 rounded bg-white px-2 py-1 text-xs font-semibold text-amber-700 transition hover:bg-amber-100"
                                     >
-                                        <X className="h-4 w-4" />
+                                        <X className="h-3 w-3" />
                                         {t('Exit Preview')}
                                     </a>
                                 </div>

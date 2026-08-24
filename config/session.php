@@ -171,7 +171,7 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN', '.' . env('APP_DOMAIN', 'localhost')),
+    'domain' => env('SESSION_DOMAIN', '.wusool.ps'),
 
     /*
     |--------------------------------------------------------------------------

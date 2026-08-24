@@ -12,6 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Draft → ABANDONED worker: every 15 minutes mark drafts idle >30min as abandoned, generate recovery token & WhatsApp automation
+        $schedule->call(function () {
+            app(\App\Services\AbandonedCartService::class)->markStaleDraftsAsAbandoned(30);
+        })->everyFifteenMinutes()->withoutOverlapping()->name('abandoned-mark-stale')->sendOutputTo(storage_path('logs/abandoned-mark.log'));
+
         // Check for abandoned carts and send reminders every 6 hours
         $schedule->command('app:check-abandoned-carts --hours=24')
             ->everySixHours()

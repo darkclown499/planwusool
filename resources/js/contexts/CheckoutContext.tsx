@@ -6,6 +6,7 @@ import { handleOrderPlacement as handleRazorpayOrder } from '@/utils/razorpay-pa
 import { handleCashfreePayment } from '@/utils/cashfree-payment';
 import { handleFlutterwavePayment } from '@/utils/flutterwave-payment';
 import { generateStoreUrl } from '@/utils/store-url-helper';
+import { useCart as useCartSafe } from '@/contexts/CartContext';
 
 // Country dropdown component
 const CountryDropdown: React.FC<{
@@ -260,6 +261,9 @@ export interface CheckoutContextType {
   bankTransferFile: File | null;
   whatsappNumber: string;
   whatsappError: string;
+  loyaltyDiscount: number;
+  loyaltyPointsUsed: number;
+  setLoyaltyDiscount: (discount: number, points: number) => void;
   setStep: (step: number) => void;
   setCouponCode: (code: string) => void;
   setCouponError: (error: string) => void;
@@ -338,6 +342,19 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   const [bankTransferFile, setBankTransferFile] = useState<File | null>(null);
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [whatsappError, setWhatsappError] = useState('');
+  const [loyaltyDiscount, setLoyaltyDiscountRaw] = useState(0);
+  const [loyaltyPointsUsed, setLoyaltyPointsUsed] = useState(0);
+  const setLoyaltyDiscount = (discount: number, points: number) => {
+    setLoyaltyDiscountRaw(discount);
+    setLoyaltyPointsUsed(points);
+  };
+
+  // Access cart context for draft capture (unified Checkout & Cart)
+  let cartFromContext: any = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    cartFromContext = (useCartSafe as any)();
+  } catch {}
 
   // Helper function to get proper store URL
   const getStoreUrl = () => {
@@ -429,14 +446,14 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     if (field === 'phone') setPhoneError('');
   };
 
-  // Trigger abandoned cart draft save on email/phone input (debounced)
+  // Trigger abandoned cart draft save on email/phone input (debounced 500ms per spec)
   useEffect(() => {
     const email = customerInfo.email?.trim() || '';
     const phone = customerInfo.phone?.trim() || '';
     if (!email && !phone) return;
     const t = setTimeout(() => {
       saveDraftOrder(email, phone);
-    }, 800);
+    }, 500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerInfo.email, customerInfo.phone]);
@@ -590,7 +607,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     }
   };
 
-  // --- Abandoned cart: save draft order when phone/email entered ---
+  // --- Abandoned cart: save draft order when phone/email entered (500ms debounced) ---
   const saveDraftOrder = async (email: string, phone: string) => {
     if (!store?.id) return;
     if (!email && !phone) return;
@@ -598,13 +615,31 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     if (email && !validateEmail(email)) return;
     if (phone && !validatePhone(phone)) return;
     try {
-      const cartData = (window as any)?.page?.props?.cartItems || (window as any)?.page?.props?.cart?.items || [];
-      // Also try to read from localStorage cart if needed
+      // Prefer CartContext cartItems, fallback to window props
+      const cartData = cartFromContext?.cartItems || (window as any)?.page?.props?.cartItems || (window as any)?.page?.props?.cart?.items || [];
       const items = Array.isArray(cartData) && cartData.length > 0
-        ? cartData.map((it: any) => ({ name: it.name || it.title || 'Product', quantity: Number(it.quantity) || 1, price: Number(it.price) || 0 }))
+        ? cartData.map((it: any) => ({
+            name: it.name || it.title || 'Product',
+            quantity: Number(it.quantity) || 1,
+            price: Number(it.price) || 0,
+            // include selected options/variants for draft recovery fidelity
+            options: it.selectedVariants || it.options || it.variant || it.customFields || undefined,
+            variant: it.variant || undefined,
+          }))
         : [];
+      // Resolve draft endpoint — task spec is POST /api/cart/draft, fallback to legacy track
+      let draftUrl: string = '';
+      try {
+        draftUrl = route('api.cart.draft');
+      } catch {
+        try {
+          draftUrl = route('api.cart.track');
+        } catch {
+          draftUrl = '/api/cart/draft';
+        }
+      }
       // Even if cart empty, still send customer identifiers so abandoned cart can be updated with contact info
-      await fetch(route('api.cart.track'), {
+      await fetch(draftUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -663,7 +698,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     setIsPlacingOrder(true);
 
     try {
-      const orderData = {
+      const orderData: any = {
         store_id: parseInt(store?.id?.toString() || '0'),
         customer_first_name: customerInfo.firstName,
         customer_last_name: customerInfo.lastName,
@@ -684,6 +719,8 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         notes: '',
         coupon_code: appliedCoupon?.code || undefined,
         whatsapp_number: selectedPayment === 'whatsapp' ? whatsappNumber : undefined,
+        loyalty_points: loyaltyPointsUsed || undefined,
+        loyalty_discount: loyaltyDiscount || undefined,
       };
 
       // Use Razorpay utility for Razorpay payments
@@ -935,6 +972,9 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     bankTransferFile,
     whatsappNumber,
     whatsappError,
+    loyaltyDiscount,
+    loyaltyPointsUsed,
+    setLoyaltyDiscount,
     setStep,
     setCouponCode,
     setCouponError,

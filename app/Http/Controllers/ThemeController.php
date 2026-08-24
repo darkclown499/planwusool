@@ -255,6 +255,18 @@ class ThemeController extends Controller
         if ($storeModel && $storeModel->user) {
             $storeSettings = \App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']);
             $configuration = StoreConfiguration::getConfiguration($store['id']);
+            try {
+                $loyalty = \App\Models\LoyaltySetting::forStore($store['id']);
+                $storeSettings['loyalty'] = [
+                    'is_enabled' => (bool) $loyalty->is_enabled,
+                    'points_per_currency' => (float) $loyalty->points_per_currency,
+                    'points_value' => (float) $loyalty->points_value,
+                    'minimum_redemption_points' => (float) $loyalty->minimum_redemption_points,
+                    'maximum_discount_percentage' => (float) $loyalty->maximum_discount_percentage,
+                ];
+            } catch (\Throwable $e) {
+                $storeSettings['loyalty'] = ['is_enabled' => false, 'points_per_currency' => 1, 'points_value' => 0.01, 'minimum_redemption_points' => 100, 'maximum_discount_percentage' => 50];
+            }
         }
         
         return [

@@ -265,8 +265,9 @@ Route::middleware('api.throttle')->group(function () {
     Route::delete('api/cart/{id}', [\App\Http\Controllers\Api\CartController::class, 'remove'])->name('api.cart.remove');
     Route::post('api/cart/sync', [\App\Http\Controllers\Api\CartController::class, 'sync'])->name('api.cart.sync');
     
-    // Abandoned cart tracking API (storefront)
+    // Abandoned cart tracking API (storefront) — draft capture & recovery
     Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
+    Route::post('api/cart/draft', [CartTrackingController::class, 'draft'])->name('api.cart.draft');
     
     // Store content/banners API (authenticated, store owner only)
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
@@ -337,6 +338,7 @@ Route::middleware('api.throttle')->group(function () {
     Route::prefix('api/loyalty')->name('api.loyalty.')->group(function () {
         Route::get('balance', [LoyaltyController::class, 'getBalance'])->name('balance');
         Route::get('history', [LoyaltyController::class, 'history'])->name('history');
+        Route::get('settings', [LoyaltyController::class, 'settingsApi'])->name('settings');
     });
     
     // Digital downloads API (storefront)

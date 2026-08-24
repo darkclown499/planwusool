@@ -19,7 +19,7 @@ interface DesignerNavigationModalProps {
 export function DesignerNavigationModal({ open, onOpenChange, storeId }: DesignerNavigationModalProps) {
   if (!storeId) return null;
 
-  const designerHref = `/stores/${storeId}/designer`;
+  const designerHref = `/stores/${storeId}/designer?tab=identity`;
 
   const handleNewTab = () => {
     window.open(designerHref, '_blank', 'noopener');

@@ -5,6 +5,7 @@ import { usePage } from '@inertiajs/react';
 import { Check, CheckCircle2, CreditCard, Gift, Package, Truck, User, Wallet, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useStorefrontCore } from '@/templates-v2/shared/contexts';
+import CheckoutLoyaltyDeduction from '@/components/storefront/CheckoutLoyaltyDeduction';
 
 interface TemplateCheckoutProps {
     onClose: () => void;
@@ -61,6 +62,8 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
         whatsappNumber,
         whatsappError,
         setWhatsappNumber,
+        loyaltyDiscount,
+        setLoyaltyDiscount,
     } = useCheckoutContext();
 
     const cartItems = cart.cartItems || [];
@@ -100,7 +103,10 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
               ? 0
               : parseFloat(selectedShippingMethod.cost || 0)
         : 0;
-    const total = subtotal + totalTax - couponDiscount + shippingCost;
+    const totalBeforeLoyalty = subtotal + totalTax - couponDiscount + shippingCost;
+    const maxLoyalty = Math.max(0, totalBeforeLoyalty);
+    const effectiveLoyalty = Math.min(loyaltyDiscount || 0, maxLoyalty);
+    const total = Math.max(0, totalBeforeLoyalty - effectiveLoyalty);
 
     const primary = 'var(--twc-primary-600, #059669)';
     const inputClass = 'w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-2';
@@ -367,6 +373,9 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                     </div>
                                 )}
 
+                                {/* Loyalty deduction */}
+                                <CheckoutLoyaltyDeduction subtotal={subtotal} onDiscountChange={(d, p) => setLoyaltyDiscount(d, p)} />
+
                                 {/* Delivery / shipping methods */}
                                 <div
                                     className="rounded-2xl border p-4"
@@ -460,6 +469,12 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                             <span className="font-semibold text-green-600">
                                                 -{formatCurrency(couponDiscount, storeSettings, currencies)}
                                             </span>
+                                        </div>
+                                    )}
+                                    {effectiveLoyalty > 0 && (
+                                        <div className="flex justify-between py-1">
+                                            <span style={{ color: 'var(--twc-text-muted, #6b7280)' }}>خصم نقاط الولاء</span>
+                                            <span className="font-semibold text-amber-600">-{formatCurrency(effectiveLoyalty, storeSettings, currencies)}</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between py-1">

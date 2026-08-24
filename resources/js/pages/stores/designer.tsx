@@ -30,6 +30,7 @@ import { apiGet, apiPut } from '@/utils/api';
 import { getImageUrl } from '@/utils/image-helper';
 import { getTemplateModule, type TemplateModule } from '@/templates-v2';
 import StoreTemplatesGrid from './components/store-templates-grid';
+import { usePage } from '@inertiajs/react';
 
 interface SlotField {
     key: string;
@@ -92,14 +93,24 @@ function AccordionSection({
     title,
     icon,
     defaultOpen = true,
+    open: controlledOpen,
+    onOpenChange: controlledOnOpenChange,
     children,
 }: {
     title: string;
     icon: React.ReactNode;
     defaultOpen?: boolean;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
     children: React.ReactNode;
 }) {
-    const [open, setOpen] = useState(defaultOpen);
+    const [internalOpen, setInternalOpen] = useState(defaultOpen);
+    const isControlled = controlledOpen !== undefined;
+    const open = isControlled ? controlledOpen : internalOpen;
+    const setOpen = (v: boolean) => {
+        if (controlledOnOpenChange) controlledOnOpenChange(v);
+        if (!isControlled) setInternalOpen(v);
+    };
     return (
         <Collapsible open={open} onOpenChange={setOpen} className="rounded-2xl border border-slate-200 bg-white shadow-sm">
             <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-start hover:bg-slate-50/60">
@@ -207,21 +218,66 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const [customJs, setCustomJs] = useState('');
     const [headInject, setHeadInject] = useState('');
     const [availableCategories, setAvailableCategories] = useState<Array<{ id: string | number; name: string; image?: string | null; slug?: string }>>([]);
+    const [initialSnapshot, setInitialSnapshot] = useState<string>('');
+
+    // Sync tab state with URL query param ?tab= (templates / identity)
+    const page = usePage<any>();
+    const getTabFromUrl = () => {
+        if (typeof window !== 'undefined') {
+            return new URLSearchParams(window.location.search).get('tab') || '';
+        }
+        return '';
+    };
+    const [activeTab, setActiveTab] = useState<string>(() => getTabFromUrl());
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+        const tab = getTabFromUrl();
+        if (tab === 'templates') return { templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false };
+        // identity (or base) is the default for تخصيص تصميم المتجر
+        return { templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false };
+    });
+
+    useEffect(() => {
+        const tab = new URLSearchParams(page.url?.split('?')[1] || window.location.search.replace(/^\?/, '')).get('tab') || new URLSearchParams(window.location.search).get('tab') || '';
+        setActiveTab(tab);
+        if (tab === 'templates') {
+            setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false });
+        } else if (tab === 'identity' || tab === 'brand' || tab === '' ) {
+            // identity maps to الهوية + hero open
+            setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false });
+        }
+    }, [page.url]);
+
+    useEffect(() => {
+        const handler = () => {
+            const tab = new URLSearchParams(window.location.search).get('tab') || '';
+            setActiveTab(tab);
+            if (tab === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false });
+            else if (tab === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false });
+        };
+        window.addEventListener('popstate', handler);
+        return () => window.removeEventListener('popstate', handler);
+    }, []);
 
     useEffect(() => {
         let alive = true;
         apiGet(`/api/stores/${store.id}/designer`)
             .then((res: any) => {
                 if (!alive || !res) return;
+                const nTokens = res.design_tokens || {};
+                const nContent = res.content || {};
+                const nCss = res.custom_css || '';
+                const nJs = res.custom_js || '';
+                const nHead = res.head_inject || '';
                 setTheme(res.theme || 'bazaar-market');
-                setTokens(res.design_tokens || {});
-                setContent(res.content || {});
-                setCustomCss(res.custom_css || '');
-                setCustomJs(res.custom_js || '');
-                setHeadInject(res.head_inject || '');
+                setTokens(nTokens);
+                setContent(nContent);
+                setCustomCss(nCss);
+                setCustomJs(nJs);
+                setHeadInject(nHead);
                 if (Array.isArray(res.categories)) {
                     setAvailableCategories(res.categories);
                 }
+                setInitialSnapshot(JSON.stringify({ theme: res.theme || 'bazaar-market', tokens: nTokens, content: nContent, css: nCss, js: nJs, head: nHead }));
             })
             .catch(() => toast.error('تعذر تحميل إعدادات المصمم'))
             .finally(() => alive && setLoading(false));
@@ -229,6 +285,15 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             alive = false;
         };
     }, [store.id]);
+
+    const isDirty = useMemo(() => {
+        try {
+            const cur = JSON.stringify({ theme, tokens, content, css: customCss, js: customJs, head: headInject });
+            return cur !== initialSnapshot;
+        } catch {
+            return true;
+        }
+    }, [theme, tokens, content, customCss, customJs, headInject, initialSnapshot]);
 
     const activeModule: TemplateModule | null = useMemo(() => {
         try {
@@ -288,9 +353,14 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                 custom_js: customJs,
                 head_inject: headInject,
             });
-            if (res?.content) setContent(res.content);
-            else setContent(payloadContent);
-            if (res?.design_tokens) setTokens(res.design_tokens);
+            const finalContent = res?.content ?? payloadContent;
+            const finalTokens = res?.design_tokens ?? tokens;
+            setContent(finalContent);
+            setTokens(finalTokens);
+            if (res?.custom_css !== undefined) setCustomCss(res.custom_css);
+            if (res?.custom_js !== undefined) setCustomJs(res.custom_js);
+            if (res?.head_inject !== undefined) setHeadInject(res.head_inject);
+            setInitialSnapshot(JSON.stringify({ theme, tokens: finalTokens, content: finalContent, css: res?.custom_css ?? customCss, js: res?.custom_js ?? customJs, head: res?.head_inject ?? headInject }));
             toast.success('تم حفظ جميع التغييرات بنجاح');
         } catch {
             toast.error('تعذر حفظ التغييرات — تأكد من سلامة المدخلات');
@@ -339,8 +409,9 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             }
 
             const res: any = await apiPut(`/api/stores/${store.id}/designer`, { content: payloadContent });
-            if (res?.content) setContent(res.content);
-            else setContent(payloadContent);
+            const finalContent2 = res?.content ?? payloadContent;
+            setContent(finalContent2);
+            setInitialSnapshot(JSON.stringify({ theme, tokens, content: finalContent2, css: customCss, js: customJs, head: headInject }));
             toast.success('تم حفظ إعدادات البنر');
         } catch {
             toast.error('تعذر حفظ إعدادات البنر');
@@ -574,9 +645,15 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                             <Eye className="h-4 w-4" />
                         </a>
 
-                        <Button onClick={handleSaveAll} disabled={saving} className="gap-1.5 rounded-full bg-emerald-600 px-5 font-black hover:bg-emerald-700">
+                        <Button
+                            onClick={handleSaveAll}
+                            disabled={saving || !isDirty}
+                            className={`gap-1.5 rounded-full px-5 font-black ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                            title={isDirty ? 'حفظ التغييرات' : 'لا توجد تغييرات'}
+                        >
                             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="hidden sm:inline">حفظ التغييرات</span>
                             <span className="sm:hidden">حفظ</span>
+                            {isDirty && !saving && <span className="ms-1 h-2 w-2 rounded-full bg-amber-300 animate-pulse" aria-hidden />}
                         </Button>
                     </div>
                 </div>
@@ -588,7 +665,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                 <aside className="order-2 w-full shrink-0 overflow-y-auto border-t bg-white p-4 lg:order-1 lg:w-[400px] lg:border-e lg:border-t-0 xl:w-[420px]">
                     <div className="space-y-3">
                         {/* ── Templates quick picker ── */}
-                        <AccordionSection title="القوالب" icon={<Sparkles className="h-3.5 w-3.5" />} defaultOpen={false}>
+                        <AccordionSection title="القوالب" icon={<Sparkles className="h-3.5 w-3.5" />} open={openSections.templates} onOpenChange={(v) => setOpenSections((s) => ({ ...s, templates: v }))}>
                             <p className="text-xs leading-relaxed text-slate-500">اختر قالب متجرك — سيُطبَّق مباشرةً عند الاختيار.</p>
                             <StoreTemplatesGrid
                                 store={store}
@@ -600,7 +677,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         </AccordionSection>
 
                         {/* ── 1. الهوية والألوان ── */}
-                        <AccordionSection title="الهوية والألوان" icon={<Palette className="h-3.5 w-3.5" />} defaultOpen={true}>
+                        <AccordionSection title="الهوية والألوان" icon={<Palette className="h-3.5 w-3.5" />} open={openSections.identity} onOpenChange={(v) => setOpenSections((s) => ({ ...s, identity: v }))}>
                             {/* Logo */}
                             <div>
                                 <Label className="mb-1.5 block text-xs font-bold text-slate-600">الشعار (Logo)</Label>
@@ -697,11 +774,11 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         </AccordionSection>
 
                         {/* ── 2. شريط الإعلانات العلوي ── */}
-                        <AccordionSection title="شريط الإعلانات العلوي" icon={<Megaphone className="h-3.5 w-3.5" />} defaultOpen={true}>
+                        <AccordionSection title="شريط الإعلانات العلوي" icon={<Megaphone className="h-3.5 w-3.5" />} open={openSections.announcement} onOpenChange={(v) => setOpenSections((s) => ({ ...s, announcement: v }))}>
                             <div>
                                 <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الشريط</Label>
                                 <Input
-                                    value={announcementText}
+                                    value={announcementText ?? ''}
                                     onChange={(e) => setContent(setDotted(content, 'announcement.text', e.target.value))}
                                     placeholder="توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح"
                                     className="bg-white"
@@ -741,7 +818,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         </AccordionSection>
 
                         {/* ── 3. البنر الرئيسي ── */}
-                        <AccordionSection title="البنر الرئيسي (Hero Banner)" icon={<ImageIcon className="h-3.5 w-3.5" />} defaultOpen={true}>
+                        <AccordionSection title="البنر الرئيسي (Hero Banner)" icon={<ImageIcon className="h-3.5 w-3.5" />} open={openSections.hero} onOpenChange={(v) => setOpenSections((s) => ({ ...s, hero: v }))}>
                             <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
                                 {[
                                     { id: 'image', label: 'صور' },
@@ -909,7 +986,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 <div>
                                     <Label className="mb-1.5 block text-xs font-bold text-slate-600">العنوان الرئيسي</Label>
                                     <Input
-                                        value={heroHeading}
+                                        value={heroHeading ?? ''}
                                         onChange={(e) => {
                                             let tmp = setDotted(content, 'hero_banner.heading', e.target.value);
                                             tmp = setDotted(tmp, 'hero_heading', e.target.value);
@@ -922,7 +999,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 <div>
                                     <Label className="mb-1.5 block text-xs font-bold text-slate-600">الوصف الفرعي</Label>
                                     <Input
-                                        value={heroSubtitle}
+                                        value={heroSubtitle ?? ''}
                                         onChange={(e) => {
                                             let tmp = setDotted(content, 'hero_banner.subtitle', e.target.value);
                                             tmp = setDotted(tmp, 'hero_subtitle', e.target.value);
@@ -936,7 +1013,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                     <div>
                                         <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الزر</Label>
                                         <Input
-                                            value={heroCtaLabel}
+                                            value={heroCtaLabel ?? ''}
                                             onChange={(e) => {
                                                 let tmp = setDotted(content, 'hero_banner.cta_label', e.target.value);
                                                 tmp = setDotted(tmp, 'hero_cta_label', e.target.value);
@@ -950,7 +1027,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                         <Label className="mb-1.5 block text-xs font-bold text-slate-600">رابط الزر</Label>
                                         <Input
                                             dir="ltr"
-                                            value={heroCtaLink}
+                                            value={heroCtaLink ?? ''}
                                             onChange={(e) => {
                                                 const clean = stripTrailingSlash(e.target.value.trim());
                                                 let tmp = setDotted(content, 'hero_banner.cta_link', clean);
@@ -990,13 +1067,10 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                     </div>
                                 </div>
                             )}
-                            <Button onClick={handleSaveHeroBanner} disabled={saving} className="mt-2 w-full gap-1.5 bg-emerald-600 hover:bg-emerald-700">
-                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} حفظ
-                            </Button>
                         </AccordionSection>
 
                         {/* ── 4. أقسام الصفحة الرئيسية (tab=content) ── */}
-                        <AccordionSection title="أقسام الصفحة الرئيسية" icon={<Store className="h-3.5 w-3.5" />} defaultOpen={true}>
+                        <AccordionSection title="أقسام الصفحة الرئيسية" icon={<Store className="h-3.5 w-3.5" />} open={openSections.homeSections} onOpenChange={(v) => setOpenSections((s) => ({ ...s, homeSections: v }))}>
                             <p className="text-xs leading-relaxed text-slate-500">تحكم في عرض الأقسام الثابتة وإضافة أقسام فئات ديناميكية للصفحة الرئيسية.</p>
 
                             <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
@@ -1106,7 +1180,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         </AccordionSection>
 
                         {/* ── 5. إعدادات متقدمة ── */}
-                        <AccordionSection title="إعدادات متقدمة" icon={<Code2 className="h-3.5 w-3.5" />} defaultOpen={false}>
+                        <AccordionSection title="إعدادات متقدمة" icon={<Code2 className="h-3.5 w-3.5" />} open={openSections.advanced} onOpenChange={(v) => setOpenSections((s) => ({ ...s, advanced: v }))}>
                             <p className="text-xs leading-relaxed text-slate-500">أكواد مخصصة تُحقن داخل واجهة متجرك فقط — في بيئة معزولة ومنقّاة.</p>
                             <div>
                                 <Label className="mb-1.5 block text-xs font-bold text-slate-600">CSS مخصص</Label>

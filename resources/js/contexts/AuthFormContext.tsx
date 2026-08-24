@@ -90,6 +90,10 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
       remember: false
     }, {
       onSuccess: () => {
+        // Multi-tenant: persist customer session across subdomains (.wusool.ps)
+        try {
+          document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`;
+        } catch {}
         // Force page reload to get updated auth data
         router.reload({
           only: ['isLoggedIn', 'customer', 'customer_address']
@@ -119,6 +123,10 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
       password_confirmation: confirmPassword
     }, {
       onSuccess: () => {
+        // Multi-tenant: persist customer session across subdomains (.wusool.ps)
+        try {
+          document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`;
+        } catch {}
         // Force page reload to get updated auth data
         router.reload({
           only: ['isLoggedIn', 'customer', 'customer_address']

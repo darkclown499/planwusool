@@ -158,6 +158,37 @@ class LoyaltyController extends Controller
             'success' => true,
             'balance' => $balance,
             'settings' => [
+                'points_per_currency' => $settings->points_per_currency,
+                'points_value' => $settings->points_value,
+                'minimum_redemption_points' => $settings->minimum_redemption_points,
+                'maximum_discount_percentage' => $settings->maximum_discount_percentage,
+                'is_enabled' => $settings->is_enabled,
+            ],
+        ]);
+    }
+
+    /**
+     * API: Public loyalty settings (storefront, no auth required).
+     */
+    public function settingsApi(Request $request)
+    {
+        $storeId = $request->query('store_id') ?? $request->input('store_id');
+        if (!$storeId) {
+            $storeSlug = $request->attributes->get('resolved_store')['id'] ?? null;
+            $storeId = $storeSlug;
+        }
+        if (!$storeId) {
+            $storeSlug = $request->header('X-Store-Id') ?? $request->query('store_id');
+            if (!$storeSlug) {
+                return response()->json(['success' => false, 'message' => 'store_id required'], 422);
+            }
+            $storeId = $storeSlug;
+        }
+        $settings = LoyaltySetting::forStore((int) $storeId);
+        return response()->json([
+            'success' => true,
+            'settings' => [
+                'points_per_currency' => $settings->points_per_currency,
                 'points_value' => $settings->points_value,
                 'minimum_redemption_points' => $settings->minimum_redemption_points,
                 'maximum_discount_percentage' => $settings->maximum_discount_percentage,

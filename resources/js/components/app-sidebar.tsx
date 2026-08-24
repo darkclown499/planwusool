@@ -189,6 +189,7 @@ export function AppSidebar() {
         const items: NavItem[] = [];
         const user = auth.user;
         const plan = user?.plan;
+        const currentStoreIdEarly = auth.user?.current_store as string | number | undefined;
         
         const hasFeatureAccess = (feature: string) => {
             if (userRole === 'superadmin') return true;
@@ -277,33 +278,21 @@ export function AppSidebar() {
             });
         }
 
-        // إدارة المتجر الحالي — expanded with shipping & payments (task spec) + strict active matching
+        // إدارة المتجر الحالي — fixed per spec: dynamic shipping, removed payments duplication, strict tab sync
         if (hasPermission('settings-stores') && currentStoreId) {
-            const shippingHref = (() => {
-                try { return route('shipping.index'); } catch { return '/store/shipping'; }
-            })();
-            const paymentsHref = (() => {
-                try { return route('stores.payments', currentStoreId); } catch { return '/store/payment-methods'; }
-            })();
             items.push({
                 title: 'إدارة المتجر',
                 icon: Building2,
                 groupLabel: t('Store'),
                 children: [
                     { title: 'قوالب المتجر', href: `${route('stores.designer', currentStoreId)}?tab=templates`, icon: LayoutTemplate },
-                    { title: 'تخصيص تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush },
+                    { title: 'تخصيص تصميم المتجر', icon: Paintbrush, onClick: () => openDesigner(currentStoreId) },
                     { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
                     {
                         title: 'الشحن والتوصيل',
-                        href: '/store/shipping',
+                        href: `/stores/${currentStoreId}/shipping`,
                         icon: Truck,
-                        activePaths: ['/store/shipping', shippingHref],
-                    },
-                    {
-                        title: 'طرق وبوابات الدفع',
-                        href: '/store/payment-methods',
-                        icon: CreditCard,
-                        activePaths: ['/store/payment-methods', paymentsHref],
+                        activePaths: [`/stores/${currentStoreId}/shipping`, `/stores/${currentStoreId}/settings?tab=shipping`],
                     },
                 ],
             });
