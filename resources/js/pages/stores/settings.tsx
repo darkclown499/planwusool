@@ -20,6 +20,7 @@ import MediaPicker from '@/components/MediaPicker';
 import { AccordionSection } from '@/components/accordion-section';
 import { apiPut, apiPost } from '@/utils/api';
 import DomainsTab from './components/domains-tab';
+import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 
 interface Props {
   store: any;
@@ -127,6 +128,7 @@ export default function StoreSettings({ store, settings }: Props) {
   const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [showDiscard, setShowDiscard] = useState(false);
   const [resettingSection, setResettingSection] = useState<string | null>(null);
+  const [designerOpen, setDesignerOpen] = useState(false);
   const initialRef = useRef<any>(settings);
 
   useEffect(() => {
@@ -278,7 +280,7 @@ export default function StoreSettings({ store, settings }: Props) {
               </p>
             </div>
           </div>
-          <Button type="button" size="lg" className="shrink-0 gap-2" onClick={() => window.open(`/stores/${store.id}/designer`, '_blank')}>
+          <Button type="button" size="lg" className="shrink-0 gap-2" onClick={() => setDesignerOpen(true)}>
             <Paintbrush className="h-4 w-4" />
             تخصيص تصميم المتجر
           </Button>
@@ -608,6 +610,7 @@ export default function StoreSettings({ store, settings }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <DesignerNavigationModal open={designerOpen} onOpenChange={setDesignerOpen} storeId={store.id} />
     </PageTemplate>
   );
 }

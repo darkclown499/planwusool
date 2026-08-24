@@ -71,7 +71,7 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                       <span className="flex h-full w-full items-center justify-center text-lg sm:text-xl">🥬</span>
                     )}
                   </span>
-                  <span className="line-clamp-1 text-center text-[11px] font-bold text-stone-700 group-hover:text-[#16a34a]">{c.name}</span>
+                  <span className="max-w-[80px] break-words text-center text-xs font-bold leading-tight text-stone-700 group-hover:text-[#16a34a] line-clamp-2">{c.name}</span>
                 </a>
               ))}
             </div>

@@ -168,6 +168,13 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                 </button>
                                 {expandedItems[`${level}-${child.title}`] && renderSubMenu(child.children, level + 1)}
                             </>
+                        ) : child.onClick ? (
+                            <button
+                                onClick={child.onClick}
+                                className={`flex items-center justify-between w-full rounded-lg px-2 py-1 text-[13px] transition-all duration-150 text-gray-500 hover:bg-gray-100 hover:text-gray-700 text-start`}
+                            >
+                                <span className="truncate">{child.title}</span>
+                            </button>
                         ) : (
                             <Link
                                 href={child.href || '#'}
@@ -226,14 +233,24 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                                                 </DropdownMenuSubTrigger>
                                                                 <DropdownMenuSubContent>
                                                                     {child.children.map(subChild => (
-                                                                        <DropdownMenuItem key={subChild.title} asChild>
-                                                                            <Link href={subChild.href || '#'} prefetch target={subChild.target}>
+                                                                        subChild.onClick ? (
+                                                                            <DropdownMenuItem key={subChild.title} onClick={subChild.onClick}>
                                                                                 {subChild.title}
-                                                                            </Link>
-                                                                        </DropdownMenuItem>
+                                                                            </DropdownMenuItem>
+                                                                        ) : (
+                                                                            <DropdownMenuItem key={subChild.title} asChild>
+                                                                                <Link href={subChild.href || '#'} prefetch target={subChild.target}>
+                                                                                    {subChild.title}
+                                                                                </Link>
+                                                                            </DropdownMenuItem>
+                                                                        )
                                                                     ))}
                                                                 </DropdownMenuSubContent>
                                                             </DropdownMenuSub>
+                                                        ) : child.onClick ? (
+                                                            <DropdownMenuItem key={child.title} onClick={child.onClick}>
+                                                                {child.title}
+                                                            </DropdownMenuItem>
                                                         ) : (
                                                             <DropdownMenuItem key={child.title} asChild>
                                                                 <Link href={child.href || '#'} prefetch target={child.target}>

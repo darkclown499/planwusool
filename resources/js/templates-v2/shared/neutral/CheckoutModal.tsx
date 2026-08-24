@@ -65,6 +65,20 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
 
     const cartItems = cart.cartItems || [];
 
+    // Coupon field is dynamic — only show if active for store
+    const couponsEnabled = (() => {
+        const s = storeSettings as any;
+        if (s.enable_coupon_system === false || s.enable_coupon_system === 'off' || s.enable_coupon_system === 0) return false;
+        if (s.enable_coupons === false || s.enable_coupons === 'off' || s.enable_coupons === 0) return false;
+        if (s.coupon_enabled === false || s.coupon_enabled === 0) return false;
+        if (s.coupons_enabled === false || s.coupons_enabled === 0) return false;
+        // Also respect page-level flag if provided
+        const p = page as any;
+        if (p.couponsEnabled === false) return false;
+        if (p.storeSettings?.couponsEnabled === false) return false;
+        return true;
+    })();
+
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -321,35 +335,37 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                     </div>
                                 </div>
 
-                                {/* Coupon */}
-                                <div
-                                    className="rounded-2xl border p-4"
-                                    style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}
-                                >
-                                    <h4 className="mb-3 flex items-center gap-2 font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
-                                        <Gift className="h-4 w-4" /> كوبون الخصم
-                                    </h4>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={couponCode}
-                                            onChange={(e) => setCouponCode(e.target.value)}
-                                            placeholder="أدخل رمز الكوبون"
-                                            className={inputClass}
-                                            style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => handleApplyCoupon(subtotal)}
-                                            className="rounded-xl px-5 text-sm font-bold whitespace-nowrap text-white transition hover:opacity-90"
-                                            style={{ background: primary }}
-                                        >
-                                            تطبيق
+                                {/* Coupon — only if active for store (dynamic) */}
+                                {couponsEnabled && (
+                                    <div
+                                        className="rounded-2xl border p-4"
+                                        style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}
+                                    >
+                                        <h4 className="mb-3 flex items-center gap-2 font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                                            <Gift className="h-4 w-4" /> كوبون الخصم
+                                        </h4>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value)}
+                                                placeholder="أدخل رمز الكوبون"
+                                                className={inputClass}
+                                                style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleApplyCoupon(subtotal)}
+                                                className="rounded-xl px-5 text-sm font-bold whitespace-nowrap text-white transition hover:opacity-90"
+                                                style={{ background: primary }}
+                                            >
+                                                تطبيق
                                         </button>
                                     </div>
                                     {couponError && <p className="mt-2 text-xs font-medium text-red-500">{couponError}</p>}
                                     {appliedCoupon && <p className="mt-2 text-xs font-bold text-green-600">✓ تم تطبيق الكوبون</p>}
-                                </div>
+                                    </div>
+                                )}
 
                                 {/* Delivery / shipping methods */}
                                 <div

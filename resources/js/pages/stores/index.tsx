@@ -11,6 +11,7 @@ import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { formatLocalDate } from '@/utils/date-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
+import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 
 interface PageAction {
   label: string;
@@ -28,6 +29,8 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
   const [storeToDelete, setStoreToDelete] = useState<number | null>(null);
+  const [designerOpen, setDesignerOpen] = useState(false);
+  const [designerStoreId, setDesignerStoreId] = useState<number | null>(null);
 
   const handleActionClick = (action: string, permission: string, storeId?: number) => {
     if (!checkPermission(permission, auth)) {
@@ -221,9 +224,9 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                         <DropdownMenuContent align="end">
                           {hasPermission('settings-stores') && (
                             <>
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(route('stores.designer', store.id) as string, '_blank'); }}>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDesignerStoreId(store.id); setDesignerOpen(true); }}>
                                 <Paintbrush className="h-4 w-4" />
-                                تصميم المتجر
+                                تخصيص تصميم المتجر
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.visit(route('stores.features', store.id)); }}>
                                 <LayoutTemplate className="h-4 w-4" />
@@ -285,6 +288,7 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <DesignerNavigationModal open={designerOpen} onOpenChange={setDesignerOpen} storeId={designerStoreId} />
     </PageTemplate>
   );
 }

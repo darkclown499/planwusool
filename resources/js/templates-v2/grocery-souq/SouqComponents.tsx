@@ -40,7 +40,7 @@ export function SouqHeader() {
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
 
   return (
-    <header className="sticky top-0 z-40 bg-[#16a34a] text-white shadow-md" dir="rtl">
+    <header className="hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 text-white shadow-md" dir="rtl">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
         {/* Brand */}
         <a href="/" className="flex shrink-0 items-center gap-2">
@@ -83,7 +83,7 @@ export function SouqHeader() {
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2 transition hover:bg-white/15">
             ♥
             {!!wishlist?.count && (
-              <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f59e0b] px-1 text-[9px] font-black">
+              <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#f59e0b] px-1 text-[9px] font-black">
                 {wishlist.count}
               </span>
             )}

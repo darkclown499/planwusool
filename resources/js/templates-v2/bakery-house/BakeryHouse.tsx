@@ -43,7 +43,7 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
   const greeting = hour < 11 ? 'خبز الصباح ساخن الآن 🔥' : hour < 17 ? 'عجين اليوم يُخبز كل ساعتين' : 'آخر دفعة من الفرن قبل الإغلاق';
 
   return (
-    <header className={`sticky top-0 z-40 border-b border-[#eaddcf] bg-[#fffbf5]/95 backdrop-blur transition-shadow ${scrolled ? 'shadow-md' : ''}`} dir="rtl">
+    <header className={`hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-md' : ''}`} dir="rtl">
       {/* Freshness ribbon */}
       <div className="bg-gradient-to-l from-[#92400e] via-[#b45309] to-[#92400e] px-4 py-1.5 text-center text-xs font-bold text-[#ffedd5]">
         {greeting}
@@ -77,7 +77,7 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
           </button>
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative hidden rounded-full p-2.5 text-[#78350f] transition hover:bg-[#f5e7d3] sm:block">
             <Heart className="h-5 w-5" strokeWidth={1.8} />
-            {!!wishlist?.count && <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#b45309] px-1 text-[9px] font-black text-white">{wishlist.count}</span>}
+            {!!wishlist?.count && <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#b45309] px-1 text-[9px] font-black text-white">{wishlist.count}</span>}
           </button>
           <button
             type="button"

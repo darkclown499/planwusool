@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hasPermission } from '@/utils/permissions';
 import { getImageUrl } from '@/utils/image-helper';
+import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 
 
 
@@ -40,6 +41,15 @@ export function AppSidebar() {
     const handleBusinessSwitch = (businessId: number) => {
         if (!routeExists('switch-business')) return;
         router.post(route('switch-business'), { business_id: businessId });
+    };
+
+    // Designer navigation confirmation modal
+    const [designerOpen, setDesignerOpen] = useState(false);
+    const [designerStoreId, setDesignerStoreId] = useState<string | number | null>(null);
+    const openDesigner = (storeId: string | number | null) => {
+        if (!storeId) return;
+        setDesignerStoreId(storeId);
+        setDesignerOpen(true);
     };
 
     const getSuperAdminNavItems = (): NavItem[] => [
@@ -267,8 +277,14 @@ export function AppSidebar() {
             });
         }
 
-        // إدارة المتجر الحالي — 3 روابط فقط (بدون تكرار القوائم الفرعية)
+        // إدارة المتجر الحالي — expanded with shipping & payments (task spec) + strict active matching
         if (hasPermission('settings-stores') && currentStoreId) {
+            const shippingHref = (() => {
+                try { return route('shipping.index'); } catch { return '/store/shipping'; }
+            })();
+            const paymentsHref = (() => {
+                try { return route('stores.payments', currentStoreId); } catch { return '/store/payment-methods'; }
+            })();
             items.push({
                 title: 'إدارة المتجر',
                 icon: Building2,
@@ -277,6 +293,18 @@ export function AppSidebar() {
                     { title: 'قوالب المتجر', href: `${route('stores.designer', currentStoreId)}?tab=templates`, icon: LayoutTemplate },
                     { title: 'تخصيص تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush },
                     { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
+                    {
+                        title: 'الشحن والتوصيل',
+                        href: '/store/shipping',
+                        icon: Truck,
+                        activePaths: ['/store/shipping', shippingHref],
+                    },
+                    {
+                        title: 'طرق وبوابات الدفع',
+                        href: '/store/payment-methods',
+                        icon: CreditCard,
+                        activePaths: ['/store/payment-methods', paymentsHref],
+                    },
                 ],
             });
         }
@@ -568,6 +596,7 @@ export function AppSidebar() {
                     <NavUser position={position} />
                 </div>
             </SidebarFooter>
+            <DesignerNavigationModal open={designerOpen} onOpenChange={setDesignerOpen} storeId={designerStoreId} />
         </Sidebar>
     );
 }

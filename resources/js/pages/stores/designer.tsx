@@ -1126,7 +1126,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                     </div>
                 </aside>
 
-                {/* Right Panel – Live Canvas Preview */}
+                {/* Right Panel – Live Canvas Preview — pure responsive iframe */}
                 <main className="order-1 flex min-h-[480px] flex-1 flex-col overflow-hidden bg-slate-100 lg:order-2">
                     <div className="flex items-center justify-between border-b bg-white px-4 py-2.5">
                         <p className="flex items-center gap-2 text-sm font-black text-slate-700">
@@ -1136,107 +1136,34 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">{previewMode === 'mobile' ? 'جوال 375px' : 'سطح مكتب'}</span>
                     </div>
 
-                    <div className="flex-1 overflow-auto p-4 sm:p-6">
-                        <div className={`mx-auto transition-all duration-300 ${previewMode === 'mobile' ? 'w-[375px] max-w-full' : 'w-full max-w-[1100px]'}`}>
-                            <div className="overflow-hidden rounded-[24px] border bg-white shadow-xl ring-1 ring-slate-200">
-                                {/* Announcement live preview */}
-                                {showAnnouncement && (
-                                    <div
-                                        className="flex items-center justify-center gap-2 px-4 py-2 text-center text-xs font-medium"
-                                        style={{ backgroundColor: announcementBg, color: announcementColor }}
-                                    >
-                                        <span aria-hidden>✦</span>
-                                        <span>{announcementText.trim() || 'توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح'}</span>
-                                        <span aria-hidden>✦</span>
-                                    </div>
-                                )}
-
-                                {/* Header mock */}
-                                <div className="flex items-center justify-between border-b px-5 py-3">
-                                    <div className="flex items-center gap-2">
-                                        {logoValue ? (
-                                            <img src={getImageUrl(logoValue)} alt="logo" className="h-7 w-auto object-contain" />
-                                        ) : (
-                                            <span className="flex h-7 w-7 items-center justify-center rounded-lg text-white" style={{ backgroundColor: colors.primary || '#0d9488' }}>
-                                                <Store className="h-4 w-4" />
-                                            </span>
-                                        )}
-                                        <span className="text-sm font-black text-slate-800">{store?.name ?? 'متجري'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="h-6 w-6 rounded-full bg-slate-100" />
-                                        <span className="h-6 w-6 rounded-full bg-slate-100" />
-                                        <span className="hidden h-8 rounded-full px-4 text-xs font-bold text-white sm:inline-flex sm:items-center" style={{ backgroundColor: colors.primary || '#0d9488' }}>
-                                            السلة
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Hero live preview */}
-                                <div className="relative flex min-h-[320px] items-center overflow-hidden bg-stone-900 p-6 text-white sm:min-h-[380px] sm:p-8">
-                                    {heroType === 'video' && heroVideoUrl ? (
-                                        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover" src={normalizeImageUrl(heroVideoUrl)} />
-                                    ) : heroType === 'youtube' && youtubeId ? (
-                                        <iframe
-                                            className="absolute inset-0 h-full w-full object-cover"
-                                            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${youtubeId}`}
-                                            title="YouTube preview"
-                                            frameBorder="0"
-                                            allow="autoplay; fullscreen"
-                                        />
-                                    ) : heroImages.length > 0 ? (
-                                        <img src={normalizeImageUrl(heroImages[0])} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                                    ) : (
-                                        <div className="absolute inset-0 bg-gradient-to-l from-stone-800 to-stone-900" />
-                                    )}
-                                    <div className="absolute inset-0 bg-black" style={{ opacity: heroOverlay / 100 }} />
-                                    <div className="relative z-10 max-w-md">
-                                        <h3 className="font-serif text-2xl font-bold leading-tight sm:text-3xl">{heroHeading || 'العنوان الرئيسي للبنر'}</h3>
-                                        <p className="mt-2 text-sm text-white/80">{heroSubtitle || 'الوصف الفرعي يظهر هنا بشكل حي'}</p>
-                                        <span className="mt-4 inline-flex items-center rounded-full border border-white/70 px-5 py-2 text-xs font-bold text-white backdrop-blur">{heroCtaLabel || 'اكتشفي التشكيلة'}</span>
-                                    </div>
-                                    {heroImages.length > 1 && (
-                                        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-                                            {heroImages.slice(0, 5).map((_, i) => (
-                                                <span key={i} className={`h-1.5 rounded-full transition ${i === 0 ? 'w-6 bg-white' : 'w-1.5 bg-white/60'}`} />
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Mock product strip */}
-                                <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4 sm:p-6">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="overflow-hidden rounded-2xl border bg-white">
-                                            <div className="aspect-[4/3] bg-slate-100" />
-                                            <div className="space-y-2 p-3">
-                                                <div className="h-3 w-3/4 rounded bg-slate-100" />
-                                                <div className="h-3 w-1/2 rounded bg-slate-100" />
-                                                <div className="h-7 w-full rounded-full" style={{ backgroundColor: colors.primary ? `${colors.primary}14` : '#ecfdf5' }} />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Live iframe – real store */}
-                                <div className="border-t bg-slate-50">
-                                    <div className="flex items-center justify-between px-4 py-2">
-                                        <p className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
-                                            <Settings2 className="h-3.5 w-3.5" /> المعاينة الحقيقية للمتجر
-                                        </p>
-                                        <a href={storeUrl} target="_blank" rel="noopener" className="text-xs font-bold text-emerald-600 hover:underline">
-                                            فتح في تبويب جديد ↗
-                                        </a>
-                                    </div>
-                                    <div className="overflow-hidden border-t bg-white">
-                                        {/* eslint-disable-next-line jsx-a11y/iframe-has-title */}
-                                        <iframe src={storeUrl} className="h-[520px] w-full border-0" loading="lazy" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <p className="mt-3 text-center text-xs text-slate-400">المعاينة الحية تتحدث فورياً — احفظ التغييرات لتظهر للزوار</p>
+                    <div className="flex flex-1 flex-col overflow-hidden bg-slate-100 p-4 sm:p-6">
+                        <div className={`mx-auto flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-out ${previewMode === 'mobile' ? 'w-[375px] max-w-full rounded-[24px] border border-slate-200 shadow-xl ring-1 ring-slate-200' : 'w-full max-w-[1100px] rounded-[16px] border border-slate-200 shadow-xl ring-1 ring-slate-200'}`}>
+                            {(() => {
+                                const previewSrc = (() => {
+                                    const base = String(storeUrl || '').trim();
+                                    if (!base) return '';
+                                    try {
+                                        const u = new URL(base, window.location.origin);
+                                        u.searchParams.set('preview', 'true');
+                                        return u.toString();
+                                    } catch {
+                                        return base.includes('?') ? `${base}&preview=true` : `${base}?preview=true`;
+                                    }
+                                })();
+                                return (
+                                    <iframe
+                                        key={previewSrc}
+                                        src={previewSrc}
+                                        title="Live store preview"
+                                        className="h-full min-h-[520px] w-full flex-1 border-0 bg-white"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer"
+                                        allow="fullscreen"
+                                    />
+                                );
+                            })()}
                         </div>
+                        <p className="mt-3 text-center text-xs text-slate-400">المعاينة الحية تتحدث فورياً — احفظ التغييرات لتظهر للزوار</p>
                     </div>
                 </main>
             </div>

@@ -47,8 +47,8 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
 
   return (
     <header
-      className={`sticky top-0 z-40 w-full border-b bg-[#faf7f2]/95 backdrop-blur transition-shadow ${
-        scrolled ? 'border-stone-200 shadow-[0_8px_30px_rgba(60,45,35,0.08)]' : 'border-transparent'
+      className={`hidden md:block sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${
+        scrolled ? 'shadow-[0_8px_30px_rgba(60,45,35,0.08)]' : ''
       }`}
       dir="rtl"
     >
@@ -103,7 +103,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2 text-stone-700 transition hover:bg-stone-100">
             <Heart className="h-5 w-5" strokeWidth={1.7} />
             {!!wishlist?.count && (
-              <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9d7463] px-1 text-[9px] font-bold text-white">
+              <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#9d7463] px-1 text-[9px] font-bold text-white">
                 {wishlist.count}
               </span>
             )}

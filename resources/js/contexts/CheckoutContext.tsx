@@ -429,6 +429,18 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     if (field === 'phone') setPhoneError('');
   };
 
+  // Trigger abandoned cart draft save on email/phone input (debounced)
+  useEffect(() => {
+    const email = customerInfo.email?.trim() || '';
+    const phone = customerInfo.phone?.trim() || '';
+    if (!email && !phone) return;
+    const t = setTimeout(() => {
+      saveDraftOrder(email, phone);
+    }, 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customerInfo.email, customerInfo.phone]);
+
   const handleNextStep = () => {
     if (step === 1) {
       let hasErrors = false;
@@ -529,13 +541,84 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        setPaymentMethods(data.payment_methods || []);
+        let methods = data.payment_methods || [];
+        // Ensure COD is always available as standard payment choice across all checkout flows
+        const hasCOD = methods.some((m: any) => ['cod', 'cash', 'cash_on_delivery', 'cash-on-delivery'].includes(String(m.name || m.code || '').toLowerCase()));
+        if (!hasCOD) {
+          methods = [
+            ...methods,
+            {
+              name: 'cod',
+              code: 'cod',
+              display_name: 'الدفع عند الاستلام',
+              description: 'ادفع نقداً عند توصيل الطلب',
+              enabled: true,
+            },
+          ];
+        }
+        setPaymentMethods(methods);
+        // Auto-select COD if no selection and COD is enabled
+        if (!selectedPayment) {
+          const cod = methods.find((m: any) => String(m.name).toLowerCase() === 'cod');
+          if (cod) setSelectedPayment('cod');
+        }
+      } else {
+        // Fallback: at least expose COD when API fails
+        setPaymentMethods([
+          {
+            name: 'cod',
+            code: 'cod',
+            display_name: 'الدفع عند الاستلام',
+            description: 'ادفع نقداً عند توصيل الطلب',
+            enabled: true,
+          },
+        ]);
       }
     } catch (error) {
       console.error('Failed to load payment methods:', error);
+      setPaymentMethods([
+        {
+          name: 'cod',
+          code: 'cod',
+          display_name: 'الدفع عند الاستلام',
+          description: 'ادفع نقداً عند توصيل الطلب',
+          enabled: true,
+        },
+      ]);
     } finally {
       setLoadingPayments(false);
     }
+  };
+
+  // --- Abandoned cart: save draft order when phone/email entered ---
+  const saveDraftOrder = async (email: string, phone: string) => {
+    if (!store?.id) return;
+    if (!email && !phone) return;
+    // Require at least valid email or phone
+    if (email && !validateEmail(email)) return;
+    if (phone && !validatePhone(phone)) return;
+    try {
+      const cartData = (window as any)?.page?.props?.cartItems || (window as any)?.page?.props?.cart?.items || [];
+      // Also try to read from localStorage cart if needed
+      const items = Array.isArray(cartData) && cartData.length > 0
+        ? cartData.map((it: any) => ({ name: it.name || it.title || 'Product', quantity: Number(it.quantity) || 1, price: Number(it.price) || 0 }))
+        : [];
+      // Even if cart empty, still send customer identifiers so abandoned cart can be updated with contact info
+      await fetch(route('api.cart.track'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({
+          store_id: store.id,
+          items: items.length > 0 ? items : [{ name: 'Draft', quantity: 1, price: 0 }],
+          customer_email: email || undefined,
+          customer_phone: phone || undefined,
+        }),
+      }).catch(() => {});
+    } catch {}
   };
 
   const handlePlaceOrder = async (total: number) => {

@@ -23,7 +23,7 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#3d332b] bg-[#191410]/97 backdrop-blur" dir="rtl">
+    <header className="hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100" dir="rtl">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
         <a href={homeHref} className="flex items-center gap-2.5">
           {(config?.logo || store?.logo) ? (

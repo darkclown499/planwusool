@@ -766,6 +766,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('shipping/{id}', [\App\Http\Controllers\ShippingController::class, 'update'])->middleware('permission:edit-shipping')->name('shipping.update');
             Route::delete('shipping/{id}', [\App\Http\Controllers\ShippingController::class, 'destroy'])->middleware('permission:delete-shipping')->name('shipping.destroy');
             Route::get('shipping/{id}', [\App\Http\Controllers\ShippingController::class, 'show'])->middleware('permission:view-shipping')->name('shipping.show');
+            // Alias routes for sidebar spec ( /store/shipping → shipping.index )
+            Route::get('store/shipping', fn() => redirect()->route('shipping.index'))->name('store.shipping');
+            Route::get('store/payment-methods', function (\Illuminate\Http\Request $request) {
+                $user = $request->user();
+                $storeId = $user?->current_store;
+                if ($storeId) return redirect()->route('stores.payments', $storeId);
+                return redirect()->route('shipping.index');
+            })->name('store.payment-methods');
         
         // Customer Management routes with permissions
             Route::get('customers', [\App\Http\Controllers\CustomerController::class, 'index'])->middleware('permission:manage-customers')->name('customers.index');

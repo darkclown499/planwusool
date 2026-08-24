@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { ArrowLeft, Edit, Settings, Globe, Paintbrush, LayoutTemplate, MoreVertical, CreditCard, Link2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,10 +9,12 @@ import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { formatLocalDate } from '@/utils/date-helper';
+import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 
 export default function ViewStore({ store, stats, storeUrl }: any) {
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
+  const [designerOpen, setDesignerOpen] = useState(false);
 
 
   // Get permissions directly
@@ -51,9 +53,9 @@ export default function ViewStore({ store, stats, storeUrl }: any) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => window.open(route('stores.designer', store.id) as string, '_blank')}>
+            <DropdownMenuItem onClick={() => setDesignerOpen(true)}>
               <Paintbrush className="h-4 w-4" />
-              تصميم المتجر
+              تخصيص تصميم المتجر
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.visit(route('stores.features', store.id))}>
               <LayoutTemplate className="h-4 w-4" />
@@ -142,6 +144,7 @@ export default function ViewStore({ store, stats, storeUrl }: any) {
           </Card>
         </div>
       </div>
+      <DesignerNavigationModal open={designerOpen} onOpenChange={setDesignerOpen} storeId={store.id} />
     </PageTemplate>
   );
 }

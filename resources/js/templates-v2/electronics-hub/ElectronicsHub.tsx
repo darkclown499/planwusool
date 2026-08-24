@@ -49,7 +49,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   }, [q, product?.products]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800 bg-[#0b1220]/97 backdrop-blur" dir="rtl">
+    <header className="hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100" dir="rtl">
       {/* Trust strip */}
       <div className="border-b border-slate-800/70 bg-[#0e1729]">
         <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 py-1.5 text-[11px] font-semibold text-slate-400 sm:px-6 lg:px-8">
@@ -352,7 +352,7 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
               {categories.slice(0, 12).map((c: any) => (
                 <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-2xl border border-slate-800 bg-[#101a2e] p-2.5 transition hover:border-blue-500/50 hover:bg-[#12203d] sm:gap-2 sm:p-4">
                   <span className="text-blue-400">{categoryIcon(c.name)}</span>
-                  <span className="line-clamp-1 text-center text-[11px] font-bold text-slate-300 group-hover:text-blue-300 sm:text-xs">{c.name}</span>
+                  <span className="max-w-[80px] break-words text-center text-xs font-bold leading-tight text-slate-300 group-hover:text-blue-300 line-clamp-2">{c.name}</span>
                 </a>
               ))}
             </div>

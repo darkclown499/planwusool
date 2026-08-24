@@ -56,7 +56,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
                   </span>
                 )}
               </span>
-              <span className="line-clamp-1 w-full text-center text-[13px] font-medium text-stone-700 transition-colors group-hover:text-[#9d7463]">{c.name}</span>
+              <span className="w-full max-w-[80px] break-words text-center text-xs font-medium leading-tight text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-2">{c.name}</span>
             </a>
           ))}
         </div>

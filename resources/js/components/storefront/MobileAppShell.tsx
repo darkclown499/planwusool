@@ -113,40 +113,29 @@ export const MobileAppShell: React.FC = () => {
 
   return (
     <>
-      {/* App header — replaces the theme's own header on mobile */}
-      <header data-app-shell="header" className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm md:hidden">
-        <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-          {config.logo ? (
-            <img src={getImageUrl(config.logo)} alt={config.storeName} className="h-8 w-auto max-w-24 object-contain" />
-          ) : (
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white" style={{ backgroundColor: accent }}>
-              <Store className="h-4 w-4" />
-            </span>
-          )}
-          <h1 className="min-w-0 flex-1 truncate text-[15px] font-bold text-gray-900">{config.storeName}</h1>
-          <button
-            type="button"
-            onClick={handleCartClick}
-            aria-label={t('السلة')}
-            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            <ShoppingCart className="h-5 w-5" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-0.5 -end-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                {cartItems.length > 99 ? '99+' : cartItems.length}
+      {/* App header — single clean top header for mobile (Logo right / Search middle / Cart left) */}
+      <header dir="rtl" data-app-shell="header" className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm md:hidden">
+        <div className="flex items-center gap-2 px-3 py-2.5">
+          {/* Logo on right (RTL start) */}
+          <div className="flex shrink-0 items-center gap-2">
+            {config.logo ? (
+              <img src={getImageUrl(config.logo)} alt={config.storeName} className="h-8 w-auto max-w-24 object-contain" />
+            ) : (
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white" style={{ backgroundColor: accent }}>
+                <Store className="h-4 w-4" />
               </span>
             )}
-          </button>
-        </div>
-        <div className="px-3 pb-2.5">
-          <div className="relative">
+            <h1 className="hidden max-w-24 truncate text-[13px] font-bold text-gray-900 sm:block">{config.storeName}</h1>
+          </div>
+          {/* Search in middle — single trigger, no duplication */}
+          <div className="relative min-w-0 flex-1">
             <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder={t('ابحث عن المنتجات...')}
-              className="h-10 w-full rounded-full border border-gray-200 bg-gray-50 ps-9 pe-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-transparent focus:bg-white focus:ring-2 focus:outline-none"
+              className="h-9 w-full rounded-full border border-gray-200 bg-gray-50 ps-9 pe-7 text-sm text-gray-900 placeholder:text-gray-400 focus:border-transparent focus:bg-white focus:ring-2 focus:outline-none"
               style={{ ['--tw-ring-color' as any]: `${accent}66` }}
             />
             {searchQuery && (
@@ -160,6 +149,20 @@ export const MobileAppShell: React.FC = () => {
               </button>
             )}
           </div>
+          {/* Cart/Menu on left (RTL end) — hidden when BottomNav cart is primary to avoid duplication, keep single trigger */}
+          <button
+            type="button"
+            onClick={handleCartClick}
+            aria-label={t('السلة')}
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-0.5 -end-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {cartItems.length > 99 ? '99+' : cartItems.length}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 

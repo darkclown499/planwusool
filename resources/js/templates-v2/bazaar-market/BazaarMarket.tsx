@@ -36,7 +36,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
   const categories = (product?.categories || []).slice(0, 8);
 
   return (
-    <header className={`sticky top-0 z-40 bg-white transition-shadow ${scrolled ? 'shadow-lg shadow-teal-950/5' : ''}`} dir="rtl">
+    <header className={`hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-lg shadow-teal-950/5' : ''}`} dir="rtl">
       {/* Masthead */}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <a href={homeHref} className="flex items-center gap-2.5">
@@ -57,7 +57,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700">
             <Heart className="h-5 w-5" strokeWidth={1.8} />
             {!!wishlist?.count && (
-              <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">{wishlist.count}</span>
+              <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">{wishlist.count}</span>
             )}
           </button>
           <button
@@ -282,7 +282,7 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                       <span className="flex h-full w-full items-center justify-center bg-teal-50 text-xl sm:text-2xl">🛍️</span>
                     )}
                   </span>
-                  <span className="line-clamp-1 text-center text-xs font-bold text-slate-600 group-hover:text-teal-700">{c.name}</span>
+                  <span className="max-w-[80px] break-words text-center text-xs font-bold leading-tight text-slate-600 group-hover:text-teal-700 line-clamp-2">{c.name}</span>
                 </a>
               ))}
             </div>

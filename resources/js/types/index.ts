@@ -95,6 +95,7 @@ export interface NavItem {
     children?: NavItem[];
     target?: string;
     groupLabel?: string;
+    onClick?: () => void;
 }
 
 export interface BreadcrumbItem {
