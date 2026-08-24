@@ -43,7 +43,7 @@ class StoreDomainController extends Controller
 
         if (!$store->canUseCustomDomain()) {
             return response()->json([
-                'message' => __('Connecting a custom domain is not included in your current plan. Please upgrade your plan to use your own domain.'),
+                'message' => __('ربط النطاق المخصص غير متاح في خطتك الحالية. يرجى ترقية الخطة لاستخدام نطاقك الخاص.'),
             ], 403);
         }
 

@@ -268,6 +268,8 @@ Route::middleware('api.throttle')->group(function () {
     // Abandoned cart tracking API (storefront) — draft capture & recovery
     Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
     Route::post('api/cart/draft', [CartTrackingController::class, 'draft'])->name('api.cart.draft');
+    // Categories API with explicit storeId validation — fallback to empty list instead of 500
+    Route::get('api/categories', [\App\Http\Controllers\CategoryController::class, 'apiIndex'])->name('api.categories.index');
     
     // Store content/banners API (authenticated, store owner only)
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
@@ -727,6 +729,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('categories/{id}', [\App\Http\Controllers\CategoryController::class, 'update'])->middleware('permission:edit-categories')->name('categories.update');
         Route::delete('categories/{id}', [\App\Http\Controllers\CategoryController::class, 'destroy'])->middleware('permission:delete-categories')->name('categories.destroy');
         Route::get('categories/{id}', [\App\Http\Controllers\CategoryController::class, 'show'])->middleware('permission:view-categories')->name('categories.show');
+        // Store-context categories route — prevents 500 when navigating via /stores/{store}/categories (task spec)
+        Route::get('stores/{store}/categories', [\App\Http\Controllers\CategoryController::class, 'index'])->middleware('permission:manage-categories')->name('stores.categories.index');
         
         // Tax Management routes with permissions
         Route::get('tax', [\App\Http\Controllers\TaxController::class, 'index'])->middleware('permission:manage-tax')->name('tax.index');
@@ -822,13 +826,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('digital-downloads', [DigitalDownloadController::class, 'index'])->name('digital-downloads.index');
         });
 
-        // Abandoned Cart Recovery routes
+        // Abandoned Cart Recovery routes - global
         Route::middleware('permission:manage-abandoned-carts')->group(function () {
             Route::get('abandoned-carts', [AbandonedCartController::class, 'index'])->name('abandoned-carts.index');
             Route::get('abandoned-carts/export', [AbandonedCartController::class, 'export'])->middleware('permission:export-abandoned-carts')->name('abandoned-carts.export');
             Route::post('abandoned-carts/{abandonedCart}/send-reminder', [AbandonedCartController::class, 'sendReminder'])->middleware('permission:send-abandoned-cart-reminders')->name('abandoned-carts.send-reminder');
             Route::post('abandoned-carts/{abandonedCart}/mark-recovered', [AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
             Route::delete('abandoned-carts/{abandonedCart}', [AbandonedCartController::class, 'destroy'])->middleware('permission:delete-abandoned-carts')->name('abandoned-carts.destroy');
+        });
+
+        // Abandoned Cart Recovery routes - store-scoped for merchant dashboard (fixes 403 for STORE_OWNER / STORE_ADMIN)
+        Route::middleware('permission:manage-abandoned-carts')->group(function () {
+            Route::get('stores/{store}/abandoned-carts', [AbandonedCartController::class, 'index'])->name('stores.abandoned-carts.index');
+            Route::get('stores/{store}/abandoned-carts/export', [AbandonedCartController::class, 'export'])->name('stores.abandoned-carts.export');
+            Route::post('stores/{store}/abandoned-carts/{abandonedCart}/send-reminder', [AbandonedCartController::class, 'sendReminder'])->name('stores.abandoned-carts.send-reminder');
+            Route::post('stores/{store}/abandoned-carts/{abandonedCart}/mark-recovered', [AbandonedCartController::class, 'markRecovered'])->name('stores.abandoned-carts.mark-recovered');
+            Route::delete('stores/{store}/abandoned-carts/{abandonedCart}', [AbandonedCartController::class, 'destroy'])->name('stores.abandoned-carts.destroy');
         });
 
         // Advanced Coupons routes (dedicated advanced-coupon permissions)

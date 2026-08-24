@@ -235,11 +235,21 @@ protected $fillable = [
     
     /**
      * Check if store can use custom domain based on plan
+     * Super admin / store owners testing bypass via current authenticated user is handled in controller; this helper checks plan features.
      */
-    public function canUseCustomDomain()
+    public function canUseCustomDomain(): bool
     {
-        $plan = $this->user->getCurrentPlan();
-        return $plan && $plan->enable_custdomain === 'on';
+        // Direct plan feature check
+        $plan = $this->user?->getCurrentPlan();
+        if ($plan && $plan->enable_custdomain === 'on') {
+            return true;
+        }
+        // Current authenticated user is super admin -> allow for testing/bypass
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        if ($authUser && $authUser->isSuperAdmin()) {
+            return true;
+        }
+        return false;
     }
     
     /**

@@ -11,34 +11,94 @@ use Inertia\Inertia;
 class CategoryController extends Controller
 {
     /**
-     * Display a listing of the categories.
+     * Display a listing of the categories. Now validates storeId explicitly and
+     * returns fallback UI instead of 500 when storeId is missing or query fails.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $currentStoreId = getCurrentStoreId($user);
-        
-        // Get categories for the current store with parent relationship and products count
-        $categories = Category::with('parent')
-                            ->withCount('products')
-                            ->where('store_id', $currentStoreId)
-                            ->get();
-        
-        // Get statistics
-        $totalCategories = $categories->count();
-        $activeCategories = $categories->where('is_active', true)->count();
-        $parentCategories = $categories->whereNull('parent_id')->count();
-        $subCategories = $categories->whereNotNull('parent_id')->count();
-        
-        return Inertia::render('categories/index', [
-            'categories' => $categories,
-            'stats' => [
-                'total' => $totalCategories,
-                'active' => $activeCategories,
-                'parent' => $parentCategories,
-                'sub' => $subCategories
-            ]
+        // Prefer explicit store param (for /stores/{store}/categories) then current store context
+        $paramStoreId = $request->route('store') ? (int) $request->route('store') : null;
+        $currentStoreId = $paramStoreId ?: getCurrentStoreId($user);
+
+        // Explicit validation for storeId
+        if (empty($currentStoreId) || !is_numeric($currentStoreId)) {
+            return Inertia::render('categories/index', [
+                'categories' => [],
+                'stats' => ['total' => 0, 'active' => 0, 'parent' => 0, 'sub' => 0],
+                'warning' => __('Store not selected or invalid. Please select a store.'),
+            ]);
+        }
+
+        try {
+            // Verify store belongs to user (or superadmin) — avoid leaking other stores
+            if (!Auth::user()?->isSuperAdmin() && !Auth::user()?->isAdmin()) {
+                $owns = \App\Models\Store::where('id', $currentStoreId)->where('user_id', $user->id)->exists();
+                $hasBusiness = $user->businesses?->contains('id', (int) $currentStoreId);
+                if (!$owns && !$hasBusiness) {
+                    return Inertia::render('categories/index', [
+                        'categories' => [],
+                        'stats' => ['total' => 0, 'active' => 0, 'parent' => 0, 'sub' => 0],
+                        'warning' => __('You do not have access to this store.'),
+                    ]);
+                }
+            }
+
+            $categories = Category::with('parent')
+                ->withCount('products')
+                ->where('store_id', $currentStoreId)
+                ->get();
+
+            $totalCategories = $categories->count();
+            $activeCategories = $categories->where('is_active', true)->count();
+            $parentCategories = $categories->whereNull('parent_id')->count();
+            $subCategories = $categories->whereNotNull('parent_id')->count();
+
+            return Inertia::render('categories/index', [
+                'categories' => $categories,
+                'stats' => [
+                    'total' => $totalCategories,
+                    'active' => $activeCategories,
+                    'parent' => $parentCategories,
+                    'sub' => $subCategories
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Categories index failed: ' . $e->getMessage(), ['store_id' => $currentStoreId, 'exception' => $e]);
+            return Inertia::render('categories/index', [
+                'categories' => [],
+                'stats' => ['total' => 0, 'active' => 0, 'parent' => 0, 'sub' => 0],
+                'warning' => __('Failed to load categories. Please try again.'),
+            ]);
+        }
+    }
+
+    /**
+     * API: GET /api/categories?storeId= — explicit storeId validation with try-catch fallback.
+     */
+    public function apiIndex(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'storeId' => 'nullable|integer|exists:stores,id',
+            'store_id' => 'nullable|integer|exists:stores,id',
         ]);
+        if ($validator->fails()) {
+            return response()->json(['categories' => [], 'error' => 'Invalid storeId'], 422);
+        }
+        $storeId = $request->input('storeId') ?? $request->input('store_id') ?? getCurrentStoreId(Auth::user());
+        if (empty($storeId)) {
+            return response()->json(['categories' => [], 'warning' => 'Missing storeId'], 200);
+        }
+        try {
+            $categories = Category::with('parent')
+                ->withCount('products')
+                ->where('store_id', $storeId)
+                ->get();
+            return response()->json(['categories' => $categories]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('API categories failed: ' . $e->getMessage(), ['store_id' => $storeId]);
+            return response()->json(['categories' => [], 'error' => 'Failed to load categories'], 200);
+        }
     }
 
     /**

@@ -231,7 +231,11 @@ export function AppSidebar() {
             productChildren.push({ title: t('Products'), href: route('products.index') });
         }
         if (hasPermission('manage-categories')) {
-            productChildren.push({ title: t('Categories'), href: route('categories.index') });
+            const categoriesHref = currentStoreIdEarly ? `/stores/${currentStoreIdEarly}/categories` : (() => { try { return route('categories.index'); } catch { return '/categories'; } })();
+            const categoriesActive = currentStoreIdEarly ? [`/stores/${currentStoreIdEarly}/categories`, '/categories'] : ['/categories'];
+            // ensure also legacy route considered active
+            try { categoriesActive.push(route('categories.index')); } catch {}
+            productChildren.push({ title: t('Categories'), href: categoriesHref, activePaths: [...new Set(categoriesActive)] });
         }
         if (hasPermission('manage-tax')) {
             productChildren.push({ title: t('Tax'), href: route('tax.index') });
@@ -321,10 +325,12 @@ export function AppSidebar() {
             });
         }
         if (hasPermission('manage-abandoned-carts')) {
+            const storeId = auth.user?.current_store;
+            const abandonedHref = storeId ? `/stores/${storeId}/abandoned-carts` : route('abandoned-carts.index');
             marketingChildren.push({ 
                 title: t('Abandoned Carts'),
                 icon: ShoppingCart,
-                href: route('abandoned-carts.index')
+                href: abandonedHref
             });
         }
         if (hasPermission('manage-cod-payments')) {

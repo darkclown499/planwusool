@@ -13,7 +13,7 @@ import { hasPermission } from '@/utils/permissions';
 
 export default function AbandonedCarts() {
   const { t } = useTranslation();
-  const { carts = { data: [] }, stats = { total: 0, new: 0, reminder_sent: 0, recovered: 0, expired: 0, recovered_amount: 0, total_abandoned_amount: 0, recovery_rate: 0 }, filters = {}, currency_symbol } = usePage().props as any;
+  const { carts = { data: [] }, stats = { total: 0, new: 0, reminder_sent: 0, recovered: 0, expired: 0, recovered_amount: 0, total_abandoned_amount: 0, recovery_rate: 0 }, filters = {}, currency_symbol, activeStoreId } = usePage().props as any;
   const [cartToDelete, setCartToDelete] = useState<number | null>(null);
   const [search, setSearch] = useState(filters.search || '');
   const [status, setStatus] = useState(filters.status || 'all');
@@ -37,20 +37,54 @@ export default function AbandonedCarts() {
     return variants[status] || { variant: 'default' as const, label: status };
   };
 
+  const getIndexRoute = () => {
+    try {
+      if (activeStoreId && route().has('stores.abandoned-carts.index')) {
+        return route('stores.abandoned-carts.index', activeStoreId);
+      }
+    } catch {}
+    return route('abandoned-carts.index');
+  };
+
   const handleSendReminder = (cartId: number) => {
+    try {
+      if (activeStoreId && route().has('stores.abandoned-carts.send-reminder')) {
+        router.post(route('stores.abandoned-carts.send-reminder', [activeStoreId, cartId]), {}, { preserveScroll: true });
+        return;
+      }
+    } catch {}
     router.post(route('abandoned-carts.send-reminder', cartId), {}, { preserveScroll: true });
   };
 
   const handleMarkRecovered = (cartId: number) => {
+    try {
+      if (activeStoreId && route().has('stores.abandoned-carts.mark-recovered')) {
+        router.post(route('stores.abandoned-carts.mark-recovered', [activeStoreId, cartId]), {}, { preserveScroll: true });
+        return;
+      }
+    } catch {}
     router.post(route('abandoned-carts.mark-recovered', cartId), {}, { preserveScroll: true });
   };
 
   const handleExport = () => {
+    try {
+      if (activeStoreId && route().has('stores.abandoned-carts.export')) {
+        window.open(route('stores.abandoned-carts.export', activeStoreId), '_blank');
+        return;
+      }
+    } catch {}
     window.open(route('abandoned-carts.export'), '_blank');
   };
 
   const handleDelete = () => {
     if (cartToDelete) {
+      try {
+        if (activeStoreId && route().has('stores.abandoned-carts.destroy')) {
+          router.delete(route('stores.abandoned-carts.destroy', [activeStoreId, cartToDelete]));
+          setCartToDelete(null);
+          return;
+        }
+      } catch {}
       router.delete(route('abandoned-carts.destroy', cartToDelete));
       setCartToDelete(null);
     }
@@ -62,7 +96,7 @@ export default function AbandonedCarts() {
     }
     const debounce = setTimeout(() => {
       router.get(
-        route('abandoned-carts.index'),
+        getIndexRoute(),
         { search: search.trim() || undefined, status: status === 'all' ? undefined : status },
         { preserveState: true, replace: true, preserveScroll: true }
       );
@@ -77,18 +111,19 @@ export default function AbandonedCarts() {
       return;
     }
     router.get(
-      route('abandoned-carts.index'),
+      getIndexRoute(),
       { search: search.trim() || undefined, status: status === 'all' ? undefined : status },
       { preserveState: true, replace: true, preserveScroll: true }
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
+  const pageUrl = activeStoreId ? `/stores/${activeStoreId}/abandoned-carts` : '/abandoned-carts';
   return (
     <PageTemplate
       title={t('Abandoned Cart Recovery')}
       description={t('Track and recover abandoned shopping carts')}
-      url="/abandoned-carts"
+      url={pageUrl}
       breadcrumbs={[
         { title: t('Dashboard'), href: route('dashboard') },
         { title: t('Abandoned Carts') }

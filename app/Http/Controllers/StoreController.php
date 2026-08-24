@@ -191,15 +191,15 @@ class StoreController extends Controller
             'pwa_orientation' => __('Orientation'),
         ]);
         
-        // Validate plan permissions for domain features
+        // Validate plan permissions for domain features (super admin bypasses)
         $plan = $user->getCurrentPlan();
-        if ($request->enable_custom_domain && $plan->enable_custdomain !== 'on') {
-            return redirect()->back()->with('error', __('Custom domain feature is not available in your current plan.'));
+        if ($request->enable_custom_domain && $plan->enable_custdomain !== 'on' && !$user->isSuperAdmin()) {
+            return redirect()->back()->with('error', __('ربط النطاق المخصص غير متاح في خطتك الحالية. يرجى ترقية الخطة لاستخدام نطاقك الخاص.'));
         }
-        if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on') {
+        if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on' && !$user->isSuperAdmin()) {
             return redirect()->back()->with('error', __('Custom subdomain feature is not available in your current plan.'));
         }
-        if ($request->enable_pwa && $plan->pwa_business !== 'on') {
+        if ($request->enable_pwa && $plan->pwa_business !== 'on' && !$user->isSuperAdmin()) {
             return redirect()->back()->with('error', __('PWA feature is not available in your current plan.'));
         }
         
@@ -386,15 +386,15 @@ class StoreController extends Controller
             'pwa_orientation' => __('Orientation'),
         ]);
         
-        // Validate plan permissions for domain features
+        // Validate plan permissions for domain features (super admin bypasses)
         $plan = $user->getCurrentPlan();
-        if ($request->enable_custom_domain && $plan->enable_custdomain !== 'on') {
-            return redirect()->back()->with('error', __('Custom domain feature is not available in your current plan.'));
+        if ($request->enable_custom_domain && $plan->enable_custdomain !== 'on' && !$user->isSuperAdmin()) {
+            return redirect()->back()->with('error', __('ربط النطاق المخصص غير متاح في خطتك الحالية. يرجى ترقية الخطة لاستخدام نطاقك الخاص.'));
         }
-        if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on') {
+        if ($request->enable_custom_subdomain && $plan->enable_custsubdomain !== 'on' && !$user->isSuperAdmin()) {
             return redirect()->back()->with('error', __('Custom subdomain feature is not available in your current plan.'));
         }
-        if ($request->enable_pwa && $plan->pwa_business !== 'on') {
+        if ($request->enable_pwa && $plan->pwa_business !== 'on' && !$user->isSuperAdmin()) {
             return redirect()->back()->with('error', __('PWA feature is not available in your current plan.'));
         }
         

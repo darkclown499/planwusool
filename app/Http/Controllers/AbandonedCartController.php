@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AbandonedCart;
+use App\Models\Store;
 use App\Services\AbandonedCartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,11 +20,46 @@ class AbandonedCartController extends Controller
 
     /**
      * Display a listing of abandoned carts.
+     * Supports both global (/abandoned-carts) and store-scoped (/stores/{store}/abandoned-carts) routes.
+     * RBAC: STORE_OWNER / STORE_ADMIN can access filtered by activeStoreId without superAdmin.
      */
-    public function index(Request $request)
+    public function index(Request $request, Store $store = null)
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+
+        // Resolve target store: route-bound store takes precedence, else current_store
+        $routeStore = $request->route('store');
+        if ($routeStore instanceof Store) {
+            $targetStore = $routeStore;
+        } elseif (is_numeric($routeStore)) {
+            $targetStore = Store::find($routeStore);
+        } elseif ($store instanceof Store && $store->exists) {
+            $targetStore = $store;
+        } else {
+            $targetStore = null;
+        }
+
+        if ($targetStore) {
+            // Store-scoped access: verify ownership or store-admin without requiring superAdmin
+            $currentStoreId = $targetStore->id;
+            $isOwner = (int) $targetStore->user_id === (int) $user->id;
+            $isActiveStore = (int) $user->current_store === (int) $currentStoreId;
+            $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+            $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+            if (!$isSuper && !$isAdmin && !$isOwner && !$isActiveStore) {
+                // Also allow if user has explicit store access via permission
+                abort(403, 'Unauthorized store access');
+            }
+        } else {
+            // Global route: filter strictly by activeStoreId for non-superAdmins
+            $currentStoreId = $user->current_store;
+            $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+            $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+            if (!$isSuper && !$isAdmin && !$currentStoreId) {
+                abort(403, 'No active store selected');
+            }
+            // Non-super users are strictly scoped to their activeStoreId
+        }
 
         $query = AbandonedCart::where('store_id', $currentStoreId);
 
@@ -68,19 +104,43 @@ class AbandonedCartController extends Controller
             'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'per_page']),
             'stats' => $stats,
             'currency_symbol' => $currencySymbol,
+            'activeStoreId' => $currentStoreId,
         ]);
     }
 
     /**
      * Send a manual reminder for a specific abandoned cart.
+     * Store-scoped: validates against route store or activeStoreId without superAdmin requirement.
      */
-    public function sendReminder(AbandonedCart $abandonedCart)
+    public function sendReminder(Request $request, AbandonedCart $abandonedCart)
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+        $routeStore = $request->route('store');
+        $targetStoreId = null;
+        if ($routeStore instanceof Store) {
+            $targetStoreId = $routeStore->id;
+        } elseif (is_numeric($routeStore)) {
+            $targetStoreId = (int) $routeStore;
+        } else {
+            $targetStoreId = $user->current_store;
+        }
 
-        if ($abandonedCart->store_id !== $currentStoreId) {
+        // Allow STORE_OWNER / STORE_ADMIN filtered by activeStoreId; verify cart belongs to target store
+        if ((int) $abandonedCart->store_id !== (int) $targetStoreId) {
             abort(403, 'Unauthorized action.');
+        }
+        // Extra ownership check for store-scoped routes
+        if ($routeStore) {
+            $storeModel = $routeStore instanceof Store ? $routeStore : Store::find($targetStoreId);
+            if ($storeModel) {
+                $isOwner = (int) $storeModel->user_id === (int) $user->id;
+                $isActive = (int) $user->current_store === (int) $targetStoreId;
+                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+                if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
+                    abort(403, 'Unauthorized store access');
+                }
+            }
         }
 
         $this->abandonedCartService->sendReminder($abandonedCart);
@@ -91,13 +151,33 @@ class AbandonedCartController extends Controller
     /**
      * Mark an abandoned cart as recovered manually.
      */
-    public function markRecovered(AbandonedCart $abandonedCart)
+    public function markRecovered(Request $request, AbandonedCart $abandonedCart)
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+        $routeStore = $request->route('store');
+        $targetStoreId = null;
+        if ($routeStore instanceof Store) {
+            $targetStoreId = $routeStore->id;
+        } elseif (is_numeric($routeStore)) {
+            $targetStoreId = (int) $routeStore;
+        } else {
+            $targetStoreId = $user->current_store;
+        }
 
-        if ($abandonedCart->store_id !== $currentStoreId) {
+        if ((int) $abandonedCart->store_id !== (int) $targetStoreId) {
             abort(403, 'Unauthorized action.');
+        }
+        if ($routeStore) {
+            $storeModel = $routeStore instanceof Store ? $routeStore : Store::find($targetStoreId);
+            if ($storeModel) {
+                $isOwner = (int) $storeModel->user_id === (int) $user->id;
+                $isActive = (int) $user->current_store === (int) $targetStoreId;
+                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+                if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
+                    abort(403, 'Unauthorized store access');
+                }
+            }
         }
 
         $abandonedCart->update([
@@ -111,27 +191,76 @@ class AbandonedCartController extends Controller
     /**
      * Remove the specified abandoned cart.
      */
-    public function destroy(AbandonedCart $abandonedCart)
+    public function destroy(Request $request, AbandonedCart $abandonedCart)
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+        $routeStore = $request->route('store');
+        $targetStoreId = null;
+        if ($routeStore instanceof Store) {
+            $targetStoreId = $routeStore->id;
+        } elseif (is_numeric($routeStore)) {
+            $targetStoreId = (int) $routeStore;
+        } else {
+            $targetStoreId = $user->current_store;
+        }
 
-        if ($abandonedCart->store_id !== $currentStoreId) {
+        if ((int) $abandonedCart->store_id !== (int) $targetStoreId) {
             abort(403, 'Unauthorized action.');
+        }
+        if ($routeStore) {
+            $storeModel = $routeStore instanceof Store ? $routeStore : Store::find($targetStoreId);
+            if ($storeModel) {
+                $isOwner = (int) $storeModel->user_id === (int) $user->id;
+                $isActive = (int) $user->current_store === (int) $targetStoreId;
+                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+                if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
+                    abort(403, 'Unauthorized store access');
+                }
+            }
         }
 
         $abandonedCart->delete();
 
+        if ($routeStore) {
+            $storeId = $routeStore instanceof Store ? $routeStore->id : $targetStoreId;
+            return redirect()->route('stores.abandoned-carts.index', $storeId)->with('success', __('Cart deleted successfully!'));
+        }
         return redirect()->route('abandoned-carts.index')->with('success', __('Cart deleted successfully!'));
     }
 
     /**
      * Export abandoned carts data as CSV.
      */
-    public function export()
+    public function export(Request $request)
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+        $routeStore = $request->route('store');
+        $currentStoreId = null;
+        if ($routeStore instanceof Store) {
+            $currentStoreId = $routeStore->id;
+            $isOwner = (int) $routeStore->user_id === (int) $user->id;
+            $isActive = (int) $user->current_store === (int) $currentStoreId;
+            $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+            $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+            if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
+                abort(403, 'Unauthorized store access');
+            }
+        } elseif (is_numeric($routeStore)) {
+            $currentStoreId = (int) $routeStore;
+            $storeModel = Store::find($currentStoreId);
+            if ($storeModel) {
+                $isOwner = (int) $storeModel->user_id === (int) $user->id;
+                $isActive = (int) $user->current_store === (int) $currentStoreId;
+                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+                if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
+                    abort(403, 'Unauthorized store access');
+                }
+            }
+        } else {
+            $currentStoreId = $user->current_store;
+        }
 
         $carts = AbandonedCart::where('store_id', $currentStoreId)
             ->orderBy('last_activity_at', 'desc')

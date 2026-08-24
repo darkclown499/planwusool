@@ -29,6 +29,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/components/custom-toast';
 import { apiGet, apiPost, apiDelete } from '@/utils/api';
+import { usePage } from '@inertiajs/react';
+import { Crown } from 'lucide-react';
 
 interface DomainItem {
   id: number;
@@ -125,6 +127,21 @@ const CopyButton = ({
 
 export default function DomainsTab({ storeId }: DomainsTabProps) {
   const { t } = useTranslation();
+  const pageProps: any = (usePage().props as any) ?? {};
+  const authUser: any = pageProps?.auth?.user ?? pageProps?.authUser ?? null;
+  const pageStore: any = pageProps?.store ?? pageProps?.currentStore ?? null;
+  const isSuperAdmin = !!authUser && (authUser.type === 'superadmin' || authUser.type === 'super_admin' || authUser.isSuperAdmin === true || authUser.is_super_admin === true || authUser.role === 'superadmin');
+  // Plan feature check – supports both new feature map and legacy enable_custdomain column
+  const planFeatureRaw = pageStore?.plan?.features?.custom_domain ?? pageStore?.plan?.enable_custdomain ?? pageStore?.enable_custdomain ?? null;
+  const planAllowsDomain = typeof planFeatureRaw === 'string' ? planFeatureRaw === 'on' : typeof planFeatureRaw === 'boolean' ? planFeatureRaw : null;
+  const [planRestricted, setPlanRestricted] = useState(false);
+  // Task-specified bypass: const canAddDomain = store.plan.features?.custom_domain || currentUser.isSuperAdmin;
+  const canAddDomain = (() => {
+    if (isSuperAdmin) return true;
+    if (planAllowsDomain !== null) return !!planAllowsDomain;
+    return !planRestricted;
+  })();
+
   const [data, setData] = useState<DomainsPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [newDomain, setNewDomain] = useState('');
@@ -137,8 +154,17 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
   const load = useCallback(() => {
     setLoading(true);
     apiGet(route('stores.domains', storeId))
-      .then((res) => setData(res))
-      .catch((e) => toast.error(t(e.message || 'Failed to load domains')))
+      .then((res) => {
+        setData(res);
+        setPlanRestricted(false);
+      })
+      .catch((e: any) => {
+        const msg: string = String(e?.data?.message || e?.message || '');
+        if (e?.status === 403 || msg.includes('خطتك الحالية') || msg.includes('upgrade') || msg.includes('custom domain')) {
+          setPlanRestricted(true);
+        }
+        toast.error(t(msg || 'Failed to load domains'));
+      })
       .finally(() => setLoading(false));
   }, [storeId]);
 
@@ -159,6 +185,9 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
   };
 
   const handleAdd = () => {
+    if (!canAddDomain) {
+      return;
+    }
     const value = newDomain.trim();
     if (!value) {
       toast.error(t('Enter a domain name'));
@@ -171,7 +200,15 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
         setNewDomain('');
         load();
       })
-      .catch((e) => toast.error(t(e.data?.message || e.message || 'Failed to add domain')))
+      .catch((e: any) => {
+        const msg = String(e?.data?.message || e?.message || 'Failed to add domain');
+        if (e?.status === 403 || msg.includes('خطتك الحالية')) {
+          setPlanRestricted(true);
+          toast.error(t('ربط النطاق المخصص غير متاح في خطتك الحالية. يرجى ترقية الخطة لاستخدام نطاقك الخاص.'));
+        } else {
+          toast.error(t(msg));
+        }
+      })
       .finally(() => setAdding(false));
   };
 
@@ -271,12 +308,26 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             {t('Add a Custom Domain')}
+            {!canAddDomain && (
+              <Badge variant="outline" className="ms-2 gap-1 border-amber-300 bg-amber-50 text-amber-700">
+                <Crown className="h-3 w-3" />
+                {t('يتطلب ترقية الخطة')}
+              </Badge>
+            )}
           </CardTitle>
           <CardDescription>
             {t('Use your own domain name for your store, for example shop.yourdomain.com or yourdomain.com.')}
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {!canAddDomain && (
+            <Alert className="mb-3 border-amber-200 bg-amber-50">
+              <Crown className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                {t('ربط النطاق المخصص غير متاح في خطتك الحالية. يرجى ترقية الخطة لاستخدام نطاقك الخاص.')}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="flex items-center gap-2">
             <Input
               dir="ltr"
@@ -284,15 +335,21 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
               value={newDomain}
               onChange={(e) => setNewDomain(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAdd();
+                if (e.key === 'Enter' && canAddDomain) handleAdd();
               }}
               className="font-mono text-sm"
+              disabled={!canAddDomain}
             />
-            <Button type="button" onClick={handleAdd} disabled={adding} className="shrink-0">
+            <Button type="button" onClick={handleAdd} disabled={adding || !canAddDomain} className="shrink-0">
               {adding ? <Loader2 className="h-4 w-4 animate-spin me-1.5" /> : <Plus className="h-4 w-4 me-1.5" />}
               {t('Add Domain')}
             </Button>
           </div>
+          {!canAddDomain && (
+            <p className="mt-2 text-xs text-amber-700">
+              ترقية الخطة تفتح لك ربط النطاق المخصص — تواصل مع الدعم أو اختر خطة Professional.
+            </p>
+          )}
         </CardContent>
       </Card>
 
