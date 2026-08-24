@@ -53,7 +53,7 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
           ) : (
             <>
               <span className="rounded-full bg-[#b45309] p-2 text-white shadow-sm"><Croissant className="h-5 w-5" /></span>
-              <span className="font-serif text-xl font-black text-[#78350f]">{config?.storeName || store?.name}</span>
+              <span className="min-w-0 max-w-[42vw] truncate font-serif text-xl font-black text-[#78350f] sm:max-w-none">{config?.storeName || store?.name}</span>
             </>
           )}
         </a>

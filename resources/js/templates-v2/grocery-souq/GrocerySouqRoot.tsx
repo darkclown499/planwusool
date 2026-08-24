@@ -59,14 +59,14 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         {/* Category tiles */}
         {categories.length > 0 && (
           <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-3 lg:grid-cols-8">
               {categories.slice(0, 8).map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-2 rounded-xl bg-white p-2.5 shadow-sm ring-1 ring-stone-100 transition hover:-translate-y-0.5 hover:shadow-md">
-                  <span className="h-14 w-14 overflow-hidden rounded-full bg-[#f0fdf4] ring-2 ring-transparent transition group-hover:ring-[#16a34a]">
+                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-xl bg-white p-2 shadow-sm ring-1 ring-stone-100 transition hover:-translate-y-0.5 hover:shadow-md sm:gap-2 sm:p-2.5">
+                  <span className="h-12 w-12 overflow-hidden rounded-full bg-[#f0fdf4] ring-2 ring-transparent transition group-hover:ring-[#16a34a] sm:h-14 sm:w-14">
                     {c.image ? (
                       <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="flex h-full w-full items-center justify-center text-xl">🥬</span>
+                      <span className="flex h-full w-full items-center justify-center text-lg sm:text-xl">🥬</span>
                     )}
                   </span>
                   <span className="line-clamp-1 text-center text-[11px] font-bold text-stone-700 group-hover:text-[#16a34a]">{c.name}</span>

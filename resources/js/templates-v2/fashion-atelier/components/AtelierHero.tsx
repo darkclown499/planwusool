@@ -87,7 +87,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
                 {slide.subtitle && (
                   <p className="mb-3 text-sm font-medium tracking-[0.2em] text-[#e8cfa8]">{slide.subtitle}</p>
                 )}
-                <h1 className="font-serif text-4xl font-bold leading-[1.25] text-white sm:text-5xl lg:text-6xl">
+                <h1 className="font-serif text-3xl font-bold leading-[1.25] text-white sm:text-5xl lg:text-6xl">
                   {slide.title}
                 </h1>
                 {slide.button_text && (

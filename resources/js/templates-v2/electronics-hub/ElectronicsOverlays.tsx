@@ -166,8 +166,8 @@ export function HubProductModal({ product, onClose }: any) {
                 <tbody>
                   {specs.map(([k, v], i) => (
                     <tr key={`${k}-${i}`} className={i % 2 === 0 ? 'bg-[#0e1729]' : ''}>
-                      <td className="w-32 shrink-0 px-4 py-2 align-top font-bold text-slate-400">{k}</td>
-                      <td className="px-4 py-2 leading-relaxed text-slate-200">{v}</td>
+                      <td className="w-24 shrink-0 px-3 py-2 align-top text-[13px] font-bold text-slate-400 sm:w-32 sm:px-4 sm:text-sm">{k}</td>
+                      <td className="px-3 py-2 text-[13px] leading-relaxed text-slate-200 sm:px-4 sm:text-sm">{v}</td>
                     </tr>
                   ))}
                 </tbody>

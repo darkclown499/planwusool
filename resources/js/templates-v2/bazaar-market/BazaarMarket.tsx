@@ -44,7 +44,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           ) : (
             <>
               <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-lg font-black text-white shadow-md">س</span>
-              <span className="text-xl font-black text-slate-900">{config?.storeName || store?.name}</span>
+              <span className="min-w-0 max-w-[45vw] truncate text-xl font-black text-slate-900 sm:max-w-none">{config?.storeName || store?.name}</span>
             </>
           )}
         </a>
@@ -333,11 +333,11 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
             <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
               {categories.slice(0, 8).map((c: any) => (
                 <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-2">
-                  <span className="h-20 w-20 overflow-hidden rounded-2xl bg-white p-1 shadow-sm ring-1 ring-slate-100 transition group-hover:shadow-md group-hover:ring-teal-200">
+                  <span className="h-16 w-16 overflow-hidden rounded-2xl bg-white p-1 shadow-sm ring-1 ring-slate-100 transition group-hover:shadow-md group-hover:ring-teal-200 sm:h-20 sm:w-20">
                     {c.image ? (
                       <img src={getImageUrl(c.image)} alt="" loading="lazy" className="h-full w-full rounded-xl object-cover" />
                     ) : (
-                      <span className="flex h-full w-full items-center justify-center bg-teal-50 text-2xl">🛍️</span>
+                      <span className="flex h-full w-full items-center justify-center bg-teal-50 text-xl sm:text-2xl">🛍️</span>
                     )}
                   </span>
                   <span className="line-clamp-1 text-center text-xs font-bold text-slate-600 group-hover:text-teal-700">{c.name}</span>

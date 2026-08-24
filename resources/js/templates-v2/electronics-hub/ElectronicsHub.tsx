@@ -386,9 +386,9 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
             <h2 className="mb-4 text-xl font-black text-white">تسوّق حسب القسم</h2>
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
               {categories.slice(0, 12).map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-800 bg-[#101a2e] p-4 transition hover:border-blue-500/50 hover:bg-[#12203d]">
+                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-2xl border border-slate-800 bg-[#101a2e] p-2.5 transition hover:border-blue-500/50 hover:bg-[#12203d] sm:gap-2 sm:p-4">
                   <span className="text-blue-400">{categoryIcon(c.name)}</span>
-                  <span className="line-clamp-1 text-center text-xs font-bold text-slate-300 group-hover:text-blue-300">{c.name}</span>
+                  <span className="line-clamp-1 text-center text-[11px] font-bold text-slate-300 group-hover:text-blue-300 sm:text-xs">{c.name}</span>
                 </a>
               ))}
             </div>

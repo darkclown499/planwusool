@@ -92,7 +92,7 @@ export function RestaurantHero({ banner }: { banner?: any }) {
       <div className="absolute inset-0 flex items-center">
         <div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
           <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
-          <h1 className="font-serif text-4xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">
+          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">
             {banner?.title || 'من قائمة الشيف'}
           </h1>
           <p className="mt-3 font-serif text-base text-[#e8d9b8]">{banner?.subtitle || 'مشاوي على الفحم • توابل بيتية • خبز التنور'}</p>

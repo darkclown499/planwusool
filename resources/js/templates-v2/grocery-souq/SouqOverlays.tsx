@@ -143,8 +143,8 @@ export function SouqProductSheet({ product, onClose }: any) {
   return (
     <div className="fixed inset-0 z-[70] flex items-end sm:items-center sm:justify-center sm:p-6" dir="rtl" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-lg overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
-        <div className="relative h-52 w-full bg-stone-100 sm:h-60">
+      <div className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+        <div className="relative h-40 w-full shrink-0 bg-stone-100 sm:h-60">
           <img src={getImageUrl(product.image || '')} alt={product.name} className="h-full w-full object-cover" />
           {discount > 0 && (
             <span className="absolute top-3 right-3 rounded-lg bg-red-600 px-2 py-1 text-xs font-black text-white">خصم {discount}%</span>
@@ -154,7 +154,7 @@ export function SouqProductSheet({ product, onClose }: any) {
           </button>
         </div>
 
-        <div className="max-h-[45vh] overflow-y-auto p-5">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
           <h2 className="text-lg font-black leading-snug text-stone-900">{product.name}</h2>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-black text-[#16a34a]">{formatPrice(product.price)}</span>
