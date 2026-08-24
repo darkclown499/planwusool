@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { getImageUrl } from '@/utils/image-helper';
+import { getProductThumbnail } from '@/utils/product-image-helper';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 
@@ -88,9 +89,9 @@ export default function ShowProduct() {
             <CardContent className="space-y-4">
               <div className="flex items-start gap-4">
                 <div className="w-32 h-32 rounded-lg overflow-hidden border shrink-0">
-                  {product.cover_image ? (
+                  {getProductThumbnail(product) ? (
                     <img
-                      src={getImageUrl(product.cover_image)}
+                      src={getImageUrl(getProductThumbnail(product))}
                       alt={product.name}
                       className="w-full h-full object-cover"
                     />

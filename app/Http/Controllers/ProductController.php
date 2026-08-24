@@ -317,8 +317,7 @@ class ProductController extends Controller
             'low_stock_warning' => 'nullable|integer|min:0',
             'track_inventory' => 'nullable|boolean',
             'allow_backorder' => 'nullable|boolean',
-            'cover_image' => 'required|string',
-            'images' => 'nullable|string',
+            'images' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'tax_id' => 'nullable|exists:taxes,id',
             'is_active' => 'nullable|boolean',
@@ -334,10 +333,13 @@ class ProductController extends Controller
             'name' => __('Product Name'),
             'sku' => __('SKU'),
             'category_id' => __('Category'),
-            'cover_image' => __('Cover Image'),
+            'images' => __('Product Images'),
             'price' => __('Price'),
             'stock' => __('Stock Quantity'),
         ]);
+
+        $normalizedImages = trim((string) $request->images);
+        $firstImage = explode(',', $normalizedImages)[0] ?? '';
         
         // Check if trying to activate product
         $newIsActive = $request->has('is_active') ? $request->is_active : $product->is_active;
@@ -372,8 +374,8 @@ class ProductController extends Controller
         $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : ($product->low_stock_warning ?? 5);
         $product->track_inventory = $request->has('track_inventory') ? $request->track_inventory : true;
         $product->allow_backorder = $request->has('allow_backorder') ? $request->allow_backorder : false;
-        $product->cover_image = $request->cover_image;
-        $product->images = $request->images;
+        $product->cover_image = trim($firstImage);
+        $product->images = $normalizedImages;
         $product->category_id = $request->category_id;
         $product->tax_id = $request->tax_id;
         $product->is_active = $newIsActive;

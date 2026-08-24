@@ -67,9 +67,9 @@ export default function DigitalDownloads() {
                       return (
                         <tr key={download.id} className="border-b hover:bg-muted/50">
                           <td className="py-3 px-4">
-                            {download.product?.cover_image && (
+                            {(download.product?.cover_image || (download.product as any)?.images) && (
                               <img
-                                src={download.product.cover_image}
+                                src={(download.product.cover_image || String((download.product as any).images || '').split(',')[0]?.trim() || '')}
                                 alt={download.product?.name || ''}
                                 className="me-2 inline-block h-8 w-8 rounded object-cover align-middle"
                               />

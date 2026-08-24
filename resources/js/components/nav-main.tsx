@@ -58,10 +58,10 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
     ) => {
         children.forEach(child => {
             const childKey = `${level}-${child.title}`;
-            const isChildItemActive = isActive(child.href, child.activePaths);
-            const hasActiveChild = child.children && isChildItemActive && isChildActive(child.children);
+            const hasActiveDescendant = child.children ? isChildActive(child.children) : false;
+            const isSelfActive = isActive(child.href, child.activePaths);
 
-            if (child.children && (isChildItemActive || hasActiveChild)) {
+            if (child.children && (isSelfActive || hasActiveDescendant)) {
                 newExpandedItems[childKey] = true;
                 checkNestedChildren(child.children, level + 1, newExpandedItems);
             }
@@ -83,23 +83,52 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
         }
     };
 
+    // Strict active matching: exact pathname (+ search) equality only.
+    // Prevents /stores from lighting up when on /stores/60/designer
+    // and prevents sibling sub-links sharing same base path from both appearing active.
+    const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/';
+
+    const splitPathAndSearch = (url: string): { path: string; search: string } => {
+        const idx = url.indexOf('?');
+        if (idx === -1) return { path: url, search: '' };
+        return { path: url.slice(0, idx), search: url.slice(idx) };
+    };
+
+    const parseHref = (href: string): { path: string; search: string } => {
+        if (href.startsWith('http')) {
+            try {
+                const u = new URL(href);
+                return { path: u.pathname, search: u.search };
+            } catch {
+                return splitPathAndSearch(href);
+            }
+        }
+        return splitPathAndSearch(href);
+    };
+
     const isActive = (href?: string, activePaths?: string[]): boolean => {
-        const currentPath = page.url.split('?')[0];
+        if (!href) return false;
+        const current = splitPathAndSearch(page.url);
+        const currentPathNorm = normalizePath(current.path);
+        const currentSearch = current.search;
 
         if (activePaths && activePaths.length > 0) {
-            for (const path of activePaths) {
-                if (currentPath === path || currentPath.startsWith(path + '/')) {
+            for (const ap of activePaths) {
+                const parsed = parseHref(ap);
+                if (normalizePath(parsed.path) === currentPathNorm && parsed.search === currentSearch) {
                     return true;
                 }
+                // Also allow matching when activePath is prefix-less but current has same pathname regardless of search?
+                // Strict requirement says exact, so we do not use startsWith.
             }
         }
 
-        if (!href) return false;
+        const hrefParsed = parseHref(href);
+        const hrefPathNorm = normalizePath(hrefParsed.path);
 
-        const hrefPath = href.startsWith('http') ? new URL(href).pathname : href;
-
-        const active = currentPath === hrefPath || currentPath.startsWith(hrefPath + '/');
-        return active;
+        // Exact match required: both pathname and query string must match.
+        // This ensures ?tab=templates vs bare path are distinguished so only one sibling is active.
+        return currentPathNorm === hrefPathNorm && currentSearch === hrefParsed.search;
     };
 
     const isChildActive = (children?: NavItem[]): boolean => {
@@ -128,7 +157,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                             <>
                                 <button
                                     onClick={() => toggleExpand(`${level}-${child.title}`)}
-                                    className={`flex items-center justify-between w-full rounded-lg px-2 py-1 text-[13px] transition-all duration-150 ${activeSubItemClasses(isChildActive(child.children))}`}
+                                    className={`flex items-center justify-between w-full rounded-lg px-2 py-1 text-[13px] transition-all duration-150 text-gray-500 hover:bg-gray-100 hover:text-gray-700`}
                                 >
                                     <span className="truncate">{child.title}</span>
                                     <ChevronDown
@@ -178,7 +207,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <SidebarMenuButton
-                                                        isActive={isChildActive(item.children)}
+                                                        isActive={false}
                                                         data-current={false}
                                                         tooltip={{ children: item.title }}
                                                         className="rounded-lg text-gray-500"
@@ -217,12 +246,11 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                             </DropdownMenu>
                                         ) : (
                                             <SidebarMenuButton
-                                                isActive={isChildActive(item.children)}
+                                                isActive={false}
                                                 data-current={false}
                                                 tooltip={{ children: item.title }}
                                                 onClick={() => toggleExpand(item.title)}
-                                                className="rounded-lg py-2 px-2.5 font-medium text-gray-700 hover:bg-gray-100 data-[active=true]:bg-emerald-50 data-[active=true]:text-emerald-700"
-                                                style={activeItemStyle(isChildActive(item.children))}
+                                                className="rounded-lg py-2 px-2.5 font-medium text-gray-700 hover:bg-gray-100"
                                             >
                                                 <div className="flex items-center justify-between w-full">
                                                     <div className="flex items-center gap-2">

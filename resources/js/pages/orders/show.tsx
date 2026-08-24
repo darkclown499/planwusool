@@ -9,6 +9,7 @@ import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { getImageUrl } from '../../utils/image-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
+import { tOrderStatus, tPaymentStatus, tPaymentMethod } from '@/utils/order-status';
 
 interface OrderShowProps {
   order: {
@@ -57,10 +58,47 @@ interface OrderShowProps {
   };
 }
 
-export default function ShowOrder({ order }: OrderShowProps) {
+export default function ShowOrder({ order: initialOrder }: OrderShowProps) {
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
+  const [order, setOrder] = React.useState(initialOrder);
+  const [statusSaving, setStatusSaving] = React.useState(false);
+  React.useEffect(() => setOrder(initialOrder), [initialOrder]);
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!newStatus || newStatus === order.status.toLowerCase()) return;
+    setStatusSaving(true);
+    try {
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const res = await fetch(route('orders.update', order.id), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-CSRF-TOKEN': token,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ status: newStatus, payment_status: order.paymentStatus.toLowerCase(), tracking_number: order.trackingNumber || '', notes: (order as any).notes || '' }),
+      });
+      if (res.ok) {
+        // Optimistic update — rebuild timeline locally
+        const statusMap: Record<string, number> = { pending: 0, processing: 2, shipped: 3, delivered: 4, completed: 4, cancelled: -1 };
+        const idx = statusMap[newStatus] ?? -1;
+        setOrder((prev: any) => ({
+          ...prev,
+          status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1),
+          timeline: (prev.timeline || []).map((step: any, i: number) => {
+            const stepKey = step.status.toLowerCase();
+            const stepIdxMap: Record<string, number> = { 'order placed': 0, 'payment confirmed': 1, 'order processing': 2, shipped: 3, delivered: 4 };
+            const sIdx = stepIdxMap[stepKey] ?? 99;
+            if (newStatus === 'cancelled') return { ...step, completed: sIdx === 0 };
+            return { ...step, completed: sIdx <= idx, date: sIdx <= idx ? new Date().toLocaleString() : step.date };
+          }),
+        }));
+      }
+    } catch {}
+    setStatusSaving(false);
+  };
 
   const handleActionClick = (action: string, permission: string) => {
     if (!checkPermission(permission, auth)) {
@@ -99,9 +137,25 @@ export default function ShowOrder({ order }: OrderShowProps) {
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="md:col-span-2">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle>{t('Order {{number}}', { number: order.orderNumber })}</CardTitle>
-                <Badge variant={order.status.toLowerCase() === 'completed' ? 'default' : 'secondary'}>{order.status}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={order.status.toLowerCase() === 'completed' ? 'default' : 'secondary'}>{tOrderStatus(order.status)}</Badge>
+                  {hasPermission('edit-orders') && (
+                    <select
+                      value={order.status.toLowerCase()}
+                      disabled={statusSaving}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700"
+                    >
+                      <option value="pending">قيد الانتظار</option>
+                      <option value="processing">قيد التجهيز</option>
+                      <option value="shipped">تم الشحن</option>
+                      <option value="delivered">تم التسليم</option>
+                      <option value="cancelled">ملغي</option>
+                    </select>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -113,18 +167,18 @@ export default function ShowOrder({ order }: OrderShowProps) {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{t('Payment Status')}</p>
-                    <Badge variant={order.paymentStatus.toLowerCase() === 'paid' ? 'default' : 'secondary'}>{order.paymentStatus}</Badge>
+                    <Badge variant={order.paymentStatus.toLowerCase() === 'paid' ? 'default' : 'secondary'}>{tPaymentStatus(order.paymentStatus)}</Badge>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{t('Payment Method')}</p>
-                    <p>{order.paymentMethod}</p>
+                    <p>{tPaymentMethod(order.paymentMethod)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{t('Fulfillment Status')}</p>
-                    <Badge variant={order.status.toLowerCase() === 'delivered' ? 'default' : 'secondary'}>{order.status}</Badge>
+                    <Badge variant={order.status.toLowerCase() === 'delivered' ? 'default' : 'secondary'}>{tOrderStatus(order.status)}</Badge>
                   </div>
                 </div>
                 
@@ -275,7 +329,7 @@ export default function ShowOrder({ order }: OrderShowProps) {
               )}
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-muted-foreground">{t('Shipping Status')}</span>
-                <Badge variant={order.status.toLowerCase() === 'delivered' ? 'default' : 'secondary'}>{order.status}</Badge>
+                <Badge variant={order.status.toLowerCase() === 'delivered' ? 'default' : 'secondary'}>{tOrderStatus(order.status)}</Badge>
               </div>
             </CardContent>
           </Card>
@@ -291,9 +345,9 @@ export default function ShowOrder({ order }: OrderShowProps) {
                 <div key={index} className="flex items-center space-x-3">
                   <div className={`w-3 h-3 rounded-full ${timeline.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
                   <div className="flex-1">
-                    <p className="font-medium">{t(timeline.status)}</p>
+                    <p className="font-medium">{tOrderStatus(timeline.status)}</p>
                     <p className="text-sm text-muted-foreground">
-                      {timeline.date || t('Pending')}
+                      {timeline.date || tOrderStatus('Pending')}
                     </p>
                   </div>
                 </div>

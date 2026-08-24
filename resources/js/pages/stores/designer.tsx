@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Code2, Eye, LayoutTemplate, Loader2, Palette, Save, Settings2, Store } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
@@ -108,6 +108,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
   const [tab, setTab] = useState<Tab>(() => getInitialTab());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const heroFileRef = useRef<HTMLInputElement>(null);
+  const [heroUploading, setHeroUploading] = useState(false);
 
   const handleTabChange = (next: Tab) => {
     setTab(next);
@@ -653,18 +655,69 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                             </div>
                           ))}
                         </div>
+                        <input
+                          ref={heroFileRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={async (e) => {
+                            const files = e.target.files;
+                            if (!files || files.length === 0) return;
+                            const valid = Array.from(files).filter((f) => f.type.startsWith('image/'));
+                            if (valid.length === 0) {
+                              toast.warning('الرجاء اختيار ملف صورة');
+                              e.target.value = '';
+                              return;
+                            }
+                            setHeroUploading(true);
+                            try {
+                              const fd = new FormData();
+                              valid.forEach((f) => fd.append('files[]', f));
+                              const res = await fetch(route('api.media.batch'), {
+                                method: 'POST',
+                                body: fd,
+                                headers: {
+                                  Accept: 'application/json',
+                                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                                },
+                              });
+                              const json: any = await res.json();
+                              if (res.ok && json?.data?.length) {
+                                const urls: string[] = (json.data as any[]).map((d: any) => {
+                                  const raw = String(d.url || '');
+                                  if (!raw) return '';
+                                  if (raw.startsWith('/storage')) return raw;
+                                  const m = raw.match(/\/storage\/.*$/);
+                                  return m ? m[0] : raw;
+                                }).filter(Boolean).map((u) => normalizeImageUrl(u)).filter(Boolean);
+                                if (urls.length) {
+                                  const next = [...heroImages, ...urls].slice(0, 10);
+                                  let tmp = setDotted(content, 'hero_banner.images', next);
+                                  tmp = setDotted(tmp, 'hero_images', next);
+                                  setContent(tmp);
+                                  toast.success('تم رفع الصورة');
+                                }
+                              } else {
+                                toast.error(json?.message || 'فشل الرفع');
+                              }
+                            } catch {
+                              toast.error('حدث خطأ أثناء الرفع');
+                            } finally {
+                              setHeroUploading(false);
+                              e.target.value = '';
+                            }
+                          }}
+                        />
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            const next = [...heroImages, ''];
-                            let tmp = setDotted(content, 'hero_banner.images', next);
-                            tmp = setDotted(tmp, 'hero_images', next);
-                            setContent(tmp);
-                          }}
+                          disabled={heroUploading}
+                          onClick={() => heroFileRef.current?.click()}
                           className="gap-1.5"
                         >
+                          {heroUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                           + إضافة صورة
                         </Button>
                       </div>

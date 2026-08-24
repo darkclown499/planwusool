@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
+import { tOrderStatus, tPaymentMethod } from '@/utils/order-status';
 
 interface OrdersProps {
   orders: Array<{
@@ -158,7 +159,7 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold">{order.orderNumber}</h3>
                         <Badge variant={getStatusVariant(order.status)}>
-                          {order.status}
+                          {tOrderStatus(order.status)}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground truncate">{order.customer} • {order.email}</p>
@@ -166,7 +167,7 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                         <span className="text-xs text-muted-foreground">{formatCurrency(order.total)}</span>
                         <span className="text-xs text-muted-foreground">{t('{{items}} items', { items: order.items })}</span>
                         <span className="text-xs text-muted-foreground">{order.date}</span>
-                        <span className="text-xs text-muted-foreground">{order.paymentMethod}</span>
+                        <span className="text-xs text-muted-foreground">{tPaymentMethod(order.paymentMethod)}</span>
                       </div>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 import { toast } from '@/components/custom-toast';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { usePage } from '@inertiajs/react';
 import { Heart, MessageCircle, Minus, PackageCheck, Plus, Share2, ShoppingCart, X } from 'lucide-react';
@@ -133,7 +134,7 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
                                     {product.category}
                                 </p>
                             )}
-                            <div className="mt-3 flex items-center gap-3">
+                            <div className="mt-3 flex flex-wrap items-center gap-3">
                                 <span className="text-2xl font-bold" style={{ color: primary }}>
                                     {formatCurrency(price, storeSettings, currencies)}
                                 </span>
@@ -146,15 +147,22 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
                                     <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">خصم {discount}%</span>
                                 )}
                             </div>
+                            {originalPrice > price && (
+                                <p className="mt-2 text-sm font-semibold text-emerald-600">
+                                    وفري {formatCurrency(originalPrice - price, storeSettings, currencies)}
+                                </p>
+                            )}
 
                             {product?.availability === 'out_of_stock' && (
                                 <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-600">غير متوفر حالياً</p>
                             )}
 
                             {product?.description && (
-                                <p className="mt-4 text-sm leading-relaxed" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
-                                    {product.description}
-                                </p>
+                                <div
+                                    className="prose prose-sm mt-4 max-w-none text-sm leading-relaxed"
+                                    style={{ color: 'var(--twc-text-muted, #6b7280)' }}
+                                    dangerouslySetInnerHTML={createSafeHtml(product.description)}
+                                />
                             )}
 
                             {Array.isArray(product?.variants) &&

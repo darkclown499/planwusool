@@ -71,7 +71,6 @@ export default function CreateProduct() {
     low_stock_warning: 5,
     track_inventory: true,
     allow_backorder: false,
-    cover_image: '',
     images: '',
     category_id: '',
     tax_id: '',
@@ -344,29 +343,18 @@ export default function CreateProduct() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <MediaPicker
-                      label={t('Cover Image')}
-                      value={formData.cover_image}
-                      onChange={(v) => handleSelectChange('cover_image', v)}
-                      placeholder={t('Select cover image...')}
-                      required
-                      dragDrop
-                    />
-                    <ImageFieldHint hint={t('Recommended: 800x800 pixels (square)')} />
-                  </div>
-                  <div>
-                    <MediaPicker
-                      label={t('Product Images')}
-                      value={formData.images}
-                      onChange={(v) => handleSelectChange('images', v)}
-                      placeholder={t('Select product images...')}
-                      multiple
-                      dragDrop
-                    />
-                    <ImageFieldHint hint={t('Optional. Recommended: 800x800 pixels (square)')} />
-                  </div>
+                <div>
+                  <MediaPicker
+                    label={t('Product Images')}
+                    value={formData.images}
+                    onChange={(v) => handleSelectChange('images', v)}
+                    placeholder={t('Select product images...')}
+                    multiple
+                    required
+                    dragDrop
+                  />
+                  <ImageFieldHint hint={t('الأولى هي الصورة الرئيسية — يُسمح بصورة واحدة أو أكثر. المقاس المقترح: 800×800 بكسل (مربّع)')} />
+                  {errors.images && <InputError message={errors.images} />}
                 </div>
 
                 <div className="flex items-center justify-between gap-3 rounded-lg border p-3">

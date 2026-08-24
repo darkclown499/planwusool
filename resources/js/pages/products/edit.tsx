@@ -39,6 +39,8 @@ export default function EditProduct() {
       .replace(/^-|-$/g, '');
   };
 
+  // Consolidate: images is sole source; cover_image is deprecated (accessor returns images[0])
+  const initialImages = product.images || product.cover_image || '';
   const [formData, setFormData] = useState({
     name: product.name || '',
     sku: product.sku || '',
@@ -54,8 +56,7 @@ export default function EditProduct() {
     low_stock_warning: product.low_stock_warning || 5,
     track_inventory: product.track_inventory !== undefined ? product.track_inventory : true,
     allow_backorder: product.allow_backorder || false,
-    cover_image: product.cover_image || '',
-    images: product.images || '',
+    images: initialImages,
     category_id: product.category_id ? String(product.category_id) : '',
     tax_id: product.tax_id ? String(product.tax_id) : '',
     is_active: product.is_active !== undefined ? product.is_active : true,
@@ -111,8 +112,7 @@ export default function EditProduct() {
         low_stock_warning: product.low_stock_warning || 5,
         track_inventory: product.track_inventory !== undefined ? product.track_inventory : true,
         allow_backorder: product.allow_backorder || false,
-        cover_image: product.cover_image || '',
-        images: product.images || '',
+        images: product.images || product.cover_image || '',
         category_id: product.category_id ? String(product.category_id) : '',
         tax_id: product.tax_id ? String(product.tax_id) : '',
         is_active: product.is_active !== undefined ? product.is_active : true,
@@ -272,15 +272,10 @@ export default function EditProduct() {
                     </Select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <MediaPicker label={t('Cover Image')} value={formData.cover_image} onChange={(v) => handleSelectChange('cover_image', v)} placeholder={t('Select cover image...')} required dragDrop />
-                    <p className="text-xs text-muted-foreground mt-1">{t('Recommended: 800x800 pixels (square)')}</p>
-                  </div>
-                  <div>
-                    <MediaPicker label={t('Product Images')} value={formData.images} onChange={(v) => handleSelectChange('images', v)} multiple={true} placeholder={t('Select product images...')} dragDrop />
-                    <p className="text-xs text-muted-foreground mt-1">{t('Optional. Recommended: 800x800 pixels (square)')}</p>
-                  </div>
+                <div>
+                  <MediaPicker label={t('Product Images')} value={formData.images} onChange={(v) => handleSelectChange('images', v)} multiple={true} placeholder={t('Select product images...')} required dragDrop />
+                  <p className="text-xs text-muted-foreground mt-1">الأولى هي الصورة الرئيسية — يُسمح بصورة واحدة أو أكثر. المقاس المقترح: 800×800 بكسل (مربّع)</p>
+                  <InputError message={errors.images} />
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-start">

@@ -3,6 +3,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { getImageUrl } from '@/utils/image-helper';
+import { getProductThumbnail } from '@/utils/product-image-helper';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { toast } from '@/components/custom-toast';
 
@@ -93,9 +94,9 @@ export const WishlistModal: React.FC<WishlistModalProps> = ({ onClose }) => {
               <div className="space-y-3">
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl hover:border-gray-200 transition-colors">
-                    {item.cover_image ? (
+                    {getProductThumbnail(item) ? (
                       <img
-                        src={getImageUrl(item.cover_image)}
+                        src={getImageUrl(getProductThumbnail(item))}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                       />
@@ -120,7 +121,7 @@ export const WishlistModal: React.FC<WishlistModalProps> = ({ onClose }) => {
                             id: String(item.product_id),
                             name: item.name,
                             price: Number(item.sale_price || item.price),
-                            image: item.cover_image || '',
+                            image: getProductThumbnail(item) || '',
                             sku: '',
                             stockQuantity: Number(item.stock) || 0,
                             categoryId: String(item.category?.id || ''),

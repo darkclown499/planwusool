@@ -13,6 +13,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { getImageUrl } from '@/utils/image-helper';
+import { getProductThumbnail } from '@/utils/product-image-helper';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 import UpgradeModal from '@/components/UpgradeModal';
@@ -401,8 +402,8 @@ export default function Products() {
                           <TableCell>
                             <div className="flex items-center space-x-3">
                               <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded border">
-                                {product.cover_image ? (
-                                  <img src={getImageUrl(product.cover_image)} alt={product.name} className="h-full w-full object-cover" />
+                                {getProductThumbnail(product) ? (
+                                  <img src={getImageUrl(getProductThumbnail(product))} alt={product.name} className="h-full w-full object-cover" />
                                 ) : (
                                   <Package className="h-5 w-5 text-muted-foreground" />
                                 )}

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
+import { tOrderStatus, tPaymentStatus, tPaymentMethod } from '@/utils/order-status';
 
 interface EditOrderProps {
   order: {
@@ -72,16 +73,18 @@ interface EditOrderProps {
 
 export default function EditOrder({ order, customers, products, shippingMethods }: EditOrderProps) {
   const { t } = useTranslation();
-  const [orderItems, setOrderItems] = useState(order.items.map(item => ({
+  const safeOrder: any = order ?? ({} as any);
+  const [orderItems, setOrderItems] = useState(((safeOrder as any).items ?? []).map((item: any) => ({
     ...item,
     variants: item.variants || {}
   })));
   const [formData, setFormData] = useState({
-    status: order.status,
-    payment_status: order.paymentStatus,
-    tracking_number: order.trackingNumber || '',
-    notes: order.notes || '',
-    items: orderItems,
+    status: (safeOrder as any)?.status?.toString() ?? '',
+    payment_status: (safeOrder as any)?.paymentStatus?.toString() ?? (safeOrder as any)?.payment_status?.toString() ?? '',
+    tracking_number: (safeOrder as any)?.trackingNumber?.toString() ?? (safeOrder as any)?.tracking_number?.toString() ?? '',
+    notes: (safeOrder as any)?.notes?.toString() ?? '',
+    phone: ((safeOrder as any)?.customer as any)?.phone?.toString() ?? (safeOrder as any)?.phone?.toString() ?? '',
+    items: ((safeOrder as any).items ?? []).map((item: any) => ({ ...item, variants: item.variants || {} })),
   });
 
   const pageActions = [
@@ -132,7 +135,7 @@ export default function EditOrder({ order, customers, products, shippingMethods 
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="customer">{t('Select Customer')}</Label>
-                  <Select defaultValue={order.customer?.id?.toString() || ''}>
+                  <Select defaultValue={order?.customer?.id?.toString() ?? ''}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -148,17 +151,17 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="customer_name">{t('Customer Name')}</Label>
-                    <Input id="customer_name" defaultValue={order.customer.name} />
+                    <Input id="customer_name" defaultValue={order?.customer?.name?.toString() ?? ''} />
                   </div>
                   <div>
                     <Label htmlFor="customer_email">{t('Email Address')}</Label>
-                    <Input id="customer_email" type="email" defaultValue={order.customer.email} />
+                    <Input id="customer_email" type="email" defaultValue={order?.customer?.email?.toString() ?? ''} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="customer_phone">{t('Phone Number')}</Label>
-                    <Input id="customer_phone" defaultValue={order.customer.phone} />
+                    <Input id="customer_phone" defaultValue={order?.customer?.phone?.toString() ?? ''} />
                   </div>
                   <div>
                     <Label htmlFor="order_notes">{t('Order Notes')}</Label>
@@ -276,7 +279,7 @@ export default function EditOrder({ order, customers, products, shippingMethods 
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="shipping_method">{t('Shipping Method')}</Label>
-                  <Select defaultValue={order.shippingMethodId.toString()}>
+                  <Select defaultValue={order?.shippingMethodId?.toString() ?? ''}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -293,25 +296,25 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                   <Label htmlFor="shipping_address">{t('Shipping Address')}</Label>
                   <Textarea 
                     id="shipping_address" 
-                    defaultValue={order.shippingAddress.address} 
+                    defaultValue={order?.shippingAddress?.address?.toString() ?? ''} 
                     rows={3} 
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="shipping_city">{t('City')}</Label>
-                    <Input id="shipping_city" defaultValue={order.shippingAddress.city} />
+                    <Input id="shipping_city" defaultValue={order?.shippingAddress?.city?.toString() ?? ''} />
                   </div>
                   <div>
                     <Label htmlFor="shipping_postal">{t('Postal Code')}</Label>
-                    <Input id="shipping_postal" defaultValue={order.shippingAddress.postalCode} />
+                    <Input id="shipping_postal" defaultValue={order?.shippingAddress?.postalCode?.toString() ?? ''} />
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="tracking_number">{t('Tracking Number')}</Label>
                   <Input 
                     id="tracking_number" 
-                    defaultValue={order.trackingNumber || ''} 
+                    defaultValue={order?.trackingNumber?.toString() ?? ''} 
                     onChange={(e) => setFormData(prev => ({ ...prev, tracking_number: e.target.value }))}
                   />
                 </div>
@@ -328,29 +331,29 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="payment_method">{t('Payment Method')}</Label>
-                    <Select defaultValue={order.paymentMethod}>
+                    <Select defaultValue={order?.paymentMethod?.toString() ?? ''}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="credit_card">{t('Credit Card')}</SelectItem>
-                        <SelectItem value="paypal">{t('PayPal')}</SelectItem>
-                        <SelectItem value="bank_transfer">{t('Bank Transfer')}</SelectItem>
-                        <SelectItem value="cash">{t('Cash on Delivery')}</SelectItem>
+                        <SelectItem value="credit_card">{tPaymentMethod('Credit Card')}</SelectItem>
+                        <SelectItem value="paypal">{tPaymentMethod('PayPal')}</SelectItem>
+                        <SelectItem value="bank_transfer">{tPaymentMethod('Bank Transfer')}</SelectItem>
+                        <SelectItem value="cash">{tPaymentMethod('Cash on Delivery')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label htmlFor="payment_status">{t('Payment Status')}</Label>
-                    <Select defaultValue={order.paymentStatus} onValueChange={(value) => setFormData(prev => ({ ...prev, payment_status: value }))}>
+                    <Select defaultValue={order?.paymentStatus?.toString() ?? ''} onValueChange={(value) => setFormData(prev => ({ ...prev, payment_status: value }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">{t('Pending')}</SelectItem>
-                        <SelectItem value="paid">{t('Paid')}</SelectItem>
-                        <SelectItem value="failed">{t('Failed')}</SelectItem>
-                        <SelectItem value="refunded">{t('Refunded')}</SelectItem>
+                        <SelectItem value="pending">{tPaymentStatus('Pending')}</SelectItem>
+                        <SelectItem value="paid">{tPaymentStatus('Paid')}</SelectItem>
+                        <SelectItem value="failed">{tPaymentStatus('Failed')}</SelectItem>
+                        <SelectItem value="refunded">{tPaymentStatus('Refunded')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -358,30 +361,30 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="subtotal">{t('Subtotal')}</Label>
-                    <Input id="subtotal" type="number" step="0.01" defaultValue={order.summary.subtotal.toFixed(2)} />
+                    <Input id="subtotal" type="number" step="0.01" defaultValue={Number(order?.summary?.subtotal ?? 0).toFixed(2)} />
                   </div>
                   <div>
                     <Label htmlFor="tax">{t('Tax Amount')}</Label>
-                    <Input id="tax" type="number" step="0.01" defaultValue={order.summary.tax.toFixed(2)} />
+                    <Input id="tax" type="number" step="0.01" defaultValue={Number(order?.summary?.tax ?? 0).toFixed(2)} />
                   </div>
                   <div>
                     <Label htmlFor="total">{t('Total Amount')}</Label>
-                    <Input id="total" type="number" step="0.01" defaultValue={order.summary.total.toFixed(2)} />
+                    <Input id="total" type="number" step="0.01" defaultValue={Number(order?.summary?.total ?? 0).toFixed(2)} />
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="order_status">{t('Order Status')}</Label>
-                  <Select defaultValue={order.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                  <Select defaultValue={order?.status?.toString() ?? ''} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">{t('Pending')}</SelectItem>
-                      <SelectItem value="processing">{t('Processing')}</SelectItem>
-                      <SelectItem value="shipped">{t('Shipped')}</SelectItem>
-                      <SelectItem value="delivered">{t('Delivered')}</SelectItem>
-                      <SelectItem value="cancelled">{t('Cancelled')}</SelectItem>
-                      <SelectItem value="completed">{t('Completed')}</SelectItem>
+                      <SelectItem value="pending">{tOrderStatus('Pending')}</SelectItem>
+                      <SelectItem value="processing">{tOrderStatus('Processing')}</SelectItem>
+                      <SelectItem value="shipped">{tOrderStatus('Shipped')}</SelectItem>
+                      <SelectItem value="delivered">{tOrderStatus('Delivered')}</SelectItem>
+                      <SelectItem value="cancelled">{tOrderStatus('Cancelled')}</SelectItem>
+                      <SelectItem value="completed">{tOrderStatus('Completed')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
