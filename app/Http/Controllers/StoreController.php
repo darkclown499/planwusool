@@ -284,7 +284,11 @@ class StoreController extends Controller
         
         return Inertia::render('stores/view', [
             'store' => $store,
-            'stats' => $stats
+            'stats' => $stats,
+            // Computed server-side (with the current request) so the "Visit
+            // Store" link carries the right port on local/dev domains instead
+            // of assuming 80/443.
+            'storeUrl' => $store->getStoreUrl(request()),
         ]);
     }
 

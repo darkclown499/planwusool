@@ -5,11 +5,13 @@ interface UIContextType {
   showCheckout: boolean;
   showAuthModal: boolean;
   showResetPasswordModal: boolean;
+  showSearch: boolean;
   resetToken: string | null;
   setShowCart: (show: boolean) => void;
   setShowCheckout: (show: boolean) => void;
   setShowAuthModal: (show: boolean) => void;
   setShowResetPasswordModal: (show: boolean) => void;
+  setShowSearch: (show: boolean) => void;
   setResetToken: (token: string | null) => void;
   handleCartClick: () => void;
   handleCloseCart: () => void;
@@ -39,6 +41,7 @@ export const UIProvider: React.FC<UIProviderProps> = ({
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showResetPasswordModal, setShowResetPasswordModal] = useState(!!showResetModal);
+  const [showSearch, setShowSearch] = useState(false);
   const [resetToken, setResetToken] = useState<string | null>(initialResetToken || null);
   const [action, setAction] = useState<string | null>(initialAction);
 
@@ -78,11 +81,13 @@ export const UIProvider: React.FC<UIProviderProps> = ({
     showCheckout,
     showAuthModal,
     showResetPasswordModal,
+    showSearch,
     resetToken,
     setShowCart,
     setShowCheckout,
     setShowAuthModal,
     setShowResetPasswordModal,
+    setShowSearch,
     setResetToken,
     handleCartClick,
     handleCloseCart,

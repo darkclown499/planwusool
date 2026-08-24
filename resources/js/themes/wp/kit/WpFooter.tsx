@@ -7,6 +7,12 @@ interface WpFooterProps {
   /** Real store name — wins over the theme placeholder. */
   storeName?: string;
   categories: any[];
+  /** Real store contact/about info — wins over the theme's placeholder
+   *  copy and generic Saudi Arabia address when the merchant has set one. */
+  realPhone?: string | null;
+  realEmail?: string | null;
+  realAddress?: string | null;
+  realAbout?: string | null;
 }
 
 /**
@@ -14,16 +20,18 @@ interface WpFooterProps {
  * contact) over a copyright bar — the originals' footer.php layout,
  * translated to Arabic.
  */
-export const WpFooter: React.FC<WpFooterProps> = ({ config, storeName, categories }) => {
+export const WpFooter: React.FC<WpFooterProps> = ({ config, storeName, categories, realPhone, realEmail, realAddress, realAbout }) => {
   const { footer, header } = config;
   const brandName = storeName || config.name;
+  const phone = realPhone || header.phone;
+  const email = realEmail || header.email;
 
   return (
     <footer className="wpt-footer">
       <div className="wpt-container wpt-footer__cols">
         <div>
           <h4>عن المتجر</h4>
-          <p className="wpt-footer__about">{footer.about}</p>
+          <p className="wpt-footer__about">{realAbout || footer.about}</p>
         </div>
 
         <div>
@@ -51,21 +59,21 @@ export const WpFooter: React.FC<WpFooterProps> = ({ config, storeName, categorie
         <div>
           <h4>تواصل معنا</h4>
           <ul style={{ display: 'grid', gap: 12 }}>
-            {header.phone && (
+            {phone && (
               <li className="flex items-center gap-2">
                 <Phone size={14} />
-                <span dir="ltr">{header.phone}</span>
+                <span dir="ltr">{phone}</span>
               </li>
             )}
-            {header.email && (
+            {email && (
               <li className="flex items-center gap-2">
                 <Mail size={14} />
-                {header.email}
+                {email}
               </li>
             )}
             <li className="flex items-center gap-2">
               <MapPin size={14} />
-              المملكة العربية السعودية
+              {realAddress || 'المملكة العربية السعودية'}
             </li>
           </ul>
           {header.socials && (

@@ -14,6 +14,8 @@ export {
 } from './templates';
 export { DEMO_CATALOGS, getDemoCatalog } from './demo-catalogs';
 export type { DemoCatalog, DemoCategory, DemoProduct } from './demo-catalogs';
+export { buildPreviewStoreData } from './preview-data';
+export type { StoreBranding } from './preview-data';
 export {
   SECTION_TYPES,
   getSectionMeta,

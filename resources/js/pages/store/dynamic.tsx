@@ -2,8 +2,9 @@ import StoreHead from '@/components/StoreHead';
 import StoreBoundary from '@/components/StoreBoundary';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
-import { StoreSite, StoreSkeleton } from '@/builder';
+import { StoreSite, StoreSkeleton, getBuilderTemplate, normalizeTemplateSlug } from '@/builder';
 import { TemplateStorefront } from '@/templates/storefront';
+import '@/themes/load-families';
 import React, { Suspense } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -68,6 +69,8 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
 }) => {
     const { t } = useTranslation();
 
+    const family = React.useMemo(() => getBuilderTemplate(normalizeTemplateSlug(template))?.family ?? null, [template]);
+
     const storeData = React.useMemo(
         () => ({
             ...store,
@@ -93,6 +96,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             />
             <StoreHead store={store} products={products} defaultTitle={config?.storeName || store?.name || 'متجري'} defaultDescription={config?.description} />
             <ThemeProvider
+                family={family}
                 config={config ?? {}}
                 store={store}
                 categories={categories}
@@ -105,7 +109,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 behavior={behavior}
             >
                 <StoreBoundary>
-                    <TemplateStorefront>
+                    <TemplateStorefront family={family}>
                         {/* Exit Preview Toolbar */}
                         {isPreview && (
                             <div className="sticky top-0 z-50 w-full bg-amber-600 text-white shadow-md border-b border-amber-700">

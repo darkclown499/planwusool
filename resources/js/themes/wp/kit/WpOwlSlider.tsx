@@ -5,6 +5,12 @@ export interface WpSlide {
   title: string;
   text?: string;
   image: string;
+  imageMobile?: string;
+  sizeMode?: 'cover' | 'contain';
+  width?: number;
+  height?: number;
+  buttonText?: string;
+  buttonLink?: string;
 }
 
 interface WpOwlSliderProps {
@@ -34,22 +40,31 @@ export const WpOwlSlider: React.FC<WpOwlSliderProps> = ({ slides, buttonLabel })
   return (
     <div className="wpt-slider">
       <div className="wpt-slider__frame">
-        {slides.map((slide, i) => (
-          <div key={i} className={`wpt-slide ${i === index ? 'is-active' : ''}`}>
-            <img src={slide.image} alt={slide.title} loading={i === 0 ? 'eager' : 'lazy'} />
-            <div className="wpt-slide__position">
-              <div className="wpt-container">
-                <div className="wpt-slide__box">
-                  <h2 className="wpt-slide__title">{slide.title}</h2>
-                  {slide.text && <p className="wpt-slide__text">{slide.text}</p>}
-                  <a href="#wpt-products" className="wpt-btn no-underline">
-                    {buttonLabel}
-                  </a>
+        {slides.map((slide, i) => {
+          const contain = slide.sizeMode === 'contain';
+          const boxStyle: React.CSSProperties | undefined = contain && slide.width && slide.height
+            ? { aspectRatio: `${slide.width} / ${slide.height}`, maxWidth: slide.width, margin: '0 auto' }
+            : undefined;
+          return (
+            <div key={i} className={`wpt-slide ${i === index ? 'is-active' : ''} ${contain ? 'is-contain' : ''}`}>
+              <picture>
+                {slide.imageMobile && <source media="(max-width: 767px)" srcSet={slide.imageMobile} />}
+                <img src={slide.image} alt={slide.title} loading={i === 0 ? 'eager' : 'lazy'} style={boxStyle} />
+              </picture>
+              <div className="wpt-slide__position">
+                <div className="wpt-container">
+                  <div className="wpt-slide__box">
+                    <h2 className="wpt-slide__title">{slide.title}</h2>
+                    {slide.text && <p className="wpt-slide__text">{slide.text}</p>}
+                    <a href={slide.buttonLink || '#wpt-products'} className="wpt-btn no-underline">
+                      {slide.buttonText || buttonLabel}
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {count > 1 && (
           <>

@@ -4,17 +4,9 @@ import { toast } from 'sonner';
 import { BadgeCheck, Check, Eye, LayoutGrid, Loader2, Palette } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { apiPut } from '@/utils/api';
-import { StoreSite, TEMPLATES, getTemplateCategories } from '@/builder';
+import { TEMPLATES, getTemplateCategories } from '@/builder';
 import { TemplateThumb } from '@/builder/TemplateThumb';
-import { getDemoCatalog } from '@/builder/demo-catalogs';
 import type { BuilderTemplateConfig } from '@/builder/types';
 
 interface StoreBranding {
@@ -30,42 +22,8 @@ interface Props {
   availableThemes?: string[];
 }
 
-/** Build a realistic preview payload: the merchant's real branding and
- *  actual categories/products when present, filled up with niche demo
- *  content so every template preview always looks fully stocked. */
-const buildPreviewStoreData = (
-  tpl: BuilderTemplateConfig,
-  store: any,
-  branding?: StoreBranding
-) => {
-  const catalog = getDemoCatalog(tpl.slug);
-  const realCategories = (store?.categories || []).filter((c: any) => c?.name);
-  const realProducts = (store?.products || []).filter((p: any) => p?.name);
-  const logo = branding?.logo || null;
-  return {
-    id: store?.id ?? 0,
-    name: store?.name || `معاينة ${tpl.name}`,
-    slug: store?.slug || 'theme-preview',
-    logo,
-    categories: realCategories.length ? realCategories : catalog.categories,
-    products: realProducts.length ? realProducts : catalog.products,
-    config: {
-      ...(store?.config || {}),
-      storeName: store?.name || tpl.name,
-      logo,
-      phoneNumber: branding?.phone || undefined,
-      whatsapp_widget_phone: branding?.phone || undefined,
-    },
-    content: {},
-    offers: [],
-    pages: [],
-    behavior: {},
-  };
-};
-
 export default function StoreThemesGallery({ store, storeBranding }: Props) {
   const [applying, setApplying] = useState<string | null>(null);
-  const [previewSlug, setPreviewSlug] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('الكل');
   // Locally-tracked active template so badges move instantly after apply.
   const [activeTheme, setActiveTheme] = useState<string>(store.theme || 'classic');
@@ -79,10 +37,11 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
   const isActive = (slug: string) =>
     activeTheme ? activeTheme === slug : slug === 'classic';
 
-  const previewTpl = useMemo(
-    () => (previewSlug ? TEMPLATES.find((t) => t.slug === previewSlug) || null : null),
-    [previewSlug]
-  );
+  // Opens the full live preview in a new browser tab instead of an
+  // in-page modal, so merchants can compare templates side by side.
+  const openPreview = (slug: string) => {
+    window.open(`/stores/${store.id}/templates/${slug}/preview`, '_blank', 'noopener');
+  };
 
   const applyTheme = async (tpl: BuilderTemplateConfig) => {
     setApplying(tpl.slug);
@@ -160,7 +119,7 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
                     tokens and niche demo imagery. */}
                 <button
                   type="button"
-                  onClick={() => setPreviewSlug(tpl.slug)}
+                  onClick={() => openPreview(tpl.slug)}
                   className="relative block h-48 w-full overflow-hidden text-start"
                   aria-label={`معاينة قالب ${tpl.name}`}
                 >
@@ -218,7 +177,7 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPreviewSlug(tpl.slug)}
+                      onClick={() => openPreview(tpl.slug)}
                       disabled={applying !== null}
                     >
                       <Eye className="me-1 h-3.5 w-3.5" />
@@ -231,66 +190,6 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
           })}
         </div>
       </div>
-
-      {/* Full live-preview modal */}
-      <Dialog open={!!previewTpl} onOpenChange={(open) => !open && setPreviewSlug(null)}>
-        <DialogContent className="max-w-[min(1100px,96vw)] overflow-hidden p-0" dir="rtl">
-          {previewTpl && (
-            <>
-              <DialogHeader className="sr-only">
-                <DialogTitle>معاينة قالب {previewTpl.name}</DialogTitle>
-                <DialogDescription>{previewTpl.description}</DialogDescription>
-              </DialogHeader>
-              {/* Sticky action bar */}
-              <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    className="h-8 w-8 shrink-0 rounded-lg ring-1 ring-black/5"
-                    style={{ background: previewTpl.preview }}
-                    aria-hidden="true"
-                  />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-gray-900">
-                      معاينة حية — قالب «{previewTpl.name}»
-                    </p>
-                    <p className="text-[11px] text-gray-400">
-                      تخصص: {previewTpl.category} · محتوى تجريبي لأغراض الاستعراض
-                    </p>
-                  </div>
-                </div>
-                {isActive(previewTpl.slug) ? (
-                  <Button variant="outline" size="sm" disabled>
-                    <Check className="me-1 h-4 w-4 text-emerald-600" />
-                    القالب الحالي
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => applyTheme(previewTpl)}
-                    disabled={applying !== null}
-                  >
-                    {applying === previewTpl.slug ? (
-                      <Loader2 className="me-1 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Check className="me-1 h-4 w-4" />
-                    )}
-                    تطبيق هذا القالب
-                  </Button>
-                )}
-              </div>
-              {/* Scrollable storefront preview */}
-              <div className="max-h-[78vh] overflow-y-auto bg-slate-50">
-                <StoreSite
-                  template={previewTpl.slug}
-                  storeData={buildPreviewStoreData(previewTpl, store, storeBranding)}
-                  mode="home"
-                />
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </PageTemplate>
   );
 }

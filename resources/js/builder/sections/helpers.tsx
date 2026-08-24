@@ -229,10 +229,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
             ))}
           </div>
         )}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
+        <div className="mt-auto flex flex-col gap-2 pt-1 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex min-w-0 flex-col">
             {hasSale && <span className="text-xs text-slate-400 line-through">{priceOf(product)}</span>}
-            <span className="truncate text-base font-bold" style={{ color: css('--twc-primary', '#0f8a5f') }}>
+            <span className="text-base font-bold" style={{ color: css('--twc-primary', '#0f8a5f') }}>
               {salePriceOf(product)}
             </span>
           </div>

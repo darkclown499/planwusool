@@ -428,6 +428,9 @@ protected $fillable = [
         'e-storefront',
         'ecommece-marketplace',
         'marketplace-shop',
+        'toys-school-store',
+        'auto-garage-store',
+        'baby-buds-store',
     ];
 
     public const GROWTH_TEMPLATES = [];

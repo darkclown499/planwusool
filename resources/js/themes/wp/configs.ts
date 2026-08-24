@@ -135,10 +135,20 @@ export const WP_THEMES: Record<string, WpThemeConfig> = {
       copyright: 'واجهة',
     },
     strings: { sliderButton: 'استعرض المنتجات', addToCart: 'أضف إلى السلة', readMore: 'اقرأ المزيد', viewAll: 'عرض الكل' },
+    services: [
+      { title: 'ضمان أصلي', text: 'كل جهاز مضمون ومطابق للمواصفات', icon: 'shield' },
+      { title: 'توصيل سريع', text: 'يصلك أينما كنت خلال 24 ساعة', icon: 'truck' },
+      { title: 'دعم فني', text: 'فريقنا يرد عليك عبر واتساب في أي وقت', icon: 'headset' },
+      { title: 'دفع آمن', text: 'طرق دفع متعددة وموثوقة', icon: 'wallet' },
+    ],
     sections: [
       sec('slider'),
       sec('categories-box', 'أقسام التقنية'),
+      sec('hot-products', 'الأكثر مبيعاً'),
       sec('shop-grid', 'أحدث المنتجات'),
+      sec('services'),
+      sec('testimonial', 'آراء عملائنا'),
+      sec('contact-strip', 'تواصل معنا'),
     ],
     media: {
       sliderMain: '/themes/e-storefront/slider.png',
@@ -225,6 +235,55 @@ export const WP_THEMES: Record<string, WpThemeConfig> = {
       catRack: '/themes/ecommerce-clothing/cat-rack.jpg',
       catStyle: '/themes/ecommerce-clothing/cat-style.jpg',
       catFlatlay: '/themes/ecommerce-clothing/cat-flatlay.jpg',
+    },
+  },
+
+  /* -------------------------------------------------- toys-school-store
+   * «لعبتي» — playful toy & school-supplies storefront modeled loosely on
+   * tthkar.ps: sunny yellow/coral/teal on white, rounded Baloo type,
+   * circle category pills and real photography of toys/blocks/stationery. */
+  'toys-school-store': {
+    slug: 'toys-school-store',
+    name: 'لعبتي',
+    nameEn: 'Toyland',
+    tagline: 'كل ما يفرح صغارك في مكان واحد',
+    tokens: tok('#ffd23f', '#ff6b6b', '#4ecdc4', '#fff9ec', '#2b2540', '#ffe9b8', '20px', FONT_BALOO),
+    header: {
+      topbarText: '🎈 عروض العودة للمدارس — خصومات حتى 30% على القرطاسية',
+      phone: '+970599112233',
+      email: 'hello@toyland.store',
+      socials: true,
+      logoText: 'لعبتي',
+      menu: MENU,
+    },
+    footer: {
+      about: 'متجر ألعاب ومستلزمات مدرسية يقدّم منتجات آمنة وممتعة لصغارك بأسعار تنافسية وتوصيل سريع.',
+      copyright: 'لعبتي',
+    },
+    strings: { sliderButton: 'تسوق الآن', addToCart: 'أضف إلى السلة', readMore: 'اقرأ المزيد', viewAll: 'عرض الكل' },
+    services: [
+      { title: 'ألعاب آمنة', text: 'مطابقة لمعايير السلامة العالمية', icon: 'shield' },
+      { title: 'أسعار مناسبة', text: 'عروض دائمة على مستلزمات المدرسة', icon: 'tag' },
+      { title: 'خدمة عملاء', text: 'فريقنا معك عبر واتساب في أي وقت', icon: 'headset' },
+      { title: 'دفع متعدد', text: 'اختر طريقة الدفع الأنسب لك', icon: 'wallet' },
+    ],
+    sections: [
+      sec('slider'),
+      sec('categories-box', 'تسوق حسب القسم'),
+      sec('hot-products', 'الأكثر مبيعاً'),
+      sec('tab-products', 'تصفح مجموعتنا الكاملة'),
+      sec('featured-carousel', 'عروض المناسبات'),
+      sec('services'),
+    ],
+    media: {
+      sliderMain: '/themes/toys-school-store/slider-1.jpg',
+      slideTwo: '/themes/toys-school-store/cat-stationery.jpg',
+      slideThree: '/themes/toys-school-store/cat-blocks.jpg',
+      bannerOne: '/themes/toys-school-store/banner-balloons.jpg',
+      catBlocks: '/themes/toys-school-store/cat-blocks.jpg',
+      catStationery: '/themes/toys-school-store/cat-stationery.jpg',
+      catDolls: '/themes/toys-school-store/slider-2.jpg',
+      catGames: '/themes/toys-school-store/slider-3.jpg',
     },
   },
 

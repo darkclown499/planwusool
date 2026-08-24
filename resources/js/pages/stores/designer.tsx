@@ -18,6 +18,7 @@ interface Props {
   store: { id: number; name: string; slug: string; theme?: string };
   availableThemes?: string[];
   settings?: Record<string, any>;
+  storeUrl?: string;
 }
 
 const DEVICE_WIDTHS: Record<Device, string> = {
@@ -26,7 +27,7 @@ const DEVICE_WIDTHS: Record<Device, string> = {
   mobile: 'w-[400px]',
 };
 
-export default function StoreDesigner({ store, settings = {} }: Props) {
+export default function StoreDesigner({ store, settings = {}, storeUrl }: Props) {
   const [theme, setTheme] = useState<string>('');
   const [sections, setSections] = useState<BuilderSectionConfig[]>([]);
   const [designTokens, setDesignTokens] = useState<BuilderDesignTokens>({ colors: {} });
@@ -365,7 +366,10 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
   );
 
   const selectedSection = sections.find((s) => s.id === selectedId) || null;
-  const previewUrl = `https://${store.slug}.${window.location.host.split(':')[0]}`;
+  // Server-computed (custom domain/subdomain or the default {slug}.<domain>
+  // subdomain) with the current request's scheme/port, so it also works on
+  // local dev hosts instead of hardcoding https with no port.
+  const previewUrl = storeUrl || `${window.location.protocol}//${store.slug}.${window.location.host}`;
 
   const statusEl = (() => {
     if (isDirty && saveState !== 'saving' && saveState !== 'error') {
@@ -555,6 +559,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
                     <Canvas
                       sections={sections}
                       storeData={storeData}
+                      family={getBuilderTemplate(theme)?.family}
                       selectedId={selectedId}
                       onSelect={setSelectedId}
                       onToggleEnabled={toggleSection}
@@ -590,6 +595,7 @@ export default function StoreDesigner({ store, settings = {} }: Props) {
                     <Canvas
                       sections={sections}
                       storeData={storeData}
+                      family={getBuilderTemplate(theme)?.family}
                       selectedId={selectedId}
                       onSelect={setSelectedId}
                       onToggleEnabled={toggleSection}

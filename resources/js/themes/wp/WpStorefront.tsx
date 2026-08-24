@@ -79,7 +79,10 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
     const logo = cfg.logo || cfg.store_logo || storeData?.logo || storeData?.store?.logo || null;
     const name = cfg.storeName || storeData?.name || storeData?.store?.name || theme.name;
     const phone = cfg.phoneNumber || cfg.whatsapp_widget_phone || storeData?.config?.phoneNumber || header_phone(theme);
-    return { logo, name, phone };
+    const email = cfg.email || storeData?.config?.email || null;
+    const address = [cfg.address, cfg.city, cfg.country].filter(Boolean).join('، ') || null;
+    const about = cfg.description || null;
+    return { logo, name, phone, email, address, about };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, storeData, theme]);
 
@@ -101,7 +104,33 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
     return theme.sections.filter((s) => !hidden.has(KIND_TO_DESIGNER_TYPE[s.kind] || s.kind));
   }, [theme, templateOverrides]);
 
+  // Merchant-authored slider: the Designer's "hero" section props.slides
+  // (same editor used by the generic themes) always win when present, so
+  // every bespoke WP theme is fully store-owner editable — image per
+  // slide, mobile image, custom size, copy and CTA. Falls back to the
+  // theme's baked-in demo slides until the merchant customizes it.
   const slides = useMemo(() => {
+    const heroOverride = (templateOverrides?.sections || []).find((s: any) => s?.type === 'hero');
+    const heroProps = heroOverride?.props || {};
+    const primary = heroProps.image ? [{ ...heroProps }] : [];
+    const extra = Array.isArray(heroProps.slides) ? heroProps.slides : [];
+    const merchantSlides = [...primary, ...extra];
+    if (merchantSlides.length > 0) {
+      return merchantSlides
+        .filter((s: any) => s && s.image)
+        .map((s: any) => ({
+          title: s.title || brand.name,
+          text: s.subtitle || '',
+          image: s.image,
+          imageMobile: s.image_mobile || undefined,
+          sizeMode: s.size_mode === 'contain' ? 'contain' : 'cover',
+          width: s.width || undefined,
+          height: s.height || undefined,
+          buttonText: s.button_text || undefined,
+          buttonLink: s.button_link || undefined,
+        }));
+    }
+
     const m = theme.media;
     const out = [{ title: brand.name, text: theme.tagline, image: m.sliderMain }];
     ['slideTwo', 'slideThree', 'slideSweets', 'slideCoffee', 'slidePerfume', 'slideGrills', 'slideToys', 'slideClothes', 'slideGifts'].forEach(
@@ -116,7 +145,7 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
       }
     );
     return out;
-  }, [theme, brand]);
+  }, [theme, brand, templateOverrides]);
 
   const whatsappPhone =
     config?.whatsapp_widget_phone || config?.socialMedia?.whatsapp || config?.phoneNumber || '';
@@ -147,7 +176,7 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
             products={data.products}
             categories={data.categories}
             title={title || 'أقسامنا'}
-            circle={theme.slug === 'kids-fashion' || theme.slug === 'ecommerce-clothing'}
+            circle={theme.slug === 'kids-fashion' || theme.slug === 'ecommerce-clothing' || theme.slug === 'toys-school-store'}
           />
         );
       case 'services':
@@ -167,6 +196,8 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
         config={theme}
         displayName={brand.name}
         logoSrc={brand.logo}
+        realPhone={brand.phone}
+        realEmail={brand.email}
         cartCount={(cart.cartItems || []).length}
         onCartClick={() => ui.setShowCart(true)}
         whatsappHref={whatsappHref}
@@ -174,7 +205,15 @@ export const WpStorefront: React.FC<WpStorefrontProps> = ({ theme, storeData, de
 
       {visibleSections.map((section, i) => renderSection(section.kind, section.title, i))}
 
-      <WpFooter config={theme} storeName={brand.name} categories={data.categories} />
+      <WpFooter
+        config={theme}
+        storeName={brand.name}
+        categories={data.categories}
+        realPhone={brand.phone}
+        realEmail={brand.email}
+        realAddress={brand.address}
+        realAbout={brand.about}
+      />
     </div>
   );
 };

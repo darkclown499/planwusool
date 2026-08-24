@@ -321,6 +321,71 @@ const BAZAAR_CATALOG: DemoCatalog = {
   ],
 };
 
+/* ------------------------------------------- toys-school-store ألعاب وأدوات مدرسية */
+const TOYS_SCHOOL_CATALOG: DemoCatalog = {
+  categories: [
+    cat('1', 'ألعاب تعليمية', 'educational-toys', '/themes/toys-school-store/cat-blocks.jpg', 14),
+    cat('2', 'دمى وشخصيات', 'dolls-figures', '/themes/toys-school-store/slider-2.jpg', 11),
+    cat('3', 'مستلزمات مدرسية', 'school-supplies', '/themes/toys-school-store/cat-stationery.jpg', 18),
+    cat('4', 'ألعاب جماعية', 'board-games', '/themes/toys-school-store/slider-1.jpg', 9),
+    cat('5', 'حفلات وهدايا', 'party-gifts', '/themes/toys-school-store/banner-balloons.jpg', 7),
+  ],
+  products: [
+    prod('p1', 'مكعبات بناء خشبية 50 قطعة', 65, 52, '/themes/toys-school-store/cat-blocks.jpg', '1'),
+    prod('p2', 'طقم تعلم الحروف والأرقام', 48, null, '/themes/toys-school-store/cat-blocks.jpg', '1'),
+    prod('p3', 'دمية دب قطيفة كبيرة', 55, 45, '/themes/toys-school-store/slider-2.jpg', '2'),
+    prod('p4', 'مجموعة شخصيات كرتونية (6 قطع)', 39, null, '/themes/toys-school-store/slider-3.jpg', '2'),
+    prod('p5', 'حقيبة مدرسية مقاومة للماء', 89, 74, '/themes/toys-school-store/cat-stationery.jpg', '3'),
+    prod('p6', 'طقم أقلام تلوين 24 لون', 22, 18, '/themes/toys-school-store/cat-stationery.jpg', '3'),
+    prod('p7', 'دفاتر مدرسية ملونة (5 قطع)', 15, null, '/themes/toys-school-store/cat-stationery.jpg', '3'),
+    prod('p8', 'لعبة طاولة عائلية ذكاء', 42, 35, '/themes/toys-school-store/slider-1.jpg', '4'),
+    prod('p9', 'بالونات وزينة عيد ميلاد', 28, null, '/themes/toys-school-store/banner-balloons.jpg', '5'),
+  ],
+};
+
+/* ------------------------------------------- auto-garage-store قطع غيار */
+const AUTO_GARAGE_CATALOG: DemoCatalog = {
+  categories: [
+    cat('1', 'قطع محرك', 'engine-parts', '/themes/auto-garage-store/hero-engine.jpg', 16),
+    cat('2', 'إطارات وجنوط', 'tires-rims', '/themes/auto-garage-store/tires.jpg', 12),
+    cat('3', 'إكسسوارات داخلية', 'interior-accessories', '/themes/auto-garage-store/dashboard.jpg', 14),
+    cat('4', 'عدد وأدوات', 'tools', '/themes/auto-garage-store/tools.jpg', 10),
+  ],
+  products: [
+    prod('p1', 'بطارية سيارة 70 أمبير', 320, 280, '/themes/auto-garage-store/hero-engine.jpg', '1'),
+    prod('p2', 'فلتر زيت أصلي', 25, null, '/themes/auto-garage-store/hero-engine.jpg', '1'),
+    prod('p3', 'طقم بواجي إشعال (4 قطع)', 85, 70, '/themes/auto-garage-store/hero-engine.jpg', '1'),
+    prod('p4', 'إطار رياضي 17 بوصة', 410, 360, '/themes/auto-garage-store/tires.jpg', '2'),
+    prod('p5', 'جنط ألمنيوم رياضي', 650, null, '/themes/auto-garage-store/tires.jpg', '2'),
+    prod('p6', 'غطاء مقاعد جلد فاخر', 220, 190, '/themes/auto-garage-store/dashboard.jpg', '3'),
+    prod('p7', 'حامل جوال للتابلوه', 45, null, '/themes/auto-garage-store/dashboard.jpg', '3'),
+    prod('p8', 'طقم عدة ميكانيكي 46 قطعة', 180, 150, '/themes/auto-garage-store/tools.jpg', '4'),
+    prod('p9', 'رافعة سيارة هيدروليك', 260, null, '/themes/auto-garage-store/tools.jpg', '4'),
+  ],
+};
+
+/* ------------------------------------------- baby-buds-store رضع وأطفال */
+const BABY_BUDS_CATALOG: DemoCatalog = {
+  categories: [
+    cat('1', 'ألعاب حديثي الولادة', 'newborn-toys', '/images/store/kids-toys.jpg', 10),
+    cat('2', 'ألعاب حسية وخشبية', 'sensory-wooden-toys', '/images/store/kids-toys.jpg', 13),
+    cat('3', 'دمى وعرائس قماشية', 'plush-dolls', '/images/store/kids-clothes.jpg', 9),
+    cat('4', 'ألعاب تعليمية', 'educational-toys', '/images/store/kids-toys.jpg', 15),
+    cat('5', 'هدايا وصناديق مواليد', 'newborn-gift-boxes', '/images/store/kids-clothes.jpg', 8),
+  ],
+  products: [
+    prod('p1', 'خشخيشة خشبية آمنة للرضع', 32, 26, '/images/store/kids-toys.jpg', '1'),
+    prod('p2', 'سجادة نشاط حسية للمواليد', 95, 79, '/images/store/kids-toys.jpg', '1'),
+    prod('p3', 'مكعبات خشبية ملونة 20 قطعة', 58, 48, '/images/store/kids-toys.jpg', '2'),
+    prod('p4', 'طقم ألعاب حسية متعددة الملمس', 65, null, '/images/store/kids-toys.jpg', '2'),
+    prod('p5', 'دمية قطيفة أرنب طرية', 42, 35, '/images/store/kids-clothes.jpg', '3'),
+    prod('p6', 'عروسة قماشية بمكونات آمنة', 38, null, '/images/store/kids-clothes.jpg', '3'),
+    prod('p7', 'لوحة تعليم الحروف والأشكال', 55, 46, '/images/store/kids-toys.jpg', '4'),
+    prod('p8', 'كتاب قماشي تفاعلي للرضع', 29, null, '/images/store/kids-toys.jpg', '4'),
+    prod('p9', 'صندوق هدية استقبال المولود', 120, 99, '/images/store/kids-clothes.jpg', '5'),
+  ],
+};
+
 export const DEMO_CATALOGS: Record<string, DemoCatalog> = {
   classic: CLASSIC_CATALOG,
   'fresh-bakers': FRESH_BAKERS_CATALOG,
@@ -336,6 +401,9 @@ export const DEMO_CATALOGS: Record<string, DemoCatalog> = {
   'e-storefront': E_STOREFRONT_CATALOG,
   'ecommece-marketplace': MARKETPLACE_CATALOG,
   'marketplace-shop': BAZAAR_CATALOG,
+  'toys-school-store': TOYS_SCHOOL_CATALOG,
+  'auto-garage-store': AUTO_GARAGE_CATALOG,
+  'baby-buds-store': BABY_BUDS_CATALOG,
 };
 
 /** Demo catalog for a template slug (legacy slugs normalize automatically). */

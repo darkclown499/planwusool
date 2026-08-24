@@ -389,6 +389,13 @@ interface SlideItem {
   button_link?: string;
   video?: string;
   background?: string;
+  /** 'cover' (default) fills the banner and crops; 'contain' letterboxes the
+   *  image at its own size — lets a merchant mix differently-sized slides
+   *  in the same slider instead of forcing one uniform crop. */
+  size_mode?: 'cover' | 'contain';
+  /** Only used when size_mode is 'contain' — explicit box size in px. */
+  width?: number;
+  height?: number;
 }
 
 /** 9-position overlay content alignment. */
@@ -414,6 +421,7 @@ const EMPTY_SLIDE: SlideItem = {
   button_text: 'اكتشف المزيد',
   button_link: '#template-products',
   video: '',
+  size_mode: 'cover',
 };
 
 /** Compact 3x3 grid picker for slide content alignment. */
@@ -496,6 +504,52 @@ const SlidesEditor: React.FC<{ value: SlideItem[]; onChange: (next: SlideItem[])
               onChange={(v) => update(index, 'image_mobile', v)}
               placeholder="صورة الجوال (عمودية — تظهر تحت 768px)"
             />
+          </div>
+
+          <div className="mt-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[11px] font-bold text-slate-600">حجم الشريحة</span>
+              <div className="flex overflow-hidden rounded-md border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => update(index, 'size_mode', 'cover')}
+                  className={`px-2.5 py-1 text-[11px] font-bold transition ${
+                    (slide.size_mode || 'cover') === 'cover' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'
+                  }`}
+                >
+                  تغطية كاملة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => update(index, 'size_mode', 'contain')}
+                  className={`px-2.5 py-1 text-[11px] font-bold transition ${
+                    slide.size_mode === 'contain' ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'
+                  }`}
+                >
+                  حجم مخصص
+                </button>
+              </div>
+            </div>
+            {slide.size_mode === 'contain' && (
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  value={slide.width || ''}
+                  onChange={(e) => update(index, 'width', Number(e.target.value) || undefined)}
+                  placeholder="العرض (px)"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+                />
+                <input
+                  type="number"
+                  min={1}
+                  value={slide.height || ''}
+                  onChange={(e) => update(index, 'height', Number(e.target.value) || undefined)}
+                  placeholder="الارتفاع (px)"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-emerald-400"
+                />
+              </div>
+            )}
           </div>
 
           <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2">

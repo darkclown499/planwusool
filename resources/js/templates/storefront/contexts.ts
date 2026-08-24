@@ -40,6 +40,7 @@ export function useStorefrontCore() {
         setShowCart: () => {},
         setShowCheckout: () => {},
         setShowAuthModal: () => {},
+        setShowSearch: () => {},
         handleCartClick: () => {},
         handleCloseCart: () => {},
     };

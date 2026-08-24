@@ -6,22 +6,32 @@ import { useOrder } from '@/contexts/OrderContext';
 import { useProduct } from '@/contexts/ProductContext';
 import { useStore } from '@/contexts/StoreContext';
 import { useUI } from '@/contexts/UIContext';
+import { getFamilyPageComponent } from '@/themes/registry';
+import type { TemplateFamily } from '@/builder/types';
 import { router } from '@inertiajs/react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TemplateAuthForm, TemplateAuthGate } from './AuthModal';
-import { TemplateCartDrawer } from './CartDrawer';
-import { TemplateCheckout } from './CheckoutModal';
-import { TemplateMyOrdersModal, TemplateOrderDetailsModal, TemplateOrderSuccessModal, TemplateProfileModal } from './CustomerModals';
-import { TemplateProductDetailModal } from './ProductDetailModal';
 
 /**
  * Storefront overlay host for the template system.
  * Mounted once inside ThemeProvider, it wires the template page to the full
  * storefront feature stack (cart, checkout with payment + delivery methods,
- * customer login/register, product details, orders and profile).
+ * customer login/register, product details, orders and profile). Every
+ * overlay below (cart/product-detail/checkout/order-success/profile/orders/
+ * order-detail/search) is resolved through getFamilyPageComponent so a
+ * family can ship its own on-brand version — anything it doesn't override
+ * falls back to the shared component every store already used.
+ *
+ * Deliberately does NOT `import '@/themes/load-families'` itself: this
+ * module sits inside the `@/templates/storefront` barrel, which several
+ * generic builder sections import — so a family module (reachable from
+ * load-families.ts) importing this file back would re-enter it while
+ * themes/registry.ts is still mid-evaluation, throwing on its `registry`
+ * const. dynamic.tsx / StoreSite.tsx trigger the family bootstrap instead,
+ * from outside that cycle, before this component ever renders.
  */
-export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const TemplateStorefront: React.FC<{ children: React.ReactNode; family?: TemplateFamily | null }> = ({ children, family = null }) => {
     const { t } = useTranslation();
     const { store, behavior } = useStore();
     const cart = useCart();
@@ -31,6 +41,15 @@ export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ ch
     const order = useOrder();
 
     const storeSlug = store?.slug;
+
+    const TemplateCartDrawer = useMemo(() => getFamilyPageComponent(family, 'cart')!, [family]);
+    const TemplateProductDetailModal = useMemo(() => getFamilyPageComponent(family, 'product_detail')!, [family]);
+    const TemplateCheckout = useMemo(() => getFamilyPageComponent(family, 'checkout')!, [family]);
+    const TemplateOrderSuccessModal = useMemo(() => getFamilyPageComponent(family, 'order_success')!, [family]);
+    const TemplateProfileModal = useMemo(() => getFamilyPageComponent(family, 'profile')!, [family]);
+    const TemplateMyOrdersModal = useMemo(() => getFamilyPageComponent(family, 'orders')!, [family]);
+    const TemplateOrderDetailsModal = useMemo(() => getFamilyPageComponent(family, 'order_detail')!, [family]);
+    const SearchOverlay = useMemo(() => getFamilyPageComponent(family, 'search')!, [family]);
 
     const loginEnabled = behavior?.enable_customer_login !== false;
     const requireLogin = behavior?.require_login_checkout === true;
@@ -82,7 +101,7 @@ export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ ch
                 <TemplateCartDrawer
                     onClose={ui.handleCloseCart}
                     onCheckout={handleCheckoutClick}
-                    onProductClick={(p) => product.handleProductClick(p)}
+                    onProductClick={(p: any) => product.handleProductClick(p)}
                 />
             )}
 
@@ -168,6 +187,8 @@ export const TemplateStorefront: React.FC<{ children: React.ReactNode }> = ({ ch
             {auth.showProfileModal && (
                 <TemplateProfileModal userProfile={auth.userProfile} storeSlug={storeSlug} onClose={() => auth.setShowProfileModal(false)} />
             )}
+
+            {ui.showSearch && <SearchOverlay onClose={() => ui.setShowSearch(false)} />}
         </>
     );
 };

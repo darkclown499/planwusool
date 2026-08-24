@@ -194,10 +194,21 @@
   background: linear-gradient(to left, rgba(0,0,0,.62) 0%, rgba(0,0,0,.34) 45%, rgba(0,0,0,.08) 100%);
   pointer-events: none;
 }
-.wpt-slide > img {
+.wpt-slide picture { display: block; }
+.wpt-slide picture > img {
   height: clamp(340px, 52vw, 800px);
   width: 100%;
   object-fit: cover;
+}
+/* Merchant-chosen "custom size" slide: letterbox the image at its own
+ * aspect ratio on the dark frame background instead of cropping to fill. */
+.wpt-slide.is-contain picture { display: flex; justify-content: center; }
+.wpt-slide.is-contain picture > img {
+  height: auto;
+  max-height: clamp(340px, 52vw, 800px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
 }
 .wpt-slide__position {
   position: absolute;
@@ -847,5 +858,103 @@
 [data-theme='ecommerce-clothing'] .wpt-testimonial {
   border-radius: 4px;
   background: #fff;
+}
+
+/* =====================================================================
+ * «لعبتي» (toys-school-store) — sunny, rounded toy-shop skin.
+ * Yellow/coral/teal on white, chunky pill buttons, dashed circle
+ * category rings and playful bouncy card corners. Scoped strictly under
+ * [data-theme='toys-school-store'].
+ * ===================================================================== */
+
+[data-theme='toys-school-store'] {
+  --toy-yellow: var(--twc-primary, #ffd23f);
+  --toy-coral: var(--twc-secondary, #ff6b6b);
+  --toy-teal: var(--twc-accent, #4ecdc4);
+}
+
+/* ------------------------------------------------------- chunky buttons */
+[data-theme='toys-school-store'] .wpt-btn {
+  background: var(--toy-coral);
+  color: #fff !important;
+  border-radius: 999px;
+  padding: 12px 34px;
+  font-weight: 800;
+  box-shadow: 0 4px 0 rgba(0,0,0,.12);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+[data-theme='toys-school-store'] .wpt-btn:hover {
+  background: var(--toy-teal);
+  filter: none;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgba(0,0,0,.12);
+}
+[data-theme='toys-school-store'] .wpt-btn--ghost {
+  border: 2px solid var(--toy-coral);
+  color: var(--toy-coral) !important;
+  border-radius: 999px;
+}
+
+/* --------------------------------------------------------- topbar & nav */
+[data-theme='toys-school-store'] .wpt-topbar {
+  background: var(--toy-yellow);
+  color: #2b2540;
+  font-weight: 700;
+}
+[data-theme='toys-school-store'] .wpt-topbar a { color: #2b2540; }
+[data-theme='toys-school-store'] .wpt-header { box-shadow: 0 2px 0 var(--toy-yellow); }
+[data-theme='toys-school-store'] .wpt-logo { font-weight: 800; }
+[data-theme='toys-school-store'] .wpt-cart-count { background: var(--toy-coral); }
+
+/* -------------------------------------------------------- slider cards */
+[data-theme='toys-school-store'] .wpt-slide__box {
+  background: rgba(255,255,255,.92);
+  border-radius: 24px;
+  padding: 32px 36px;
+  border: none;
+}
+[data-theme='toys-school-store'] .wpt-slide__title { color: #2b2540; }
+[data-theme='toys-school-store'] .wpt-slide__text { color: rgba(43,37,64,.75); }
+[data-theme='toys-school-store'] .wpt-arrow {
+  background: #fff;
+  border: none;
+  color: var(--toy-coral);
+}
+[data-theme='toys-school-store'] .wpt-arrow:hover { background: var(--toy-yellow); }
+[data-theme='toys-school-store'] .wpt-dot.is-active { background: var(--toy-coral); }
+
+/* --------------------------------------------------- circle categories */
+[data-theme='toys-school-store'] .wpt-circle img {
+  border: 3px dashed var(--toy-teal);
+  padding: 4px;
+}
+[data-theme='toys-school-store'] .wpt-circle:hover img {
+  border-color: var(--toy-coral);
+  transform: rotate(-4deg) scale(1.06);
+}
+[data-theme='toys-school-store'] .wpt-circle span { font-weight: 800; color: #2b2540; }
+
+/* -------------------------------------------------------- product cards */
+[data-theme='toys-school-store'] .wpt-product-card,
+[data-theme='toys-school-store'] .wpt-cat-card {
+  border-radius: 20px;
+  overflow: hidden;
+}
+[data-theme='toys-school-store'] .wpt-badge {
+  background: var(--toy-coral);
+  border-radius: 999px;
+}
+
+/* ------------------------------------------------------------ services */
+[data-theme='toys-school-store'] .wpt-service__icon {
+  background: var(--toy-yellow);
+  color: #2b2540;
+  border-radius: 999px;
+}
+
+/* --------------------------------------------------------- testimonials */
+[data-theme='toys-school-store'] .wpt-testimonial {
+  border-radius: 24px;
+  background: #fff9ec;
 }
 [data-theme='ecommerce-clothing'] .wpt-testimonial__avatar { border-color: var(--anaqa-blush); }

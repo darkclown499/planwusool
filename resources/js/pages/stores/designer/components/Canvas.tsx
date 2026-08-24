@@ -1,20 +1,26 @@
 import React from 'react';
 import { Draggable, Droppable } from '@hello-pangea/dnd';
 import { Eye, EyeOff, GripVertical, Trash2, Plus } from 'lucide-react';
-import { getSectionComponent, getSectionMeta } from '@/builder';
-import type { BuilderSectionConfig } from '@/builder/types';
+import { getSectionMeta } from '@/builder';
+import type { BuilderSectionConfig, TemplateFamily } from '@/builder/types';
+import { getFamilySectionComponent } from '@/themes/registry';
+import '@/themes/load-families';
 import { SECTION_ICONS } from './controls';
 
 type Props = {
   sections: BuilderSectionConfig[];
   storeData?: any;
+  /** The active template's design family — resolves each section to that
+   *  family's bespoke component so the canvas preview matches the live
+   *  storefront exactly, instead of always falling back to the generic one. */
+  family?: TemplateFamily | null;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onToggleEnabled: (id: string, enabled: boolean) => void;
   onDelete: (id: string) => void;
 };
 
-export const Canvas: React.FC<Props> = ({ sections, storeData, selectedId, onSelect, onToggleEnabled, onDelete }) => {
+export const Canvas: React.FC<Props> = ({ sections, storeData, family, selectedId, onSelect, onToggleEnabled, onDelete }) => {
   return (
     <Droppable droppableId="canvas">
       {(droppableProvided, snapshot) => (
@@ -32,7 +38,7 @@ export const Canvas: React.FC<Props> = ({ sections, storeData, selectedId, onSel
           )}
 
           {sections.map((section, index) => {
-            const Component = getSectionComponent(section.type);
+            const Component = getFamilySectionComponent(family, section.type);
             const meta = getSectionMeta(section.type);
             const Icon = meta ? SECTION_ICONS[meta.icon] || Plus : Plus;
             if (!Component) return null;

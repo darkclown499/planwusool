@@ -10,11 +10,11 @@ import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { formatLocalDate } from '@/utils/date-helper';
 
-export default function ViewStore({ store, stats }: any) {
+export default function ViewStore({ store, stats, storeUrl }: any) {
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
 
-  
+
   // Get permissions directly
   const userPermissions = typeof auth?.permissions === 'function' ? auth.permissions() : (auth?.permissions || []);
   const hasEditPermission = userPermissions.includes('edit-stores');
@@ -24,28 +24,10 @@ export default function ViewStore({ store, stats }: any) {
       label: t('Visit Store'),
       icon: <Globe className="h-4 w-4" />,
       variant: 'outline' as const,
-      onClick: () => {
-        const getStoreUrl = () => {
-          const protocol = window.location.protocol;
-          
-          if (store.enable_custom_domain && store.custom_domain) {
-            return `${protocol}//${store.custom_domain}`;
-          }
-          
-          if (store.enable_custom_subdomain && store.custom_subdomain) {
-            // Get base domain dynamically
-            const currentHost = window.location.hostname;
-            const baseDomain = currentHost.includes('localhost') 
-              ? 'localhost' 
-              : currentHost.split('.').slice(-2).join('.');
-            return `${protocol}//${store.custom_subdomain}.${baseDomain}`;
-          }
-          
-          return route('store.home', store.slug);
-        };
-        
-        window.open(getStoreUrl(), '_blank');
-      }
+      // storeUrl is computed server-side (custom domain/subdomain or the
+      // default {slug}.<domain> subdomain) with the current request's port,
+      // so it works on local dev hosts too instead of assuming 80/443.
+      onClick: () => window.open(storeUrl || route('store.home', store.slug), '_blank'),
     },
     ...(hasEditPermission ? [{
       label: t('Edit Store'),

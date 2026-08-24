@@ -1,5 +1,6 @@
 import { AccountArea } from '@/components/storefront/AccountArea';
 import { MobileAppShell } from '@/components/storefront/MobileAppShell';
+import type { TemplateFamily } from '@/builder/types';
 import React, { ReactNode } from 'react';
 import { AuthProvider } from './AuthContext';
 import { CartProvider } from './CartContext';
@@ -116,6 +117,7 @@ interface ThemeProviderProps {
     paymentStatus?: string;
     orderNumber?: string;
     action?: string | null;
+    family?: TemplateFamily | null;
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
@@ -134,6 +136,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     paymentStatus,
     orderNumber,
     action = null,
+    family = null,
 }) => {
     return (
         <StorefrontLocaleProvider defaultLocale={config.locale}>
@@ -152,7 +155,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
                                     >
                                         <MobileAppShell />
                                         {children}
-                                        <AccountArea />
+                                        {/* Reserves space so the fixed mobile bottom tab bar never covers the last bit of page content (e.g. the footer). */}
+                                        <div aria-hidden className="h-[calc(54px_+_env(safe-area-inset-bottom))] md:hidden" />
+                                        <AccountArea family={family} />
                                     </UIProvider>
                                 </OrderProvider>
                             </ProductProvider>

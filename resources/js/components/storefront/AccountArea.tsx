@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUI } from '@/contexts/UIContext';
-import { WishlistModal } from '@/components/storefront/WishlistModal';
 import { DownloadsModal } from '@/components/storefront/DownloadsModal';
 import { LoyaltyModal } from '@/components/storefront/LoyaltyModal';
+import { getFamilyPageComponent } from '@/themes/registry';
+import '@/themes/load-families';
+import type { TemplateFamily } from '@/builder/types';
 
 /**
  * Central account-area host.
@@ -13,9 +15,11 @@ import { LoyaltyModal } from '@/components/storefront/LoyaltyModal';
  * It also consumes the `action` prop (query string or URL path deep links
  * such as /my-orders, /my-profile, /wishlist, /my-downloads) and opens the
  * matching modal — the per-theme Profile/Orders modals are driven through
- * the same AuthContext state.
+ * the same AuthContext state. `wishlist` resolves through the family page
+ * registry so a family can ship its own on-brand wishlist; downloads/loyalty
+ * stay generic (niche features, no per-family variants yet).
  */
-export const AccountArea: React.FC = () => {
+export const AccountArea: React.FC<{ family?: TemplateFamily | null }> = ({ family = null }) => {
   const {
     isLoggedIn,
     showWishlistModal,
@@ -29,6 +33,7 @@ export const AccountArea: React.FC = () => {
     setShowLoginModal
   } = useAuth();
   const { action } = useUI();
+  const WishlistModal = useMemo(() => getFamilyPageComponent(family, 'wishlist')!, [family]);
 
   useEffect(() => {
     if (!action) return;

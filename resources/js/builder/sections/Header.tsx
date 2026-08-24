@@ -303,7 +303,7 @@ export const HeaderSection: React.FC<BuilderSectionProps> = ({ section, storeDat
   return (
     <>
       <header
-        className={`${stickyOn ? 'sticky top-0 z-[100]' : 'relative'} z-[100] w-full ${isFloating ? 'bg-transparent' : 'border-b shadow-sm'}`}
+        className={`hidden md:block ${stickyOn ? 'sticky top-0 z-[100]' : 'relative'} z-[100] w-full ${isFloating ? 'bg-transparent' : 'border-b shadow-sm'}`}
         style={{
           background: isFloating ? 'transparent' : css('--twc-surface', '#ffffff'),
           borderColor: css('--twc-border', '#e2e8f0'),

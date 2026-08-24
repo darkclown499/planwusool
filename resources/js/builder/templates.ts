@@ -86,6 +86,7 @@ const tokens = (
 /* ---------------------------------------------------------------- 1 */
 const CLASSIC: BuilderTemplateConfig = {
   slug: 'classic',
+  family: 'modern-minimal',
   name: 'كلاسيك',
   name_en: 'Classic',
   description: 'متجر عربي متكامل: ترويسة واحدة، تصنيفات دائرية بالصور، منتجات مجمّعة حسب التصنيف وطلب مباشر عبر واتساب.',
@@ -139,6 +140,7 @@ const CLASSIC: BuilderTemplateConfig = {
    core/sections: slider → testimonial → additional-content              */
 const FRESH_BAKERS: BuilderTemplateConfig = {
   slug: 'fresh-bakers',
+  family: 'food-menu',
   name: 'المخبز الطازج',
   name_en: 'Fresh Bakers',
   description: 'قالب المخبز الوردي الشهير: سلايدر عريض ثم آراء العملاء مباشرة كما في التصميم الأصلي — مخبز وحلويات وكيك.',
@@ -199,6 +201,7 @@ const FRESH_BAKERS: BuilderTemplateConfig = {
    core/sections: slider → deal-of-day → additional-content             */
 const GROCERY_SHOPPING: BuilderTemplateConfig = {
   slug: 'grocery-shopping',
+  family: 'dense-marketplace',
   name: 'بقالتك',
   name_en: 'Grocery Shopping',
   description: 'قالب البقالة الأحمر الجريء: سلايدر عريض ثم بانر «عرض اليوم» كما في الأصل — خضار وفواكه ومواد تموينية.',
@@ -263,6 +266,7 @@ const GROCERY_SHOPPING: BuilderTemplateConfig = {
    theme ships no frontpage.php → standard shop grid after the slider   */
 const SUPER_MART_STORE: BuilderTemplateConfig = {
   slug: 'super-mart-store',
+  family: 'dense-marketplace',
   name: 'سوبر مارت',
   name_en: 'Super Mart Store',
   description: 'قالب السوبرماركت بالأحمر والأصفر: سلايدر عروض عريض وشبكة متجر كاملة لكل احتياجات المنزل.',
@@ -313,6 +317,7 @@ const SUPER_MART_STORE: BuilderTemplateConfig = {
    core/sections: slider → product-category → tab-products              */
 const MEGA_STORE_WOOCOMMERCE: BuilderTemplateConfig = {
   slug: 'mega-store-woocommerce',
+  family: 'dense-marketplace',
   name: 'هايبر مارت',
   name_en: 'Hyper Mart',
   description: 'قالب الهايبر بالأزرق والأصفر: سلايدر ثم شبكة تصنيفات ثم تبويبات منتجات — نفس ترتيب الأصل حرفياً.',
@@ -374,6 +379,7 @@ const MEGA_STORE_WOOCOMMERCE: BuilderTemplateConfig = {
    core/sections: slider → tab-products                                 */
 const ECOMMERCE_MEGA_STORE: BuilderTemplateConfig = {
   slug: 'ecommerce-mega-store',
+  family: 'flash-deals',
   name: 'ميغا ستور',
   name_en: 'Mega Store',
   description: 'قالب العروض بالكحلي والبرتقالي: سلايدر صارخ ثم تبويبات منتجات — هوية «ميغا ستور» الأصلية.',
@@ -429,6 +435,7 @@ const ECOMMERCE_MEGA_STORE: BuilderTemplateConfig = {
    Unique shapes live in the [data-theme='ecommerce-clothing'] skin.  */
 const ECOMMERCE_CLOTHING: BuilderTemplateConfig = {
   slug: 'ecommerce-clothing',
+  family: 'editorial-boutique',
   name: 'أناقة',
   name_en: 'Elegance',
   description: 'بوتيك أنثوي فاخر بلمسة وردية هادئة وأسود أنيق: سلايدر صور كامل، تصنيفات دائرية، الأكثر مبيعاً وأحدث التشكيلات — على طريقة متاجر الموضة العالمية.',
@@ -507,6 +514,7 @@ const ECOMMERCE_CLOTHING: BuilderTemplateConfig = {
    core/sections: slider → hot-products                                 */
 const FASHION_DESIGNER_MART: BuilderTemplateConfig = {
   slug: 'fashion-designer-mart',
+  family: 'editorial-boutique',
   name: 'ديزاينر',
   name_en: 'Designer Mart',
   description: 'قالب المصممين بالوردي والأسود مع خط أميري الفاخر للعناوين — سلايدر ثم المنتجات الساخنة كما في الأصل.',
@@ -568,6 +576,7 @@ const FASHION_DESIGNER_MART: BuilderTemplateConfig = {
    core/sections: slider → hot-products                                 */
 const KIDS_FASHION: BuilderTemplateConfig = {
   slug: 'kids-fashion',
+  family: 'playful-cards',
   name: 'عالم الأطفال',
   name_en: 'Kids World',
   description: 'قالب الأطفال بالوردي والبنفسجي وخط «بالو» المرِح: سلايدر ملوّن ثم المنتجات الساخنة — ملابس وألعاب.',
@@ -631,6 +640,7 @@ const KIDS_FASHION: BuilderTemplateConfig = {
    core/sections: slider → hot-products                                 */
 const COSMETIC_STORE: BuilderTemplateConfig = {
   slug: 'cosmetic-store',
+  family: 'editorial-boutique',
   name: 'جماليات',
   name_en: 'Cosmetic Store',
   description: 'قالب التجميل الأخضر المنعش: سلايدر أنيق ثم صف المنتجات الساخنة — مكياج وعطور وعناية أصلية.',
@@ -692,6 +702,7 @@ const COSMETIC_STORE: BuilderTemplateConfig = {
    core/sections: slider → special-meal                                 */
 const RESTAURANT_FOOD_DELIVERY: BuilderTemplateConfig = {
   slug: 'restaurant-food-delivery',
+  family: 'food-menu',
   name: 'المطعم',
   name_en: 'Restaurant & Delivery',
   description: 'قالب المطعم بالأحمر والأصفر الشهيان: سلايدر أطباق عريض ثم بانر «الوجبة المميزة» وقائمة بتبويبات.',
@@ -753,6 +764,7 @@ const RESTAURANT_FOOD_DELIVERY: BuilderTemplateConfig = {
    core/sections: slider → categories                                   */
 const E_STOREFRONT: BuilderTemplateConfig = {
   slug: 'e-storefront',
+  family: 'visual-tech',
   name: 'واجهة',
   name_en: 'E-Storefront',
   description: 'قالب الإلكترونيات الأخضر النابض بخط Inter العربي: سلايدر تقني ثم شبكة التصنيفات مباشرة كالأصل.',
@@ -810,6 +822,7 @@ const E_STOREFRONT: BuilderTemplateConfig = {
    core/sections: slider → featured-product                             */
 const ECOMMECE_MARKETPLACE: BuilderTemplateConfig = {
   slug: 'ecommece-marketplace',
+  family: 'flash-deals',
   name: 'السوق',
   name_en: 'Marketplace',
   description: 'قالب السوق بالأزرق الملكي والليموني الحاد: سلايدر ثم شبكة «منتجات مميزة» كما في التصميم الأصلي.',
@@ -872,6 +885,7 @@ const ECOMMECE_MARKETPLACE: BuilderTemplateConfig = {
    ships no frontpage.php → standard shop grid after the slider         */
 const MARKETPLACE_SHOP: BuilderTemplateConfig = {
   slug: 'marketplace-shop',
+  family: 'flash-deals',
   name: 'بازار',
   name_en: 'Bazaar Shop',
   description: 'قالب البازار الوردي الدافئ: سلايدر ترحيبي وشبكة متجر متنوعة — منزل وهدايا وإكسسوارات.',
@@ -934,6 +948,247 @@ const MARKETPLACE_SHOP: BuilderTemplateConfig = {
   preview: 'linear-gradient(135deg,#fdf2f4,#9085f9)',
 };
 
+/* ---------------------------------------------------------------- 15 */
+/* «لعبتي» — playful toy & school-supplies store, rounded Baloo type,
+   sunny yellow/coral/sky palette, circle categories, real Unsplash
+   photography of toys/blocks/stationery/balloons. */
+const TOYS_SCHOOL_STORE: BuilderTemplateConfig = {
+  slug: 'toys-school-store',
+  family: 'playful-cards',
+  name: 'لعبتي',
+  name_en: 'Toyland',
+  description: 'متجر ألعاب ومستلزمات مدرسية بألوان مبهجة: سلايدر صور كامل، تصنيفات دائرية، الأكثر مبيعاً وعروض المناسبات — مثالي لمتاجر الألعاب والقرطاسية.',
+  category: 'ألعاب وأدوات مدرسية',
+  is_free: true,
+  plan_required: 'starter',
+  sections: [
+    s('header', 1, { variant: 'centered', sticky: true, show_nav: true }),
+    s('hero', 2, {
+      hero_variant: 'slider_full',
+      title: 'كل ما يفرح صغارك في مكان واحد',
+      subtitle: 'ألعاب تعليمية، دمى، ومستلزمات مدرسية بأسعار تنافسية — توصيل سريع لكل المدن.',
+      image: '/themes/toys-school-store/slider-1.jpg',
+      button_text: 'تسوق الآن',
+      button_link: '#template-products',
+      overlay_opacity: 0.32,
+      slides: [
+        { title: 'مستلزمات العودة للمدارس', subtitle: 'حقائب وأقلام ودفاتر بألوان زاهية', image: '/themes/toys-school-store/cat-stationery.jpg', button_text: 'تسوقي القرطاسية', button_link: '#template-products' },
+        { title: 'ألعاب تنمّي المهارات', subtitle: 'مكعبات وألغاز تعليمية لكل الأعمار', image: '/themes/toys-school-store/cat-blocks.jpg', button_text: 'اكتشف الألعاب', button_link: '#template-products' },
+      ],
+    }),
+    s('categories', 3, {
+      category_variant: 'circle_pills',
+      columns: 5,
+      section_title: 'تسوق حسب القسم',
+      show_all: false,
+    }),
+    s('products', 4, {
+      product_variant: 'detailed_cards_with_badges',
+      section_title: 'الأكثر مبيعاً',
+      columns: 4,
+    }),
+    s('products_by_category', 5, {
+      section_title: 'تصفح مجموعتنا الكاملة',
+      per_category: 4,
+      columns: 4,
+      sort_default: 'newest',
+      show_view_all: true,
+    }),
+    s('features', 6, {
+      section_title: '',
+      items: [
+        { icon: 'shield', title: 'ألعاب آمنة', text: 'مطابقة لمعايير السلامة العالمية' },
+        { icon: 'tag', title: 'أسعار مناسبة', text: 'عروض دائمة على مستلزمات المدرسة' },
+        { icon: 'headset', title: 'خدمة عملاء', text: 'فريقنا معك عبر واتساب في أي وقت' },
+        { icon: 'wallet', title: 'دفع متعدد', text: 'اختر طريقة الدفع الأنسب لك' },
+      ],
+    }),
+    s('reviews', 7, {
+      section_title: 'ماذا يقول أولياء الأمور؟',
+      display_mode: 'slider',
+      items: [
+        { name: 'أم يزن', rating: 5, text: 'جودة الألعاب ممتازة والتوصيل كان سريع جداً.' },
+        { name: 'أبو ليان', rating: 5, text: 'حقيبة المدرسة قوية وسعرها مناسب، رح أطلب منهم دايماً.' },
+      ],
+    }),
+    s('newsletter', 8, { section_title: 'اشترك ليصلك كل جديد عن الألعاب والعروض' }),
+    s('footer', 9, { show_newsletter: false }),
+  ],
+  tokens: tokens({
+    primary: '#ffd23f',
+    secondary: '#ff6b6b',
+    accent: '#4ecdc4',
+    background: '#ffffff',
+    surface: '#fff9ec',
+    text_primary: '#2b2540',
+    text_secondary: '#7a7391',
+    border: '#ffe9b8',
+  }, '1.25rem', FONT_BALOO),
+  preview: 'linear-gradient(135deg,#fff9ec,#ffd23f 45%,#ff6b6b 85%)',
+};
+
+/* ---------------------------------------------------------------- 16 */
+/* «كاراج» — dark industrial auto-parts storefront. Deliberately built on
+   the GENERIC section pipeline with a completely different variant mix
+   (minimal header, bento hero, masonry categories, bento+scroll products,
+   sharp 0.25rem corners, dark charcoal/safety-orange palette) so it reads
+   as a structurally distinct design, not a recolor of another template. */
+const AUTO_GARAGE_STORE: BuilderTemplateConfig = {
+  slug: 'auto-garage-store',
+  family: 'visual-tech',
+  name: 'كاراج',
+  name_en: 'Garage',
+  description: 'متجر قطع غيار وإكسسوارات سيارات بطابع صناعي داكن: هيرو بنتو، تصنيفات موزاييك بالصور، منتجات مميزة بلوحة بنتو وشريط تمرير أفقي.',
+  category: 'قطع غيار واكسسوارات سيارات',
+  is_free: true,
+  plan_required: 'starter',
+  sections: [
+    s('header', 1, { variant: 'minimal', sticky: true, show_nav: true }),
+    s('hero', 2, {
+      hero_variant: 'bento_grid',
+      badge: 'شحن لكل المدن',
+      title: 'كل قطعة تحتاجها لسيارتك',
+      subtitle: 'قطع غيار أصلية وإكسسوارات مضمونة بأسعار الجملة — نوصلها لباب الكراج.',
+      image: '/themes/auto-garage-store/hero-engine.jpg',
+      button_text: 'تصفح القطع',
+      button_link: '#template-products',
+      side_title_1: 'إطارات وجنوط',
+      side_image_1: '/themes/auto-garage-store/tires.jpg',
+      side_title_2: 'إكسسوارات داخلية',
+      side_image_2: '/themes/auto-garage-store/dashboard.jpg',
+    }),
+    s('categories', 3, {
+      category_variant: 'masonry_grid',
+      columns: 4,
+      section_title: 'تسوق حسب القسم',
+      show_all: false,
+    }),
+    s('products', 4, {
+      product_variant: 'bento_products',
+      section_title: 'الأكثر طلباً',
+      columns: 4,
+    }),
+    s('products', 5, {
+      product_variant: 'horizontal_scroll',
+      section_title: 'وصل حديثاً',
+      columns: 4,
+    }),
+    s('features', 6, {
+      section_title: '',
+      items: [
+        { icon: 'shield', title: 'ضمان أصلي', text: 'كل قطعة مضمونة ومطابقة للمواصفات' },
+        { icon: 'truck', title: 'توصيل سريع', text: 'يوصلك أينما كنت خلال أيام' },
+        { icon: 'headset', title: 'دعم فني', text: 'فريقنا يساعدك تختار القطعة الصح' },
+        { icon: 'wallet', title: 'أسعار الجملة', text: 'أسعار تنافسية لكل الميزانيات' },
+      ],
+    }),
+    s('reviews', 7, {
+      section_title: 'ثقة عملائنا',
+      display_mode: 'slider',
+      items: [
+        { name: 'أبو خالد', rating: 5, text: 'القطعة وصلت مطابقة تماماً وأسرع مما توقعت.' },
+        { name: 'محمد س.', rating: 5, text: 'أسعار ممتازة مقارنة بالسوق وخدمة احترافية.' },
+      ],
+    }),
+    s('newsletter', 8, { section_title: 'اشترك ليصلك كل جديد عن القطع والعروض' }),
+    s('footer', 9, { show_newsletter: false }),
+  ],
+  tokens: tokens({
+    primary: '#ff6b00',
+    secondary: '#2b3138',
+    accent: '#3ec9c0',
+    background: '#ffffff',
+    surface: '#f2f3f5',
+    text_primary: '#191b1f',
+    text_secondary: '#5b6572',
+    border: '#e2e4e8',
+  }, '0.25rem', FONT_TAJAWAL),
+  preview: 'linear-gradient(135deg,#15181c,#2b3138 55%,#ff6b00)',
+};
+
+/* ---------------------------------------------------------------- 17 */
+/* «براعم» — pastel nursery storefront for infant/toddler toys &
+   educational products, browsed by the child's age stage. Soft sky-blue
+   / peach / lavender palette (distinct from kids-fashion's hot pink and
+   toys-school-store's sunny yellow), clean Tajawal type (not the playful
+   Baloo used by the other two kids templates) for a calmer boutique feel,
+   free-shipping announcement bar and discount-badge product cards. */
+const BABY_BUDS_STORE: BuilderTemplateConfig = {
+  slug: 'baby-buds-store',
+  family: 'playful-cards',
+  name: 'براعم',
+  name_en: 'Baby Buds',
+  description: 'متجر ألعاب ومستلزمات الرضع والأطفال: تصفح حسب عمر طفلك، شريط شحن مجاني، سلايدر ترحيبي هادئ وشارات خصم على المنتجات — مثالي لمتاجر ألعاب المواليد والتعليم المبكر.',
+  category: 'رضع وأطفال',
+  is_free: true,
+  plan_required: 'starter',
+  sections: [
+    s('announcement', 1, { text: '🚚 توصيل مجاني للطلبات فوق 300 ريال داخل المدينة' }),
+    s('header', 2, { variant: 'centered', sticky: true, show_nav: true }),
+    s('hero', 3, {
+      hero_variant: 'slider_full',
+      title: 'كل ما يحتاجه طفلك في بداياته',
+      subtitle: 'ألعاب آمنة ومستلزمات تعليمية مختارة بعناية لكل مرحلة عمرية — اطلبي عبر واتساب.',
+      image: STORE_MEDIA.kidsToys,
+      button_text: 'تسوقي الآن',
+      button_link: '#template-categories',
+      overlay_opacity: 0.3,
+      slides: [
+        { title: 'مستلزمات المواليد الجدد', subtitle: 'هدايا وصناديق عناية للأيام الأولى', image: STORE_MEDIA.kidsToys, button_text: 'شاهدي المجموعة', button_link: '#template-categories' },
+        { title: 'ألعاب تنمّي الحواس', subtitle: 'خامات آمنة معتمدة عالمياً', image: STORE_MEDIA.kidsClothes, button_text: 'اكتشفي الألعاب', button_link: '#template-products' },
+      ],
+    }),
+    s('categories', 4, {
+      category_variant: 'icon_grid',
+      columns: 5,
+      section_title: 'تسوقي حسب عمر طفلك',
+      show_all: false,
+    }),
+    s('products', 5, {
+      product_variant: 'detailed_cards_with_badges',
+      section_title: 'الأكثر مبيعاً',
+      columns: 4,
+    }),
+    s('products_by_category', 6, {
+      section_title: 'تصفحي مجموعتنا الكاملة',
+      per_category: 4,
+      columns: 4,
+      sort_default: 'newest',
+      show_view_all: true,
+    }),
+    s('features', 7, {
+      section_title: 'لماذا تثق بنا الأمهات؟',
+      items: [
+        { icon: 'shield', title: 'مواد آمنة', text: 'خامات معتمدة عالمياً وخالية من المواد الضارة.' },
+        { icon: 'gift', title: 'تغليف هدايا', text: 'نغلّف صناديق المواليد بلمسة أنيقة مجاناً.' },
+        { icon: 'truck', title: 'توصيل سريع', text: 'يصلك طلبك خلال أيام قليلة أينما كنتِ.' },
+        { icon: 'headset', title: 'استشارة مجانية', text: 'تواصلي معنا عبر واتساب لاختيار الأنسب لعمر طفلك.' },
+      ],
+    }),
+    s('reviews', 8, {
+      section_title: 'ماذا تقول الأمهات؟',
+      display_mode: 'slider',
+      items: [
+        { name: 'أم ليان', rating: 5, text: 'جودة الألعاب ممتازة والخامات آمنة فعلاً على بشرة الصغار.' },
+        { name: 'رهف العتيبي', rating: 5, text: 'صندوق هدية المولود كان فخم جداً ووصل بسرعة قياسية.' },
+      ],
+    }),
+    s('newsletter', 9, { section_title: 'اشتركي ليصلك كل جديد عن مراحل نمو طفلك' }),
+    s('footer', 10, { show_newsletter: false }),
+  ],
+  tokens: tokens({
+    primary: '#8ecae6',
+    secondary: '#ffb4a2',
+    accent: '#cdb4db',
+    background: '#ffffff',
+    surface: '#f5fbfd',
+    text_primary: '#2b2d42',
+    text_secondary: '#6b7280',
+    border: '#dceef5',
+  }, '1.75rem', FONT_TAJAWAL),
+  preview: 'linear-gradient(135deg,#f5fbfd,#8ecae6 45%,#ffb4a2 85%)',
+};
+
 export const TEMPLATES: BuilderTemplateConfig[] = [
   CLASSIC,
   FRESH_BAKERS,
@@ -949,6 +1204,9 @@ export const TEMPLATES: BuilderTemplateConfig[] = [
   E_STOREFRONT,
   ECOMMECE_MARKETPLACE,
   MARKETPLACE_SHOP,
+  TOYS_SCHOOL_STORE,
+  AUTO_GARAGE_STORE,
+  BABY_BUDS_STORE,
 ];
 
 export const TEMPLATE_SLUGS = TEMPLATES.map((t) => t.slug);

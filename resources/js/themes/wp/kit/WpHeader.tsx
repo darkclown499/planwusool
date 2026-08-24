@@ -8,6 +8,10 @@ interface WpHeaderProps {
   displayName?: string;
   /** Real store logo URL — shown instead of the text logo when present. */
   logoSrc?: string | null;
+  /** Real store contact info from the merchant's own settings — wins over
+   *  the theme's placeholder phone/email when the merchant has set one. */
+  realPhone?: string | null;
+  realEmail?: string | null;
   cartCount: number;
   onCartClick: () => void;
   whatsappHref?: string;
@@ -18,27 +22,29 @@ interface WpHeaderProps {
  * above a sticky row with logo, menu and round cart button — exactly the
  * structure of the originals' header.php, translated to Arabic.
  */
-export const WpHeader: React.FC<WpHeaderProps> = ({ config, displayName, logoSrc, cartCount, onCartClick, whatsappHref }) => {
+export const WpHeader: React.FC<WpHeaderProps> = ({ config, displayName, logoSrc, realPhone, realEmail, cartCount, onCartClick, whatsappHref }) => {
   const [open, setOpen] = useState(false);
   const { header } = config;
+  const phone = realPhone || header.phone;
+  const email = realEmail || header.email;
 
   return (
     <>
-      {(header.topbarText || header.phone || header.email || header.socials) && (
+      {(header.topbarText || phone || email || header.socials) && (
         <div className="wpt-topbar">
           <div className="wpt-container wpt-topbar__inner">
             <p className="m-0">{header.topbarText}</p>
             <div className="flex items-center gap-5 flex-wrap">
-              {header.phone && (
-                <a href={`tel:${header.phone}`} className="inline-flex items-center gap-2 no-underline">
+              {phone && (
+                <a href={`tel:${phone}`} className="inline-flex items-center gap-2 no-underline">
                   <Phone size={13} />
-                  <span dir="ltr">{header.phone}</span>
+                  <span dir="ltr">{phone}</span>
                 </a>
               )}
-              {header.email && (
-                <a href={`mailto:${header.email}`} className="hidden sm:inline-flex items-center gap-2 no-underline">
+              {email && (
+                <a href={`mailto:${email}`} className="hidden sm:inline-flex items-center gap-2 no-underline">
                   <Mail size={13} />
-                  {header.email}
+                  {email}
                 </a>
               )}
             </div>

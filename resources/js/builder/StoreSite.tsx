@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo } from 'react';
 import { getBuilderTemplate, normalizeTemplateSlug } from './templates';
-import { getSectionComponent } from './registry';
 import { applyTokens, mergeTokens, tokensToStyle, clearTokens } from './design-tokens';
 import { canAccessTemplate, getTemplateTierFromPlanName } from './types';
 import type { BuilderDesignTokens, PlanTier } from './types';
 import { CustomSection } from './sections/Custom';
 import { EmptySection, css, sectionDefaults } from './sections/helpers';
 import { CategoryListing, type CategoryPageData } from './CategoryListing';
-import { getWpTheme } from '@/themes/wp/configs';
-import { WpStorefront } from '@/themes/wp/WpStorefront';
+import { getFamilySectionComponent } from '@/themes/registry';
+import '@/themes/load-families';
 
 export interface StoreSiteProps {
   /** Store theme slug (may be legacy/engine — gets normalized). */
@@ -47,8 +46,8 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
   categoryData = null,
 }) => {
   const slug = useMemo(() => normalizeTemplateSlug(template), [template]);
-  const wpTheme = useMemo(() => getWpTheme(slug), [slug]);
   const tpl = useMemo(() => getBuilderTemplate(slug), [slug]);
+  const family = tpl?.family;
 
   const mergedTokens = useMemo(
     () => mergeTokens(tpl?.tokens, designTokens as BuilderDesignTokens | null | undefined),
@@ -83,25 +82,9 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
         order: Number(sec.order) || 0,
         props: { ...(sectionDefaults(sec.type) || {}), ...(sec.props || {}) },
       }))
-      .filter((sec: any) => !!getSectionComponent(sec.type))
+      .filter((sec: any) => !!getFamilySectionComponent(family, sec.type))
       .sort((a: any, b: any) => a.order - b.order);
-  }, [tpl, templateOverrides]);
-
-  // Bespoke ported WordPress themes render their own faithful storefront
-  // (original markup/CSS/section order, Arabic copy) instead of the generic
-  // section pipeline. Merchant designer tokens and section show/hide
-  // overrides flow through so live edits appear on these themes too.
-  // Page/category modes still use the shared chrome below.
-  if (wpTheme && mode === 'home') {
-    return (
-      <WpStorefront
-        theme={wpTheme}
-        storeData={storeData}
-        designTokens={designTokens as BuilderDesignTokens | null | undefined}
-        templateOverrides={templateOverrides}
-      />
-    );
-  }
+  }, [tpl, templateOverrides, family]);
 
   if (!tpl) {
     return (
@@ -145,13 +128,13 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
         dir="rtl"
       >
         {chromeBefore.map((sec: any) => {
-          const Component = getSectionComponent(sec.type);
+          const Component = getFamilySectionComponent(family, sec.type);
           if (!Component) return null;
           return <Component key={sec.id} section={sec} storeData={storeData} mode="home" />;
         })}
         <CategoryListing categoryPage={categoryData} storeData={storeData} />
         {footer.map((sec: any) => {
-          const Component = getSectionComponent(sec.type);
+          const Component = getFamilySectionComponent(family, sec.type);
           if (!Component) return null;
           return <Component key={sec.id} section={sec} storeData={storeData} mode="home" />;
         })}
@@ -160,7 +143,7 @@ export const StoreSite: React.FC<StoreSiteProps> = ({
   }
 
   const rendered = sections.map((sec: any) => {
-    const Component = getSectionComponent(sec.type);
+    const Component = getFamilySectionComponent(family, sec.type);
     if (!Component) return null;
     return <Component key={sec.id} section={sec} storeData={storeData} mode="home" />;
   });

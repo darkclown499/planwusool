@@ -111,6 +111,41 @@ export interface BuilderDesignTokens {
   shadows?: Record<string, string>;
 }
 
+/**
+ * A design family is a fully separate component tree (header, hero,
+ * categories, product cards, footer, ...) — genuinely different layout,
+ * composition and visual hierarchy, not just a recolor. Every template
+ * belongs to exactly one family; templates in the same family still read
+ * as distinct via tokens/content/section-variant props, but templates in
+ * different families never share a component. See resources/js/themes/registry.ts.
+ */
+export type TemplateFamily =
+  | 'modern-minimal'
+  | 'dense-marketplace'
+  | 'flash-deals'
+  | 'editorial-boutique'
+  | 'playful-cards'
+  | 'food-menu'
+  | 'visual-tech';
+
+/**
+ * Addressable shopping-flow overlay slots. Unlike `BuilderSectionType` these
+ * are fixed singletons (one cart, one checkout, ...) — not a reorderable,
+ * toggleable stack — so they're resolved through their own family-aware
+ * registry (`getFamilyPageComponent` in resources/js/themes/registry.ts)
+ * rather than living in `BuilderSectionConfig`/the Designer's section canvas.
+ */
+export type BuilderPageSlot =
+  | 'product_detail'
+  | 'cart'
+  | 'checkout'
+  | 'order_success'
+  | 'profile'
+  | 'orders'
+  | 'order_detail'
+  | 'wishlist'
+  | 'search';
+
 export interface BuilderTemplateConfig {
   slug: string;
   name: string;
@@ -119,6 +154,8 @@ export interface BuilderTemplateConfig {
   category: string;
   is_free: boolean;
   plan_required: PlanTier;
+  /** Which design system this template renders through. */
+  family: TemplateFamily;
   sections: BuilderSectionConfig[];
   tokens: BuilderDesignTokens;
   is_default?: boolean;

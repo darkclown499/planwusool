@@ -62,8 +62,14 @@
         @endif
         {{-- Force the browser to upgrade any HTTP resource to HTTPS and stop
              Mixed-Content blocking (fixes unresponsive buttons when assets
-             are loaded over http:// inside an https:// page). --}}
+             are loaded over http:// inside an https:// page). Only emitted
+             when the app is actually served over https — on plain-http
+             local/dev environments this would upgrade every fetch/XHR
+             (including form submits) to https and break them, since there
+             is no TLS listener there. --}}
+        @if(str_starts_with($appUrl, 'https://'))
         <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+        @endif
 
         <style{!! $nonceAttr !!}>
             html {
