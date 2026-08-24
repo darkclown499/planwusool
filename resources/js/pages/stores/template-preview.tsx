@@ -4,12 +4,69 @@ import { toast } from 'sonner';
 import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPut } from '@/utils/api';
-import { requireTemplateModule, V2PreviewProviders, buildV2PreviewStoreData } from '@/templates-v2';
+import { ProductContext, useProduct } from '@/contexts/ProductContext';
+import {
+  requireTemplateModule,
+  V2PreviewProviders,
+  buildV2PreviewStoreData,
+  type TemplateModule,
+} from '@/templates-v2';
 
 interface Props {
   store: any;
   templateSlug: string;
   storeBranding?: Record<string, any>;
+}
+
+/**
+ * Preview-only overlay host.
+ *
+ * The real storefront wraps the template with TemplateStorefrontV2, which
+ * renders its bespoke product-detail overlay when the context flags it. The
+ * standalone preview mounts <tpl.Root> bare, so clicking a demo product used
+ * to fire a doomed /product/{id} fetch against the main domain (404 noise)
+ * while nothing appeared. Here we override the product context with local
+ * modal state — no fetching, demo products are not real catalog rows — and
+ * render the template's own detail overlay on top.
+ */
+function PreviewProductLayer({ module, children }: { module: TemplateModule; children: React.ReactNode }) {
+  const ctx = useProduct();
+  const [selected, setSelected] = useState<any>(null);
+  const [imgIndex, setImgIndex] = useState(0);
+
+  const close = () => {
+    setSelected(null);
+    setImgIndex(0);
+  };
+
+  const value: ReturnType<typeof useProduct> = {
+    ...ctx,
+    selectedProduct: selected,
+    selectedImageIndex: imgIndex,
+    showProductDetail: !!selected,
+    handleProductClick: (p: any) => {
+      setSelected(p);
+      setImgIndex(0);
+    },
+    handleCloseProductDetail: close,
+    handleImageSelect: setImgIndex,
+  };
+
+  const DetailModal = module.overlays?.product_detail;
+
+  return (
+    <ProductContext.Provider value={value}>
+      {children}
+      {selected && DetailModal && (
+        <DetailModal
+          product={selected}
+          selectedImageIndex={imgIndex}
+          onClose={close}
+          onImageSelect={setImgIndex}
+        />
+      )}
+    </ProductContext.Provider>
+  );
 }
 
 /**
@@ -98,7 +155,9 @@ export default function TemplatePreview({ store, templateSlug, storeBranding }: 
 
       {/* The template itself, wearing the merchant's brand + demo catalog */}
       <V2PreviewProviders storeData={storeData}>
-        <tpl.Root storeData={storeData} mode="home" isPreview />
+        <PreviewProductLayer module={tpl}>
+          <tpl.Root storeData={storeData} mode="home" isPreview />
+        </PreviewProductLayer>
       </V2PreviewProviders>
     </div>
   );

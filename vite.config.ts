@@ -61,8 +61,30 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     vendor: ['react', 'react-dom'],
-                    ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-                    utils: ['date-fns', 'clsx'],
+                    // Every @radix-ui primitive the app installs + class utils.
+                    // Grouping them keeps them in one long-cached chunk instead
+                    // of bloating the entry bundle on every deploy.
+                    ui: [
+                        '@radix-ui/react-avatar', '@radix-ui/react-checkbox',
+                        '@radix-ui/react-collapsible', '@radix-ui/react-dialog',
+                        '@radix-ui/react-direction', '@radix-ui/react-dropdown-menu',
+                        '@radix-ui/react-label', '@radix-ui/react-navigation-menu',
+                        '@radix-ui/react-popover', '@radix-ui/react-progress',
+                        '@radix-ui/react-radio-group', '@radix-ui/react-scroll-area',
+                        '@radix-ui/react-select', '@radix-ui/react-separator',
+                        '@radix-ui/react-slot', '@radix-ui/react-switch',
+                        '@radix-ui/react-tabs', '@radix-ui/react-toggle-group',
+                        '@radix-ui/react-tooltip',
+                        'class-variance-authority', 'clsx', 'tailwind-merge',
+                    ],
+                    // i18next runtime + plugins are stable across deploys;
+                    // isolate them so locale JSON changes don't invalidate
+                    // the whole entry hash.
+                    i18n: [
+                        'i18next', 'react-i18next',
+                        'i18next-browser-languagedetector', 'i18next-http-backend',
+                    ],
+                    utils: ['date-fns'],
                     // Heavy libraries pulled into the entry chunk by Rollup's
                     // shared-dependency hoisting. Splitting them out keeps the
                     // initial HTML payload (landing page, auth, dashboard shell)

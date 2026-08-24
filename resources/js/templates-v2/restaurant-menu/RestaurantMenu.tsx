@@ -87,7 +87,7 @@ export function RestaurantTabs({ categories, activeId }: { categories: any[]; ac
 export function RestaurantHero({ banner }: { banner?: any }) {
   return (
     <section className="relative h-72 overflow-hidden bg-[#0f0b09] sm:h-96" dir="rtl">
-      <img src={getImageUrl(banner?.image || '/images/store/restaurant.jpg')} alt="" className="h-full w-full object-cover opacity-60" />
+      <img src={getImageUrl(banner?.image || '/images/store/restaurant-dish.jpg')} alt="" className="h-full w-full object-cover opacity-60" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
       <div className="absolute inset-0 flex items-center">
         <div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">

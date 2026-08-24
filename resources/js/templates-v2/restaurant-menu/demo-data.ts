@@ -2,7 +2,7 @@
    desserts and drinks, menu-board style. */
 
 const IMG = {
-  restaurant: '/images/store/restaurant.jpg',
+  restaurant: '/images/store/restaurant-dish.jpg',
   sweets: '/images/store/sweets.jpg',
   coffee: '/images/store/coffee.jpg',
   banner: '/images/store/banner-store.jpg',
