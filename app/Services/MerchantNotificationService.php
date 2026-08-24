@@ -152,6 +152,39 @@ class MerchantNotificationService
     }
 
     /**
+     * Create a notification when a customer adds a product to wishlist.
+     */
+    public static function wishlistAdded(Product $product): void
+    {
+        $store = $product->store;
+        if (!$store || !$store->user) {
+            return;
+        }
+
+        $productName = $product->name ?? 'منتج';
+        $productImage = $product->cover_image ?? $product->thumbnail ?? null;
+
+        self::create([
+            'user_id' => $store->user_id,
+            'store_id' => $product->store_id,
+            'type' => 'wishlist_added',
+            'title' => 'إضافة جديدة للمفضلة ❤️',
+            'body' => "قام عميل بإضافة المنتج {$productName} إلى قائمة المفضلة.",
+            'icon' => 'Heart',
+            'color' => 'pink',
+            'action_url' => route('products.show', $product->id, false),
+            'related_id' => $product->id,
+            'related_type' => 'product',
+            'data' => [
+                'product_id' => $product->id,
+                'product_name' => $productName,
+                'product_image' => $productImage,
+            ],
+            'is_urgent' => false,
+        ]);
+    }
+
+    /**
      * Create a notification for a new product review.
      */
     public static function newReview(ProductReview $review): void

@@ -50,6 +50,7 @@ class MerchantNotification extends Model
         'plan_approved' => 'plan_approved',
         'cod_collected' => 'cod_collected',
         'abandoned_cart' => 'abandoned_cart',
+        'wishlist_added' => 'wishlist_added',
         'system' => 'system',
     ];
 
@@ -69,6 +70,7 @@ class MerchantNotification extends Model
         'plan_approved' => 'green',
         'cod_collected' => 'green',
         'abandoned_cart' => 'yellow',
+        'wishlist_added' => 'pink',
         'system' => 'gray',
     ];
 

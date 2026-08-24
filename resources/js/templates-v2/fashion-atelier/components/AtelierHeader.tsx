@@ -16,8 +16,9 @@ interface AtelierHeaderProps {
  * Turns sticky + elevated once the page scrolls.
  */
 export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) => {
-  const { config, store, cart, auth, ui, wishlist, product } = useStorefrontCore();
+  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
   const [scrolled, setScrolled] = useState(false);
+  const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const [menuOpen, setMenuOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState<null | 'about' | 'shipping' | 'privacy'>(null);
 
@@ -121,16 +122,18 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
         </div>
       </div>
 
-      {/* Hairline nav (desktop, full list) — single scroll row, never wraps */}
-      <div className="hidden border-t border-stone-200/70 md:block">
-        <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-6 py-2.5 lg:gap-3 lg:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {categories.map((c: any) => (
-            <a key={c.id} href={`/category/${c.slug || c.id}`} className={navLink}>
-              {c.name}
-            </a>
-          ))}
+      {/* Hairline nav — hidden by default; enable via settings.show_categories_bar */}
+      {showCategoriesBar && categories.length > 0 && (
+        <div className="hidden border-t border-stone-200/70 md:block">
+          <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-6 py-2.5 lg:gap-3 lg:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {categories.map((c: any) => (
+              <a key={c.id} href={`/category/${c.slug || c.id}`} className={navLink}>
+                {c.name}
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Mobile drawer */}
       {menuOpen && (

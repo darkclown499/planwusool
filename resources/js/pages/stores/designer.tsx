@@ -450,6 +450,18 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const showAnnouncementRaw = getDotted(content, 'announcement.enabled');
     const showAnnouncement = showAnnouncementRaw === undefined ? true : !!showAnnouncementRaw;
 
+    // Homepage sections state — stored under content.settings (also aliased as homepage.* for back-compat)
+    // Defaults: show categories bar false (task spec), latest/best sellers true
+    const showCategoriesBarRaw = getDotted(content, 'settings.show_categories_bar') ?? getDotted(content, 'homepage.show_categories_bar') ?? false;
+    const showCategoriesBar = !!showCategoriesBarRaw;
+    const showLatestRaw = getDotted(content, 'settings.show_latest_products') ?? getDotted(content, 'homepage.show_latest_products');
+    const showLatestProducts = showLatestRaw === undefined ? true : !!showLatestRaw;
+    const showBestSellersRaw = getDotted(content, 'settings.show_best_sellers') ?? getDotted(content, 'homepage.show_best_sellers');
+    const showBestSellers = showBestSellersRaw === undefined ? true : !!showBestSellersRaw;
+    const homepageCategories = (getDotted(content, 'settings.homepage_categories') ?? getDotted(content, 'homepage.homepage_categories') ?? getDotted(content, 'homepage_categories') ?? []) as Array<string | number>;
+    const homepageProductsPerCategoryRaw = getDotted(content, 'settings.homepage_products_per_category') ?? getDotted(content, 'homepage.homepage_products_per_category') ?? 8;
+    const homepageProductsPerCategory = [4, 8, 12].includes(Number(homepageProductsPerCategoryRaw)) ? Number(homepageProductsPerCategoryRaw) : 8;
+
     // Hero state
     const heroType = (getDotted(content, 'hero_banner.type') ?? getDotted(content, 'hero_type') ?? 'image') as string;
     const rawHeroImages = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any;
@@ -983,7 +995,117 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                             </Button>
                         </AccordionSection>
 
-                        {/* ── 4. إعدادات متقدمة ── */}
+                        {/* ── 4. أقسام الصفحة الرئيسية (tab=content) ── */}
+                        <AccordionSection title="أقسام الصفحة الرئيسية" icon={<Store className="h-3.5 w-3.5" />} defaultOpen={true}>
+                            <p className="text-xs leading-relaxed text-slate-500">تحكم في عرض الأقسام الثابتة وإضافة أقسام فئات ديناميكية للصفحة الرئيسية.</p>
+
+                            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-800">شريط الفئات العلوي</p>
+                                    <p className="text-xs text-slate-500">إظهار شريط الفئات الثانوي في الهيدر</p>
+                                </div>
+                                <Switch
+                                    checked={showCategoriesBar}
+                                    onCheckedChange={(v) => {
+                                        let tmp = setDotted(content, 'settings.show_categories_bar', v);
+                                        tmp = setDotted(tmp, 'homepage.show_categories_bar', v);
+                                        setContent(tmp);
+                                    }}
+                                    aria-label="show_categories_bar"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-800">وصل حديثاً</p>
+                                    <p className="text-xs text-slate-500">إظهار قسم أحدث المنتجات</p>
+                                </div>
+                                <Switch
+                                    checked={showLatestProducts}
+                                    onCheckedChange={(v) => {
+                                        let tmp = setDotted(content, 'settings.show_latest_products', v);
+                                        tmp = setDotted(tmp, 'homepage.show_latest_products', v);
+                                        setContent(tmp);
+                                    }}
+                                    aria-label="show_latest_products"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+                                <div>
+                                    <p className="text-sm font-bold text-slate-800">الأكثر مبيعاً</p>
+                                    <p className="text-xs text-slate-500">إظهار قسم المنتجات الأكثر مبيعاً</p>
+                                </div>
+                                <Switch
+                                    checked={showBestSellers}
+                                    onCheckedChange={(v) => {
+                                        let tmp = setDotted(content, 'settings.show_best_sellers', v);
+                                        tmp = setDotted(tmp, 'homepage.show_best_sellers', v);
+                                        setContent(tmp);
+                                    }}
+                                    aria-label="show_best_sellers"
+                                />
+                            </div>
+
+                            <Separator />
+
+                            <div>
+                                <Label className="mb-2 block text-xs font-black text-slate-700">مدير أقسام الفئات (homepage_categories)</Label>
+                                <p className="mb-3 text-xs text-slate-500">اختر الفئات التي تريد عرضها كأقسام منفصلة في الصفحة الرئيسية. لكل قسم سيظهر شبكة منتجات مع زر "عرض الكل".</p>
+                                {availableCategories.length === 0 ? (
+                                    <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-700">لا توجد فئات نشطة لهذا المتجر.</p>
+                                ) : (
+                                    <div className="max-h-56 space-y-1.5 overflow-auto rounded-xl border border-slate-200 bg-white p-3">
+                                        {availableCategories.map((cat) => {
+                                            const idStr = String(cat.id);
+                                            const checked = homepageCategories.map(String).includes(idStr);
+                                            return (
+                                                <label key={cat.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
+                                                        onChange={(e) => {
+                                                            const next = e.target.checked
+                                                                ? [...homepageCategories.map(String), idStr]
+                                                                : homepageCategories.map(String).filter((x) => x !== idStr);
+                                                            // store as strings to keep type consistent
+                                                            let tmp = setDotted(content, 'settings.homepage_categories', next);
+                                                            tmp = setDotted(tmp, 'homepage.homepage_categories', next);
+                                                            tmp = setDotted(tmp, 'homepage_categories', next);
+                                                            setContent(tmp);
+                                                        }}
+                                                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                                    />
+                                                    <span className="flex-1 text-sm font-medium text-slate-700">{cat.name}</span>
+                                                    <span className="text-xs text-slate-400">#{cat.id}</span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                <p className="mt-2 text-xs text-slate-400">{homepageCategories.length} فئة محددة</p>
+                            </div>
+
+                            <div>
+                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">الحد الأقصى للمنتجات في كل قسم فئة</Label>
+                                <select
+                                    value={String(homepageProductsPerCategory)}
+                                    onChange={(e) => {
+                                        const v = Number(e.target.value);
+                                        let tmp = setDotted(content, 'settings.homepage_products_per_category', v);
+                                        tmp = setDotted(tmp, 'homepage.homepage_products_per_category', v);
+                                        setContent(tmp);
+                                    }}
+                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
+                                >
+                                    <option value="4">4 منتجات</option>
+                                    <option value="8">8 منتجات</option>
+                                    <option value="12">12 منتجاً</option>
+                                </select>
+                            </div>
+                        </AccordionSection>
+
+                        {/* ── 5. إعدادات متقدمة ── */}
                         <AccordionSection title="إعدادات متقدمة" icon={<Code2 className="h-3.5 w-3.5" />} defaultOpen={false}>
                             <p className="text-xs leading-relaxed text-slate-500">أكواد مخصصة تُحقن داخل واجهة متجرك فقط — في بيئة معزولة ومنقّاة.</p>
                             <div>

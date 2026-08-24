@@ -10,6 +10,7 @@ import {
   useStorefrontCore,
   type V2Product,
 } from '../shared/hooks';
+import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
 
 /* ===================================================================== */
@@ -22,8 +23,9 @@ import type { TemplateRootProps } from '../types';
 /* ------------------------------ Header ------------------------------ */
 
 export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, wishlist, product } = useStorefrontCore();
+  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
   const [scrolled, setScrolled] = useState(false);
+  const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -77,8 +79,8 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
         </div>
       </div>
 
-      {/* Category nav */}
-      {categories.length > 0 && (
+      {/* Category nav — hidden by default; enable via settings.show_categories_bar */}
+      {showCategoriesBar && categories.length > 0 && (
         <nav className="border-t border-slate-100">
           <div className="scrollbar-none mx-auto flex max-w-7xl items-center justify-start gap-0.5 overflow-x-auto px-4 sm:px-6 lg:justify-center lg:px-8">
             {categories.map((c: any) => (
@@ -255,6 +257,8 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const categories: any[] = product?.categories || storeData?.categories || [];
   const banners: any[] = storeData?.content?.banners || [];
 
+  const { showLatest, showBest, homepageCategories, productsPerCategory } = useHomepageSettings(storeData);
+
   const newest = useMemo(() => [...products].reverse().slice(0, 12), [products]);
   const popular = useMemo(() => sortList(products, 'price_desc').slice(0, 6), [products]);
 
@@ -285,8 +289,8 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        {/* Newest */}
-        {newest.length > 0 && (
+        {/* Newest — toggle show_latest_products */}
+        {showLatest && newest.length > 0 && (
           <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionTitle moreHref="#newest">وصل حديثاً</SectionTitle>
             <div id="newest" className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
@@ -309,8 +313,8 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </div>
         </section>
 
-        {/* Popular picks */}
-        {popular.length > 0 && (
+        {/* Popular picks — toggle show_best_sellers */}
+        {showBest && popular.length > 0 && (
           <section id="popular" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionTitle>الأكثر رواجاً</SectionTitle>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
@@ -319,6 +323,33 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Dynamic category sections — driven by homepage_categories */}
+        {homepageCategories.length > 0 && (
+          <div className="space-y-12">
+            {homepageCategories.map((catId: string) => {
+              const cat = categories.find((c: any) => String(c.id) === String(catId));
+              if (!cat) return null;
+              const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
+              if (catProducts.length === 0) return null;
+              return (
+                <section key={cat.id} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <SectionTitle moreHref={`/category/${cat.slug || cat.id}`}>{cat.name}</SectionTitle>
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+                    {catProducts.map((p: any) => (
+                      <BazaarCard key={p.id} product={p} />
+                    ))}
+                  </div>
+                  <div className="mt-4 text-center">
+                    <a href={`/category/${cat.slug || cat.id}`} className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-white px-5 py-2 text-sm font-bold text-teal-700 hover:bg-teal-50">
+                      عرض الكل ←
+                    </a>
+                  </div>
+                </section>
+              );
+            })}
+          </div>
         )}
       </main>
     </div>

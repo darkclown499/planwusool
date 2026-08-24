@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 import { PackageSearch } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { useStorefrontCore } from '../shared/hooks';
+import { useHomepageSettings } from '../shared/CategorySections';
 import { SouqDealsRail, SouqHeader, SouqHero, SouqProductCard, SouqStickyCartBar } from './SouqComponents';
 import { souqOverlays } from './SouqOverlays';
 
@@ -46,6 +47,8 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const categories: any[] = product?.categories || storeData?.categories || [];
   const banners: any[] = storeData?.content?.banners || [];
 
+  const { showLatest, showBest, homepageCategories, productsPerCategory } = useHomepageSettings(storeData);
+
   const fresh = useMemo(() => [...products].slice(-14).reverse(), [products]);
   const pantry = useMemo(() => [...products].sort(byPriceAsc).slice(0, 10), [products]);
 
@@ -77,18 +80,20 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         <SouqDealsRail products={products} />
 
-        {/* Fresh arrivals */}
-        <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
-          <h2 className="mb-4 text-xl font-black text-stone-900">وصل طازج اليوم 🥕</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:gap-4">
-            {fresh.map((p) => (
-              <SouqProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </section>
+        {/* Fresh arrivals — toggle show_latest_products */}
+        {showLatest && (
+          <section className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+            <h2 className="mb-4 text-xl font-black text-stone-900">وصل طازج اليوم 🥕</h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:gap-4">
+              {fresh.map((p) => (
+                <SouqProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Pantry essentials */}
-        {pantry.length > 0 && (
+        {/* Pantry essentials — toggle show_best_sellers */}
+        {showBest && pantry.length > 0 && (
           <section className="bg-white py-8">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <h2 className="mb-4 text-xl font-black text-stone-900">أساسيات المؤونة 🏺</h2>
@@ -99,6 +104,31 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
               </div>
             </div>
           </section>
+        )}
+
+        {/* Dynamic category sections */}
+        {homepageCategories.length > 0 && (
+          <div className="space-y-8 bg-white py-8">
+            {homepageCategories.map((catId: string) => {
+              const cat = categories.find((c: any) => String(c.id) === String(catId));
+              if (!cat) return null;
+              const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
+              if (!catProducts.length) return null;
+              return (
+                <section key={cat.id} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-xl font-black text-stone-900">{cat.name}</h2>
+                    <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-emerald-600 hover:text-emerald-700">عرض الكل ←</a>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:gap-4">
+                    {catProducts.map((p: any) => (
+                      <SouqProductCard key={p.id} product={p} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
         )}
       </main>
       <SouqStickyCartBar />

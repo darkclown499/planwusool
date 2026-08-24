@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\WishlistRequest;
 use App\Models\WishlistItem;
 use App\Models\Product;
+use App\Services\MerchantNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class WishlistController extends Controller
 {
@@ -76,6 +78,16 @@ class WishlistController extends Controller
             'session_id' => session()->getId(),
             'product_id' => $request->product_id
         ]);
+
+        // Merchant notification: new wishlist addition
+        try {
+            $product = Product::find($request->product_id);
+            if ($product) {
+                MerchantNotificationService::wishlistAdded($product);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Wishlist merchant notification failed: ' . $e->getMessage());
+        }
         
         return response()->json(['message' => 'Added to wishlist', 'item' => $wishlistItem]);
     }
@@ -123,6 +135,17 @@ class WishlistController extends Controller
                 'session_id' => session()->getId(),
                 'product_id' => $request->product_id
             ]);
+
+            // Merchant notification: new wishlist addition
+            try {
+                $product = Product::find($request->product_id);
+                if ($product) {
+                    MerchantNotificationService::wishlistAdded($product);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Wishlist merchant notification failed: ' . $e->getMessage());
+            }
+
             return response()->json(['message' => 'Added to wishlist', 'action' => 'added']);
         }
     }

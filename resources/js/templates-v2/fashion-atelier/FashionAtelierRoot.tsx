@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 import { ChevronLeft, PackageSearch } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { useStorefrontCore } from '../shared/hooks';
+import { useHomepageSettings } from '../shared/CategorySections';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { AtelierHeader } from './components/AtelierHeader';
 import { AtelierHero } from './components/AtelierHero';
@@ -49,6 +50,8 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const categories: any[] = product?.categories || storeData?.categories || [];
   const banners: any[] = storeData?.content?.banners || [];
 
+  const { showLatest, showBest, homepageCategories, productsPerCategory } = useHomepageSettings(storeData);
+
   const newest = useMemo(() => [...products].sort(byNewest).slice(0, 14), [products]);
   const bestsellers = useMemo(() => {
     const discounted = products.filter((p) => p.originalPrice && Number(p.originalPrice) > Number(p.price));
@@ -75,9 +78,11 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         <AtelierCategoryCircles categories={categories} />
 
-        <div id="atelier-new">
-          <AtelierRail title="وصل حديثاً" subtitle="أحدث القطع التي انضمت للأتيليه" products={newest} viewAllHref="/products" />
-        </div>
+        {showLatest && (
+          <div id="atelier-new">
+            <AtelierRail title="وصل حديثاً" subtitle="أحدث القطع التي انضمت للأتيليه" products={newest} viewAllHref="/products" />
+          </div>
+        )}
 
         {(lookbookA || lookbookB) && (
           <AtelierLookbook
@@ -88,21 +93,50 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           />
         )}
 
-        <div id="atelier-best" className="bg-white">
-          <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-            <div className="mb-6 flex items-end justify-between gap-4">
-              <div>
-                <span className="mb-2 block h-px w-10 bg-[#b08d57]" />
-                <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">الأكثر مبيعاً</h2>
+        {showBest && (
+          <div id="atelier-best" className="bg-white">
+            <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+              <div className="mb-6 flex items-end justify-between gap-4">
+                <div>
+                  <span className="mb-2 block h-px w-10 bg-[#b08d57]" />
+                  <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">الأكثر مبيعاً</h2>
+                </div>
               </div>
+              <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
+                {bestsellers.map((p) => (
+                  <AtelierProductCard key={p.id} product={p} className="h-full" />
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* Dynamic category sections */}
+        {homepageCategories.length > 0 && (
+          <div className="bg-white">
+            <div className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
+              {homepageCategories.map((catId: string) => {
+                const cat = categories.find((c: any) => String(c.id) === String(catId));
+                if (!cat) return null;
+                const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
+                if (!catProducts.length) return null;
+                return (
+                  <section key={cat.id}>
+                    <div className="mb-6 flex items-center justify-between">
+                      <h2 className="font-serif text-2xl font-bold text-stone-900">{cat.name}</h2>
+                      <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-[#9d7463] hover:text-[#85604f]">عرض الكل ←</a>
+                    </div>
+                    <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+                      {catProducts.map((p: any) => (
+                        <AtelierProductCard key={p.id} product={p} className="h-full" />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
             </div>
-            <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
-              {bestsellers.map((p) => (
-                <AtelierProductCard key={p.id} product={p} className="h-full" />
-              ))}
-            </div>
-          </section>
-        </div>
+          </div>
+        )}
 
       </main>
     </div>

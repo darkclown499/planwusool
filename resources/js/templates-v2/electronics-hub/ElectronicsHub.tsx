@@ -11,6 +11,7 @@ import {
   useStorefrontCore,
   type V2Product,
 } from '../shared/hooks';
+import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
 
 /* ===================================================================== */
@@ -35,8 +36,9 @@ function categoryIcon(name: string) {
 /* ------------------------------ Header ------------------------------ */
 
 export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, wishlist, product } = useStorefrontCore();
+  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
   const [q, setQ] = useState('');
+  const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const categories = (product?.categories || []).slice(0, 8);
 
@@ -111,8 +113,8 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
         </div>
       </div>
 
-      {/* Category bar */}
-      {categories.length > 0 && (
+      {/* Category bar — hidden by default; enable via settings.show_categories_bar */}
+      {showCategoriesBar && categories.length > 0 && (
         <div className="border-t border-slate-800/60">
           <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-1.5 sm:px-6 lg:px-8">
             {categories.map((c: any) => (
@@ -308,6 +310,8 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const categories: any[] = product?.categories || storeData?.categories || [];
   const banners: any[] = storeData?.content?.banners || [];
 
+  const { showLatest, homepageCategories, productsPerCategory } = useHomepageSettings(storeData);
+
   const newest = useMemo(() => [...products].reverse().slice(0, 12), [products]);
   const brands = useMemo(() => {
     // Unique first tokens of product names — a light-weight brand rail.
@@ -355,17 +359,45 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        {/* Newest arrivals */}
-        <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-black text-white">
-            وصل حديثاً <span className="rounded bg-blue-600/20 px-2 py-0.5 text-xs text-blue-300">NEW</span>
-          </h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
-            {newest.map((p) => (
-              <HubCard key={p.id} product={p} />
-            ))}
+        {/* Newest arrivals — toggle show_latest_products */}
+        {showLatest && (
+          <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-black text-white">
+              وصل حديثاً <span className="rounded bg-blue-600/20 px-2 py-0.5 text-xs text-blue-300">NEW</span>
+            </h2>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+              {newest.map((p) => (
+                <HubCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Best sellers block hidden for electronics — still respects show_best_sellers */}
+        {/* Dynamic category sections */}
+        {homepageCategories.length > 0 && (
+          <div className="space-y-12 pt-12">
+            {homepageCategories.map((catId: string) => {
+              const cat = categories.find((c: any) => String(c.id) === String(catId));
+              if (!cat) return null;
+              const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
+              if (!catProducts.length) return null;
+              return (
+                <section key={cat.id} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="flex items-center gap-2 text-xl font-black text-white">{cat.name}</h2>
+                    <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-blue-300 hover:text-white">عرض الكل ←</a>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+                    {catProducts.map((p: any) => (
+                      <HubCard key={p.id} product={p} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
-        </section>
+        )}
 
       </main>
     </div>

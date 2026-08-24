@@ -81,22 +81,26 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
         <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose}>
             <div className="flex min-h-full items-end justify-center md:items-center md:p-4">
                 <div
-                    className="flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl md:rounded-3xl"
+                    className="relative flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl md:rounded-3xl"
                     style={{ background: 'var(--twc-surface, #ffffff)', paddingBottom: 'env(safe-area-inset-bottom)' }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex items-center justify-between border-b p-4" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        aria-label="إغلاق"
+                        className="absolute end-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border bg-white shadow-sm transition hover:bg-black/5"
+                        style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                    <div
+                        className="flex items-center border-b p-4 pe-14"
+                        style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}
+                    >
                         <h2 className="text-lg font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
                             تفاصيل المنتج
                         </h2>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            aria-label="إغلاق"
-                            className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/5"
-                        >
-                            <X className="h-5 w-5" />
-                        </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 md:flex md:gap-6 md:p-6">

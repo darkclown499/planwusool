@@ -62,6 +62,9 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
 /* --------------------------- Category tabs --------------------------- */
 
 export function RestaurantTabs({ categories, activeId }: { categories: any[]; activeId?: string | null }) {
+  const { store, content } = useStorefrontCore() as any;
+  const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
+  if (!showCategoriesBar) return null;
   if (!categories.length) return null;
   return (
     <div className="sticky top-[68px] z-30 border-b border-[#3d332b] bg-[#191410]/97 backdrop-blur" dir="rtl">
@@ -70,7 +73,7 @@ export function RestaurantTabs({ categories, activeId }: { categories: any[]; ac
           <a key={c.id}
             href={`/category/${c.slug || c.id}`}
             className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold transition ${
-              activeId === c.id
+              String(activeId) === String(c.id)
                 ? 'bg-[#f59e0b] text-[#191410]'
                 : 'border border-[#4a3e33] text-[#d8c9a8] hover:border-[#f59e0b] hover:text-[#fbbf24]'
             }`}>

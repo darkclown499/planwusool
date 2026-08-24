@@ -650,6 +650,20 @@ protected $fillable = [
             'video_url' => '',
             'poster' => '',
         ],
+        'settings' => [
+            'show_categories_bar' => false,
+            'show_latest_products' => true,
+            'show_best_sellers' => true,
+            'homepage_categories' => [],
+            'homepage_products_per_category' => 8,
+        ],
+        'homepage' => [
+            'show_categories_bar' => false,
+            'show_latest_products' => true,
+            'show_best_sellers' => true,
+            'homepage_categories' => [],
+            'homepage_products_per_category' => 8,
+        ],
     ];
 
     /**

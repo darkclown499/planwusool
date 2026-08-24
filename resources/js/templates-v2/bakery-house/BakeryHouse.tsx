@@ -12,6 +12,7 @@ import {
   useStorefrontCore,
   type V2Product,
 } from '../shared/hooks';
+import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
 
 /* ===================================================================== */
@@ -26,8 +27,9 @@ const ACCENT = '#b45309';
 /* ------------------------------ Header ------------------------------ */
 
 export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, wishlist, product } = useStorefrontCore();
+  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
   const [scrolled, setScrolled] = useState(false);
+  const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -58,14 +60,16 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
           )}
         </a>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          <a href={homeHref} className="rounded-full px-3.5 py-2 text-sm font-bold text-[#78350f] transition hover:bg-[#f5e7d3]">الرئيسية</a>
-          {categories.map((c: any) => (
-            <a key={c.id} href={`/category/${c.slug || c.id}`} className="rounded-full px-3.5 py-2 text-sm font-semibold text-[#92603a] transition hover:bg-[#f5e7d3] hover:text-[#78350f]">
-              {c.name}
-            </a>
-          ))}
-        </nav>
+        {showCategoriesBar && (
+          <nav className="hidden items-center gap-1 md:flex">
+            <a href={homeHref} className="rounded-full px-3.5 py-2 text-sm font-bold text-[#78350f] transition hover:bg-[#f5e7d3]">الرئيسية</a>
+            {categories.map((c: any) => (
+              <a key={c.id} href={`/category/${c.slug || c.id}`} className="rounded-full px-3.5 py-2 text-sm font-semibold text-[#92603a] transition hover:bg-[#f5e7d3] hover:text-[#78350f]">
+                {c.name}
+              </a>
+            ))}
+          </nav>
+        )}
 
         <div className="flex items-center gap-1">
           <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="rounded-full p-2.5 text-[#78350f] transition hover:bg-[#f5e7d3]">
@@ -93,8 +97,8 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
         </div>
       </div>
 
-      {/* Mobile nav chips */}
-      {categories.length > 0 && (
+      {/* Mobile nav chips — hidden by default; enable via settings.show_categories_bar */}
+      {showCategoriesBar && categories.length > 0 && (
         <div className="scrollbar-none flex items-center gap-1.5 overflow-x-auto px-4 pb-2 md:hidden">
           {categories.map((c: any) => (
             <a key={c.id} href={`/category/${c.slug || c.id}`} className="whitespace-nowrap rounded-full bg-[#f5e7d3] px-3 py-1 text-xs font-bold text-[#78350f]">
@@ -285,6 +289,8 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const categories: any[] = product?.categories || storeData?.categories || [];
   const banners: any[] = storeData?.content?.banners || [];
 
+  const { showLatest, showBest, homepageCategories, productsPerCategory } = useHomepageSettings(storeData);
+
   const bestsellers = useMemo(
     () => [...products].sort((a, b) => (Number(b.originalPrice ?? b.price) % 7) - (Number(a.originalPrice ?? a.price) % 7)).slice(0, 10),
     [products]
@@ -324,17 +330,47 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         <BakeryLastBatch />
 
-        {/* Bestsellers */}
-        <section id="bakery-best" className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
-          <h2 className="mb-4 flex items-center gap-2 font-serif text-2xl font-black text-[#78350f]">
-            <Flame className="h-6 w-6 text-orange-600" /> الأكثر طلباً اليوم
-          </h2>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-5">
-            {bestsellers.map((p) => (
-              <BakeryCard key={p.id} product={p} />
-            ))}
+        {/* Bestsellers — respect show_best_sellers, fallback show_latest also hides if needed */}
+        {showBest && (
+          <section id="bakery-best" className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
+            <h2 className="mb-4 flex items-center gap-2 font-serif text-2xl font-black text-[#78350f]">
+              <Flame className="h-6 w-6 text-orange-600" /> الأكثر طلباً اليوم
+            </h2>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-5">
+              {bestsellers.map((p) => (
+                <BakeryCard key={p.id} product={p} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Optional latest shelf (generic) — hidden if showLatest false */}
+        {showLatest && false && null}
+
+        {/* Dynamic category sections */}
+        {homepageCategories.length > 0 && (
+          <div className="mx-auto max-w-6xl space-y-10 px-4 sm:px-6">
+            {homepageCategories.map((catId: string) => {
+              const cat = categories.find((c: any) => String(c.id) === String(catId));
+              if (!cat) return null;
+              const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
+              if (!catProducts.length) return null;
+              return (
+                <section key={cat.id} className="mt-10">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="flex items-center gap-2 font-serif text-2xl font-black text-[#78350f]">{cat.name}</h2>
+                    <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-[#b45309] hover:text-[#92400e]">عرض الكل ←</a>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-5">
+                    {catProducts.map((p: any) => (
+                      <BakeryCard key={p.id} product={p} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
-        </section>
+        )}
 
         {/* Sweets shelf */}
         {sweets.length >= 4 && (

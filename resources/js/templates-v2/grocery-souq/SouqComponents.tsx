@@ -24,8 +24,9 @@ export const SOUQ_ACCENT = '#16a34a';
 /* ------------------------------ Header ------------------------------ */
 
 export function SouqHeader() {
-  const { config, store, cart, auth, ui, wishlist, product } = useStorefrontCore();
+  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
   const [q, setQ] = useState('');
+  const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
 
   const matches = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -104,8 +105,8 @@ export function SouqHeader() {
         </div>
       </div>
 
-      {/* Category chips rail */}
-      {categories.length > 0 && (
+      {/* Category chips rail — hidden by default; enable via settings.show_categories_bar */}
+      {showCategoriesBar && categories.length > 0 && (
         <div className="border-t border-white/15 bg-[#15803d]">
           <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1.5 overflow-x-auto px-4 py-1.5 sm:px-6 lg:px-8">
             <a href="/" className="whitespace-nowrap rounded-full bg-white px-3.5 py-1 text-xs font-black text-[#16a34a]">الكل</a>
