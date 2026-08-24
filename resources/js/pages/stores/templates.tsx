@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Check, Eye, LayoutGrid, Loader2, Palette } from 'lucide-react';
 import { PageTemplate } from '@/components/page-template';
@@ -57,7 +56,7 @@ export default function StoreThemesGallery({ store, storeBranding }: Props) {
         description: `قالب «${tpl.meta.name}» أصبح نشطاً على متجرك.`,
         action: {
           label: 'فتح المصمم',
-          onClick: () => router.visit(`/stores/${store.id}/designer`),
+          onClick: () => window.open(`/stores/${store.id}/designer`, '_blank', 'noopener'),
         },
       });
     } catch (e) {

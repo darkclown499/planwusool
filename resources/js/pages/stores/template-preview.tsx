@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,7 @@ export default function TemplatePreview({ store, templateSlug, storeBranding }: 
         description: `قالب «${tpl.meta.name}» أصبح نشطاً على متجرك.`,
         action: {
           label: 'فتح المصمم',
-          onClick: () => router.visit(`/stores/${store.id}/designer`),
+          onClick: () => window.open(`/stores/${store.id}/designer`, '_blank', 'noopener'),
         },
       });
     } catch (e) {

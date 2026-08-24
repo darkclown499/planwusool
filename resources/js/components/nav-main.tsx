@@ -198,7 +198,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                                                 <DropdownMenuSubContent>
                                                                     {child.children.map(subChild => (
                                                                         <DropdownMenuItem key={subChild.title} asChild>
-                                                                            <Link href={subChild.href || '#'} prefetch>
+                                                                            <Link href={subChild.href || '#'} prefetch target={subChild.target}>
                                                                                 {subChild.title}
                                                                             </Link>
                                                                         </DropdownMenuItem>
@@ -207,7 +207,7 @@ export function NavMain({ items = [], position }: { items: NavItem[]; position: 
                                                             </DropdownMenuSub>
                                                         ) : (
                                                             <DropdownMenuItem key={child.title} asChild>
-                                                                <Link href={child.href || '#'} prefetch>
+                                                                <Link href={child.href || '#'} prefetch target={child.target}>
                                                                     {child.title}
                                                                 </Link>
                                                             </DropdownMenuItem>
