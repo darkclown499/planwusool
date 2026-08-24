@@ -130,14 +130,14 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const heroBg = (storeSettings as any)?.hero_images?.[0] ?? heroImages[0] ?? null;
   const heroBgUrl = heroBg ? (() => { try { return getImageUrl(String(heroBg).trim().replace(/\/+$/, '')); } catch { return String(heroBg); } })() : null;
 
-  // Fallback to static slides when no dynamic hero is configured
+  // Fallback to static slides when no dynamic hero is configured — when dynamic hero has empty text, do NOT fallback to hardcoded text
   const list = hasDynamicHero && heroType === 'image' && heroImages.length > 0
     ? heroImages.map((img) => ({
-        title: heroHeading || FALLBACK_SLIDES[0].title,
-        subtitle: heroSubtitle || FALLBACK_SLIDES[0].subtitle,
+        title: heroHeading || '',
+        subtitle: heroSubtitle || '',
         image: img,
-        button_text: heroCtaLabel || FALLBACK_SLIDES[0].button_text,
-        button_link: heroCtaLink || FALLBACK_SLIDES[0].button_link,
+        button_text: heroCtaLabel || '',
+        button_link: heroCtaLink || '#atelier-new',
       }))
     : (slides && slides.length > 0 ? slides : FALLBACK_SLIDES).filter((s) => s.image || s.title);
 
@@ -160,15 +160,20 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   // Resolve overlay opacity for dynamic hero (0-1)
   const overlayStyleOpacity = hasDynamicHero ? normalizedOverlay : 0.35;
 
-  // Helper to render single hero content for video/youtube (uses heroHeading etc.)
-  const singleHeroTitle = heroHeading || list[0]?.title || FALLBACK_SLIDES[0].title;
-  const singleHeroSubtitle = heroSubtitle || list[0]?.subtitle || FALLBACK_SLIDES[0].subtitle;
-  const singleHeroCtaLabel = heroCtaLabel || list[0]?.button_text || FALLBACK_SLIDES[0].button_text;
-  const singleHeroCtaLink = heroCtaLink || list[0]?.button_link || FALLBACK_SLIDES[0].button_link;
+  // Helper to render single hero content — hide fallback when dynamic hero has empty fields
+  const singleHeroTitle = hasDynamicHero ? (heroHeading || '') : (heroHeading || list[0]?.title || FALLBACK_SLIDES[0].title);
+  const singleHeroSubtitle = hasDynamicHero ? (heroSubtitle || '') : (heroSubtitle || list[0]?.subtitle || FALLBACK_SLIDES[0].subtitle);
+  const singleHeroCtaLabel = hasDynamicHero ? (heroCtaLabel || '') : (heroCtaLabel || list[0]?.button_text || FALLBACK_SLIDES[0].button_text);
+  const singleHeroCtaLink = hasDynamicHero ? (heroCtaLink || '#atelier-new') : (heroCtaLink || list[0]?.button_link || FALLBACK_SLIDES[0].button_link);
+
+  // Conditional overlay text: hide entirely when dynamic hero has no text
+  const shouldShowOverlayText = isSingleMedia
+    ? !!(singleHeroTitle || singleHeroSubtitle || singleHeroCtaLabel)
+    : list.some((s) => (s.title && String(s.title).trim()) || (s.subtitle && String(s.subtitle).trim()) || (s.button_text && String(s.button_text).trim()));
 
   return (
-    <section className="relative min-h-[500px] h-[75vh] w-full overflow-hidden bg-stone-900 md:h-[85vh]" dir="rtl">
-      {/* Background media */}
+    <section className="relative w-full aspect-[16/9] overflow-hidden bg-stone-900 md:aspect-[16/9]" dir="rtl">
+      {/* Background media — 16:9 contain to prevent cropping */}
       {hasDynamicHero && heroType === 'video' && videoUrl ? (
         <>
           <video
@@ -176,7 +181,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
             loop
             muted
             playsInline
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain bg-black"
             src={videoUrl}
             poster={list[0]?.image ? getImageUrl(list[0].image) : undefined}
           />
@@ -185,13 +190,13 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
       ) : hasDynamicHero && heroType === 'youtube' && youtubeId ? (
         <>
           <iframe
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full bg-black"
             src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${youtubeId}&modestbranding=1&rel=0&enablejsapi=1`}
             title="YouTube video player"
             frameBorder="0"
             allow="autoplay; fullscreen"
             allowFullScreen
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: 'black' }}
           />
           <div className="absolute inset-0 bg-black" style={{ opacity: overlayStyleOpacity }} />
         </>
@@ -200,85 +205,91 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
           {list.map((slide, i) => (
             <div
               key={i}
-              className="absolute inset-0 transition-opacity duration-[1200ms] ease-out"
+              className="absolute inset-0 bg-black transition-opacity duration-[1200ms] ease-out"
               style={{ opacity: i === index ? 1 : 0 }}
               aria-hidden={i !== index}
             >
               <img
                 src={getImageUrl(slide.image || '')}
                 alt=""
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain bg-black"
                 style={{
-                  transform: i === index ? 'scale(1.08)' : 'scale(1)',
+                  transform: i === index ? 'scale(1.02)' : 'scale(1)',
                   transition: 'transform 7s ease-out',
                 }}
               />
-              {/* Warm editorial veil + configurable overlay */}
-              <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/25 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+              {/* Warm editorial veil + configurable overlay — veil is subtle when contain is used */}
+              <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-black/15 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
               {hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: overlayStyleOpacity }} />}
             </div>
           ))}
         </>
       )}
 
-      {/* Copy — z-10 ensures legibility over media */}
-      <div className="absolute inset-0 z-10 flex items-center">
-        <div className="mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16">
-          <div className="max-w-xl">
-            <span className="mb-4 block h-px w-14 bg-[#d8b48a]" />
-            {isSingleMedia ? (
-              <div className="transition-all duration-700">
-                {singleHeroSubtitle && (
-                  <p className="mb-3 text-sm font-medium tracking-[0.2em] text-[#e8cfa8]">{singleHeroSubtitle}</p>
-                )}
-                <h1 className="font-serif text-2xl font-bold leading-[1.25] text-white sm:text-4xl md:text-6xl">
-                  {singleHeroTitle}
-                </h1>
-                {singleHeroCtaLabel && (
-                  <a
-                    href={singleHeroCtaLink || '#atelier-new'}
-                    className="group mt-8 inline-flex items-center gap-3 border border-white/70 px-8 py-3 text-sm font-semibold tracking-wide text-white transition-all hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900"
-                  >
-                    {singleHeroCtaLabel}
-                    <span className="transition-transform group-hover:-translate-x-1">←</span>
-                  </a>
-                )}
-              </div>
-            ) : (
-              list.map((slide, i) => (
-                <div
-                  key={i}
-                  className="transition-all duration-700"
-                  style={{
-                    opacity: i === index ? 1 : 0,
-                    transform: i === index ? 'translateY(0)' : 'translateY(18px)',
-                    position: i === index ? 'relative' : 'absolute',
-                    inset: i === index ? undefined : 0,
-                    pointerEvents: i === index ? 'auto' : 'none',
-                  }}
-                >
-                  {slide.subtitle && (
-                    <p className="mb-3 text-sm font-medium tracking-[0.2em] text-[#e8cfa8]">{slide.subtitle}</p>
+      {/* Copy — z-10 ensures legibility over media; hidden entirely when all text fields are empty */}
+      {shouldShowOverlayText && (
+        <div className="absolute inset-0 z-10 flex items-center">
+          <div className="mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16">
+            <div className="max-w-xl">
+              <span className="mb-4 block h-px w-14 bg-[#d8b48a]" />
+              {isSingleMedia ? (
+                <div className="transition-all duration-700">
+                  {singleHeroSubtitle && (
+                    <p className="mb-3 text-sm font-medium tracking-[0.2em] text-[#e8cfa8]">{singleHeroSubtitle}</p>
                   )}
-                  <h1 className="font-serif text-2xl font-bold leading-[1.25] text-white sm:text-4xl md:text-6xl">
-                    {slide.title}
-                  </h1>
-                  {slide.button_text && (
+                  {singleHeroTitle && (
+                    <h1 className="font-serif text-2xl font-bold leading-[1.25] text-white sm:text-4xl md:text-6xl">
+                      {singleHeroTitle}
+                    </h1>
+                  )}
+                  {singleHeroCtaLabel && (
                     <a
-                      href={slide.button_link || '#atelier-new'}
+                      href={singleHeroCtaLink || '#atelier-new'}
                       className="group mt-8 inline-flex items-center gap-3 border border-white/70 px-8 py-3 text-sm font-semibold tracking-wide text-white transition-all hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900"
                     >
-                      {slide.button_text}
+                      {singleHeroCtaLabel}
                       <span className="transition-transform group-hover:-translate-x-1">←</span>
                     </a>
                   )}
                 </div>
-              ))
-            )}
+              ) : (
+                list.map((slide, i) => (
+                  <div
+                    key={i}
+                    className="transition-all duration-700"
+                    style={{
+                      opacity: i === index ? 1 : 0,
+                      transform: i === index ? 'translateY(0)' : 'translateY(18px)',
+                      position: i === index ? 'relative' : 'absolute',
+                      inset: i === index ? undefined : 0,
+                      pointerEvents: i === index ? 'auto' : 'none',
+                    }}
+                  >
+                    {slide.subtitle && (
+                      <p className="mb-3 text-sm font-medium tracking-[0.2em] text-[#e8cfa8]">{slide.subtitle}</p>
+                    )}
+                    {slide.title && (
+                      <h1 className="font-serif text-2xl font-bold leading-[1.25] text-white sm:text-4xl md:text-6xl">
+                        {slide.title}
+                      </h1>
+                    )}
+                    {slide.button_text && (
+                      <a
+                        href={slide.button_link || '#atelier-new'}
+                        className="group mt-8 inline-flex items-center gap-3 border border-white/70 px-8 py-3 text-sm font-semibold tracking-wide text-white transition-all hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900"
+                      >
+                        {slide.button_text}
+                        <span className="transition-transform group-hover:-translate-x-1">←</span>
+                      </a>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Controls — hidden for single-media video/youtube */}
       {!isSingleMedia && list.length > 1 && (
