@@ -11,6 +11,7 @@ import {
   type V2Product,
 } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
+import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import type { TemplateRootProps } from '../types';
 
 /* ===================================================================== */
@@ -54,6 +55,9 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700">
             🔍
           </button>
+          <div className="hidden sm:block">
+            <HeaderLoyaltyBadge />
+          </div>
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700">
             <Heart className="h-5 w-5" strokeWidth={1.8} />
             {!!wishlist?.count && (

@@ -294,7 +294,7 @@ export function AppSidebar() {
                     { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
                     {
                         title: 'الشحن والتوصيل',
-                        href: `/stores/${currentStoreId}/shipping`,
+                        href: `/stores/${currentStoreId}/settings?tab=shipping`,
                         icon: Truck,
                         activePaths: [`/stores/${currentStoreId}/shipping`, `/stores/${currentStoreId}/settings?tab=shipping`],
                     },

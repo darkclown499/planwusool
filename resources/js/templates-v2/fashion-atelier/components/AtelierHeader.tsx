@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Gift, Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useStorefrontCore } from '../../shared/hooks';
 import { getImageUrl } from '@/utils/image-helper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { POLICY_LINKS, getPolicyContent } from './PolicyContent';
+import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 
 interface AtelierHeaderProps {
   /** Extra links prepended to the category navigation (e.g. الرئيسية). */
@@ -100,6 +101,9 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
           <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="rounded-full p-2 text-stone-700 transition hover:bg-stone-100">
             <Search className="h-5 w-5" strokeWidth={1.7} />
           </button>
+          <div className="hidden sm:block">
+            <HeaderLoyaltyBadge />
+          </div>
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2 text-stone-700 transition hover:bg-stone-100">
             <Heart className="h-5 w-5" strokeWidth={1.7} />
             {!!wishlist?.count && (

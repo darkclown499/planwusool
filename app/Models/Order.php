@@ -118,19 +118,30 @@ class Order extends Model
                 || strtolower((string) $order->payment_status) === 'failed';
 
             if (!$terminal || (bool) $order->stock_restored || !$order->exists) {
-                return;
-            }
-
-            foreach ($order->items()->get() as $item) {
-                if (!$item->product_id) {
-                    continue;
+                // still check loyalty even if stock already restored — loyalty uses its own idempotency
+            } else {
+                foreach ($order->items()->get() as $item) {
+                    if (!$item->product_id) {
+                        continue;
+                    }
+                    \Illuminate\Support\Facades\DB::table('products')
+                        ->where('id', $item->product_id)
+                        ->increment('stock', (int) $item->quantity);
                 }
-                \Illuminate\Support\Facades\DB::table('products')
-                    ->where('id', $item->product_id)
-                    ->increment('stock', (int) $item->quantity);
+
+                $order->forceFill(['stock_restored' => true]);
             }
 
-            $order->forceFill(['stock_restored' => true]);
+            // Loyalty reversal: idempotent per store/order, handles earn + redeem
+            $wasTerminal = in_array(strtolower((string) $order->getOriginal('status')), ['cancelled', 'refunded'], true);
+            $isNowTerminal = in_array(strtolower((string) $order->status), ['cancelled', 'refunded'], true);
+            if (!$wasTerminal && $isNowTerminal) {
+                try {
+                    app(\App\Services\LoyaltyService::class)->reversePointsForOrder($order);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Loyalty reversal failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                }
+            }
         });
     }
 }

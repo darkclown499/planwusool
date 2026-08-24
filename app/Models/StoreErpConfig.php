@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Crypt;
 
 class StoreErpConfig extends Model
 {
@@ -41,7 +42,57 @@ class StoreErpConfig extends Model
     protected $hidden = [
         'api_key',
         'api_password',
+        'api_username',
     ];
+
+    /**
+     * Encrypted accessors — transparently decrypt on read, encrypt on write.
+     * Plaintext fallback keeps existing stores working without immediate backfill.
+     */
+    public function getApiKeyAttribute($value): ?string
+    {
+        if ($value === null || $value === '') return $value;
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Throwable $e) {
+            return $value; // plaintext legacy
+        }
+    }
+
+    public function setApiKeyAttribute($value): void
+    {
+        $this->attributes['api_key'] = $value === null || $value === '' ? $value : Crypt::encryptString((string) $value);
+    }
+
+    public function getApiPasswordAttribute($value): ?string
+    {
+        if ($value === null || $value === '') return $value;
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Throwable $e) {
+            return $value;
+        }
+    }
+
+    public function setApiPasswordAttribute($value): void
+    {
+        $this->attributes['api_password'] = $value === null || $value === '' ? $value : Crypt::encryptString((string) $value);
+    }
+
+    public function getApiUsernameAttribute($value): ?string
+    {
+        if ($value === null || $value === '') return $value;
+        try {
+            return Crypt::decryptString($value);
+        } catch (\Throwable $e) {
+            return $value;
+        }
+    }
+
+    public function setApiUsernameAttribute($value): void
+    {
+        $this->attributes['api_username'] = $value === null || $value === '' ? $value : Crypt::encryptString((string) $value);
+    }
 
     public function store(): BelongsTo
     {

@@ -190,6 +190,112 @@ class LoyaltyService
     }
 
     /**
+     * Reverse loyalty points when an order is cancelled/refunded.
+     * Idempotent per store/order: second cancel does not create additional reversal.
+     * Supports partial refund via $refundAmount (proportional reversal).
+     */
+    public function reversePointsForOrder(Order $order, ?float $refundAmount = null): void
+    {
+        $store = $order->store;
+        $customer = $order->customer;
+        if (!$store || !$customer) return;
+
+        $storeId = $store->id;
+        $customerId = $customer->id;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $storeId, $customerId, $refundAmount) {
+            // Lock to prevent race double reversal
+            $earnPoints = (float) LoyaltyTransaction::where('store_id', $storeId)
+                ->where('customer_id', $customerId)
+                ->where('order_id', $order->id)
+                ->where('type', 'earn')
+                ->sum('points');
+
+            $redeemPoints = abs((float) LoyaltyTransaction::where('store_id', $storeId)
+                ->where('customer_id', $customerId)
+                ->where('order_id', $order->id)
+                ->where('type', 'redeem')
+                ->sum('points'));
+
+            if ($earnPoints == 0 && $redeemPoints == 0) return;
+
+            // Idempotency: check if reversal already exists
+            $hasEarnReversal = LoyaltyTransaction::where('store_id', $storeId)
+                ->where('customer_id', $customerId)
+                ->where('order_id', $order->id)
+                ->where('type', 'refund')
+                ->where('points', '<', 0)
+                ->exists();
+
+            $hasRedeemReversal = LoyaltyTransaction::where('store_id', $storeId)
+                ->where('customer_id', $customerId)
+                ->where('order_id', $order->id)
+                ->where('type', 'adjustment')
+                ->where('points', '>', 0)
+                ->exists();
+
+            $ratio = 1.0;
+            if ($refundAmount !== null && $refundAmount > 0 && $order->total_amount > 0) {
+                $ratio = min(1.0, max(0, $refundAmount / (float) $order->total_amount));
+            }
+
+            if ($earnPoints > 0 && !$hasEarnReversal) {
+                $pointsToReverse = round($earnPoints * $ratio, 2);
+                if ($pointsToReverse > 0) {
+                    $currentBalance = LoyaltyTransaction::balanceFor($storeId, $customerId);
+                    LoyaltyTransaction::create([
+                        'store_id' => $storeId,
+                        'customer_id' => $customerId,
+                        'order_id' => $order->id,
+                        'type' => 'refund',
+                        'points' => -$pointsToReverse,
+                        'balance_after' => $currentBalance - $pointsToReverse,
+                        'description' => "Points reversed for cancelled/refunded order #{$order->order_number}",
+                        'metadata' => [
+                            'order_number' => $order->order_number,
+                            'original_earn' => $earnPoints,
+                            'reversed' => $pointsToReverse,
+                            'refund_amount' => $refundAmount,
+                            'reason' => 'order_cancelled',
+                        ],
+                    ]);
+                }
+            }
+
+            if ($redeemPoints > 0 && !$hasRedeemReversal) {
+                $pointsToReturn = round($redeemPoints * $ratio, 2);
+                if ($pointsToReturn > 0) {
+                    $currentBalance = LoyaltyTransaction::balanceFor($storeId, $customerId);
+                    LoyaltyTransaction::create([
+                        'store_id' => $storeId,
+                        'customer_id' => $customerId,
+                        'order_id' => $order->id,
+                        'type' => 'adjustment',
+                        'points' => $pointsToReturn,
+                        'balance_after' => $currentBalance + $pointsToReturn,
+                        'description' => "Redeemed points returned for cancelled/refunded order #{$order->order_number}",
+                        'metadata' => [
+                            'order_number' => $order->order_number,
+                            'original_redeem' => $redeemPoints,
+                            'returned' => $pointsToReturn,
+                            'refund_amount' => $refundAmount,
+                            'reason' => 'order_cancelled_redeem_return',
+                        ],
+                    ]);
+                }
+            }
+        });
+    }
+
+    /**
+     * Convenience for partial refund (amount based).
+     */
+    public function refundPointsForOrder(Order $order, float $refundAmount): void
+    {
+        $this->reversePointsForOrder($order, $refundAmount);
+    }
+
+    /**
      * Get the transaction history for a customer.
      */
     public function getHistory(int $storeId, int $customerId, int $limit = 50)

@@ -706,6 +706,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/domains/{domain}/check-ssl', [\App\Http\Controllers\StoreDomainController::class, 'checkSsl'])->middleware('permission:settings-stores')->name('stores.domains.check-ssl');
         Route::post('stores/{id}/domains/{domain}/make-primary', [\App\Http\Controllers\StoreDomainController::class, 'makePrimary'])->middleware('permission:settings-stores')->name('stores.domains.primary');
         Route::delete('stores/{id}/domains/{domain}', [\App\Http\Controllers\StoreDomainController::class, 'destroy'])->middleware('permission:settings-stores')->name('stores.domains.destroy');
+
+        // Fallback for الشحن والتوصيل — ensures /stores/{store}/shipping never 404s (Nginx fix)
+        Route::get('stores/{store}/shipping', function ($store) {
+            return redirect()->route('stores.settings', ['id' => $store, 'tab' => 'shipping']);
+        })->middleware('permission:settings-stores')->name('stores.shipping');
         
         // Product Management routes with permissions
         Route::get('products', [\App\Http\Controllers\ProductController::class, 'index'])->middleware('permission:manage-products')->name('products.index');

@@ -354,7 +354,7 @@ class DemoStoreService
                     ['/themes/fashion-designer-mart/trending-products3.png', 'طقم تونيك وبنطلون كتان', 'طقم صيفي من الكتان الطبيعي بلون بيج هادئ، قصّة واسعة مريحة تليق بأناقتك اليومية.', 329, 389, 15],
                     ['/themes/fashion-designer-mart/trending-products4.png', 'معطف صوف طويل بحزام', 'معطف شتوي أنيق من الصوف المخلوط بقصّة مستقيمة وحزام يبرز الخصر، دفء بلمسة فخامة.', 479, 559, 8],
                     ['p4', 'بلوزة ساتان بأكمام منفوخة', 'بلوزة ساتان بلمعة راقية وأكمام منفوخة تناسب إطلالات العمل والمناسبات المسائية.', 159, 199, 30],
-                    ['p4', 'تنورة ميدي بليسيه انسيابية', 'تنورة بليسيه بطول منتصف الساق بحركة انسيابية تمنح مشيتك رشاقة مميزة.', 179, 0, 25],
+                    ['p6', 'تنورة ميدي بليسيه انسيابية', 'تنورة بليسيه بطول منتصف الساق بحركة انسيابية تمنح مشيتك رشاقة مميزة.', 179, 0, 25],
                     ['p5', 'بنطلون قماش واسع عالي الخصر', 'بنطلون واسع من قماش السكوبا المرن بخصرة عالية تطيّل القامة وتناسب كل الإطلالات.', 145, 175, 40],
                 ],
             ],
@@ -362,9 +362,9 @@ class DemoStoreService
                 'name' => 'حقائب ومجوهرات',
                 'products' => [
                     ['p12', 'حقيبة يد جلد طبيعي فاخر', 'حقيبة يد من الجلد الطبيعي 100% بتشطيبات ذهبية وحزام كتف قابل للفصل، تأتي بغبار واقٍ.', 349, 429, 10],
-                    ['p12', 'حقيبة كتف ميني عصرية', 'حقيبة كتف مدمجة بتصميم عصري تناسب المناسبات والخروجات اليومية، بعدة جيوب داخلية.', 229, 279, 18],
+                    ['p11', 'حقيبة كتف ميني عصرية', 'حقيبة كتف مدمجة بتصميم عصري تناسب المناسبات والخروجات اليومية، بعدة جيوب داخلية.', 229, 279, 18],
                     ['p24', 'طقم خواتم ستانلس مذهّب', 'ثلاثية خواتم ستانلس ستيل مطلية بالذهب عيار 18 مقاومة للتأكسد والماء، مقاسات متعددة.', 189, 239, 35],
-                    ['p24', 'قلادة لؤلؤ طبيعي بكلاسب آمن', 'قلادة من اللؤلؤ العذبي الطبيعي بإغلاق محكم وتأتي بكيس هدايا مخملي مجاني.', 319, 0, 14],
+                    ['p10', 'قلادة لؤلؤ طبيعي بكلاسب آمن', 'قلادة من اللؤلؤ العذبي الطبيعي بإغلاق محكم وتأتي بكيس هدايا مخملي مجاني.', 319, 0, 14],
                     ['p3', 'ساعة نسائية روز قولد جلد', 'ساعة بحركة كوارتز يابانية وسوار جلد بلون الذهب الوردي، مقاومة للماء بعمق 3ATM.', 459, 539, 9],
                 ],
             ],
@@ -401,7 +401,7 @@ class DemoStoreService
                 'name' => 'كتب',
                 'products' => [
                     ['p13', 'رواية «ظل الريح»', 'رواية أدبية آسرة تأخذك في رحلة لا تُنسى بين أسرار مدينة قديمة.', 89, 109, 40],
-                    ['p13', 'كتاب «فن التفكير»', 'دليل عملي لتطوير مهارات التفكير النقدي واتخاذ القرار.', 75, 95, 55],
+                    ['p22', 'كتاب «فن التفكير»', 'دليل عملي لتطوير مهارات التفكير النقدي واتخاذ القرار.', 75, 95, 55],
                     ['p14', 'موسوعة التاريخ المصور', 'مرجع مصور غني بالصور النادرة يروي قصة الحضارات.', 199, 249, 20],
                 ],
             ],
@@ -410,14 +410,14 @@ class DemoStoreService
                 'products' => [
                     ['p15', 'قهوة عربية فاخرة', 'حبوب مختارة محمصة بعناية لنكهة غنية ورغوة مثالية.', 129, 149, 70],
                     ['p14', 'ماكينة إسبريسو', 'ماكينة إسبريسو منزلية بضغط 15 بار ورغوة حليب احترافية.', 899, 1099, 10],
-                    ['p15', 'كوب سيراميك حراري', 'كوب يحافظ على حرارة مشروبك لساعات بتصميم أنيق.', 49, 69, 90],
+                    ['p27', 'كوب سيراميك حراري', 'كوب يحافظ على حرارة مشروبك لساعات بتصميم أنيق.', 49, 69, 90],
                 ],
             ],
             'cat-pharmacy' => [
                 'name' => 'صيدلية',
                 'products' => [
                     ['p16', 'مكمل فيتامين د', 'مكمل غذائي يقوي المناعة والعظام بجرعة يومية متوازنة.', 59, 79, 120],
-                    ['p16', 'جهاز قياس الضغط', 'جهاز رقمي دقيق لقياس ضغط الدم في المنزل.', 149, 199, 35],
+                    ['p15', 'جهاز قياس الضغط', 'جهاز رقمي دقيق لقياس ضغط الدم في المنزل.', 149, 199, 35],
                     ['p17', 'عناية بالبشرة الحساسة', 'مجموعة لطيفة لتنظيف وترطيب البشرة الحساسة.', 99, 129, 45],
                 ],
             ],
@@ -426,14 +426,14 @@ class DemoStoreService
                 'products' => [
                     ['p17', 'طعام قطط متوازن', 'طعام جاف غني بالبروتين والفيتامينات لنمو صحي.', 119, 149, 80],
                     ['p18', 'سرير كلب مريح', 'سرير فاخر بتصميم مريح يدعم مفاصل حيوانك الأليف.', 169, 219, 30],
-                    ['p18', 'طوق بمناسبة ذكية', 'طوق مزود بشريحة تتبع الموقع لحيوانك الأليف.', 89, 119, 50],
+                    ['p16', 'طوق بمناسبة ذكية', 'طوق مزود بشريحة تتبع الموقع لحيوانك الأليف.', 89, 119, 50],
                 ],
             ],
             'cat-perfumes' => [
                 'name' => 'عطور',
                 'products' => [
                     ['p19', 'عطر العود الملكي', 'عطر شرقي فاخر برائحة العود والعنبر تدوم طوال اليوم.', 249, 329, 25],
-                    ['p19', 'ماء عطر الزهور', 'عطر منعش بنفحات زهرية ناعمة تناسب الاستخدام اليومي.', 159, 199, 60],
+                    ['p1', 'ماء عطر الزهور', 'عطر منعش بنفحات زهرية ناعمة تناسب الاستخدام اليومي.', 159, 199, 60],
                     ['p20', 'مجموعة عطور مصغرة', 'تشكيلة من 5 عطور مصغرة لاكتشاف توقيعك الخاص.', 129, 179, 40],
                 ],
             ],
@@ -441,7 +441,7 @@ class DemoStoreService
                 'name' => 'زهور وهدايا',
                 'products' => [
                     ['p21', 'باقة ورد طبيعي', 'باقة ورد طازج مقطوفة صباح كل يوم بألوان مبهجة.', 149, 189, 20],
-                    ['p21', 'صندوق هدية ورد', 'صندوق أنيق مملوء بالورد المجفف مع رسالة شخصية.', 179, 229, 15],
+                    ['p1', 'صندوق هدية ورد', 'صندوق أنيق مملوء بالورد المجفف مع رسالة شخصية.', 179, 229, 15],
                     ['p22', 'نبتة مكتبية أنيقة', 'نبتة منزلية سهلة العناية تضفي لمسة خضراء على مكتبك.', 59, 79, 70],
                 ],
             ],
@@ -449,7 +449,7 @@ class DemoStoreService
                 'name' => 'أدوات منزلية',
                 'products' => [
                     ['p23', 'صندوق عدة كامل', 'صندوق أدوات متكامل بجودة متينة لكل أعمال المنزل.', 299, 399, 25],
-                    ['p23', 'مثقاب كهربائي', 'مثقاب قوي ببطارية تدوم طويلاً وسرعات متعددة.', 249, 329, 18],
+                    ['p1', 'مثقاب كهربائي', 'مثقاب قوي ببطارية تدوم طويلاً وسرعات متعددة.', 249, 329, 18],
                     ['p24', 'مقياس ليزر للمسافات', 'أداة قياس ليزر دقيقة للتصميم والديكور.', 129, 169, 30],
                 ],
             ],
@@ -457,7 +457,7 @@ class DemoStoreService
                 'name' => 'حرف يدوية',
                 'products' => [
                     ['p25', 'سلة خيزران منسوجة', 'سلة يدوية الصنع من خامات طبيعية 100%.', 99, 129, 35],
-                    ['p25', 'إبريق فخاري مزخرف', 'قطعة فخارية مصنوعة يدوياً بنقوش تقليدية.', 139, 179, 20],
+                    ['p1', 'إبريق فخاري مزخرف', 'قطعة فخارية مصنوعة يدوياً بنقوش تقليدية.', 139, 179, 20],
                     ['p26', 'شال صوفي محبوك', 'شال دافئ محبوك يدوياً بألوان ترابية هادئة.', 189, 239, 15],
                 ],
             ],
@@ -465,7 +465,7 @@ class DemoStoreService
                 'name' => 'بقالة',
                 'products' => [
                     ['p27', 'علبة فواكه موسمية', 'فواكه طازجة مختارة بعناية من أفضل المزارع.', 79, 99, 100],
-                    ['p27', 'طرد خضروات طازج', 'خضروات يومية طازجة تلبي احتياجات أسبوع كامل.', 89, 109, 85],
+                    ['p1', 'طرد خضروات طازج', 'خضروات يومية طازجة تلبي احتياجات أسبوع كامل.', 89, 109, 85],
                     ['p22', 'زيت زيتون بكر', 'زيت زيتون بكر ممتاز من معصرة تقليدية.', 149, 189, 60],
                 ],
             ],
@@ -474,14 +474,14 @@ class DemoStoreService
                 'products' => [
                     ['p13', 'دفتر ملاحظات فاخر', 'دفتر بغلاف جلدي وورق عالي الجودة لكتابة سلسة.', 45, 65, 120],
                     ['p14', 'طقم أقلام رصاص', 'مجموعة أقلام رصاص احترافية بدرجات متعددة.', 39, 55, 150],
-                    ['p13', 'ألوان مائية احترافية', 'طقم ألوان مائية غني مناسب للفنانين والطلاب.', 89, 119, 40],
+                    ['p1', 'ألوان مائية احترافية', 'طقم ألوان مائية غني مناسب للفنانين والطلاب.', 89, 119, 40],
                 ],
             ],
             'cat-electronics-pro' => [
                 'name' => 'إلكترونيات احترافية',
                 'products' => [
                     ['p23', 'لابتوب عمل قوي', 'لابتوب بمعالج حديث وذاكرة كبيرة للمهام الثقيلة.', 5499, 6499, 8],
-                    ['p23', 'شاشة 4K احترافية', 'شاشة بدقة 4K وألوان دقيقة مناسبة للمصممين.', 1899, 2299, 12],
+                    ['p1', 'شاشة 4K احترافية', 'شاشة بدقة 4K وألوان دقيقة مناسبة للمصممين.', 1899, 2299, 12],
                     ['p24', 'كاميرا ميرورلس', 'كاميرا احترافية بجودة سينمائية وسرعة تركيز عالية.', 3499, 3999, 6],
                 ],
             ],
@@ -489,7 +489,7 @@ class DemoStoreService
                 'name' => 'ساعات',
                 'products' => [
                     ['p25', 'ساعة كرونوغراف', 'ساعة ميكانيكية فاخرة بحركة سويسرية دقيقة.', 5999, 6999, 4],
-                    ['p25', 'ساعة جلد كلاسيكية', 'ساعة بتصميم كلاسيكي خالد وجلد طبيعي أصلي.', 899, 1199, 10],
+                    ['p1', 'ساعة جلد كلاسيكية', 'ساعة بتصميم كلاسيكي خالد وجلد طبيعي أصلي.', 899, 1199, 10],
                     ['p26', 'ساعة رياضية مقاومة', 'ساعة مقاومة للماء والصدمات لرياضيين التحمل.', 649, 799, 20],
                 ],
             ],
@@ -497,7 +497,7 @@ class DemoStoreService
                 'name' => 'توريد جملة',
                 'products' => [
                     ['p26', 'كرتون عبوات تغليف', 'جملة عبوات تغليف متينة للمتاجر والشركات.', 499, 599, 500],
-                    ['p26', 'علبة أقلام ترويجية', 'أقلام مخصصة بكميات كبيرة للتوزيع الترويجي.', 299, 399, 800],
+                    ['p1', 'علبة أقلام ترويجية', 'أقلام مخصصة بكميات كبيرة للتوزيع الترويجي.', 299, 399, 800],
                     ['p22', 'دباسة مكتبية مدرسية', 'دفعة مكتبية من الدباسات عالية الجودة للموردين.', 199, 249, 300],
                 ],
             ],
@@ -505,7 +505,7 @@ class DemoStoreService
                 'name' => 'رياضة',
                 'products' => [
                     ['p27', 'كرة قدم رسمية', 'كرة قدم معتمدة للاستخدام الاحترافي.', 149, 199, 40],
-                    ['p27', 'دمبل قابل للتعديل', 'دمبل ذكي قابل للتعديل من 2 إلى 24 كجم.', 599, 749, 15],
+                    ['p1', 'دمبل قابل للتعديل', 'دمبل ذكي قابل للتعديل من 2 إلى 24 كجم.', 599, 749, 15],
                     ['p3', 'سجادة يوجا مطاطية', 'سجادة يوغا مضادة للانزلاق بسمك مريح.', 129, 169, 35],
                 ],
             ],
@@ -537,7 +537,7 @@ class DemoStoreService
                     ['/themes/fashion-designer-mart/trending-products3.png', 'Linen Tunic & Wide-Leg Set', 'Summer two-piece in natural linen with a calm beige tone — a relaxed wide cut for effortless everyday elegance.', 329, 389, 15],
                     ['/themes/fashion-designer-mart/trending-products4.png', 'Long Belted Wool Coat', 'Elegant winter coat in blended wool with a straight cut and waist-defining belt — warmth with a touch of luxury.', 479, 559, 8],
                     ['p4', 'Satin Blouse with Puff Sleeves', 'Lustrous satin blouse with voluminous puff sleeves that transitions from office hours to evening outings.', 159, 199, 30],
-                    ['p4', 'Flowy Pleated Midi Skirt', 'Pleated midi skirt with a graceful flowing movement that adds charm to every step.', 179, 0, 25],
+                    ['p6', 'Flowy Pleated Midi Skirt', 'Pleated midi skirt with a graceful flowing movement that adds charm to every step.', 179, 0, 25],
                     ['p5', 'High-Waist Wide-Leg Trousers', 'Wide-leg trousers in stretch scuba fabric with a high rise that elongates the silhouette.', 145, 175, 40],
                 ],
             ],
@@ -545,9 +545,9 @@ class DemoStoreService
                 'name' => 'Bags & Jewelry',
                 'products' => [
                     ['p12', 'Premium Genuine-Leather Handbag', '100% genuine-leather handbag with gold-tone hardware and a detachable shoulder strap, dust bag included.', 349, 429, 10],
-                    ['p12', 'Mini Modern Shoulder Bag', 'Compact shoulder bag with a contemporary design for occasions and daily outings, multiple inner pockets.', 229, 279, 18],
+                    ['p11', 'Mini Modern Shoulder Bag', 'Compact shoulder bag with a contemporary design for occasions and daily outings, multiple inner pockets.', 229, 279, 18],
                     ['p24', 'Gold-Plated Stainless Ring Trio', 'Set of three stainless steel rings plated in 18K gold, tarnish- and water-resistant, in multiple sizes.', 189, 239, 35],
-                    ['p24', 'Natural Pearl Pendant Necklace', 'Natural freshwater pearl necklace with a secure clasp, complimentary velvet gift pouch included.', 319, 0, 14],
+                    ['p10', 'Natural Pearl Pendant Necklace', 'Natural freshwater pearl necklace with a secure clasp, complimentary velvet gift pouch included.', 319, 0, 14],
                     ['p3', 'Rose-Gold Leather Ladies Watch', 'Japanese quartz movement with a rose-gold leather strap, water-resistant to 3ATM.', 459, 539, 9],
                 ],
             ],
@@ -584,7 +584,7 @@ class DemoStoreService
                 'name' => 'Books',
                 'products' => [
                     ['p13', '"Shadow of the Wind" Novel', 'An absorbing literary novel that takes you on an unforgettable journey.', 89, 109, 40],
-                    ['p13', '"The Art of Thinking" Book', 'A practical guide to developing critical thinking and decision-making skills.', 75, 95, 55],
+                    ['p22', '"The Art of Thinking" Book', 'A practical guide to developing critical thinking and decision-making skills.', 75, 95, 55],
                     ['p14', 'Illustrated History Encyclopedia', 'An illustrated reference full of rare photos telling the story of civilizations.', 199, 249, 20],
                 ],
             ],
@@ -593,14 +593,14 @@ class DemoStoreService
                 'products' => [
                     ['p15', 'Premium Arabic Coffee', 'Hand-picked beans roasted with care for a rich flavor and perfect foam.', 129, 149, 70],
                     ['p14', 'Espresso Machine', 'Home espresso machine with 15-bar pressure and professional milk frothing.', 899, 1099, 10],
-                    ['p15', 'Thermal Ceramic Mug', 'A mug that keeps your drink hot for hours with an elegant design.', 49, 69, 90],
+                    ['p27', 'Thermal Ceramic Mug', 'A mug that keeps your drink hot for hours with an elegant design.', 49, 69, 90],
                 ],
             ],
             'cat-pharmacy' => [
                 'name' => 'Pharmacy',
                 'products' => [
                     ['p16', 'Vitamin D Supplement', 'A supplement that strengthens immunity and bones with a balanced daily dose.', 59, 79, 120],
-                    ['p16', 'Blood Pressure Monitor', 'Accurate digital device for measuring blood pressure at home.', 149, 199, 35],
+                    ['p15', 'Blood Pressure Monitor', 'Accurate digital device for measuring blood pressure at home.', 149, 199, 35],
                     ['p17', 'Sensitive Skin Care', 'A gentle set for cleansing and moisturizing sensitive skin.', 99, 129, 45],
                 ],
             ],
@@ -609,14 +609,14 @@ class DemoStoreService
                 'products' => [
                     ['p17', 'Balanced Cat Food', 'Protein- and vitamin-rich dry food for healthy growth.', 119, 149, 80],
                     ['p18', 'Comfortable Dog Bed', 'Luxurious comfortable design that supports your pet\'s joints.', 169, 219, 30],
-                    ['p18', 'Smart Location Collar', 'A collar with a location tracking chip for your pet.', 89, 119, 50],
+                    ['p1', 'Smart Location Collar', 'A collar with a location tracking chip for your pet.', 89, 119, 50],
                 ],
             ],
             'cat-perfumes' => [
                 'name' => 'Perfumes',
                 'products' => [
                     ['p19', 'Royal Oud Perfume', 'Luxurious oriental perfume with oud and amber that lasts all day.', 249, 329, 25],
-                    ['p19', 'Floral Eau de Parfum', 'Refreshing fragrance with soft floral notes for everyday use.', 159, 199, 60],
+                    ['p1', 'Floral Eau de Parfum', 'Refreshing fragrance with soft floral notes for everyday use.', 159, 199, 60],
                     ['p20', 'Mini Perfume Collection', 'A selection of 5 mini perfumes to discover your own signature.', 129, 179, 40],
                 ],
             ],
@@ -624,7 +624,7 @@ class DemoStoreService
                 'name' => 'Flowers & Gifts',
                 'products' => [
                     ['p21', 'Fresh Flower Bouquet', 'Fresh flowers picked every morning in vibrant colors.', 149, 189, 20],
-                    ['p21', 'Flower Gift Box', 'An elegant box filled with dried flowers and a personal message.', 179, 229, 15],
+                    ['p1', 'Flower Gift Box', 'An elegant box filled with dried flowers and a personal message.', 179, 229, 15],
                     ['p22', 'Elegant Desk Plant', 'An easy-care houseplant that adds a green touch to your desk.', 59, 79, 70],
                 ],
             ],
@@ -632,7 +632,7 @@ class DemoStoreService
                 'name' => 'Home Tools',
                 'products' => [
                     ['p23', 'Complete Tool Box', 'A complete, durable tool set for all home repairs.', 299, 399, 25],
-                    ['p23', 'Electric Drill', 'Powerful drill with a long-lasting battery and multiple speeds.', 249, 329, 18],
+                    ['p1', 'Electric Drill', 'Powerful drill with a long-lasting battery and multiple speeds.', 249, 329, 18],
                     ['p24', 'Laser Distance Meter', 'Precise laser measuring tool for design and decoration.', 129, 169, 30],
                 ],
             ],
@@ -640,7 +640,7 @@ class DemoStoreService
                 'name' => 'Handcrafted',
                 'products' => [
                     ['p25', 'Woven Bamboo Basket', 'A handcrafted basket made from 100% natural materials.', 99, 129, 35],
-                    ['p25', 'Decorated Pottery Pitcher', 'A handmade pottery piece with traditional patterns.', 139, 179, 20],
+                    ['p1', 'Decorated Pottery Pitcher', 'A handmade pottery piece with traditional patterns.', 139, 179, 20],
                     ['p26', 'Knitted Wool Shawl', 'A warm, hand-knitted shawl in calm earthy tones.', 189, 239, 15],
                 ],
             ],
@@ -648,7 +648,7 @@ class DemoStoreService
                 'name' => 'Grocery',
                 'products' => [
                     ['p27', 'Seasonal Fruit Box', 'Fresh fruits carefully selected from the best farms.', 79, 99, 100],
-                    ['p27', 'Fresh Vegetables Pack', 'Daily fresh vegetables that cover a full week of needs.', 89, 109, 85],
+                    ['p1', 'Fresh Vegetables Pack', 'Daily fresh vegetables that cover a full week of needs.', 89, 109, 85],
                     ['p22', 'Extra Virgin Olive Oil', 'Premium extra virgin olive oil from a traditional press.', 149, 189, 60],
                 ],
             ],
@@ -657,14 +657,14 @@ class DemoStoreService
                 'products' => [
                     ['p13', 'Luxury Notebook', 'Notebook with a leather cover and high-quality paper for smooth writing.', 45, 65, 120],
                     ['p14', 'Professional Pencil Set', 'Professional pencil set with multiple grades.', 39, 55, 150],
-                    ['p13', 'Professional Watercolors', 'A rich watercolor set suitable for artists and students.', 89, 119, 40],
+                    ['p1', 'Professional Watercolors', 'A rich watercolor set suitable for artists and students.', 89, 119, 40],
                 ],
             ],
             'cat-electronics-pro' => [
                 'name' => 'Professional Electronics',
                 'products' => [
                     ['p23', 'Powerful Work Laptop', 'Laptop with a modern processor and plenty of memory for heavy tasks.', 5499, 6499, 8],
-                    ['p23', 'Professional 4K Monitor', '4K resolution monitor with accurate colors, ideal for designers.', 1899, 2299, 12],
+                    ['p1', 'Professional 4K Monitor', '4K resolution monitor with accurate colors, ideal for designers.', 1899, 2299, 12],
                     ['p24', 'Mirrorless Camera', 'Professional camera with cinematic quality and fast autofocus.', 3499, 3999, 6],
                 ],
             ],
@@ -672,7 +672,7 @@ class DemoStoreService
                 'name' => 'Watches',
                 'products' => [
                     ['p25', 'Chronograph Watch', 'Luxury mechanical watch with precise Swiss movement.', 5999, 6999, 4],
-                    ['p25', 'Classic Leather Watch', 'A timeless classic design with genuine natural leather.', 899, 1199, 10],
+                    ['p1', 'Classic Leather Watch', 'A timeless classic design with genuine natural leather.', 899, 1199, 10],
                     ['p26', 'Rugged Sports Watch', 'Water- and shock-resistant watch for endurance athletes.', 649, 799, 20],
                 ],
             ],
@@ -680,7 +680,7 @@ class DemoStoreService
                 'name' => 'Bulk Supply',
                 'products' => [
                     ['p26', 'Packaging Cartons Box', 'Bulk durable packaging cartons for stores and companies.', 499, 599, 500],
-                    ['p26', 'Promotional Pens Box', 'Customized pens in bulk for promotional distribution.', 299, 399, 800],
+                    ['p1', 'Promotional Pens Box', 'Customized pens in bulk for promotional distribution.', 299, 399, 800],
                     ['p22', 'Office Stapler Bulk', 'Bulk high-quality office staplers for suppliers.', 199, 249, 300],
                 ],
             ],
@@ -688,7 +688,7 @@ class DemoStoreService
                 'name' => 'Sports',
                 'products' => [
                     ['p27', 'Official Football', 'An approved football for professional use.', 149, 199, 40],
-                    ['p27', 'Adjustable Dumbbell', 'Smart adjustable dumbbell from 2 to 24 kg.', 599, 749, 15],
+                    ['p1', 'Adjustable Dumbbell', 'Smart adjustable dumbbell from 2 to 24 kg.', 599, 749, 15],
                     ['p3', 'Rubber Yoga Mat', 'Anti-slip yoga mat with comfortable thickness.', 129, 169, 35],
                 ],
             ],

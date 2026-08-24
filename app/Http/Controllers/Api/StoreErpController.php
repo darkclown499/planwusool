@@ -134,9 +134,11 @@ class StoreErpController extends Controller
 
         $validated['is_active'] = (bool) ($request->input('is_active', false));
 
-        if (($validated['api_key'] ?? '') === '' && $config) {
-            // Preserve the existing secret when the field is left empty.
-            unset($validated['api_key'], $validated['api_password']);
+        // Preserve existing secrets when fields are left empty on update (encrypted at rest)
+        foreach (['api_key', 'api_password', 'api_username'] as $field) {
+            if (($validated[$field] ?? '') === '' && $config) {
+                unset($validated[$field]);
+            }
         }
 
         return $validated;
