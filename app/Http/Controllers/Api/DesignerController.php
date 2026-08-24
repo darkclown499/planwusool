@@ -141,6 +141,7 @@ class DesignerController extends Controller
             'theme' => $store->getTemplateSlug(),
             'sections' => $overrides['sections'] ?? [],
             'design_tokens' => $store->design_tokens ?? [],
+            'content' => $store->store_content ?? [],
             'custom_css' => $overrides['custom_css'] ?? '',
             'custom_js' => $overrides['custom_js'] ?? '',
             'head_inject' => $overrides['head_inject'] ?? '',
