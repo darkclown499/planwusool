@@ -69,12 +69,12 @@ function ColorPickerField({ label, helper, value, onChange }: { label: string; h
     const safe = /^#[0-9a-fA-F]{6}$/.test(String(value || '').trim()) ? String(value).trim() : '#0d9488';
     return (
         <div>
-            <Label className="mb-1.5 block text-xs font-bold text-slate-600">{label}{helper && <span className="ms-1.5 text-[10px] font-normal text-slate-400">{helper}</span>}</Label>
-            <div className="flex items-center gap-2.5">
-                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-inner">
+            <Label className="mb-1 block text-xs font-bold leading-none text-slate-700">{label}{helper && <span className="ms-1 text-[9px] font-normal tracking-wide text-slate-400/70">{helper}</span>}</Label>
+            <div className="flex items-center gap-2">
+                <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-slate-200 shadow-inner">
                     <input type="color" value={safe} onChange={(e) => onChange(e.target.value)} className="absolute -inset-2 h-[200%] w-[200%] cursor-pointer border-0 p-0" aria-label={label} />
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-xs font-bold text-slate-600" dir="ltr">{safe}</span>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 font-mono text-[11px] font-bold leading-none text-slate-600" dir="ltr">{safe}</span>
             </div>
         </div>
     );
@@ -89,21 +89,21 @@ function DropzoneUploader({ onFiles, accept = 'image/*', multiple = false, label
             onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
             onDrop={(e) => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files?.length) onFiles(e.dataTransfer.files); }}
             onClick={() => ref.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed p-4 text-center transition ${dragActive ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-slate-50 hover:border-emerald-300 hover:bg-emerald-50/40'}`}
+            className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed p-3 text-center transition ${dragActive ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-slate-50 hover:border-emerald-300 hover:bg-emerald-50/40'}`}
         >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow">{uploading ? <Loader2 className="h-4 w-4 animate-spin text-emerald-600" /> : <UploadCloud className="h-4 w-4 text-emerald-600" />}</div>
-            <p className="text-xs font-bold text-slate-700">{label}</p>
-            {hint && <p className="text-[11px] text-slate-500">{hint}</p>}
-            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-emerald-700 shadow">اختيار ملف</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm">{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" /> : <UploadCloud className="h-3.5 w-3.5 text-emerald-600" />}</div>
+            <p className="text-xs font-bold leading-none text-slate-700">{label}</p>
+            {hint && <p className="text-[11px] leading-none text-slate-500">{hint}</p>}
+            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold leading-none text-emerald-700 shadow-sm">اختيار ملف</span>
             <input ref={ref} type="file" accept={accept} multiple={multiple} className="hidden" onChange={(e) => e.target.files && onFiles(e.target.files)} />
         </div>
     );
 }
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-    return <div className={`rounded-xl border border-slate-200 bg-white p-3 shadow-sm ${className}`}>{children}</div>;
+    return <div className={`rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm ${className}`}>{children}</div>;
 }
 function SectionLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
-    return <Label className="mb-1.5 block text-xs font-bold text-slate-600">{children}{hint && <span className="ms-1 text-[10px] font-normal text-slate-400">— {hint}</span>}</Label>;
+    return <Label className="mb-1 block text-xs font-bold leading-none text-slate-700">{children}{hint && <span className="ms-1 text-[10px] font-normal text-slate-400">— {hint}</span>}</Label>;
 }
 
 type WorkspaceId = 'templates' | 'identity' | 'interface' | 'sections' | 'content' | 'advanced';
@@ -393,23 +393,32 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         </div>
                         <a href={storeUrl} target="_blank" rel="noopener" className="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 sm:inline-flex"><Eye className="h-3.5 w-3.5" /> معاينة المتجر</a>
                         <a href={storeUrl} target="_blank" rel="noopener" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm sm:hidden" aria-label="معاينة المتجر"><Eye className="h-3.5 w-3.5" /></a>
-                        <Button onClick={handleSaveAll} disabled={saving || !isDirty} className={`gap-1.5 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-black ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} title={isDirty ? 'حفظ التغييرات' : 'لا توجد تغييرات'}>
-                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="hidden sm:inline">حفظ التغييرات</span><span className="sm:hidden">حفظ</span>{isDirty && !saving && <span className="ms-1 h-2 w-2 rounded-full bg-amber-300 animate-pulse" aria-hidden />}
+                        <Button onClick={handleSaveAll} disabled={saving || !isDirty} className={`gap-1.5 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-black transition ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'}`} title={isDirty ? 'حفظ التغييرات' : 'لا توجد تغييرات'}>
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="hidden sm:inline">حفظ التغييرات</span><span className="sm:hidden">حفظ</span>{isDirty && !saving && <span className="ms-1 h-2 w-2 rounded-full bg-amber-400 animate-pulse" aria-hidden />}
                         </Button>
                     </div>
                 </div>
             </header>
 
-            {/* Split Layout: Preview (left 70%) + Controls (right 30%) */}
-            <div className="mx-auto flex max-w-[1600px] flex-col lg:h-[calc(100vh-56px)] lg:flex-row lg:overflow-hidden">
-                {/* Preview Panel — order first on mobile, left on desktop */}
-                <main className="order-1 flex min-h-[420px] flex-1 flex-col overflow-hidden bg-slate-100 lg:order-1 lg:min-h-0">
-                    <div className="flex items-center justify-between border-b bg-white px-3 py-2 sm:px-4">
-                        <p className="flex items-center gap-2 text-xs font-black text-slate-700"><Monitor className="h-3.5 w-3.5 text-slate-400" /> معاينة حية<span className="hidden text-xs font-normal text-slate-400 sm:inline">— تتحدث فورياً</span></p>
-                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200">{previewMode === 'mobile' ? 'جوال 375px' : 'سطح مكتب'}</span>
+            {/* Split Layout: Preview + Controls — Controls on RIGHT (RTL), Preview LEFT ~72-75% */}
+            <div dir="ltr" className="mx-auto flex max-w-[1600px] flex-col lg:h-[calc(100vh-56px)] lg:flex-row lg:overflow-hidden">
+                {/* Preview Panel — left visually (DOM second with ltr row), order second on mobile */}
+                <main className="order-1 flex min-h-[420px] flex-1 flex-col overflow-hidden bg-slate-100 lg:order-2 lg:min-h-0" dir="rtl">
+                    <div className="flex items-center justify-between border-b border-slate-100 bg-white px-3 py-2 sm:px-4">
+                        <div className="flex flex-col gap-0.5">
+                            <p className="flex items-center gap-1.5 text-xs font-black leading-none text-slate-800"><Monitor className="h-3.5 w-3.5 text-slate-400" /> وضع المعاينة</p>
+                            <p className="text-[11px] font-medium leading-none text-slate-500">أنت تشاهد معاينة مباشرة للمتجر</p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-bold leading-none text-slate-600 ring-1 ring-slate-200">{previewMode === 'mobile' ? 'جوال 375px' : 'سطح مكتب'}</span>
                     </div>
-                    <div className="flex flex-1 flex-col overflow-hidden bg-slate-100 p-3 sm:p-5">
-                        <div className={`mx-auto flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-out ${previewMode === 'mobile' ? 'w-[375px] max-w-full rounded-[20px] border border-slate-200 shadow-xl ring-1 ring-slate-200' : 'w-full max-w-[1100px] rounded-[14px] border border-slate-200 shadow-xl ring-1 ring-slate-200'}`}>
+                    {isDirty && (
+                        <div className="flex items-center justify-center gap-1.5 border-b border-amber-200 bg-amber-50 px-3 py-1.5 text-center">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" aria-hidden />
+                            <p className="text-[11px] font-bold leading-none text-amber-800">لديك تغييرات غير محفوظة</p>
+                        </div>
+                    )}
+                    <div className="flex flex-1 flex-col overflow-hidden bg-slate-100 p-2 sm:p-3">
+                        <div className={`mx-auto flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-out ${previewMode === 'mobile' ? 'w-[375px] max-w-full rounded-[18px] border border-slate-200 shadow-lg ring-1 ring-slate-200' : 'w-full max-w-[1100px] rounded-[12px] border border-slate-200 shadow-lg ring-1 ring-slate-200'}`}>
                             {(() => {
                                 const base = String(storeUrl || '').trim();
                                 let previewSrc = '';
@@ -419,12 +428,11 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 return <iframe ref={previewIframeRef} key={`${previewSrc}-${previewVersion}-${theme}`} src={previewSrc} title="Live store preview" className="h-full min-h-[520px] w-full flex-1 border-0 bg-white" loading="lazy" referrerPolicy="no-referrer" allow="fullscreen" />;
                             })()}
                         </div>
-                        <p className="mt-2 text-center text-[11px] text-slate-400">المعاينة تتحدث فورياً — احفظ لتظهر للزوار {isDirty && <span className="font-bold text-amber-600">• توجد تغييرات غير محفوظة</span>}</p>
                     </div>
                 </main>
 
-                {/* Controls Panel — order second on mobile, right on desktop, 25-30% */}
-                <aside className="order-2 flex w-full shrink-0 flex-col overflow-hidden border-t bg-white lg:order-2 lg:w-[360px] lg:border-e-0 lg:border-s lg:border-t-0 xl:w-[390px]">
+                {/* Controls Panel — RIGHT visually (DOM first with ltr row), top on RTL reading */}
+                <aside className="order-2 flex w-full shrink-0 flex-col overflow-hidden border-t border-slate-100 bg-white lg:order-1 lg:w-[360px] lg:border-e lg:border-t-0 xl:w-[390px]" dir="rtl">
                     {/* Sticky workspace navigation */}
                     <div className="sticky top-0 z-10 shrink-0 border-b border-slate-100 bg-white">
                         <div className="grid grid-cols-3 gap-1 p-2 sm:gap-1.5 sm:p-2.5">
@@ -435,16 +443,16 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                         key={ws.id}
                                         type="button"
                                         onClick={() => setActiveWorkspace(ws.id)}
-                                        className={`flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-black leading-none transition sm:py-2.5 sm:text-xs ${active ? 'bg-slate-900 text-white shadow' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                                        className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-1 py-2 text-[11px] font-black leading-none transition sm:py-2 sm:text-xs ${active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900'}`}
                                     >
-                                        <span className={`flex h-6 w-6 items-center justify-center rounded-full ${active ? 'bg-white/15' : 'bg-white shadow-sm'}`}>{ws.icon}</span>
+                                        <span className={`flex h-5 w-5 items-center justify-center rounded-full ${active ? 'bg-white/15' : 'bg-slate-100'}`}>{ws.icon}</span>
                                         {ws.label}
                                     </button>
                                 );
                             })}
                         </div>
                         {/* Active workspace title bar */}
-                        <div className="flex items-center justify-between bg-slate-50 px-3 py-2">
+                        <div className="flex items-center justify-between bg-slate-50/80 px-3 py-2">
                             <span className="flex items-center gap-1.5 text-xs font-black text-slate-800">
                                 {WORKSPACES.find((w) => w.id === activeWorkspace)?.icon}
                                 {WORKSPACES.find((w) => w.id === activeWorkspace)?.label}
@@ -453,8 +461,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                         </div>
                     </div>
 
-                    {/* Scrollable workspace content */}
-                    <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4" style={{ maxHeight: 'calc(100vh - 56px - 132px)', scrollbarWidth: 'thin' }}>
+                    {/* Scrollable workspace content — subtle scrollbar */}
+                    <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-3 sm:py-3 lg:max-h-[calc(100vh-56px-118px)] [scrollbar-width:thin] [scrollbar-color:theme(colors.slate.200)_transparent] [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-track]:bg-transparent">
                         {/* ============ 1. القالب ============ */}
                         {activeWorkspace === 'templates' && (
                             <div className="space-y-3">
@@ -494,9 +502,9 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
 
                         {/* ============ 2. الهوية ============ */}
                         {activeWorkspace === 'identity' && (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 <Card>
-                                    <SectionLabel>شعار المتجر <span className="text-[10px] font-normal text-slate-400">Logo</span></SectionLabel>
+                                    <SectionLabel>شعار المتجر <span className="text-[9px] font-normal tracking-wide text-slate-400/70">Logo</span></SectionLabel>
                                     {logoValue ? (
                                         <div className="group relative flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                                             <img src={getImageUrl(logoValue)} alt="شعار المتجر" className="h-12 w-12 rounded-xl bg-white object-contain p-1 shadow" />
@@ -511,7 +519,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 </Card>
 
                                 <Card>
-                                    <SectionLabel>أيقونة المتجر <span className="text-[10px] font-normal text-slate-400">Favicon</span></SectionLabel>
+                                    <SectionLabel>أيقونة المتجر <span className="text-[9px] font-normal tracking-wide text-slate-400/70">Favicon</span></SectionLabel>
                                     {faviconValue ? (
                                         <div className="group relative flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                                             <img src={getImageUrl(faviconValue)} alt="أيقونة المتجر" className="h-10 w-10 rounded-xl bg-white object-contain p-1 shadow" />
@@ -526,15 +534,15 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 </Card>
 
                                 <Card>
-                                    <p className="mb-3 text-xs font-black text-slate-800">الألوان</p>
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <p className="mb-2 text-xs font-black leading-none text-slate-800">الألوان</p>
+                                    <div className="grid grid-cols-2 gap-2.5">
                                         <ColorPickerField label="اللون الأساسي" helper="Primary" value={colors.primary || '#0d9488'} onChange={(v) => setTokens({ ...tokens, colors: { ...colors, primary: v } })} />
                                         <ColorPickerField label="اللون الثانوي" helper="Secondary" value={colors.secondary || '#f59e0b'} onChange={(v) => setTokens({ ...tokens, colors: { ...colors, secondary: v } })} />
                                     </div>
                                 </Card>
 
                                 <Card>
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                         <div>
                                             <SectionLabel>استدارة الزوايا</SectionLabel>
                                             <div className="flex items-center gap-3">
@@ -548,11 +556,11 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                                 <option value="">افتراضي القالب</option><option value="Cairo">Cairo</option><option value="Tajawal">Tajawal</option><option value="Almarai">Almarai</option><option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
                                             </select>
                                         </div>
-                                        <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
-                                            <p className="mb-2 text-[11px] font-bold text-slate-400">معاينة سريعة</p>
+                                        <div className="rounded-lg bg-slate-50 p-2.5 ring-1 ring-slate-100">
+                                            <p className="mb-1.5 text-[11px] font-bold leading-none text-slate-400">معاينة سريعة</p>
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <span className="px-4 py-2 text-xs font-black text-white shadow" style={{ backgroundColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}>زر أساسي</span>
-                                                <span className="px-4 py-2 text-xs font-black text-white shadow" style={{ backgroundColor: colors.secondary || '#f59e0b', borderRadius: tokens.radius || '16px' }}>زر ثانوي</span>
+                                                <span className="px-3 py-1.5 text-xs font-black leading-none text-white shadow-sm" style={{ backgroundColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}>زر أساسي</span>
+                                                <span className="px-3 py-1.5 text-xs font-black leading-none text-white shadow-sm" style={{ backgroundColor: colors.secondary || '#f59e0b', borderRadius: tokens.radius || '16px' }}>زر ثانوي</span>
                                             </div>
                                         </div>
                                     </div>
@@ -562,7 +570,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
 
                         {/* ============ 3. الواجهة ============ */}
                         {activeWorkspace === 'interface' && (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 <Card>
                                     <SectionLabel>نوع الواجهة</SectionLabel>
                                     <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
@@ -613,9 +621,9 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 )}
 
                                 <Card>
-                                    <div className="space-y-3">
+                                    <div className="space-y-2.5">
                                         <SectionLabel>العنوان الرئيسي</SectionLabel>
-                                        <Input value={heroHeading ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.heading', e.target.value); tmp = setDotted(tmp, 'hero_heading', e.target.value); setContent(tmp); }} placeholder="أناقة تُروى كقصة" className="bg-white" />
+                                        <Input value={heroHeading ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.heading', e.target.value); tmp = setDotted(tmp, 'hero_heading', e.target.value); setContent(tmp); }} placeholder="أناقة تُروى كقصة" className="h-9 bg-white" />
                                         <SectionLabel>الوصف الفرعي</SectionLabel>
                                         <Input value={heroSubtitle ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.subtitle', e.target.value); tmp = setDotted(tmp, 'hero_subtitle', e.target.value); setContent(tmp); }} placeholder="تشكيلة الموسم الجديدة" className="bg-white" />
                                         <div className="grid grid-cols-2 gap-3">
