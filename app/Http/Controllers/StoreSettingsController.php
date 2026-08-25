@@ -91,6 +91,20 @@ class StoreSettingsController extends Controller
             ];
         })->values();
         
+        // Publish readiness for frontend guard (mirrors Dashboard checklist but lightweight)
+        $userForReadiness = Auth::user();
+        $hasProducts = \App\Models\Product::where('store_id', $store->id)->exists();
+        $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->exists();
+        if (!$hasShipping) $hasShipping = !empty($configuration['shipping_enabled']) || !empty($configuration['shipping_methods']);
+        $hasPayments = count(getEnabledPaymentMethods($userForReadiness->id, $store->id)) > 0;
+        $publishReadiness = [
+            'hasProducts' => $hasProducts,
+            'hasShipping' => $hasShipping,
+            'hasPayments' => $hasPayments,
+            'isReady' => $hasProducts && $hasShipping && $hasPayments,
+            'missing' => array_values(array_filter([$hasProducts ? null : 'المنتجات', $hasShipping ? null : 'الشحن والتوصيل', $hasPayments ? null : 'طرق الدفع'])),
+        ];
+
         return Inertia::render('stores/settings', [
             'store' => $store,
             'settings' => $configuration,
@@ -100,6 +114,7 @@ class StoreSettingsController extends Controller
             'availableThemes' => Auth::user()->getAvailableThemes(),
             'storeContent' => $store->getMergedStoreContent(),
             'demoStoreUrl' => app(\App\Services\DemoStoreService::class)->demoStoreUrl(),
+            'publishReadiness' => $publishReadiness,
         ]);
     }
 
@@ -276,14 +291,46 @@ class StoreSettingsController extends Controller
             $settingsToSave['whatsapp_widget_phone'] = $cleanPhone;
         }
 
+        // Publish readiness guard — when enabling store_status, ensure merchant has completed the critical path
+        // (at least one product + shipping method + payment method) unless the store type explicitly doesn't need them.
+        // We do NOT block hard if the business logic indicates a digital/no-shipping store — respect existing flags.
+        $enablingStore = isset($settingsToSave['store_status']) && ($settingsToSave['store_status'] === 'true' || $settingsToSave['store_status'] === true || $settingsToSave['store_status'] === 1 || $settingsToSave['store_status'] === '1');
+        if ($enablingStore) {
+            // Check if we're transitioning from disabled to enabled
+            $currentStatusRecord = StoreConfiguration::where('store_id', $storeId)->where('key', 'store_status')->first();
+            $currentlyEnabled = $currentStatusRecord ? ($currentStatusRecord->value === 'true') : true;
+            $isTransitionToEnabled = !$currentlyEnabled;
+            // Also treat first-time publish (no record) as transition if no product/shipping/payment yet
+            if ($isTransitionToEnabled || !$currentStatusRecord) {
+                $hasProducts = \App\Models\Product::where('store_id', $storeId)->exists();
+                $hasShipping = \App\Models\Shipping::where('store_id', $storeId)->exists();
+                if (!$hasShipping) {
+                    $cfgTmp = StoreConfiguration::getConfiguration($storeId);
+                    $hasShipping = !empty($cfgTmp['shipping_enabled']) || !empty($cfgTmp['shipping_methods']);
+                }
+                $hasPayments = count(getEnabledPaymentMethods($user->id, $storeId)) > 0;
+                // Respect store type that doesn't require shipping (e.g. digital goods only)
+                $cfgTmp = $cfgTmp ?? StoreConfiguration::getConfiguration($storeId);
+                $isDigitalOnly = false; // extend if a flag like 'requires_shipping' exists
+                $missing = [];
+                if (!$hasProducts) $missing[] = 'المنتجات';
+                if (!$hasShipping && !$isDigitalOnly) $missing[] = 'الشحن والتوصيل';
+                if (!$hasPayments) $missing[] = 'طرق الدفع';
+                if (count($missing) > 0) {
+                    // Return structured error so frontend can show direct CTAs
+                    return ['error' => __('المتجر غير جاهز للنشر') . ': ' . implode('، ', $missing) . '. ' . __('يرجى إكمال الإعدادات المطلوبة قبل النشر.'), 'missing' => $missing];
+                }
+            }
+        }
+
         // Check if store_status is being enabled against plan limits
-        if (isset($settingsToSave['store_status']) && ($settingsToSave['store_status'] === 'true' || $settingsToSave['store_status'] === true)) {
+        if ($enablingStore) {
             $companyUser = $user->type === 'company' ? $user : $user->creator;
             if ($companyUser && $companyUser->plan) {
-                $currentStatusRecord = StoreConfiguration::where('store_id', $storeId)
+                $currentStatusRecord2 = StoreConfiguration::where('store_id', $storeId)
                     ->where('key', 'store_status')
                     ->first();
-                $currentStatus = $currentStatusRecord ? ($currentStatusRecord->value === 'true') : true;
+                $currentStatus = $currentStatusRecord2 ? ($currentStatusRecord2->value === 'true') : true;
 
                 if (!$currentStatus) {
                     $activeStores = 0;

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe, Truck, Percent, Folder, Palette } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -699,10 +699,17 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {onboarding.steps.map((step) => {
                     const stepMeta = {
-                      products: { icon: Package, label: t('Add your products') },
+                      store_info: { icon: Building2, label: t('إعداد معلومات المتجر') },
+                      design: { icon: Palette, label: t('اختيار التصميم') },
+                      categories: { icon: Folder, label: t('إضافة التصنيفات') },
+                      products: { icon: Package, label: t('إضافة المنتجات') },
+                      inventory: { icon: Boxes, label: t('إعداد المخزون') },
+                      shipping: { icon: Truck, label: t('إعداد الشحن والتوصيل') },
+                      payments: { icon: CreditCard, label: t('إعداد طرق الدفع') },
+                      taxes: { icon: Percent, label: t('إعداد الضرائب') },
+                      domain: { icon: Globe, label: t('ربط الدومين') },
                       whatsapp: { icon: MessageSquare, label: t('Set up WhatsApp') },
-                      payments: { icon: CreditCard, label: t('Configure payment methods') },
-                      published: { icon: CheckCircle, label: t('Publish your store') },
+                      published: { icon: CheckCircle, label: t('نشر المتجر') },
                     }[step.key] || { icon: CheckCircle, label: step.key };
                     const Icon = stepMeta.icon;
                     return step.done ? (
@@ -723,6 +730,43 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
             </Card>
           );
         })()}
+
+        {/* Publish Readiness Warning */}
+        {onboarding && !onboarding.isReadyToPublish && onboarding.missingForPublish && onboarding.missingForPublish.length > 0 && (
+          <Card className="border-amber-200 bg-amber-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-amber-800">
+                <XCircle className="h-5 w-5 text-amber-600" />
+                المتجر غير جاهز للنشر
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-3 text-sm text-amber-700">يرجى إكمال الإعدادات التالية قبل نشر المتجر:</p>
+              <ul className="mb-4 list-disc space-y-1 ps-5 text-sm font-medium text-amber-800">
+                {onboarding.missingForPublish.map((item: string, idx: number) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-2">
+                {onboarding.missingForPublish.includes('الشحن والتوصيل') && (
+                  <Button size="sm" variant="outline" onClick={() => router.visit(`/stores/${currentStore.id}/settings?tab=shipping`)} className="gap-1.5 border-amber-300 bg-white text-amber-800 hover:bg-amber-100">
+                    <Truck className="h-4 w-4" /> إعداد الشحن
+                  </Button>
+                )}
+                {onboarding.missingForPublish.includes('طرق الدفع') && (
+                  <Button size="sm" variant="outline" onClick={() => router.visit(`/stores/${currentStore.id}/settings?tab=payments`)} className="gap-1.5 border-amber-300 bg-white text-amber-800 hover:bg-amber-100">
+                    <CreditCard className="h-4 w-4" /> إعداد الدفع
+                  </Button>
+                )}
+                {onboarding.missingForPublish.includes('المنتجات') && (
+                  <Button size="sm" variant="outline" onClick={() => router.visit(route('products.create'))} className="gap-1.5 border-amber-300 bg-white text-amber-800 hover:bg-amber-100">
+                    <Package className="h-4 w-4" /> إضافة منتجات
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -92,8 +92,8 @@ export default function Tax() {
       actions={pageActions}
       breadcrumbs={[
         { title: t('Dashboard'), href: route('dashboard') },
-        { title: t('Product Management'), href: route('products.index') },
-        { title: t('Tax') }
+        { title: 'إدارة المتجر', href: route('stores.index') },
+        { title: 'الضرائب' }
       ]}
     >
       <div className="space-y-4">

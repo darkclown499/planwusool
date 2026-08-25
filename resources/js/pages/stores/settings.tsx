@@ -3,7 +3,7 @@ import { PageTemplate } from '@/components/page-template';
 import {
    Save, Mail, Globe, Search,
    XCircle, Info, Loader2, Trash2, Palette, History, CheckCircle2, Building2, PenLine, Power, Paintbrush,
-   LayoutTemplate, CreditCard, Boxes,
+   LayoutTemplate, CreditCard, Boxes, Truck, Percent,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,7 @@ import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 interface Props {
   store: any;
   settings: any;
+  publishReadiness?: { hasProducts: boolean; hasShipping: boolean; hasPayments: boolean; isReady: boolean; missing: string[] };
 }
 
 const LEGACY_SOCIAL_MAP: Record<string, string> = {
@@ -108,18 +109,20 @@ function initSocialLinks(s: any): any[] {
   return legacy;
 }
 
-export default function StoreSettings({ store, settings }: Props) {
+export default function StoreSettings({ store, settings, publishReadiness }: Props) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (window.location.search.includes('tab=seo')) {
-        return 'seo';
-      }
-      if (window.location.search.includes('tab=domains')) {
-        return 'domains';
-      }
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      if (tab && ['general','seo','domains','features','payments','erp','shipping','taxes'].includes(tab)) return tab;
+      if (window.location.search.includes('tab=seo')) return 'seo';
+      if (window.location.search.includes('tab=domains')) return 'domains';
+      if (window.location.search.includes('tab=shipping')) return 'shipping';
+      if (window.location.search.includes('tab=payments')) return 'payments';
+      if (window.location.search.includes('tab=taxes')) return 'taxes';
     }
     return 'general';
   });
@@ -129,6 +132,8 @@ export default function StoreSettings({ store, settings }: Props) {
   const [showDiscard, setShowDiscard] = useState(false);
   const [resettingSection, setResettingSection] = useState<string | null>(null);
   const [designerOpen, setDesignerOpen] = useState(false);
+  const [showPublishGuard, setShowPublishGuard] = useState(false);
+  const [publishGuardMissing, setPublishGuardMissing] = useState<string[]>([]);
   const initialRef = useRef<any>(settings);
 
   useEffect(() => {
@@ -153,6 +158,15 @@ export default function StoreSettings({ store, settings }: Props) {
   const hasErrors = Object.keys(validationErrors).length > 0;
 
   const updateSetting = (key: string, value: any) => {
+    // Publish readiness guard: block enabling store_status if missing critical setup
+    if (key === 'store_status' && (value === true || value === 'true' || value === 1 || value === '1')) {
+      const readiness = publishReadiness;
+      if (readiness && !readiness.isReady && readiness.missing?.length) {
+        setPublishGuardMissing(readiness.missing);
+        setShowPublishGuard(true);
+        return;
+      }
+    }
     setFormData((prev: any) => ({ ...prev, [key]: value }));
     setDirty(true);
     setAutoSaveState('idle');
@@ -160,6 +174,13 @@ export default function StoreSettings({ store, settings }: Props) {
 
   const handleSave = () => {
     if (hasErrors || saving) return;
+    // Guard at save time as well (covers direct Switch + Save flow)
+    const enablingNow = formData.store_status === true || formData.store_status === 'true';
+    if (enablingNow && publishReadiness && !publishReadiness.isReady && publishReadiness.missing?.length) {
+      setPublishGuardMissing(publishReadiness.missing);
+      setShowPublishGuard(true);
+      return;
+    }
     setSaving(true);
     router.put(route('stores.settings.update', store.id), { settings: formData }, {
       preserveScroll: true,
@@ -288,28 +309,36 @@ export default function StoreSettings({ store, settings }: Props) {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 border-b border-border bg-transparent p-0 md:grid-cols-6">
-          <TabsTrigger value="general" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+        <TabsList className="flex w-full overflow-x-auto border-b border-border bg-transparent p-0 md:grid md:grid-cols-8">
+          <TabsTrigger value="general" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <PenLine className="h-4 w-4 me-2" />
             {t('General')}
           </TabsTrigger>
-          <TabsTrigger value="seo" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Search className="h-4 w-4 me-2" />
-            {t('SEO')}
+          <TabsTrigger value="shipping" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <Truck className="h-4 w-4 me-2" />
+            {t('Shipping & Delivery')}
           </TabsTrigger>
-          <TabsTrigger value="domains" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Globe className="h-4 w-4 me-2" />
-            {t('Domains')}
-          </TabsTrigger>
-          <TabsTrigger value="features" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <LayoutTemplate className="h-4 w-4 me-2" />
-            {t('Features')}
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+          <TabsTrigger value="payments" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <CreditCard className="h-4 w-4 me-2" />
             {t('Payment Methods')}
           </TabsTrigger>
-          <TabsTrigger value="erp" className="border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+          <TabsTrigger value="taxes" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <Percent className="h-4 w-4 me-2" />
+            {t('الضرائب')}
+          </TabsTrigger>
+          <TabsTrigger value="seo" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <Search className="h-4 w-4 me-2" />
+            {t('SEO')}
+          </TabsTrigger>
+          <TabsTrigger value="domains" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <Globe className="h-4 w-4 me-2" />
+            {t('Domains')}
+          </TabsTrigger>
+          <TabsTrigger value="features" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
+            <LayoutTemplate className="h-4 w-4 me-2" />
+            {t('Features')}
+          </TabsTrigger>
+          <TabsTrigger value="erp" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Boxes className="h-4 w-4 me-2" />
             {t('ERP & Inventory')}
           </TabsTrigger>
@@ -360,43 +389,41 @@ export default function StoreSettings({ store, settings }: Props) {
             </div>
           </AccordionSection>
 
-          <AccordionSection
-            title={t('Store Branding')}
-            icon={<Palette className="h-4 w-4" />}
-            subtitle={t('Upload your logo and favicon. You can drag & drop an image directly.')}
-            onReset={() => handleResetSection('branding')}
-            resetDisabled={resettingSection === 'branding'}
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <MediaPicker
-                  label={t('Store Logo')}
-                  value={formData.logo || ''}
-                  onChange={(value) => updateSetting('logo', value)}
-                  placeholder={t('Select store logo...')}
-                  dropzoneLabel={t('Upload store logo (PNG/SVG)')}
-                  dragDrop
-                />
+          {/* Branding — canonical is the visual Designer. Keep no duplicate editor here.
+              Show a clear callout that links to Designer where Logo/Favicon/Colors/Typography live together. */}
+          <Card className="border-dashed border-emerald-200 bg-emerald-50/50">
+            <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                  <Palette className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="font-semibold text-slate-900">الهوية والعلامة التجارية</p>
+                  <p className="text-sm text-muted-foreground">الشعار، الأيقونة، الألوان، الخطوط والزوايا — تُدار كلها من مكان واحد في مصمم المتجر.</p>
+                </div>
               </div>
-              <div>
-                <MediaPicker
-                  label={t('Store Favicon')}
-                  value={formData.favicon || ''}
-                  onChange={(value) => updateSetting('favicon', value)}
-                  placeholder={t('Select store favicon...')}
-                  dropzoneLabel={t('Upload store icon / Favicon (32x32)')}
-                  dragDrop
-                />
-              </div>
-            </div>
-          </AccordionSection>
+              <Button type="button" onClick={() => setDesignerOpen(true)} className="shrink-0 gap-1.5">
+                <Paintbrush className="h-4 w-4" />
+                فتح مصمم المتجر
+              </Button>
+            </CardContent>
+          </Card>
 
+          {/* Homepage Content — canonical is the visual Designer (announcement + hero + sections). Keep raw fields here for advanced users but surface the primary CTA. */}
           <AccordionSection
             title={t('Store Homepage Content')}
             icon={<Building2 className="h-4 w-4" />}
+            subtitle="يُفضل تعديل محتوى الصفحة الرئيسية من مصمم المتجر حيث ترى المعاينة الفورية"
             onReset={() => handleResetSection('homepage')}
             resetDisabled={resettingSection === 'homepage'}
           >
+            <div className="mb-3 flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+              <p className="text-xs font-medium text-emerald-800">للمعاينة الفورية والبنرات والأقسام، استخدم مصمم المتجر.</p>
+              <Button type="button" variant="outline" size="sm" className="h-7 gap-1.5 border-emerald-300 bg-white text-emerald-700" onClick={() => setDesignerOpen(true)}>
+                <Paintbrush className="h-3.5 w-3.5" />
+                فتح المصمم
+              </Button>
+            </div>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="welcome_message">{t('Welcome Message')}</Label>
@@ -587,6 +614,20 @@ export default function StoreSettings({ store, settings }: Props) {
             className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
           />
         </TabsContent>
+        <TabsContent value="shipping" className="mt-6">
+          <iframe
+            src={`/shipping`}
+            title={t('Shipping & Delivery')}
+            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
+          />
+        </TabsContent>
+        <TabsContent value="taxes" className="mt-6">
+          <iframe
+            src={route('tax.index')}
+            title={t('الضرائب')}
+            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
+          />
+        </TabsContent>
         <TabsContent value="erp" className="mt-6">
           <iframe
             src={`/stores/${store?.id}/integrations/erp`}
@@ -607,6 +648,32 @@ export default function StoreSettings({ store, settings }: Props) {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDiscard(false)}>{t('Cancel')}</Button>
             <Button variant="destructive" onClick={handleDiscard}>{t('Discard Changes')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Publish readiness guard */}
+      <Dialog open={showPublishGuard} onOpenChange={setShowPublishGuard}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-700">
+              <XCircle className="h-5 w-5 text-amber-600" />
+              المتجر غير جاهز للنشر
+            </DialogTitle>
+            <DialogDescription className="text-start">
+              يرجى إكمال الإعدادات التالية قبل تفعيل المتجر:
+            </DialogDescription>
+          </DialogHeader>
+          <ul className="list-disc space-y-1 ps-5 text-sm font-medium text-amber-800">
+            {publishGuardMissing.map((m, i) => <li key={i}>{m === 'المنتجات' ? 'لم يتم إضافة المنتجات' : m === 'الشحن والتوصيل' ? 'لم يتم إعداد الشحن والتوصيل' : m === 'طرق الدفع' ? 'لم يتم إعداد الدفع' : m}</li>)}
+          </ul>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {publishGuardMissing.includes('الشحن والتوصيل') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => { setShowPublishGuard(false); setActiveTab('shipping'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Truck className="h-4 w-4" /> إعداد الشحن</Button>}
+            {publishGuardMissing.includes('طرق الدفع') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => { setShowPublishGuard(false); setActiveTab('payments'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><CreditCard className="h-4 w-4" /> إعداد الدفع</Button>}
+            {publishGuardMissing.includes('المنتجات') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => router.visit(route('products.create'))}><Boxes className="h-4 w-4" /> إضافة منتجات</Button>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPublishGuard(false)}>إغلاق</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

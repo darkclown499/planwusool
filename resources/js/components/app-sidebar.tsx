@@ -237,9 +237,6 @@ export function AppSidebar() {
             try { categoriesActive.push(route('categories.index')); } catch {}
             productChildren.push({ title: t('Categories'), href: categoriesHref, activePaths: [...new Set(categoriesActive)] });
         }
-        if (hasPermission('manage-tax')) {
-            productChildren.push({ title: t('Tax'), href: route('tax.index') });
-        }
         if (productChildren.length > 0) {
             items.push({
                 title: t('Product Management'),
@@ -257,8 +254,15 @@ export function AppSidebar() {
         if (hasPermission('manage-customers')) {
             orderChildren.push({ title: t('Customers'), href: route('customers.index') });
         }
-        if (hasPermission('manage-shipping') && hasFeatureAccess('shipping_method')) {
-            orderChildren.push({ title: t('Shipping'), href: route('shipping.index') });
+        if (hasPermission('manage-loyalty')) {
+            orderChildren.push({ 
+                title: t('Loyalty Points'),
+                icon: Star,
+                href: route('loyalty.settings')
+            });
+        }
+        if (hasPermission('manage-pos') && routeExists('pos.index')) {
+            orderChildren.push({ title: t('POS System'), href: route('pos.index') });
         }
         if (orderChildren.length > 0) {
             items.push({
@@ -282,22 +286,38 @@ export function AppSidebar() {
             });
         }
 
-        // إدارة المتجر الحالي — fixed per spec: dynamic shipping, removed payments duplication, strict tab sync
+        // إدارة المتجر الحالي — Single canonical for Shipping/Payments/Taxes/Domain, unified Design, no duplication
+        // Design unified: one entry "تصميم المتجر" leads to visual designer (templates + branding + homepage)
+        // Journey: Design → Shipping → Payments → Taxes → Domain → Settings is the merchant's natural flow
         if (hasPermission('settings-stores') && currentStoreId) {
             items.push({
                 title: 'إدارة المتجر',
                 icon: Building2,
                 groupLabel: t('Store'),
                 children: [
-                    { title: 'قوالب المتجر', href: `${route('stores.designer', currentStoreId)}?tab=templates`, icon: LayoutTemplate },
-                    { title: 'تخصيص تصميم المتجر', icon: Paintbrush, onClick: () => openDesigner(currentStoreId) },
-                    { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
+                    { title: 'تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush },
                     {
                         title: 'الشحن والتوصيل',
                         href: `/stores/${currentStoreId}/settings?tab=shipping`,
                         icon: Truck,
-                        activePaths: [`/stores/${currentStoreId}/shipping`, `/stores/${currentStoreId}/settings?tab=shipping`],
+                        activePaths: [`/stores/${currentStoreId}/shipping`, `/stores/${currentStoreId}/settings?tab=shipping`, `/stores/${currentStoreId}/settings?tab=payments`, `/stores/${currentStoreId}/settings?tab=taxes`],
                     },
+                    {
+                        title: 'الدفع',
+                        href: `/stores/${currentStoreId}/settings?tab=payments`,
+                        icon: CreditCard,
+                    },
+                    {
+                        title: 'الضرائب',
+                        href: route('tax.index'),
+                        icon: Percent,
+                    },
+                    {
+                        title: 'الدومين',
+                        href: `/stores/${currentStoreId}/settings?tab=domains`,
+                        icon: Globe,
+                    },
+                    { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
                 ],
             });
         }
@@ -317,13 +337,6 @@ export function AppSidebar() {
         if (hasPermission('manage-express-checkout')) {
             marketingChildren.push({ title: t('Express Checkout'), href: route('express-checkout.index') });
         }
-        if (hasPermission('manage-loyalty')) {
-            marketingChildren.push({ 
-                title: t('Loyalty Points'),
-                icon: Star,
-                href: route('loyalty.settings')
-            });
-        }
         if (hasPermission('manage-abandoned-carts')) {
             const storeId = auth.user?.current_store;
             const abandonedHref = storeId ? `/stores/${storeId}/abandoned-carts` : route('abandoned-carts.index');
@@ -339,9 +352,6 @@ export function AppSidebar() {
                 icon: DollarSign,
                 href: route('cod-payments.index')
             });
-        }
-        if (hasPermission('manage-pos') && routeExists('pos.index')) {
-            marketingChildren.push({ title: t('POS System'), href: route('pos.index') });
         }
         if (marketingChildren.length > 0) {
             items.push({

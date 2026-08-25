@@ -210,6 +210,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const [heroUploading, setHeroUploading] = useState(false);
     const logoFileRef = useRef<HTMLInputElement>(null);
     const [logoUploading, setLogoUploading] = useState(false);
+    const faviconFileRef = useRef<HTMLInputElement>(null);
+    const [faviconUploading, setFaviconUploading] = useState(false);
 
     const [theme, setTheme] = useState<string>('bazaar-market');
     const [tokens, setTokens] = useState<Record<string, any>>({});
@@ -237,9 +239,9 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const [activeTab, setActiveTab] = useState<string>(() => searchParams.get('tab') || getTabFromUrl());
     const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
         const tab = searchParams.get('tab') || getTabFromUrl();
-        if (tab === 'templates') return { templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false };
-        // identity (or base) is the default for تخصيص تصميم المتجر — expand "الهوية والألوان" and collapse "القوالب"
-        return { templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false };
+        if (tab === 'templates') return { templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false };
+        // identity (or base) is the default for تخصيص تصميم المتجر
+        return { templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false };
     });
     // activeSection mirrors activeTab for task spec compliance (setActiveSection)
     const [activeSection, setActiveSectionState] = useState<string>(() => {
@@ -249,8 +251,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const setActiveSection = (section: string) => {
         setActiveSectionState(section);
         setActiveTab(section);
-        if (section === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false });
-        else if (section === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false });
+        if (section === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false });
+        else if (section === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false });
     };
 
     useEffect(() => {
@@ -263,10 +265,10 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
         const tab = new URLSearchParams(page.url?.split('?')[1] || window.location.search.replace(/^\?/, '')).get('tab') || new URLSearchParams(window.location.search).get('tab') || '';
         setActiveTab(tab);
         if (tab === 'templates') {
-            setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false });
+            setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false });
         } else if (tab === 'identity' || tab === 'brand' || tab === '' ) {
             // identity maps to الهوية + hero open
-            setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false });
+            setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false });
         }
     }, [page.url]);
 
@@ -274,8 +276,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
         const handler = () => {
             const tab = new URLSearchParams(window.location.search).get('tab') || '';
             setActiveTab(tab);
-            if (tab === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, advanced: false });
-            else if (tab === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, advanced: false });
+            if (tab === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false });
+            else if (tab === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false });
         };
         window.addEventListener('popstate', handler);
         return () => window.removeEventListener('popstate', handler);
@@ -533,9 +535,49 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
         }
     };
 
+    const uploadFaviconFile = async (files: FileList) => {
+        const file = Array.from(files).find((f) => f.type.startsWith('image/'));
+        if (!file) {
+            toast.warning('الرجاء اختيار ملف صورة');
+            return;
+        }
+        setFaviconUploading(true);
+        try {
+            const fd = new FormData();
+            fd.append('files[]', file);
+            const res = await fetch(route('api.media.batch'), {
+                method: 'POST',
+                body: fd,
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+            const json: any = await res.json();
+            if (res.ok && json?.data?.[0]?.url) {
+                const raw = String(json.data[0].url || '');
+                const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : '';
+                const normalized = normalizeImageUrl(url);
+                const nextTokens = { ...tokens, favicon: normalized };
+                setTokens(nextTokens);
+                let tmp = setDotted(content, 'brand.favicon', normalized);
+                tmp = setDotted(tmp, 'favicon', normalized);
+                setContent(tmp);
+                toast.success('تم رفع الأيقونة');
+            } else {
+                toast.error(json?.message || 'فشل رفع الأيقونة');
+            }
+        } catch {
+            toast.error('حدث خطأ أثناء الرفع');
+        } finally {
+            setFaviconUploading(false);
+        }
+    };
+
     const colors = (tokens?.colors || {}) as Record<string, string>;
     const typography = (tokens?.typography || {}) as Record<string, any>;
     const logoValue = (tokens?.logo as string) || (getDotted(content, 'brand.logo') as string) || (getDotted(content, 'logo') as string) || '';
+    const faviconValue = (tokens?.favicon as string) || (getDotted(content, 'brand.favicon') as string) || (getDotted(content, 'favicon') as string) || '';
 
     // Announcement state
     const announcementText = (getDotted(content, 'announcement.text') ?? '') as string;
@@ -739,6 +781,45 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                     />
                                 )}
                                 <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadLogoFile(e.target.files)} />
+                            </div>
+
+                            <div>
+                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">الأيقونة (Favicon)</Label>
+                                {faviconValue ? (
+                                    <div className="group relative flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                                        <img src={getImageUrl(faviconValue)} alt="الأيقونة" className="h-12 w-12 rounded-xl bg-white object-contain p-1 shadow" />
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-xs font-bold text-slate-700" dir="ltr">
+                                                {faviconValue}
+                                            </p>
+                                            <p className="text-xs text-slate-500">اضغط لتغيير الأيقونة</p>
+                                        </div>
+                                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => faviconFileRef.current?.click()} disabled={faviconUploading}>
+                                            {faviconUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+                                        </Button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setTokens({ ...tokens, favicon: '' });
+                                                setContent(setDotted(setDotted(content, 'brand.favicon', ''), 'favicon', ''));
+                                            }}
+                                            className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600"
+                                            aria-label="حذف"
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <DropzoneUploader
+                                        label="اسحب الأيقونة هنا أو اضغط للاختيار"
+                                        hint="32×32 — تظهر في تبويب المتصفح"
+                                        accept="image/*"
+                                        multiple={false}
+                                        uploading={faviconUploading}
+                                        onFiles={uploadFaviconFile}
+                                    />
+                                )}
+                                <input ref={faviconFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFaviconFile(e.target.files)} />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -1202,7 +1283,28 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                             </div>
                         </AccordionSection>
 
-                        {/* ── 5. إعدادات متقدمة ── */}
+                        {/* ── 5. محتوى الصفحة الرئيسية — جزء من تجربة التصميم الموحدة ── */}
+                        <AccordionSection title="محتوى الصفحة الرئيسية" icon={<Building2 className="h-3.5 w-3.5" />} open={openSections.homeSections} onOpenChange={(v) => setOpenSections((s) => ({ ...s, homeSections: v }))}>
+                            <div className="space-y-4">
+                                <div>
+                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">رسالة الترحيب</Label>
+                                    <Input value={getDotted(content, 'welcome_message') as string || ''} onChange={(e) => setContent(setDotted(content, 'welcome_message', e.target.value))} placeholder="مرحباً بكم في متجرنا!" className="bg-white" />
+                                </div>
+                                <div>
+                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">وصف المتجر</Label>
+                                    <Textarea value={getDotted(content, 'store_description') as string || ''} onChange={(e) => setContent(setDotted(content, 'store_description', e.target.value))} placeholder="وصف مختصر لمتجرك..." rows={3} className="bg-white" />
+                                </div>
+                                <div>
+                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الحقوق</Label>
+                                    <Input value={getDotted(content, 'copyright_text') as string || ''} onChange={(e) => setContent(setDotted(content, 'copyright_text', e.target.value))} placeholder="© 2026 متجري. جميع الحقوق محفوظة." className="bg-white" />
+                                </div>
+                                <div className="rounded-xl bg-amber-50 p-3 ring-1 ring-amber-200">
+                                    <p className="text-xs leading-relaxed text-amber-800">💡 هذا المحتوى يظهر في الصفحة الرئيسية. يمكنك معاينته مباشرة في المعاينة الحية على اليمين.</p>
+                                </div>
+                            </div>
+                        </AccordionSection>
+
+                        {/* ── 6. إعدادات متقدمة ── */}
                         <AccordionSection title="إعدادات متقدمة" icon={<Code2 className="h-3.5 w-3.5" />} open={openSections.advanced} onOpenChange={(v) => setOpenSections((s) => ({ ...s, advanced: v }))}>
                             <p className="text-xs leading-relaxed text-slate-500">أكواد مخصصة تُحقن داخل واجهة متجرك فقط — في بيئة معزولة ومنقّاة.</p>
                             <div>

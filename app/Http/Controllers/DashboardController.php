@@ -113,16 +113,32 @@ class DashboardController extends Controller
     }
     
     /**
-     * دليل البدء السريع للتاجر الجديد — يظهر حتى يكتمل الإعداد الأساسي.
-     */
+      * دليل البدء السريع للتاجر الجديد — 10 خطوات تغطي رحلة الإطلاق الكاملة.
+      * يبقى ظاهراً حتى يكتمل النشر، ويمنع النشر الناقص (Shipping/Payment).
+      */
     private function getOnboardingChecklist(Store $store, $user)
     {
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
         
+        $hasStoreInfo = !empty($store->name) && !empty($store->slug);
+        $hasDesign = !empty($store->theme) || !empty($config['design_tokens']) || !empty($config['template_overrides']);
+        $hasCategories = \App\Models\Category::where('store_id', $store->id)->exists();
         $hasProducts = Product::where('store_id', $store->id)->exists();
-        $whatsappSet = !empty($config['whatsapp_widget_phone']);
-        $storePublished = ($config['store_status'] ?? null) === true || ($config['store_status'] ?? null) === 'true' || !array_key_exists('store_status', $config);
+        $hasInventory = \App\Models\Product::where('store_id', $store->id)->where('stock', '>', 0)->exists();
+        // Shipping: check if any shipping method exists for this store
+        $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->exists();
+        // Fallback: also check store configuration for shipping
+        if (!$hasShipping) {
+            $hasShipping = !empty($config['shipping_enabled']) || !empty($config['shipping_methods']);
+        }
         $hasPayments = count(getEnabledPaymentMethods($user->id, $store->id)) > 0;
+        $hasTaxes = \App\Models\Tax::where('store_id', $store->id)->exists();
+        $hasDomain = !empty($store->custom_domain) || !empty($store->custom_subdomain);
+        $hasSeo = !empty($config['meta_title']) || !empty($config['seo_title']);
+        $storePublished = ($config['store_status'] ?? null) === true || ($config['store_status'] ?? null) === 'true' || !array_key_exists('store_status', $config);
+        // Publish readiness: must have shipping, payment, and at least one product
+        $isReadyToPublish = $hasProducts && $hasShipping && $hasPayments;
+
         try {
             $canManageStoreSettings = $user->can('settings-stores') || $user->type === 'company';
         } catch (\Exception $e) {
@@ -131,40 +147,73 @@ class DashboardController extends Controller
         
         $steps = [
             [
+                'key' => 'store_info',
+                'done' => $hasStoreInfo,
+                'href' => route('stores.settings', $store->id) . '?tab=general',
+            ],
+            [
+                'key' => 'design',
+                'done' => $hasDesign,
+                'href' => route('stores.designer', $store->id) . '?tab=templates',
+            ],
+            [
+                'key' => 'categories',
+                'done' => $hasCategories,
+                'href' => $hasCategories ? null : route('categories.index'),
+            ],
+            [
                 'key' => 'products',
                 'done' => $hasProducts,
                 'href' => $hasProducts ? null : route('products.create'),
             ],
             [
-                'key' => 'whatsapp',
-                'done' => $whatsappSet,
-                'href' => $whatsappSet ? null : route('stores.settings', $store->id) . '?tab=general',
+                'key' => 'inventory',
+                'done' => $hasInventory,
+                'href' => $hasInventory ? null : route('products.index'),
+            ],
+            [
+                'key' => 'shipping',
+                'done' => $hasShipping,
+                'href' => $hasShipping ? null : '/stores/' . $store->id . '/settings?tab=shipping',
+            ],
+            [
+                'key' => 'payments',
+                'done' => $hasPayments,
+                'href' => $hasPayments ? null : '/stores/' . $store->id . '/settings?tab=payments',
+            ],
+            [
+                'key' => 'taxes',
+                'done' => $hasTaxes,
+                'href' => $hasTaxes ? null : route('tax.index'),
+            ],
+            [
+                'key' => 'domain',
+                'done' => $hasDomain,
+                'href' => $hasDomain ? null : '/stores/' . $store->id . '/settings?tab=domains',
             ],
             [
                 'key' => 'published',
-                'done' => $storePublished,
-                'href' => $storePublished ? null : route('stores.settings', $store->id) . '?tab=general',
+                'done' => $storePublished && $isReadyToPublish,
+                'href' => ($storePublished && $isReadyToPublish) ? null : route('stores.settings', $store->id) . '?tab=general',
             ],
         ];
 
-        // The payments step deep-links to the dedicated per-store payments page
-        // (/stores/{id}/payments) which is the single source of truth for the
-        // merchant's own gateways — never the platform-wide /settings page.
-        if ($canManageStoreSettings) {
-            $steps[] = [
-                'key' => 'payments',
-                'done' => $hasPayments,
-                'href' => $hasPayments ? null : route('stores.payments', $store->id),
-            ];
-        }
+        // Keep payments step as canonical for backward compatibility, but ensure it points to the unified tab
+        // (already handled in shipping/payments above)
         
         $pendingCount = collect($steps)->where('done', false)->count();
         
         return [
-            'show' => $pendingCount > 0,
+            'show' => true, // Always show until fully published and ready — don't hide when pending
             'pendingCount' => $pendingCount,
             'totalCount' => count($steps),
             'steps' => $steps,
+            'isReadyToPublish' => $isReadyToPublish,
+            'missingForPublish' => array_values(array_filter([
+                !$hasShipping ? 'الشحن والتوصيل' : null,
+                !$hasPayments ? 'طرق الدفع' : null,
+                !$hasProducts ? 'المنتجات' : null,
+            ])),
         ];
     }
     

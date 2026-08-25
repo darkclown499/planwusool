@@ -81,7 +81,8 @@ export default function Shipping() {
         actions={pageActions}
         breadcrumbs={[
           { title: t('Dashboard'), href: route('dashboard') },
-          { title: t('Shipping Management') }
+          { title: 'إدارة المتجر', href: route('stores.index') },
+          { title: 'الشحن والتوصيل' }
         ]}
       >
         {!shippingEnabled ? (

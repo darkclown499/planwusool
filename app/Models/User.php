@@ -386,6 +386,10 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             $plan = Plan::getDefaultPlan();
         }
 
+        if (!$plan) {
+            return \App\Models\Store::FREE_TEMPLATES;
+        }
+
         // Pro/professional subscribers must never be treated as free:
         // a paid plan without an explicit theme restriction unlocks the
         // entire catalog (bugfix — empty `themes` used to downgrade them).
@@ -393,7 +397,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             return \App\Models\Store::ALL_TEMPLATES;
         }
 
-        $themes = \App\Models\Store::normalizeThemeList($plan->themes);
+        $themes = \App\Models\Store::normalizeThemeList($plan->themes ?? []);
 
         return count($themes) > 0 ? $themes : \App\Models\Store::FREE_TEMPLATES;
     }

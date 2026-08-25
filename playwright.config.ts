@@ -35,12 +35,20 @@ export default defineConfig({
       use: { ...devices['iPhone 12'] },
     },
   ],
-  webServer: {
-    command: 'concurrently "php artisan serve --host=:: --port=8000 --env=testing" "npm run dev -- --host :: --port 5173"',
-    url: 'http://127.0.0.1:8000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 180000,
-  },
+  webServer: [
+    {
+      command: 'php artisan serve --host=127.0.0.1 --port=8000 --env=testing',
+      url: 'http://127.0.0.1:8000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 180000,
+    },
+    {
+      command: 'npm run dev -- --host=127.0.0.1 --port=5173',
+      url: 'http://127.0.0.1:5173',
+      reuseExistingServer: !process.env.CI,
+      timeout: 180000,
+    },
+  ],
   timeout: 60000,
   expect: {
     timeout: 10000,
