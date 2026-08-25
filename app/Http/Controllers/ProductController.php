@@ -198,11 +198,13 @@ class ProductController extends Controller
         
         $normalizedImages = trim((string) $request->images);
         $firstImage = explode(',', $normalizedImages)[0] ?? '';
+        // Sanitize description: replace <br> tags with newlines (biddimarket import fix)
+        $sanitizedDescription = $request->description !== null ? preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description) : null;
         $product = new Product();
         $product->name = $request->name;
         $product->sku = $request->sku;
         $product->barcode = $request->barcode;
-        $product->description = $request->description;
+        $product->description = $sanitizedDescription;
         $product->short_description = $request->short_description;
         $product->specifications = $request->specifications;
         $product->details = $request->details;
@@ -361,10 +363,12 @@ class ProductController extends Controller
             }
         }
         
+        // Sanitize description: replace <br> tags with newlines (biddimarket import fix)
+        $sanitizedDescription = $request->has('description') && $request->description !== null ? preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description) : $product->description;
         $product->name = $request->name;
         $product->sku = $request->sku;
         $product->barcode = $request->barcode;
-        $product->description = $request->description ?? $product->description;
+        $product->description = $sanitizedDescription;
         $product->short_description = $request->short_description ?? $product->short_description;
         $product->specifications = $request->specifications ?? $product->specifications;
         $product->details = $request->details ?? $product->details;

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, Heart, Minus, Plus, RefreshCcw, ShieldCheck, Truck, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
 
@@ -127,7 +128,10 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
             )}
 
             {product.description && (
-              <p className="mt-5 whitespace-pre-line text-sm leading-relaxed text-stone-600 line-clamp-6">{product.description}</p>
+              <div
+                className="mt-5 text-sm leading-relaxed text-stone-600 line-clamp-6 whitespace-pre-line"
+                dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
+              />
             )}
 
             {/* Variants */}

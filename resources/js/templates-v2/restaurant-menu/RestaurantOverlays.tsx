@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, ReceiptText, Search, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
@@ -137,9 +138,10 @@ export function DishModal({ product, onClose }: any) {
           <p className="mt-2 font-serif text-2xl font-black text-[#f59e0b]">{formatPrice(product.price)}</p>
 
           {product.description && (
-            <p className="mt-3 whitespace-pre-line border-r-2 border-[#f59e0b]/40 pr-3 text-sm leading-relaxed text-[#c9b896]">
-              {product.description}
-            </p>
+            <div
+              className="mt-3 whitespace-pre-line border-r-2 border-[#f59e0b]/40 pr-3 text-sm leading-relaxed text-[#c9b896]"
+              dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
+            />
           )}
 
           {(product.variants || []).map((group: any) => (

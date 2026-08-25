@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, Search, ShoppingBasket, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { computeCartTotals, discountPercent, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
@@ -166,7 +167,10 @@ export function SouqProductSheet({ product, onClose }: any) {
           </div>
 
           {product.description && (
-            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-stone-600 line-clamp-4">{product.description}</p>
+            <div
+              className="mt-3 text-sm leading-relaxed text-stone-600 line-clamp-4 whitespace-pre-line"
+              dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
+            />
           )}
 
           {(product.variants || []).map((group: any) => (

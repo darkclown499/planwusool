@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, Search, ShoppingBag, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
@@ -136,7 +137,10 @@ export function BakeryProductModal({ product, onClose }: any) {
           <p className="mt-2 text-2xl font-black text-[#b45309]">{formatPrice(product.price)}</p>
 
           {product.description && (
-            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[#8a6a4f]">{product.description}</p>
+            <div
+              className="mt-3 whitespace-pre-line text-sm leading-relaxed text-[#8a6a4f]"
+              dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
+            />
           )}
 
           {(product.variants || []).map((group: any) => (
