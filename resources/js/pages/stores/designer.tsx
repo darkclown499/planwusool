@@ -3,14 +3,18 @@ import { toast } from 'sonner';
 import {
     ArrowRight,
     Building2,
+    Check,
     ChevronDown,
     Code2,
     Eye,
     Image as ImageIcon,
+    Layers,
+    LayoutGrid,
     Loader2,
     Megaphone,
     Monitor,
     Palette,
+    Pencil,
     Save,
     Settings2,
     Smartphone,
@@ -25,182 +29,101 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
 import { getImageUrl } from '@/utils/image-helper';
-import { getTemplateModule, type TemplateModule } from '@/templates-v2';
-import StoreTemplatesGrid from './components/store-templates-grid';
+import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2';
 import { usePage } from '@inertiajs/react';
 
-interface SlotField {
-    key: string;
-    label: string;
-    type: 'text' | 'image';
-    group?: string;
-    default?: string;
-}
-
-interface Props {
-    store: any;
-    availableThemes: string[];
-    settings: any;
-    storeUrl: string;
-}
+interface SlotField { key: string; label: string; type: 'text' | 'image'; group?: string; default?: string; }
+interface Props { store: any; availableThemes: string[]; settings: any; storeUrl: string; }
 
 function setDotted(obj: Record<string, any>, path: string, value: any): Record<string, any> {
     if (typeof path !== 'string' || !path) return obj;
     const next = { ...obj };
     const parts = path.split('.');
     let cur: any = next;
-    for (let i = 0; i < parts.length - 1; i++) {
-        cur[parts[i]] = { ...(cur[parts[i]] || {}) };
-        cur = cur[parts[i]];
-    }
+    for (let i = 0; i < parts.length - 1; i++) { cur[parts[i]] = { ...(cur[parts[i]] || {}) }; cur = cur[parts[i]]; }
     cur[parts[parts.length - 1]] = value;
     return next;
 }
-
 function getDotted(obj: Record<string, any>, path: string): any {
     if (typeof path !== 'string' || !path) return undefined;
     return path.split('.').reduce((acc, k) => (acc == null ? undefined : acc[k]), obj);
 }
-
-function stripTrailingSlash(url: string): string {
-    return String(url || '').trim().replace(/\/+$/, '');
-}
-
+function stripTrailingSlash(url: string): string { return String(url || '').trim().replace(/\/+$/, ''); }
 function normalizeImageUrl(url: string): string {
     if (!url) return '';
     const trimmed = stripTrailingSlash(String(url).trim());
     if (!trimmed) return '';
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
-    try {
-        return stripTrailingSlash(getImageUrl(trimmed));
-    } catch {
-        return trimmed;
-    }
+    try { return stripTrailingSlash(getImageUrl(trimmed)); } catch { return trimmed; }
 }
-
 function sanitizeHeroImages(images: any): string[] {
     if (!Array.isArray(images)) return [];
-    return images
-        .map((u: any) => String(u || '').trim())
-        .filter(Boolean)
-        .map((u) => normalizeImageUrl(u))
-        .filter((u) => u && u.length > 5 && u !== '/' && u !== '//' && !u.endsWith('//'))
-        .slice(0, 10);
+    return images.map((u: any) => String(u || '').trim()).filter(Boolean).map((u) => normalizeImageUrl(u)).filter((u) => u && u.length > 5 && u !== '/' && u !== '//' && !u.endsWith('//')).slice(0, 10);
 }
-
-function AccordionSection({
-    title,
-    icon,
-    defaultOpen = true,
-    open: controlledOpen,
-    onOpenChange: controlledOnOpenChange,
-    children,
-}: {
-    title: string;
-    icon: React.ReactNode;
-    defaultOpen?: boolean;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-    children: React.ReactNode;
-}) {
-    const [internalOpen, setInternalOpen] = useState(defaultOpen);
-    const isControlled = controlledOpen !== undefined;
-    const open = isControlled ? controlledOpen : internalOpen;
-    const setOpen = (v: boolean) => {
-        if (controlledOnOpenChange) controlledOnOpenChange(v);
-        if (!isControlled) setInternalOpen(v);
-    };
-    return (
-        <Collapsible open={open} onOpenChange={setOpen} className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-start hover:bg-slate-50/60">
-                <span className="flex items-center gap-2.5 text-sm font-black text-slate-800">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-600">{icon}</span>
-                    {title}
-                </span>
-                <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="px-4 pb-4 pt-1">
-                <div className="space-y-4 pt-2">{children}</div>
-            </CollapsibleContent>
-        </Collapsible>
-    );
-}
-
-function ColorPickerField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function ColorPickerField({ label, helper, value, onChange }: { label: string; helper?: string; value: string; onChange: (v: string) => void }) {
     const safe = /^#[0-9a-fA-F]{6}$/.test(String(value || '').trim()) ? String(value).trim() : '#0d9488';
     return (
         <div>
-            <Label className="mb-1.5 block text-xs font-bold text-slate-600">{label}</Label>
-            <div className="flex items-center gap-3">
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-inner">
-                    <input
-                        type="color"
-                        value={safe}
-                        onChange={(e) => onChange(e.target.value)}
-                        className="absolute -inset-2 h-[200%] w-[200%] cursor-pointer border-0 p-0"
-                        aria-label={label}
-                    />
+            <Label className="mb-1.5 block text-xs font-bold text-slate-600">{label}{helper && <span className="ms-1.5 text-[10px] font-normal text-slate-400">{helper}</span>}</Label>
+            <div className="flex items-center gap-2.5">
+                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-slate-200 shadow-inner">
+                    <input type="color" value={safe} onChange={(e) => onChange(e.target.value)} className="absolute -inset-2 h-[200%] w-[200%] cursor-pointer border-0 p-0" aria-label={label} />
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-xs font-bold text-slate-600" dir="ltr">
-                    {safe}
-                </span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-xs font-bold text-slate-600" dir="ltr">{safe}</span>
             </div>
         </div>
     );
 }
-
-function DropzoneUploader({
-    onFiles,
-    accept = 'image/*',
-    multiple = false,
-    label,
-    hint,
-    uploading,
-}: {
-    onFiles: (files: FileList) => void;
-    accept?: string;
-    multiple?: boolean;
-    label: string;
-    hint?: string;
-    uploading?: boolean;
-}) {
+function DropzoneUploader({ onFiles, accept = 'image/*', multiple = false, label, hint, uploading }: { onFiles: (files: FileList) => void; accept?: string; multiple?: boolean; label: string; hint?: string; uploading?: boolean; }) {
     const ref = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
     return (
         <div
-            onDragEnter={(e) => {
-                e.preventDefault();
-                setDragActive(true);
-            }}
-            onDragOver={(e) => {
-                e.preventDefault();
-                setDragActive(true);
-            }}
-            onDragLeave={(e) => {
-                e.preventDefault();
-                setDragActive(false);
-            }}
-            onDrop={(e) => {
-                e.preventDefault();
-                setDragActive(false);
-                if (e.dataTransfer.files?.length) onFiles(e.dataTransfer.files);
-            }}
+            onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
+            onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
+            onDrop={(e) => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files?.length) onFiles(e.dataTransfer.files); }}
             onClick={() => ref.current?.click()}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-6 text-center transition ${
-                dragActive ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-slate-50 hover:border-emerald-300 hover:bg-emerald-50/40'
-            }`}
+            className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed p-4 text-center transition ${dragActive ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-slate-50 hover:border-emerald-300 hover:bg-emerald-50/40'}`}
         >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow">
-                {uploading ? <Loader2 className="h-5 w-5 animate-spin text-emerald-600" /> : <UploadCloud className="h-5 w-5 text-emerald-600" />}
-            </div>
-            <p className="text-sm font-bold text-slate-700">{label}</p>
-            {hint && <p className="text-xs text-slate-500">{hint}</p>}
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-emerald-700 shadow">اختيار ملف</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow">{uploading ? <Loader2 className="h-4 w-4 animate-spin text-emerald-600" /> : <UploadCloud className="h-4 w-4 text-emerald-600" />}</div>
+            <p className="text-xs font-bold text-slate-700">{label}</p>
+            {hint && <p className="text-[11px] text-slate-500">{hint}</p>}
+            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-emerald-700 shadow">اختيار ملف</span>
             <input ref={ref} type="file" accept={accept} multiple={multiple} className="hidden" onChange={(e) => e.target.files && onFiles(e.target.files)} />
+        </div>
+    );
+}
+function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+    return <div className={`rounded-xl border border-slate-200 bg-white p-3 shadow-sm ${className}`}>{children}</div>;
+}
+function SectionLabel({ children, hint }: { children: React.ReactNode; hint?: string }) {
+    return <Label className="mb-1.5 block text-xs font-bold text-slate-600">{children}{hint && <span className="ms-1 text-[10px] font-normal text-slate-400">— {hint}</span>}</Label>;
+}
+
+type WorkspaceId = 'templates' | 'identity' | 'interface' | 'sections' | 'content' | 'advanced';
+const WORKSPACES: { id: WorkspaceId; label: string; icon: React.ReactNode }[] = [
+    { id: 'templates', label: 'القالب', icon: <LayoutGrid className="h-3.5 w-3.5" /> },
+    { id: 'identity', label: 'الهوية', icon: <Palette className="h-3.5 w-3.5" /> },
+    { id: 'interface', label: 'الواجهة', icon: <ImageIcon className="h-3.5 w-3.5" /> },
+    { id: 'sections', label: 'الأقسام', icon: <Layers className="h-3.5 w-3.5" /> },
+    { id: 'content', label: 'المحتوى', icon: <Building2 className="h-3.5 w-3.5" /> },
+    { id: 'advanced', label: 'متقدم', icon: <Code2 className="h-3.5 w-3.5" /> },
+];
+
+function CompactTemplateThumb({ slug, preview }: { slug: string; preview: string }) {
+    // ultra compact visual - just gradient + simple shapes for thumb 64px
+    return (
+        <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200" style={{ background: preview }}>
+            <div className="absolute inset-0 flex flex-col p-1">
+                <div className="h-1 w-6 rounded bg-black/15" />
+                <div className="mt-1 flex-1 rounded bg-white/80" />
+            </div>
         </div>
     );
 }
@@ -215,7 +138,6 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const [logoUploading, setLogoUploading] = useState(false);
     const faviconFileRef = useRef<HTMLInputElement>(null);
     const [faviconUploading, setFaviconUploading] = useState(false);
-
     const [theme, setTheme] = useState<string>('bazaar-market');
     const [tokens, setTokens] = useState<Record<string, any>>({});
     const [content, setContent] = useState<Record<string, any>>({});
@@ -226,69 +148,36 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const [initialSnapshot, setInitialSnapshot] = useState<string>('');
     const [previewVersion, setPreviewVersion] = useState(0);
     const previewIframeRef = useRef<HTMLIFrameElement>(null);
-
-    // Sync tab state with URL query param ?tab= (templates / identity) — task: Fix URL Query Param (`tab=identity`) Syncing
-    const page = usePage<any>();
-    const getTabFromUrl = () => {
+    const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>(() => {
         if (typeof window !== 'undefined') {
-            return new URLSearchParams(window.location.search).get('tab') || '';
+            const tab = new URLSearchParams(window.location.search).get('tab');
+            if (tab === 'templates') return 'templates';
+            if (tab === 'identity' || tab === 'brand') return 'identity';
+            if (tab === 'interface' || tab === 'hero') return 'interface';
+            if (tab === 'sections') return 'sections';
+            if (tab === 'content') return 'content';
+            if (tab === 'advanced') return 'advanced';
         }
-        return '';
-    };
-    // searchParams as required by task spec (parse searchParams.get('tab'))
-    const searchParams = useMemo(() => {
-        if (typeof window !== 'undefined') return new URLSearchParams(window.location.search);
-        const rawUrl = typeof page.url === 'string' ? page.url : '';
-        const q = rawUrl.split('?')[1] || '';
-        return new URLSearchParams(q);
-    }, [page.url]);
-    const [activeTab, setActiveTab] = useState<string>(() => searchParams.get('tab') || getTabFromUrl());
-    const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
-        const tab = searchParams.get('tab') || getTabFromUrl();
-        if (tab === 'templates') return { templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false };
-        // identity (or base) is the default for تخصيص تصميم المتجر
-        return { templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false };
+        return 'templates';
     });
-    // activeSection mirrors activeTab for task spec compliance (setActiveSection)
-    const [activeSection, setActiveSectionState] = useState<string>(() => {
-        const t = searchParams.get('tab') || getTabFromUrl();
-        return t === 'templates' ? 'templates' : 'identity';
-    });
-    const setActiveSection = (section: string) => {
-        setActiveSectionState(section);
-        setActiveTab(section);
-        if (section === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false });
-        else if (section === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false });
-    };
+    const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
+    const [previewTemplateSlug, setPreviewTemplateSlug] = useState<string | null>(null);
+    const [confirmTemplateSlug, setConfirmTemplateSlug] = useState<string | null>(null);
+    const [applyingTemplate, setApplyingTemplate] = useState<string | null>(null);
+    const [interfaceVideoUploading, setInterfaceVideoUploading] = useState(false);
 
-    useEffect(() => {
-      const activeTab = searchParams.get('tab');
-      if (activeTab === 'identity') setActiveSection('identity');
-      else if (activeTab === 'templates') setActiveSection('templates');
-    }, [searchParams]);
-
+    const page = usePage<any>();
     useEffect(() => {
         const rawUrl = typeof page.url === 'string' ? page.url : '';
-        const tab = new URLSearchParams(rawUrl.split('?')[1] || (typeof window !== 'undefined' ? window.location.search.replace(/^\?/, '') : '')).get('tab') || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') : null) || '';
-        setActiveTab(tab);
-        if (tab === 'templates') {
-            setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false });
-        } else if (tab === 'identity' || tab === 'brand' || tab === '' ) {
-            // identity maps to الهوية + hero open
-            setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false });
-        }
+        const q = rawUrl.split('?')[1] || (typeof window !== 'undefined' ? window.location.search.replace(/^\?/, '') : '');
+        const tab = new URLSearchParams(q).get('tab') || '';
+        if (tab === 'templates') setActiveWorkspace('templates');
+        else if (tab === 'identity' || tab === 'brand') setActiveWorkspace('identity');
+        else if (tab === 'interface' || tab === 'hero') setActiveWorkspace('interface');
+        else if (tab === 'sections') setActiveWorkspace('sections');
+        else if (tab === 'content') setActiveWorkspace('content');
+        else if (tab === 'advanced') setActiveWorkspace('advanced');
     }, [page.url]);
-
-    useEffect(() => {
-        const handler = () => {
-            const tab = new URLSearchParams(window.location.search).get('tab') || '';
-            setActiveTab(tab);
-            if (tab === 'templates') setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false });
-            else if (tab === 'identity') setOpenSections({ templates: false, identity: true, announcement: true, hero: true, homeSections: true, homepageContent: true, advanced: false });
-        };
-        window.addEventListener('popstate', handler);
-        return () => window.removeEventListener('popstate', handler);
-    }, []);
 
     useEffect(() => {
         let alive = true;
@@ -301,49 +190,25 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                 const nJs = res.custom_js || '';
                 const nHead = res.head_inject || '';
                 setTheme(res.theme || 'bazaar-market');
-                setTokens(nTokens);
-                setContent(nContent);
-                setCustomCss(nCss);
-                setCustomJs(nJs);
-                setHeadInject(nHead);
-                if (Array.isArray(res.categories)) {
-                    setAvailableCategories(res.categories);
-                }
+                setTokens(nTokens); setContent(nContent); setCustomCss(nCss); setCustomJs(nJs); setHeadInject(nHead);
+                if (Array.isArray(res.categories)) setAvailableCategories(res.categories);
                 setInitialSnapshot(JSON.stringify({ theme: res.theme || 'bazaar-market', tokens: nTokens, content: nContent, css: nCss, js: nJs, head: nHead }));
             })
             .catch(() => toast.error('تعذر تحميل إعدادات المصمم'))
             .finally(() => alive && setLoading(false));
-        return () => {
-            alive = false;
-        };
+        return () => { alive = false; };
     }, [store.id]);
 
-    // Theme is saved instantly via StoreTemplatesGrid, so exclude it from dirty check
     const isDirty = useMemo(() => {
         try {
             const cur = JSON.stringify({ tokens, content, css: customCss, js: customJs, head: headInject });
-            const snap = (() => {
-                try {
-                    const parsed = JSON.parse(initialSnapshot);
-                    const { theme: _t, ...rest } = parsed;
-                    return JSON.stringify(rest);
-                } catch {
-                    return initialSnapshot;
-                }
-            })();
+            const snap = (() => { try { const parsed = JSON.parse(initialSnapshot); const { theme: _t, ...rest } = parsed; return JSON.stringify(rest); } catch { return initialSnapshot; } })();
             return cur !== snap;
-        } catch {
-            return true;
-        }
+        } catch { return true; }
     }, [tokens, content, customCss, customJs, headInject, initialSnapshot]);
 
-    const activeModule: TemplateModule | null = useMemo(() => {
-        try {
-            return getTemplateModule(theme);
-        } catch {
-            return null;
-        }
-    }, [theme]);
+    const activeModule: TemplateModule | null = useMemo(() => { try { return getTemplateModule(theme); } catch { return null; } }, [theme]);
+    const modules = useMemo(() => listTemplateModules(), []);
 
     const handleSaveAll = async () => {
         setSaving(true);
@@ -356,39 +221,17 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             payloadContent = setDotted(payloadContent, 'hero_banner.images', clean);
             payloadContent = setDotted(payloadContent, 'hero_images', clean);
             const heroType = getDotted(content, 'hero_banner.type') ?? getDotted(content, 'hero_type');
-            if (heroType !== undefined) {
-                payloadContent = setDotted(payloadContent, 'hero_banner.type', String(heroType).trim().replace(/\/+$/, ''));
-                payloadContent = setDotted(payloadContent, 'hero_type', String(heroType).trim().replace(/\/+$/, ''));
-            }
+            if (heroType !== undefined) { payloadContent = setDotted(payloadContent, 'hero_banner.type', String(heroType).trim().replace(/\/+$/, '')); payloadContent = setDotted(payloadContent, 'hero_type', String(heroType).trim().replace(/\/+$/, '')); }
             const heroVideo = getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url');
-            if (heroVideo !== undefined) {
-                const cleanVideo = stripTrailingSlash(String(heroVideo).trim());
-                const normVideo = cleanVideo ? (cleanVideo.startsWith('http') ? cleanVideo : normalizeImageUrl(cleanVideo)) : '';
-                payloadContent = setDotted(payloadContent, 'hero_banner.video_url', normVideo);
-                payloadContent = setDotted(payloadContent, 'hero_video_url', normVideo);
-            }
+            if (heroVideo !== undefined) { const cleanVideo = stripTrailingSlash(String(heroVideo).trim()); const normVideo = cleanVideo ? (cleanVideo.startsWith('http') ? cleanVideo : normalizeImageUrl(cleanVideo)) : ''; payloadContent = setDotted(payloadContent, 'hero_banner.video_url', normVideo); payloadContent = setDotted(payloadContent, 'hero_video_url', normVideo); }
             const heroYoutube = getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url');
-            if (heroYoutube !== undefined) {
-                const cleanYt = stripTrailingSlash(String(heroYoutube).trim());
-                payloadContent = setDotted(payloadContent, 'hero_banner.youtube_url', cleanYt);
-                payloadContent = setDotted(payloadContent, 'hero_youtube_url', cleanYt);
-            }
+            if (heroYoutube !== undefined) { const cleanYt = stripTrailingSlash(String(heroYoutube).trim()); payloadContent = setDotted(payloadContent, 'hero_banner.youtube_url', cleanYt); payloadContent = setDotted(payloadContent, 'hero_youtube_url', cleanYt); }
             const overlay = getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity');
-            if (overlay !== undefined) {
-                const num = Math.min(100, Math.max(0, Number(overlay)));
-                payloadContent = setDotted(payloadContent, 'hero_banner.overlay_opacity', num);
-                payloadContent = setDotted(payloadContent, 'overlay_opacity', num);
-            }
+            if (overlay !== undefined) { const num = Math.min(100, Math.max(0, Number(overlay))); payloadContent = setDotted(payloadContent, 'hero_banner.overlay_opacity', num); payloadContent = setDotted(payloadContent, 'overlay_opacity', num); }
             for (const k of ['heading', 'subtitle', 'cta_label', 'cta_link'] as const) {
                 const v = getDotted(content, `hero_banner.${k}`) ?? getDotted(content, `hero_${k}`);
-                if (v !== undefined) {
-                    const s = k === 'cta_link' ? stripTrailingSlash(String(v).trim()) : String(v ?? '');
-                    payloadContent = setDotted(payloadContent, `hero_banner.${k}`, s);
-                    payloadContent = setDotted(payloadContent, `hero_${k}`, s);
-                }
+                if (v !== undefined) { const s = k === 'cta_link' ? stripTrailingSlash(String(v).trim()) : String(v ?? ''); payloadContent = setDotted(payloadContent, `hero_banner.${k}`, s); payloadContent = setDotted(payloadContent, `hero_${k}`, s); }
             }
-            // Sync legacy banners array for cross-template visibility (Bazaar/Grocery/etc read content.banners)
-            // When hero type is image and images exist, mirror them as banner slides so Public Store shows updated banners
             try {
                 const finalType = String(getDotted(payloadContent, 'hero_banner.type') ?? getDotted(payloadContent, 'hero_type') ?? 'image').trim() || 'image';
                 const finalImages = sanitizeHeroImages((getDotted(payloadContent, 'hero_banner.images') ?? getDotted(payloadContent, 'hero_images') ?? []) as any);
@@ -401,223 +244,51 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                     payloadContent = setDotted(payloadContent, 'banners', bannerArray);
                 }
             } catch {}
-
-            const res: any = await apiPut(`/api/stores/${store.id}/designer`, {
-                design_tokens: tokens,
-                content: payloadContent,
-                custom_css: customCss,
-                custom_js: customJs,
-                head_inject: headInject,
-            });
-            const finalContent = res?.content ?? payloadContent;
-            const finalTokens = res?.design_tokens ?? tokens;
-            setContent(finalContent);
-            setTokens(finalTokens);
+            const res: any = await apiPut(`/api/stores/${store.id}/designer`, { design_tokens: tokens, content: payloadContent, custom_css: customCss, custom_js: customJs, head_inject: headInject });
+            const finalContent = res?.content ?? payloadContent; const finalTokens = res?.design_tokens ?? tokens;
+            setContent(finalContent); setTokens(finalTokens);
             if (res?.custom_css !== undefined) setCustomCss(res.custom_css);
             if (res?.custom_js !== undefined) setCustomJs(res.custom_js);
             if (res?.head_inject !== undefined) setHeadInject(res.head_inject);
             setInitialSnapshot(JSON.stringify({ theme, tokens: finalTokens, content: finalContent, css: res?.custom_css ?? customCss, js: res?.custom_js ?? customJs, head: res?.head_inject ?? headInject }));
             toast.success('تم حفظ جميع التغييرات بنجاح');
-            // Trigger live preview reload so iframe reflects saved state (same rendering path as public store)
             setPreviewVersion((v) => v + 1);
-        } catch {
-            toast.error('تعذر حفظ التغييرات — تأكد من سلامة المدخلات');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleSaveHeroBanner = async () => {
-        setSaving(true);
-        try {
-            let payloadContent: Record<string, any> = { ...content };
-            const rawNested = getDotted(content, 'hero_banner.images');
-            const rawFlat = getDotted(content, 'hero_images');
-            const rawImages = rawNested !== undefined ? rawNested : rawFlat;
-            const cleanImages = sanitizeHeroImages((rawImages as any) ?? []);
-            payloadContent = setDotted(payloadContent, 'hero_banner.images', cleanImages);
-            payloadContent = setDotted(payloadContent, 'hero_images', cleanImages);
-
-            const heroType = getDotted(content, 'hero_banner.type') ?? getDotted(content, 'hero_type') ?? 'image';
-            const vType = String(heroType).trim().replace(/\/+$/, '') || 'image';
-            payloadContent = setDotted(payloadContent, 'hero_banner.type', vType);
-            payloadContent = setDotted(payloadContent, 'hero_type', vType);
-
-            const heroVideo = getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url') ?? '';
-            const cleanVideo = stripTrailingSlash(String(heroVideo).trim());
-            const normVideo = cleanVideo ? (cleanVideo.startsWith('http') ? cleanVideo : normalizeImageUrl(cleanVideo)) : '';
-            payloadContent = setDotted(payloadContent, 'hero_banner.video_url', normVideo);
-            payloadContent = setDotted(payloadContent, 'hero_video_url', normVideo);
-
-            const heroYoutube = getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url') ?? '';
-            const cleanYt = stripTrailingSlash(String(heroYoutube).trim());
-            payloadContent = setDotted(payloadContent, 'hero_banner.youtube_url', cleanYt);
-            payloadContent = setDotted(payloadContent, 'hero_youtube_url', cleanYt);
-
-            const overlay = getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity') ?? 35;
-            const num = Math.min(100, Math.max(0, Number(overlay)));
-            payloadContent = setDotted(payloadContent, 'hero_banner.overlay_opacity', num);
-            payloadContent = setDotted(payloadContent, 'overlay_opacity', num);
-
-            for (const k of ['heading', 'subtitle', 'cta_label', 'cta_link'] as const) {
-                const v = getDotted(content, `hero_banner.${k}`) ?? getDotted(content, `hero_${k}`) ?? '';
-                const s = k === 'cta_link' ? stripTrailingSlash(String(v).trim()) : String(v ?? '');
-                payloadContent = setDotted(payloadContent, `hero_banner.${k}`, s);
-                payloadContent = setDotted(payloadContent, `hero_${k}`, s);
-            }
-            try {
-                const finalType2 = String(getDotted(payloadContent, 'hero_banner.type') ?? getDotted(payloadContent, 'hero_type') ?? 'image').trim() || 'image';
-                const finalImages2 = sanitizeHeroImages((getDotted(payloadContent, 'hero_banner.images') ?? getDotted(payloadContent, 'hero_images') ?? []) as any);
-                if ((finalType2 === 'image' || finalType2 === 'slider') && finalImages2.length > 0) {
-                    const hHeading2 = String(getDotted(payloadContent, 'hero_banner.heading') ?? getDotted(payloadContent, 'hero_heading') ?? '');
-                    const hSubtitle2 = String(getDotted(payloadContent, 'hero_banner.subtitle') ?? getDotted(payloadContent, 'hero_subtitle') ?? '');
-                    const hCtaLabel2 = String(getDotted(payloadContent, 'hero_banner.cta_label') ?? getDotted(payloadContent, 'hero_cta_label') ?? '');
-                    const hCtaLink2 = String(getDotted(payloadContent, 'hero_banner.cta_link') ?? getDotted(payloadContent, 'hero_cta_link') ?? '#');
-                    const bannerArray2 = finalImages2.map((img: string) => ({ image: img, title: hHeading2, subtitle: hSubtitle2, button_text: hCtaLabel2, button_link: hCtaLink2 }));
-                    payloadContent = setDotted(payloadContent, 'banners', bannerArray2);
-                }
-            } catch {}
-
-            const res: any = await apiPut(`/api/stores/${store.id}/designer`, { content: payloadContent });
-            const finalContent2 = res?.content ?? payloadContent;
-            setContent(finalContent2);
-            setInitialSnapshot(JSON.stringify({ theme, tokens, content: finalContent2, css: customCss, js: customJs, head: headInject }));
-            toast.success('تم حفظ إعدادات البنر');
-            setPreviewVersion((v) => v + 1);
-        } catch {
-            toast.error('تعذر حفظ إعدادات البنر');
-        } finally {
-            setSaving(false);
-        }
+        } catch { toast.error('تعذر حفظ التغييرات — تأكد من سلامة المدخلات'); } finally { setSaving(false); }
     };
 
     const uploadHeroFiles = async (files: FileList) => {
         const valid = Array.from(files).filter((f) => f.type.startsWith('image/'));
-        if (valid.length === 0) {
-            toast.warning('الرجاء اختيار ملف صورة');
-            return;
-        }
+        if (valid.length === 0) { toast.warning('الرجاء اختيار ملف صورة'); return; }
         setHeroUploading(true);
         try {
-            const fd = new FormData();
-            valid.forEach((f) => fd.append('files[]', f));
-            const res = await fetch(route('api.media.batch'), {
-                method: 'POST',
-                body: fd,
-                headers: {
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-            });
+            const fd = new FormData(); valid.forEach((f) => fd.append('files[]', f));
+            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } });
             const json: any = await res.json();
             if (res.ok && json?.data?.length) {
-                const urls: string[] = (json.data as any[])
-                    .map((d: any) => {
-                        const raw = String(d.url || '');
-                        if (!raw) return '';
-                        if (raw.startsWith('/storage')) return raw;
-                        const m = raw.match(/\/storage\/.*$/);
-                        return m ? m[0] : raw;
-                    })
-                    .filter(Boolean)
-                    .map((u) => normalizeImageUrl(u))
-                    .filter(Boolean);
-                if (urls.length) {
-                    const rawHero = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any;
-                    const existing = sanitizeHeroImages(rawHero);
-                    const next = [...existing, ...urls].slice(0, 10);
-                    let tmp = setDotted(content, 'hero_banner.images', next);
-                    tmp = setDotted(tmp, 'hero_images', next);
-                    setContent(tmp);
-                    toast.success('تم رفع الصورة');
-                }
-            } else {
-                toast.error(json?.message || 'فشل الرفع');
-            }
-        } catch {
-            toast.error('حدث خطأ أثناء الرفع');
-        } finally {
-            setHeroUploading(false);
-        }
+                const urls: string[] = (json.data as any[]).map((d: any) => { const raw = String(d.url || ''); if (!raw) return ''; if (raw.startsWith('/storage')) return raw; const m = raw.match(/\/storage\/.*$/); return m ? m[0] : raw; }).filter(Boolean).map((u) => normalizeImageUrl(u)).filter(Boolean);
+                if (urls.length) { const rawHero = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any; const existing = sanitizeHeroImages(rawHero); const next = [...existing, ...urls].slice(0, 10); let tmp = setDotted(content, 'hero_banner.images', next); tmp = setDotted(tmp, 'hero_images', next); setContent(tmp); toast.success('تم رفع الصورة'); }
+            } else toast.error(json?.message || 'فشل الرفع');
+        } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setHeroUploading(false); }
     };
-
     const uploadLogoFile = async (files: FileList) => {
-        const file = Array.from(files).find((f) => f.type.startsWith('image/'));
-        if (!file) {
-            toast.warning('الرجاء اختيار ملف صورة');
-            return;
-        }
+        const file = Array.from(files).find((f) => f.type.startsWith('image/')); if (!file) { toast.warning('الرجاء اختيار ملف صورة'); return; }
         setLogoUploading(true);
         try {
-            const fd = new FormData();
-            fd.append('files[]', file);
-            const res = await fetch(route('api.media.batch'), {
-                method: 'POST',
-                body: fd,
-                headers: {
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-            });
+            const fd = new FormData(); fd.append('files[]', file);
+            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } });
             const json: any = await res.json();
-            if (res.ok && json?.data?.[0]?.url) {
-                const raw = String(json.data[0].url || '');
-                const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : '';
-                const normalized = normalizeImageUrl(url);
-                const nextTokens = { ...tokens, logo: normalized };
-                setTokens(nextTokens);
-                // also store in content for persistence flexibility
-                let tmp = setDotted(content, 'brand.logo', normalized);
-                tmp = setDotted(tmp, 'logo', normalized);
-                setContent(tmp);
-                toast.success('تم رفع الشعار');
-            } else {
-                toast.error(json?.message || 'فشل رفع الشعار');
-            }
-        } catch {
-            toast.error('حدث خطأ أثناء الرفع');
-        } finally {
-            setLogoUploading(false);
-        }
+            if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); setTokens({ ...tokens, logo: normalized }); let tmp = setDotted(content, 'brand.logo', normalized); tmp = setDotted(tmp, 'logo', normalized); setContent(tmp); toast.success('تم رفع الشعار'); } else toast.error(json?.message || 'فشل رفع الشعار');
+        } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setLogoUploading(false); }
     };
-
     const uploadFaviconFile = async (files: FileList) => {
-        const file = Array.from(files).find((f) => f.type.startsWith('image/'));
-        if (!file) {
-            toast.warning('الرجاء اختيار ملف صورة');
-            return;
-        }
+        const file = Array.from(files).find((f) => f.type.startsWith('image/')); if (!file) { toast.warning('الرجاء اختيار ملف صورة'); return; }
         setFaviconUploading(true);
         try {
-            const fd = new FormData();
-            fd.append('files[]', file);
-            const res = await fetch(route('api.media.batch'), {
-                method: 'POST',
-                body: fd,
-                headers: {
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                },
-            });
+            const fd = new FormData(); fd.append('files[]', file);
+            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } });
             const json: any = await res.json();
-            if (res.ok && json?.data?.[0]?.url) {
-                const raw = String(json.data[0].url || '');
-                const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : '';
-                const normalized = normalizeImageUrl(url);
-                const nextTokens = { ...tokens, favicon: normalized };
-                setTokens(nextTokens);
-                let tmp = setDotted(content, 'brand.favicon', normalized);
-                tmp = setDotted(tmp, 'favicon', normalized);
-                setContent(tmp);
-                toast.success('تم رفع الأيقونة');
-            } else {
-                toast.error(json?.message || 'فشل رفع الأيقونة');
-            }
-        } catch {
-            toast.error('حدث خطأ أثناء الرفع');
-        } finally {
-            setFaviconUploading(false);
-        }
+            if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); setTokens({ ...tokens, favicon: normalized }); let tmp = setDotted(content, 'brand.favicon', normalized); tmp = setDotted(tmp, 'favicon', normalized); setContent(tmp); toast.success('تم رفع الأيقونة'); } else toast.error(json?.message || 'فشل رفع الأيقونة');
+        } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setFaviconUploading(false); }
     };
 
     const colors = (tokens?.colors || {}) as Record<string, string>;
@@ -625,67 +296,39 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const logoValue = (tokens?.logo as string) || (getDotted(content, 'brand.logo') as string) || (getDotted(content, 'logo') as string) || '';
     const faviconValue = (tokens?.favicon as string) || (getDotted(content, 'brand.favicon') as string) || (getDotted(content, 'favicon') as string) || '';
 
-    // Sync live preview frame favicon whenever settings.favicon changes — updates both designer tab and preview iframe head
     useEffect(() => {
         if (!faviconValue) return;
         const faviconUrl = getImageUrl(faviconValue);
         const timestamp = Date.now();
         const hrefWithCacheBuster = `${faviconUrl}${faviconUrl.includes('?') ? '&' : '?'}v=${timestamp}`;
-
         const updateFavicon = (doc: Document) => {
             let link = doc.querySelector('link[rel="icon"]') as HTMLLinkElement;
-            if (!link) {
-                link = doc.createElement('link');
-                link.rel = 'icon';
-                link.type = 'image/png';
-                doc.head.appendChild(link);
-            }
+            if (!link) { link = doc.createElement('link'); link.rel = 'icon'; link.type = 'image/png'; doc.head.appendChild(link); }
             link.href = hrefWithCacheBuster;
-
             let appleLink = doc.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
-            if (!appleLink) {
-                appleLink = doc.createElement('link');
-                appleLink.rel = 'apple-touch-icon';
-                doc.head.appendChild(appleLink);
-            }
+            if (!appleLink) { appleLink = doc.createElement('link'); appleLink.rel = 'apple-touch-icon'; doc.head.appendChild(appleLink); }
             appleLink.href = hrefWithCacheBuster;
         };
-
-        // Update designer tab favicon
         updateFavicon(document);
-
-        // Update live preview iframe favicon
         const iframe = document.querySelector('iframe[title="Live store preview"]') as HTMLIFrameElement;
         if (iframe) {
             try {
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                if (iframeDoc) {
-                    updateFavicon(iframeDoc);
-                } else {
-                    const handleLoad = () => {
-                        try {
-                            const doc = iframe.contentDocument || iframe.contentWindow?.document;
-                            if (doc) updateFavicon(doc);
-                        } catch {}
-                    };
+                if (iframeDoc) updateFavicon(iframeDoc);
+                else {
+                    const handleLoad = () => { try { const doc = iframe.contentDocument || iframe.contentWindow?.document; if (doc) updateFavicon(doc); } catch {} };
                     iframe.addEventListener('load', handleLoad, { once: true });
                     return () => iframe.removeEventListener('load', handleLoad);
                 }
-            } catch {
-                // Cross-origin fallback — iframe will pick up new favicon on next reload via cache-buster in src
-            }
+            } catch {}
         }
     }, [faviconValue]);
 
-    // Announcement state
     const announcementText = (getDotted(content, 'announcement.text') ?? '') as string;
     const announcementBg = (getDotted(content, 'announcement.bg_color') ?? '#2b2320') as string;
     const announcementColor = (getDotted(content, 'announcement.text_color') ?? '#f5ede2') as string;
     const showAnnouncementRaw = getDotted(content, 'announcement.enabled');
     const showAnnouncement = showAnnouncementRaw === undefined ? true : !!showAnnouncementRaw;
-
-    // Homepage sections state — stored under content.settings (also aliased as homepage.* for back-compat)
-    // Defaults: show categories bar false (task spec), latest/best sellers true
     const showCategoriesBarRaw = getDotted(content, 'settings.show_categories_bar') ?? getDotted(content, 'homepage.show_categories_bar') ?? false;
     const showCategoriesBar = !!showCategoriesBarRaw;
     const showLatestRaw = getDotted(content, 'settings.show_latest_products') ?? getDotted(content, 'homepage.show_latest_products');
@@ -695,8 +338,6 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const homepageCategories = (getDotted(content, 'settings.homepage_categories') ?? getDotted(content, 'homepage.homepage_categories') ?? getDotted(content, 'homepage_categories') ?? []) as Array<string | number>;
     const homepageProductsPerCategoryRaw = getDotted(content, 'settings.homepage_products_per_category') ?? getDotted(content, 'homepage.homepage_products_per_category') ?? 8;
     const homepageProductsPerCategory = [4, 8, 12].includes(Number(homepageProductsPerCategoryRaw)) ? Number(homepageProductsPerCategoryRaw) : 8;
-
-    // Hero state
     const heroType = (getDotted(content, 'hero_banner.type') ?? getDotted(content, 'hero_type') ?? 'image') as string;
     const rawHeroImages = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any;
     const heroImages = sanitizeHeroImages(rawHeroImages);
@@ -707,784 +348,475 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const heroSubtitle = (getDotted(content, 'hero_banner.subtitle') ?? '') as string;
     const heroCtaLabel = (getDotted(content, 'hero_banner.cta_label') ?? '') as string;
     const heroCtaLink = (getDotted(content, 'hero_banner.cta_link') ?? '') as string;
-
     const getYoutubeId = (url: string) => {
-        try {
-            const u = new URL(url);
-            if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0];
-            if (u.searchParams.get('v')) return u.searchParams.get('v')!.split('&')[0];
-            const parts = u.pathname.split('/').filter(Boolean);
-            const idx = parts.indexOf('embed');
-            if (idx !== -1 && parts[idx + 1]) return parts[idx + 1].split('?')[0];
-            return parts[parts.length - 1]?.split('?')[0] ?? null;
-        } catch {
-            const m = url.match(/[a-zA-Z0-9_-]{11}/);
-            return m ? m[0] : null;
-        }
+        try { const u = new URL(url); if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0]; if (u.searchParams.get('v')) return u.searchParams.get('v')!.split('&')[0]; const parts = u.pathname.split('/').filter(Boolean); const idx = parts.indexOf('embed'); if (idx !== -1 && parts[idx + 1]) return parts[idx + 1].split('?')[0]; return parts[parts.length - 1]?.split('?')[0] ?? null; } catch { const m = url.match(/[a-zA-Z0-9_-]{11}/); return m ? m[0] : null; }
     };
     const youtubeId = heroYoutubeUrl ? getYoutubeId(heroYoutubeUrl) : null;
 
+    const applyTemplate = async (slug: string) => {
+        setApplyingTemplate(slug);
+        try {
+            await apiPut(`/api/stores/${store.id}/designer`, { theme: slug });
+            setTheme(slug);
+            setInitialSnapshot((prev) => { try { const p = JSON.parse(prev); p.theme = slug; return JSON.stringify(p); } catch { return prev; } });
+            setPreviewVersion((v) => v + 1);
+            toast.success('تم تطبيق القالب بنجاح');
+            setConfirmTemplateSlug(null);
+        } catch { toast.error('تعذر تطبيق القالب'); } finally { setApplyingTemplate(null); }
+    };
+    const previewModule = useMemo(() => (previewTemplateSlug ? modules.find((m) => m.meta.slug === previewTemplateSlug) ?? null : null), [previewTemplateSlug, modules]);
+    const confirmModule = useMemo(() => (confirmTemplateSlug ? modules.find((m) => m.meta.slug === confirmTemplateSlug) ?? null : null), [confirmTemplateSlug, modules]);
+
     if (loading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center gap-3 bg-slate-50 text-slate-400">
-                <Loader2 className="h-6 w-6 animate-spin" /> جارٍ تحميل المصمم…
-            </div>
-        );
+        return <div className="flex min-h-screen items-center justify-center gap-3 bg-slate-50 text-slate-400"><Loader2 className="h-6 w-6 animate-spin" /> جارٍ تحميل المصمم…</div>;
     }
 
     return (
         <div className="min-h-screen bg-slate-100" dir="rtl">
-            {/* ───────────── Unified Global Sticky Header ───────────── */}
+            {/* Global Header */}
             <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-                <div className="mx-auto flex h-[64px] max-w-[1600px] items-center justify-between gap-2 px-4">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="gap-1.5 font-bold text-slate-600 hover:text-slate-900"
-                            onClick={() => {
-                                const fallback = '/stores';
-                                if (typeof route !== 'undefined') {
-                                    try {
-                                        window.location.href = route('stores.index');
-                                        return;
-                                    } catch {}
-                                }
-                                window.location.href = fallback;
-                            }}
-                        >
-                            <ArrowRight className="h-4 w-4" /> <span className="hidden sm:inline">رجوع للمتاجر</span>
-                            <span className="sm:hidden">رجوع</span>
+                <div className="mx-auto flex h-[56px] max-w-[1600px] items-center justify-between gap-2 px-3 sm:px-4">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" className="gap-1.5 font-bold text-slate-600 hover:text-slate-900 px-2 sm:px-3" onClick={() => { try { window.location.href = route('stores.index'); } catch { window.location.href = '/stores'; } }}>
+                            <ArrowRight className="h-4 w-4" /> <span className="hidden sm:inline">رجوع للمتاجر</span><span className="sm:hidden">رجوع</span>
                         </Button>
                         <Separator orientation="vertical" className="hidden h-6 sm:block" />
                         <div className="hidden items-center gap-2 sm:flex">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
-                                <Store className="h-4 w-4" />
-                            </div>
-                            <div className="hidden lg:block">
-                                <p className="text-sm font-black leading-none text-slate-900">{store?.name ?? 'تخصيص المتجر'}</p>
-                                <p className="text-xs text-slate-500">محرر بصري فوري</p>
-                            </div>
+                            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 text-white"><Store className="h-3.5 w-3.5" /></div>
+                            <div className="hidden lg:block"><p className="text-sm font-black leading-none text-slate-900">{store?.name ?? 'تخصيص المتجر'}</p><p className="text-[11px] text-slate-500">محرر بصري فوري</p></div>
                         </div>
                     </div>
-
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                        {/* Desktop / Mobile switcher */}
+                    <div className="flex items-center gap-1.5">
                         <div className="flex rounded-full bg-slate-100 p-1">
-                            <button
-                                type="button"
-                                aria-label="معاينة سطح المكتب"
-                                onClick={() => setPreviewMode('desktop')}
-                                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${previewMode === 'desktop' ? 'bg-white text-slate-900 shadow' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                <Monitor className="h-4 w-4" />
-                            </button>
-                            <button
-                                type="button"
-                                aria-label="معاينة الجوال"
-                                onClick={() => setPreviewMode('mobile')}
-                                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${previewMode === 'mobile' ? 'bg-white text-slate-900 shadow' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                <Smartphone className="h-4 w-4" />
-                            </button>
+                            <button type="button" aria-label="معاينة سطح المكتب" onClick={() => setPreviewMode('desktop')} className={`flex h-7 w-7 items-center justify-center rounded-full transition ${previewMode === 'desktop' ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}><Monitor className="h-3.5 w-3.5" /></button>
+                            <button type="button" aria-label="معاينة الجوال" onClick={() => setPreviewMode('mobile')} className={`flex h-7 w-7 items-center justify-center rounded-full transition ${previewMode === 'mobile' ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}><Smartphone className="h-3.5 w-3.5" /></button>
                         </div>
-
-                        <a
-                            href={storeUrl}
-                            target="_blank"
-                            rel="noopener"
-                            className="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 sm:inline-flex"
-                        >
-                            <Eye className="h-4 w-4" /> معاينة المتجر
-                        </a>
-
-                        <a
-                            href={storeUrl}
-                            target="_blank"
-                            rel="noopener"
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm sm:hidden"
-                            aria-label="معاينة المتجر"
-                        >
-                            <Eye className="h-4 w-4" />
-                        </a>
-
-                        <Button
-                            onClick={handleSaveAll}
-                            disabled={saving || !isDirty}
-                            className={`gap-1.5 rounded-full px-5 font-black ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
-                            title={isDirty ? 'حفظ التغييرات' : 'لا توجد تغييرات'}
-                        >
-                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="hidden sm:inline">حفظ التغييرات</span>
-                            <span className="sm:hidden">حفظ</span>
-                            {isDirty && !saving && <span className="ms-1 h-2 w-2 rounded-full bg-amber-300 animate-pulse" aria-hidden />}
+                        <a href={storeUrl} target="_blank" rel="noopener" className="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 sm:inline-flex"><Eye className="h-3.5 w-3.5" /> معاينة المتجر</a>
+                        <a href={storeUrl} target="_blank" rel="noopener" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm sm:hidden" aria-label="معاينة المتجر"><Eye className="h-3.5 w-3.5" /></a>
+                        <Button onClick={handleSaveAll} disabled={saving || !isDirty} className={`gap-1.5 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-black ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`} title={isDirty ? 'حفظ التغييرات' : 'لا توجد تغييرات'}>
+                            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="hidden sm:inline">حفظ التغييرات</span><span className="sm:hidden">حفظ</span>{isDirty && !saving && <span className="ms-1 h-2 w-2 rounded-full bg-amber-300 animate-pulse" aria-hidden />}
                         </Button>
                     </div>
                 </div>
             </header>
 
-            {/* ───────────── Split Layout: Sidebar + Live Canvas ───────────── */}
-            <div className="h-full flex flex-col overflow-hidden mx-auto max-w-[1600px] lg:h-[calc(100vh-64px)] lg:flex-row">
-                {/* Left Panel – Settings Sidebar */}
-                <aside className="h-full flex flex-col overflow-hidden order-2 w-full shrink-0 border-t bg-white lg:order-1 lg:w-[400px] lg:border-e lg:border-t-0 xl:w-[420px]">
-                    <div className="flex-1 overflow-y-auto max-h-[calc(100vh-100px)] px-4 py-2 custom-scrollbar space-y-3">
-                        {/* ── Templates quick picker ── */}
-                        <AccordionSection title="القوالب" icon={<Sparkles className="h-3.5 w-3.5" />} open={openSections.templates} onOpenChange={(v) => setOpenSections((s) => ({ ...s, templates: v }))}>
-                            <p className="text-xs leading-relaxed text-slate-500">اختر قالب متجرك — سيُطبَّق مباشرةً عند الاختيار.</p>
-                            <StoreTemplatesGrid
-                                store={store}
-                                activeTheme={theme}
-                                availableThemes={availableThemes}
-                                withFilter={false}
-                                onApplied={(slug) => {
-                                    setTheme(slug);
-                                    setInitialSnapshot((prev) => {
-                                        try {
-                                            const parsed = JSON.parse(prev);
-                                            parsed.theme = slug;
-                                            return JSON.stringify(parsed);
-                                        } catch { return prev; }
-                                    });
-                                    setPreviewVersion((v) => v + 1);
-                                }}
-                            />
-                        </AccordionSection>
+            {/* Split Layout: Preview (left 70%) + Controls (right 30%) */}
+            <div className="mx-auto flex max-w-[1600px] flex-col lg:h-[calc(100vh-56px)] lg:flex-row lg:overflow-hidden">
+                {/* Preview Panel — order first on mobile, left on desktop */}
+                <main className="order-1 flex min-h-[420px] flex-1 flex-col overflow-hidden bg-slate-100 lg:order-1 lg:min-h-0">
+                    <div className="flex items-center justify-between border-b bg-white px-3 py-2 sm:px-4">
+                        <p className="flex items-center gap-2 text-xs font-black text-slate-700"><Monitor className="h-3.5 w-3.5 text-slate-400" /> معاينة حية<span className="hidden text-xs font-normal text-slate-400 sm:inline">— تتحدث فورياً</span></p>
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200">{previewMode === 'mobile' ? 'جوال 375px' : 'سطح مكتب'}</span>
+                    </div>
+                    <div className="flex flex-1 flex-col overflow-hidden bg-slate-100 p-3 sm:p-5">
+                        <div className={`mx-auto flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-out ${previewMode === 'mobile' ? 'w-[375px] max-w-full rounded-[20px] border border-slate-200 shadow-xl ring-1 ring-slate-200' : 'w-full max-w-[1100px] rounded-[14px] border border-slate-200 shadow-xl ring-1 ring-slate-200'}`}>
+                            {(() => {
+                                const base = String(storeUrl || '').trim();
+                                let previewSrc = '';
+                                if (base) {
+                                    try { const u = new URL(base, window.location.origin); u.searchParams.set('preview', 'true'); u.searchParams.set('v', String(previewVersion)); u.searchParams.set('theme', theme); previewSrc = u.toString(); } catch { const sep = base.includes('?') ? '&' : '?'; previewSrc = `${base}${sep}preview=true&v=${previewVersion}&theme=${encodeURIComponent(theme)}`; }
+                                }
+                                return <iframe ref={previewIframeRef} key={`${previewSrc}-${previewVersion}-${theme}`} src={previewSrc} title="Live store preview" className="h-full min-h-[520px] w-full flex-1 border-0 bg-white" loading="lazy" referrerPolicy="no-referrer" allow="fullscreen" />;
+                            })()}
+                        </div>
+                        <p className="mt-2 text-center text-[11px] text-slate-400">المعاينة تتحدث فورياً — احفظ لتظهر للزوار {isDirty && <span className="font-bold text-amber-600">• توجد تغييرات غير محفوظة</span>}</p>
+                    </div>
+                </main>
 
-                        {/* ── 1. الهوية والألوان ── */}
-                        <AccordionSection title="الهوية والألوان" icon={<Palette className="h-3.5 w-3.5" />} open={openSections.identity} onOpenChange={(v) => setOpenSections((s) => ({ ...s, identity: v }))}>
-                            {/* Logo */}
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">الشعار (Logo)</Label>
-                                {logoValue ? (
-                                    <div className="group relative flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                                        <img src={getImageUrl(logoValue)} alt="الشعار" className="h-12 w-12 rounded-xl bg-white object-contain p-1 shadow" />
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-xs font-bold text-slate-700" dir="ltr">
-                                                {logoValue}
-                                            </p>
-                                            <p className="text-xs text-slate-500">اضغط لتغيير الشعار</p>
-                                        </div>
-                                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => logoFileRef.current?.click()} disabled={logoUploading}>
-                                            {logoUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-                                        </Button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setTokens({ ...tokens, logo: '' });
-                                                setContent(setDotted(setDotted(content, 'brand.logo', ''), 'logo', ''));
-                                            }}
-                                            className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600"
-                                            aria-label="حذف"
-                                        >
-                                            <X className="h-3 w-3" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <DropzoneUploader
-                                        label="اسحب الشعار هنا أو اضغط للاختيار"
-                                        hint="PNG أو SVG بخلفية شفافة — 512×512 يفضل"
-                                        accept="image/*"
-                                        multiple={false}
-                                        uploading={logoUploading}
-                                        onFiles={uploadLogoFile}
-                                    />
-                                )}
-                                <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadLogoFile(e.target.files)} />
-                            </div>
+                {/* Controls Panel — order second on mobile, right on desktop, 25-30% */}
+                <aside className="order-2 flex w-full shrink-0 flex-col overflow-hidden border-t bg-white lg:order-2 lg:w-[360px] lg:border-e-0 lg:border-s lg:border-t-0 xl:w-[390px]">
+                    {/* Sticky workspace navigation */}
+                    <div className="sticky top-0 z-10 shrink-0 border-b border-slate-100 bg-white">
+                        <div className="grid grid-cols-3 gap-1 p-2 sm:gap-1.5 sm:p-2.5">
+                            {WORKSPACES.map((ws) => {
+                                const active = activeWorkspace === ws.id;
+                                return (
+                                    <button
+                                        key={ws.id}
+                                        type="button"
+                                        onClick={() => setActiveWorkspace(ws.id)}
+                                        className={`flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[11px] font-black leading-none transition sm:py-2.5 sm:text-xs ${active ? 'bg-slate-900 text-white shadow' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}
+                                    >
+                                        <span className={`flex h-6 w-6 items-center justify-center rounded-full ${active ? 'bg-white/15' : 'bg-white shadow-sm'}`}>{ws.icon}</span>
+                                        {ws.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {/* Active workspace title bar */}
+                        <div className="flex items-center justify-between bg-slate-50 px-3 py-2">
+                            <span className="flex items-center gap-1.5 text-xs font-black text-slate-800">
+                                {WORKSPACES.find((w) => w.id === activeWorkspace)?.icon}
+                                {WORKSPACES.find((w) => w.id === activeWorkspace)?.label}
+                            </span>
+                            <span className="text-[10px] font-medium text-slate-400">{activeWorkspace === 'templates' ? `${modules.length} قوالب` : activeWorkspace === 'sections' ? `${homepageCategories.length} فئات` : ''}</span>
+                        </div>
+                    </div>
 
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">الأيقونة (Favicon)</Label>
-                                {faviconValue ? (
-                                    <div className="group relative flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                                        <img src={getImageUrl(faviconValue)} alt="الأيقونة" className="h-12 w-12 rounded-xl bg-white object-contain p-1 shadow" />
-                                        <div className="min-w-0 flex-1">
-                                            <p className="truncate text-xs font-bold text-slate-700" dir="ltr">
-                                                {faviconValue}
-                                            </p>
-                                            <p className="text-xs text-slate-500">اضغط لتغيير الأيقونة</p>
-                                        </div>
-                                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => faviconFileRef.current?.click()} disabled={faviconUploading}>
-                                            {faviconUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-                                        </Button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setTokens({ ...tokens, favicon: '' });
-                                                setContent(setDotted(setDotted(content, 'brand.favicon', ''), 'favicon', ''));
-                                            }}
-                                            className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600"
-                                            aria-label="حذف"
-                                        >
-                                            <X className="h-3 w-3" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <DropzoneUploader
-                                        label="اسحب الأيقونة هنا أو اضغط للاختيار"
-                                        hint="32×32 — تظهر في تبويب المتصفح"
-                                        accept="image/*"
-                                        multiple={false}
-                                        uploading={faviconUploading}
-                                        onFiles={uploadFaviconFile}
-                                    />
-                                )}
-                                <input ref={faviconFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFaviconFile(e.target.files)} />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <ColorPickerField label="اللون الأساسي" value={colors.primary || '#0d9488'} onChange={(v) => setTokens({ ...tokens, colors: { ...colors, primary: v } })} />
-                                <ColorPickerField label="اللون الثانوي" value={colors.secondary || '#f59e0b'} onChange={(v) => setTokens({ ...tokens, colors: { ...colors, secondary: v } })} />
-                            </div>
-
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">استدارة الزوايا</Label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="range"
-                                        min={0}
-                                        max={32}
-                                        value={parseInt(String(tokens.radius ?? 16), 10) || 0}
-                                        onChange={(e) => setTokens({ ...tokens, radius: `${e.target.value}px` })}
-                                        className="flex-1 accent-emerald-600"
-                                        aria-label="استدارة الزوايا"
-                                    />
-                                    <span className="min-w-12 rounded-full bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">
-                                        {String(tokens.radius ?? '16px')}
-                                    </span>
+                    {/* Scrollable workspace content */}
+                    <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4" style={{ maxHeight: 'calc(100vh - 56px - 132px)', scrollbarWidth: 'thin' }}>
+                        {/* ============ 1. القالب ============ */}
+                        {activeWorkspace === 'templates' && (
+                            <div className="space-y-3">
+                                <p className="text-xs leading-relaxed text-slate-500">اختر قالب متجرك — يُطبّق فوراً عند الاختيار.</p>
+                                <div className="space-y-2.5">
+                                    {modules.map((tpl) => {
+                                        const active = theme.trim().toLowerCase() === tpl.meta.slug.toLowerCase();
+                                        const allowed = !availableThemes || availableThemes.length === 0 || availableThemes.includes(tpl.meta.slug);
+                                        return (
+                                            <div key={tpl.meta.slug} className={`flex gap-3 rounded-xl border p-3 transition ${active ? 'border-emerald-500 bg-emerald-50/60 ring-1 ring-emerald-200' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'} ${!allowed ? 'opacity-60' : ''}`}>
+                                                <CompactTemplateThumb slug={tpl.meta.slug} preview={tpl.meta.preview} />
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <h3 className="truncate text-sm font-black text-slate-900">{tpl.meta.name}</h3>
+                                                        {active && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white"><Check className="h-3 w-3" /></span>}
+                                                    </div>
+                                                    <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-slate-500">{tpl.meta.description}</p>
+                                                    <div className="mt-2 flex items-center gap-1.5">
+                                                        <button type="button" onClick={() => setPreviewTemplateSlug(tpl.meta.slug)} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50"><Eye className="h-3 w-3" /> معاينة</button>
+                                                        {active ? (
+                                                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-black text-white">مُستخدم حالياً</span>
+                                                        ) : !allowed ? (
+                                                            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">ترقية مطلوبة</span>
+                                                        ) : (
+                                                            <button type="button" disabled={applyingTemplate === tpl.meta.slug} onClick={() => setConfirmTemplateSlug(tpl.meta.slug)} className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-[11px] font-black text-white hover:bg-slate-800 disabled:opacity-50" style={{ backgroundColor: tpl.meta.accent }}>
+                                                                {applyingTemplate === tpl.meta.slug && <Loader2 className="h-3 w-3 animate-spin" />} استخدام
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            </div>
-
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">عائلة الخط</Label>
-                                <select
-                                    value={typography.font_family || ''}
-                                    onChange={(e) => setTokens({ ...tokens, typography: { ...typography, font_family: e.target.value } })}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
-                                >
-                                    <option value="">افتراضي القالب</option>
-                                    <option value="Cairo">Cairo</option>
-                                    <option value="Tajawal">Tajawal</option>
-                                    <option value="Almarai">Almarai</option>
-                                    <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
-                                </select>
-                            </div>
-
-                            {/* Live token preview */}
-                            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
-                                <p className="mb-2 text-xs font-bold text-slate-400">معاينة سريعة</p>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className="px-4 py-2 text-xs font-black text-white shadow" style={{ backgroundColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}>
-                                        زر أساسي
-                                    </span>
-                                    <span className="px-4 py-2 text-xs font-black text-white shadow" style={{ backgroundColor: colors.secondary || '#f59e0b', borderRadius: tokens.radius || '16px' }}>
-                                        زر ثانوي
-                                    </span>
-                                    <span className="border bg-white px-4 py-2 text-xs font-bold text-slate-700" style={{ borderColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}>
-                                        عنصر محدد
-                                    </span>
-                                </div>
-                            </div>
-                        </AccordionSection>
-
-                        {/* ── 2. شريط الإعلانات العلوي — يعمل فقط مع Fashion Atelier */}
-                        {theme === 'fashion-atelier' ? (
-                            <AccordionSection title="شريط الإعلانات العلوي" icon={<Megaphone className="h-3.5 w-3.5" />} open={openSections.announcement} onOpenChange={(v) => setOpenSections((s) => ({ ...s, announcement: v }))}>
-                                <div>
-                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الشريط</Label>
-                                    <Input
-                                        value={announcementText ?? ''}
-                                        onChange={(e) => setContent(setDotted(content, 'announcement.text', e.target.value))}
-                                        placeholder="توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح"
-                                        className="bg-white"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <ColorPickerField
-                                        label="لون الخلفية"
-                                        value={announcementBg && /^#[0-9a-fA-F]{6}$/.test(announcementBg.trim()) ? announcementBg.trim() : '#1a1a1a'}
-                                        onChange={(v) => setContent(setDotted(content, 'announcement.bg_color', v))}
-                                    />
-                                    <ColorPickerField
-                                        label="لون النص"
-                                        value={announcementColor && /^#[0-9a-fA-F]{6}$/.test(announcementColor.trim()) ? announcementColor.trim() : '#ffffff'}
-                                        onChange={(v) => setContent(setDotted(content, 'announcement.text_color', v))}
-                                    />
-                                </div>
-
-                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-800">إظهار الشريط</p>
-                                        <p className="text-xs text-slate-500">يظهر أعلى كل صفحات المتجر</p>
-                                    </div>
-                                    <Switch checked={showAnnouncement} onCheckedChange={(v) => setContent(setDotted(content, 'announcement.enabled', v))} aria-label="إظهار شريط الإعلانات" />
-                                </div>
-
-                                {/* Mini preview */}
-                                <div className="overflow-hidden rounded-xl ring-1 ring-slate-200">
-                                    <div dir="rtl" className="flex items-center justify-center gap-2 px-3 py-2 text-center text-xs font-medium" style={{ backgroundColor: announcementBg, color: announcementColor }}>
-                                        <span aria-hidden>✦</span>
-                                    <span>{announcementText.trim() || 'توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح'}</span>
-                                    <span aria-hidden>✦</span>
-                                </div>
-                                {!showAnnouncement && <p className="bg-amber-50 px-3 py-1.5 text-center text-xs font-bold text-amber-700">مخفي</p>}
-                            </div>
-                        </AccordionSection>
-                        ) : (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold text-amber-800">
-                                شريط الإعلانات متاح فقط لقالب Fashion Atelier حالياً — اختر هذا القالب لاستخدامه.
                             </div>
                         )}
 
-                        {/* ── 3. البنر الرئيسي ── */}
-                        <AccordionSection title="البنر الرئيسي (Hero Banner)" icon={<ImageIcon className="h-3.5 w-3.5" />} open={openSections.hero} onOpenChange={(v) => setOpenSections((s) => ({ ...s, hero: v }))}>
-                            <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
-                                {[
-                                    { id: 'image', label: 'صور' },
-                                    { id: 'video', label: 'فيديو' },
-                                    { id: 'youtube', label: 'يوتيوب' },
-                                ].map((opt) => (
-                                    <button
-                                        key={opt.id}
-                                        type="button"
-                                        onClick={() => {
-                                            let tmp = setDotted(content, 'hero_banner.type', opt.id);
-                                            tmp = setDotted(tmp, 'hero_type', opt.id);
-                                            setContent(tmp);
-                                        }}
-                                        className={`flex-1 rounded-lg px-3 py-2 text-xs font-black transition ${heroType === opt.id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {heroType === 'image' && (
-                                <div className="space-y-3">
-                                    {heroImages.length > 0 && (
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {heroImages.map((img: string, idx: number) => (
-                                                <div key={idx} className="group relative overflow-hidden rounded-xl border bg-slate-100">
-                                                    <img src={normalizeImageUrl(img)} alt="" className="aspect-[16/10] w-full object-cover" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const next = heroImages.filter((_: string, i: number) => i !== idx);
-                                                            let tmp = setDotted(content, 'hero_banner.images', next);
-                                                            tmp = setDotted(tmp, 'hero_images', next);
-                                                            setContent(tmp);
-                                                        }}
-                                                        className="absolute left-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-red-600"
-                                                        aria-label="حذف الصورة"
-                                                    >
-                                                        <X className="h-3.5 w-3.5" />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    <DropzoneUploader
-                                        label={heroImages.length === 0 ? 'اسحب صور البنر هنا' : 'إضافة المزيد من الصور'}
-                                        hint="حتى 10 صور — 1920×1080 موصى به، 2MB حد أقصى"
-                                        multiple
-                                        uploading={heroUploading}
-                                        onFiles={uploadHeroFiles}
-                                    />
-                                    <input ref={heroFileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && uploadHeroFiles(e.target.files)} />
-                                </div>
-                            )}
-
-                            {heroType === 'video' && (
-                                <div className="space-y-3">
-                                    <Label className="block text-xs font-bold text-slate-600">رابط فيديو MP4</Label>
-                                    <Input
-                                        dir="ltr"
-                                        value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl}
-                                        onChange={(e) => {
-                                            const clean = stripTrailingSlash(e.target.value.trim());
-                                            const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : '';
-                                            let tmp = setDotted(content, 'hero_banner.video_url', norm);
-                                            tmp = setDotted(tmp, 'hero_video_url', norm);
-                                            setContent(tmp);
-                                        }}
-                                        placeholder="https://example.com/video.mp4"
-                                        className="bg-white font-mono text-sm"
-                                    />
-                                    <DropzoneUploader
-                                        label="أو اسحب ملف الفيديو هنا"
-                                        hint="MP4 — حتى 15MB"
-                                        accept="video/mp4,video/*"
-                                        onFiles={async (files) => {
-                                            const f = Array.from(files)[0];
-                                            if (!f) return;
-                                            setHeroUploading(true);
-                                            try {
-                                                const fd = new FormData();
-                                                fd.append('files[]', f);
-                                                const res = await fetch(route('api.media.batch'), {
-                                                    method: 'POST',
-                                                    body: fd,
-                                                    headers: {
-                                                        Accept: 'application/json',
-                                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                                                    },
-                                                });
-                                                const json: any = await res.json();
-                                                if (res.ok && json?.data?.[0]?.url) {
-                                                    const raw = String(json.data[0].url || '');
-                                                    const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : '';
-                                                    const normalized = normalizeImageUrl(url);
-                                                    let tmp = setDotted(content, 'hero_banner.video_url', normalized);
-                                                    tmp = setDotted(tmp, 'hero_video_url', normalized);
-                                                    setContent(tmp);
-                                                    toast.success('تم رفع الفيديو');
-                                                } else toast.error(json?.message || 'فشل الرفع');
-                                            } catch {
-                                                toast.error('حدث خطأ أثناء الرفع');
-                                            } finally {
-                                                setHeroUploading(false);
-                                            }
-                                        }}
-                                        uploading={heroUploading}
-                                    />
-                                    {heroVideoUrl && <video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-48 w-full rounded-xl border object-cover" />}
-                                </div>
-                            )}
-
-                            {heroType === 'youtube' && (
-                                <div className="space-y-3">
-                                    <Label className="block text-xs font-bold text-slate-600">رابط يوتيوب</Label>
-                                    <Input
-                                        dir="ltr"
-                                        value={heroYoutubeUrl ? stripTrailingSlash(heroYoutubeUrl) : heroYoutubeUrl}
-                                        onChange={(e) => {
-                                            const clean = stripTrailingSlash(e.target.value.trim());
-                                            let tmp = setDotted(content, 'hero_banner.youtube_url', clean);
-                                            tmp = setDotted(tmp, 'hero_youtube_url', clean);
-                                            setContent(tmp);
-                                        }}
-                                        placeholder="https://www.youtube.com/watch?v=..."
-                                        className="bg-white font-mono text-sm"
-                                    />
-                                    {youtubeId && (
-                                        <div className="overflow-hidden rounded-xl border">
-                                            <iframe
-                                                className="aspect-video w-full"
-                                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`}
-                                                title="YouTube preview"
-                                                frameBorder="0"
-                                                allow="autoplay; fullscreen"
-                                                allowFullScreen
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">شفافية الطبقة ({heroOverlay}%)</Label>
-                                <div className="flex items-center gap-3">
-                                    <input
-                                        type="range"
-                                        min={0}
-                                        max={100}
-                                        value={heroOverlay}
-                                        onChange={(e) => {
-                                            const val = Number(e.target.value);
-                                            let tmp = setDotted(content, 'hero_banner.overlay_opacity', val);
-                                            tmp = setDotted(tmp, 'overlay_opacity', val);
-                                            setContent(tmp);
-                                        }}
-                                        className="flex-1 accent-emerald-600"
-                                    />
-                                    <span className="min-w-12 rounded-full bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">{heroOverlay}%</span>
-                                </div>
-                            </div>
-
-                            <div className="grid gap-3">
-                                <div>
-                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">العنوان الرئيسي</Label>
-                                    <Input
-                                        value={heroHeading ?? ''}
-                                        onChange={(e) => {
-                                            let tmp = setDotted(content, 'hero_banner.heading', e.target.value);
-                                            tmp = setDotted(tmp, 'hero_heading', e.target.value);
-                                            setContent(tmp);
-                                        }}
-                                        placeholder="أناقة تُروى كقصة"
-                                        className="bg-white"
-                                    />
-                                </div>
-                                <div>
-                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">الوصف الفرعي</Label>
-                                    <Input
-                                        value={heroSubtitle ?? ''}
-                                        onChange={(e) => {
-                                            let tmp = setDotted(content, 'hero_banner.subtitle', e.target.value);
-                                            tmp = setDotted(tmp, 'hero_subtitle', e.target.value);
-                                            setContent(tmp);
-                                        }}
-                                        placeholder="تشكيلة الموسم الجديدة"
-                                        className="bg-white"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الزر</Label>
-                                        <Input
-                                            value={heroCtaLabel ?? ''}
-                                            onChange={(e) => {
-                                                let tmp = setDotted(content, 'hero_banner.cta_label', e.target.value);
-                                                tmp = setDotted(tmp, 'hero_cta_label', e.target.value);
-                                                setContent(tmp);
-                                            }}
-                                            placeholder="اكتشفي التشكيلة"
-                                            className="bg-white"
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label className="mb-1.5 block text-xs font-bold text-slate-600">رابط الزر</Label>
-                                        <Input
-                                            dir="ltr"
-                                            value={heroCtaLink ?? ''}
-                                            onChange={(e) => {
-                                                const clean = stripTrailingSlash(e.target.value.trim());
-                                                let tmp = setDotted(content, 'hero_banner.cta_link', clean);
-                                                tmp = setDotted(tmp, 'hero_cta_link', clean);
-                                                setContent(tmp);
-                                            }}
-                                            placeholder="#section"
-                                            className="bg-white font-mono text-sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Template-specific slots (if any) */}
-                            {!!activeModule?.contentSchema?.length && (
-                                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                                    <p className="mb-2 text-xs font-black text-slate-700">محتوى قالب «{activeModule.meta.name}»</p>
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        {(activeModule.contentSchema as SlotField[]).map((field) => {
-                                            const value = getDotted(content, field.key) ?? field.default ?? '';
-                                            return (
-                                                <div key={field.key} className={field.type === 'image' ? 'sm:col-span-2' : ''}>
-                                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">{field.label}</Label>
-                                                    {field.type === 'image' ? (
-                                                        <MediaPicker value={value} onChange={(url: string) => setContent(setDotted(content, field.key, url))} />
-                                                    ) : (
-                                                        <Input
-                                                            value={String(value)}
-                                                            onChange={(e) => setContent(setDotted(content, field.key, e.target.value))}
-                                                            placeholder={field.default}
-                                                            className="bg-white"
-                                                        />
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-                        </AccordionSection>
-
-                        {/* ── 4. أقسام الصفحة الرئيسية (tab=content) ── */}
-                        <AccordionSection title="أقسام الصفحة الرئيسية" icon={<Store className="h-3.5 w-3.5" />} open={openSections.homeSections} onOpenChange={(v) => setOpenSections((s) => ({ ...s, homeSections: v }))}>
-                            <p className="text-xs leading-relaxed text-slate-500">تحكم في عرض الأقسام الثابتة وإضافة أقسام فئات ديناميكية للصفحة الرئيسية.</p>
-
-                            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
-                                <div>
-                                    <p className="text-sm font-bold text-slate-800">شريط الفئات العلوي</p>
-                                    <p className="text-xs text-slate-500">إظهار شريط الفئات الثانوي في الهيدر</p>
-                                </div>
-                                <Switch
-                                    checked={showCategoriesBar}
-                                    onCheckedChange={(v) => {
-                                        let tmp = setDotted(content, 'settings.show_categories_bar', v);
-                                        tmp = setDotted(tmp, 'homepage.show_categories_bar', v);
-                                        setContent(tmp);
-                                    }}
-                                    aria-label="show_categories_bar"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
-                                <div>
-                                    <p className="text-sm font-bold text-slate-800">وصل حديثاً</p>
-                                    <p className="text-xs text-slate-500">إظهار قسم أحدث المنتجات</p>
-                                </div>
-                                <Switch
-                                    checked={showLatestProducts}
-                                    onCheckedChange={(v) => {
-                                        let tmp = setDotted(content, 'settings.show_latest_products', v);
-                                        tmp = setDotted(tmp, 'homepage.show_latest_products', v);
-                                        setContent(tmp);
-                                    }}
-                                    aria-label="show_latest_products"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
-                                <div>
-                                    <p className="text-sm font-bold text-slate-800">الأكثر مبيعاً</p>
-                                    <p className="text-xs text-slate-500">إظهار قسم المنتجات الأكثر مبيعاً</p>
-                                </div>
-                                <Switch
-                                    checked={showBestSellers}
-                                    onCheckedChange={(v) => {
-                                        let tmp = setDotted(content, 'settings.show_best_sellers', v);
-                                        tmp = setDotted(tmp, 'homepage.show_best_sellers', v);
-                                        setContent(tmp);
-                                    }}
-                                    aria-label="show_best_sellers"
-                                />
-                            </div>
-
-                            <Separator />
-
-                            <div>
-                                <Label className="mb-2 block text-xs font-black text-slate-700">مدير أقسام الفئات (homepage_categories)</Label>
-                                <p className="mb-3 text-xs text-slate-500">اختر الفئات التي تريد عرضها كأقسام منفصلة في الصفحة الرئيسية. لكل قسم سيظهر شبكة منتجات مع زر "عرض الكل".</p>
-                                {availableCategories.length === 0 ? (
-                                    <p className="rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-700">لا توجد فئات نشطة لهذا المتجر.</p>
-                                ) : (
-                                    <div className="max-h-56 space-y-1.5 overflow-auto rounded-xl border border-slate-200 bg-white p-3">
-                                        {availableCategories.map((cat) => {
-                                            const idStr = String(cat.id);
-                                            const checked = homepageCategories.map(String).includes(idStr);
-                                            return (
-                                                <label key={cat.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={checked}
-                                                        onChange={(e) => {
-                                                            const next = e.target.checked
-                                                                ? [...homepageCategories.map(String), idStr]
-                                                                : homepageCategories.map(String).filter((x) => x !== idStr);
-                                                            // store as strings to keep type consistent
-                                                            let tmp = setDotted(content, 'settings.homepage_categories', next);
-                                                            tmp = setDotted(tmp, 'homepage.homepage_categories', next);
-                                                            tmp = setDotted(tmp, 'homepage_categories', next);
-                                                            setContent(tmp);
-                                                        }}
-                                                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                                                    />
-                                                    <span className="flex-1 text-sm font-medium text-slate-700">{cat.name}</span>
-                                                    <span className="text-xs text-slate-400">#{cat.id}</span>
-                                                </label>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                                <p className="mt-2 text-xs text-slate-400">{homepageCategories.length} فئة محددة</p>
-                            </div>
-
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">الحد الأقصى للمنتجات في كل قسم فئة</Label>
-                                <select
-                                    value={String(homepageProductsPerCategory)}
-                                    onChange={(e) => {
-                                        const v = Number(e.target.value);
-                                        let tmp = setDotted(content, 'settings.homepage_products_per_category', v);
-                                        tmp = setDotted(tmp, 'homepage.homepage_products_per_category', v);
-                                        setContent(tmp);
-                                    }}
-                                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none"
-                                >
-                                    <option value="4">4 منتجات</option>
-                                    <option value="8">8 منتجات</option>
-                                    <option value="12">12 منتجاً</option>
-                                </select>
-                            </div>
-                        </AccordionSection>
-
-                        {/* ── 5. محتوى الصفحة الرئيسية — جزء من تجربة التصميم الموحدة ── */}
-                        <AccordionSection title="محتوى الصفحة الرئيسية" icon={<Building2 className="h-3.5 w-3.5" />} open={openSections.homeSections} onOpenChange={(v) => setOpenSections((s) => ({ ...s, homeSections: v }))}>
+                        {/* ============ 2. الهوية ============ */}
+                        {activeWorkspace === 'identity' && (
                             <div className="space-y-4">
-                                <div>
-                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">رسالة الترحيب</Label>
-                                    <Input value={getDotted(content, 'welcome_message') as string || ''} onChange={(e) => setContent(setDotted(content, 'welcome_message', e.target.value))} placeholder="مرحباً بكم في متجرنا!" className="bg-white" />
-                                </div>
-                                <div>
-                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">وصف المتجر</Label>
-                                    <Textarea value={getDotted(content, 'store_description') as string || ''} onChange={(e) => setContent(setDotted(content, 'store_description', e.target.value))} placeholder="وصف مختصر لمتجرك..." rows={3} className="bg-white" />
-                                </div>
-                                <div>
-                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الحقوق</Label>
-                                    <Input value={getDotted(content, 'copyright_text') as string || ''} onChange={(e) => setContent(setDotted(content, 'copyright_text', e.target.value))} placeholder="© 2026 متجري. جميع الحقوق محفوظة." className="bg-white" />
-                                </div>
-                                <div className="rounded-xl bg-amber-50 p-3 ring-1 ring-amber-200">
-                                    <p className="text-xs leading-relaxed text-amber-800">💡 هذا المحتوى يظهر في الصفحة الرئيسية. يمكنك معاينته مباشرة في المعاينة الحية على اليمين.</p>
-                                </div>
-                            </div>
-                        </AccordionSection>
+                                <Card>
+                                    <SectionLabel>شعار المتجر <span className="text-[10px] font-normal text-slate-400">Logo</span></SectionLabel>
+                                    {logoValue ? (
+                                        <div className="group relative flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                            <img src={getImageUrl(logoValue)} alt="شعار المتجر" className="h-12 w-12 rounded-xl bg-white object-contain p-1 shadow" />
+                                            <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-700" dir="ltr">{logoValue}</p><p className="text-[11px] text-slate-500">اضغط لتغيير الشعار</p></div>
+                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => logoFileRef.current?.click()} disabled={logoUploading}>{logoUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}</Button>
+                                            <button type="button" onClick={() => { setTokens({ ...tokens, logo: '' }); setContent(setDotted(setDotted(content, 'brand.logo', ''), 'logo', '')); }} className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600" aria-label="حذف"><X className="h-3 w-3" /></button>
+                                        </div>
+                                    ) : (
+                                        <DropzoneUploader label="اسحب الشعار هنا أو اضغط للاختيار" hint="PNG بخلفية شفافة — 512×512 يفضل" accept="image/*" multiple={false} uploading={logoUploading} onFiles={uploadLogoFile} />
+                                    )}
+                                    <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadLogoFile(e.target.files)} />
+                                </Card>
 
-                        {/* ── 6. إعدادات متقدمة ── */}
-                        <AccordionSection title="إعدادات متقدمة" icon={<Code2 className="h-3.5 w-3.5" />} open={openSections.advanced} onOpenChange={(v) => setOpenSections((s) => ({ ...s, advanced: v }))}>
-                            <p className="text-xs leading-relaxed text-slate-500">أكواد مخصصة تُحقن داخل واجهة متجرك فقط — في بيئة معزولة ومنقّاة.</p>
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">CSS مخصص</Label>
-                                <Textarea dir="ltr" rows={6} value={customCss} onChange={(e) => setCustomCss(e.target.value)} placeholder=".my-button { background: #0d9488; }" className="font-mono text-sm" />
-                            </div>
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">JavaScript مخصص</Label>
-                                <Textarea dir="ltr" rows={6} value={customJs} onChange={(e) => setCustomJs(e.target.value)} placeholder="// يعمل بعد اكتمال التحميل" className="font-mono text-sm" />
-                            </div>
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">وسوم الرأس (Head)</Label>
-                                <Textarea dir="ltr" rows={3} value={headInject} onChange={(e) => setHeadInject(e.target.value)} placeholder='<meta name="..." />' className="font-mono text-sm" />
-                            </div>
-                        </AccordionSection>
+                                <Card>
+                                    <SectionLabel>أيقونة المتجر <span className="text-[10px] font-normal text-slate-400">Favicon</span></SectionLabel>
+                                    {faviconValue ? (
+                                        <div className="group relative flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                            <img src={getImageUrl(faviconValue)} alt="أيقونة المتجر" className="h-10 w-10 rounded-xl bg-white object-contain p-1 shadow" />
+                                            <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-700" dir="ltr">{faviconValue}</p><p className="text-[11px] text-slate-500">تظهر في تبويب المتصفح</p></div>
+                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => faviconFileRef.current?.click()} disabled={faviconUploading}>{faviconUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}</Button>
+                                            <button type="button" onClick={() => { setTokens({ ...tokens, favicon: '' }); setContent(setDotted(setDotted(content, 'brand.favicon', ''), 'favicon', '')); }} className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600" aria-label="حذف"><X className="h-3 w-3" /></button>
+                                        </div>
+                                    ) : (
+                                        <DropzoneUploader label="اسحب الأيقونة هنا" hint="32×32 — PNG" accept="image/*" multiple={false} uploading={faviconUploading} onFiles={uploadFaviconFile} />
+                                    )}
+                                    <input ref={faviconFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFaviconFile(e.target.files)} />
+                                </Card>
 
-                        <p className="px-1 pt-2 text-center text-xs text-slate-400">يتم حفظ كل الأقسام معاً عبر زر “حفظ التغييرات” أعلاه</p>
+                                <Card>
+                                    <p className="mb-3 text-xs font-black text-slate-800">الألوان</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <ColorPickerField label="اللون الأساسي" helper="Primary" value={colors.primary || '#0d9488'} onChange={(v) => setTokens({ ...tokens, colors: { ...colors, primary: v } })} />
+                                        <ColorPickerField label="اللون الثانوي" helper="Secondary" value={colors.secondary || '#f59e0b'} onChange={(v) => setTokens({ ...tokens, colors: { ...colors, secondary: v } })} />
+                                    </div>
+                                </Card>
+
+                                <Card>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <SectionLabel>استدارة الزوايا</SectionLabel>
+                                            <div className="flex items-center gap-3">
+                                                <input type="range" min={0} max={32} value={parseInt(String(tokens.radius ?? 16), 10) || 0} onChange={(e) => setTokens({ ...tokens, radius: `${e.target.value}px` })} className="flex-1 accent-emerald-600" aria-label="استدارة الزوايا" />
+                                                <span className="min-w-12 rounded-full bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">{String(tokens.radius ?? '16px')}</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <SectionLabel>عائلة الخط</SectionLabel>
+                                            <select value={typography.font_family || ''} onChange={(e) => setTokens({ ...tokens, typography: { ...typography, font_family: e.target.value } })} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none">
+                                                <option value="">افتراضي القالب</option><option value="Cairo">Cairo</option><option value="Tajawal">Tajawal</option><option value="Almarai">Almarai</option><option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option>
+                                            </select>
+                                        </div>
+                                        <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
+                                            <p className="mb-2 text-[11px] font-bold text-slate-400">معاينة سريعة</p>
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <span className="px-4 py-2 text-xs font-black text-white shadow" style={{ backgroundColor: colors.primary || '#0d9488', borderRadius: tokens.radius || '16px' }}>زر أساسي</span>
+                                                <span className="px-4 py-2 text-xs font-black text-white shadow" style={{ backgroundColor: colors.secondary || '#f59e0b', borderRadius: tokens.radius || '16px' }}>زر ثانوي</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
+                        {/* ============ 3. الواجهة ============ */}
+                        {activeWorkspace === 'interface' && (
+                            <div className="space-y-4">
+                                <Card>
+                                    <SectionLabel>نوع الواجهة</SectionLabel>
+                                    <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
+                                        {[{ id: 'image', label: 'صور' }, { id: 'video', label: 'فيديو' }, { id: 'youtube', label: 'YouTube' }].map((opt) => (
+                                            <button key={opt.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.type', opt.id); tmp = setDotted(tmp, 'hero_type', opt.id); setContent(tmp); }} className={`flex-1 rounded-lg px-3 py-2 text-xs font-black transition ${heroType === opt.id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}>{opt.label}</button>
+                                        ))}
+                                    </div>
+                                </Card>
+
+                                {heroType === 'image' && (
+                                    <Card>
+                                        <SectionLabel>صور الواجهة</SectionLabel>
+                                        {heroImages.length > 0 && (
+                                            <div className="mb-3 grid grid-cols-2 gap-2">
+                                                {heroImages.map((img: string, idx: number) => (
+                                                    <div key={idx} className="group relative overflow-hidden rounded-xl border bg-slate-100">
+                                                        <img src={normalizeImageUrl(img)} alt="" className="aspect-[16/10] w-full object-cover" />
+                                                        <button type="button" onClick={() => { const next = heroImages.filter((_: string, i: number) => i !== idx); let tmp = setDotted(content, 'hero_banner.images', next); tmp = setDotted(tmp, 'hero_images', next); setContent(tmp); }} className="absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-red-600" aria-label="حذف الصورة"><X className="h-3 w-3" /></button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <DropzoneUploader label={heroImages.length === 0 ? 'اسحب صور الواجهة هنا' : 'إضافة المزيد'} hint="حتى 10 صور — 1920×1080" multiple uploading={heroUploading} onFiles={uploadHeroFiles} />
+                                        <input ref={heroFileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && uploadHeroFiles(e.target.files)} />
+                                    </Card>
+                                )}
+                                {heroType === 'video' && (
+                                    <Card>
+                                        <div className="space-y-3">
+                                            <SectionLabel>رابط فيديو MP4</SectionLabel>
+                                            <Input dir="ltr" value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url', norm); tmp = setDotted(tmp, 'hero_video_url', norm); setContent(tmp); }} placeholder="https://example.com/video.mp4" className="bg-white font-mono text-sm" />
+                                            <DropzoneUploader label="أو اسحب ملف الفيديو هنا" hint="MP4 — حتى 15MB" accept="video/mp4,video/*" uploading={interfaceVideoUploading || heroUploading} onFiles={async (files) => {
+                                                const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
+                                                try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع الفيديو'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                            }} />
+                                            {heroVideoUrl && <video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-40 w-full rounded-xl border object-cover" />}
+                                        </div>
+                                    </Card>
+                                )}
+                                {heroType === 'youtube' && (
+                                    <Card>
+                                        <div className="space-y-3">
+                                            <SectionLabel>رابط يوتيوب</SectionLabel>
+                                            <Input dir="ltr" value={heroYoutubeUrl ? stripTrailingSlash(heroYoutubeUrl) : heroYoutubeUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.youtube_url', clean); tmp = setDotted(tmp, 'hero_youtube_url', clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm" />
+                                            {youtubeId && <div className="overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`} title="YouTube preview" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /></div>}
+                                        </div>
+                                    </Card>
+                                )}
+
+                                <Card>
+                                    <div className="space-y-3">
+                                        <SectionLabel>العنوان الرئيسي</SectionLabel>
+                                        <Input value={heroHeading ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.heading', e.target.value); tmp = setDotted(tmp, 'hero_heading', e.target.value); setContent(tmp); }} placeholder="أناقة تُروى كقصة" className="bg-white" />
+                                        <SectionLabel>الوصف الفرعي</SectionLabel>
+                                        <Input value={heroSubtitle ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.subtitle', e.target.value); tmp = setDotted(tmp, 'hero_subtitle', e.target.value); setContent(tmp); }} placeholder="تشكيلة الموسم الجديدة" className="bg-white" />
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div><SectionLabel>نص الزر</SectionLabel><Input value={heroCtaLabel ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.cta_label', e.target.value); tmp = setDotted(tmp, 'hero_cta_label', e.target.value); setContent(tmp); }} placeholder="اكتشفي التشكيلة" className="bg-white" /></div>
+                                            <div><SectionLabel>رابط الزر</SectionLabel><Input dir="ltr" value={heroCtaLink ?? ''} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.cta_link', clean); tmp = setDotted(tmp, 'hero_cta_link', clean); setContent(tmp); }} placeholder="#section" className="bg-white font-mono text-sm" /></div>
+                                        </div>
+                                        <div>
+                                            <SectionLabel>شفافية الطبقة ({heroOverlay}%)</SectionLabel>
+                                            <div className="flex items-center gap-3">
+                                                <input type="range" min={0} max={100} value={heroOverlay} onChange={(e) => { const val = Number(e.target.value); let tmp = setDotted(content, 'hero_banner.overlay_opacity', val); tmp = setDotted(tmp, 'overlay_opacity', val); setContent(tmp); }} className="flex-1 accent-emerald-600" />
+                                                <span className="min-w-12 rounded-full bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">{heroOverlay}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+
+                                {/* Collapsed template-specific options */}
+                                <Collapsible className="rounded-xl border border-slate-200 bg-white">
+                                    <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-start">
+                                        <span className="flex items-center gap-2 text-xs font-black text-slate-700"><Settings2 className="h-3.5 w-3.5 text-slate-500" /> خيارات خاصة بهذا القالب</span>
+                                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="px-3 pb-3">
+                                        <div className="space-y-3 border-t border-slate-100 pt-3">
+                                            {theme === 'fashion-atelier' ? (
+                                                <>
+                                                    <SectionLabel>نص شريط الإعلانات</SectionLabel>
+                                                    <Input value={announcementText ?? ''} onChange={(e) => setContent(setDotted(content, 'announcement.text', e.target.value))} placeholder="توصيل سريع لجميع المناطق" className="bg-white" />
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <ColorPickerField label="خلفية الشريط" value={announcementBg} onChange={(v) => setContent(setDotted(content, 'announcement.bg_color', v))} />
+                                                        <ColorPickerField label="لون النص" value={announcementColor} onChange={(v) => setContent(setDotted(content, 'announcement.text_color', v))} />
+                                                    </div>
+                                                    <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
+                                                        <span className="text-xs font-bold text-slate-700">إظهار الشريط</span>
+                                                        <Switch checked={showAnnouncement} onCheckedChange={(v) => setContent(setDotted(content, 'announcement.enabled', v))} />
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">شريط الإعلانات متاح فقط لقالب Fashion Atelier حالياً.</p>
+                                            )}
+                                            {!!activeModule?.contentSchema?.length && (
+                                                <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
+                                                    <p className="mb-2 text-xs font-black text-slate-700">محتوى قالب «{activeModule.meta.name}»</p>
+                                                    <div className="grid gap-3">
+                                                        {(activeModule.contentSchema as SlotField[]).map((field) => {
+                                                            const value = getDotted(content, field.key) ?? field.default ?? '';
+                                                            return (
+                                                                <div key={field.key}>
+                                                                    <SectionLabel>{field.label}</SectionLabel>
+                                                                    {field.type === 'image' ? <MediaPicker value={value} onChange={(url: string) => setContent(setDotted(content, field.key, url))} /> : <Input value={String(value)} onChange={(e) => setContent(setDotted(content, field.key, e.target.value))} placeholder={field.default} className="bg-white" />}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {!activeModule?.contentSchema?.length && theme !== 'fashion-atelier' && <p className="text-xs text-slate-400">لا توجد خيارات خاصة لهذا القالب.</p>}
+                                        </div>
+                                    </CollapsibleContent>
+                                </Collapsible>
+                            </div>
+                        )}
+
+                        {/* ============ 4. الأقسام ============ */}
+                        {activeWorkspace === 'sections' && (
+                            <div className="space-y-3">
+                                <p className="text-xs leading-relaxed text-slate-500">تحكم في أقسام الصفحة الرئيسية.</p>
+                                {[
+                                    { label: 'شريط الفئات', hint: 'شريط الفئات الثانوي في الهيدر', checked: showCategoriesBar, onChange: (v: boolean) => { let tmp = setDotted(content, 'settings.show_categories_bar', v); tmp = setDotted(tmp, 'homepage.show_categories_bar', v); setContent(tmp); } },
+                                    { label: 'وصل حديثاً', hint: 'أحدث المنتجات', checked: showLatestProducts, onChange: (v: boolean) => { let tmp = setDotted(content, 'settings.show_latest_products', v); tmp = setDotted(tmp, 'homepage.show_latest_products', v); setContent(tmp); } },
+                                    { label: 'الأكثر مبيعاً', hint: 'المنتجات الأكثر مبيعاً', checked: showBestSellers, onChange: (v: boolean) => { let tmp = setDotted(content, 'settings.show_best_sellers', v); tmp = setDotted(tmp, 'homepage.show_best_sellers', v); setContent(tmp); } },
+                                ].map((row) => (
+                                    <div key={row.label} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm">
+                                        <div><p className="text-sm font-bold text-slate-800">{row.label}</p><p className="text-[11px] text-slate-500">{row.hint}</p></div>
+                                        <Switch checked={row.checked} onCheckedChange={row.onChange} />
+                                    </div>
+                                ))}
+                                <Separator />
+                                <Card>
+                                    <div className="flex items-center justify-between">
+                                        <div><p className="text-sm font-black text-slate-800">التصنيفات المعروضة</p><p className="text-xs text-slate-500">{homepageCategories.length === 0 ? 'لم يتم اختيار تصنيفات' : `${homepageCategories.length} تصنيفات مختارة`}</p></div>
+                                        <Button variant="outline" size="sm" className="gap-1.5 rounded-full text-xs font-bold" onClick={() => setCategoryPickerOpen(true)}><Pencil className="h-3 w-3" /> تعديل التصنيفات</Button>
+                                    </div>
+                                    {homepageCategories.length > 0 && availableCategories.length > 0 && (
+                                        <div className="mt-3 flex flex-wrap gap-1.5">
+                                            {homepageCategories.map((id) => { const cat = availableCategories.find((c) => String(c.id) === String(id)); return <span key={String(id)} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{cat?.name ?? `#${id}`}</span>; })}
+                                        </div>
+                                    )}
+                                </Card>
+                                <Card>
+                                    <SectionLabel>الحد الأقصى للمنتجات في كل قسم</SectionLabel>
+                                    <select value={String(homepageProductsPerCategory)} onChange={(e) => { const v = Number(e.target.value); let tmp = setDotted(content, 'settings.homepage_products_per_category', v); tmp = setDotted(tmp, 'homepage.homepage_products_per_category', v); setContent(tmp); }} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none">
+                                        <option value="4">4 منتجات</option><option value="8">8 منتجات</option><option value="12">12 منتجاً</option>
+                                    </select>
+                                </Card>
+                            </div>
+                        )}
+
+                        {/* ============ 5. المحتوى ============ */}
+                        {activeWorkspace === 'content' && (
+                            <div className="space-y-4">
+                                <p className="text-xs leading-relaxed text-slate-500">محتوى الصفحة — يظهر في الصفحة الرئيسية والمتجر.</p>
+                                <Card>
+                                    <div className="space-y-4">
+                                        <div><SectionLabel>رسالة الترحيب</SectionLabel><Input value={getDotted(content, 'welcome_message') as string || ''} onChange={(e) => setContent(setDotted(content, 'welcome_message', e.target.value))} placeholder="مرحباً بكم في متجرنا!" className="bg-white" /><p className="mt-1 text-[11px] text-slate-400">تظهر أعلى الصفحة الرئيسية</p></div>
+                                        <div><SectionLabel>وصف المتجر</SectionLabel><Textarea value={getDotted(content, 'store_description') as string || ''} onChange={(e) => setContent(setDotted(content, 'store_description', e.target.value))} placeholder="وصف مختصر لمتجرك..." rows={3} className="bg-white" /><p className="mt-1 text-[11px] text-slate-400">يُستخدم في السيو والمشاركة</p></div>
+                                        <div><SectionLabel>نص الحقوق</SectionLabel><Input value={getDotted(content, 'copyright_text') as string || ''} onChange={(e) => setContent(setDotted(content, 'copyright_text', e.target.value))} placeholder="© 2026 متجري. جميع الحقوق محفوظة." className="bg-white" /><p className="mt-1 text-[11px] text-slate-400">يظهر في تذييل المتجر</p></div>
+                                    </div>
+                                </Card>
+                                <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-xs leading-relaxed text-emerald-800">💡 يمكنك معاينة هذا المحتوى مباشرة في المعاينة الحية على اليسار.</p></div>
+                            </div>
+                        )}
+
+                        {/* ============ 6. متقدم ============ */}
+                        {activeWorkspace === 'advanced' && (
+                            <div className="space-y-4">
+                                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                                    <p className="flex items-center gap-1.5 text-xs font-black text-amber-800"><Code2 className="h-3.5 w-3.5" /> منطقة متقدمة</p>
+                                    <p className="mt-1 text-xs leading-relaxed text-amber-700">هذا القسم مخصص للمستخدمين المتقدمين. الأكواد هنا تُحقن في واجهة متجرك فقط ضمن بيئة معزولة.</p>
+                                </div>
+                                <Card>
+                                    <SectionLabel>CSS مخصص</SectionLabel>
+                                    <Textarea dir="ltr" rows={6} value={customCss} onChange={(e) => setCustomCss(e.target.value)} placeholder=".my-button { background: #0d9488; }" className="font-mono text-sm" />
+                                </Card>
+                                <Card>
+                                    <SectionLabel>JavaScript مخصص</SectionLabel>
+                                    <Textarea dir="ltr" rows={6} value={customJs} onChange={(e) => setCustomJs(e.target.value)} placeholder="// يعمل بعد اكتمال التحميل" className="font-mono text-sm" />
+                                </Card>
+                                <Card>
+                                    <SectionLabel>وسوم الرأس (Head)</SectionLabel>
+                                    <Textarea dir="ltr" rows={4} value={headInject} onChange={(e) => setHeadInject(e.target.value)} placeholder='<meta name="..." />' className="font-mono text-sm" />
+                                </Card>
+                            </div>
+                        )}
+
+                        <p className="px-1 pt-4 text-center text-[11px] text-slate-400">يتم حفظ كل الأقسام معاً عبر زر “حفظ التغييرات” أعلاه</p>
                     </div>
                 </aside>
-
-                {/* Right Panel – Live Canvas Preview — pure responsive iframe */}
-                <main className="order-1 flex min-h-[480px] flex-1 flex-col overflow-hidden bg-slate-100 lg:order-2">
-                    <div className="flex items-center justify-between border-b bg-white px-4 py-2.5">
-                        <p className="flex items-center gap-2 text-sm font-black text-slate-700">
-                            <Monitor className="h-4 w-4 text-slate-400" /> معاينة حية
-                            <span className="hidden text-xs font-medium text-slate-400 sm:inline">— تتحدث فورياً مع تعديلاتك</span>
-                        </p>
-                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">{previewMode === 'mobile' ? 'جوال 375px' : 'سطح مكتب'}</span>
-                    </div>
-
-                    <div className="flex flex-1 flex-col overflow-hidden bg-slate-100 p-4 sm:p-6">
-                        <div className={`mx-auto flex flex-1 flex-col overflow-hidden transition-all duration-300 ease-out ${previewMode === 'mobile' ? 'w-[375px] max-w-full rounded-[24px] border border-slate-200 shadow-xl ring-1 ring-slate-200' : 'w-full max-w-[1100px] rounded-[16px] border border-slate-200 shadow-xl ring-1 ring-slate-200'}`}>
-                            {(() => {
-                                const previewSrc = (() => {
-                                    const base = String(storeUrl || '').trim();
-                                    if (!base) return '';
-                                    try {
-                                        const u = new URL(base, window.location.origin);
-                                        u.searchParams.set('preview', 'true');
-                                        u.searchParams.set('v', String(previewVersion));
-                                        // bust cache on theme change too - must match ThemeController::applyPreviewTheme (?theme=)
-                                        u.searchParams.set('theme', theme);
-                                        return u.toString();
-                                    } catch {
-                                        const sep = base.includes('?') ? '&' : '?';
-                                        return `${base}${sep}preview=true&v=${previewVersion}&theme=${encodeURIComponent(theme)}`;
-                                    }
-                                })();
-                                return (
-                                    <iframe
-                                        ref={previewIframeRef}
-                                        key={`${previewSrc}-${previewVersion}-${theme}`}
-                                        src={previewSrc}
-                                        title="Live store preview"
-                                        className="h-full min-h-[520px] w-full flex-1 border-0 bg-white"
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer"
-                                        allow="fullscreen"
-                                    />
-                                );
-                            })()}
-                        </div>
-                        <p className="mt-3 text-center text-xs text-slate-400">المعاينة الحية تتحدث فورياً — احفظ التغييرات لتظهر للزوار {isDirty && <span className="text-amber-600 font-bold">• توجد تغييرات غير محفوظة</span>}</p>
-                    </div>
-                </main>
             </div>
+
+            {/* Category picker dialog */}
+            <Dialog open={categoryPickerOpen} onOpenChange={setCategoryPickerOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader><DialogTitle>اختيار التصنيفات</DialogTitle><DialogDescription className="text-start">اختر الفئات التي تريد عرضها كأقسام في الصفحة الرئيسية.</DialogDescription></DialogHeader>
+                    {availableCategories.length === 0 ? (
+                        <p className="rounded-xl bg-amber-50 px-3 py-3 text-center text-xs font-bold text-amber-700">لا توجد فئات نشطة لهذا المتجر.</p>
+                    ) : (
+                        <div className="max-h-[320px] space-y-1 overflow-auto rounded-xl border border-slate-200 bg-white p-2">
+                            {availableCategories.map((cat) => {
+                                const idStr = String(cat.id); const checked = homepageCategories.map(String).includes(idStr);
+                                return (
+                                    <label key={cat.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 hover:bg-slate-50">
+                                        <input type="checkbox" checked={checked} onChange={(e) => { const next = e.target.checked ? [...homepageCategories.map(String), idStr] : homepageCategories.map(String).filter((x) => x !== idStr); let tmp = setDotted(content, 'settings.homepage_categories', next); tmp = setDotted(tmp, 'homepage.homepage_categories', next); tmp = setDotted(tmp, 'homepage_categories', next); setContent(tmp); }} className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                                        <span className="flex-1 text-sm font-medium text-slate-700">{cat.name}</span><span className="text-xs text-slate-400">#{cat.id}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    )}
+                    <p className="text-xs text-slate-500">{homepageCategories.length} فئات مختارة</p>
+                    <DialogFooter><Button onClick={() => setCategoryPickerOpen(false)} className="bg-slate-900 text-white hover:bg-slate-800">تم</Button></DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Template preview dialog */}
+            <Dialog open={!!previewTemplateSlug} onOpenChange={(o) => !o && setPreviewTemplateSlug(null)}>
+                <DialogContent className="max-h-[90vh] flex w-[95vw] max-w-5xl flex-col gap-0 overflow-hidden p-0">
+                    {previewModule && (
+                        <>
+                            <DialogHeader className="shrink-0 border-b border-slate-100 px-6 pb-4 pt-6">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="text-start"><DialogTitle className="flex items-center gap-2 text-lg font-black text-slate-900">{previewModule.meta.name}<span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600">{previewModule.meta.sector}</span></DialogTitle><DialogDescription className="mt-1 text-start text-sm text-slate-500">{previewModule.meta.description}</DialogDescription></div>
+                                    <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1 shrink-0">
+                                        <button type="button" onClick={() => setPreviewMode('desktop')} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${previewMode === 'desktop' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}><Monitor className="h-3.5 w-3.5" /> سطح المكتب</button>
+                                        <button type="button" onClick={() => setPreviewMode('mobile')} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${previewMode === 'mobile' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}><Smartphone className="h-3.5 w-3.5" /> الهاتف</button>
+                                    </div>
+                                </div>
+                            </DialogHeader>
+                            <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-slate-100 p-4">
+                                <div className={`overflow-hidden rounded-2xl bg-white shadow-xl transition-all duration-300 ${previewMode === 'mobile' ? 'h-[650px] w-[390px] max-w-full' : 'h-[600px] w-full'}`}><iframe src={`/stores/${store.id}/templates/${previewModule.meta.slug}/preview`} title={`معاينة ${previewModule.meta.name}`} className="h-full w-full border-0" loading="lazy" /></div>
+                            </div>
+                            <DialogFooter className="shrink-0 gap-2 border-t border-slate-100 px-6 py-4 sm:gap-2">
+                                <Button variant="outline" onClick={() => setPreviewTemplateSlug(null)}>إغلاق</Button>
+                                {theme.trim().toLowerCase() === previewModule.meta.slug.toLowerCase() ? (
+                                    <Button className="gap-1.5 bg-emerald-600 hover:bg-emerald-700" onClick={() => setPreviewTemplateSlug(null)}>تخصيص القالب</Button>
+                                ) : (
+                                    <Button disabled={!!applyingTemplate} onClick={() => { setPreviewTemplateSlug(null); setConfirmTemplateSlug(previewModule.meta.slug); }} style={{ backgroundColor: previewModule.meta.accent }} className="gap-1.5 text-white">{applyingTemplate === previewModule.meta.slug && <Loader2 className="h-4 w-4 animate-spin" />} استخدام هذا القالب</Button>
+                                )}
+                            </DialogFooter>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Confirm apply template */}
+            <Dialog open={!!confirmTemplateSlug} onOpenChange={(o) => !o && setConfirmTemplateSlug(null)}>
+                <DialogContent>
+                    <DialogHeader><DialogTitle>هل تريد تطبيق هذا القالب؟</DialogTitle><DialogDescription className="text-start leading-relaxed">سيتم تغيير طريقة عرض متجرك إلى قالب <span className="font-bold text-slate-900">«{confirmModule?.meta.name}»</span>.<br /><span className="font-medium text-emerald-700">لن يتم حذف منتجاتك أو تصنيفاتك أو طلباتك.</span><br />يمكنك تغيير القالب في أي وقت.</DialogDescription></DialogHeader>
+                    <DialogFooter className="gap-2"><Button variant="outline" onClick={() => setConfirmTemplateSlug(null)} disabled={!!applyingTemplate}>إلغاء</Button><Button onClick={() => confirmModule && applyTemplate(confirmModule.meta.slug)} disabled={!!applyingTemplate} style={{ backgroundColor: confirmModule?.meta.accent }} className="gap-1.5 text-white">{applyingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : null}تطبيق القالب</Button></DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
