@@ -183,8 +183,8 @@ function SouqSearchRow({ product, onPick }: { product: any; onPick: () => void }
 
 export function SouqHero({ banners }: { banners: any[] }) {
   const fallback = [
-    { image: 'https://storage.googleapis.com/biddimarket-assets/اول-طلب.jpg', title: 'أول طلب', subtitle: '' },
-    { image: 'https://storage.googleapis.com/biddimarket-assets/كل-اغراض.jpg', title: 'كل أغراض البيت', subtitle: '' },
+    { image: '/images/store/banner-store.jpg', title: 'أول طلب', subtitle: '' },
+    { image: '/images/store/banner-store.jpg', title: 'كل أغراض البيت', subtitle: '' },
   ];
   const slides = (banners.length > 0 ? banners : fallback);
   const normalized = slides.map((b: any) => ({
