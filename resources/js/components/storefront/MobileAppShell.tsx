@@ -151,18 +151,7 @@ export const MobileAppShell: React.FC = () => {
               </button>
             )}
           </div>
-          {/* Collapsed Search trigger icon on left (RTL end) — secondary bar (bag/heart) hidden on mobile, handled by BottomNav */}
-          <button
-            type="button"
-            onClick={() => {
-              const el = document.querySelector<HTMLInputElement>('header[data-app-shell="header"] input[type="text"]');
-              el?.focus();
-            }}
-            aria-label={t('بحث')}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100"
-          >
-            <Search className="h-5 w-5" />
-          </button>
+
         </div>
       </header>
 

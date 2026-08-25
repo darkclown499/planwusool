@@ -16,6 +16,8 @@ class CustomerEmailOtpService
     public const MAX_ATTEMPTS = 5;
     public const RESEND_COOLDOWN_SEC = 60;
     public const RESEND_MAX_PER_HOUR = 5;
+    // Deterministic cutoff for legacy customers (see migration 2026_08_25_221240)
+    public const ENFORCED_AT = '2026-08-26 00:00:00';
 
     public function generate(Customer $customer, Store $store): CustomerEmailOtp
     {

@@ -14,6 +14,11 @@ class ProfileController extends Controller
 {
     public function updateProfile(Request $request, $storeSlug)
     {
+        $customer = Auth::guard('customer')->user();
+        $enforcedAt = \App\Services\CustomerEmailOtpService::ENFORCED_AT;
+        if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gte(\Carbon\Carbon::parse($enforcedAt))) {
+            throw ValidationException::withMessages(['email'=>['يجب تأكيد البريد الإلكتروني أولاً.']]);
+        }
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -73,6 +78,10 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request, $storeSlug)
     {
+        $customer = Auth::guard('customer')->user();
+        if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gt(now()->subHour())) {
+            throw ValidationException::withMessages(['email'=>['يجب تأكيد البريد الإلكتروني أولاً.']]);
+        }
         $request->validate([
             'current_password' => 'required',
             'password' => 'required|string|min:8|confirmed',

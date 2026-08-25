@@ -21,7 +21,8 @@ import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 /* ===================================================================== */
 
 export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, order } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, order, behavior } = useStorefrontCore() as any;
+  const accountsOn = behavior?.customer_accounts_enabled !== false;
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
 
   const handleMyOrders = () => {
@@ -55,14 +56,18 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
           <div className="hidden sm:block">
             <HeaderLoyaltyBadge />
           </div>
+          {accountsOn && (
           <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
             className="hidden rounded-lg border border-white/20 bg-white/10 p-2 text-white transition-colors hover:bg-white/20 sm:block">
             <Package className="h-4 w-4" />
           </button>
+          )}
+          {accountsOn && (
           <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} aria-label="حسابي"
             className="hidden rounded-lg border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 sm:block">
             حسابي
           </button>
+          )}
           <button type="button" onClick={() => ui.setShowCart(true)}
             className="relative flex items-center gap-2 rounded-full bg-[#f59e0b] px-4 py-2 text-sm font-black text-[#191410] shadow transition hover:bg-[#fbbf24]">
             <ShoppingBag className="h-4 w-4" />

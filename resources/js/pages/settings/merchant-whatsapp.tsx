@@ -99,19 +99,19 @@ export default function MerchantWhatsapp({ whatsappSettings, providerConfigured,
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6" dir="rtl">
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6" dir="rtl">
       <div>
-        <h1 className="text-2xl font-bold">إشعارات الطلبات عبر واتساب</h1>
-        <p className="text-sm text-muted-foreground mt-1">سنرسل لك إشعاراً على واتساب عند وصول طلب جديد إلى متجرك.</p>
+        <h1 className="text-2xl font-bold">إشعارات الطلبات</h1>
+        <p className="text-sm text-muted-foreground mt-1">استقبل إشعاراً على واتساب فور وصول طلب جديد إلى متجرك.</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-green-600" />
-            إشعارات الطلبات عبر واتساب
+            إشعارات واتساب
           </CardTitle>
-          <CardDescription>فعّل الإشعارات وأدخل رقم واتساب لاستقبال الطلبات حتى لو المتجر مغلق</CardDescription>
+          <CardDescription>استقبل إشعاراً على واتساب فور وصول طلب جديد إلى متجرك — يعمل حتى عندما لا تكون داخل لوحة التحكم.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Status */}
@@ -162,34 +162,39 @@ export default function MerchantWhatsapp({ whatsappSettings, providerConfigured,
               <Input
                 id="whatsapp_number"
                 dir="ltr"
-                placeholder="+970 59 123 4567"
+                placeholder="059 123 4567"
                 value={data.whatsapp_number}
                 onChange={(e) => setData('whatsapp_number', e.target.value)}
                 className="text-left"
               />
               {errors.whatsapp_number && <p className="text-sm text-red-600">{errors.whatsapp_number}</p>}
-              <p className="text-xs text-muted-foreground">مثال: 0591234567 أو +970591234567 أو +972591234567 — سيتم التحويل تلقائياً إلى E.164</p>
+              <p className="text-xs text-muted-foreground">سيتم إرسال إشعارات الطلبات الجديدة إلى هذا الرقم حتى عندما لا تكون داخل لوحة التحكم.</p>
+              <p className="text-xs text-muted-foreground">مثال: 0591234567 أو +970591234567 — سيتم التحويل تلقائياً إلى E.164</p>
               {whatsappSettings.whatsapp_number_masked && (
                 <p className="text-xs text-muted-foreground">الرقم المحفوظ: {whatsappSettings.whatsapp_number_masked}</p>
               )}
             </div>
 
-            <div className="flex gap-3">
-              <Button type="submit" disabled={processing} className="gap-2">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button type="submit" disabled={processing} className="gap-2 w-full sm:w-auto">
                 <Save className="h-4 w-4" />
-                حفظ
+                حفظ الإعدادات
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleTest}
-                disabled={testLoading || !status.has_number}
-                className="gap-2"
+                disabled={testLoading || !status.has_number || !status.is_ready}
+                className="gap-2 w-full sm:w-auto"
+                title={!status.is_ready ? status.status_label : undefined}
               >
                 <Send className="h-4 w-4" />
                 {testLoading ? 'جاري الإرسال...' : 'إرسال رسالة اختبار'}
               </Button>
             </div>
+            {!status.is_ready && status.has_number && (
+              <p className="text-xs text-amber-600">خدمة إشعارات واتساب غير متاحة حالياً — يمكنك حفظ الرقم وتفعيله، وسيتم الإرسال تلقائياً عند توفر المزود.</p>
+            )}
           </form>
 
           <div className="rounded-xl bg-muted p-4 text-xs space-y-1">

@@ -17,16 +17,15 @@ class StoreConfiguration extends Model
         return $this->belongsTo(Store::class);
     }
 
+    protected static array $requestCache = [];
+
     /**
      * Get configuration for a store (cached for 5 minutes + request-level memoization).
      */
     public static function getConfiguration($storeId)
     {
-        // Request-level memoization to avoid multiple calls within same request
-        static $requestCache = [];
-        
-        if (isset($requestCache[$storeId])) {
-            return $requestCache[$storeId];
+        if (isset(self::$requestCache[$storeId])) {
+            return self::$requestCache[$storeId];
         }
         
         $config = \Illuminate\Support\Facades\Cache::remember(
@@ -113,8 +112,7 @@ class StoreConfiguration extends Model
             }
         );
         
-        // Store in request-level cache
-        $requestCache[$storeId] = $config;
+        self::$requestCache[$storeId] = $config;
         
         return $config;
     }
@@ -125,6 +123,7 @@ class StoreConfiguration extends Model
     public static function forgetConfiguration($storeId)
     {
         \Illuminate\Support\Facades\Cache::forget('store_configuration.' . $storeId);
+        unset(self::$requestCache[$storeId]);
     }
 
     /**

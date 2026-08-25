@@ -320,6 +320,12 @@ export function AppSidebar() {
                         icon: Globe,
                         activePaths: [`/stores/${currentStoreId}/settings?tab=domains`, `/stores/${currentStoreId}/domains`],
                     },
+                    {
+                        title: 'إشعارات الطلبات',
+                        href: route('stores.notifications.whatsapp', currentStoreId),
+                        icon: Bell,
+                        activePaths: [`/stores/${currentStoreId}/notifications/whatsapp`],
+                    },
                     { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
                 ],
             });

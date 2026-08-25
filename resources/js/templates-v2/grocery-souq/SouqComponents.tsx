@@ -36,7 +36,8 @@ function SafeLoyaltyBadge() {
 /* ------------------------------ Header — Biddi exact ------------------------------ */
 
 export function SouqHeader() {
-  const { config, store, cart, auth, ui, wishlist, product, order } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, wishlist, product, order, behavior } = useStorefrontCore() as any;
+  const accountsOn = behavior?.customer_accounts_enabled !== false;
   const [q, setQ] = useState('');
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -67,7 +68,7 @@ export function SouqHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-b from-[#FDFCF9] to-[#FDF9F1] shadow-sm" dir="rtl">
+    <header className="hidden md:block sticky top-0 z-50 bg-gradient-to-b from-[#FDFCF9] to-[#FDF9F1] shadow-sm" dir="rtl">
       {/* Top row: logo + hamburger + desktop nav pills + support/address */}
       <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 px-3 py-2.5 lg:px-6">
         <div className="flex items-center gap-2">
@@ -95,14 +96,18 @@ export function SouqHeader() {
             <button type="button" onClick={() => ui.setShowCart(true)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
               <ShoppingBasket className="h-3.5 w-3.5" /> السلة {count > 0 && <span className="rounded-full bg-black px-1.5 text-[10px] text-white">{count}</span>}
             </button>
+            {accountsOn && (
             <button type="button" onClick={handleMyOrders} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
               طلباتي
             </button>
+            )}
+            {accountsOn && (
             <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               حسابي
             </button>
+            )}
           </nav>
         </div>
 
@@ -167,8 +172,8 @@ export function SouqHeader() {
           <nav className="grid grid-cols-2 gap-2">
             <a href="/" onClick={() => setMobileNav(false)} className="rounded-xl bg-[#FFC20E] px-4 py-3 text-center text-sm font-black text-black">الرئيسية</a>
             <button type="button" onClick={() => { setMobileNav(false); ui.setShowCart(true); }} className="rounded-xl bg-stone-900 px-4 py-3 text-sm font-bold text-white">السلة ({count})</button>
-            <button type="button" onClick={() => { setMobileNav(false); handleMyOrders(); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">طلباتي</button>
-            <button type="button" onClick={() => { setMobileNav(false); auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">حسابي</button>
+            {accountsOn && (<button type="button" onClick={() => { setMobileNav(false); handleMyOrders(); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">طلباتي</button>)}
+            {accountsOn && (<button type="button" onClick={() => { setMobileNav(false); auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">حسابي</button>)}
             <a href="https://wa.me/970599000000" target="_blank" rel="noreferrer" className="col-span-2 rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-stone-700 ring-1 ring-black/5">الدعم</a>
           </nav>
         </div>

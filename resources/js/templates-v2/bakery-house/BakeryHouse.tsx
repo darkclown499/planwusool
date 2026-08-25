@@ -29,7 +29,8 @@ const ACCENT = '#b45309';
 /* ------------------------------ Header ------------------------------ */
 
 export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, wishlist, product, content, order } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, wishlist, product, content, order, behavior } = useStorefrontCore() as any;
+  const accountsOn = behavior?.customer_accounts_enabled !== false;
   const [scrolled, setScrolled] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
 
@@ -93,9 +94,12 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
             <Heart className="h-5 w-5" strokeWidth={1.8} />
             {!!wishlist?.count && <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#b45309] px-1 text-[9px] font-black text-white">{wishlist.count}</span>}
           </button>
+          {accountsOn && (
           <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2.5 text-[#78350f] transition hover:bg-[#f5e7d3] sm:block">
             <Package className="h-5 w-5" strokeWidth={1.8} />
           </button>
+          )}
+          {accountsOn && (
           <button
             type="button"
             onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))}
@@ -104,6 +108,7 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
           >
             <User className="h-5 w-5" strokeWidth={1.8} />
           </button>
+          )}
           <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="relative mr-1 flex items-center gap-2 rounded-full bg-[#b45309] py-2 pl-4 pr-3 text-sm font-black text-white shadow-sm transition hover:bg-[#92400e]">
             <ShoppingBag className="h-4 w-4" />
             السلة

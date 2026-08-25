@@ -25,7 +25,8 @@ class OrderController extends Controller
             $storeModel = \App\Models\Store::find($request->store_id);
             if ($storeModel) {
                 $config = \App\Models\StoreConfiguration::getConfiguration($storeModel->id);
-                if (($config['require_login_checkout'] ?? false) && !Auth::guard('customer')->check()) {
+                $accountsOn = (bool) ($config['customer_accounts_enabled'] ?? true);
+                if ($accountsOn && ($config['require_login_checkout'] ?? false) && !Auth::guard('customer')->check()) {
                     if ($request->expectsJson() || $request->ajax()) {
                         return response()->json([
                             'success' => false,

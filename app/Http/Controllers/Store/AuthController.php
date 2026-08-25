@@ -42,8 +42,9 @@ class AuthController extends Controller
 
             if ($customer && Hash::check($request->password, $customer->password)) {
                 // Backward-compatible: legacy customers (created >1h ago) with null email_verified_at are considered verified
-                if (is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->lt(now()->subHour())) {
-                    $customer->update(['email_verified_at' => now()]);
+                $enforcedAt = \App\Services\CustomerEmailOtpService::ENFORCED_AT;
+                if (is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->lt(\Carbon\Carbon::parse($enforcedAt))) {
+                    $customer->update(['email_verified_at' => $customer->created_at]);
                     $customer->refresh();
                 }
                 if (is_null($customer->email_verified_at)) {
@@ -482,7 +483,7 @@ class AuthController extends Controller
         return [
             'enable_customer_login' => $master && (bool) ($config['enable_customer_login'] ?? true),
             'enable_customer_registration' => $master && (bool) ($config['enable_customer_registration'] ?? true),
-            'require_login_checkout' => (bool) ($config['require_login_checkout'] ?? false),
+            'require_login_checkout' => $master && (bool) ($config['require_login_checkout'] ?? false),
             'customer_accounts_enabled' => $master,
         ];
     }
