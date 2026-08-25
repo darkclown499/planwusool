@@ -49,6 +49,7 @@ interface Props {
 }
 
 function setDotted(obj: Record<string, any>, path: string, value: any): Record<string, any> {
+    if (typeof path !== 'string' || !path) return obj;
     const next = { ...obj };
     const parts = path.split('.');
     let cur: any = next;
@@ -61,6 +62,7 @@ function setDotted(obj: Record<string, any>, path: string, value: any): Record<s
 }
 
 function getDotted(obj: Record<string, any>, path: string): any {
+    if (typeof path !== 'string' || !path) return undefined;
     return path.split('.').reduce((acc, k) => (acc == null ? undefined : acc[k]), obj);
 }
 
@@ -234,7 +236,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     // searchParams as required by task spec (parse searchParams.get('tab'))
     const searchParams = useMemo(() => {
         if (typeof window !== 'undefined') return new URLSearchParams(window.location.search);
-        const q = page.url?.split('?')[1] || '';
+        const rawUrl = typeof page.url === 'string' ? page.url : '';
+        const q = rawUrl.split('?')[1] || '';
         return new URLSearchParams(q);
     }, [page.url]);
     const [activeTab, setActiveTab] = useState<string>(() => searchParams.get('tab') || getTabFromUrl());
@@ -263,7 +266,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     }, [searchParams]);
 
     useEffect(() => {
-        const tab = new URLSearchParams(page.url?.split('?')[1] || window.location.search.replace(/^\?/, '')).get('tab') || new URLSearchParams(window.location.search).get('tab') || '';
+        const rawUrl = typeof page.url === 'string' ? page.url : '';
+        const tab = new URLSearchParams(rawUrl.split('?')[1] || (typeof window !== 'undefined' ? window.location.search.replace(/^\?/, '') : '')).get('tab') || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') : null) || '';
         setActiveTab(tab);
         if (tab === 'templates') {
             setOpenSections({ templates: true, identity: false, announcement: false, hero: false, homeSections: false, homepageContent: false, advanced: false });
