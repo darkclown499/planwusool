@@ -10,6 +10,7 @@ import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
+import { CourierLogo } from '@/components/courier-logo';
 
 export default function Shipping() {
   const { t } = useTranslation();
@@ -172,11 +173,17 @@ export default function Shipping() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {shippings.map((shipping: any) => (
+                    {shippings.map((shipping: any) => {
+                      const isConnected = !!shipping.courier_integration_id;
+                      const isManual = !isConnected && !!shipping.delivery_company;
+                      let fulfillmentLabel = 'التنفيذ: توصيل شخصي';
+                      if (isConnected) fulfillmentLabel = `التنفيذ: ${shipping.delivery_company || 'شركة مربوطة'} — متصل`;
+                      else if (isManual) fulfillmentLabel = `التنفيذ: ${shipping.delivery_company} — يدوي`;
+                      return (
                       <div key={shipping.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <Truck className="h-6 w-6 text-primary" />
+                          <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                            {isConnected ? <CourierLogo src={null} name={shipping.delivery_company || 'CO'} size={48} /> : <Truck className="h-6 w-6 text-primary" />}
                           </div>
                           <div>
                             <div className="flex items-center space-x-2">
@@ -186,11 +193,12 @@ export default function Shipping() {
                               </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground">{shipping.type.replace('_', ' ').charAt(0).toUpperCase() + shipping.type.replace('_', ' ').slice(1)} • {shipping.zone_type || t('Any')}</p>
-                            <div className="flex items-center space-x-4 mt-1">
+                            <div className="flex items-center gap-3 mt-1 flex-wrap">
                               <span className="text-xs text-muted-foreground">
                                 {t('Cost')}: {shipping.type === 'free_shipping' ? t('Free') : formatCurrency(shipping.cost)}
                               </span>
                               <span className="text-xs text-muted-foreground">{t('Delivery')}: {shipping.delivery_time || t('Not specified')}</span>
+                              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{fulfillmentLabel}</span>
                             </div>
                           </div>
                         </div>
@@ -212,7 +220,8 @@ export default function Shipping() {
                           )}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

@@ -12,6 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { apiGet, apiPost, apiPut } from '@/utils/api';
 import { usePage } from '@inertiajs/react';
 import { Truck, CheckCircle2, AlertCircle, Link2, Package, Globe, Building2, Clock3, HelpCircle, ChevronDown, Shield, ExternalLink, ArrowLeft } from 'lucide-react';
+import { CourierLogo } from '@/components/courier-logo';
 import { toast } from 'sonner';
 
 const PROVIDER_FIELDS: Record<string, {key:string,label:string,helper:string,placeholder:string,type:string,required:boolean}[]> = {
@@ -148,9 +149,7 @@ export default function CourierIntegrations() {
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <div className="flex gap-3 min-w-0">
-              <div className="h-12 w-12 shrink-0 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden">
-                {item.logo ? <img src={item.logo} alt={item.name} className="h-8 w-8 object-contain" /> : <span className="font-bold text-xs text-slate-600">{item.name.substring(0,2).toUpperCase()}</span>}
-              </div>
+              <CourierLogo src={item.logo} name={item.name} size={48} />
               <div className="min-w-0">
                 <CardTitle className="text-sm truncate">{item.name_ar || item.name}</CardTitle>
                 <p className="text-xs text-muted-foreground truncate">{item.coverage || ''}</p>
@@ -245,7 +244,6 @@ export default function CourierIntegrations() {
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>ربط حساب API — {selected?.name_ar || selected?.name}</DialogTitle><DialogDescription className="text-xs">الحقول من وثائق المزود الرسمية. الأسرار تُشفّر ولا تُعاد للواجهة بعد الحفظ.</DialogDescription></DialogHeader>
           <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-            <p className="text-xs text-muted-foreground">{selected?.evidence}</p>
             <Collapsible>
               <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-emerald-700"><HelpCircle className="h-3.5 w-3.5"/> من أين أحصل على بيانات الربط؟ <ChevronDown className="h-3 w-3"/></CollapsibleTrigger>
               <CollapsibleContent className="mt-2 rounded-lg border bg-slate-50 p-3">{selected && HELP_GUIDE[selected.slug]}</CollapsibleContent>

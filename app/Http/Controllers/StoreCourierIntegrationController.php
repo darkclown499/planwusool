@@ -37,7 +37,7 @@ class StoreCourierIntegrationController extends Controller
         return Inertia::render('stores/courier-integrations', [
             'store' => $store,
             'integrations' => $integrations,
-            'catalog' => CourierRegistry::catalog(),
+            'catalog' => CourierRegistry::merchantCatalog(),
         ]);
     }
 }

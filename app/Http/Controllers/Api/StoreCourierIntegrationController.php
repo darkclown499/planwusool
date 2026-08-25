@@ -31,7 +31,7 @@ class StoreCourierIntegrationController extends Controller
     {
         if (!$this->authorizeStoreAccess($request, $store)) return response()->json(['error'=>'Unauthorized'],403);
         $integrations = StoreCourierIntegration::where('store_id', $store->id)->get()->map(fn($i)=>$this->validateNoSecretsLeak($i));
-        return response()->json(['success'=>true,'integrations'=>$integrations,'catalog'=>CourierRegistry::catalog()]);
+        return response()->json(['success'=>true,'integrations'=>$integrations,'catalog'=>CourierRegistry::merchantCatalog()]);
     }
 
     public function store(Request $request, Store $store)
