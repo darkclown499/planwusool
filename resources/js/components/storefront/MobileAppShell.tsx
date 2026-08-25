@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Home, LayoutGrid, Package, Search, ShoppingCart, Store, User, X } from 'lucide-react';
+import { Heart, Home, LayoutGrid, Package, Search, ShoppingCart, Store, User, X } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
@@ -8,6 +8,7 @@ import { useProduct } from '@/contexts/ProductContext';
 import { useUI } from '@/contexts/UIContext';
 import { useOrder } from '@/contexts/OrderContext';
 import { useStorefrontLocale } from '@/contexts/StorefrontLocaleContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { getImageUrl } from '@/utils/image-helper';
 
 type TabId = 'home' | 'categories' | 'cart' | 'orders' | 'account';
@@ -56,10 +57,13 @@ export const MobileAppShell: React.FC = () => {
     setShowLoginModal,
     setShowProfileModal,
     setShowOrdersModal,
+    setShowWishlistModal,
   } = useAuth();
 
   const { cartItems } = useCart();
   const { categories, activeCategory, searchQuery, handleSearch, handleCategoryClick } = useProduct();
+  const wishlist = useWishlist();
+  const wishlistCount = wishlist?.count ?? 0;
 
   const {
     showCart,
@@ -129,7 +133,7 @@ export const MobileAppShell: React.FC = () => {
             )}
             <h1 className="hidden max-w-24 truncate text-[13px] font-bold text-gray-900 sm:block">{config.storeName}</h1>
           </div>
-          {/* Collapsed Search trigger in middle — single, no duplication with secondary bar */}
+          {/* Search — single canonical input for mobile */}
           <div className="relative min-w-0 flex-1">
             <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
@@ -151,6 +155,20 @@ export const MobileAppShell: React.FC = () => {
               </button>
             )}
           </div>
+          {/* Wishlist — single instance on mobile (priority 5) */}
+          <button
+            type="button"
+            onClick={() => setShowWishlistModal(true)}
+            aria-label={t('المفضلة')}
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100"
+          >
+            <Heart className="h-5 w-5" strokeWidth={1.7} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -end-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                {wishlistCount > 99 ? '99+' : wishlistCount}
+              </span>
+            )}
+          </button>
 
         </div>
       </header>

@@ -9,7 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public const ENFORCED_AT = '2026-08-26 00:00:00';
+    public const ENFORCED_AT = '2026-08-24 00:00:00';
 
     public function up(): void
     {
