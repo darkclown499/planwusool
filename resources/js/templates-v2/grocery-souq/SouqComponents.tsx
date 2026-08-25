@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, Clock3, Minus, Plus, ShoppingBasket, X } from 'lucide-react';
+import { ChevronLeft, Clock3, Heart, Minus, Plus, ShoppingBasket, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import {
   computeCartTotals,
@@ -107,11 +107,11 @@ export function SouqHeader() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
             ادخل عنوانك
           </a>
-          {/* Wishlist */}
-          <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative hidden h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 sm:inline-flex">
-            <span className="text-sm">♥</span>
+          {/* Wishlist - Heart icon next to Cart */}
+          <a href="/wishlist" aria-label="المفضلة" className="relative hidden h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 sm:inline-flex text-slate-700 hover:text-emerald-600 transition-colors">
+            <Heart className="h-5 w-5" strokeWidth={1.8} />
             {!!wishlist?.count && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FFC20E] px-1 text-[9px] font-black text-black">{wishlist.count}</span>}
-          </button>
+          </a>
         </div>
       </div>
 
@@ -142,6 +142,10 @@ export function SouqHeader() {
             </ul>
           )}
         </div>
+        <a href="/wishlist" aria-label="المفضلة" className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 text-slate-700 hover:text-emerald-600 transition-colors">
+          <Heart className="h-5 w-5" strokeWidth={1.8} />
+          {!!wishlist?.count && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FFC20E] px-1 text-[9px] font-black text-black">{wishlist.count}</span>}
+        </a>
         <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-[#0F1620] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-black">
           <ShoppingBasket className="h-4 w-4" /> السلة {count > 0 && <span className="rounded-full bg-[#FFC20E] px-1.5 py-0.5 text-xs font-black text-black">{count}</span>}
         </button>
@@ -246,12 +250,13 @@ interface SouqCardProps {
 
 /** Biddi-style tile: rounded-[18px], image contain, price + strikethrough inline, full-width pill button. */
 export function SouqProductCard({ product }: SouqCardProps) {
-  const { cart, product: productCtx } = useStorefrontCore();
+  const { cart, product: productCtx, wishlist } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
   const discount = discountPercent(product);
   const out = product.availability === 'out_of_stock';
   const remaining = lowStockRemaining(product);
   const variable = isVariableProduct(product);
+  const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
 
   const quickAdd = async () => {
     if (variable) {
@@ -271,6 +276,15 @@ export function SouqProductCard({ product }: SouqCardProps) {
         {!!remaining && !out && (
           <span className="absolute top-2 left-2 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">آخر {remaining}</span>
         )}
+        {/* Wishlist heart toggle */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); wishlist?.toggle?.(product.id); }}
+          aria-label={wished ? "إزالة من المفضلة" : "إضافة للمفضلة"}
+          className={`absolute bottom-2 left-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 transition ${wished ? 'text-red-500' : 'text-slate-400 hover:text-red-500'}`}
+        >
+          <Heart className={`h-4 w-4 ${wished ? 'fill-red-500' : ''}`} strokeWidth={1.8} />
+        </button>
         {out && (
           <span className="absolute inset-0 flex items-center justify-center bg-white/80 text-sm font-black text-stone-500">نفذت</span>
         )}
