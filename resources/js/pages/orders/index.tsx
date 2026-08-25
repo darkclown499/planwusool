@@ -190,9 +190,18 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                   </div>
                 </div>
               )) : (
-                <div className="text-center py-10">
-                  <ShoppingCart className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">{t('No orders found')}</p>
+                <div className="text-center py-12 px-4">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
+                    <ShoppingCart className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">لا توجد طلبات بعد</h3>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    ستظهر طلبات العملاء هنا بعد أول عملية شراء. تأكد من نشر متجرك ومشاركة رابطه.
+                  </p>
+                  <Button variant="outline" className="mt-6 gap-2" onClick={() => window.open((usePage().props as any).storeUrl || '/', '_blank')}>
+                    <Package className="h-4 w-4" />
+                    عرض المتجر
+                  </Button>
                 </div>
               )}
             </div>

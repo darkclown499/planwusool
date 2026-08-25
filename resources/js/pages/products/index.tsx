@@ -326,18 +326,44 @@ export default function Products() {
                 </div>
               </div>
             )}
-            {products.length === 0 ? (
-              <div className="text-center py-8">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                <p className="mt-2 text-muted-foreground">{t('No products found')}</p>
-                {hasPermission('create-products') && !selectedTotal && (
-                  <Button variant="outline" className="mt-4" onClick={() => handleActionClick('create', 'create-products')}>
-                    <Plus className="h-4 w-4 me-2" />
-                    {t('Create your first product')}
-                  </Button>
-                )}
-              </div>
-            ) : (
+            {products.length === 0 ? (() => {
+              const hasActiveSearch = !!(activeFilter.search || (activeFilter.category_id && String(activeFilter.category_id) !== 'all' && String(activeFilter.category_id) !== '') || (activeFilter.status && String(activeFilter.status) !== 'all' && String(activeFilter.status) !== ''));
+              if (hasActiveSearch) {
+                return (
+                  <div className="text-center py-12 px-4">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
+                      <Search className="h-8 w-8 text-slate-400" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">لم نجد نتائج مطابقة</h3>
+                    <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                      جرب كلمات مختلفة أو امسح الفلاتر لعرض جميع المنتجات.
+                    </p>
+                    <Button variant="outline" className="mt-6 gap-2" onClick={() => { setSearchInput(''); applyFilters({ search: '', category_id: 'all', status: 'all' }); }}>
+                      <RefreshCw className="h-4 w-4" />
+                      مسح البحث والفلاتر
+                    </Button>
+                  </div>
+                );
+              }
+              return (
+                <div className="text-center py-12 px-4">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50">
+                    <Package className="h-8 w-8 text-emerald-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">لا توجد منتجات بعد</h3>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    أضف منتجاتك حتى يستطيع العملاء رؤيتها وشراؤها من متجرك. يمكنك إضافة الصور والسعر والمخزون والتصنيف.
+                  </p>
+                  {hasPermission('create-products') && !selectedTotal && (
+                    <Button className="mt-6 gap-2" onClick={() => handleActionClick('create', 'create-products')}>
+                      <Plus className="h-4 w-4" />
+                      إضافة أول منتج
+                    </Button>
+                  )}
+                  <p className="mt-3 text-xs text-muted-foreground">تلميح: أضف تصنيفاً أولاً ثم أضف المنتجات داخله لتنظيم أفضل</p>
+                </div>
+              );
+            })() : (
               <div className="overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
@@ -421,14 +447,20 @@ export default function Products() {
                               {product.sale_price && <span className="text-xs text-gray-400 line-through ltr-num">{formatCurrency(product.price)}</span>}
                             </div>
                           </TableCell>
-                          <TableCell>{product.stock}</TableCell>
+                          <TableCell>
+                            <span className="inline-flex items-center gap-1.5">
+                              <span className={`h-2 w-2 rounded-full ${product.stock <= 0 ? 'bg-red-500' : isLowStock ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                              <span className="ltr-num font-bold tabular-nums">{product.stock}</span>
+                              <span className="text-xs text-muted-foreground">{product.stock === 1 ? 'قطعة' : 'قطع'}</span>
+                            </span>
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <Badge variant={product.is_active ? 'default' : 'secondary'}>
                                 {product.is_active ? t('Active') : t('Inactive')}
                               </Badge>
                               <Badge className={stockColor}>
-                                {product.stock <= 0 ? t('Out of Stock') : isLowStock ? t('Low Stock') : t('In Stock')}
+                                {product.stock <= 0 ? 'نفد المخزون' : isLowStock ? 'مخزون منخفض' : 'متوفر'}
                               </Badge>
                             </div>
                           </TableCell>

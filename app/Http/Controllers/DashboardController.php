@@ -184,7 +184,7 @@ class DashboardController extends Controller
             [
                 'key' => 'taxes',
                 'done' => $hasTaxes,
-                'href' => $hasTaxes ? null : route('tax.index'),
+                'href' => $hasTaxes ? null : '/stores/' . $store->id . '/settings?tab=taxes',
             ],
             [
                 'key' => 'domain',

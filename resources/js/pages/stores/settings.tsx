@@ -63,6 +63,38 @@ const SectionResetButton = ({ onReset }: { onReset: () => void }) => {
   );
 };
 
+const SettingsIframe = ({ src, title }: { src: string; title: string }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border bg-white">
+      {loading && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/80 backdrop-blur-sm">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm font-medium text-muted-foreground">جاري تحميل {title}...</p>
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white p-6 text-center">
+          <XCircle className="h-10 w-10 text-red-400" />
+          <p className="font-semibold text-slate-800">تعذر تحميل {title}</p>
+          <p className="max-w-sm text-sm text-muted-foreground">تحقق من الاتصال وحاول مرة أخرى.</p>
+          <Button variant="outline" size="sm" onClick={() => { setError(false); setLoading(true); }}>
+            حاول مرة أخرى
+          </Button>
+        </div>
+      )}
+      <iframe
+        src={src}
+        title={title}
+        className="h-[calc(100vh-260px)] min-h-[560px] w-full bg-white"
+        onLoad={() => setLoading(false)}
+        onError={() => { setLoading(false); setError(true); }}
+      />
+    </div>
+  );
+};
+
 const GoogleSnippetPreview = ({ title, url, description, favicon }: { title: string; url: string; description: string; favicon?: string }) => {
   const { t } = useTranslation();
   let hostname = '';
@@ -601,39 +633,19 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
         {/* Unified workspace tabs — the dedicated pages render chrome-free
             inside iframes thanks to PageTemplate's embedded mode. */}
         <TabsContent value="features" className="mt-6">
-          <iframe
-            src={`/stores/${store?.id}/features`}
-            title={t('Features')}
-            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
-          />
+          <SettingsIframe src={`/stores/${store?.id}/features`} title={t('Features')} />
         </TabsContent>
         <TabsContent value="payments" className="mt-6">
-          <iframe
-            src={`/stores/${store?.id}/payments`}
-            title={t('Payment Methods')}
-            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
-          />
+          <SettingsIframe src={`/stores/${store?.id}/payments`} title={t('Payment Methods')} />
         </TabsContent>
         <TabsContent value="shipping" className="mt-6">
-          <iframe
-            src={`/shipping`}
-            title={t('Shipping & Delivery')}
-            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
-          />
+          <SettingsIframe src={`/shipping`} title={t('Shipping & Delivery')} />
         </TabsContent>
         <TabsContent value="taxes" className="mt-6">
-          <iframe
-            src={route('tax.index')}
-            title={t('الضرائب')}
-            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
-          />
+          <SettingsIframe src={route('tax.index')} title={t('الضرائب')} />
         </TabsContent>
         <TabsContent value="erp" className="mt-6">
-          <iframe
-            src={`/stores/${store?.id}/integrations/erp`}
-            title={t('ERP & Inventory')}
-            className="h-[calc(100vh-260px)] min-h-[560px] w-full rounded-xl border border-border bg-white"
-          />
+          <SettingsIframe src={`/stores/${store?.id}/integrations/erp`} title={t('ERP & Inventory')} />
         </TabsContent>
       </Tabs>
 

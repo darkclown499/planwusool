@@ -130,19 +130,21 @@ export default function Categories() {
           <CardContent>
             <div className="space-y-4">
               {categories.length === 0 ? (
-                <div className="text-center py-8">
-                  <Folder className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                  <p className="mt-2 text-muted-foreground">{t('No categories found')}</p>
+                <div className="text-center py-12 px-4">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
+                    <Folder className="h-8 w-8 text-amber-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">لم تضف أي تصنيفات بعد</h3>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    التصنيفات تساعد العملاء على العثور على منتجاتك بسرعة. أضف تصنيفاً ثم أضف المنتجات داخله.
+                  </p>
                   {hasPermission('create-categories') && (
-                    <Button 
-                      variant="outline" 
-                      className="mt-4" 
-                      onClick={() => handleActionClick('create', 'create-categories')}
-                    >
-                      <Plus className="h-4 w-4 me-2" />
-                      {t('Create your first category')}
+                    <Button className="mt-6 gap-2" onClick={() => handleActionClick('create', 'create-categories')}>
+                      <Plus className="h-4 w-4" />
+                      إضافة أول تصنيف
                     </Button>
                   )}
+                  <p className="mt-3 text-xs text-muted-foreground">بعد إضافة التصنيف يمكنك إضافة المنتجات مباشرة</p>
                 </div>
               ) : (
                 categories.map((category: any) => (

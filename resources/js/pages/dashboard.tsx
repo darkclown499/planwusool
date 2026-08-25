@@ -681,19 +681,35 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
         {onboarding?.show && !isSuperAdmin && (() => {
           const doneCount = Math.max(onboarding.totalCount - (onboarding.pendingCount || 0), 0);
           const percent = onboarding.totalCount > 0 ? Math.round((doneCount / onboarding.totalCount) * 100) : 0;
+          const isComplete = percent === 100 && onboarding.isReadyToPublish;
           return (
-            <Card className="border-primary/30 bg-primary/5">
+            <Card className={isComplete ? "border-emerald-200 bg-emerald-50" : "border-primary/30 bg-primary/5"}>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-primary" />
-                    <CardTitle className="text-base">{t('ابدأ من هنا')}</CardTitle>
+                    {isComplete ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <Zap className="h-4 w-4 text-primary" />}
+                    <CardTitle className={isComplete ? "text-base text-emerald-800" : "text-base"}>{isComplete ? 'متجرك جاهز 🎉' : t('ابدأ من هنا')}</CardTitle>
                   </div>
-                  <span className="text-sm font-semibold text-primary">
-                    <span className="ltr-num" dir="ltr">{percent}%</span> {t('إكمال تهيئة المتجر')}
+                  <span className={isComplete ? "text-sm font-semibold text-emerald-700" : "text-sm font-semibold text-primary"}>
+                    <span className="ltr-num" dir="ltr">{percent}%</span> {isComplete ? ' — جاهز للنشر' : t('إكمال تهيئة المتجر')}
                   </span>
                 </div>
                 <Progress value={percent} className="mt-3 h-2" />
+                {isComplete && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm text-emerald-700">ممتاز! أكملت جميع الخطوات الأساسية. متجرك جاهز لاستقبال الطلبات.</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700" onClick={() => window.open(storeUrl!, '_blank')}>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        فتح المتجر
+                      </Button>
+                      <Button size="sm" variant="outline" className="gap-1.5 border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50" onClick={() => router.visit(route('orders.index'))}>
+                        <ShoppingCart className="h-3.5 w-3.5" />
+                        عرض الطلبات
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -767,6 +783,46 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
             </CardContent>
           </Card>
         )}
+
+        {/* NEXT BEST ACTION — يقلل الحمل الذهني: خطوة واحدة واضحة */}
+        {onboarding && !isSuperAdmin && (() => {
+          const nextStep = onboarding.steps.find((s: any) => !s.done && s.href);
+          if (!nextStep) return null;
+          const actionMap: Record<string, { cta: string; desc: string; icon: any }> = {
+            store_info: { cta: 'إكمال معلومات المتجر', desc: 'أكمل اسم المتجر ومعلوماته الأساسية', icon: Building2 },
+            design: { cta: 'تخصيص المتجر', desc: 'اختر القالب والألوان والشعار', icon: Palette },
+            categories: { cta: 'إضافة تصنيف', desc: 'أنشئ أول تصنيف لتنظيم منتجاتك', icon: Folder },
+            products: { cta: 'إضافة منتج', desc: 'أضف أول منتج ليظهر في متجرك', icon: Package },
+            inventory: { cta: 'مراجعة المخزون', desc: 'تأكد أن منتجاتك بها كمية متاحة', icon: Boxes },
+            shipping: { cta: 'إعداد الشحن', desc: 'أضف طريقة توصيل حتى يتمكن العملاء من الطلب', icon: Truck },
+            payments: { cta: 'إضافة طريقة دفع', desc: 'فعّل الدفع عند الاستلام أو الدفع الإلكتروني', icon: CreditCard },
+            taxes: { cta: 'إعداد الضرائب', desc: 'أضف قواعد الضرائب إذا كان متجرك يحتاجها', icon: Percent },
+            domain: { cta: 'ربط الدومين', desc: 'اربط دومينك الخاص لظهور احترافي', icon: Globe },
+            published: { cta: 'نشر المتجر', desc: 'متجرك جاهز — انشره الآن', icon: CheckCircle },
+          };
+          const meta = actionMap[nextStep.key] || { cta: 'متابعة الإعداد', desc: 'أكمل الخطوة التالية', icon: Zap };
+          const NextIcon = meta.icon;
+          return (
+            <Card className="border-emerald-200 bg-gradient-to-l from-emerald-50 via-white to-white shadow-sm">
+              <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200">
+                    <NextIcon className="h-6 w-6" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">الخطوة التالية</p>
+                    <h3 className="mt-1 text-lg font-extrabold text-slate-900">{meta.cta}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{meta.desc}</p>
+                  </div>
+                </div>
+                <Button size="lg" className="shrink-0 gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={() => router.visit(nextStep.href!)}>
+                  {meta.cta}
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* KPI Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

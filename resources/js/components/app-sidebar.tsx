@@ -300,22 +300,25 @@ export function AppSidebar() {
                         title: 'الشحن والتوصيل',
                         href: `/stores/${currentStoreId}/settings?tab=shipping`,
                         icon: Truck,
-                        activePaths: [`/stores/${currentStoreId}/shipping`, `/stores/${currentStoreId}/settings?tab=shipping`, `/stores/${currentStoreId}/settings?tab=payments`, `/stores/${currentStoreId}/settings?tab=taxes`],
+                        activePaths: [`/stores/${currentStoreId}/shipping`, `/stores/${currentStoreId}/settings?tab=shipping`, '/shipping'],
                     },
                     {
                         title: 'الدفع',
                         href: `/stores/${currentStoreId}/settings?tab=payments`,
                         icon: CreditCard,
+                        activePaths: [`/stores/${currentStoreId}/settings?tab=payments`, `/stores/${currentStoreId}/payments`],
                     },
                     {
                         title: 'الضرائب',
-                        href: route('tax.index'),
+                        href: `/stores/${currentStoreId}/settings?tab=taxes`,
                         icon: Percent,
+                        activePaths: [`/stores/${currentStoreId}/settings?tab=taxes`, '/tax'],
                     },
                     {
                         title: 'الدومين',
                         href: `/stores/${currentStoreId}/settings?tab=domains`,
                         icon: Globe,
+                        activePaths: [`/stores/${currentStoreId}/settings?tab=domains`, `/stores/${currentStoreId}/domains`],
                     },
                     { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
                 ],
@@ -367,14 +370,12 @@ export function AppSidebar() {
         if (hasPermission('manage-product-reviews')) {
             contentChildren.push({ 
                 title: t('Product Reviews'),
-                icon: Star,
                 href: route('product-reviews.index')
             });
         }
         if (hasPermission('manage-digital-downloads')) {
             contentChildren.push({ 
                 title: t('Digital Downloads'),
-                icon: Download,
                 href: route('digital-downloads.index')
             });
         }

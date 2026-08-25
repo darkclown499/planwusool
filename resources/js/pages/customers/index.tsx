@@ -124,21 +124,21 @@ export default function Customers() {
             <CardContent>
               <div className="space-y-4">
                 {customers.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                    <h3 className="mt-4 text-lg font-medium">{t('No customers found')}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {t('Get started by adding your first customer.')}
+                  <div className="text-center py-12 px-4">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50">
+                      <Users className="h-8 w-8 text-violet-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">لا يوجد عملاء بعد</h3>
+                    <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                      سيظهر عملاؤك هنا بعد أول عملية شراء. يمكنك أيضاً إضافة عميل يدوياً لبدء إدارة قاعدة العملاء.
                     </p>
                     {hasPermission('create-customers') && (
-                      <Button 
-                        onClick={() => handleActionClick('create-customers', () => router.visit(route('customers.create')))} 
-                        className="mt-4"
-                      >
-                        <Plus className="h-4 w-4 me-2" />
-                        {t('Create Customer')}
+                      <Button onClick={() => handleActionClick('create-customers', () => router.visit(route('customers.create')))} className="mt-6 gap-2">
+                        <Plus className="h-4 w-4" />
+                        إضافة أول عميل
                       </Button>
                     )}
+                    <p className="mt-3 text-xs text-muted-foreground">تلميح: العملاء يضافون تلقائياً عند إتمام الطلبات</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
