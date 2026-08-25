@@ -67,7 +67,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
           ) : (
             <>
               <span className="rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 p-1.5 text-white shadow-lg shadow-blue-500/25"><Zap className="h-5 w-5" /></span>
-              <span className="hidden text-lg font-black tracking-tight text-white sm:block">{config?.storeName || store?.name}</span>
+              <span className="hidden text-white font-bold text-lg sm:block">{config?.storeName || store?.name}</span>
             </>
           )}
         </a>
@@ -103,7 +103,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
             type="button"
             onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))}
             aria-label="حسابي"
-            className="hidden rounded-lg px-3 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white sm:block"
+            className="hidden rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-900 transition-colors hover:text-blue-600 focus:bg-blue-600 focus:text-white sm:block"
           >
             دخول
           </button>

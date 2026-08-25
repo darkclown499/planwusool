@@ -46,7 +46,7 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
             <HeaderLoyaltyBadge />
           </div>
           <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} aria-label="حسابي"
-            className="hidden rounded-full border border-[#4a3e33] px-4 py-2 text-sm font-bold text-[#d8c9a8] transition hover:border-[#f59e0b] hover:text-[#f59e0b] sm:block">
+            className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-900 transition hover:text-blue-600 focus:bg-blue-600 focus:text-white sm:block">
             حسابي
           </button>
           <button type="button" onClick={() => ui.setShowCart(true)}
