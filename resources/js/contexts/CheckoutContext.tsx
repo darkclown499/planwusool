@@ -887,6 +887,9 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
             window.open(data.whatsapp_data.url, '_blank');
           }
 
+          // onSuccess: only toast after server confirms order
+          toast.success("تم إنشاء طلبك بنجاح!");
+
           // Handle success state without page refresh if possible
           if (onOrderComplete) {
             // Update URL silently
@@ -908,6 +911,9 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
             window.location.href = storeUrl + '?payment_status=success&order_number=' + data.order_number;
           }
         } else {
+          // onSuccess: only toast after server confirms order
+          toast.success("تم إنشاء طلبك بنجاح!");
+
           if (onOrderComplete) {
             // Update URL silently
             const url = new URL(window.location.href);
@@ -928,11 +934,15 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
           }
         }
       } else {
-        // Handle validation errors
+        // onError: display specific validation error messages
         if (data.errors) {
-          // setPaymentErrors(data.errors);
+          Object.values(data.errors).forEach((err: any) => {
+            const msg = Array.isArray(err) ? err[0] : String(err);
+            toast.error(msg);
+          });
+        } else {
+          toast.error(data.message || 'فشل إتمام الطلب');
         }
-        toast.error(data.message || 'فشل إتمام الطلب');
       }
     } catch (error) {
       console.error('Order placement error:', error);

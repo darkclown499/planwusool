@@ -40,18 +40,18 @@ class OrderService
                 'customer_first_name' => $orderData['customer_first_name'],
                 'customer_last_name' => $orderData['customer_last_name'],
                 
-                // Shipping address
+                // Shipping address — postal codes nullable for local delivery
                 'shipping_address' => $orderData['shipping_address'],
                 'shipping_city' => $orderData['shipping_city'],
                 'shipping_state' => $orderData['shipping_state'],
-                'shipping_postal_code' => $orderData['shipping_postal_code'],
+                'shipping_postal_code' => $orderData['shipping_postal_code'] ?? $orderData['postal_code'] ?? null,
                 'shipping_country' => $orderData['shipping_country'],
                 
                 // Billing address
                 'billing_address' => $orderData['billing_address'],
                 'billing_city' => $orderData['billing_city'],
                 'billing_state' => $orderData['billing_state'],
-                'billing_postal_code' => $orderData['billing_postal_code'],
+                'billing_postal_code' => $orderData['billing_postal_code'] ?? $orderData['postal_code'] ?? null,
                 'billing_country' => $orderData['billing_country'],
                 
                 // Pricing

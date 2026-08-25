@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { toast } from '@/components/custom-toast';
 import { route } from 'ziggy-js';
+import axios from 'axios';
 
 interface Product {
   id: string;
@@ -48,6 +49,28 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartLoading, setCartLoading] = useState(false);
   const [cartError, setCartError] = useState<string | null>(null);
+  const debouncedSyncRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced background sync for abandoned cart recovery — works across all templates
+  const syncAbandonedCart = (items: any[]) => {
+    if (!storeId) return;
+    if (debouncedSyncRef.current) clearTimeout(debouncedSyncRef.current);
+    debouncedSyncRef.current = setTimeout(async () => {
+      try {
+        await axios.post(route('api.cart.sync-abandoned'), {
+          store_id: storeId,
+          items: items.map((item: any) => ({
+            name: item.name || item.product?.name || 'Product',
+            quantity: item.quantity || 1,
+            price: Number(item.price ?? item.product?.price ?? 0),
+          })),
+        });
+      } catch (e) {
+        // Silent fail — never break cart flow due to abandoned tracking
+        console.warn('Abandoned cart sync failed', e);
+      }
+    }, 800);
+  };
 
   const loadCart = async () => {
     if (!storeId) return;
@@ -69,6 +92,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
       const data = await response.json();
       if (data.items) {
         setCartItems(data.items);
+        // Sync abandoned cart in background — debounced, works for all templates
+        syncAbandonedCart(data.items);
+      } else {
+        syncAbandonedCart([]);
       }
     } catch (error) {
       console.error('Failed to load cart:', error);
@@ -230,6 +257,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
       loadCart();
     }
   }, [storeId]);
+
+  // Cleanup debounced sync on unmount
+  useEffect(() => {
+    return () => {
+      if (debouncedSyncRef.current) clearTimeout(debouncedSyncRef.current);
+    };
+  }, []);
 
   const value: CartContextType = {
     cartItems,

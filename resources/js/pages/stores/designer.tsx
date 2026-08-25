@@ -224,6 +224,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const [headInject, setHeadInject] = useState('');
     const [availableCategories, setAvailableCategories] = useState<Array<{ id: string | number; name: string; image?: string | null; slug?: string }>>([]);
     const [initialSnapshot, setInitialSnapshot] = useState<string>('');
+    const [previewVersion, setPreviewVersion] = useState(0);
+    const previewIframeRef = useRef<HTMLIFrameElement>(null);
 
     // Sync tab state with URL query param ?tab= (templates / identity) — task: Fix URL Query Param (`tab=identity`) Syncing
     const page = usePage<any>();
@@ -392,6 +394,8 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             if (res?.head_inject !== undefined) setHeadInject(res.head_inject);
             setInitialSnapshot(JSON.stringify({ theme, tokens: finalTokens, content: finalContent, css: res?.custom_css ?? customCss, js: res?.custom_js ?? customJs, head: res?.head_inject ?? headInject }));
             toast.success('تم حفظ جميع التغييرات بنجاح');
+            // Trigger live preview reload so iframe reflects saved state (same rendering path as public store)
+            setPreviewVersion((v) => v + 1);
         } catch {
             toast.error('تعذر حفظ التغييرات — تأكد من سلامة المدخلات');
         } finally {
@@ -443,6 +447,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             setContent(finalContent2);
             setInitialSnapshot(JSON.stringify({ theme, tokens, content: finalContent2, css: customCss, js: customJs, head: headInject }));
             toast.success('تم حفظ إعدادات البنر');
+            setPreviewVersion((v) => v + 1);
         } catch {
             toast.error('تعذر حفظ إعدادات البنر');
         } finally {
@@ -794,7 +799,17 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 activeTheme={theme}
                                 availableThemes={availableThemes}
                                 withFilter={false}
-                                onApplied={(slug) => setTheme(slug)}
+                                onApplied={(slug) => {
+                                    setTheme(slug);
+                                    setInitialSnapshot((prev) => {
+                                        try {
+                                            const parsed = JSON.parse(prev);
+                                            parsed.theme = slug;
+                                            return JSON.stringify(parsed);
+                                        } catch { return prev; }
+                                    });
+                                    setPreviewVersion((v) => v + 1);
+                                }}
                             />
                         </AccordionSection>
 
@@ -1401,14 +1416,19 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                     try {
                                         const u = new URL(base, window.location.origin);
                                         u.searchParams.set('preview', 'true');
+                                        u.searchParams.set('v', String(previewVersion));
+                                        // bust cache on theme change too
+                                        u.searchParams.set('t', theme);
                                         return u.toString();
                                     } catch {
-                                        return base.includes('?') ? `${base}&preview=true` : `${base}?preview=true`;
+                                        const sep = base.includes('?') ? '&' : '?';
+                                        return `${base}${sep}preview=true&v=${previewVersion}&t=${encodeURIComponent(theme)}`;
                                     }
                                 })();
                                 return (
                                     <iframe
-                                        key={previewSrc}
+                                        ref={previewIframeRef}
+                                        key={`${previewSrc}-${previewVersion}-${theme}`}
                                         src={previewSrc}
                                         title="Live store preview"
                                         className="h-full min-h-[520px] w-full flex-1 border-0 bg-white"
@@ -1419,7 +1439,7 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                 );
                             })()}
                         </div>
-                        <p className="mt-3 text-center text-xs text-slate-400">المعاينة الحية تتحدث فورياً — احفظ التغييرات لتظهر للزوار</p>
+                        <p className="mt-3 text-center text-xs text-slate-400">المعاينة الحية تتحدث فورياً — احفظ التغييرات لتظهر للزوار {isDirty && <span className="text-amber-600 font-bold">• توجد تغييرات غير محفوظة</span>}</p>
                     </div>
                 </main>
             </div>

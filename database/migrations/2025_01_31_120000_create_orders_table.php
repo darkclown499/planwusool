@@ -25,18 +25,18 @@ return new class extends Migration
             $table->string('customer_first_name');
             $table->string('customer_last_name');
             
-            // Shipping address
+            // Shipping address — postal codes nullable for local delivery
             $table->string('shipping_address');
             $table->string('shipping_city');
             $table->string('shipping_state');
-            $table->string('shipping_postal_code');
+            $table->string('shipping_postal_code')->nullable();
             $table->string('shipping_country');
             
             // Billing address
             $table->string('billing_address');
             $table->string('billing_city');
             $table->string('billing_state');
-            $table->string('billing_postal_code');
+            $table->string('billing_postal_code')->nullable();
             $table->string('billing_country');
             
             // Pricing

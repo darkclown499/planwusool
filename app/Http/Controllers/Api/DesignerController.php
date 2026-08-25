@@ -90,6 +90,19 @@ class DesignerController extends Controller
 
         if (isset($validated['design_tokens'])) {
             $store->design_tokens = $validated['design_tokens'];
+            // Sync branding to StoreConfiguration so ThemeController fallback chain
+            // and legacy integrations see the same logo/favicon. Single source remains
+            // design_tokens; this is a mirrored write for backward compat.
+            try {
+                if (array_key_exists('logo', $validated['design_tokens'])) {
+                    \App\Models\StoreConfiguration::setConfiguration($store->id, 'logo', (string) ($validated['design_tokens']['logo'] ?? ''));
+                }
+                if (array_key_exists('favicon', $validated['design_tokens'])) {
+                    \App\Models\StoreConfiguration::setConfiguration($store->id, 'favicon', (string) ($validated['design_tokens']['favicon'] ?? ''));
+                }
+            } catch (\Throwable $e) {
+                // non-fatal
+            }
         }
 
         // Slot content (v2 editor): dotted keys expand into the store_content

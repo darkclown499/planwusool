@@ -8,12 +8,20 @@ use App\Http\Requests\Api\UpdateCartRequest;
 use App\Http\Requests\Api\CartStoreRequest;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Services\AbandonedCartService;
 use App\Services\CartCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
+    protected $abandonedCartService;
+
+    public function __construct(AbandonedCartService $abandonedCartService)
+    {
+        $this->abandonedCartService = $abandonedCartService;
+    }
+
     public function index(Request $request)
     {
         $storeId = $request->store_id;
@@ -96,6 +104,10 @@ class CartController extends Controller
                 'price' => $product->sale_price ?? $product->price
             ]);
         }
+
+        // Sync abandoned cart — persistent record for dashboard "استعادة السلة المتروكة"
+        $this->syncAbandonedCart($request->store_id);
+
         return response()->json(['message' => 'تمت الإضافة إلى السلة', 'item' => $cartItem]);
     }
 
@@ -104,6 +116,8 @@ class CartController extends Controller
         $cartItem = $this->getCartItems($request->store_id, $request)->findOrFail($id);
         $cartItem->update(['quantity' => $request->quantity]);
         
+        $this->syncAbandonedCart($request->store_id);
+
         return response()->json(['message' => 'تم تحديث السلة', 'item' => $cartItem]);
     }
 
@@ -112,6 +126,8 @@ class CartController extends Controller
         $cartItem = $this->getCartItems($request->store_id, $request)->findOrFail($id);
         $cartItem->delete();
         
+        $this->syncAbandonedCart($request->store_id);
+
         return response()->json(['message' => 'تمت إزالة المنتج']);
     }
 
@@ -128,7 +144,50 @@ class CartController extends Controller
             ->whereNull('customer_id')
             ->update(['customer_id' => Auth::guard('customer')->id()]);
 
+        $this->syncAbandonedCart($request->store_id);
+
         return response()->json(['message' => 'تمت مزامنة السلة']);
+    }
+
+    private function syncAbandonedCart(int $storeId): void
+    {
+        try {
+            $sessionId = session()->getId();
+            $customer = Auth::guard('customer')->user();
+            $customerId = $customer?->id;
+            $customerEmail = $customer?->email;
+            $customerPhone = $customer?->phone;
+            $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) ?: ($customer->name ?? null) : null;
+
+            $calculation = CartCalculationService::calculateCartTotals($storeId, $sessionId);
+            $items = $calculation['items']->map(function ($item) {
+                return [
+                    'name' => $item->product->name,
+                    'quantity' => $item->quantity,
+                    'price' => (float) ($item->product->sale_price ?? $item->product->price),
+                    'product_id' => $item->product_id,
+                    'image' => $item->product->cover_image ?? null,
+                ];
+            })->values()->toArray();
+
+            $total = (float) ($calculation['total'] ?? 0);
+
+            // If cart is empty, still update abandoned cart to reflect empty state (or keep last known)
+            // The service handles empty items by keeping existing cart_items if contact info exists
+            $this->abandonedCartService->trackCart(
+                $storeId,
+                $sessionId,
+                $customerId,
+                $customerEmail,
+                $customerPhone,
+                $customerName,
+                $items,
+                $total
+            );
+        } catch (\Throwable $e) {
+            // Never break cart flow due to abandoned tracking failure
+            \Illuminate\Support\Facades\Log::warning('Abandoned cart sync failed: ' . $e->getMessage(), ['store_id' => $storeId]);
+        }
     }
 
     private function getCartItems($storeId, $request)

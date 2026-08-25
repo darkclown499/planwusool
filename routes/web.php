@@ -268,6 +268,7 @@ Route::middleware('api.throttle')->group(function () {
     // Abandoned cart tracking API (storefront) — draft capture & recovery
     Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
     Route::post('api/cart/draft', [CartTrackingController::class, 'draft'])->name('api.cart.draft');
+    Route::post('api/cart/sync-abandoned', [CartTrackingController::class, 'track'])->name('api.cart.sync-abandoned');
     // Categories API with explicit storeId validation — fallback to empty list instead of 500
     Route::get('api/categories', [\App\Http\Controllers\CategoryController::class, 'apiIndex'])->name('api.categories.index');
     

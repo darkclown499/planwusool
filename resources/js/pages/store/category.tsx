@@ -1,5 +1,6 @@
 import StoreBoundary from '@/components/StoreBoundary';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
+import DesignTokensInjector from '@/components/DesignTokensInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
 import type { TemplateCategoryPageData } from '@/templates-v2';
 import { requireTemplateModule, TemplateStorefrontV2 } from '@/templates-v2';
@@ -38,6 +39,7 @@ interface CategoryStoreProps {
  */
 const CategoryStore: React.FC<CategoryStoreProps> = ({
     template,
+    designTokens,
     store,
     categories,
     products,
@@ -78,6 +80,7 @@ const CategoryStore: React.FC<CategoryStoreProps> = ({
 
     return (
         <>
+            <DesignTokensInjector tokens={designTokens as any} />
             <Head title={seoTitle}>
                 <meta name="description" content={seoDescription} />
                 <meta property="og:title" content={seoTitle} />

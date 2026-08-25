@@ -63,9 +63,12 @@ class AbandonedCartController extends Controller
 
         $query = AbandonedCart::where('store_id', $currentStoreId);
 
-        // Apply filters
+        // Exclude completed orders by default — dashboard should only show pending recoveries
+        // This fixes the "0 pending recoveries" bug where recovered carts were cluttering the list
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
+        } else {
+            $query->whereNotIn('status', ['recovered', 'expired', 'unsubscribed']);
         }
         if ($request->has('search') && $request->search) {
             $search = $request->search;

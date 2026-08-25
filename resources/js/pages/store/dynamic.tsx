@@ -1,6 +1,7 @@
 import StoreHead from '@/components/StoreHead';
 import StoreBoundary from '@/components/StoreBoundary';
 import { CustomCodeInjector } from '@/components/CustomCodeInjector';
+import DesignTokensInjector from '@/components/DesignTokensInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { requireTemplateModule, TemplateStorefrontV2 } from '@/templates-v2';
 import React, { Suspense } from 'react';
@@ -44,6 +45,7 @@ interface DynamicStoreProps {
  */
 const DynamicStore: React.FC<DynamicStoreProps> = ({
     template,
+    designTokens,
     store,
     categories,
     products,
@@ -81,6 +83,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
 
     return (
         <>
+            <DesignTokensInjector tokens={designTokens as any} />
             <CustomCodeInjector
                 customCss={store?.custom_css}
                 customJavascript={store?.custom_javascript}

@@ -46,12 +46,13 @@ class OrderController extends Controller
                 'shipping_address' => 'required|string|max:255',
                 'shipping_city' => 'required|max:100',
                 'shipping_state' => 'required|max:100',
-                'shipping_postal_code' => 'required|string|max:20',
+                'shipping_postal_code' => 'nullable|string|max:20',
+                'postal_code'          => 'nullable|string|max:20',
                 'shipping_country' => 'required|max:100',
                 'billing_address' => 'required|string|max:255',
                 'billing_city' => 'required|max:100',
                 'billing_state' => 'required|max:100',
-                'billing_postal_code' => 'required|string|max:20',
+                'billing_postal_code' => 'nullable|string|max:20',
                 'billing_country' => 'required|max:100',
                 'payment_method' => 'required|string',
                 'shipping_method_id' => 'nullable|exists:shippings,id',
@@ -110,7 +111,7 @@ class OrderController extends Controller
                     ?? 'ILS';
             }
 
-            // Prepare order data
+            // Prepare order data — postal codes are nullable for local delivery
             $orderData = [
                 'store_id' => $request->store_id,
                 'currency' => strtoupper($currencyCode),
@@ -121,12 +122,12 @@ class OrderController extends Controller
                 'shipping_address' => $request->shipping_address,
                 'shipping_city' => $request->shipping_city,
                 'shipping_state' => $request->shipping_state,
-                'shipping_postal_code' => $request->shipping_postal_code,
+                'shipping_postal_code' => $request->shipping_postal_code ?? $request->postal_code ?? null,
                 'shipping_country' => $request->shipping_country,
                 'billing_address' => $request->billing_address,
                 'billing_city' => $request->billing_city,
                 'billing_state' => $request->billing_state,
-                'billing_postal_code' => $request->billing_postal_code,
+                'billing_postal_code' => $request->billing_postal_code ?? $request->postal_code ?? null,
                 'billing_country' => $request->billing_country,
                 'subtotal' => $calculation['subtotal'],
                 'tax_amount' => $calculation['tax'],

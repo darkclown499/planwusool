@@ -116,9 +116,11 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
     const stepLabels = ['المعلومات', 'المراجعة', 'الدفع'];
 
     const handlePlace = () => {
-        handlePlaceOrder(total).then(() => {
-            onOrderComplete();
-        });
+        // Do NOT call onOrderComplete prematurely — CheckoutContext will invoke it
+        // only inside the fetch onSuccess path after server confirms the order.
+        // Its internal handling shows toast.success("تم إنشاء طلبك بنجاح!") in onSuccess
+        // and toast.error per validation error in onError.
+        handlePlaceOrder(total);
     };
 
     return (

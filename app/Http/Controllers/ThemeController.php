@@ -98,9 +98,13 @@ class ThemeController extends Controller
         if (!$store) return null;
         
         $configuration = StoreConfiguration::getConfiguration($store->id);
+        $designTokens = $store->design_tokens ?? [];
         
-        // Get favicon from store config or company store settings
-        $favicon = $configuration['favicon'] ?: '';
+        // Get favicon from design_tokens first (designer source of truth), then store config, then user settings
+        $favicon = $designTokens['favicon'] ?? $configuration['favicon'] ?? '';
+        // Also check store_content fallback
+        if (empty($favicon) && !empty($store->store_content['brand']['favicon'])) $favicon = $store->store_content['brand']['favicon'];
+        if (empty($favicon) && !empty($store->store_content['favicon'])) $favicon = $store->store_content['favicon'];
         if (empty($favicon) && $store->user) {
             $userSettings = \App\Models\Setting::getUserSettings($store->user->id, $store->id);
             $favicon = $userSettings['favicon'] ?? '';
@@ -126,11 +130,15 @@ class ThemeController extends Controller
         // Get favicon for PWA popup with proper fallback chain
         $faviconForPWA = getPWAIconUrl($store);
         
+        $brandingLogo = $designTokens['logo'] ?? $configuration['logo'] ?? '';
+        if (empty($brandingLogo) && !empty($store->store_content['brand']['logo'])) $brandingLogo = $store->store_content['brand']['logo'];
+        if (empty($brandingLogo) && !empty($store->store_content['logo'])) $brandingLogo = $store->store_content['logo'];
+
         return [
             'id' => $store->id,
             'name' => $store->name,
             'email' => $store->email,
-            'logo' => $configuration['logo'] ?: asset('images/logos/logo-light.png'),
+            'logo' => $brandingLogo ?: asset('images/logos/logo-light.png'),
             'favicon' => $faviconForPWA,
             'description' => $store->description,
             'theme' => $store->getTemplateSlug(),
@@ -251,10 +259,11 @@ class ThemeController extends Controller
     {
         $storeModel = Store::find($store['id']);
         $storeSettings = [];
+        $configuration = $storeModel ? StoreConfiguration::getConfiguration($store['id']) : [];
+        $designTokens = $storeModel ? ($storeModel->design_tokens ?? []) : [];
         
         if ($storeModel && $storeModel->user) {
             $storeSettings = \App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']);
-            $configuration = StoreConfiguration::getConfiguration($store['id']);
             try {
                 $loyalty = \App\Models\LoyaltySetting::forStore($store['id']);
                 $storeSettings['loyalty'] = [
@@ -269,11 +278,29 @@ class ThemeController extends Controller
             }
         }
         
+        // Branding source of truth: design_tokens.logo/favicon take precedence over
+        // StoreConfiguration (designer saves there). Fallback chain keeps legacy stores working.
+        $brandingLogo = $designTokens['logo'] ?? $configuration['logo'] ?? '';
+        // Also check store_content as tertiary fallback (designer dual-writes there)
+        if (empty($brandingLogo) && $storeModel && !empty($storeModel->store_content['brand']['logo'])) {
+            $brandingLogo = $storeModel->store_content['brand']['logo'];
+        }
+        if (empty($brandingLogo) && $storeModel && !empty($storeModel->store_content['logo'])) {
+            $brandingLogo = $storeModel->store_content['logo'];
+        }
+        $brandingFavicon = $designTokens['favicon'] ?? $configuration['favicon'] ?? '';
+        if (empty($brandingFavicon) && $storeModel && !empty($storeModel->store_content['brand']['favicon'])) {
+            $brandingFavicon = $storeModel->store_content['brand']['favicon'];
+        }
+        if (empty($brandingFavicon) && $storeModel && !empty($storeModel->store_content['favicon'])) {
+            $brandingFavicon = $storeModel->store_content['favicon'];
+        }
+
         return [
             'config' => [
                 'storeName' => $store['name'] ?? 'gadgets',
-                'logo' => $configuration['logo'] ?? '',
-                'favicon' => $configuration['favicon'] ?? '',
+                'logo' => $brandingLogo,
+                'favicon' => $brandingFavicon,
                 'phoneNumber' => $storeSettings['phone'] ?? '+1-555-123-4567',
                 'currency' => $storeSettings['currency_symbol'] ?? '$',
                 'address' => $configuration['address'] ?? '',
