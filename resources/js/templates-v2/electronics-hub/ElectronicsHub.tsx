@@ -14,6 +14,7 @@ import {
 } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
+import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* عالم التقنية — Electronics Hub                                         */
@@ -147,26 +148,68 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   );
 }
 
-/* ------------------------------- Hero ------------------------------- */
+/* ------------------------------- Hero — hero_banner-aware ------------------------------- */
 
 export function HubHero({ banner }: { banner?: any }) {
+  const hero = useResolvedHero();
+  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
+  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  const effective = {
+    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || '/images/store/electronics.jpg',
+    title: hero.heading || banner?.title || 'تقنية تليق بك',
+    subtitle: hero.subtitle || banner?.subtitle || 'إصدارات 2026 وصلت',
+    button_text: hero.ctaLabel || banner?.button_text || 'تصفح عروض اليوم',
+    button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
+  };
+  if (isVideo) {
+    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    return (
+      <section className="relative overflow-hidden bg-black" dir="rtl">
+        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-60" src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
+        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
+          <div>
+            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
+            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
+            <p className="mt-3 max-w-md leading-relaxed text-slate-300">أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.</p>
+            <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (isYoutube) {
+    return (
+      <section className="relative overflow-hidden bg-black" dir="rtl">
+        <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
+        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
+          <div>
+            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
+            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
+            <p className="mt-3 max-w-md leading-relaxed text-slate-300">أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.</p>
+            <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
+          </div>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="relative overflow-hidden bg-gradient-to-l from-[#0b1220] via-[#12203d] to-[#0b1220]" dir="rtl">
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 right-10 h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
       <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
         <div>
-          <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">
-            {banner?.subtitle || 'إصدارات 2026 وصلت'}
-          </p>
-          <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{banner?.title || 'تقنية تليق بك'}</h1>
+          <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
+          <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
           <p className="mt-3 max-w-md leading-relaxed text-slate-400">أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.</p>
-          <a href="#hub-deals" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500">
-            <Zap className="h-4 w-4" /> {banner?.button_text || 'تصفح عروض اليوم'}
-          </a>
+          <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
         </div>
         <div className="relative hidden justify-self-end sm:block">
-          <img src={getOptimizedImageUrl(banner?.image || '/images/store/electronics.jpg', 'medium')} alt="" className="max-h-64 rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(banner?.image||'/images/store/electronics.jpg'))}} width={800} height={400} />
+          <img src={getOptimizedImageUrl(effective.image, 'medium')} alt="" className="max-h-64 rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effective.image))}} width={800} height={400} />
+          {hero.hasDynamicHero && <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
         </div>
       </div>
     </section>

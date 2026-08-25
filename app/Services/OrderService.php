@@ -145,8 +145,9 @@ class OrderService
                 ]);
             }
 
-            // Clear cart items after order creation
-            $this->clearCart($orderData['store_id']);
+            // Cart clearing is now handled in Store\OrderController ONLY after payment is confirmed
+            // to prevent data loss on failed orders (spec: cart must remain on failure).
+            // $this->clearCart($orderData['store_id']); // moved to controller
 
             // Dispatch accounting sync job
             try {

@@ -11,6 +11,7 @@ import {
   type V2Product,
 } from '../shared/hooks';
 import type { TemplateRootProps } from '../types';
+import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* مطعم — Restaurant Menu                                                 */
@@ -102,20 +103,56 @@ export function RestaurantTabs({ categories, activeId }: { categories: any[]; ac
   );
 }
 
-/* ------------------------------ Hero ------------------------------ */
+/* ------------------------------ Hero — hero_banner-aware ------------------------------ */
 
 export function RestaurantHero({ banner }: { banner?: any }) {
+  const hero = useResolvedHero();
+  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
+  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  const effective = {
+    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
+    title: hero.heading || banner?.title || 'من قائمة الشيف',
+    subtitle: hero.subtitle || banner?.subtitle || 'مشاوي على الفحم • توابل بيتية • خبز التنور',
+  };
+  if (isVideo) {
+    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    return (
+      <section className="relative h-72 overflow-hidden bg-black sm:h-96" dir="rtl">
+        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-60" src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
+        <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
+          <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
+          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
+          <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
+        </div></div>
+      </section>
+    );
+  }
+  if (isYoutube) {
+    return (
+      <section className="relative h-72 overflow-hidden bg-black sm:h-96" dir="rtl">
+        <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
+        <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
+          <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
+          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
+          <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
+        </div></div>
+      </section>
+    );
+  }
   return (
     <section className="relative h-72 overflow-hidden bg-[#0f0b09] sm:h-96" dir="rtl">
-        <img src={getOptimizedImageUrl(banner?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5', 'medium')} alt="" className="h-full w-full object-cover opacity-60" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />
+        <img src={getOptimizedImageUrl(effective.image, 'medium')} alt="" className="h-full w-full object-cover opacity-60" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />
       <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
+      {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
       <div className="absolute inset-0 flex items-center">
         <div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
           <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
-          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">
-            {banner?.title || 'من قائمة الشيف'}
-          </h1>
-          <p className="mt-3 font-serif text-base text-[#e8d9b8]">{banner?.subtitle || 'مشاوي على الفحم • توابل بيتية • خبز التنور'}</p>
+          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
+          <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
         </div>
       </div>
     </section>

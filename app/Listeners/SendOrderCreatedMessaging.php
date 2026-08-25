@@ -23,9 +23,23 @@ class SendOrderCreatedMessaging
         $userId = $store->user_id;
         $storeId = $store->id;
         
-        // Only send notification based on selected payment method
+        // ---- Merchant WhatsApp notification (for EVERY order, not only whatsapp payment) ----
+        // This is the fix for Production bug: merchant expects WhatsApp on new order.
+        // Honest architecture: if no provider configured, we log clearly and rely on DB bell.
+        // Order creation is never rolled back by notification failure.
+        try {
+            app(\App\Services\MerchantWhatsAppNotifier::class)->notify($order);
+        } catch (\Throwable $e) {
+            \Log::warning('Merchant WhatsApp notifier threw (order still created)', [
+                'order_id' => $order->id,
+                'store_id' => $storeId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Only send customer-facing messaging based on selected payment method
         if ($order->payment_method === 'whatsapp') {
-            // Send WhatsApp notification if WhatsApp payment was selected
+            // Send WhatsApp notification if WhatsApp payment was selected (customer wa.me redirect)
             $isWhatsAppEnabled = getSetting('is_whatsapp_enabled', false, $userId, $storeId);
             
             if ($isWhatsAppEnabled && $order->whatsapp_number) {

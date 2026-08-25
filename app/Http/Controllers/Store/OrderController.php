@@ -78,6 +78,52 @@ class OrderController extends Controller
                 }
                 return back()->withErrors($validator)->withInput();
             }
+
+            // Store isolation: shipping method must belong to same store
+            if ($request->shipping_method_id) {
+                $shippingValid = \App\Models\Shipping::where('id', $request->shipping_method_id)
+                    ->where('store_id', $request->store_id)
+                    ->where('is_active', true)
+                    ->exists();
+                if (!$shippingValid) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'طريقة الشحن المحددة غير صالحة لهذا المتجر.',
+                        'errors' => ['shipping_method_id' => ['طريقة الشحن غير صالحة.']]
+                    ], 422);
+                }
+            }
+
+            // Store isolation: payment method must be enabled for this store
+            if ($request->payment_method) {
+                $enabledMethods = getEnabledPaymentMethods(
+                    \App\Models\Store::find($request->store_id)?->user_id,
+                    $request->store_id
+                );
+                // COD fallback is always allowed even if not explicitly enabled
+                $allowedOffline = ['cod','cash','cash_on_delivery'];
+                if (!isset($enabledMethods[$request->payment_method]) && !in_array($request->payment_method, $allowedOffline, true)) {
+                    // Check if method exists but disabled -> return error
+                    // Allow any offline/local methods that are stored as payment configs with enabled flag
+                    $isOffline = in_array($request->payment_method, ['bank','jawwal_pay','pal_pay','zain_cash','orange_money','bank_palestine','al_quds_bank','arab_islamic_bank','cairo_amman_bank','housing_bank','safad_bank','cliq','zain_cash_jo','orange_money_jo','etihad_wallet','dinar_pay','jordan_kuwait_bank','arab_bank','housing_bank_jo','cairo_amman_bank_jo','safad_bank_jo','usdt_trc20','usdt_erc20','usdt_bep20','usdt_polygon','usdt_solana','whatsapp','telegram'], true);
+                    if (!$isOffline || !isset($enabledMethods[$request->payment_method])) {
+                        // For COD we already allow, for others if not in enabled list, reject
+                        if ($request->payment_method !== 'cod' && !isset($enabledMethods[$request->payment_method])) {
+                            // Only enforce if method is not a generic offline that we allow without explicit config
+                            // Strict check: if payment method is not cod and not in enabled list, reject
+                            // But to avoid breaking existing stores with legacy offline methods, only reject if method is online gateway not enabled
+                            $onlineGateways = ['stripe','paypal','razorpay','paystack','mercadopago','xendit','toyyibpay','cashfree','flutterwave','paytabs','skrill','coingate','midtrans','mollie','benefit','yookassa','tap','payfast','paytr','iyzipay','khalti','easebuzz','ozow','authorizenet','fedapay','payhere','cinetpay','nepalste','paiement','aamarpay'];
+                            if (in_array($request->payment_method, $onlineGateways, true)) {
+                                return response()->json([
+                                    'success' => false,
+                                    'message' => 'طريقة الدفع المحددة غير مفعلة لهذا المتجر.',
+                                    'errors' => ['payment_method' => ['طريقة الدفع غير مفعلة.']]
+                                ], 422);
+                            }
+                        }
+                    }
+                }
+            }
             // Get cart calculation
             $calculation = CartCalculationService::calculateCartTotals(
                 $request->store_id,
@@ -208,11 +254,22 @@ class OrderController extends Controller
             // Process payment
             $paymentResult = $this->orderService->processPayment($order, $storeSlug);
             
-            // Clear cart after successful order
+            // Clear cart ONLY after successful payment/order — scoped correctly for guest vs logged-in
             if ($paymentResult['success']) {
-                \App\Models\CartItem::where('store_id', $request->store_id)
-                    ->where('session_id', session()->getId())
-                    ->delete();
+                $cartQuery = \App\Models\CartItem::where('store_id', $request->store_id);
+                if (Auth::guard('customer')->check()) {
+                    $cartQuery->where('customer_id', Auth::guard('customer')->id());
+                } else {
+                    $cartQuery->where('session_id', session()->getId())->whereNull('customer_id');
+                }
+                $cartQuery->delete();
+                // Also clear any remaining guest session items for this store (defensive for post-login sync)
+                if (Auth::guard('customer')->check()) {
+                    \App\Models\CartItem::where('store_id', $request->store_id)
+                        ->where('session_id', session()->getId())
+                        ->whereNull('customer_id')
+                        ->delete();
+                }
             }
 
             if ($paymentResult['success']) {

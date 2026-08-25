@@ -13,6 +13,7 @@ import {
 import { useHomepageSettings } from '../shared/CategorySections';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import type { TemplateRootProps } from '../types';
+import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* البازار — Bazaar Market                                                */
@@ -112,18 +113,62 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
   );
 }
 
-/* ------------------------------- Hero ------------------------------- */
+/* ------------------------------- Hero — now hero_banner-aware (video/youtube/image) ------------------------------- */
 
 export function BazaarHero({ banners }: { banners: any[] }) {
-  const slides = banners.length > 0 ? banners : [
-    { title: 'كل احتياجاتك في مكان واحد', subtitle: 'شحن سريع لجميع المدن', image: '/images/store/banner-store.jpg', button_text: 'ابدأ التسوق' },
-  ];
+  const hero = useResolvedHero();
+  const fallbackSlides = [{ title: 'كل احتياجاتك في مكان واحد', subtitle: 'شحن سريع لجميع المدن', image: '/images/store/banner-store.jpg', button_text: 'ابدأ التسوق' }];
+  // Prefer dynamic hero images when merchant saved them via Designer, fallback to legacy content.banners
+  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider') && hero.images.length > 0
+    ? hero.images.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
+    : null;
+  const slides = dynamicSlides ?? (banners.length > 0 ? banners : fallbackSlides);
+  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
+  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const [i, setI] = useState(0);
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (isVideo || isYoutube || slides.length <= 1) return;
     const t = setInterval(() => setI((v) => (v + 1) % slides.length), 5500);
     return () => clearInterval(t);
-  }, [slides.length]);
+  }, [slides.length, isVideo, isYoutube]);
+
+  // Single-media video/youtube heroes — full-bleed with overlay text
+  if (isVideo) {
+    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    return (
+      <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
+        <div className="relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72">
+          <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover" src={vidSrc} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-black/10 to-transparent" />
+          {(hero.heading || hero.subtitle || hero.ctaLabel) && (
+            <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-2 p-7 sm:p-12">
+              {hero.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{hero.subtitle}</p>}
+              {hero.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{hero.heading}</h1>}
+              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">{hero.ctaLabel} ←</a>}
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+  if (isYoutube) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
+        <div className="relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72">
+          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          {(hero.heading || hero.subtitle || hero.ctaLabel) && (
+            <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-2 p-7 sm:p-12">
+              {hero.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{hero.subtitle}</p>}
+              {hero.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{hero.heading}</h1>}
+              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">{hero.ctaLabel} ←</a>}
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
@@ -134,12 +179,13 @@ export function BazaarHero({ banners }: { banners: any[] }) {
               <img src={getOptimizedImageUrl(b.image||'', 'medium')} alt="" className="h-full w-full object-cover opacity-75" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
             ) : null}
             <div className="absolute inset-0 bg-gradient-to-l from-emerald-950/80 via-emerald-900/30 to-transparent" />
+            {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
             <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
-              {b.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{b.subtitle}</p>}
-              <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{b.title}</h1>
-              {b.button_text && (
-                <a href={b.button_link || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">
-                  {b.button_text} ←
+              {(b.subtitle || hero.subtitle) && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{b.subtitle || hero.subtitle}</p>}
+              {(b.title || hero.heading) && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{b.title || hero.heading}</h1>}
+              {(b.button_text || hero.ctaLabel) && (
+                <a href={b.button_link || hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">
+                  {b.button_text || hero.ctaLabel} ←
                 </a>
               )}
             </div>

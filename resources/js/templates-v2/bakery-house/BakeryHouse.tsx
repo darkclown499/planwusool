@@ -15,6 +15,7 @@ import {
 } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
+import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* بيت المخبز — Bakery House                                              */
@@ -127,22 +128,62 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
   );
 }
 
-/* ------------------------------- Hero ------------------------------- */
+/* ------------------------------- Hero — hero_banner-aware (video/youtube/image) ------------------------------- */
 
 export function BakeryHero({ banner }: { banner?: any }) {
+  const hero = useResolvedHero();
+  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
+  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  const heroImg = hero.hasDynamicHero && hero.images.length > 0 ? hero.images[0] : null;
+  const effective = {
+    image: heroImg || banner?.image || '/images/store/bakery.jpg',
+    title: hero.heading || banner?.title || 'من فرننا الدافئ… إلى مائدتك',
+    subtitle: hero.subtitle || banner?.subtitle || 'مخبوزات طازجة كل يوم',
+    button_text: hero.ctaLabel || banner?.button_text || 'اكتشف تشكيلة اليوم',
+    button_link: hero.ctaLink || banner?.button_link || '#bakery-best',
+  };
+  if (isVideo) {
+    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    return (
+      <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
+        <div className="relative overflow-hidden rounded-3xl bg-black shadow-lg">
+          <video autoPlay loop muted playsInline className="h-64 w-full object-cover sm:h-80" src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          <div className="absolute inset-0 bg-gradient-to-l from-[#3b2412]/70 via-black/20 to-transparent" />
+          <div className="absolute inset-y-0 right-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
+            <p className="w-fit rounded-full bg-[#fbbf24] px-3.5 py-1 text-xs font-black text-[#78350f]">{effective.subtitle}</p>
+            <h1 className="max-w-sm font-serif text-3xl font-black leading-snug text-white sm:text-4xl">{effective.title}</h1>
+            <a href={effective.button_link} className="w-fit rounded-full bg-white px-6 py-2.5 text-sm font-black text-[#78350f] shadow transition hover:bg-[#ffedd5]">{effective.button_text} ←</a>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (isYoutube) {
+    return (
+      <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
+        <div className="relative overflow-hidden rounded-3xl bg-black shadow-lg">
+          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          <div className="absolute inset-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
+            <p className="w-fit rounded-full bg-[#fbbf24] px-3.5 py-1 text-xs font-black text-[#78350f]">{effective.subtitle}</p>
+            <h1 className="max-w-sm font-serif text-3xl font-black leading-snug text-white sm:text-4xl">{effective.title}</h1>
+            <a href={effective.button_link} className="w-fit rounded-full bg-white px-6 py-2.5 text-sm font-black text-[#78350f] shadow transition hover:bg-[#ffedd5]">{effective.button_text} ←</a>
+          </div>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
       <div className="relative overflow-hidden rounded-3xl bg-[#3b2412] shadow-lg">
-        <img src={getOptimizedImageUrl(banner?.image || '/images/store/bakery.jpg', 'medium')} alt="" className="h-64 w-full object-cover opacity-80 sm:h-80" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(banner?.image||'/images/store/bakery.jpg'))}} width={1200} height={400} />
+        <img src={getOptimizedImageUrl(effective.image, 'medium')} alt="" className="h-64 w-full object-cover opacity-80 sm:h-80" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effective.image))}} width={1200} height={400} />
         <div className="absolute inset-0 bg-gradient-to-l from-[#3b2412]/85 via-transparent to-transparent" />
+        {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
         <div className="absolute inset-y-0 right-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
-          <p className="w-fit rounded-full bg-[#fbbf24] px-3.5 py-1 text-xs font-black text-[#78350f]">{banner?.subtitle || 'مخبوزات طازجة كل يوم'}</p>
-          <h1 className="max-w-sm font-serif text-3xl font-black leading-snug text-white sm:text-4xl">
-            {banner?.title || 'من فرننا الدافئ… إلى مائدتك'}
-          </h1>
-          <a href="#bakery-best" className="w-fit rounded-full bg-white px-6 py-2.5 text-sm font-black text-[#78350f] shadow transition hover:bg-[#ffedd5]">
-            {banner?.button_text || 'اكتشف تشكيلة اليوم'} ←
-          </a>
+          <p className="w-fit rounded-full bg-[#fbbf24] px-3.5 py-1 text-xs font-black text-[#78350f]">{effective.subtitle}</p>
+          <h1 className="max-w-sm font-serif text-3xl font-black leading-snug text-white sm:text-4xl">{effective.title}</h1>
+          <a href={effective.button_link} className="w-fit rounded-full bg-white px-6 py-2.5 text-sm font-black text-[#78350f] shadow transition hover:bg-[#ffedd5]">{effective.button_text} ←</a>
         </div>
       </div>
     </section>

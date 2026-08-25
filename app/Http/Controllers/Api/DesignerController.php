@@ -147,6 +147,24 @@ class DesignerController extends Controller
         $store->save();
         $store->refresh();
 
+        // Invalidate storefront caches so Public Store immediately reflects new hero/banner/logo
+        try {
+            $themes = \App\Models\Store::ALL_TEMPLATES;
+            $locales = ['ar', 'en'];
+            foreach ($themes as $t) {
+                foreach ($locales as $loc) {
+                    \Illuminate\Support\Facades\Cache::forget("store_catalog.{$store->id}.theme_{$t}.locale_{$loc}.active_1");
+                    \Illuminate\Support\Facades\Cache::forget("store_categories.{$store->id}.theme_{$t}.locale_{$loc}");
+                }
+            }
+            // Also clear the exact current theme/locale keys
+            $curTheme = $store->getTemplateSlug();
+            foreach ($locales as $loc) {
+                \Illuminate\Support\Facades\Cache::forget("store_catalog.{$store->id}.theme_{$curTheme}.locale_{$loc}.active_1");
+                \Illuminate\Support\Facades\Cache::forget("store_categories.{$store->id}.theme_{$curTheme}.locale_{$loc}");
+            }
+        } catch (\Throwable $e) {}
+
         $overrides = $store->template_overrides ?? [];
 
         return response()->json([
@@ -231,11 +249,19 @@ class DesignerController extends Controller
                 return $result;
             }
 
-            // Indexed array — keep only scalar strings (e.g., hero_images: string[])
-            $filtered = array_values(array_filter($value, fn ($v) => is_scalar($v) && $v !== '' && $v !== null));
-            // Cap each string length
-            $filtered = array_map(fn ($v) => is_string($v) && strlen($v) > 5000 ? substr($v, 0, 5000) : $v, $filtered);
-            return array_slice($filtered, 0, 50);
+            // Indexed array — keep scalars (e.g., hero_images: string[]) OR associative objects (e.g., banners: [{image,title}])
+            $result = [];
+            foreach (array_slice($value, 0, 50) as $v) {
+                if (is_scalar($v) && $v !== '' && $v !== null) {
+                    $result[] = is_string($v) && strlen($v) > 5000 ? substr($v, 0, 5000) : $v;
+                } elseif (is_array($v)) {
+                    $sanitized = $this->sanitizeContentValue($v);
+                    if (is_array($sanitized) && count($sanitized) > 0) {
+                        $result[] = $sanitized;
+                    }
+                }
+            }
+            return $result;
         }
 
         return null;

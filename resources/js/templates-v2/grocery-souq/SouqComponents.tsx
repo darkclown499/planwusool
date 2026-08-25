@@ -13,6 +13,7 @@ import {
 } from '../shared/hooks';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import { AuthContext } from '@/contexts/AuthContext';
+import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* Souq grocery — components.                                             */
@@ -193,14 +194,55 @@ function SouqSearchRow({ product, onPick }: { product: any; onPick: () => void }
   );
 }
 
-/* ------------------------------ Hero — Biddi light ------------------------------ */
+/* ------------------------------ Hero — Biddi light (hero_banner-aware) ------------------------------ */
 
 export function SouqHero({ banners }: { banners: any[] }) {
+  const hero = useResolvedHero();
+  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
+  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  if (isVideo) {
+    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    return (
+      <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
+        <div className="relative aspect-[343/96] w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]">
+          <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover" src={vidSrc} />
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          {(hero.heading || hero.subtitle || hero.ctaLabel) && (
+            <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
+              {hero.subtitle && <p className="mb-1 text-xs font-bold text-white/90 lg:text-sm drop-shadow">{hero.subtitle}</p>}
+              {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-white sm:text-2xl lg:text-3xl drop-shadow">{hero.heading}</h1>}
+              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{hero.ctaLabel} ←</a>}
+            </div></div>
+          )}
+        </div>
+      </section>
+    );
+  }
+  if (isYoutube) {
+    return (
+      <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
+        <div className="relative aspect-[343/96] w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]">
+          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          {(hero.heading || hero.subtitle || hero.ctaLabel) && (
+            <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
+              {hero.subtitle && <p className="mb-1 text-xs font-bold text-white/90 lg:text-sm drop-shadow">{hero.subtitle}</p>}
+              {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-white sm:text-2xl lg:text-3xl drop-shadow">{hero.heading}</h1>}
+              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{hero.ctaLabel} ←</a>}
+            </div></div>
+          )}
+        </div>
+      </section>
+    );
+  }
   const fallback = [
     { image: '/images/store/banner-store.jpg', title: 'أول طلب', subtitle: '' },
     { image: '/images/store/banner-store.jpg', title: 'كل أغراض البيت', subtitle: '' },
   ];
-  const slides = (banners.length > 0 ? banners : fallback);
+  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider') && hero.images.length > 0
+    ? hero.images.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
+    : null;
+  const slides = dynamicSlides ?? (banners.length > 0 ? banners : fallback);
   const normalized = slides.map((b: any) => ({
     image: b.image || b.src || '/images/store/vegetables.jpg',
     title: b.title || b.heading || '',
@@ -221,6 +263,7 @@ export function SouqHero({ banners }: { banners: any[] }) {
         {normalized.map((b: any, idx: number) => (
           <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === i ? 1 : 0 }} aria-hidden={idx !== i}>
             <img src={getOptimizedImageUrl(b.image || '', 'medium')} alt={b.title} className="h-full w-full object-cover" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
+            {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
             {(b.title || b.subtitle || b.button_text) && (
               <>
                 <div className="absolute inset-0 bg-gradient-to-l from-white/85 via-white/30 to-transparent lg:from-white/90 lg:via-white/40" />

@@ -377,6 +377,20 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                     payloadContent = setDotted(payloadContent, `hero_${k}`, s);
                 }
             }
+            // Sync legacy banners array for cross-template visibility (Bazaar/Grocery/etc read content.banners)
+            // When hero type is image and images exist, mirror them as banner slides so Public Store shows updated banners
+            try {
+                const finalType = String(getDotted(payloadContent, 'hero_banner.type') ?? getDotted(payloadContent, 'hero_type') ?? 'image').trim() || 'image';
+                const finalImages = sanitizeHeroImages((getDotted(payloadContent, 'hero_banner.images') ?? getDotted(payloadContent, 'hero_images') ?? []) as any);
+                if ((finalType === 'image' || finalType === 'slider') && finalImages.length > 0) {
+                    const hHeading = String(getDotted(payloadContent, 'hero_banner.heading') ?? getDotted(payloadContent, 'hero_heading') ?? '');
+                    const hSubtitle = String(getDotted(payloadContent, 'hero_banner.subtitle') ?? getDotted(payloadContent, 'hero_subtitle') ?? '');
+                    const hCtaLabel = String(getDotted(payloadContent, 'hero_banner.cta_label') ?? getDotted(payloadContent, 'hero_cta_label') ?? '');
+                    const hCtaLink = String(getDotted(payloadContent, 'hero_banner.cta_link') ?? getDotted(payloadContent, 'hero_cta_link') ?? '#');
+                    const bannerArray = finalImages.map((img: string) => ({ image: img, title: hHeading, subtitle: hSubtitle, button_text: hCtaLabel, button_link: hCtaLink }));
+                    payloadContent = setDotted(payloadContent, 'banners', bannerArray);
+                }
+            } catch {}
 
             const res: any = await apiPut(`/api/stores/${store.id}/designer`, {
                 design_tokens: tokens,
@@ -441,6 +455,18 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                 payloadContent = setDotted(payloadContent, `hero_banner.${k}`, s);
                 payloadContent = setDotted(payloadContent, `hero_${k}`, s);
             }
+            try {
+                const finalType2 = String(getDotted(payloadContent, 'hero_banner.type') ?? getDotted(payloadContent, 'hero_type') ?? 'image').trim() || 'image';
+                const finalImages2 = sanitizeHeroImages((getDotted(payloadContent, 'hero_banner.images') ?? getDotted(payloadContent, 'hero_images') ?? []) as any);
+                if ((finalType2 === 'image' || finalType2 === 'slider') && finalImages2.length > 0) {
+                    const hHeading2 = String(getDotted(payloadContent, 'hero_banner.heading') ?? getDotted(payloadContent, 'hero_heading') ?? '');
+                    const hSubtitle2 = String(getDotted(payloadContent, 'hero_banner.subtitle') ?? getDotted(payloadContent, 'hero_subtitle') ?? '');
+                    const hCtaLabel2 = String(getDotted(payloadContent, 'hero_banner.cta_label') ?? getDotted(payloadContent, 'hero_cta_label') ?? '');
+                    const hCtaLink2 = String(getDotted(payloadContent, 'hero_banner.cta_link') ?? getDotted(payloadContent, 'hero_cta_link') ?? '#');
+                    const bannerArray2 = finalImages2.map((img: string) => ({ image: img, title: hHeading2, subtitle: hSubtitle2, button_text: hCtaLabel2, button_link: hCtaLink2 }));
+                    payloadContent = setDotted(payloadContent, 'banners', bannerArray2);
+                }
+            } catch {}
 
             const res: any = await apiPut(`/api/stores/${store.id}/designer`, { content: payloadContent });
             const finalContent2 = res?.content ?? payloadContent;
