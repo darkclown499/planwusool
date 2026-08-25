@@ -67,7 +67,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
           ) : (
             <>
               <span className="rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 p-1.5 text-white shadow-lg shadow-blue-500/25"><Zap className="h-5 w-5" /></span>
-              <span className="hidden text-white font-bold text-lg sm:block">{config?.storeName || store?.name}</span>
+              <span className="hidden font-bold text-lg text-slate-900 sm:block">{config?.storeName || store?.name}</span>
             </>
           )}
         </a>
