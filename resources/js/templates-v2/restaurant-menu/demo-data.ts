@@ -5,7 +5,7 @@ const IMG = {
   restaurant: '/images/store/restaurant-dish.jpg',
   sweets: '/images/store/sweets.jpg',
   coffee: '/images/store/coffee.jpg',
-  banner: '/images/store/banner-store.jpg',
+  banner: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
 };
 
 /* A distinct photo per product (cycled by catalog order) so grills, mains,
