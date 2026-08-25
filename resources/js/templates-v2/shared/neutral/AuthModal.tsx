@@ -1,6 +1,7 @@
 import { AuthFormProvider, useAuthForm } from '@/contexts/AuthFormContext';
 import { Eye, EyeOff, Lock, Mail, Phone, ShoppingBag, User, UserCheck, User as UserIcon, X } from 'lucide-react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useStore } from '@/contexts/StoreContext';
 
 /**
  * Token-aware auth modals shared by all templates.
@@ -103,6 +104,7 @@ interface AuthFormProps {
 const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, storeSlug }) => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+    const otpRefs = useRef<Array<HTMLInputElement|null>>([]);
 
     const {
         email,
@@ -123,10 +125,23 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
         setShowForgot,
         isLoading,
         errors,
+        otpStep,
+        otpEmail,
+        otpCode,
+        otpError,
+        resendIn,
+        setOtpCode,
+        setOtpStep,
+        handleVerifyOtp,
+        handleResendOtp,
         handleLogin,
         handleRegister,
         handleForgotPassword,
     } = useAuthForm();
+    const { behavior } = useStore();
+    const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
+    const registerEnabled = customerAccountsEnabled && behavior?.enable_customer_registration !== false;
+    const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -147,6 +162,53 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
 
     const inputClass = 'w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-2';
     const labelClass = 'mb-1.5 block text-sm font-semibold';
+
+    // OTP pane
+    if (otpStep === 'otp') {
+        const digits = (otpCode || '').padEnd(6, ' ').split('').slice(0,6);
+        const handleOtpInput = (idx:number, val:string) => {
+            const v = val.replace(/[^0-9]/g,'').slice(-1);
+            const arr = otpCode.split('');
+            while(arr.length<6) arr.push('');
+            arr[idx]=v;
+            const next = arr.join('').slice(0,6);
+            setOtpCode(next);
+            if (v && idx<5) otpRefs.current[idx+1]?.focus();
+        };
+        const handleOtpPaste = (e:React.ClipboardEvent) => {
+            const text = e.clipboardData.getData('text').replace(/[^0-9]/g,'').slice(0,6);
+            if (text.length===6) { e.preventDefault(); setOtpCode(text); otpRefs.current[5]?.focus(); }
+        };
+        const handleOtpKeyDown = (idx:number,e:React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.key==='Backspace' && !otpCode[idx] && idx>0) otpRefs.current[idx-1]?.focus();
+        };
+        return (
+            <ModalShell onClose={onClose}>
+                <div className="flex items-center justify-between border-b p-4" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ background: primary }}><Mail className="h-5 w-5" /></div>
+                        <h2 className="text-lg font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>تأكيد البريد الإلكتروني</h2>
+                    </div>
+                    <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/5"><X className="h-5 w-5" /></button>
+                </div>
+                <div className="space-y-4 p-5 text-center">
+                    <p className="text-sm" style={{ color:'var(--twc-text-muted,#6b7280)' }}>أرسلنا رمز تحقق إلى <span className="font-bold" dir="ltr">{otpEmail}</span></p>
+                    <div className="flex justify-center gap-1.5 sm:gap-2" dir="ltr" onPaste={handleOtpPaste}>
+                        {[0,1,2,3,4,5].map((i)=>(
+                            <input key={i} ref={(el)=>{otpRefs.current[i]=el}} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={1} value={digits[i]?.trim()||''} onChange={(e)=>handleOtpInput(i,e.target.value)} onKeyDown={(e)=>handleOtpKeyDown(i,e)} className="h-12 w-10 rounded-xl border text-center text-lg font-bold focus:outline-none focus:ring-2 sm:h-12 sm:w-11" style={{ borderColor:'var(--twc-border,#e5e7eb)' }} />
+                        ))}
+                    </div>
+                    {otpError && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{otpError}</div>}
+                    {errors && Object.keys(errors).length>0 && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{Object.entries(errors).map(([k,m])=> <p key={k}>{String(m)}</p>)}</div>}
+                    <button type="button" disabled={isLoading || otpCode.length!==6} onClick={()=>handleVerifyOtp(storeSlug!, ()=>{ onLoginSuccess(); onClose(); })} className="w-full rounded-xl py-3.5 font-bold text-white disabled:opacity-60" style={{ background:primary }}>{isLoading?'جاري التحقق...':'تأكيد الحساب'}</button>
+                    <div className="flex items-center justify-between text-sm">
+                        <button type="button" disabled={resendIn>0 || isLoading} onClick={()=>handleResendOtp(storeSlug!)} className="font-semibold disabled:opacity-50 hover:underline" style={{ color:primary }}>{resendIn>0 ? `إعادة الإرسال بعد ${resendIn} ثانية` : 'إعادة إرسال الرمز'}</button>
+                        <button type="button" onClick={()=>{ setOtpStep('form'); setOtpCode(''); }} className="font-semibold hover:underline" style={{ color:'var(--twc-text-muted,#6b7280)' }}>العودة</button>
+                    </div>
+                </div>
+            </ModalShell>
+        );
+    }
 
     return (
         <ModalShell onClose={onClose}>
@@ -169,6 +231,12 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                 </button>
             </div>
 
+            {!customerAccountsEnabled ? (
+                <div className="p-6 text-center">
+                    <p className="rounded-xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">حسابات العملاء غير مفعلة في هذا المتجر.</p>
+                    <p className="mt-2 text-xs" style={{ color:'var(--twc-text-muted,#6b7280)' }}>يمكنك المتابعة كضيف لإتمام الطلب.</p>
+                </div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-4 p-5">
                 {showForgot ? (
                     <div>
@@ -351,14 +419,19 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                         >
                             العودة لتسجيل الدخول
                         </button>
+                    ) : !registerEnabled && isLogin ? (
+                        <span className="text-xs">التسجيل غير متاح حالياً</span>
+                    ) : !loginEnabled && !isLogin ? (
+                        <span className="text-xs">تسجيل الدخول غير متاح</span>
                     ) : (
                         <>
                             {isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}{' '}
                             <button
                                 type="button"
                                 onClick={() => setIsLogin(!isLogin)}
-                                className="font-semibold hover:underline"
+                                className={`font-semibold hover:underline ${!registerEnabled || !loginEnabled ? 'opacity-50 pointer-events-none' : ''}`}
                                 style={{ color: primary }}
+                                disabled={!registerEnabled && isLogin ? true : !loginEnabled && !isLogin ? true : false}
                             >
                                 {isLogin ? 'إنشاء حساب' : 'تسجيل الدخول'}
                             </button>
@@ -366,6 +439,7 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                     )}
                 </div>
             </form>
+            )}
         </ModalShell>
     );
 };

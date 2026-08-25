@@ -70,6 +70,7 @@ interface StoreContextType {
         show_search?: boolean;
         show_cart?: boolean;
         show_auth_button?: boolean;
+        customer_accounts_enabled?: boolean;
     };
 }
 

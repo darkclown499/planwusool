@@ -41,7 +41,8 @@ const TabButton: React.FC<TabButtonProps> = ({ id, label, icon: Icon, active, ac
 );
 
 export const MobileAppShell: React.FC = () => {
-  const { config } = useStore();
+  const { config, behavior } = useStore();
+  const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
   const { t } = useStorefrontLocale();
 
   const {
@@ -104,6 +105,7 @@ export const MobileAppShell: React.FC = () => {
   };
 
   const openAccount = (open: () => void) => {
+    if (!customerAccountsEnabled) return;
     if (isLoggedIn) {
       open();
     } else {
@@ -203,6 +205,7 @@ export const MobileAppShell: React.FC = () => {
             accent={accent}
             onClick={() => openAccount(() => setShowOrdersModal(true))}
           />
+          {customerAccountsEnabled && (
           <TabButton
             id="account"
             label={t('حسابي')}
@@ -217,6 +220,7 @@ export const MobileAppShell: React.FC = () => {
               }
             }}
           />
+          )}
         </div>
       </nav>
 

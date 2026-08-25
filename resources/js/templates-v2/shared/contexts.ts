@@ -49,6 +49,7 @@ export function useStorefrontCore() {
         store: { id: 0, slug: '', name: '' } as any,
         config: {} as any,
         content: undefined,
+        behavior: {} as any,
     };
 
     const product = useContext(ProductContext) || {
@@ -81,6 +82,7 @@ export function useStorefrontCore() {
         store: storeCtx.store,
         config: storeCtx.config,
         content: storeCtx.content,
+        behavior: (storeCtx as any).behavior || {},
         product,
         order,
         wishlist,

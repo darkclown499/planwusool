@@ -90,6 +90,7 @@ protected $fillable = [
         'show_search',
         'show_cart',
         'show_auth_button',
+        'customer_accounts_enabled',
     ];
 
     /**

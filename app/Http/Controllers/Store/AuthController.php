@@ -18,15 +18,13 @@ class AuthController extends Controller
 {
     public function login(Request $request, $storeSlug = null)
     {
-        // Get store from domain resolution or slug
         $store = $this->getStore($request, $storeSlug);
-        
-        // If store not found, return 404
         if (!$store) {
             abort(404, 'Store not found');
         }
-
-        // SECURITY: store owner can disable customer login entirely.
+        if (!$this->customerAccountsEnabled($store)) {
+            abort(403, 'حسابات العملاء غير مفعلة في هذا المتجر.');
+        }
         if (!$this->behavior($store)['enable_customer_login']) {
             abort(403, 'Customer login is disabled for this store.');
         }
@@ -43,16 +41,34 @@ class AuthController extends Controller
                 ->first();
 
             if ($customer && Hash::check($request->password, $customer->password)) {
-                Auth::guard('customer')->login($customer, $request->boolean('remember'));
+                // Backward-compatible: legacy customers (created >1h ago) with null email_verified_at are considered verified
+                if (is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->lt(now()->subHour())) {
+                    $customer->update(['email_verified_at' => now()]);
+                    $customer->refresh();
+                }
+                if (is_null($customer->email_verified_at)) {
+                    // Unverified — do not login, prompt verification
+                    if ($request->expectsJson() || $request->header('X-Inertia')) {
+                        return response()->json([
+                            'success' => false,
+                            'requires_verification' => true,
+                            'email' => $customer->email,
+                            'message' => 'يجب تأكيد بريدك الإلكتروني أولاً.',
+                        ], 401);
+                    }
+                    throw ValidationException::withMessages([
+                        'email' => ['يجب تأكيد بريدك الإلكتروني أولاً.'],
+                    ]);
+                }
 
-                // Prevent session fixation on customer login.
+                Auth::guard('customer')->login($customer, $request->boolean('remember'));
                 $request->session()->regenerate();
-                
-                // Clear any intended URL that might contain /store/{slug} for custom domains
                 if ($store->isCurrentDomain()) {
                     $request->session()->forget('url.intended');
                 }
-                
+                if ($request->expectsJson() || $request->wantsJson()) {
+                    return response()->json(['success'=>true,'message'=>'تم تسجيل الدخول']);
+                }
                 return redirect()->to($this->getStoreHomeUrl($store));
             }
 
@@ -100,14 +116,13 @@ class AuthController extends Controller
 
     public function register(Request $request, $storeSlug = null)
     {
-        // Get store from domain resolution or slug
         $store = $this->getStore($request, $storeSlug);
-        
         if (!$store) {
             abort(404, 'Store not found');
         }
-
-        // SECURITY: store owner can disable customer registration.
+        if (!$this->customerAccountsEnabled($store)) {
+            abort(403, 'حسابات العملاء غير مفعلة في هذا المتجر.');
+        }
         if (!$this->behavior($store)['enable_customer_registration']) {
             abort(403, 'Customer registration is disabled for this store.');
         }
@@ -126,6 +141,23 @@ class AuthController extends Controller
                 ->first();
 
             if ($existingCustomer) {
+                // If existing is unverified (recent), allow resend instead of duplicate error
+                if (is_null($existingCustomer->email_verified_at) && $existingCustomer->created_at && $existingCustomer->created_at->gt(now()->subHour())) {
+                    // Resend OTP for unverified recent duplicate
+                    try {
+                        app(\App\Services\CustomerEmailOtpService::class)->generate($existingCustomer, $store);
+                    } catch (\Throwable $e) {
+                        $msg = str_starts_with($e->getMessage(), 'email_failed') ? 'تعذر إرسال رمز التحقق. حاول مرة أخرى.' : ($e->getMessage() === 'rate_limited_hour' ? 'تم تجاوز الحد المسموح لإرسال الرموز.' : 'يرجى الانتظار قبل إعادة الإرسال.');
+                        if ($request->expectsJson() || $request->header('X-Inertia')) {
+                            return response()->json(['success'=>false,'message'=>$msg], 429);
+                        }
+                        throw ValidationException::withMessages(['email'=>[$msg]]);
+                    }
+                    if ($request->expectsJson() || $request->header('X-Inertia') || $request->wantsJson()) {
+                        return response()->json(['success'=>true,'requires_verification'=>true,'email'=>$existingCustomer->email,'message'=>'تم إرسال رمز تحقق جديد.'], 200);
+                    }
+                    return back()->with(['requires_verification'=>true,'verification_email'=>$existingCustomer->email]);
+                }
                 throw ValidationException::withMessages([
                     'email' => [__('A customer with this email already exists.')],
                 ]);
@@ -141,17 +173,22 @@ class AuthController extends Controller
                 'is_active' => true,
             ]);
 
-            Auth::guard('customer')->login($customer);
-
-            // Prevent session fixation on customer registration.
-            $request->session()->regenerate();
-
-            // Clear any intended URL that might contain /store/{slug} for custom domains
-            if ($store->isCurrentDomain()) {
-                $request->session()->forget('url.intended');
+            // Generate OTP — do NOT auto-login, require verification
+            try {
+                app(\App\Services\CustomerEmailOtpService::class)->generate($customer, $store);
+            } catch (\Throwable $e) {
+                // Email failed — keep customer unverified and inform frontend
+                $msg = str_starts_with($e->getMessage(), 'email_failed') ? 'تعذر إرسال رمز التحقق. حاول مرة أخرى.' : ($e->getMessage() === 'rate_limited_hour' ? 'تم تجاوز الحد المسموح.' : 'يرجى الانتظار قبل إعادة الإرسال.');
+                if ($request->expectsJson() || $request->header('X-Inertia') || $request->wantsJson()) {
+                    return response()->json(['success'=>false,'requires_verification'=>true,'email'=>$customer->email,'message'=>$msg], 200);
+                }
+                return back()->withErrors(['email'=>[$msg]])->withInput();
             }
 
-            return redirect()->to($this->getStoreHomeUrl($store));
+            if ($request->expectsJson() || $request->header('X-Inertia') || $request->wantsJson()) {
+                return response()->json(['success'=>true,'requires_verification'=>true,'email'=>$customer->email,'message'=>'أرسلنا رمز تحقق إلى بريدك.'], 200);
+            }
+            return back()->with(['requires_verification'=>true,'verification_email'=>$customer->email]);
         }
 
         // // Get dynamic content from database
@@ -188,6 +225,86 @@ class AuthController extends Controller
         //             ];
         //         }),
         // ]);
+    }
+
+    public function verifyEmail(Request $request, $storeSlug = null)
+    {
+        $store = $this->getStore($request, $storeSlug);
+        if (!$store) abort(404, 'Store not found');
+        if (!$this->customerAccountsEnabled($store)) abort(403, 'حسابات العملاء غير مفعلة');
+
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+        ]);
+
+        $customer = Customer::where('store_id', $store->id)->where('email', $request->email)->first();
+        if (!$customer) {
+            $msg = 'رمز التحقق غير صحيح';
+            if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Inertia')) {
+                return response()->json(['success'=>false,'message'=>$msg], 422);
+            }
+            throw ValidationException::withMessages(['code'=>[$msg]]);
+        }
+
+        $result = app(\App\Services\CustomerEmailOtpService::class)->verify($customer, $store, $request->code);
+        if (!$result['ok']) {
+            $map = [
+                'invalid' => 'رمز التحقق غير صحيح',
+                'expired' => 'انتهت صلاحية الرمز، اطلب رمزاً جديداً',
+                'used' => 'تم استخدام الرمز مسبقاً، اطلب رمزاً جديداً',
+                'too_many' => 'عدد المحاولات كثير، اطلب رمزاً جديداً',
+                'store_mismatch' => 'رمز التحقق غير صحيح',
+            ];
+            $msg = $map[$result['error']] ?? 'رمز التحقق غير صحيح';
+            if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Inertia')) {
+                return response()->json(['success'=>false,'message'=>$msg], 422);
+            }
+            throw ValidationException::withMessages(['code'=>[$msg]]);
+        }
+
+        Auth::guard('customer')->login($customer);
+        $request->session()->regenerate();
+        if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Inertia')) {
+            return response()->json(['success'=>true,'message'=>'تم تأكيد البريد بنجاح'], 200);
+        }
+        return redirect()->to($this->getStoreHomeUrl($store))->with('success','تم تأكيد البريد بنجاح');
+    }
+
+    public function resendVerification(Request $request, $storeSlug = null)
+    {
+        $store = $this->getStore($request, $storeSlug);
+        if (!$store) abort(404, 'Store not found');
+        if (!$this->customerAccountsEnabled($store)) abort(403, 'حسابات العملاء غير مفعلة');
+
+        $request->validate(['email'=>'required|email']);
+        $customer = Customer::where('store_id',$store->id)->where('email',$request->email)->first();
+        if (!$customer) {
+            if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Inertia')) {
+                return response()->json(['success'=>false,'message'=>'رمز التحقق غير صحيح'], 422);
+            }
+            throw ValidationException::withMessages(['email'=>['رمز التحقق غير صحيح']]);
+        }
+        if (!is_null($customer->email_verified_at)) {
+            if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Inertia')) {
+                return response()->json(['success'=>false,'message'=>'الحساب مفعل مسبقاً'], 422);
+            }
+            throw ValidationException::withMessages(['email'=>['الحساب مفعل مسبقاً']]);
+        }
+        try {
+            app(\App\Services\CustomerEmailOtpService::class)->resend($customer, $store);
+        } catch (\Throwable $e) {
+            $msg = str_starts_with($e->getMessage(),'email_failed') ? 'تعذر إرسال رمز التحقق. حاول مرة أخرى.' : ($e->getMessage()==='rate_limited_hour' ? 'تم تجاوز الحد المسموح لإرسال الرموز.' : 'يرجى الانتظار قبل إعادة الإرسال.');
+            $code = str_contains($e->getMessage(),'rate_limited') ? 429 : 422;
+            if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Inertia')) {
+                return response()->json(['success'=>false,'message'=>$msg], $code);
+            }
+            throw ValidationException::withMessages(['email'=>[$msg]]);
+        }
+        if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Inertia')) {
+            return response()->json(['success'=>true,'message'=>'تم إرسال رمز جديد'], 200);
+        }
+        return back()->with('success','تم إرسال رمز جديد');
     }
 
     public function logout(Request $request, $storeSlug = null)
@@ -360,11 +477,18 @@ class AuthController extends Controller
     private function behavior(Store $store): array
     {
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
+        $master = (bool) ($config['customer_accounts_enabled'] ?? true);
 
         return [
-            'enable_customer_login' => (bool) ($config['enable_customer_login'] ?? true),
-            'enable_customer_registration' => (bool) ($config['enable_customer_registration'] ?? true),
+            'enable_customer_login' => $master && (bool) ($config['enable_customer_login'] ?? true),
+            'enable_customer_registration' => $master && (bool) ($config['enable_customer_registration'] ?? true),
             'require_login_checkout' => (bool) ($config['require_login_checkout'] ?? false),
+            'customer_accounts_enabled' => $master,
         ];
+    }
+
+    private function customerAccountsEnabled(Store $store): bool
+    {
+        return $this->behavior($store)['customer_accounts_enabled'];
     }
 }

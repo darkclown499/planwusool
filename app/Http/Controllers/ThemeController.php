@@ -179,19 +179,22 @@ class ThemeController extends Controller
                 'show_search' => true,
                 'show_cart' => true,
                 'show_auth_button' => true,
+                'customer_accounts_enabled' => true,
             ];
         }
 
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
+        $master = (bool) ($config['customer_accounts_enabled'] ?? true);
 
         return [
-            'enable_customer_login' => (bool) ($config['enable_customer_login'] ?? true),
-            'enable_customer_registration' => (bool) ($config['enable_customer_registration'] ?? true),
+            'enable_customer_login' => $master && (bool) ($config['enable_customer_login'] ?? true),
+            'enable_customer_registration' => $master && (bool) ($config['enable_customer_registration'] ?? true),
             'require_login_checkout' => (bool) ($config['require_login_checkout'] ?? false),
             'show_whatsapp_order_button' => (bool) ($config['show_whatsapp_order_button'] ?? true),
             'show_search' => (bool) ($config['show_search'] ?? true),
             'show_cart' => (bool) ($config['show_cart'] ?? true),
-            'show_auth_button' => (bool) ($config['show_auth_button'] ?? true),
+            'show_auth_button' => $master && (bool) ($config['show_auth_button'] ?? true),
+            'customer_accounts_enabled' => $master,
         ];
     }
 

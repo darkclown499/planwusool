@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { generateStoreUrl } from '@/utils/store-url-helper';
 
@@ -14,6 +14,16 @@ interface AuthFormContextType {
   showForgot: boolean;
   isLoading: boolean;
   errors: any;
+  // OTP verification
+  otpStep: 'form' | 'otp';
+  otpEmail: string | null;
+  otpCode: string;
+  otpError: string | null;
+  resendIn: number;
+  setOtpCode: (code: string) => void;
+  setOtpStep: (step: 'form' | 'otp') => void;
+  handleVerifyOtp: (storeSlug: string, onSuccess: () => void) => void;
+  handleResendOtp: (storeSlug: string) => void;
   
   // Profile state
   profile: any;
@@ -70,6 +80,18 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
   const [showForgot, setShowForgot] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<any>({});
+  // OTP state
+  const [otpStep, setOtpStep] = useState<'form' | 'otp'>('form');
+  const [otpEmail, setOtpEmail] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [resendIn, setResendIn] = useState(0);
+  const resendTimer = useRef<number | null>(null);
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    resendTimer.current = window.setTimeout(() => setResendIn((v) => v - 1), 1000) as any;
+    return () => { if (resendTimer.current) clearTimeout(resendTimer.current); };
+  }, [resendIn]);
   
   // Profile state
   const [profile, setProfile] = useState(initialProfile || {});
@@ -80,67 +102,110 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
     confirmPassword: ''
   });
 
+  const getCsrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
   const handleLogin = (storeSlug: string, onSuccess: () => void) => {
     setIsLoading(true);
     setErrors({});
-
-    router.post(generateStoreUrl('store.login', store), {
-      email,
-      password,
-      remember: false
-    }, {
-      onSuccess: () => {
-        // Multi-tenant: persist customer session across subdomains (.wusool.ps)
-        try {
-          document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`;
-        } catch {}
-        // Force page reload to get updated auth data
-        router.reload({
-          only: ['isLoggedIn', 'customer', 'customer_address']
-        });
+    setOtpError(null);
+    const url = generateStoreUrl('store.login', store);
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':getCsrf(),'X-Requested-With':'XMLHttpRequest' },
+      body: JSON.stringify({ email, password, remember:false }),
+    }).then(async (res) => {
+      const data = await res.json().catch(()=> ({}));
+      if (res.ok) {
+        try { document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`; } catch {}
+        router.reload({ only:['isLoggedIn','customer','customer_address'] });
         onSuccess();
-      },
-      onError: (errors) => {
-        setErrors(errors);
-        setIsLoading(false);
-      },
-      onFinish: () => {
-        setIsLoading(false);
+        return;
       }
-    });
+      // Unverified case: 401 with requires_verification
+      if (data?.requires_verification) {
+        setOtpEmail(data.email || email);
+        setOtpStep('otp');
+        setOtpCode('');
+        setResendIn(60);
+        setIsLoading(false);
+        return;
+      }
+      // Validation errors
+      if (res.status===422 && data?.errors) setErrors(data.errors);
+      else if (data?.message) setErrors({ email:[data.message] });
+      else setErrors({ email:['بيانات الدخول غير صحيحة'] });
+      setIsLoading(false);
+    }).catch(()=>{ setErrors({ email:['تعذر الاتصال'] }); setIsLoading(false); });
   };
 
   const handleRegister = (storeSlug: string, onSuccess: () => void) => {
     setIsLoading(true);
     setErrors({});
-
-    router.post(generateStoreUrl('store.register', store), {
-      first_name: firstName,
-      last_name: lastName,
-      email,
-      phone,
-      password,
-      password_confirmation: confirmPassword
-    }, {
-      onSuccess: () => {
-        // Multi-tenant: persist customer session across subdomains (.wusool.ps)
-        try {
-          document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`;
-        } catch {}
-        // Force page reload to get updated auth data
-        router.reload({
-          only: ['isLoggedIn', 'customer', 'customer_address']
-        });
-        onSuccess();
-      },
-      onError: (errors) => {
-        setErrors(errors);
+    setOtpError(null);
+    const url = generateStoreUrl('store.register', store);
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':getCsrf(),'X-Requested-With':'XMLHttpRequest' },
+      body: JSON.stringify({ first_name:firstName, last_name:lastName, email, phone, password, password_confirmation:confirmPassword }),
+    }).then(async (res) => {
+      const data = await res.json().catch(()=> ({}));
+      if (data?.requires_verification) {
+        setOtpEmail(data.email || email);
+        setOtpStep('otp');
+        setOtpCode('');
+        setResendIn(60);
         setIsLoading(false);
-      },
-      onFinish: () => {
-        setIsLoading(false);
+        return;
       }
-    });
+      if (res.ok && data?.success!==false) {
+        // Fallback: if server logged in directly (legacy), treat as success
+        try { document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`; } catch {}
+        router.reload({ only:['isLoggedIn','customer','customer_address'] });
+        onSuccess();
+        return;
+      }
+      if (res.status===422 && data?.errors) setErrors(data.errors);
+      else if (data?.message) setErrors({ email:[data.message] });
+      else setErrors({ email:['تعذر إنشاء الحساب'] });
+      setIsLoading(false);
+    }).catch(()=>{ setErrors({ email:['تعذر الاتصال'] }); setIsLoading(false); });
+  };
+
+  const handleVerifyOtp = (storeSlug: string, onSuccess: () => void) => {
+    if (!otpEmail || otpCode.length!==6) { setOtpError('أدخل رمزاً مكوناً من 6 أرقام'); return; }
+    setIsLoading(true); setOtpError(null);
+    const url = generateStoreUrl('store.verify-email', store);
+    fetch(url, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':getCsrf(),'X-Requested-With':'XMLHttpRequest' },
+      body: JSON.stringify({ email:otpEmail, code:otpCode })
+    }).then(async (res)=>{
+      const data= await res.json().catch(()=>({}));
+      if (res.ok) {
+        try { document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`; } catch {}
+        setOtpStep('form'); setOtpCode(''); setOtpEmail(null);
+        router.reload({ only:['isLoggedIn','customer','customer_address'] });
+        onSuccess();
+        return;
+      }
+      setOtpError(data?.message || 'رمز التحقق غير صحيح');
+      setIsLoading(false);
+    }).catch(()=>{ setOtpError('تعذر الاتصال'); setIsLoading(false); });
+  };
+  const handleResendOtp = (storeSlug: string) => {
+    if (!otpEmail || resendIn>0) return;
+    setIsLoading(true); setOtpError(null);
+    const url = generateStoreUrl('store.verify-email.resend', store);
+    fetch(url,{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':getCsrf(),'X-Requested-With':'XMLHttpRequest' },
+      body: JSON.stringify({ email:otpEmail })
+    }).then(async (res)=>{
+      const data= await res.json().catch(()=>({}));
+      if (res.ok) { setResendIn(60); setIsLoading(false); return; }
+      setOtpError(data?.message || 'تعذر إعادة الإرسال');
+      if (res.status===429) setResendIn(60);
+      setIsLoading(false);
+    }).catch(()=>{ setOtpError('تعذر الاتصال'); setIsLoading(false); });
   };
 
   const handleForgotPassword = (storeSlug: string) => {
@@ -256,6 +321,15 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
     showForgot,
     isLoading,
     errors,
+    otpStep,
+    otpEmail,
+    otpCode,
+    otpError,
+    resendIn,
+    setOtpCode,
+    setOtpStep,
+    handleVerifyOtp,
+    handleResendOtp,
     profile,
     activeTab,
     passwords,

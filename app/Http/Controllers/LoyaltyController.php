@@ -150,6 +150,10 @@ class LoyaltyController extends Controller
         if (!$customerId || !$storeId) {
             return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
         }
+        $customer = Auth::guard('customer')->user();
+        if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gt(now()->subHour())) {
+            return response()->json(['success' => false, 'message' => 'يجب تأكيد البريد الإلكتروني أولاً'], 403);
+        }
 
         $balance = $this->loyaltyService->getBalance($storeId, $customerId);
         $settings = LoyaltySetting::forStore($storeId);
@@ -207,6 +211,10 @@ class LoyaltyController extends Controller
 
         if (!$customerId || !$storeId) {
             return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
+        }
+        $customer = Auth::guard('customer')->user();
+        if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gt(now()->subHour())) {
+            return response()->json(['success' => false, 'message' => 'يجب تأكيد البريد الإلكتروني أولاً'], 403);
         }
 
         $history = $this->loyaltyService->getHistory($storeId, $customerId, $request->get('limit', 50));

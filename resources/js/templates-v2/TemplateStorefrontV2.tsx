@@ -42,8 +42,9 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
     const WishlistOverlay = overlays.wishlist!;
     const SearchOverlay = overlays.search!;
 
-    const loginEnabled = behavior?.enable_customer_login !== false;
-    const requireLogin = behavior?.require_login_checkout === true;
+    const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
+    const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false;
+    const requireLogin = customerAccountsEnabled && behavior?.require_login_checkout === true;
 
     // Payment redirects (Paystack, Skrill, Flutterwave...) return to the store
     // with payment_status + order_number in the URL -> show the success modal.
@@ -66,6 +67,8 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
     const handleCheckoutClick = () => {
         ui.setShowCart(false);
         if (auth.isLoggedIn) {
+            ui.setShowCheckout(true);
+        } else if (!customerAccountsEnabled) {
             ui.setShowCheckout(true);
         } else if (requireLogin) {
             ui.setShowAuthModal(false);

@@ -108,6 +108,8 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::post('/login', [\App\Http\Controllers\Store\AuthController::class, 'login'])->middleware('throttle:5,1')->name('store.login');
     Route::post('/register', [\App\Http\Controllers\Store\AuthController::class, 'register'])->middleware('throttle:10,1')->name('store.register');
     Route::post('/logout', [\App\Http\Controllers\Store\AuthController::class, 'logout'])->name('store.logout');
+    Route::post('/verify-email', [\App\Http\Controllers\Store\AuthController::class, 'verifyEmail'])->middleware('throttle:10,1')->name('store.verify-email');
+    Route::post('/verify-email/resend', [\App\Http\Controllers\Store\AuthController::class, 'resendVerification'])->middleware('throttle:6,1')->name('store.verify-email.resend');
 
     // Profile routes
     Route::post('/profile/update', [\App\Http\Controllers\Store\ProfileController::class, 'updateProfile'])->name('store.profile.update');

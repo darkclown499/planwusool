@@ -28,6 +28,7 @@ class FeatureService
         'show_search',
         'show_auth_button',
         'show_whatsapp_order_button',
+        'customer_accounts_enabled',
     ];
 
     /**
@@ -57,6 +58,7 @@ class FeatureService
         'whatsapp_widget_enabled' => true,
         'whatsapp_widget_show_on_mobile' => true,
         'whatsapp_widget_show_on_desktop' => true,
+        'customer_accounts_enabled' => true,
     ];
 
     /** Payment gateways catalog (method => label). */
@@ -276,6 +278,7 @@ class FeatureService
             'enable_customer_login' => 'تسجيل دخول العملاء',
             'enable_customer_registration' => 'تسجيل عملاء جدد',
             'require_login_checkout' => 'إلزام الدخول قبل الدفع',
+            'customer_accounts_enabled' => 'حسابات العملاء',
             'whatsapp_widget_enabled' => 'زر واتساب العائم',
             'whatsapp_widget_show_on_mobile' => 'إظهار في الجوال',
             'whatsapp_widget_show_on_desktop' => 'إظهار في الكمبيوتر',
@@ -295,6 +298,7 @@ class FeatureService
             'enable_customer_login' => 'السماح للعملاء بتسجيل الدخول ومتابعة طلباتهم.',
             'enable_customer_registration' => 'السماح بإنشاء حسابات عملاء جديدة.',
             'require_login_checkout' => 'يتطلب تسجيل الدخول قبل إتمام الطلب.',
+            'customer_accounts_enabled' => 'تفعيل نظام حسابات العملاء بالكامل — عند الإيقاف يختفي زر الدخول ويمنع التسجيل.',
             'whatsapp_widget_enabled' => 'زر واتساب العائم في زاوية المتجر.',
             'whatsapp_widget_show_on_mobile' => 'إظهار الزر العائم على شاشات الجوال.',
             'whatsapp_widget_show_on_desktop' => 'إظهار الزر العائم على شاشات الكمبيوتر.',
