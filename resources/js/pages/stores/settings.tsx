@@ -2,8 +2,8 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
    Save, Mail, Search,
-   XCircle, Info, Loader2, Trash2, Palette, History, CheckCircle2, Building2, PenLine, Paintbrush,
-   Boxes, Truck, CreditCard,
+    XCircle, Info, Loader2, Trash2, History, CheckCircle2, PenLine, Paintbrush,
+    Boxes, Truck, CreditCard,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -269,9 +269,9 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
           {autoSaveState === 'error' && <><XCircle className="h-3.5 w-3.5 text-red-500" /> <span className="text-red-500">{t('Auto-save failed, please save manually')}</span></>}
           {dirty && !saving && <span className="text-xs text-muted-foreground">{t('Unsaved changes')}</span>}
         </div>
-        <button type="button" onClick={() => setDesignerOpen(true)} className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:underline">
+        <button type="button" onClick={() => setDesignerOpen(true)} className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-emerald-700 hover:underline">
           <Paintbrush className="h-3.5 w-3.5" />
-          إدارة التصميم من مصمم المتجر
+          لتخصيص شكل ومحتوى واجهة المتجر، افتح مصمم المتجر
         </button>
       </div>
 
@@ -336,73 +336,6 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
                   <p className="text-xs text-muted-foreground text-start">{t('This message will be shown to your visitors during maintenance.')}</p>
                 </div>
               )}
-            </div>
-          </AccordionSection>
-
-          {/* Branding — canonical is the visual Designer. Keep no duplicate editor here.
-              Show a clear callout that links to Designer where Logo/Favicon/Colors/Typography live together. */}
-          <Card className="border-dashed border-emerald-200 bg-emerald-50/50">
-            <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white">
-                  <Palette className="h-5 w-5" />
-                </span>
-                <div>
-                  <p className="font-semibold text-slate-900">الهوية والعلامة التجارية</p>
-                  <p className="text-sm text-muted-foreground">الشعار، الأيقونة، الألوان، الخطوط والزوايا — تُدار كلها من مكان واحد في مصمم المتجر.</p>
-                </div>
-              </div>
-              <Button type="button" onClick={() => setDesignerOpen(true)} className="shrink-0 gap-1.5">
-                <Paintbrush className="h-4 w-4" />
-                فتح مصمم المتجر
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Homepage Content — canonical is the visual Designer (announcement + hero + sections). Keep raw fields here for advanced users but surface the primary CTA. */}
-          <AccordionSection
-            title={t('Store Homepage Content')}
-            icon={<Building2 className="h-4 w-4" />}
-            subtitle="يُفضل تعديل محتوى الصفحة الرئيسية من مصمم المتجر حيث ترى المعاينة الفورية"
-            onReset={() => handleResetSection('homepage')}
-            resetDisabled={resettingSection === 'homepage'}
-          >
-            <div className="mb-3 flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
-              <p className="text-xs font-medium text-emerald-800">للمعاينة الفورية والبنرات والأقسام، استخدم مصمم المتجر.</p>
-              <Button type="button" variant="outline" size="sm" className="h-7 gap-1.5 border-emerald-300 bg-white text-emerald-700" onClick={() => setDesignerOpen(true)}>
-                <Paintbrush className="h-3.5 w-3.5" />
-                فتح المصمم
-              </Button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="welcome_message">{t('Welcome Message')}</Label>
-                <Input
-                  id="welcome_message"
-                  value={formData.welcome_message || ''}
-                  onChange={(e) => updateSetting('welcome_message', e.target.value)}
-                  placeholder={t('Welcome to our store!')}
-                />
-              </div>
-              <div>
-                <Label htmlFor="store_description">{t('Store Description')}</Label>
-                <Textarea
-                  id="store_description"
-                  value={formData.store_description || ''}
-                  onChange={(e) => updateSetting('store_description', e.target.value)}
-                  placeholder={t('Brief description of your store...')}
-                  rows={3}
-                />
-              </div>
-              <div>
-                <Label htmlFor="copyright_text">{t('Copyright Text')}</Label>
-                <Input
-                  id="copyright_text"
-                  value={formData.copyright_text || ''}
-                  onChange={(e) => updateSetting('copyright_text', e.target.value)}
-                  placeholder={t('© 2026 Your Store Name. All rights reserved.')}
-                />
-              </div>
             </div>
           </AccordionSection>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\CreateCourierShipment;
 use App\Services\OrderService;
 use App\Services\CartCalculationService;
 use Illuminate\Http\Request;
@@ -264,6 +265,16 @@ class OrderController extends Controller
 
             // Create order
             $order = $this->orderService->createOrder($orderData, $cartItems);
+
+            // Queue courier shipment if shipping method is linked to a courier integration (never inside DB transaction)
+            if (!empty($order->shipping_method_id)) {
+                try {
+                    // Use afterCommit so job only runs if DB commit succeeded
+                    dispatch(new CreateCourierShipment($order->id))->afterCommit();
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Courier dispatch failed (order still created)', ['order_id'=>$order->id, 'error'=>$e->getMessage()]);
+                }
+            }
 
             // Persist loyalty redemption transaction after order is created
             if ($loyaltyDiscount > 0 && $loyaltyPointsRequested > 0) {

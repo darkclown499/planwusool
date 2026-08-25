@@ -58,9 +58,16 @@ export default function Shipping() {
     }
   };
 
+  const currentStoreId = (auth as any)?.user?.current_store;
   const pageActions = [
+    ...(currentStoreId ? [{
+      label: 'شركات التوصيل',
+      icon: <Truck className="h-4 w-4" />,
+      variant: 'outline' as const,
+      onClick: () => router.visit(`/stores/${currentStoreId}/shipping/integrations`)
+    }] : []),
     ...(hasPermission('create-shipping') ? [{
-      label: t('Create Shipping'),
+      label: '+ إضافة طريقة شحن',
       icon: <Plus className="h-4 w-4" />,
       variant: 'default' as const,
       onClick: () => handleActionClick('create', 'create-shipping')
@@ -77,7 +84,7 @@ export default function Shipping() {
     <>
       <PageTemplate 
         title="الشحن والتوصيل"
-        description="طرق الشحن، مناطق التوصيل، التكلفة والاستلام من المتجر"
+        description="حدد طرق استلام وتوصيل الطلبات لعملائك."
         url="/shipping"
         actions={pageActions}
         breadcrumbs={[

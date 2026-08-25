@@ -315,6 +315,35 @@ Route::middleware('api.throttle')->group(function () {
         Route::put('/', [\App\Http\Controllers\Api\StorePaymentController::class, 'update'])->name('update');
     });
 
+    // Courier integrations API (per-store, encrypted, isolated)
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/courier-integrations')->name('api.store-courier-integrations.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreCourierIntegrationController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\StoreCourierIntegrationController::class, 'store'])->name('store');
+        Route::put('{integration}', [\App\Http\Controllers\Api\StoreCourierIntegrationController::class, 'update'])->name('update');
+        Route::post('{integration}/test', [\App\Http\Controllers\Api\StoreCourierIntegrationController::class, 'test'])->name('test');
+        Route::delete('{integration}', [\App\Http\Controllers\Api\StoreCourierIntegrationController::class, 'destroy'])->name('destroy');
+    });
+
+    // Order shipments API
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/orders/{order}/shipments')->name('api.store-order-shipments.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreOrderShipmentController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\StoreOrderShipmentController::class, 'store'])->name('store');
+        Route::post('{shipment}/cancel', [\App\Http\Controllers\Api\StoreOrderShipmentController::class, 'cancel'])->name('cancel');
+        Route::post('{shipment}/retry', [\App\Http\Controllers\Api\StoreOrderShipmentController::class, 'retry'])->name('retry');
+    });
+
+    // Courier connection requests (private local couriers)
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/courier-requests')->name('api.store-courier-requests.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreCourierConnectionRequestController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\StoreCourierConnectionRequestController::class, 'store'])->name('store');
+    });
+
+    // Admin courier requests management
+    Route::middleware(['auth'])->prefix('api/admin/courier-requests')->name('api.admin-courier-requests.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreCourierConnectionRequestController::class, 'adminIndex'])->name('index');
+        Route::put('{id}/status', [\App\Http\Controllers\Api\StoreCourierConnectionRequestController::class, 'updateStatus'])->name('updateStatus');
+    });
+
     // Store offers API
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/offers')->name('api.store-offers.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StoreOfferController::class, 'index'])->name('index');
@@ -480,6 +509,9 @@ Route::post('cashfree/webhook', [CashfreeController::class, 'webhook'])->middlew
 
 // Accounting integration webhook (public route - secured via API key in request)
 Route::post('webhook/accounting/{store}', [\App\Http\Controllers\AccountingWebhookController::class, 'handle'])->name('accounting.webhook');
+
+// Courier shipment webhook (per-provider, signature verified per integration)
+Route::post('webhook/courier/{provider}', [\App\Http\Controllers\CourierWebhookController::class, 'handle'])->name('courier.webhook');
 
 // Benefit webhook (public route)
 Route::post('benefit/webhook', [BenefitPaymentController::class, 'webhook'])->middleware('webhook.signature:benefit')->name('benefit.webhook');
@@ -722,6 +754,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Canonical store-scoped الشحن والتوصيل / الضرائب — explicit store isolation
         Route::get('stores/{id}/shipping', [\App\Http\Controllers\StoreShippingController::class, 'index'])->middleware('permission:settings-stores')->name('stores.shipping.canonical');
+        Route::get('stores/{id}/shipping/integrations', [\App\Http\Controllers\StoreCourierIntegrationController::class, 'index'])->middleware('permission:settings-stores')->name('stores.shipping.integrations');
         Route::get('stores/{id}/taxes', [\App\Http\Controllers\StoreTaxController::class, 'index'])->middleware('permission:settings-stores')->name('stores.taxes.canonical');
         Route::get('stores/{id}/notifications', fn($id) => redirect()->route('stores.notifications.whatsapp', $id))->middleware('auth')->name('stores.notifications');
         

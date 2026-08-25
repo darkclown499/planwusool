@@ -90,7 +90,12 @@ class ShippingController extends Controller
             'require_signature' => 'boolean',
             'insurance_required' => 'boolean',
             'tracking_available' => 'boolean',
-            'handling_fee' => 'nullable|numeric|min:0'
+            'handling_fee' => 'nullable|numeric|min:0',
+            'courier_integration_id' => 'nullable|integer|exists:store_courier_integrations,id',
+            'fulfillment_type' => 'nullable|string|in:manual,personal,courier',
+            'courier_service_type' => 'nullable|string|max:50',
+            'courier_price_mode' => 'nullable|string|in:api,fixed,free',
+            'courier_fixed_price' => 'nullable|numeric|min:0',
         ], [], [
             'name' => __('Shipping Method Name'),
             'type' => __('Shipping Type'),
@@ -100,6 +105,14 @@ class ShippingController extends Controller
 
         $user = Auth::user();
         $currentStoreId = $user->current_store;
+
+        // Courier integration must belong to same store (isolation)
+        if (!empty($request->courier_integration_id)) {
+            $valid = \App\Models\StoreCourierIntegration::where('id', $request->courier_integration_id)->where('store_id', $currentStoreId)->exists();
+            if (!$valid) {
+                return back()->withErrors(['courier_integration_id'=>__('Invalid courier integration for this store')])->withInput();
+            }
+        }
 
         $data = $request->all();
         $data['store_id'] = $currentStoreId;
@@ -231,7 +244,12 @@ class ShippingController extends Controller
             'require_signature' => 'boolean',
             'insurance_required' => 'boolean',
             'tracking_available' => 'boolean',
-            'handling_fee' => 'nullable|numeric|min:0'
+            'handling_fee' => 'nullable|numeric|min:0',
+            'courier_integration_id' => 'nullable|integer|exists:store_courier_integrations,id',
+            'fulfillment_type' => 'nullable|string|in:manual,personal,courier',
+            'courier_service_type' => 'nullable|string|max:50',
+            'courier_price_mode' => 'nullable|string|in:api,fixed,free',
+            'courier_fixed_price' => 'nullable|numeric|min:0',
         ], [], [
             'name' => __('Shipping Method Name'),
             'type' => __('Shipping Type'),
@@ -241,6 +259,13 @@ class ShippingController extends Controller
 
         $user = Auth::user();
         $currentStoreId = $user->current_store;
+
+        if (!empty($request->courier_integration_id)) {
+            $valid = \App\Models\StoreCourierIntegration::where('id', $request->courier_integration_id)->where('store_id', $currentStoreId)->exists();
+            if (!$valid) {
+                return back()->withErrors(['courier_integration_id'=>__('Invalid courier integration for this store')])->withInput();
+            }
+        }
         
         $shipping = Shipping::where('store_id', $currentStoreId)
             ->findOrFail($id);
