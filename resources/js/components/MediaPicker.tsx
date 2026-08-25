@@ -80,7 +80,8 @@ export default function MediaPicker({
         const uploaded = result.data as { url: string }[];
         if (multiple) {
           const paths = uploaded.map((item) => convertToRelativePath(item.url));
-          onChange([...(value ? value.split(',').filter(Boolean) : []), ...paths].join(','));
+          const current = typeof value === 'string' ? value : (value != null ? String(value) : '');
+          onChange([...(current ? current.split(',').filter(Boolean) : []), ...paths].join(','));
         } else {
           onChange(convertToRelativePath(uploaded[0].url));
         }
@@ -99,7 +100,8 @@ export default function MediaPicker({
     onChange('');
   };
 
-  const imageUrls = value ? value.split(',').filter(Boolean) : [];
+  const stringValue = Array.isArray(value) ? (value as unknown as string[]).join(',') : (typeof value === 'string' ? value : (value != null ? String(value) : ''));
+  const imageUrls = stringValue ? stringValue.split(',').filter(Boolean) : [];
 
   return (
     <div className="space-y-2">
