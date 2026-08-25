@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { CakeSlice, ChevronLeft, Clock3, Croissant, Flame, Heart, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
+import { CakeSlice, ChevronLeft, Clock3, Croissant, Flame, Heart, Package, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { toast } from '@/components/custom-toast';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
@@ -28,7 +28,7 @@ const ACCENT = '#b45309';
 /* ------------------------------ Header ------------------------------ */
 
 export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, wishlist, product, content, order } = useStorefrontCore() as any;
   const [scrolled, setScrolled] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
 
@@ -42,6 +42,15 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const hour = new Date().getHours();
   const greeting = hour < 11 ? 'خبز الصباح ساخن الآن 🔥' : hour < 17 ? 'عجين اليوم يُخبز كل ساعتين' : 'آخر دفعة من الفرن قبل الإغلاق';
+
+  const handleMyOrders = () => {
+    if (auth?.isLoggedIn) {
+      order?.loadUserOrders?.();
+      auth.setShowOrdersModal(true);
+    } else {
+      auth.setShowLoginModal(true);
+    }
+  };
 
   return (
     <header className={`hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-md' : ''}`} dir="rtl">
@@ -82,6 +91,9 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
           <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative hidden rounded-full p-2.5 text-[#78350f] transition hover:bg-[#f5e7d3] sm:block">
             <Heart className="h-5 w-5" strokeWidth={1.8} />
             {!!wishlist?.count && <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#b45309] px-1 text-[9px] font-black text-white">{wishlist.count}</span>}
+          </button>
+          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2.5 text-[#78350f] transition hover:bg-[#f5e7d3] sm:block">
+            <Package className="h-5 w-5" strokeWidth={1.8} />
           </button>
           <button
             type="button"

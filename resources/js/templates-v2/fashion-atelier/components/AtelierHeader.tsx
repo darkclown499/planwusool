@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Gift, Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Gift, Heart, Menu, Package, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useStorefrontCore } from '../../shared/hooks';
 import { getImageUrl } from '@/utils/image-helper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -17,7 +17,7 @@ interface AtelierHeaderProps {
  * Turns sticky + elevated once the page scrolls.
  */
 export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) => {
-  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, wishlist, product, content, order } = useStorefrontCore() as any;
   const [scrolled, setScrolled] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -35,6 +35,15 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
   const openAccount = () => {
     if (auth?.isLoggedIn) auth.setShowProfileModal(true);
     else if (auth?.setShowLoginModal) auth.setShowLoginModal(true);
+  };
+
+  const handleMyOrders = () => {
+    if (auth?.isLoggedIn) {
+      order?.loadUserOrders?.();
+      auth.setShowOrdersModal(true);
+    } else {
+      auth.setShowLoginModal(true);
+    }
   };
 
   const navLink = 'relative shrink-0 whitespace-nowrap px-3 py-2 text-[13px] font-medium tracking-wide text-stone-700 transition-colors hover:text-[#9d7463]';
@@ -111,6 +120,9 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
                 {wishlist.count}
               </span>
             )}
+          </button>
+          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 sm:block">
+            <Package className="h-5 w-5" strokeWidth={1.7} />
           </button>
           <button type="button" onClick={openAccount} aria-label="حسابي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 sm:block">
             <User className="h-5 w-5" strokeWidth={1.7} />

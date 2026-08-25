@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, Flame, Minus, PackageSearch, Plus, ShoppingBag, Star, UtensilsCrossed } from 'lucide-react';
+import { ChevronLeft, Flame, Minus, Package, PackageSearch, Plus, ShoppingBag, Star, UtensilsCrossed } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
@@ -20,8 +20,17 @@ import type { TemplateRootProps } from '../types';
 /* ===================================================================== */
 
 export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui } = useStorefrontCore();
+  const { config, store, cart, auth, ui, order } = useStorefrontCore() as any;
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
+
+  const handleMyOrders = () => {
+    if ((auth as any)?.isLoggedIn) {
+      (order as any)?.loadUserOrders?.();
+      (auth as any).setShowOrdersModal(true);
+    } else {
+      (auth as any).setShowLoginModal(true);
+    }
+  };
 
   return (
     <header className="hidden md:block sticky top-0 z-50 border-b border-[#3d332b] bg-[#191410]/97 backdrop-blur" dir="rtl">
@@ -45,6 +54,10 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
           <div className="hidden sm:block">
             <HeaderLoyaltyBadge />
           </div>
+          <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
+            className="hidden rounded-lg border border-white/20 bg-white/10 p-2 text-white transition-colors hover:bg-white/20 sm:block">
+            <Package className="h-4 w-4" />
+          </button>
           <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} aria-label="حسابي"
             className="hidden rounded-lg border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 sm:block">
             حسابي

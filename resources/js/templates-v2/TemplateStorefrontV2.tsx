@@ -56,6 +56,13 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Load orders whenever the My Orders modal opens (covers both logged-in and guest session)
+    useEffect(() => {
+        if (auth.showOrdersModal) {
+            order.loadUserOrders();
+        }
+    }, [auth.showOrdersModal]);
+
     const handleCheckoutClick = () => {
         ui.setShowCart(false);
         if (auth.isLoggedIn) {
@@ -74,10 +81,9 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
         ui.setShowCheckout(false);
         ui.setShowCart(false);
         cart.clearCart?.();
-        if (auth.isLoggedIn) {
-            order.loadUserOrders();
-        }
-        toast.success('تم إنشاء طلبك بنجاح!');
+        order.loadUserOrders();
+        // Success toast is now shown inside CheckoutContext's onSuccess callback only,
+        // after server confirms the order — prevents premature toast on validation failure.
     };
 
     return (

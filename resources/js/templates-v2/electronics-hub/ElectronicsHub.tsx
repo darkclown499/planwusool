@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { BadgeCheck, ChevronLeft, Cpu, Headphones, Laptop, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
+import { BadgeCheck, ChevronLeft, Cpu, Headphones, Laptop, Package, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
@@ -37,11 +37,20 @@ function categoryIcon(name: string) {
 /* ------------------------------ Header ------------------------------ */
 
 export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, wishlist, product, content, order } = useStorefrontCore() as any;
   const [q, setQ] = useState('');
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const categories = (product?.categories || []).slice(0, 8);
+
+  const handleMyOrders = () => {
+    if (auth?.isLoggedIn) {
+      order?.loadUserOrders?.();
+      auth.setShowOrdersModal(true);
+    } else {
+      auth.setShowLoginModal(true);
+    }
+  };
 
   const matches = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -99,6 +108,9 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
           <div className="hidden sm:block">
             <HeaderLoyaltyBadge />
           </div>
+          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-lg border border-white/20 bg-white/10 p-2 text-white transition-colors hover:bg-white/20 sm:block">
+            <Package className="h-5 w-5" strokeWidth={1.8} />
+          </button>
           <button
             type="button"
             onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))}

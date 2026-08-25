@@ -12,31 +12,60 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'store_id' => 'required|exists:stores,id'
+            'store_id' => 'required|exists:stores,id',
+            'email' => 'nullable|email',
         ]);
 
-        if (!Auth::guard('customer')->check()) {
-            return response()->json(['orders' => []]);
+        $storeId = $request->store_id;
+
+        if (Auth::guard('customer')->check()) {
+            $orders = Order::where('store_id', $storeId)
+                ->where('customer_id', Auth::guard('customer')->id())
+                ->with('items')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($order) {
+                    return [
+                        'id' => $order->order_number,
+                        'order_number' => $order->order_number,
+                        'date' => $order->created_at->toISOString(),
+                        'created_at' => $order->created_at->toISOString(),
+                        'status' => $order->status,
+                        'total' => (float) $order->total_amount,
+                        'items' => $order->items->count()
+                    ];
+                });
+
+            return response()->json(['orders' => $orders]);
         }
 
-        $orders = Order::where('store_id', $request->store_id)
-            ->where('customer_id', Auth::guard('customer')->id())
-            ->with('items')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($order) {
-                return [
-                    'id' => $order->order_number,
-                    'date' => $order->created_at->toISOString(),
-                    'status' => $order->status,
-                    'total' => (float) $order->total_amount,
-                    'items' => $order->items->count()
-                ];
-            });
+        // Guest: match by session_id and optionally by email
+        $sessionId = session()->getId();
+        $email = $request->input('email') ?: $request->input('customer_email');
 
-        return response()->json([
-            'orders' => $orders
-        ]);
+        $query = Order::where('store_id', $storeId)->with('items')->orderBy('created_at', 'desc');
+
+        $query->where(function ($q) use ($sessionId, $email) {
+            $q->where('session_id', $sessionId);
+            if ($email) {
+                $q->orWhere('customer_email', $email);
+            }
+        });
+
+        // If no session match and no email, still try session_id only; empty result will be returned
+        $orders = $query->get()->map(function ($order) {
+            return [
+                'id' => $order->order_number,
+                'order_number' => $order->order_number,
+                'date' => $order->created_at->toISOString(),
+                'created_at' => $order->created_at->toISOString(),
+                'status' => $order->status,
+                'total' => (float) $order->total_amount,
+                'items' => $order->items->count()
+            ];
+        });
+
+        return response()->json(['orders' => $orders]);
     }
 
     public function show(Request $request, $orderNumber)
@@ -45,20 +74,23 @@ class OrderController extends Controller
             'store_slug' => 'required|string'
         ]);
 
-        if (!Auth::guard('customer')->check()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
         $store = \App\Models\Store::where('slug', $request->store_slug)->first();
         if (!$store) {
             return response()->json(['error' => 'Store not found'], 404);
         }
 
-        $order = Order::where('order_number', $orderNumber)
+        $query = Order::where('order_number', $orderNumber)
             ->where('store_id', $store->id)
-            ->where('customer_id', Auth::guard('customer')->id())
-            ->with(['items.product'])
-            ->first();
+            ->with(['items.product']);
+
+        if (Auth::guard('customer')->check()) {
+            $query->where('customer_id', Auth::guard('customer')->id());
+        } else {
+            $sessionId = session()->getId();
+            $query->where('session_id', $sessionId);
+        }
+
+        $order = $query->first();
 
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);

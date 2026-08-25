@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, Heart, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
+import { ChevronLeft, Heart, Package, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import {
   discountPercent,
@@ -24,7 +24,7 @@ import type { TemplateRootProps } from '../types';
 /* ------------------------------ Header ------------------------------ */
 
 export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
-  const { config, store, cart, auth, ui, wishlist, product, content } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, wishlist, product, content, order } = useStorefrontCore() as any;
   const [scrolled, setScrolled] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   useEffect(() => {
@@ -35,6 +35,15 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
 
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const categories = (product?.categories || []).slice(0, 8);
+
+  const handleMyOrders = () => {
+    if (auth?.isLoggedIn) {
+      order?.loadUserOrders?.();
+      auth.setShowOrdersModal(true);
+    } else {
+      auth.setShowLoginModal(true);
+    }
+  };
 
   return (
     <header className={`hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-lg shadow-teal-950/5' : ''}`} dir="rtl">
@@ -63,6 +72,9 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
             {!!wishlist?.count && (
               <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">{wishlist.count}</span>
             )}
+          </button>
+          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 sm:block">
+            <Package className="h-5 w-5" strokeWidth={1.8} />
           </button>
           <button
             type="button"

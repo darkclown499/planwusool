@@ -64,7 +64,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
   }, [paymentStatus, initialOrderNumber]);
 
   const loadUserOrders = async () => {
-    if (!isLoggedIn || !storeId) return;
+    if (!storeId) return;
     
     setLoadingOrders(true);
     try {
@@ -84,6 +84,13 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
       setLoadingOrders(false);
     }
   };
+
+  // Auto-load when authenticated state changes or storeId becomes available
+  useEffect(() => {
+    if (storeId) {
+      loadUserOrders();
+    }
+  }, [storeId, isLoggedIn]);
 
   const handleViewOrder = (orderNumber: string) => {
     setSelectedOrderId(orderNumber);
