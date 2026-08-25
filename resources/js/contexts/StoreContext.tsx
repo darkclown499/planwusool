@@ -84,21 +84,48 @@ interface StoreProviderProps {
 }
 
 export const StoreProvider: React.FC<StoreProviderProps> = ({ children, config, store, content, behavior }) => {
-    // Set dynamic favicon once on mount
+    // Set dynamic favicon with cache-buster — updates whenever favicon changes
     useEffect(() => {
-        if (config.favicon) {
-            let favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+        const rawFavicon = config.favicon || (store as any)?.favicon || '';
+        const existingLinks = document.querySelectorAll('link[rel*="icon"]');
 
-            if (!favicon) {
-                favicon = document.createElement('link');
-                favicon.rel = 'icon';
-                favicon.type = 'image/x-icon';
-                document.head.appendChild(favicon);
-            }
-
-            favicon.href = getImageUrl(config.favicon);
+        if (!rawFavicon) {
+            // No favicon configured — ensure default is not stale (optional: keep existing)
+            return;
         }
-    }, [config.favicon]);
+
+        const baseUrl = getImageUrl(rawFavicon);
+        const timestamp = (store as any)?.updated_at ? new Date((store as any).updated_at).getTime() : Date.now();
+        const separator = baseUrl.includes('?') ? '&' : '?';
+        const hrefWithCacheBuster = `${baseUrl}${separator}v=${timestamp}`;
+
+        // Update or create favicon links with cache-buster
+        let favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+        if (!favicon) {
+            favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            favicon.type = 'image/png';
+            document.head.appendChild(favicon);
+        }
+        favicon.href = hrefWithCacheBuster;
+
+        // Also update apple-touch-icon for iOS
+        let appleIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
+        if (!appleIcon) {
+            appleIcon = document.createElement('link');
+            appleIcon.rel = 'apple-touch-icon';
+            document.head.appendChild(appleIcon);
+        }
+        appleIcon.href = hrefWithCacheBuster;
+
+        // Force browser to reload by temporarily removing and re-adding (helps WebKit)
+        // Also update any existing icon links to use the new href
+        existingLinks.forEach((link) => {
+            if (link !== favicon && link !== appleIcon) {
+                (link as HTMLLinkElement).href = hrefWithCacheBuster;
+            }
+        });
+    }, [config.favicon, (store as any)?.favicon, (store as any)?.updated_at]);
 
     // Inject SEO meta tags and tracking scripts once on mount
     useEffect(() => {

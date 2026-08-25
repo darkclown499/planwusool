@@ -584,6 +584,58 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
     const logoValue = (tokens?.logo as string) || (getDotted(content, 'brand.logo') as string) || (getDotted(content, 'logo') as string) || '';
     const faviconValue = (tokens?.favicon as string) || (getDotted(content, 'brand.favicon') as string) || (getDotted(content, 'favicon') as string) || '';
 
+    // Sync live preview frame favicon whenever settings.favicon changes — updates both designer tab and preview iframe head
+    useEffect(() => {
+        if (!faviconValue) return;
+        const faviconUrl = getImageUrl(faviconValue);
+        const timestamp = Date.now();
+        const hrefWithCacheBuster = `${faviconUrl}${faviconUrl.includes('?') ? '&' : '?'}v=${timestamp}`;
+
+        const updateFavicon = (doc: Document) => {
+            let link = doc.querySelector('link[rel="icon"]') as HTMLLinkElement;
+            if (!link) {
+                link = doc.createElement('link');
+                link.rel = 'icon';
+                link.type = 'image/png';
+                doc.head.appendChild(link);
+            }
+            link.href = hrefWithCacheBuster;
+
+            let appleLink = doc.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
+            if (!appleLink) {
+                appleLink = doc.createElement('link');
+                appleLink.rel = 'apple-touch-icon';
+                doc.head.appendChild(appleLink);
+            }
+            appleLink.href = hrefWithCacheBuster;
+        };
+
+        // Update designer tab favicon
+        updateFavicon(document);
+
+        // Update live preview iframe favicon
+        const iframe = document.querySelector('iframe[title="Live store preview"]') as HTMLIFrameElement;
+        if (iframe) {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (iframeDoc) {
+                    updateFavicon(iframeDoc);
+                } else {
+                    const handleLoad = () => {
+                        try {
+                            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                            if (doc) updateFavicon(doc);
+                        } catch {}
+                    };
+                    iframe.addEventListener('load', handleLoad, { once: true });
+                    return () => iframe.removeEventListener('load', handleLoad);
+                }
+            } catch {
+                // Cross-origin fallback — iframe will pick up new favicon on next reload via cache-buster in src
+            }
+        }
+    }, [faviconValue]);
+
     // Announcement state
     const announcementText = (getDotted(content, 'announcement.text') ?? '') as string;
     const announcementBg = (getDotted(content, 'announcement.bg_color') ?? '#2b2320') as string;

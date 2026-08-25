@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
+import { getImageUrl } from '@/utils/image-helper';
 
 interface StoreHeadProps {
   store: any;
@@ -17,6 +18,18 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
   const ogImage = rawOgImage
     ? (rawOgImage.startsWith('http') ? rawOgImage : `${window.location.origin}${rawOgImage.startsWith('/') ? '' : '/'}${rawOgImage}`)
     : '';
+
+  // Dynamic favicon with cache-buster — forces browser to reload when store favicon changes
+  const faviconHref = (() => {
+    const rawFavicon = store?.favicon || (store as any)?.config?.favicon || '';
+    if (!rawFavicon) return '/images/logos/favicon.png';
+    const baseUrl = rawFavicon.startsWith('http') || rawFavicon.startsWith('/') ? rawFavicon : `/${rawFavicon}`;
+    // Use getImageUrl to handle relative storage paths
+    const resolved = baseUrl.startsWith('http') ? baseUrl : getImageUrl(baseUrl);
+    const timestamp = store?.updated_at ? new Date(store.updated_at).getTime() : Date.now();
+    const separator = resolved.includes('?') ? '&' : '?';
+    return `${resolved}${separator}v=${timestamp}`;
+  })();
 
   useEffect(() => {
     // Name the browser tab after the store (seo_title, then store name) so tabs
@@ -111,6 +124,8 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
       <meta name="description" content={description} />
       {keywords ? <meta name="keywords" content={keywords} /> : null}
       <link rel="canonical" href={window.location.href} />
+      <link rel="icon" type="image/png" href={faviconHref} />
+      <link rel="apple-touch-icon" href={faviconHref} />
       <meta property="og:site_name" content={store?.name || title} />
       <meta property="og:title" content={title} />
       {description ? <meta property="og:description" content={description} /> : null}
