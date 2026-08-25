@@ -159,6 +159,7 @@ export function CrudTable({
   // Helper function to get nested property value using dot notation
   const getNestedValue = (obj: any, path: string) => {
     if (!obj || !path) return null;
+    if (typeof path !== 'string') return null;
     
     const keys = path.split('.');
     return keys.reduce((acc, key) => {

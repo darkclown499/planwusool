@@ -160,7 +160,7 @@ export default function MediaLibraryButton({
                         {/* File Type Badge */}
                         <div className="absolute top-2 left-2">
                           <Badge variant="secondary" className="text-xs bg-background/95">
-                            {item.mime_type.split('/')[1].toUpperCase()}
+                            {(item.mime_type || '').split('/')[1]?.toUpperCase() || 'FILE'}
                           </Badge>
                         </div>
                       </div>

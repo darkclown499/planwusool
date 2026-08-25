@@ -5,7 +5,11 @@
  * @returns The full URL
  */
 export function getImageUrl(path: string): string {
-  if (!path) return '';
+  if (!path || typeof path !== 'string') {
+    if (path == null) return '';
+    path = String(path);
+    if (!path) return '';
+  }
 
   if (path.startsWith('http')) {
     return path;
