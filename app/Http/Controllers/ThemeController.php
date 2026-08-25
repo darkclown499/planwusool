@@ -134,6 +134,8 @@ class ThemeController extends Controller
         if (empty($brandingLogo) && !empty($store->store_content['brand']['logo'])) $brandingLogo = $store->store_content['brand']['logo'];
         if (empty($brandingLogo) && !empty($store->store_content['logo'])) $brandingLogo = $store->store_content['logo'];
 
+        // Custom assets: canonical is StoreConfiguration, fallback to template_overrides for designer compatibility
+        $overrides = $store->template_overrides ?? [];
         return [
             'id' => $store->id,
             'name' => $store->name,
@@ -147,9 +149,9 @@ class ThemeController extends Controller
             'custom_subdomain' => $store->custom_subdomain,
             'enable_custom_domain' => $store->enable_custom_domain,
             'enable_custom_subdomain' => $store->enable_custom_subdomain,
-            'custom_css' => $configuration['custom_css'] ?? '',
-            'custom_javascript' => $configuration['custom_javascript'] ?? '',
-            'custom_head_scripts' => $configuration['custom_head_scripts'] ?? '',
+            'custom_css' => $configuration['custom_css'] ?? $overrides['custom_css'] ?? '',
+            'custom_javascript' => $configuration['custom_javascript'] ?? $overrides['custom_js'] ?? '',
+            'custom_head_scripts' => $configuration['custom_head_scripts'] ?? $overrides['head_inject'] ?? '',
             'custom_body_scripts' => $configuration['custom_body_scripts'] ?? '',
             'pwa' => $pwaData,
             'seo_title' => $store->seo_title,

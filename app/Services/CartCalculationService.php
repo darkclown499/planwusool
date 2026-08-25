@@ -214,7 +214,13 @@ class CartCalculationService
                 ->first();
 
             if ($shippingMethod) {
-                $shipping = $shippingMethod->cost + ($shippingMethod->handling_fee ?? 0);
+                if ($shippingMethod->type === 'free_shipping') {
+                    $shipping = 0;
+                } elseif ($shippingMethod->type === 'percentage_based') {
+                    $shipping = ($subtotal * (float) $shippingMethod->cost / 100) + ($shippingMethod->handling_fee ?? 0);
+                } else {
+                    $shipping = (float) $shippingMethod->cost + ($shippingMethod->handling_fee ?? 0);
+                }
             }
         }
 

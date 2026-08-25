@@ -318,14 +318,24 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
         };
     }, [store.id]);
 
+    // Theme is saved instantly via StoreTemplatesGrid, so exclude it from dirty check
     const isDirty = useMemo(() => {
         try {
-            const cur = JSON.stringify({ theme, tokens, content, css: customCss, js: customJs, head: headInject });
-            return cur !== initialSnapshot;
+            const cur = JSON.stringify({ tokens, content, css: customCss, js: customJs, head: headInject });
+            const snap = (() => {
+                try {
+                    const parsed = JSON.parse(initialSnapshot);
+                    const { theme: _t, ...rest } = parsed;
+                    return JSON.stringify(rest);
+                } catch {
+                    return initialSnapshot;
+                }
+            })();
+            return cur !== snap;
         } catch {
             return true;
         }
-    }, [theme, tokens, content, customCss, customJs, headInject, initialSnapshot]);
+    }, [tokens, content, customCss, customJs, headInject, initialSnapshot]);
 
     const activeModule: TemplateModule | null = useMemo(() => {
         try {
@@ -975,49 +985,55 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                             </div>
                         </AccordionSection>
 
-                        {/* ── 2. شريط الإعلانات العلوي ── */}
-                        <AccordionSection title="شريط الإعلانات العلوي" icon={<Megaphone className="h-3.5 w-3.5" />} open={openSections.announcement} onOpenChange={(v) => setOpenSections((s) => ({ ...s, announcement: v }))}>
-                            <div>
-                                <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الشريط</Label>
-                                <Input
-                                    value={announcementText ?? ''}
-                                    onChange={(e) => setContent(setDotted(content, 'announcement.text', e.target.value))}
-                                    placeholder="توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح"
-                                    className="bg-white"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <ColorPickerField
-                                    label="لون الخلفية"
-                                    value={announcementBg && /^#[0-9a-fA-F]{6}$/.test(announcementBg.trim()) ? announcementBg.trim() : '#1a1a1a'}
-                                    onChange={(v) => setContent(setDotted(content, 'announcement.bg_color', v))}
-                                />
-                                <ColorPickerField
-                                    label="لون النص"
-                                    value={announcementColor && /^#[0-9a-fA-F]{6}$/.test(announcementColor.trim()) ? announcementColor.trim() : '#ffffff'}
-                                    onChange={(v) => setContent(setDotted(content, 'announcement.text_color', v))}
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+                        {/* ── 2. شريط الإعلانات العلوي — يعمل فقط مع Fashion Atelier */}
+                        {theme === 'fashion-atelier' ? (
+                            <AccordionSection title="شريط الإعلانات العلوي" icon={<Megaphone className="h-3.5 w-3.5" />} open={openSections.announcement} onOpenChange={(v) => setOpenSections((s) => ({ ...s, announcement: v }))}>
                                 <div>
-                                    <p className="text-sm font-bold text-slate-800">إظهار الشريط</p>
-                                    <p className="text-xs text-slate-500">يظهر أعلى كل صفحات المتجر</p>
+                                    <Label className="mb-1.5 block text-xs font-bold text-slate-600">نص الشريط</Label>
+                                    <Input
+                                        value={announcementText ?? ''}
+                                        onChange={(e) => setContent(setDotted(content, 'announcement.text', e.target.value))}
+                                        placeholder="توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح"
+                                        className="bg-white"
+                                    />
                                 </div>
-                                <Switch checked={showAnnouncement} onCheckedChange={(v) => setContent(setDotted(content, 'announcement.enabled', v))} aria-label="إظهار شريط الإعلانات" />
-                            </div>
 
-                            {/* Mini preview */}
-                            <div className="overflow-hidden rounded-xl ring-1 ring-slate-200">
-                                <div dir="rtl" className="flex items-center justify-center gap-2 px-3 py-2 text-center text-xs font-medium" style={{ backgroundColor: announcementBg, color: announcementColor }}>
-                                    <span aria-hidden>✦</span>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <ColorPickerField
+                                        label="لون الخلفية"
+                                        value={announcementBg && /^#[0-9a-fA-F]{6}$/.test(announcementBg.trim()) ? announcementBg.trim() : '#1a1a1a'}
+                                        onChange={(v) => setContent(setDotted(content, 'announcement.bg_color', v))}
+                                    />
+                                    <ColorPickerField
+                                        label="لون النص"
+                                        value={announcementColor && /^#[0-9a-fA-F]{6}$/.test(announcementColor.trim()) ? announcementColor.trim() : '#ffffff'}
+                                        onChange={(v) => setContent(setDotted(content, 'announcement.text_color', v))}
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800">إظهار الشريط</p>
+                                        <p className="text-xs text-slate-500">يظهر أعلى كل صفحات المتجر</p>
+                                    </div>
+                                    <Switch checked={showAnnouncement} onCheckedChange={(v) => setContent(setDotted(content, 'announcement.enabled', v))} aria-label="إظهار شريط الإعلانات" />
+                                </div>
+
+                                {/* Mini preview */}
+                                <div className="overflow-hidden rounded-xl ring-1 ring-slate-200">
+                                    <div dir="rtl" className="flex items-center justify-center gap-2 px-3 py-2 text-center text-xs font-medium" style={{ backgroundColor: announcementBg, color: announcementColor }}>
+                                        <span aria-hidden>✦</span>
                                     <span>{announcementText.trim() || 'توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح'}</span>
                                     <span aria-hidden>✦</span>
                                 </div>
                                 {!showAnnouncement && <p className="bg-amber-50 px-3 py-1.5 text-center text-xs font-bold text-amber-700">مخفي</p>}
                             </div>
                         </AccordionSection>
+                        ) : (
+                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs font-bold text-amber-800">
+                                شريط الإعلانات متاح فقط لقالب Fashion Atelier حالياً — اختر هذا القالب لاستخدامه.
+                            </div>
+                        )}
 
                         {/* ── 3. البنر الرئيسي ── */}
                         <AccordionSection title="البنر الرئيسي (Hero Banner)" icon={<ImageIcon className="h-3.5 w-3.5" />} open={openSections.hero} onOpenChange={(v) => setOpenSections((s) => ({ ...s, hero: v }))}>
@@ -1443,12 +1459,12 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                         const u = new URL(base, window.location.origin);
                                         u.searchParams.set('preview', 'true');
                                         u.searchParams.set('v', String(previewVersion));
-                                        // bust cache on theme change too
-                                        u.searchParams.set('t', theme);
+                                        // bust cache on theme change too - must match ThemeController::applyPreviewTheme (?theme=)
+                                        u.searchParams.set('theme', theme);
                                         return u.toString();
                                     } catch {
                                         const sep = base.includes('?') ? '&' : '?';
-                                        return `${base}${sep}preview=true&v=${previewVersion}&t=${encodeURIComponent(theme)}`;
+                                        return `${base}${sep}preview=true&v=${previewVersion}&theme=${encodeURIComponent(theme)}`;
                                     }
                                 })();
                                 return (

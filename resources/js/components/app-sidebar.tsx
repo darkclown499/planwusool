@@ -286,47 +286,60 @@ export function AppSidebar() {
             });
         }
 
-        // إدارة المتجر الحالي — Single canonical for Shipping/Payments/Taxes/Domain, unified Design, no duplication
-        // Design unified: one entry "تصميم المتجر" leads to visual designer (templates + branding + homepage)
-        // Journey: Design → Shipping → Payments → Taxes → Domain → Settings is the merchant's natural flow
+        // إدارة المتجر — IA cleaned: one feature = one page, one canonical route
         if (hasPermission('settings-stores') && currentStoreId) {
+            const safeRoute = (name: string, params: any, fallback: string) => {
+                try { return route(name, params); } catch { return fallback; }
+            };
             items.push({
                 title: 'إدارة المتجر',
                 icon: Building2,
                 groupLabel: t('Store'),
                 children: [
-                    { title: 'تصميم المتجر', href: route('stores.designer', currentStoreId), icon: Paintbrush },
+                    { title: 'تصميم المتجر', href: safeRoute('stores.designer', currentStoreId, `/stores/${currentStoreId}/designer`), icon: Paintbrush },
+                    { title: 'إعدادات المتجر', href: safeRoute('stores.settings', currentStoreId, `/stores/${currentStoreId}/settings`), icon: Settings, activePaths: [`/stores/${currentStoreId}/settings`] },
                     {
                         title: 'الشحن والتوصيل',
-                        href: `/stores/${currentStoreId}/settings?tab=shipping`,
+                        href: `/stores/${currentStoreId}/shipping`,
                         icon: Truck,
-                        activePaths: [`/stores/${currentStoreId}/shipping`, `/stores/${currentStoreId}/settings?tab=shipping`, '/shipping'],
+                        activePaths: [`/stores/${currentStoreId}/shipping`, '/shipping'],
                     },
                     {
-                        title: 'الدفع',
-                        href: `/stores/${currentStoreId}/settings?tab=payments`,
+                        title: 'طرق الدفع',
+                        href: `/stores/${currentStoreId}/payments`,
                         icon: CreditCard,
-                        activePaths: [`/stores/${currentStoreId}/settings?tab=payments`, `/stores/${currentStoreId}/payments`],
+                        activePaths: [`/stores/${currentStoreId}/payments`],
                     },
                     {
                         title: 'الضرائب',
-                        href: `/stores/${currentStoreId}/settings?tab=taxes`,
+                        href: `/stores/${currentStoreId}/taxes`,
                         icon: Percent,
-                        activePaths: [`/stores/${currentStoreId}/settings?tab=taxes`, '/tax'],
+                        activePaths: [`/stores/${currentStoreId}/taxes`, '/tax'],
                     },
                     {
-                        title: 'الدومين',
-                        href: `/stores/${currentStoreId}/settings?tab=domains`,
-                        icon: Globe,
-                        activePaths: [`/stores/${currentStoreId}/settings?tab=domains`, `/stores/${currentStoreId}/domains`],
+                        title: 'حسابات العملاء',
+                        href: `/stores/${currentStoreId}/customer-accounts`,
+                        icon: UserCheck,
+                        activePaths: [`/stores/${currentStoreId}/customer-accounts`],
                     },
                     {
                         title: 'إشعارات الطلبات',
-                        href: route('stores.notifications.whatsapp', currentStoreId),
+                        href: `/stores/${currentStoreId}/notifications/whatsapp`,
                         icon: Bell,
-                        activePaths: [`/stores/${currentStoreId}/notifications/whatsapp`],
+                        activePaths: [`/stores/${currentStoreId}/notifications/whatsapp`, `/stores/${currentStoreId}/notifications`],
                     },
-                    { title: 'إعدادات المتجر', href: route('stores.settings', currentStoreId), icon: Settings },
+                    {
+                        title: 'الدومين',
+                        href: `/stores/${currentStoreId}/domains`,
+                        icon: Globe,
+                        activePaths: [`/stores/${currentStoreId}/domains`],
+                    },
+                    {
+                        title: 'التكاملات',
+                        href: `/stores/${currentStoreId}/integrations`,
+                        icon: Webhook,
+                        activePaths: [`/stores/${currentStoreId}/integrations`, `/stores/${currentStoreId}/integrations/erp`],
+                    },
                 ],
             });
         }

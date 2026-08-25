@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\StoreWhatsappIntegration;
 use App\Services\MerchantWhatsAppNotifier;
 use App\Services\PhoneNormalizer;
 use Illuminate\Http\Request;
@@ -17,32 +18,38 @@ class MerchantWhatsAppController extends Controller
         if ($id) {
             $store = \App\Models\Store::find($id);
             if ($store && !$this->userCanManageStore($user, $store)) abort(403);
-        } elseif (!$this->userCanManageStore($user, null)) {
-            // For superadmin/company without explicit store, allow
-            if (!$user->hasPermissionTo('manage-settings') && $user->type !== 'company' && $user->type !== 'superadmin') {
-                abort(403);
-            }
         }
 
         [$userId, $storeId] = $this->resolveStoreContext($user, $id);
+        if (!$storeId) abort(404);
 
+        $integration = StoreWhatsappIntegration::where('store_id', $storeId)->first();
         $notifier = app(MerchantWhatsAppNotifier::class);
         $status = $notifier->getStatusForStore($userId, $storeId);
 
-        $rawNumber = (string) getSetting('whatsapp_number', '', $userId, $storeId);
-        $isEnabled = (bool) getSetting('is_whatsapp_enabled', false, $userId, $storeId);
-        $normalized = PhoneNormalizer::normalize($rawNumber);
+        // For form, decrypt token is hidden
+        $hasToken = $integration && !empty($integration->getAttributes()['access_token']);
 
         return Inertia::render('settings/merchant-whatsapp', [
             'whatsappSettings' => [
-                'is_enabled' => $isEnabled,
-                'whatsapp_number' => $rawNumber,
-                'whatsapp_number_normalized' => $normalized,
-                'whatsapp_number_masked' => $normalized ? PhoneNormalizer::mask($normalized) : '',
+                'is_enabled' => $integration ? (bool) $integration->is_enabled : false,
+                'has_token' => $hasToken,
+                'token_masked' => $hasToken ? '••••••••••••••••' : '',
+                'phone_number_id' => $integration->phone_number_id ?? '',
+                'waba_id' => $integration->waba_id ?? '',
+                'business_phone' => $integration->business_phone ?? '',
+                'notification_phone' => $integration->notification_phone ?? '',
+                'notification_phone_masked' => $integration && $integration->notification_phone ? PhoneNormalizer::mask(PhoneNormalizer::normalize($integration->notification_phone) ?: $integration->notification_phone) : '',
                 'status' => $status,
+                'integration' => $integration ? [
+                    'id' => $integration->id,
+                    'provider' => $integration->provider,
+                    'connection_status' => $integration->connection_status,
+                    'last_verified_at' => $integration->last_verified_at,
+                    'last_error' => $integration->last_error,
+                ] : null,
             ],
-            'providerConfigured' => $notifier->detectProvider() !== null,
-            'providerStatus' => $notifier->detectProviderStatus(),
+            'storeId' => $storeId,
         ]);
     }
 
@@ -58,37 +65,101 @@ class MerchantWhatsAppController extends Controller
         }
 
         $request->validate([
-            'is_whatsapp_enabled' => 'required|boolean',
-            'whatsapp_number' => 'nullable|string|max:20',
+            'access_token' => 'nullable|string|max:500',
+            'phone_number_id' => 'nullable|string|max:50',
+            'waba_id' => 'nullable|string|max:50',
+            'business_phone' => 'nullable|string|max:20',
+            'notification_phone' => 'nullable|string|max:20',
+            'is_enabled' => 'required|boolean',
         ]);
 
         [$userId, $storeId] = $this->resolveStoreContext($user, $id);
+        if (!$storeId) return response()->json(['message' => 'Store not found'], 404);
 
-        $isEnabled = $request->boolean('is_whatsapp_enabled');
-        $rawNumber = trim((string) $request->input('whatsapp_number', ''));
+        $integration = StoreWhatsappIntegration::firstOrNew(['store_id' => $storeId]);
+        $integration->provider = 'meta';
 
-        if ($isEnabled) {
-            if (empty($rawNumber)) {
-                return back()->withErrors(['whatsapp_number' => 'رقم واتساب مطلوب عند تفعيل الإشعارات']);
-            }
-            $normalized = PhoneNormalizer::normalize($rawNumber);
-            if (!$normalized) {
-                return back()->withErrors(['whatsapp_number' => 'رقم واتساب غير صالح. استخدم صيغة مثل 0591234567 أو +970591234567']);
-            }
-            $rawNumber = $normalized;
-        } else {
-            if (!empty($rawNumber)) {
-                $normalized = PhoneNormalizer::normalize($rawNumber);
-                if (!$normalized) {
-                    return back()->withErrors(['whatsapp_number' => 'رقم واتساب غير صالح']);
+        // Only update token if provided and not masked
+        $newToken = trim((string) $request->input('access_token', ''));
+        if ($newToken !== '' && $newToken !== '••••••••••••••••' && $newToken !== '*************') {
+            $integration->access_token = $newToken;
+        }
+
+        if ($request->has('phone_number_id')) {
+            $integration->phone_number_id = trim((string) $request->input('phone_number_id'));
+        }
+        if ($request->has('waba_id')) {
+            $integration->waba_id = trim((string) $request->input('waba_id'));
+        }
+        if ($request->has('business_phone')) {
+            $bp = trim((string) $request->input('business_phone'));
+            if ($bp !== '') {
+                $norm = PhoneNormalizer::normalize($bp);
+                if (!$norm) {
+                    return back()->withErrors(['business_phone' => 'رقم واتساب التجاري غير صالح']);
                 }
-                $rawNumber = $normalized;
+                $integration->business_phone = $norm;
+            } else {
+                $integration->business_phone = null;
             }
         }
 
-        $this->saveWhatsAppSettings($userId, $storeId, $isEnabled, $rawNumber);
+        $isEnabled = $request->boolean('is_enabled');
+        $integration->is_enabled = $isEnabled;
+
+        // Notification phone (recipient)
+        $notifPhone = trim((string) $request->input('notification_phone', ''));
+        if ($notifPhone !== '') {
+            $norm = PhoneNormalizer::normalize($notifPhone);
+            if (!$norm) {
+                return back()->withErrors(['notification_phone' => 'رقم استقبال الإشعارات غير صالح']);
+            }
+            $integration->notification_phone = $norm;
+        } elseif ($isEnabled) {
+            // If enabling, require notification phone
+            if (empty($integration->notification_phone)) {
+                return back()->withErrors(['notification_phone' => 'رقم استقبال الإشعارات مطلوب عند التفعيل']);
+            }
+        }
+
+        // If credentials changed, reset connection status to disconnected
+        $wasDirty = $integration->isDirty(['access_token', 'phone_number_id', 'waba_id']);
+        if ($wasDirty) {
+            $integration->connection_status = 'disconnected';
+            $integration->last_verified_at = null;
+            $integration->last_error = null;
+        }
+
+        $integration->save();
 
         return back()->with('success', 'تم حفظ إعدادات واتساب بنجاح');
+    }
+
+    public function verify(Request $request, $id = null)
+    {
+        $user = auth()->user();
+        if (!$user) return response()->json(['message' => 'Unauthorized'], 403);
+        if ($id) {
+            $store = \App\Models\Store::find($id);
+            if ($store && !$this->userCanManageStore($user, $store)) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        }
+
+        [$userId, $storeId] = $this->resolveStoreContext($user, $id);
+        $integration = StoreWhatsappIntegration::where('store_id', $storeId)->first();
+        if (!$integration || !$integration->access_token || !$integration->phone_number_id) {
+            return response()->json(['success' => false, 'message' => 'إعداد واتساب غير مكتمل'], 400);
+        }
+
+        $notifier = app(MerchantWhatsAppNotifier::class);
+        $result = $notifier->verifyConnection($integration);
+
+        if ($result['connected']) {
+            return response()->json(['success' => true, 'message' => 'تم ربط واتساب بنجاح', 'data' => $result['data'] ?? null]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'تعذر الاتصال بحساب واتساب. ' . ($result['error'] ?? ''), 'error' => $result['error'] ?? null], 400);
     }
 
     public function sendTest(Request $request, $id = null)
@@ -118,6 +189,31 @@ class MerchantWhatsAppController extends Controller
         ], 400);
     }
 
+    public function disconnect(Request $request, $id = null)
+    {
+        $user = auth()->user();
+        if (!$user) return response()->json(['message' => 'Unauthorized'], 403);
+        if ($id) {
+            $store = \App\Models\Store::find($id);
+            if ($store && !$this->userCanManageStore($user, $store)) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        }
+
+        [$userId, $storeId] = $this->resolveStoreContext($user, $id);
+        $integration = StoreWhatsappIntegration::where('store_id', $storeId)->first();
+        if ($integration) {
+            $integration->update([
+                'is_enabled' => false,
+                'connection_status' => 'disconnected',
+                'access_token' => null,
+                'last_error' => null,
+            ]);
+        }
+
+        return back()->with('success', 'تم فصل واتساب بنجاح');
+    }
+
     public function status(Request $request, $id = null)
     {
         $user = auth()->user();
@@ -136,7 +232,6 @@ class MerchantWhatsAppController extends Controller
         if ($user->type === 'superadmin') return true;
         if ($user->type === 'company' && (int) $user->id === (int) $store->user_id) return true;
         if ($user->created_by && (int) $user->created_by === (int) $store->user_id) return true;
-        // Fallback to permission
         try {
             return $user->hasPermissionTo('manage-settings') || $user->hasPermissionTo('manage-orders');
         } catch (\Throwable $e) {
@@ -175,16 +270,5 @@ class MerchantWhatsAppController extends Controller
         $companyUser = \App\Models\User::find($user->created_by);
         $storeId = $id ? (int) $id : ($companyUser ? getCurrentStoreId($companyUser) : null);
         return [$user->created_by, $storeId];
-    }
-
-    private function saveWhatsAppSettings(int $userId, ?int $storeId, bool $isEnabled, string $number): void
-    {
-        \App\Models\PaymentSetting::updateOrCreateSetting($userId, 'is_whatsapp_enabled', $isEnabled ? '1' : '0', $storeId);
-        \App\Models\PaymentSetting::updateOrCreateSetting($userId, 'whatsapp_number', $number, $storeId);
-
-        if ($storeId) {
-            \App\Models\StoreConfiguration::setConfiguration($storeId, 'is_whatsapp_enabled', $isEnabled ? '1' : '0');
-            \App\Models\StoreConfiguration::setConfiguration($storeId, 'whatsapp_number', $number);
-        }
     }
 }

@@ -108,7 +108,7 @@ class OnboardingTest extends TestCase
             ->assertOk();
 
         $store = Store::where('user_id', $user->id)->firstOrFail();
-        $this->assertSame('arabic-gadgets', $store->theme);
+        $this->assertSame(Store::normalizeThemeSlug('arabic-gadgets'), $store->theme);
         $this->assertNotNull($user->fresh()->onboarded_at);
     }
 
@@ -121,7 +121,7 @@ class OnboardingTest extends TestCase
             ->assertOk();
 
         $store = Store::where('user_id', $user->id)->firstOrFail();
-        $this->assertSame('basic', $store->theme);
+        $this->assertSame(Store::DEFAULT_TEMPLATE, $store->theme);
     }
 
     public function test_demo_import_creates_english_catalog_when_english_is_selected()

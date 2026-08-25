@@ -695,13 +695,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/templates/{slug}/preview', [\App\Http\Controllers\StoreDesignerController::class, 'previewTemplate'])->middleware('permission:settings-stores')->name('stores.templates.preview');
         Route::get('stores/{id}/themes', fn ($id) => redirect()->route('stores.templates', ['id' => $id]))->middleware('permission:settings-stores')->name('stores.themes');
         Route::get('stores/{id}/features', [\App\Http\Controllers\StoreFeaturesController::class, 'show'])->middleware('permission:settings-stores')->name('stores.features');
+        Route::get('stores/{id}/customer-accounts', [\App\Http\Controllers\StoreCustomerAccountsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.customer-accounts');
+        Route::get('stores/{id}/integrations', [\App\Http\Controllers\StoreIntegrationsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.integrations');
         Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
         Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');
 
-        // Merchant WhatsApp Order Notifications — honest status, E.164, test message, rate limited (store owner only)
+        // Merchant WhatsApp Order Notifications — per-store, encrypted, honest status, rate limited
         Route::get('stores/{id}/notifications/whatsapp', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'index'])->middleware('auth')->name('stores.notifications.whatsapp');
         Route::put('stores/{id}/notifications/whatsapp', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'update'])->middleware('auth')->name('stores.notifications.whatsapp.update');
+        Route::post('stores/{id}/notifications/whatsapp/verify', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'verify'])->middleware(['auth', 'throttle:5,10'])->name('stores.notifications.whatsapp.verify');
         Route::post('stores/{id}/notifications/whatsapp/test', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'sendTest'])->middleware(['auth', 'throttle:3,10'])->name('stores.notifications.whatsapp.test');
+        Route::post('stores/{id}/notifications/whatsapp/disconnect', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'disconnect'])->middleware('auth')->name('stores.notifications.whatsapp.disconnect');
         Route::get('stores/{id}/notifications/whatsapp/status', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'status'])->middleware('auth')->name('stores.notifications.whatsapp.status');
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
@@ -716,10 +720,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/domains/{domain}/make-primary', [\App\Http\Controllers\StoreDomainController::class, 'makePrimary'])->middleware('permission:settings-stores')->name('stores.domains.primary');
         Route::delete('stores/{id}/domains/{domain}', [\App\Http\Controllers\StoreDomainController::class, 'destroy'])->middleware('permission:settings-stores')->name('stores.domains.destroy');
 
-        // Fallback for الشحن والتوصيل — ensures /stores/{store}/shipping never 404s (Nginx fix)
-        Route::get('stores/{store}/shipping', function ($store) {
-            return redirect()->route('stores.settings', ['id' => $store, 'tab' => 'shipping']);
-        })->middleware('permission:settings-stores')->name('stores.shipping');
+        // Canonical store-scoped الشحن والتوصيل / الضرائب — explicit store isolation
+        Route::get('stores/{id}/shipping', [\App\Http\Controllers\StoreShippingController::class, 'index'])->middleware('permission:settings-stores')->name('stores.shipping.canonical');
+        Route::get('stores/{id}/taxes', [\App\Http\Controllers\StoreTaxController::class, 'index'])->middleware('permission:settings-stores')->name('stores.taxes.canonical');
+        Route::get('stores/{id}/notifications', fn($id) => redirect()->route('stores.notifications.whatsapp', $id))->middleware('auth')->name('stores.notifications');
         
         // Product Management routes with permissions
         Route::get('products', [\App\Http\Controllers\ProductController::class, 'index'])->middleware('permission:manage-products')->name('products.index');

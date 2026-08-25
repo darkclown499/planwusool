@@ -100,12 +100,19 @@ export default function DesignTokensInjector({ tokens }: Props) {
                 .text-teal-700, .text-teal-600, .hover\\:text-teal-700:hover { color: var(--store-primary) !important; }
                 .border-teal-600, .border-teal-500, .ring-teal-200 { border-color: var(--store-primary) !important; --tw-ring-color: var(--store-primary) !important; }
                 .shadow-teal-600\\/25, .shadow-teal-600\\/20 { --tw-shadow-color: var(--store-primary) !important; }
+                /* Hardcoded template primaries — map to --store-primary */
+                .bg-\\[\\#9d7463\\], .bg-\\[\\#9D7463\\], .from-\\[\\#9d7463\\], .to-\\[\\#9d7463\\], .text-\\[\\#9d7463\\], .border-\\[\\#9d7463\\] { background-color: var(--store-primary) !important; color: var(--store-primary) !important; border-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .bg-\\[\\#FFC20E\\], .bg-\\[\\#ffc20e\\], .from-\\[\\#FFC20E\\], .to-\\[\\#FFC20E\\], .text-\\[\\#FFC20E\\], .border-\\[\\#FFC20E\\] { background-color: var(--store-primary) !important; color: var(--store-primary) !important; border-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
+                .bg-\\[\\#0b1220\\], .bg-\\[\\#0B1220\\], .from-\\[\\#0b1220\\], .to-\\[\\#0b1220\\], .text-\\[\\#0b1220\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
+                .bg-slate-900, .bg-slate-800, .from-slate-900, .to-slate-900 { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
             `);
         }
         if (secondary) {
             parts.push(`
-                .bg-amber-500, .from-amber-500, .bg-secondary { background-color: var(--store-secondary) !important; }
-                .text-amber-700, .text-amber-600 { color: var(--store-secondary) !important; }
+                .bg-amber-500, .from-amber-500, .bg-secondary, .bg-amber-400, .from-amber-400 { background-color: var(--store-secondary) !important; }
+                .text-amber-700, .text-amber-600, .text-amber-500 { color: var(--store-secondary) !important; }
+                .border-amber-500, .border-amber-400 { border-color: var(--store-secondary) !important; }
+                .bg-\\[\\#F5E6CC\\], .bg-\\[\\#f5e6cc\\], .from-\\[\\#F5E6CC\\] { background-color: var(--store-secondary) !important; --tw-gradient-from: var(--store-secondary) var(--tw-gradient-from-position) !important; }
             `);
         }
         if (radius) {

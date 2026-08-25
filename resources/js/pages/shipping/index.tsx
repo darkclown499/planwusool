@@ -76,11 +76,12 @@ export default function Shipping() {
   return (
     <>
       <PageTemplate 
-        title={t('Shipping Management')}
+        title="الشحن والتوصيل"
+        description="طرق الشحن، مناطق التوصيل، التكلفة والاستلام من المتجر"
         url="/shipping"
         actions={pageActions}
         breadcrumbs={[
-          { title: t('Dashboard'), href: route('dashboard') },
+          { title: 'لوحة التحكم', href: route('dashboard') },
           { title: 'إدارة المتجر', href: route('stores.index') },
           { title: 'الشحن والتوصيل' }
         ]}

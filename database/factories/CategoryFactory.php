@@ -11,8 +11,10 @@ class CategoryFactory extends Factory
 
     public function definition(): array
     {
+        $name = $this->faker->unique()->word();
         return [
-            'name' => $this->faker->unique()->word(),
+            'name' => $name,
+            'slug' => \Illuminate\Support\Str::slug($name) . '-' . $this->faker->unique()->randomNumber(5),
             'description' => $this->faker->sentence(),
             'image' => 'categories/category-' . $this->faker->numberBetween(1, 5) . '.jpg',
             'created_at' => $this->faker->dateTimeBetween('-1 year', 'now'),

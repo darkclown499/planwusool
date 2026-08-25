@@ -8,15 +8,10 @@ import { router, usePage } from '@inertiajs/react';
  */
 export default function StoreShipping() {
   const { store } = usePage<any>().props as any;
-  // Prefer store from props, fallback to URL param
   const storeId = store?.id || (typeof window !== 'undefined' ? window.location.pathname.split('/')[2] : null);
 
   useEffect(() => {
-    if (storeId) {
-      router.visit(`/stores/${storeId}/settings?tab=shipping`, { replace: true });
-    } else {
-      router.visit('/shipping', { replace: true });
-    }
+    router.visit(route('shipping.index'), { replace: true });
   }, [storeId]);
 
   return (

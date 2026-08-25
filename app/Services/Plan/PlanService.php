@@ -15,6 +15,11 @@ class PlanService
         protected PlanPricingService $pricingService
     ) {}
 
+    public function getPricingService(): PlanPricingService
+    {
+        return $this->pricingService;
+    }
+
     /**
      * Assign plan to user with all side effects
      */
@@ -100,13 +105,11 @@ class PlanService
                 ['store_id' => $store->id, 'key' => 'store_status'],
                 ['value' => 'true']
             );
+            \App\Models\StoreConfiguration::forgetConfiguration($store->id);
         }
 
-        // Reactivate users within new limit for each active store
+        // Reactivate users within new limit for each store (including newly reactivated)
         foreach ($user->stores as $store) {
-            $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
-            if (!($config['store_status'] ?? true)) continue;
-
             $deactivatedUsers = \App\Models\User::where('current_store', $store->id)
                 ->where('type', '!=', 'company')
                 ->where('status', 'inactive')
@@ -119,11 +122,9 @@ class PlanService
             }
         }
 
-        // Reactivate products within new limit for each active store
+        // Reactivate products within new limit for each store
         if ($maxProductsPerStore > 0) {
             foreach ($user->stores as $store) {
-                $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
-                if (!($config['store_status'] ?? true)) continue;
 
                 $deactivatedProducts = \App\Models\Product::where('store_id', $store->id)
                     ->where('is_active', false)
@@ -164,6 +165,7 @@ class PlanService
                         ['store_id' => $store->id, 'key' => 'store_status'],
                         ['value' => 'false']
                     );
+                    \App\Models\StoreConfiguration::forgetConfiguration($store->id);
                 }
             }
         }

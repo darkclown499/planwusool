@@ -35,8 +35,10 @@ class PaymentSettingsService
         $cacheKey = 'payment_settings.' . $userId . '.' . ($storeId ?? 'global');
 
         return Cache::remember($cacheKey, 300, function () use ($userId, $storeId) {
+            // Use get() so value accessor decrypts sensitive keys; pluck bypasses accessor
             return PaymentSetting::where('user_id', $userId)
                 ->where('store_id', $storeId)
+                ->get(['key', 'value'])
                 ->pluck('value', 'key')
                 ->toArray();
         });

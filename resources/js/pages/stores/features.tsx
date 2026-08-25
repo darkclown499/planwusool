@@ -85,14 +85,27 @@ export default function StoreFeatures({ store, groups: initialGroups = [], integ
     }, 400);
   };
 
+  // Moved keys now have canonical pages — filter them out to avoid duplicate UI
+  const filteredGroups = groups.map((g) => ({
+    ...g,
+    features: g.features.filter((f) => !['customer_accounts_enabled', 'show_auth_button', 'guest_checkout', 'vat_calculation'].includes(f.key)),
+  })).filter((g) => g.features.length > 0);
+
   return (
     <PageTemplate
       title="الميزات"
-      description="فعّل أو أوقف كل نظام في متجرك بضغطة واحدة"
+      description="إعدادات واجهة المتجر المتبقية — تم نقل الحسابات والضرائب والدفع إلى صفحاتها الخاصة"
       url={`/stores/${store.id}/features`}
-      backUrl={`/stores/${store.id}/settings`}
+      breadcrumbs={[
+        { title: 'لوحة التحكم', href: route('dashboard') },
+        { title: 'إدارة المتجر', href: route('stores.index') },
+        { title: 'الميزات' },
+      ]}
       action={
         <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => router.visit(`/stores/${store.id}/customer-accounts`)}>
+            حسابات العملاء
+          </Button>
           <Button type="button" variant="outline" size="sm" onClick={() => router.visit(`/stores/${store.id}/payments`)}>
             <CreditCard className="h-4 w-4 me-1.5" />
             طرق الدفع
@@ -105,7 +118,10 @@ export default function StoreFeatures({ store, groups: initialGroups = [], integ
       }
     >
       <div className="mx-auto max-w-4xl space-y-6">
-        {groups.map((group) => {
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          تم نقل: حسابات العملاء → صفحة "حسابات العملاء"، الضرائب → "الضرائب"، طرق الدفع → "طرق الدفع"، التكاملات → "التكاملات". هذه الصفحة تبقي فقط إعدادات الواجهة العامة.
+        </div>
+        {filteredGroups.map((group) => {
           const Icon = GROUP_ICONS[group.id] || LayoutGrid;
           return (
             <Card key={group.id}>

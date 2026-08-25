@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
-   Save, Mail, Globe, Search,
-   XCircle, Info, Loader2, Trash2, Palette, History, CheckCircle2, Building2, PenLine, Power, Paintbrush,
-   LayoutTemplate, CreditCard, Boxes, Truck, Percent,
+   Save, Mail, Search,
+   XCircle, Info, Loader2, Trash2, Palette, History, CheckCircle2, Building2, PenLine, Paintbrush,
+   Boxes, Truck, CreditCard,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,6 @@ import { router } from '@inertiajs/react';
 import MediaPicker from '@/components/MediaPicker';
 import { AccordionSection } from '@/components/accordion-section';
 import { apiPut, apiPost } from '@/utils/api';
-import DomainsTab from './components/domains-tab';
 import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 
 interface Props {
@@ -60,38 +59,6 @@ const SectionResetButton = ({ onReset }: { onReset: () => void }) => {
       <History className="h-3.5 w-3.5 me-1" />
       {t('Reset')}
     </Button>
-  );
-};
-
-const SettingsIframe = ({ src, title }: { src: string; title: string }) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-border bg-white">
-      {loading && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/80 backdrop-blur-sm">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm font-medium text-muted-foreground">جاري تحميل {title}...</p>
-        </div>
-      )}
-      {error && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white p-6 text-center">
-          <XCircle className="h-10 w-10 text-red-400" />
-          <p className="font-semibold text-slate-800">تعذر تحميل {title}</p>
-          <p className="max-w-sm text-sm text-muted-foreground">تحقق من الاتصال وحاول مرة أخرى.</p>
-          <Button variant="outline" size="sm" onClick={() => { setError(false); setLoading(true); }}>
-            حاول مرة أخرى
-          </Button>
-        </div>
-      )}
-      <iframe
-        src={src}
-        title={title}
-        className="h-[calc(100vh-260px)] min-h-[560px] w-full bg-white"
-        onLoad={() => setLoading(false)}
-        onError={() => { setLoading(false); setError(true); }}
-      />
-    </div>
   );
 };
 
@@ -149,12 +116,7 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get('tab');
-      if (tab && ['general','seo','domains','features','payments','erp','shipping','taxes'].includes(tab)) return tab;
-      if (window.location.search.includes('tab=seo')) return 'seo';
-      if (window.location.search.includes('tab=domains')) return 'domains';
-      if (window.location.search.includes('tab=shipping')) return 'shipping';
-      if (window.location.search.includes('tab=payments')) return 'payments';
-      if (window.location.search.includes('tab=taxes')) return 'taxes';
+      if (tab && ['general','seo'].includes(tab)) return tab;
     }
     return 'general';
   });
@@ -288,28 +250,29 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
 
   return (
     <PageTemplate
-      title={t('Store Settings')}
-      url="/stores/settings"
+      title="إعدادات المتجر"
+      description="الإعدادات العامة للمتجر — الاسم، الحالة، والظهور"
+      url={`/stores/${store.id}/settings`}
       actions={pageActions}
       stickyHeader
       backUrl={route('stores.index')}
       breadcrumbs={[
-        { title: t('Dashboard'), href: route('dashboard') },
-        { title: t('Store Management'), href: route('stores.index') },
-        { title: t('Store Settings') },
+        { title: 'لوحة التحكم', href: route('dashboard') },
+        { title: 'إدارة المتجر', href: route('stores.index') },
+        { title: 'إعدادات المتجر' },
       ]}
     >
-<div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div className="flex items-center gap-2 text-sm">
           {autoSaveState === 'saving' && <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /> <span className="text-muted-foreground">{t('Auto-saving draft...')}</span></>}
           {autoSaveState === 'saved' && <><CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> <span className="text-green-600">{t('Draft saved automatically')}</span></>}
           {autoSaveState === 'error' && <><XCircle className="h-3.5 w-3.5 text-red-500" /> <span className="text-red-500">{t('Auto-save failed, please save manually')}</span></>}
           {dirty && !saving && <span className="text-xs text-muted-foreground">{t('Unsaved changes')}</span>}
         </div>
-        <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => router.visit(`/stores/${store.id}/features`)}>
-          <Power className="h-3.5 w-3.5" />
-          الميزات
-        </Button>
+        <button type="button" onClick={() => setDesignerOpen(true)} className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:underline">
+          <Paintbrush className="h-3.5 w-3.5" />
+          إدارة التصميم من مصمم المتجر
+        </button>
       </div>
 
       {hasErrors && (
@@ -319,60 +282,15 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
         </div>
       )}
 
-      {/* Visual designer callout — replaces the legacy template tab */}
-      <Card className="mb-5 border-emerald-200 bg-gradient-to-l from-emerald-50 via-white to-white">
-        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200">
-              <Paintbrush className="h-6 w-6" />
-            </span>
-            <div>
-              <h3 className="text-lg font-extrabold text-slate-900">تصميم وتنسيق المتجر</h3>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                اختر قالب متجرك وخصص الألوان والبانرات وترتيب الأقسام بكل سهولة.
-              </p>
-            </div>
-          </div>
-          <Button type="button" size="lg" className="shrink-0 gap-2" onClick={() => setDesignerOpen(true)}>
-            <Paintbrush className="h-4 w-4" />
-            تخصيص تصميم المتجر
-          </Button>
-        </CardContent>
-      </Card>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex w-full overflow-x-auto border-b border-border bg-transparent p-0 md:grid md:grid-cols-8">
+        <TabsList className="flex w-full overflow-x-auto border-b border-border bg-transparent p-0 md:grid md:grid-cols-2">
           <TabsTrigger value="general" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <PenLine className="h-4 w-4 me-2" />
-            {t('General')}
-          </TabsTrigger>
-          <TabsTrigger value="shipping" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Truck className="h-4 w-4 me-2" />
-            {t('Shipping & Delivery')}
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <CreditCard className="h-4 w-4 me-2" />
-            {t('Payment Methods')}
-          </TabsTrigger>
-          <TabsTrigger value="taxes" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Percent className="h-4 w-4 me-2" />
-            {t('الضرائب')}
+            عامة
           </TabsTrigger>
           <TabsTrigger value="seo" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
             <Search className="h-4 w-4 me-2" />
             {t('SEO')}
-          </TabsTrigger>
-          <TabsTrigger value="domains" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Globe className="h-4 w-4 me-2" />
-            {t('Domains')}
-          </TabsTrigger>
-          <TabsTrigger value="features" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <LayoutTemplate className="h-4 w-4 me-2" />
-            {t('Features')}
-          </TabsTrigger>
-          <TabsTrigger value="erp" className="whitespace-nowrap border-b-2 border-transparent rounded-none data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none">
-            <Boxes className="h-4 w-4 me-2" />
-            {t('ERP & Inventory')}
           </TabsTrigger>
         </TabsList>
 
@@ -626,27 +544,6 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
         </TabsContent>
 
 
-        <TabsContent value="domains" className="space-y-4 mt-0">
-          <DomainsTab storeId={Number(store?.id)} />
-        </TabsContent>
-
-        {/* Unified workspace tabs — the dedicated pages render chrome-free
-            inside iframes thanks to PageTemplate's embedded mode. */}
-        <TabsContent value="features" className="mt-6">
-          <SettingsIframe src={`/stores/${store?.id}/features`} title={t('Features')} />
-        </TabsContent>
-        <TabsContent value="payments" className="mt-6">
-          <SettingsIframe src={`/stores/${store?.id}/payments`} title={t('Payment Methods')} />
-        </TabsContent>
-        <TabsContent value="shipping" className="mt-6">
-          <SettingsIframe src={`/shipping`} title={t('Shipping & Delivery')} />
-        </TabsContent>
-        <TabsContent value="taxes" className="mt-6">
-          <SettingsIframe src={route('tax.index')} title={t('الضرائب')} />
-        </TabsContent>
-        <TabsContent value="erp" className="mt-6">
-          <SettingsIframe src={`/stores/${store?.id}/integrations/erp`} title={t('ERP & Inventory')} />
-        </TabsContent>
       </Tabs>
 
       <Dialog open={showDiscard} onOpenChange={setShowDiscard}>
@@ -680,8 +577,8 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
             {publishGuardMissing.map((m, i) => <li key={i}>{m === 'المنتجات' ? 'لم يتم إضافة المنتجات' : m === 'الشحن والتوصيل' ? 'لم يتم إعداد الشحن والتوصيل' : m === 'طرق الدفع' ? 'لم يتم إعداد الدفع' : m}</li>)}
           </ul>
           <div className="flex flex-wrap gap-2 pt-2">
-            {publishGuardMissing.includes('الشحن والتوصيل') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => { setShowPublishGuard(false); setActiveTab('shipping'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Truck className="h-4 w-4" /> إعداد الشحن</Button>}
-            {publishGuardMissing.includes('طرق الدفع') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => { setShowPublishGuard(false); setActiveTab('payments'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><CreditCard className="h-4 w-4" /> إعداد الدفع</Button>}
+            {publishGuardMissing.includes('الشحن والتوصيل') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => { setShowPublishGuard(false); router.visit(`/stores/${store.id}/shipping`); }}><Truck className="h-4 w-4" /> إعداد الشحن</Button>}
+            {publishGuardMissing.includes('طرق الدفع') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => { setShowPublishGuard(false); router.visit(`/stores/${store.id}/payments`); }}><CreditCard className="h-4 w-4" /> إعداد الدفع</Button>}
             {publishGuardMissing.includes('المنتجات') && <Button variant="outline" size="sm" className="gap-1.5 border-amber-300" onClick={() => router.visit(route('products.create'))}><Boxes className="h-4 w-4" /> إضافة منتجات</Button>}
           </div>
           <DialogFooter>

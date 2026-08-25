@@ -52,35 +52,48 @@ class StoreDomainController extends Controller
 
     /**
      * List all domains for a store, plus the DNS setup hints.
+     * Serves both Inertia page (HTML) and JSON API (XHR) from same URI.
      */
-    public function index($storeId)
+    public function index(Request $request, $storeId)
     {
         $store = $this->resolveStore($storeId);
 
         if ($gate = $this->requireDomainPlan($store)) {
-            return $gate;
+            // For Inertia visits, render error page; for API, JSON already handled
+            if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return $gate;
+            }
+            return redirect()->back()->with('error', 'ربط النطاق المخصص غير متاح في خطتك الحالية.');
         }
 
-        $domains = $store->storeDomains()
-            ->orderByDesc('is_primary')
-            ->orderBy('id')
-            ->get()
-            ->map(fn ($domain) => $this->formatDomain($domain));
+        // JSON API branch — used by DomainsTab component via apiGet()
+        if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->header('Accept') === 'application/json') {
+            $domains = $store->storeDomains()
+                ->orderByDesc('is_primary')
+                ->orderBy('id')
+                ->get()
+                ->map(fn ($domain) => $this->formatDomain($domain));
 
-        return response()->json([
-            'domains' => $domains,
-            'dns' => [
-                'cnameTarget' => $store->slug . '.' . config('app.store_domain'),
-                'aRecord' => $this->getServerIp() ?: '',
-                'mainDomain' => getBaseDomain(),
-                'verificationHost' => '_wusool-verify',
-            ],
-            'store' => [
-                'id' => $store->id,
-                'slug' => $store->slug,
-                'default_url' => $store->getStoreSubdomainUrl(),
-                'store_url' => $store->getStoreUrl(),
-            ],
+            return response()->json([
+                'domains' => $domains,
+                'dns' => [
+                    'cnameTarget' => $store->slug . '.' . config('app.store_domain'),
+                    'aRecord' => $this->getServerIp() ?: '',
+                    'mainDomain' => getBaseDomain(),
+                    'verificationHost' => '_wusool-verify',
+                ],
+                'store' => [
+                    'id' => $store->id,
+                    'slug' => $store->slug,
+                    'default_url' => $store->getStoreSubdomainUrl(),
+                    'store_url' => $store->getStoreUrl(),
+                ],
+            ]);
+        }
+
+        // Inertia page branch — canonical merchant UI
+        return \Inertia\Inertia::render('stores/domains', [
+            'store' => $store,
         ]);
     }
 

@@ -86,12 +86,12 @@ export default function Tax() {
 
   return (
     <PageTemplate 
-      title={t('Tax')}
-      description={t('Manage your store tax rules and configurations')}
+      title="الضرائب"
+      description="الأسعار تشمل الضريبة، القواعد والنسب — فعّل أو أوقف الضرائب"
       url="/tax"
       actions={pageActions}
       breadcrumbs={[
-        { title: t('Dashboard'), href: route('dashboard') },
+        { title: 'لوحة التحكم', href: route('dashboard') },
         { title: 'إدارة المتجر', href: route('stores.index') },
         { title: 'الضرائب' }
       ]}

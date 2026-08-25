@@ -7,7 +7,8 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
-    $response = $this->post('/register', [
+    \App\Models\Plan::factory()->create(['is_default' => true, 'price' => 0]);
+    $response = $this->withSession(['otp_verified_test@example.com' => true])->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'Password123',

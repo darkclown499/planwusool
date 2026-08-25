@@ -12,6 +12,7 @@ class ProductFactory extends Factory
 
     public function definition(): array
     {
+        $cover = 'products/product-' . $this->faker->numberBetween(1, 10) . '.jpg';
         return [
             'name' => $this->faker->words(3, true),
             'description' => $this->faker->paragraph(),
@@ -19,8 +20,10 @@ class ProductFactory extends Factory
             'category_id' => function () {
                 return Category::inRandomOrder()->first()->id ?? null;
             },
-            'featured_image' => 'products/product-' . $this->faker->numberBetween(1, 10) . '.jpg',
-            'featured_image_original_name' => 'product-image.jpg',
+            'cover_image' => $cover,
+            'images' => $cover,
+            'stock' => $this->faker->numberBetween(5, 100),
+            'is_active' => true,
             'created_at' => $this->faker->dateTimeBetween('-6 months', 'now'),
             'updated_at' => function (array $attributes) {
                 return $this->faker->dateTimeBetween($attributes['created_at'], 'now');

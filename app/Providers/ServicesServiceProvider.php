@@ -29,8 +29,10 @@ class ServicesServiceProvider extends ServiceProvider
         });
 
         // Plan Service
-        $this->app->singleton(\App\Services\Plan\PlanService::class, function () {
-            return new \App\Services\Plan\PlanService();
+        $this->app->singleton(\App\Services\Plan\PlanService::class, function ($app) {
+            return new \App\Services\Plan\PlanService(
+                $app->make(\App\Services\Plan\Pricing\PlanPricingService::class)
+            );
         });
 
         // Store Service

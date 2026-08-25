@@ -462,13 +462,36 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     if (step === 1) {
       let hasErrors = false;
 
+      if (!customerInfo.firstName.trim()) {
+        toast.error('الاسم الأول مطلوب');
+        hasErrors = true;
+      }
+      if (!customerInfo.lastName.trim()) {
+        toast.error('اسم العائلة مطلوب');
+        hasErrors = true;
+      }
       if (!validateEmail(customerInfo.email)) {
         setEmailError('يرجى إدخال بريد إلكتروني صحيح');
         hasErrors = true;
       }
-
       if (!validatePhone(customerInfo.phone)) {
         setPhoneError('يرجى إدخال رقم هاتف صحيح');
+        hasErrors = true;
+      }
+      if (!customerInfo.address.trim()) {
+        toast.error('العنوان مطلوب');
+        hasErrors = true;
+      }
+      if (!customerInfo.country.trim()) {
+        toast.error('الدولة مطلوبة');
+        hasErrors = true;
+      }
+      if (!customerInfo.state.trim()) {
+        toast.error('المحافظة مطلوبة');
+        hasErrors = true;
+      }
+      if (!customerInfo.city.trim()) {
+        toast.error('المدينة مطلوبة');
         hasErrors = true;
       }
 

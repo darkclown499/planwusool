@@ -301,10 +301,15 @@ export default function StoreErp({ store, configs: initialConfigs = [], logs: in
 
   return (
     <PageTemplate
-      title="التكاملات — المحاسبة والمخزون"
-      description="اربط متجرك بأنظمة المحاسبة والمخزون وزامن المنتجات والكميات تلقائياً"
+      title="التكاملات"
+      description="المحاسبة والمخزون — Odoo، الشامل، Webhook / JSON API"
       url={`/stores/${store.id}/integrations/erp`}
-      backUrl={`/stores/${store.id}/features`}
+      breadcrumbs={[
+        { title: 'لوحة التحكم', href: route('dashboard') },
+        { title: 'إدارة المتجر', href: route('stores.index') },
+        { title: 'التكاملات', href: route('stores.integrations', store.id) },
+        { title: 'ERP والمخزون' },
+      ]}
       action={
         <Button type="button" size="sm" onClick={() => openNew('custom')}>
           <Plug className="h-4 w-4 me-1.5" />

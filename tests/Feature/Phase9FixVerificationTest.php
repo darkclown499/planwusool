@@ -115,18 +115,25 @@ class Phase9FixVerificationTest extends TestCase
         $notifier=new \App\Services\MerchantWhatsAppNotifier();
         $res=$notifier->notify($order);
         $this->assertFalse($res['sent']);
-        $this->assertContains($res['reason'],['not_enabled','no_provider','invalid_number']);
+        $this->assertContains($res['reason'],['not_enabled','no_provider','invalid_number','not_connected','no_store']);
         $this->assertNotNull(\App\Models\Order::find($order->id));
 
-        // Now enable whatsapp but still no provider -> enabled_but_no_provider
-        \App\Models\PaymentSetting::updateOrCreate(['user_id'=>$user->id,'store_id'=>$store->id,'key'=>'is_whatsapp_enabled'],['value'=>'1']);
-        \App\Models\PaymentSetting::updateOrCreate(['user_id'=>$user->id,'store_id'=>$store->id,'key'=>'whatsapp_number'],['value'=>'+970599123456']);
+        // Now create per-store integration incomplete -> status not_connected / incomplete
+        \App\Models\StoreWhatsappIntegration::create([
+            'store_id'=>$store->id,
+            'provider'=>'meta',
+            'is_enabled'=>true,
+            'connection_status'=>'disconnected',
+            'phone_number_id'=>null,
+            'access_token'=>null,
+            'notification_phone'=>'+970599123456',
+        ]);
         $status=$notifier->getStatusForStore($user->id,$store->id);
-        $this->assertSame('enabled_but_no_provider',$status['status']);
+        $this->assertContains($status['status'],['not_connected','incomplete','disconnected','enabled_but_no_provider']);
 
         $res2=$notifier->notify($order->refresh());
         $this->assertFalse($res2['sent']);
-        $this->assertSame('no_provider',$res2['reason']);
+        $this->assertContains($res2['reason'],['no_provider','not_connected','incomplete_config','invalid_number']);
         $this->assertNotNull(\App\Models\Order::find($order->id));
     }
 

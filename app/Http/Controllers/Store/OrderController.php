@@ -36,6 +36,20 @@ class OrderController extends Controller
                     }
                     return redirect()->back()->withErrors(['login' => __('Please log in to your account to complete your order.')]);
                 }
+                // Guest checkout disabled -> require login even if require_login_checkout is false but guest_checkout is explicitly disabled
+                $guestCheckoutEnabled = $config['guest_checkout'] ?? true;
+                // guest_checkout is stored as string 'true'/'false' or bool
+                $guestAllowed = $guestCheckoutEnabled === true || $guestCheckoutEnabled === 'true' || $guestCheckoutEnabled === 1 || $guestCheckoutEnabled === '1';
+                if ($accountsOn && !$guestAllowed && !Auth::guard('customer')->check()) {
+                    if ($request->expectsJson() || $request->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => __('Guest checkout is disabled. Please create an account or log in to continue.'),
+                            'requires_login' => true,
+                        ], 401);
+                    }
+                    return redirect()->back()->withErrors(['login' => __('Guest checkout is disabled. Please log in.')]);
+                }
             }
 
             $validationRules = [
@@ -43,7 +57,7 @@ class OrderController extends Controller
                 'customer_first_name' => 'required|string|max:255',
                 'customer_last_name' => 'required|string|max:255',
                 'customer_email' => 'required|email|max:255',
-                'customer_phone' => 'nullable|string|max:20',
+                'customer_phone' => 'required|string|max:20',
                 'shipping_address' => 'required|string|max:255',
                 'shipping_city' => 'required|max:100',
                 'shipping_state' => 'required|max:100',
@@ -60,6 +74,9 @@ class OrderController extends Controller
                 'notes' => 'nullable|string',
                 'coupon_code' => 'nullable|string',
                 'bank_transfer_receipt' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+                'whatsapp_number' => 'nullable|string|max:20',
+                'loyalty_points' => 'nullable|integer|min:0',
+                'loyalty_points_used' => 'nullable|integer|min:0',
             ];
             
             // Add bank transfer file validation if payment method is bank
@@ -95,34 +112,34 @@ class OrderController extends Controller
                 }
             }
 
-            // Store isolation: payment method must be enabled for this store
+            // Store isolation: payment method must be enabled for this store (COD always allowed as fallback)
             if ($request->payment_method) {
                 $enabledMethods = getEnabledPaymentMethods(
                     \App\Models\Store::find($request->store_id)?->user_id,
                     $request->store_id
                 );
-                // COD fallback is always allowed even if not explicitly enabled
-                $allowedOffline = ['cod','cash','cash_on_delivery'];
-                if (!isset($enabledMethods[$request->payment_method]) && !in_array($request->payment_method, $allowedOffline, true)) {
-                    // Check if method exists but disabled -> return error
-                    // Allow any offline/local methods that are stored as payment configs with enabled flag
-                    $isOffline = in_array($request->payment_method, ['bank','jawwal_pay','pal_pay','zain_cash','orange_money','bank_palestine','al_quds_bank','arab_islamic_bank','cairo_amman_bank','housing_bank','safad_bank','cliq','zain_cash_jo','orange_money_jo','etihad_wallet','dinar_pay','jordan_kuwait_bank','arab_bank','housing_bank_jo','cairo_amman_bank_jo','safad_bank_jo','usdt_trc20','usdt_erc20','usdt_bep20','usdt_polygon','usdt_solana','whatsapp','telegram'], true);
-                    if (!$isOffline || !isset($enabledMethods[$request->payment_method])) {
-                        // For COD we already allow, for others if not in enabled list, reject
-                        if ($request->payment_method !== 'cod' && !isset($enabledMethods[$request->payment_method])) {
-                            // Only enforce if method is not a generic offline that we allow without explicit config
-                            // Strict check: if payment method is not cod and not in enabled list, reject
-                            // But to avoid breaking existing stores with legacy offline methods, only reject if method is online gateway not enabled
-                            $onlineGateways = ['stripe','paypal','razorpay','paystack','mercadopago','xendit','toyyibpay','cashfree','flutterwave','paytabs','skrill','coingate','midtrans','mollie','benefit','yookassa','tap','payfast','paytr','iyzipay','khalti','easebuzz','ozow','authorizenet','fedapay','payhere','cinetpay','nepalste','paiement','aamarpay'];
-                            if (in_array($request->payment_method, $onlineGateways, true)) {
-                                return response()->json([
-                                    'success' => false,
-                                    'message' => 'طريقة الدفع المحددة غير مفعلة لهذا المتجر.',
-                                    'errors' => ['payment_method' => ['طريقة الدفع غير مفعلة.']]
-                                ], 422);
-                            }
-                        }
-                    }
+                $allowedAlways = ['cod','cash','cash_on_delivery'];
+                if (!isset($enabledMethods[$request->payment_method]) && !in_array($request->payment_method, $allowedAlways, true)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'طريقة الدفع المحددة غير مفعلة لهذا المتجر.',
+                        'errors' => ['payment_method' => ['طريقة الدفع غير مفعلة.']]
+                    ], 422);
+                }
+                // WhatsApp requires number
+                if ($request->payment_method === 'whatsapp' && empty($request->whatsapp_number)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'رقم الواتساب مطلوب عند اختيار الطلب عبر الواتساب.',
+                        'errors' => ['whatsapp_number' => ['رقم الواتساب مطلوب.']]
+                    ], 422);
+                }
+                if ($request->payment_method === 'whatsapp' && !preg_match('/^\+?[0-9]{10,15}$/', preg_replace('/\s+/', '', $request->whatsapp_number))) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'رقم الواتساب غير صالح.',
+                        'errors' => ['whatsapp_number' => ['رقم الواتساب غير صالح.']]
+                    ], 422);
                 }
             }
             // Get cart calculation
@@ -138,6 +155,20 @@ class OrderController extends Controller
                     'success' => false,
                     'message' => 'سلة التسوق فارغة'
                 ], 400);
+            }
+
+            // Duplicate protection: check for recent identical order (only when cart not empty)
+            $recentDuplicate = \App\Models\Order::where('store_id', $request->store_id)
+                ->where('customer_email', $request->customer_email)
+                ->where('created_at', '>=', now()->subSeconds(30))
+                ->latest()->first();
+            if ($recentDuplicate && $recentDuplicate->created_at->diffInSeconds(now()) < 5) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'تم استلام طلبك بالفعل، يرجى عدم تكرار الضغط.',
+                    'order_number' => $recentDuplicate->order_number,
+                    'duplicate' => true,
+                ], 409);
             }
 
             // Handle bank transfer receipt upload
@@ -207,7 +238,7 @@ class OrderController extends Controller
             })->toArray();
 
             // Apply loyalty points redemption (if requested) before order creation – cap discount to max allowed
-            $loyaltyPointsRequested = (float) ($request->input('loyalty_points') ?? $request->input('loyalty_points_used') ?? 0);
+            $loyaltyPointsRequested = (int) ($request->input('loyalty_points') ?? $request->input('loyalty_points_used') ?? 0);
             $loyaltyDiscount = 0;
             if ($loyaltyPointsRequested > 0 && Auth::guard('customer')->check()) {
                 try {

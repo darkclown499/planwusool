@@ -41,15 +41,17 @@ class DesignerController extends Controller
             ])
             ->values();
 
+        // Fallback to StoreConfiguration for custom assets (canonical source is template_overrides, but legacy stores may have it in StoreConfiguration)
+        $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
         return response()->json([
             'success' => true,
             'theme' => $store->getTemplateSlug(),
             'sections' => $overrides['sections'] ?? [],
             'design_tokens' => $store->design_tokens ?? [],
             'content' => $store->store_content ?? [],
-            'custom_css' => $overrides['custom_css'] ?? '',
-            'custom_js' => $overrides['custom_js'] ?? '',
-            'head_inject' => $overrides['head_inject'] ?? '',
+            'custom_css' => $overrides['custom_css'] ?? $config['custom_css'] ?? '',
+            'custom_js' => $overrides['custom_js'] ?? $config['custom_javascript'] ?? '',
+            'head_inject' => $overrides['head_inject'] ?? $config['custom_head_scripts'] ?? '',
             'availableThemes' => $request->user()->getAvailableThemes(),
             'categories' => $categories,
         ]);
@@ -129,16 +131,28 @@ class DesignerController extends Controller
 
         // Custom code assets (code editor mode) — sanitized before storage so
         // the storefront injection can never break out of its container.
+        // Dual-write: template_overrides is the designer source, StoreConfiguration is the storefront source (ThemeController reads from there).
         $customAssetKeys = ['custom_css', 'custom_js', 'head_inject'];
         if (collect($customAssetKeys)->contains(fn ($key) => array_key_exists($key, $validated))) {
             $overrides = $store->template_overrides ?? [];
             foreach ($customAssetKeys as $key) {
                 if (array_key_exists($key, $validated)) {
-                    $overrides[$key] = match ($key) {
+                    $sanitized = match ($key) {
                         'custom_css' => ThemeAssetSanitizer::css($validated[$key]),
                         'custom_js' => ThemeAssetSanitizer::js($validated[$key]),
                         default => ThemeAssetSanitizer::html($validated[$key]),
                     };
+                    $overrides[$key] = $sanitized;
+                    // Sync to StoreConfiguration for ThemeController::formatStoreData
+                    try {
+                        $configKey = match ($key) {
+                            'custom_css' => 'custom_css',
+                            'custom_js' => 'custom_javascript',
+                            'head_inject' => 'custom_head_scripts',
+                            default => $key,
+                        };
+                        \App\Models\StoreConfiguration::setConfiguration($store->id, $configKey, $sanitized);
+                    } catch (\Throwable $e) {}
                 }
             }
             $store->template_overrides = $overrides;
@@ -163,6 +177,9 @@ class DesignerController extends Controller
                 \Illuminate\Support\Facades\Cache::forget("store_catalog.{$store->id}.theme_{$curTheme}.locale_{$loc}.active_1");
                 \Illuminate\Support\Facades\Cache::forget("store_categories.{$store->id}.theme_{$curTheme}.locale_{$loc}");
             }
+            // Clear StoreConfiguration request cache so ThemeController reads fresh design_tokens/store_content
+            \App\Models\StoreConfiguration::forgetConfiguration($store->id);
+            \Illuminate\Support\Facades\Cache::forget('store_configuration.' . $store->id);
         } catch (\Throwable $e) {}
 
         $overrides = $store->template_overrides ?? [];

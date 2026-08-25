@@ -57,10 +57,30 @@ class StoreSettingsController extends Controller
         return $plan && !empty($plan->template_editor_level) && $plan->template_editor_level !== 'none';
     }
 
-    public function show($storeId)
+    public function show(Request $request, $storeId)
     {
         if (!Auth::user()->can('settings-stores')) {
             return redirect()->back()->with('error', __('You do not have permission to access store settings.'));
+        }
+
+        // Server-side legacy redirects — settings?tab=X -> canonical
+        if ($request->has('tab')) {
+            $tab = $request->query('tab');
+            $map = [
+                'shipping' => route('stores.shipping.canonical', $storeId),
+                'payments' => route('stores.payments', $storeId),
+                'taxes' => route('stores.taxes.canonical', $storeId),
+                'domains' => route('stores.domains', $storeId),
+                'features' => route('stores.features', $storeId),
+                'erp' => route('stores.integrations', $storeId),
+            ];
+            if (isset($map[$tab])) {
+                return redirect()->to($map[$tab]);
+            }
+            // only general/seo stay on settings; unknown tabs fall through to general
+            if (!in_array($tab, ['general','seo'], true)) {
+                return redirect()->route('stores.settings', $storeId);
+            }
         }
         
         $store = $this->resolveStore($storeId);

@@ -133,10 +133,14 @@ export default function StorePayments({ store }: Props) {
 
   return (
     <PageTemplate
-      title="إعدادات الدفع"
-      description="بوابات التحصيل ومفاتيح الربط في مكان واحد — فعّل البوابة وضَع مفاتيحها من هنا"
+      title="طرق الدفع"
+      description="اختر طرق الدفع التي تريد قبولها في متجرك"
       url={`/stores/${store.id}/payments`}
-      backUrl={`/stores/${store.id}/settings`}
+      breadcrumbs={[
+        { title: 'لوحة التحكم', href: route('dashboard') },
+        { title: 'إدارة المتجر', href: route('stores.index') },
+        { title: 'طرق الدفع' },
+      ]}
     >
       <div className="mx-auto max-w-5xl space-y-4">
         {!loaded ? (
