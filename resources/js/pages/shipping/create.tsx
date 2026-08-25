@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import { cn } from '@/lib/utils';
+import { apiGet } from '@/utils/api';
 
 interface Country {
   id: number;
@@ -35,11 +36,37 @@ interface City {
   state_id: number;
 }
 
-const companyOptions = ['Aramex', 'DHL', 'FedEx', 'UPS', 'SMSA Express'];
-
+const companyOptions:string[] = [];
 export default function CreateShipping() {
   const { t } = useTranslation();
-  const { errors, countries: countryList = [], states: stateList = [], cities: cityList = [] } = usePage().props as any;
+  const { errors, countries: countryList = [], states: stateList = [], cities: cityList = [], auth } = usePage().props as any;
+  const currentStoreId = (auth as any)?.user?.current_store;
+  const [connectedIntegrations, setConnectedIntegrations] = useState<any[]>([]);
+  const [manualCatalog, setManualCatalog] = useState<any[]>([]);
+  useEffect(() => {
+    if (!currentStoreId) return;
+    apiGet(`/api/stores/${currentStoreId}/courier-integrations`).then((r:any)=>{
+      const connected = (r.integrations||[]).filter((i:any)=>i.status==='connected' && i.is_active);
+      setConnectedIntegrations(connected);
+      const cat = r.catalog||[];
+      const manual = cat.filter((c:any)=>c.region==='local');
+      setManualCatalog(manual.length ? manual : [
+        {slug:'wassel', name_ar:'واصل لوجستيك'},
+        {slug:'bosta', name_ar:'بوستا إكسبرس'},
+        {slug:'united_express', name_ar:'يونايتد إكسبرس'},
+        {slug:'city_express', name_ar:'سيتي إكسبرس'},
+        {slug:'togo', name_ar:'TOGO'},
+      ]);
+    }).catch(()=>{
+      setManualCatalog([
+        {slug:'wassel', name_ar:'واصل لوجستيك'},
+        {slug:'bosta', name_ar:'بوستا إكسبرس'},
+        {slug:'united_express', name_ar:'يونايتد إكسبرس'},
+        {slug:'city_express', name_ar:'سيتي إكسبرس'},
+        {slug:'togo', name_ar:'TOGO'},
+      ]);
+    });
+  }, [currentStoreId]);
   const [shippingType, setShippingType] = useState('flat_rate');
   const [currentStep, setCurrentStep] = useState(0);
   const [advancedOpen, setAdvancedOpen] = useState(false);
@@ -57,6 +84,7 @@ export default function CreateShipping() {
       countrySearchRef.current?.focus();
     }
   }, [currentStep]);
+  const [fulfillmentType, setFulfillmentType] = useState<'personal'|'connected'|'manual_company'>('personal');
   const [formData, setFormData] = useState({
     name: '',
     type: 'flat_rate',
@@ -78,6 +106,10 @@ export default function CreateShipping() {
     max_weight: null,
     max_dimensions: '',
     delivery_method: 'personal',
+    fulfillment_type: 'personal',
+    courier_integration_id: null as number | null,
+    courier_service_type: '',
+    courier_price_mode: 'api',
     delivery_company: '',
     require_signature: false,
     insurance_required: false,
@@ -121,9 +153,10 @@ export default function CreateShipping() {
     { value: 'international', icon: Globe, label: t('International Shipping'), description: t('International / Regional Shipping') }
   ];
 
-  const deliveryOptions = [
-    { value: 'personal', icon: Bike, label: t('Personal Delivery'), description: t('Deliver it yourself or through your own team.') },
-    { value: 'company', icon: Truck, label: t('Delivery Company'), description: t('Ship through a courier such as Aramex or a local delivery company.') }
+  const fulfillmentOptions = [
+    { value: 'personal', icon: Bike, label: 'توصيل شخصي', description: 'توصيل عبر فريقك الخاص' },
+    { value: 'connected', icon: Truck, label: 'شركة توصيل مربوطة', description: 'إرسال تلقائي عبر API' },
+    { value: 'manual_company', icon: Home, label: 'توصيل يدوي عبر شركة', description: 'تسجيل اسم الشركة فقط بدون إرسال تلقائي' },
   ];
 
   const selectedCountry = (countryList as Country[]).find(country => country.id === formData.country_id) || null;
@@ -539,75 +572,68 @@ export default function CreateShipping() {
               )}
 
               <div>
-                <Label required>{t('Delivery Method')}</Label>
-                <div className="mt-2 grid gap-3 sm:grid-cols-2">
-                  {deliveryOptions.map((option) => (
+                <Label required>من سينفذ التوصيل؟</Label>
+                <div className="mt-2 grid gap-3 sm:grid-cols-3">
+                  {fulfillmentOptions.map((option) => (
                     <button
                       type="button"
                       key={option.value}
-                      onClick={() => handleSelectChange('delivery_method', option.value)}
+                      onClick={() => { setFulfillmentType(option.value as any); setFormData(prev=>({ ...prev, fulfillment_type: option.value, delivery_method: option.value==='personal' ? 'personal' : 'company', courier_integration_id: option.value==='personal' || option.value==='manual_company' ? null : prev.courier_integration_id })); }}
                       className={cn(
-                        'relative flex items-start gap-3 rounded-lg border-2 p-4 text-start transition-all',
-                        formData.delivery_method === option.value
+                        'relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 text-center transition-all',
+                        fulfillmentType === option.value
                           ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
                           : 'border-border hover:border-muted-foreground/40 hover:bg-muted/40'
                       )}
                     >
-                      <div
-                        className={cn(
-                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors',
-                          formData.delivery_method === option.value
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
-                        )}
-                      >
+                      <div className={cn('flex h-10 w-10 items-center justify-center rounded-full', fulfillmentType===option.value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
                         <option.icon className="h-5 w-5" />
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium">{option.label}</div>
-                        <div className="mt-0.5 text-xs text-muted-foreground">{option.description}</div>
-                      </div>
-                      <div
-                        className={cn(
-                          'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
-                          formData.delivery_method === option.value ? 'border-primary bg-primary' : 'border-muted-foreground/30'
-                        )}
-                      >
-                        {formData.delivery_method === option.value && <Check className="h-3 w-3 text-primary-foreground" />}
-                      </div>
+                      <div className="text-sm font-medium">{option.label}</div>
+                      <div className="text-xs text-muted-foreground">{option.description}</div>
+                      {fulfillmentType===option.value && <Check className="h-4 w-4 text-primary absolute top-2 right-2" />}
                     </button>
                   ))}
                 </div>
 
-{formData.delivery_method === 'company' && (
-                  <div className="mt-3 max-w-md">
-                      <Label>{t('Select Delivery Company')}</Label>
-                      {showCustomCompany ? (
-                        <div className="mt-2 flex items-center gap-2">
-                          <Input
-                            value={formData.delivery_company}
-                            onChange={handleInputChange}
-                            name="delivery_company"
-                            placeholder={t('Enter company name')}
-                          />
-                          <Button type="button" variant="outline" onClick={() => setCustomCompanyOpen(false)}>
-                            {t('Back to list')}
-                          </Button>
-                        </div>
-                      ) : (
-                        <Select value={companySelectValue} onValueChange={handleCompanyChange}>
-                          <SelectTrigger className="mt-2">
-                            <SelectValue placeholder={t('Choose a company...')} />
-                          </SelectTrigger>
+                {fulfillmentType==='connected' && (
+                  <div className="mt-4 max-w-md">
+                    {connectedIntegrations.length===0 ? (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
+                        <p className="text-sm font-medium">لم تربط أي شركة توصيل بعد.</p>
+                        <p className="text-xs text-muted-foreground mt-1">اربط شركة لإرسال الطلبات تلقائياً</p>
+                        <Button type="button" size="sm" className="mt-3" onClick={()=>window.location.href=`/stores/${currentStoreId}/shipping/integrations`}>ربط شركة توصيل</Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <Label>شركة التوصيل المربوطة</Label>
+                        <Select value={formData.courier_integration_id ? String(formData.courier_integration_id) : ''} onValueChange={(v)=>setFormData(prev=>({ ...prev, courier_integration_id: v ? Number(v) : null, delivery_company: connectedIntegrations.find((c:any)=>String(c.id)===v)?.provider || '' }))}>
+                          <SelectTrigger className="mt-2"><SelectValue placeholder="اختر شركة متصلة" /></SelectTrigger>
                           <SelectContent>
-                            {companyOptions.map((company) => (
-                              <SelectItem key={company} value={company}>{company}</SelectItem>
-                            ))}
-                            <SelectItem value="__custom__">{t('Other / Enter custom name')}</SelectItem>
+                            {connectedIntegrations.map((c:any)=>(<SelectItem key={c.id} value={String(c.id)}>{c.provider} — متصل</SelectItem>))}
                           </SelectContent>
                         </Select>
-                      )}
-                    </div>
+                        <p className="text-xs text-muted-foreground mt-1">سيتم إرسال الطلب تلقائياً عبر API</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {fulfillmentType==='manual_company' && (
+                  <div className="mt-4 max-w-md">
+                    <Label>شركة التوصيل (يدوي)</Label>
+                    <Select value={formData.delivery_company} onValueChange={(v)=>setFormData(prev=>({ ...prev, delivery_company: v }))}>
+                      <SelectTrigger className="mt-2"><SelectValue placeholder="اختر شركة" /></SelectTrigger>
+                      <SelectContent>
+                        {manualCatalog.map((c:any)=>(<SelectItem key={c.slug} value={c.name_ar || c.slug}>{c.name_ar || c.slug}</SelectItem>))}
+                        <SelectItem value="أخرى">شركة أخرى</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">سيتم تسجيل اسم الشركة فقط، ولن يتم إرسال الطلب تلقائياً.</p>
+                    {formData.delivery_company==='أخرى' && (
+                      <Input className="mt-2" placeholder="اسم الشركة" value={formData.delivery_company==='أخرى' ? '' : formData.delivery_company} onChange={(e)=>setFormData(prev=>({ ...prev, delivery_company: e.target.value }))} />
+                    )}
+                  </div>
                 )}
               </div>
             </CardContent>

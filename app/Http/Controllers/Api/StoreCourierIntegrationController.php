@@ -39,7 +39,7 @@ class StoreCourierIntegrationController extends Controller
         if (!$this->authorizeStoreAccess($request, $store)) return response()->json(['error'=>'Unauthorized'],403);
         $validated = $request->validate([
             'provider' => 'required|string|max:50',
-            'credentials' => 'required|array',
+            'credentials' => 'present|array',
             'settings' => 'sometimes|array',
             'display_name' => 'nullable|string|max:100',
         ]);
@@ -72,14 +72,36 @@ class StoreCourierIntegrationController extends Controller
             }
         }
 
-        // Encrypt credentials; never log secrets
+        // Merge credentials: blank preserves existing secret
+        $existing = StoreCourierIntegration::where('store_id',$store->id)->where('provider',$provider)->first();
+        $incomingCreds = $validated['credentials'];
+        $mergedCreds = $incomingCreds;
+        if ($existing && !empty($existing->credentials)) {
+            foreach ($existing->credentials as $k => $v) {
+                if (!array_key_exists($k, $incomingCreds) || $incomingCreds[$k] === '' || $incomingCreds[$k] === null) {
+                    $mergedCreds[$k] = $v;
+                }
+            }
+        }
+        // Determine status: incomplete if required keys missing
+        $status = 'not_connected';
+        $providerInstance = CourierRegistry::make($provider);
+        if ($providerInstance) {
+            $required = $providerInstance->getRequiredCredentialKeys();
+            $hasAll = true;
+            foreach ($required as $rk) {
+                if (empty($mergedCreds[$rk])) { $hasAll = false; break; }
+            }
+            if (!$hasAll) $status = 'incomplete';
+        }
+
         $integration = StoreCourierIntegration::updateOrCreate(
             ['store_id'=>$store->id, 'provider'=>$provider],
             [
-                'display_name'=>$validated['display_name'] ?? null,
-                'credentials'=>$validated['credentials'],
-                'settings'=>$validated['settings'] ?? [],
-                'status'=>'not_connected',
+                'display_name'=>$validated['display_name'] ?? $existing?->display_name,
+                'credentials'=>$mergedCreds,
+                'settings'=>$validated['settings'] ?? $existing?->settings ?? [],
+                'status'=>$status,
             ]
         );
         return response()->json(['success'=>true,'integration'=>$this->validateNoSecretsLeak($integration)]);
@@ -106,14 +128,36 @@ class StoreCourierIntegrationController extends Controller
                 $integration->update(['status'=>'connected','last_tested_at'=>now(),'last_error'=>null]);
                 return response()->json(['success'=>true,'status'=>'connected']);
             } else {
-                $integration->update(['status'=>'error','last_tested_at'=>now(),'last_error'=>$result['error'] ?? 'Invalid credentials']);
-                return response()->json(['success'=>false,'error'=>$result['error'] ?? 'Invalid'],422);
+                $raw = $result['error'] ?? 'Invalid credentials';
+                $mapped = $this->mapProviderError($raw);
+                $integration->update(['status'=>'error','last_tested_at'=>now(),'last_error'=>$mapped]);
+                return response()->json(['success'=>false,'error'=>$mapped],422);
             }
         } catch (\Throwable $e) {
-            Log::warning('Courier test failed', ['integration_id'=>$integration->id, 'error'=>$e->getMessage()]);
-            $integration->update(['status'=>'error','last_tested_at'=>now(),'last_error'=>$e->getMessage()]);
-            return response()->json(['success'=>false,'error'=>'Connection failed'],500);
+            $msg = $e->getMessage();
+            $mapped = $this->mapProviderError($msg);
+            Log::warning('Courier test failed', ['integration_id'=>$integration->id, 'error'=>$msg]);
+            $integration->update(['status'=>'error','last_tested_at'=>now(),'last_error'=>$mapped]);
+            return response()->json(['success'=>false,'error'=>$mapped],500);
         }
+    }
+
+    private function mapProviderError(string $raw): string
+    {
+        $l = strtolower($raw);
+        if (str_contains($l, '401') || str_contains($l, '403') || str_contains($l, 'unauthorized') || str_contains($l, 'forbidden') || str_contains($l, 'invalid') || str_contains($l, 'credentials')) {
+            return 'بيانات الربط غير صحيحة أو غير مصرح بها — تأكد من Account Number/PIN واسم المستخدم';
+        }
+        if (str_contains($l, 'timeout') || str_contains($l, 'timed out') || str_contains($l, 'connection')) {
+            return 'تعذر الوصول إلى شركة التوصيل، حاول مرة أخرى';
+        }
+        if (str_contains($l, 'rate limit') || str_contains($l, '429') || str_contains($l, 'too many')) {
+            return 'تم تجاوز حد الطلبات، حاول لاحقاً';
+        }
+        if (str_contains($l, 'account')) {
+            return 'رقم الحساب أو إعداداته غير صحيحة';
+        }
+        return $raw;
     }
 
     public function destroy(Request $request, Store $store, $integrationId)
@@ -133,7 +177,29 @@ class StoreCourierIntegrationController extends Controller
             'settings'=>'sometimes|array',
             'auto_submit_orders'=>'sometimes|boolean',
             'auto_sync_status'=>'sometimes|boolean',
+            'credentials'=>'sometimes|array',
+            'display_name'=>'sometimes|nullable|string|max:100',
         ]);
+        // Handle credentials patch with blank preserve
+        if (array_key_exists('credentials', $validated) && is_array($validated['credentials'])) {
+            $merged = $integration->credentials ?? [];
+            foreach ($validated['credentials'] as $k=>$v) {
+                if ($v === '' || $v === null) continue; // preserve existing secret
+                $merged[$k] = $v;
+            }
+            $validated['credentials'] = $merged;
+            // Re-evaluate status if credentials changed
+            $provider = CourierRegistry::make($integration->provider);
+            if ($provider) {
+                $required = $provider->getRequiredCredentialKeys();
+                $hasAll = true;
+                foreach ($required as $rk) { if (empty($merged[$rk])) { $hasAll=false; break; } }
+                // Keep connected until re-tested; if now incomplete, mark incomplete
+                if (!$hasAll) $validated['status'] = 'incomplete';
+            }
+        } else {
+            unset($validated['credentials']);
+        }
         $integration->update($validated);
         return response()->json(['success'=>true,'integration'=>$this->validateNoSecretsLeak($integration)]);
     }
