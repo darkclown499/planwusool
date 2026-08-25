@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
     ArrowRight,
+    Building2,
     ChevronDown,
     Code2,
     Eye,
