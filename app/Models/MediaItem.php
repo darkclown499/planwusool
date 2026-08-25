@@ -46,10 +46,27 @@ class MediaItem extends Model implements HasMedia
     {
         \App\Services\DynamicStorageService::configureDynamicDisks();
 
+        // thumb 300x300 - used for tiny previews, remains non-queued
         $this->addMediaConversion('thumb')
             ->width(300)
             ->height(300)
             ->sharpen(10)
+            ->performOnCollections('images')
+            ->nonQueued();
+
+        // small 400 - ideal for product grid cards (200-300px displayed)
+        $this->addMediaConversion('small')
+            ->width(400)
+            ->height(400)
+            ->sharpen(8)
+            ->performOnCollections('images')
+            ->nonQueued();
+
+        // medium 800 - hero / detail / banner (400-800px displayed)
+        $this->addMediaConversion('medium')
+            ->width(800)
+            ->height(800)
+            ->sharpen(5)
             ->performOnCollections('images')
             ->nonQueued();
     }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { ChevronLeft, Heart, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import {
   discountPercent,
   isVariableProduct,
@@ -119,7 +119,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
         {slides.map((b: any, idx: number) => (
           <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === i ? 1 : 0 }} aria-hidden={idx !== i}>
             {b.image ? (
-              <img src={getImageUrl(b.image)} alt="" className="h-full w-full object-cover opacity-75" />
+              <img src={getOptimizedImageUrl(b.image||'', 'medium')} alt="" className="h-full w-full object-cover opacity-75" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
             ) : null}
             <div className="absolute inset-0 bg-gradient-to-l from-emerald-950/80 via-emerald-900/30 to-transparent" />
             <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
@@ -165,7 +165,7 @@ export function BazaarCard({ product }: { product: V2Product }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-100 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-950/5" dir="rtl">
       <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative block aspect-[4/5] w-full overflow-hidden bg-slate-50" aria-label={product.name}>
-        <img src={getImageUrl(product.image || '')} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" width={400} height={400} />
         {discount > 0 && !out && (
           <span className="absolute top-2.5 right-2.5 rounded-lg bg-rose-500 px-2 py-0.5 text-[11px] font-black text-white">-{discount}%</span>
         )}
@@ -281,7 +281,7 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                 <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-2">
                   <span className="h-16 w-16 overflow-hidden rounded-2xl bg-white p-1 shadow-sm ring-1 ring-slate-100 transition group-hover:shadow-md group-hover:ring-teal-200 sm:h-20 sm:w-20">
                     {c.image ? (
-                      <img src={getImageUrl(c.image)} alt="" loading="lazy" className="h-full w-full rounded-xl object-cover" />
+                      <img src={getOptimizedImageUrl(c.image||'', 'thumb')} alt="" loading="lazy" decoding="async" sizes="80px" onError={(e)=>{(e.currentTarget.src=getImageUrl(c.image||''))}} className="h-full w-full rounded-xl object-cover" width={80} height={80} />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center bg-teal-50 text-xl sm:text-2xl">🛍️</span>
                     )}

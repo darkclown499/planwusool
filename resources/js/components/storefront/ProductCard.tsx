@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, Gift, Plus } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { WishlistButton } from './WishlistButton';
 import { WhatsAppOrderButton } from './WhatsAppOrderButton';
@@ -70,11 +70,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden group transition-shadow duration-200 hover:shadow-md">
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
         <img
-          src={getImageUrl(product.image) || '/placeholder.jpg'}
+          src={getOptimizedImageUrl(product.image, 'small') || '/placeholder.jpg'}
           alt={product.name}
           className="w-full h-full object-cover object-center cursor-pointer transition-transform duration-200 group-hover:scale-105"
           onClick={() => onProductClick(product)}
           loading="lazy"
+          decoding="async"
+          sizes="(max-width:640px) 50vw, 25vw"
+          width={400}
+          height={300}
+          onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image)||'/placeholder.jpg')}}
         />
 
         {!isInStock && (

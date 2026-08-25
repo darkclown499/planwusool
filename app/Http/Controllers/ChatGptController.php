@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Setting;
+use App\Services\GeminiApiService;
 use OpenAI;
 
 class ChatGptController extends Controller
@@ -12,12 +13,40 @@ class ChatGptController extends Controller
     public function generate(Request $request): JsonResponse
     {
         $request->validate([
-            'prompt' => 'required|string|max:1000',
-            'language' => 'string|in:en,es,ar,da,de,fr,he,it,ja,nl,pl,pt,pt-BR,ru,tr,zh',
-            'creativity' => 'string|in:low,medium,high',
-            'num_results' => 'integer|min:1|max:5',
-            'max_length' => 'integer|min:1|max:500'
+            'prompt' => 'required|string|max:2000',
+            'language' => 'nullable|string|max:10',
+            'creativity' => 'nullable',
+            'num_results' => 'nullable|integer|min:1|max:5',
+            'max_length' => 'nullable|integer|min:1|max:2048',
+            'maxTokens' => 'nullable|integer|min:1|max:2048',
+            'max_tokens' => 'nullable|integer|min:1|max:2048',
         ]);
+
+        // Prefer Gemini if GEMINI_API_KEY / services.gemini.key is configured (free tier)
+        $geminiKey = config('services.gemini.key') ?: env('GEMINI_API_KEY');
+        if (empty($geminiKey)) {
+            try {
+                $geminiKey = Setting::where('key', 'geminiKey')->value('value');
+            } catch (\Throwable $e) {}
+        }
+        if (!empty($geminiKey)) {
+            try {
+                $gemini = app(GeminiApiService::class);
+                $creativity = $request->input('creativity', $request->input('temperature', 0.7));
+                $maxTokens = $request->input('maxTokens') ?? $request->input('max_tokens') ?? $request->input('max_length') ?? 150;
+                $content = $gemini->generate(
+                    prompt: $request->input('prompt'),
+                    language: $request->input('language', 'ar'),
+                    creativity: $creativity,
+                    maxTokens: (int) $maxTokens
+                );
+                return response()->json(['success' => true, 'content' => $content]);
+            } catch (\Exception $e) {
+                // fall through to OpenAI fallback, but if Gemini was explicitly configured return error
+                // to surface missing/invalid key clearly
+                return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            }
+        }
 
         try {
             $apiKey = Setting::where('key', 'chatgptKey')->value('value');

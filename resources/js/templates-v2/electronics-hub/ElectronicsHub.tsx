@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { BadgeCheck, ChevronLeft, Cpu, Headphones, Laptop, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
   discountPercent,
@@ -50,7 +50,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   }, [q, product?.products]);
 
   return (
-    <header className="hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100" dir="rtl">
+    <header className="hidden md:block sticky top-0 z-50 border-b border-slate-800 bg-[#0b1220]/97 backdrop-blur" dir="rtl">
       {/* Trust strip */}
       <div className="border-b border-slate-800/70 bg-[#0e1729]">
         <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 py-1.5 text-[11px] font-semibold text-slate-400 sm:px-6 lg:px-8">
@@ -103,7 +103,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
             type="button"
             onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))}
             aria-label="حسابي"
-            className="hidden rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-900 transition-colors hover:text-blue-600 focus:bg-blue-600 focus:text-white sm:block"
+            className="hidden rounded-lg border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 sm:block"
           >
             دخول
           </button>
@@ -154,7 +154,7 @@ export function HubHero({ banner }: { banner?: any }) {
           </a>
         </div>
         <div className="relative hidden justify-self-end sm:block">
-          <img src={getImageUrl(banner?.image || '/images/store/electronics.jpg')} alt="" className="max-h-64 rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" />
+          <img src={getOptimizedImageUrl(banner?.image || '/images/store/electronics.jpg', 'medium')} alt="" className="max-h-64 rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(banner?.image||'/images/store/electronics.jpg'))}} width={800} height={400} />
         </div>
       </div>
     </section>
@@ -186,7 +186,7 @@ export function HubCard({ product }: { product: V2Product }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-[#101a2e] transition-all hover:-translate-y-0.5 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-950/50" dir="rtl">
       <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative block aspect-square w-full overflow-hidden bg-[#0b1220]" aria-label={product.name}>
-        <img src={getImageUrl(product.image || '')} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" width={400} height={400} />
         {discount > 0 && !out && (
           <span className="absolute top-2.5 right-2.5 rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-black text-white">-{discount}%</span>
         )}

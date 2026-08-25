@@ -23,13 +23,17 @@ export function useChatGpt(options: UseChatGptOptions = {}) {
 
     setIsLoading(true);
     try {
-      const response = await fetch(route('chatgpt.generate'), {
+      const endpoint = (() => { try { return route('ai.generate'); } catch { return null; } })()
+        || (() => { try { return route('chatgpt.generate'); } catch { return null; } })()
+        || '/api/ai/generate';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, language: 'ar', creativity: 0.7, maxTokens: 150 })
       });
 
       const data = await response.json();

@@ -474,8 +474,9 @@ class MediaController extends Controller
         $width = imagesx($source);
         $height = imagesy($source);
 
-        // Max target dimension — keeps cards crisp while slashing bytes.
-        $maxDim = 1280;
+        // Max target dimension — lowered from 1280 to 900 to halve bytes for storefront heroes,
+        // grid cards use the 300-400 thumb/small conversions instead.
+        $maxDim = 900;
         $scale = min(1.0, $maxDim / max($width, $height));
         $newWidth = max(1, (int) round($width * $scale));
         $newHeight = max(1, (int) round($height * $scale));
@@ -493,7 +494,7 @@ class MediaController extends Controller
         imagecopyresampled($target, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
         $tempPath = tempnam(sys_get_temp_dir(), 'med_opt_') . '.webp';
-        $saved = imagewebp($target, $tempPath, 82);
+        $saved = imagewebp($target, $tempPath, 78);
 
         imagedestroy($source);
         imagedestroy($target);

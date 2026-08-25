@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { ChevronLeft, Flame, Minus, PackageSearch, Plus, ShoppingBag, Star, UtensilsCrossed } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
   discountPercent,
@@ -24,7 +24,7 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
 
   return (
-    <header className="hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100" dir="rtl">
+    <header className="hidden md:block sticky top-0 z-50 border-b border-[#3d332b] bg-[#191410]/97 backdrop-blur" dir="rtl">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
         <a href={homeHref} className="flex items-center gap-2.5">
           {(config?.logo || store?.logo) ? (
@@ -46,7 +46,7 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
             <HeaderLoyaltyBadge />
           </div>
           <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} aria-label="حسابي"
-            className="hidden rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-900 transition hover:text-blue-600 focus:bg-blue-600 focus:text-white sm:block">
+            className="hidden rounded-lg border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 sm:block">
             حسابي
           </button>
           <button type="button" onClick={() => ui.setShowCart(true)}
@@ -94,7 +94,7 @@ export function RestaurantTabs({ categories, activeId }: { categories: any[]; ac
 export function RestaurantHero({ banner }: { banner?: any }) {
   return (
     <section className="relative h-72 overflow-hidden bg-[#0f0b09] sm:h-96" dir="rtl">
-      <img src={getImageUrl(banner?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5')} alt="" className="h-full w-full object-cover opacity-60" />
+        <img src={getOptimizedImageUrl(banner?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5', 'medium')} alt="" className="h-full w-full object-cover opacity-60" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />
       <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
       <div className="absolute inset-0 flex items-center">
         <div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
@@ -129,7 +129,7 @@ export function DishRow({ product }: { product: V2Product }) {
     <div className={`group flex items-center gap-4 rounded-2xl border border-[#2e2620] bg-[#211a15] p-3.5 transition-all hover:border-[#f59e0b]/40 hover:bg-[#282018] ${out ? 'opacity-55' : ''}`} dir="rtl">
       {/* Thumb */}
       <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-[#2e2620]" aria-label={product.name}>
-        <img src={getImageUrl(product.image || '')} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 100vw, 400px" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" width={400} height={300} />
         {discountPercent(product) > 0 && (
           <span className="absolute top-1.5 right-1.5 rounded-md bg-red-700 px-1.5 py-0.5 text-[10px] font-black text-white">-{discountPercent(product)}%</span>
         )}

@@ -27,16 +27,19 @@ export function ChatGptModal({
   onClose,
   onGenerate,
   title = "AI Content Generator",
-  placeholder = "Describe what you want to generate..."
+  placeholder = "أدخل التوجيه هنا (مثال: صغ عنواناً إعلانياً لخصومات العيد 50% على المحافظ الجلدية)."
 }: ChatGptModalProps) {
   const { t } = useTranslation();
   const { modalStack } = useModalStack();
   const { modalId, zIndex } = useStackedModal('chatgpt-modal', isOpen);
   const [prompt, setPrompt] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
+  // Spec aliases
+  const [result, setResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState('ar');
-  const [creativity, setCreativity] = useState('medium');
+  const [creativity, setCreativity] = useState('0.7');
   const [numResults, setNumResults] = useState(1);
   const [maxLength, setMaxLength] = useState(150);
   const [selectedText, setSelectedText] = useState('');
@@ -50,30 +53,49 @@ export function ChatGptModal({
     }
 
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(route('chatgpt.generate'), {
+      // Prefer new Gemini endpoint; fallback to legacy chatgpt endpoint if not available
+      const aiRoute = (() => {
+        try { return route('ai.generate'); } catch { return null; }
+      })();
+      const legacyRoute = (() => {
+        try { return route('chatgpt.generate'); } catch { return null; }
+      })();
+      const endpoint = aiRoute || legacyRoute || '/api/ai/generate';
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           prompt,
           language,
-          creativity,
+          creativity: parseFloat(creativity as any) || 0.7,
+          maxTokens: parseInt(String(maxLength), 10) || 150,
+          // legacy aliases for backward compat
+          max_length: parseInt(String(maxLength), 10) || 150,
+          max_tokens: parseInt(String(maxLength), 10) || 150,
           num_results: numResults,
-          max_length: maxLength
         })
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        setGeneratedContent(data.content);
+      if (response.ok && (data.text || data.result || data.content || data.success)) {
+        const txt = (data.text ?? data.result ?? data.content ?? '') as string;
+        setGeneratedContent(txt);
+        setResult(txt);
       } else {
-        toast.error(data.message || t('Failed to generate content'));
+        const msg = data.message || t('Failed to generate content');
+        setError('حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. تأكد من إعداد API Key.');
+        toast.error(msg);
       }
-    } catch (error) {
+    } catch (err: any) {
+      setError('حدث خطأ أثناء الاتصال بالذكاء الاصطناعي. تأكد من إعداد API Key.');
       toast.error(t('Error connecting to AI service'));
     } finally {
       setIsLoading(false);
@@ -81,8 +103,9 @@ export function ChatGptModal({
   };
 
   const handleUse = () => {
-    if (generatedContent) {
-      onGenerate(generatedContent);
+    const text = generatedContent || result;
+    if (text) {
+      onGenerate(text);
       handleClose();
     }
   };
@@ -90,6 +113,8 @@ export function ChatGptModal({
   const handleClose = () => {
     setPrompt('');
     setGeneratedContent('');
+    setResult('');
+    setError(null);
     setSelectedText('');
     setCopied(false);
     onClose();
@@ -180,19 +205,24 @@ export function ChatGptModal({
               style={{ zIndex: zIndex + 1 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-6 border-b flex items-center justify-between">
-                <DialogPrimitive.Title className="text-lg font-semibold flex items-center gap-2 m-0 p-0 border-0">
-                  <Sparkles className="h-5 w-5 text-blue-500" />
-                  {t(title)}
-                </DialogPrimitive.Title>
-                <DialogPrimitive.Close asChild>
-                  <button
-                    onClick={handleClose}
-                    className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer focus:outline-none"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </DialogPrimitive.Close>
+              <div className="p-6 border-b">
+                <div className="flex items-center justify-between">
+                  <DialogPrimitive.Title className="text-lg font-semibold flex items-center gap-2 m-0 p-0 border-0">
+                    <Sparkles className="h-5 w-5 text-blue-500" />
+                    {t(title)}
+                  </DialogPrimitive.Title>
+                  <DialogPrimitive.Close asChild>
+                    <button
+                      onClick={handleClose}
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer focus:outline-none"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </DialogPrimitive.Close>
+                </div>
+                <DialogPrimitive.Description className="mt-1 text-sm text-muted-foreground">
+                  مولّد النصوص الذكي لتسريع كتابة وصف المنتجات والعناوين الإعلانية.
+                </DialogPrimitive.Description>
               </div>
 
               <div className="p-6 space-y-4">
@@ -218,15 +248,15 @@ export function ChatGptModal({
                     </Select>
                   </div>
                   <div>
-                    <Label>{t('AI Creativity')}</Label>
+                    <Label>مستوى الإبداع</Label>
                     <Select value={creativity} onValueChange={setCreativity}>
                       <SelectTrigger className="cursor-pointer">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent style={{ zIndex: zIndex + 10 }}>
-                        <SelectItem value="low" className="cursor-pointer">{t("Low")} (0.3)</SelectItem>
-                        <SelectItem value="medium" className="cursor-pointer">{t("Medium")} (0.7)</SelectItem>
-                        <SelectItem value="high" className="cursor-pointer">{t("High")} (0.9)</SelectItem>
+                        <SelectItem value="0.2" className="cursor-pointer">دقيق 0.2</SelectItem>
+                        <SelectItem value="0.7" className="cursor-pointer">متوازن 0.7</SelectItem>
+                        <SelectItem value="1.0" className="cursor-pointer">إبداعي 1.0</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -244,7 +274,7 @@ export function ChatGptModal({
                     />
                   </div>
                   <div>
-                    <Label>{t('Max Result Length')}</Label>
+                    <Label>عدد الكلمات التقديري</Label>
                     <Input
                       type="number"
                       value={maxLength}
@@ -261,7 +291,7 @@ export function ChatGptModal({
                     id="prompt"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder={t(placeholder)}
+                    placeholder="أدخل التوجيه هنا (مثال: صغ عنواناً إعلانياً لخصومات العيد 50% على المحافظ الجلدية)."
                     rows={3}
                     className="mt-1"
                   />
@@ -275,17 +305,21 @@ export function ChatGptModal({
                   {isLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 me-2 animate-spin" />
-                      {t('Generating...')}
+                      جارٍ التوليد...
                     </>
                   ) : (
                     <>
                       <Sparkles className="h-4 w-4 me-2" />
-                      {t('Generate')}
+                      توليد
                     </>
                   )}
                 </Button>
 
-                {generatedContent && (
+                {error && (
+                  <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">{error}</div>
+                )}
+
+                {(generatedContent || result) && (
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <Label htmlFor="generated">{t('Output Text')}</Label>
@@ -304,25 +338,25 @@ export function ChatGptModal({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleCopyLink(generatedContent)}
+                          onClick={() => handleCopyLink(generatedContent || result)}
                           className="cursor-pointer"
                         >
                           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                          {t('Copy Text')}
+                          نسخ النص
                         </Button>
                       </div>
                     </div>
                     <Textarea
                       id="generated-content"
-                      value={generatedContent}
-                      onChange={(e) => setGeneratedContent(e.target.value)}
+                      value={generatedContent || result}
+                      onChange={(e) => { setGeneratedContent(e.target.value); setResult(e.target.value); }}
                       onSelect={handleTextSelection}
                       rows={6}
                       className="mt-1"
                     />
                     <div className="flex gap-2 mt-2">
                       <Button onClick={handleUse} className="flex-1 cursor-pointer">
-                        {t('Use This Content')}
+                        استخدام النص
                       </Button>
                       <Button variant="outline" onClick={handleGenerate} disabled={isLoading} className="cursor-pointer">
                         {t('Regenerate')}

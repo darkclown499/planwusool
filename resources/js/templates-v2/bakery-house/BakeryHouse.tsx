@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { CakeSlice, ChevronLeft, Clock3, Croissant, Flame, Heart, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { toast } from '@/components/custom-toast';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
@@ -121,7 +121,7 @@ export function BakeryHero({ banner }: { banner?: any }) {
   return (
     <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
       <div className="relative overflow-hidden rounded-3xl bg-[#3b2412] shadow-lg">
-        <img src={getImageUrl(banner?.image || '/images/store/bakery.jpg')} alt="" className="h-64 w-full object-cover opacity-80 sm:h-80" />
+        <img src={getOptimizedImageUrl(banner?.image || '/images/store/bakery.jpg', 'medium')} alt="" className="h-64 w-full object-cover opacity-80 sm:h-80" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(banner?.image||'/images/store/bakery.jpg'))}} width={1200} height={400} />
         <div className="absolute inset-0 bg-gradient-to-l from-[#3b2412]/85 via-transparent to-transparent" />
         <div className="absolute inset-y-0 right-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
           <p className="w-fit rounded-full bg-[#fbbf24] px-3.5 py-1 text-xs font-black text-[#78350f]">{banner?.subtitle || 'مخبوزات طازجة كل يوم'}</p>
@@ -161,7 +161,7 @@ export function BakeryCard({ product }: { product: V2Product }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#f0e2d0] transition-all hover:-translate-y-0.5 hover:shadow-xl" dir="rtl">
       <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative block aspect-[4/3] w-full overflow-hidden bg-[#fdf3e3]" aria-label={product.name}>
-        <img src={getImageUrl(product.image || '')} alt={product.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 33vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" width={400} height={400} />
         {discount > 0 && !out && (
           <span className="absolute top-2.5 right-2.5 rounded-full bg-red-700 px-2 py-0.5 text-[11px] font-black text-white shadow">وفّر {discount}%</span>
         )}
@@ -320,7 +320,7 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
               {categories.slice(0, 8).map((c: any) => (
                 <a key={c.id} href={`/category/${c.slug || c.id}`} className="group relative h-28 overflow-hidden rounded-2xl shadow-sm ring-1 ring-[#f0e2d0]">
                   {c.image ? (
-                    <img src={getImageUrl(c.image)} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <img src={getOptimizedImageUrl(c.image||'', 'thumb')} alt="" loading="lazy" decoding="async" sizes="160px" onError={(e)=>{(e.currentTarget.src=getImageUrl(c.image||''))}} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" width={160} height={160} />
                   ) : (
                     <span className="block h-full w-full bg-gradient-to-br from-[#f5e7d3] to-[#eaddcf]" />
                   )}

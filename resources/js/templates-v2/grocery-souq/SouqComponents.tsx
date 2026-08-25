@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Clock3, Heart, Minus, Plus, ShoppingBasket, X } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import {
   computeCartTotals,
   discountPercent,
@@ -210,7 +210,7 @@ export function SouqHero({ banners }: { banners: any[] }) {
       <div className="relative aspect-[343/96] w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5 md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]">
         {normalized.map((b: any, idx: number) => (
           <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === i ? 1 : 0 }} aria-hidden={idx !== i}>
-            <img src={getImageUrl(b.image || '')} alt={b.title} className="h-full w-full object-cover" />
+            <img src={getOptimizedImageUrl(b.image || '', 'medium')} alt={b.title} className="h-full w-full object-cover" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
             {(b.title || b.subtitle || b.button_text) && (
               <>
                 <div className="absolute inset-0 bg-gradient-to-l from-white/85 via-white/30 to-transparent lg:from-white/90 lg:via-white/40" />
@@ -269,7 +269,7 @@ export function SouqProductCard({ product }: SouqCardProps) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-[18px] border border-black/5 bg-white shadow-sm transition hover:shadow-md" dir="rtl">
       <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative aspect-square w-full overflow-hidden bg-white p-2" aria-label={product.name}>
-        <img src={getImageUrl(product.image || '')} alt={product.name} loading="lazy" className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" />
+        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 20vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" width={400} height={400} />
         {discount > 0 && !out && (
           <span className="absolute top-2 right-2 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-600 ring-1 ring-red-200">-{discount}%</span>
         )}

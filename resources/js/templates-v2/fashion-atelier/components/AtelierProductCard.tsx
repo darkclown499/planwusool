@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Check, Gift, Heart, Plus } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { toast } from '@/components/custom-toast';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore, type V2Product } from '../../shared/hooks';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
@@ -33,11 +33,11 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
   const remaining = lowStockRemaining(product);
   const variable = isVariableProduct(product);
 
-  const mainImage = getImageUrl(product.image || product.images?.[0] || '');
+  const mainImage = getOptimizedImageUrl(product.image || product.images?.[0] || '', 'small');
   const hoverImage = useMemo(() => {
     const candidates = [product.images?.[1], product.images?.[2], product.images?.[0]].filter(Boolean);
     const next = candidates.find((c) => c !== product.image);
-    return next ? getImageUrl(next as string) : null;
+    return next ? getOptimizedImageUrl(next as string, 'small') : null;
   }, [product.image, product.images]);
 
   const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
@@ -74,13 +74,12 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
       {/* Image — fixed portrait ratio so every grid cell aligns */}
       <div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-stone-100">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }} aria-label={product.name} className="block h-full w-full">
-          <img src={mainImage} alt={product.name} loading="lazy"
+          <img src={mainImage} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||product.images?.[0]||'')); (e.currentTarget.style.opacity='1')}} width={400} height={533}
             className="h-full w-full object-cover object-center transition-all duration-700 group-hover:scale-[1.03]"
-            style={{ opacity: hoverImage ? 1 : undefined }}
-            onError={(e) => { (e.currentTarget.style.opacity = '0'); }} />
+            style={{ opacity: hoverImage ? 1 : undefined }} />
           {hoverImage && (
-            <img src={hoverImage} alt="" loading="lazy" aria-hidden
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+            <img src={hoverImage} alt="" loading="lazy" decoding="async" aria-hidden sizes="(max-width:640px) 50vw, 25vw"
+              className="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-700 group-hover:opacity-100" width={400} height={533} />
           )}
         </a>
 

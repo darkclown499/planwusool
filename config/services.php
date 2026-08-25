@@ -89,4 +89,8 @@ return [
         'scope' => env('PLANKTON_SCOPE', 'openid profile email'),
     ],
 
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+    ],
+
 ];
