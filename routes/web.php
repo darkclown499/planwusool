@@ -695,6 +695,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/features', [\App\Http\Controllers\StoreFeaturesController::class, 'show'])->middleware('permission:settings-stores')->name('stores.features');
         Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
         Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');
+
+        // Merchant WhatsApp Order Notifications — honest status, E.164, test message, rate limited (store owner only)
+        Route::get('stores/{id}/notifications/whatsapp', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'index'])->middleware('auth')->name('stores.notifications.whatsapp');
+        Route::put('stores/{id}/notifications/whatsapp', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'update'])->middleware('auth')->name('stores.notifications.whatsapp.update');
+        Route::post('stores/{id}/notifications/whatsapp/test', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'sendTest'])->middleware(['auth', 'throttle:3,10'])->name('stores.notifications.whatsapp.test');
+        Route::get('stores/{id}/notifications/whatsapp/status', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'status'])->middleware('auth')->name('stores.notifications.whatsapp.status');
         Route::put('stores/{id}/settings', [\App\Http\Controllers\StoreSettingsController::class, 'update'])->middleware('permission:settings-stores')->name('stores.settings.update');
         Route::put('stores/{id}/settings/autosave', [\App\Http\Controllers\StoreSettingsController::class, 'autosave'])->middleware('permission:settings-stores')->name('stores.settings.autosave');
         Route::post('stores/{id}/settings/reset-section', [\App\Http\Controllers\StoreSettingsController::class, 'resetSection'])->middleware('permission:settings-stores')->name('stores.settings.reset-section');

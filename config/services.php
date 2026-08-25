@@ -93,4 +93,14 @@ return [
         'key' => env('GEMINI_API_KEY'),
     ],
 
+    'whatsapp' => [
+        'provider' => env('WHATSAPP_PROVIDER', env('WHATSAPP_CLOUD_PROVIDER', '')),
+        'cloud_token' => env('WHATSAPP_CLOUD_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'business_account_id' => env('WHATSAPP_BUSINESS_ACCOUNT_ID'),
+        'twilio_sid' => env('TWILIO_SID'),
+        'twilio_token' => env('TWILIO_AUTH_TOKEN'),
+        'twilio_from' => env('TWILIO_WHATSAPP_FROM'),
+    ],
+
 ];

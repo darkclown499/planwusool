@@ -90,12 +90,13 @@ class StoreConfiguration extends Model
                     'show_search' => 'true',
                     'show_cart' => 'true',
                     'show_auth_button' => 'true',
+                    'customer_accounts_enabled' => 'true',
                 ];
 
                 $result = array_merge($defaults, $configs);
 
                 // Convert string values to boolean for specific keys
-                $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop', 'enable_customer_login', 'enable_customer_registration', 'require_login_checkout', 'show_whatsapp_order_button', 'show_search', 'show_cart', 'show_auth_button'];
+                $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop', 'enable_customer_login', 'enable_customer_registration', 'require_login_checkout', 'show_whatsapp_order_button', 'show_search', 'show_cart', 'show_auth_button', 'customer_accounts_enabled'];
                 foreach ($booleanKeys as $key) {
                     if (isset($result[$key])) {
                         $result[$key] = $result[$key] === 'true' || $result[$key] === true;
