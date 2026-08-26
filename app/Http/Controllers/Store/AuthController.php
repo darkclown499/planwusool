@@ -198,6 +198,8 @@ class AuthController extends Controller
                     $existing = \App\Models\LoyaltyTransaction::where('store_id',$store->id)->where('customer_id',$customer->id)->where('type','signup_bonus')->exists();
                     if (!$existing) app(\App\Services\LoyaltyService::class)->awardSignupBonus($customer);
                 } catch (\Throwable $e) {}
+                // Dispatch welcome email event (idempotent)
+                try { event(new \App\Events\CustomerVerified($customer)); } catch (\Throwable $e) {}
                 if ($request->expectsJson() || $request->header('X-Inertia') || $request->wantsJson()) {
                     return response()->json(['success'=>true,'requires_verification'=>false,'email'=>$customer->email,'message'=>'تم إنشاء الحساب بنجاح'], 200);
                 }

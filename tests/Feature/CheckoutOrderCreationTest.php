@@ -224,10 +224,23 @@ class CheckoutOrderCreationTest extends TestCase
         [$owner, $store] = $this->ownerWithStore();
         $cat = Category::factory()->create(['store_id' => $store->id, 'is_active' => true, 'slug' => 'cat-' . uniqid()]);
         $product = $this->createProduct($store, $cat, 0);
-        $this->addToCartViaApi($store, $product, 5);
+        $res = $this->addToCartViaApiExpect($store, $product, 5);
+        // Hardened cart now rejects OOS at add (422) instead of at order (400). Both enforce no oversell.
+        if ($res->status() === 422) {
+            $this->assertEquals(422, $res->status());
+            return;
+        }
         $payload = $this->checkoutPayload($store);
         $response = $this->postJson($this->placeOrderUrl($store), $payload);
         $this->assertTrue(in_array($response->status(), [400, 500]));
+    }
+    private function addToCartViaApiExpect(Store $store, $product, int $qty = 1)
+    {
+        return $this->postJson('/api/cart/add', [
+            'store_id' => $store->id,
+            'product_id' => $product->id,
+            'quantity' => $qty,
+        ]);
     }
 
     public function test_validation_errors_return_correctly(): void

@@ -234,14 +234,18 @@ class OrderController extends Controller
                 'whatsapp_number' => $request->whatsapp_number,
             ];
 
-            // Prepare cart items
+            // Prepare cart items — variant-aware canonical price
             $cartItems = $calculation['items']->map(function ($item) {
+                $variantSel = $item->variants ? (is_string($item->variants) ? json_decode($item->variants, true) : $item->variants) : null;
+                $combo = method_exists($item->product, 'resolveVariantCombination') ? $item->product->resolveVariantCombination($variantSel) : null;
+                $sku = $combo['sku'] ?? $item->product->sku;
+                $effectivePrice = method_exists($item->product, 'effectivePriceForVariant') ? $item->product->effectivePriceForVariant($variantSel) : (float)($item->product->sale_price ?? $item->product->price);
                 return [
                     'product_id' => $item->product_id,
                     'name' => $item->product->name,
-                    'sku' => $item->product->sku,
-                    'price' => $item->product->price,
-                    'sale_price' => $item->product->sale_price,
+                    'sku' => $sku,
+                    'price' => $effectivePrice,
+                    'sale_price' => null,
                     'quantity' => $item->quantity,
                     'variants' => $item->variants,
                     'taxName' => $item->product->tax->name ?? NULL,

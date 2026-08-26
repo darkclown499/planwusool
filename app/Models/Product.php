@@ -167,6 +167,124 @@ class Product extends Model
     }
     
     /**
+     * Canonical effective price: sale only when 0 < sale < price, else base price.
+     */
+    public function effectivePrice(): float
+    {
+        $price = (float) $this->price;
+        $sale = $this->sale_price !== null && $this->sale_price !== '' ? (float) $this->sale_price : null;
+        if ($sale !== null && $sale > 0 && $sale < $price) {
+            return $sale;
+        }
+        return $price;
+    }
+
+    public function hasEffectiveSale(): bool
+    {
+        $price = (float) $this->price;
+        $sale = $this->sale_price !== null && $this->sale_price !== '' ? (float) $this->sale_price : null;
+        return $sale !== null && $sale > 0 && $sale < $price;
+    }
+
+    /**
+     * Canonical availability respecting track_inventory + allow_backorder.
+     */
+    public function availabilityStatus(): string
+    {
+        if (!$this->track_inventory) return 'in_stock';
+        if ($this->allow_backorder) return 'in_stock';
+        return $this->stock > 0 ? 'in_stock' : 'out_of_stock';
+    }
+
+    /**
+     * Scope for storefront visibility.
+     */
+    public function scopeVisible($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    private const VARIANT_SEP = '‖';
+
+    /**
+     * Resolve selected variant against canonical variant_combinations.
+     * Accepts: map [Color=>Red] , id string "Red‖M" , array values, or null.
+     * Returns matching combination array or null if not found / not required.
+     */
+    public function resolveVariantCombination($selection): ?array
+    {
+        $combinations = $this->variant_combinations;
+        if (!is_array($combinations) || empty($combinations)) return null;
+        if ($selection === null || $selection === '' || (is_array($selection) && empty($selection))) return null;
+
+        // Direct id match (frontend sends id)
+        if (is_string($selection)) {
+            foreach ($combinations as $c) {
+                if (($c['id'] ?? null) === $selection) return $c;
+            }
+            // also try label
+            foreach ($combinations as $c) {
+                if (($c['label'] ?? null) === $selection) return $c;
+            }
+        }
+
+        // Map case: {Color:Red, Size:M} — values must match combination values set
+        if (is_array($selection) && array_keys($selection) !== range(0, count($selection)-1)) {
+            $values = array_values(array_map(fn($v)=>trim((string)$v), $selection));
+            sort($values);
+            foreach ($combinations as $c) {
+                $cVals = $c['values'] ?? [];
+                $sorted = $cVals; sort($sorted);
+                if ($sorted === $values) return $c;
+                // also match via id join
+                if (($c['id'] ?? null) === implode(self::VARIANT_SEP, $cVals) && implode(self::VARIANT_SEP, $values) === $c['id']) return $c;
+            }
+            return null;
+        }
+
+        // Array values case: ['Red','M'] or ['M','Red']
+        if (is_array($selection)) {
+            $vals = array_map(fn($v)=>trim((string)$v), $selection);
+            sort($vals);
+            foreach ($combinations as $c) {
+                $cVals = $c['values'] ?? [];
+                $sorted = $cVals; sort($sorted);
+                if ($sorted === $vals) return $c;
+                if (($c['id'] ?? null) === implode(self::VARIANT_SEP, $selection)) return $c;
+            }
+            // Check json-encoded id
+            $id = implode(self::VARIANT_SEP, $selection);
+            foreach ($combinations as $c) if (($c['id'] ?? null) === $id) return $c;
+        }
+
+        return null;
+    }
+
+    /**
+     * Canonical price for a given variant selection. Falls back to base effectivePrice.
+     */
+    public function effectivePriceForVariant($selection): float
+    {
+        $combo = $this->resolveVariantCombination($selection);
+        if ($combo && isset($combo['price']) && $combo['price'] !== '' && $combo['price'] !== null) {
+            $vPrice = (float) $combo['price'];
+            if ($vPrice > 0 && $vPrice < 9999999) return $vPrice;
+        }
+        return $this->effectivePrice();
+    }
+
+    /**
+     * Whether product has any variant combinations with explicit price.
+     */
+    public function hasVariantPrices(): bool
+    {
+        foreach (($this->variant_combinations ?? []) as $c) {
+            if (isset($c['price']) && $c['price'] !== '' && (float)$c['price'] > 0) return true;
+        }
+        return false;
+    }
+
+    /**
      * Get the reviews for the product.
      */
     public function reviews()
@@ -211,26 +329,43 @@ class Product extends Model
                 \Log::error('Product updated event failed: ' . $e->getMessage(), ['product_id' => $product->id]);
             }
 
-// Invalidate all storefront catalog cache variations (theme/locale)
+            // Targeted invalidation for ThemeController cache permutations
             $storeId = $product->store_id;
-            \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
-            \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
-            // Invalidate pattern-based keys for all theme/locale combinations
-            \Illuminate\Support\Facades\Cache::flush(); // Note: Consider using cache tags in production for granular invalidation
+            $origStoreId = $product->getOriginal('store_id') ?? $storeId;
+            foreach ([$storeId, $origStoreId] as $sid) {
+                \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $sid);
+                \Illuminate\Support\Facades\Cache::forget('store_categories.' . $sid);
+                foreach (\App\Models\Store::ALL_TEMPLATES as $theme) {
+                    foreach (['ar','en'] as $locale) {
+                        \Illuminate\Support\Facades\Cache::forget("store_catalog.{$sid}.theme_{$theme}.locale_{$locale}.active_1");
+                        \Illuminate\Support\Facades\Cache::forget("store_categories.{$sid}.theme_{$theme}.locale_{$locale}");
+                    }
+                }
+            }
         });
  
         static::created(function ($product) {
             $storeId = $product->store_id;
             \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
             \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
-            \Illuminate\Support\Facades\Cache::flush();
+            foreach (\App\Models\Store::ALL_TEMPLATES as $theme) {
+                foreach (['ar','en'] as $locale) {
+                    \Illuminate\Support\Facades\Cache::forget("store_catalog.{$storeId}.theme_{$theme}.locale_{$locale}.active_1");
+                    \Illuminate\Support\Facades\Cache::forget("store_categories.{$storeId}.theme_{$theme}.locale_{$locale}");
+                }
+            }
         });
  
         static::deleted(function ($product) {
             $storeId = $product->store_id;
             \Illuminate\Support\Facades\Cache::forget('store_catalog.' . $storeId);
             \Illuminate\Support\Facades\Cache::forget('store_categories.' . $storeId);
-            \Illuminate\Support\Facades\Cache::flush();
+            foreach (\App\Models\Store::ALL_TEMPLATES as $theme) {
+                foreach (['ar','en'] as $locale) {
+                    \Illuminate\Support\Facades\Cache::forget("store_catalog.{$storeId}.theme_{$theme}.locale_{$locale}.active_1");
+                    \Illuminate\Support\Facades\Cache::forget("store_categories.{$storeId}.theme_{$theme}.locale_{$locale}");
+                }
+            }
         });
     }
 }

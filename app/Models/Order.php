@@ -124,8 +124,21 @@ class Order extends Model
                     if (!$item->product_id) {
                         continue;
                     }
+                    $product = \App\Models\Product::find($item->product_id);
+                    if (!$product) {
+                        continue;
+                    }
+                    // Respect track_inventory — do not mutate stock for non-tracked products
+                    if (!$product->track_inventory) {
+                        continue;
+                    }
+                    // Store isolation guard: product must belong to order's store
+                    if ((int)$product->store_id !== (int)$order->store_id) {
+                        \Illuminate\Support\Facades\Log::warning('Stock restore skipped: product store mismatch', ['order_id'=>$order->id,'product_id'=>$product->id]);
+                        continue;
+                    }
                     \Illuminate\Support\Facades\DB::table('products')
-                        ->where('id', $item->product_id)
+                        ->where('id', $product->id)
                         ->increment('stock', (int) $item->quantity);
                 }
 

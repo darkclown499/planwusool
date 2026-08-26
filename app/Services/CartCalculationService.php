@@ -52,10 +52,16 @@ class CartCalculationService
             ];
         }
 
-        // Calculate subtotal
+        // Calculate subtotal — variant-aware, skip inactive products
         $subtotal = 0;
         foreach ($cartItems as $item) {
-            $itemPrice = $item->product->sale_price ?? $item->product->price;
+            if (!$item->product || !$item->product->is_active) continue;
+            $variantSel = $item->variants ? (is_string($item->variants) ? json_decode($item->variants, true) : $item->variants) : null;
+            if (method_exists($item->product, 'effectivePriceForVariant')) {
+                $itemPrice = $item->product->effectivePriceForVariant($variantSel);
+            } else {
+                $itemPrice = method_exists($item->product, 'effectivePrice') ? $item->product->effectivePrice() : ((float)($item->product->sale_price ?? $item->product->price));
+            }
             $subtotal += $itemPrice * $item->quantity;
         }
 
@@ -227,8 +233,14 @@ class CartCalculationService
         // ─── Tax ───
         $tax = 0;
         foreach ($cartItems as $item) {
+            if (!$item->product || !$item->product->is_active) continue;
             if ($item->product->tax && $item->product->tax->is_active) {
-                $itemPrice = $item->product->sale_price ?? $item->product->price;
+                $variantSel = $item->variants ? (is_string($item->variants) ? json_decode($item->variants, true) : $item->variants) : null;
+                if (method_exists($item->product, 'effectivePriceForVariant')) {
+                    $itemPrice = $item->product->effectivePriceForVariant($variantSel);
+                } else {
+                    $itemPrice = method_exists($item->product, 'effectivePrice') ? $item->product->effectivePrice() : ((float)($item->product->sale_price ?? $item->product->price));
+                }
                 $itemSubtotal = $itemPrice * $item->quantity;
 
                 if ($item->product->tax->type === 'percentage') {

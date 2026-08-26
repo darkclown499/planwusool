@@ -426,6 +426,7 @@ class ThemeController extends Controller
                     }])
                     ->orderBy('sort_order')
                     ->orderBy('name')
+                    ->orderBy('id')
                     ->get()
                     ->map(function ($category) {
                         return [
@@ -505,6 +506,7 @@ class ThemeController extends Controller
                     }])
                     ->orderBy('sort_order')
                     ->orderBy('name')
+                    ->orderBy('id')
                     ->get()
                     ->map(function ($cat) {
                         return [
@@ -703,16 +705,17 @@ class ThemeController extends Controller
      */
     private function formatFullProduct(Product $product): array
     {
+        $hasSale = $product->hasEffectiveSale();
         return [
             'id' => (string) $product->id,
             'name' => $product->name,
-            'price' => $product->sale_price ? (float) $product->sale_price : (float) $product->price,
-            'originalPrice' => $product->sale_price ? (float) $product->price : null,
+            'price' => $hasSale ? (float) $product->sale_price : (float) $product->price,
+            'originalPrice' => $hasSale ? (float) $product->price : null,
             'image' => $product->cover_image ? $product->cover_image : asset('images/avatar/avatar.png'),
             'images' => $product->images ? (is_array($product->images) ? $product->images : (strpos($product->images, ',') !== false ? explode(',', $product->images) : json_decode($product->images, true))) : null,
             'categoryId' => (string) $product->category_id,
             'category' => $product->category ? $product->category->name : 'Uncategorized',
-            'availability' => $product->stock > 0 ? 'in_stock' : 'out_of_stock',
+            'availability' => $product->availabilityStatus(),
             'sku' => $product->sku ?: 'SKU-' . $product->id,
             'stockQuantity' => (int) $product->stock,
             'metaTitle' => $product->meta_title,
@@ -739,10 +742,15 @@ class ThemeController extends Controller
 
         $productModel = Product::where('store_id', $store['id'])
             ->where('id', $product)
+            ->where('is_active', true)
             ->with('category')
             ->first();
 
         if (!$productModel) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+        // Hide if category inactive
+        if ($productModel->category && !$productModel->category->is_active) {
             return response()->json(['error' => 'Product not found'], 404);
         }
 

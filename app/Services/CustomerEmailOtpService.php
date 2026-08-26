@@ -142,6 +142,11 @@ class CustomerEmailOtpService
             }
         } catch (\Throwable $e) {}
 
+        // Dispatch CustomerVerified event for welcome email (after DB commit, store-isolated)
+        try {
+            event(new \App\Events\CustomerVerified($customer->fresh()));
+        } catch (\Throwable $e) {}
+
         return ['ok'=>true,'otp'=>$otp];
     }
 

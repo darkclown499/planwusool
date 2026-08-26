@@ -160,37 +160,48 @@ class ProductController extends Controller
             return redirect()->back()->with('error', $productCheck['message']);
         }
         
+        // Normalize inputs: trim name, sku, barcode, images
+        $request->merge([
+            'name' => is_string($request->input('name')) ? trim($request->input('name')) : $request->input('name'),
+            'sku' => is_string($request->input('sku')) ? trim($request->input('sku')) : $request->input('sku'),
+            'barcode' => is_string($request->input('barcode')) ? trim($request->input('barcode')) : $request->input('barcode'),
+            'images' => is_string($request->input('images')) ? trim($request->input('images')) : $request->input('images'),
+        ]);
+        // Reject whitespace-only name explicitly
+        if ($request->input('name') === '') {
+            return redirect()->back()->withErrors(['name' => __('Product name cannot be empty.')])->withInput();
+        }
         // Validation — single source of truth for create+edit
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:100',
             'barcode' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:10000',
             'short_description' => 'nullable|string|max:500',
-            'specifications' => 'nullable|string',
-            'details' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
-            'cost_price' => 'nullable|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'low_stock_warning' => 'nullable|integer|min:0',
+            'specifications' => 'nullable|string|max:10000',
+            'details' => 'nullable|string|max:10000',
+            'price' => 'required|numeric|min:0|max:9999999',
+            'sale_price' => 'nullable|numeric|min:0|max:9999999',
+            'cost_price' => 'nullable|numeric|min:0|max:9999999',
+            'stock' => 'required|integer|min:0|max:999999',
+            'low_stock_warning' => 'nullable|integer|min:0|max:999999',
             'track_inventory' => 'nullable|boolean',
             'allow_backorder' => 'nullable|boolean',
-            'images' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'tax_id' => 'nullable|exists:taxes,id',
+            'images' => 'required|string|max:5000',
+            'category_id' => 'required|integer|exists:categories,id',
+            'tax_id' => 'nullable|integer|exists:taxes,id',
             'is_active' => 'nullable|boolean',
             'is_published' => 'nullable|boolean',
             'is_tax_included' => 'nullable|boolean',
             'is_downloadable' => 'nullable|boolean',
-            'downloadable_file' => 'nullable|string',
+            'downloadable_file' => 'nullable|string|max:2048',
             'meta_title' => 'nullable|string|max:60',
             'meta_description' => 'nullable|string|max:160',
-            'seo_url_slug' => 'nullable|string|max:191',
-            'variants' => 'nullable|array',
-            'variant_combinations' => 'nullable|array',
-            'custom_fields' => 'nullable|array',
-            'quick_specs' => 'nullable|array',
+            'seo_url_slug' => 'nullable|string|max:191|regex:/^[a-z0-9\-_]*$/i',
+            'variants' => 'nullable|array|max:20',
+            'variant_combinations' => 'nullable|array|max:100',
+            'custom_fields' => 'nullable|array|max:20',
+            'quick_specs' => 'nullable|array|max:20',
         ], [], [
             'name' => __('Product Name'),
             'sku' => __('SKU'),
@@ -200,13 +211,22 @@ class ProductController extends Controller
             'stock' => __('Stock Quantity'),
         ]);
         
-        // Store isolation: category must belong to this store
+        // Store isolation: category must belong to this store and be active (or allow but warn)
         $categoryValid = Category::where('id', $request->category_id)->where('store_id', $currentStoreId)->exists();
         if (!$categoryValid) {
             return redirect()->back()->withErrors(['category_id' => __('Invalid category.')])->withInput();
         }
-
+        // sale_price sanity: must be < price if set, else ignore (store null)
+        $priceVal = (float)$request->input('price');
+        $saleVal = $request->input('sale_price') !== null && $request->input('sale_price') !== '' ? (float)$request->input('sale_price') : null;
+        if ($saleVal !== null && ($saleVal <= 0 || $saleVal >= $priceVal)) {
+            $saleVal = null;
+        }
+        // images security: reject traversal/script
         $normalizedImages = trim((string) $request->images);
+        if (str_contains($normalizedImages, '..') || str_contains($normalizedImages, '<script') || str_contains($normalizedImages, 'javascript:')) {
+            return redirect()->back()->withErrors(['images' => __('Invalid image path.')])->withInput();
+        }
         $firstImage = explode(',', $normalizedImages)[0] ?? '';
         $sanitizedDescription = $request->description !== null ? preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description) : null;
         // quick_specs is a structured helper for the new UX; persist as JSON-encoded specifications
@@ -217,24 +237,24 @@ class ProductController extends Controller
             if (count($filtered) > 0) $specsFromQuick = json_encode($filtered, JSON_UNESCAPED_UNICODE);
         }
         $product = new Product();
-        $product->name = $request->name;
-        $product->sku = $request->sku;
-        $product->barcode = $request->barcode;
-        $product->description = $sanitizedDescription;
-        $product->short_description = $request->short_description;
+        $product->name = trim((string)$request->input('name'));
+        $product->sku = $request->input('sku') !== null && $request->input('sku') !== '' ? trim((string)$request->input('sku')) : null;
+        $product->barcode = $request->input('barcode') !== null && $request->input('barcode') !== '' ? trim((string)$request->input('barcode')) : null;
+        $product->description = $sanitizedDescription !== null ? trim($sanitizedDescription) : null;
+        $product->short_description = $request->input('short_description') !== null ? trim((string)$request->input('short_description')) : null;
         $product->specifications = $specsFromQuick ?? $request->specifications;
         $product->details = $request->details;
-        $product->price = $request->price;
-        $product->sale_price = $request->sale_price;
-        $product->cost_price = $request->cost_price;
-        $product->stock = $request->stock;
-        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : 5;
+        $product->price = $priceVal;
+        $product->sale_price = $saleVal;
+        $product->cost_price = $request->input('cost_price') !== null && $request->input('cost_price') !== '' ? (float)$request->input('cost_price') : null;
+        $product->stock = (int)$request->input('stock');
+        $product->low_stock_warning = $request->has('low_stock_warning') ? (int)$request->input('low_stock_warning') : 5;
         $product->track_inventory = $request->has('track_inventory') ? (bool)$request->track_inventory : true;
         $product->allow_backorder = $request->has('allow_backorder') ? (bool)$request->allow_backorder : false;
         $product->cover_image = trim($firstImage);
         $product->images = $normalizedImages;
-        $product->category_id = $request->category_id;
-        $product->tax_id = $request->tax_id;
+        $product->category_id = (int)$request->input('category_id');
+        $product->tax_id = $request->input('tax_id') ? (int)$request->input('tax_id') : null;
         $product->store_id = $currentStoreId;
         // Draft support: is_published=false => is_active=false ; is_active takes precedence if both sent
         if ($request->has('is_active')) {
@@ -246,10 +266,10 @@ class ProductController extends Controller
         }
         $product->is_tax_included = $request->has('is_tax_included') ? (bool)$request->is_tax_included : true;
         $product->is_downloadable = $request->has('is_downloadable') ? (bool)$request->is_downloadable : false;
-        $product->downloadable_file = $request->downloadable_file;
-        $product->meta_title = $request->meta_title;
-        $product->meta_description = $request->meta_description;
-        $product->seo_url_slug = $request->seo_url_slug;
+        $product->downloadable_file = $request->input('downloadable_file') ? trim((string)$request->input('downloadable_file')) : null;
+        $product->meta_title = $request->input('meta_title') ? trim((string)$request->input('meta_title')) : null;
+        $product->meta_description = $request->input('meta_description') ? trim((string)$request->input('meta_description')) : null;
+        $product->seo_url_slug = $request->input('seo_url_slug') ? trim((string)$request->input('seo_url_slug')) : null;
         $product->variants = $request->variants;
         $product->variant_combinations = $request->variant_combinations;
         $product->custom_fields = $request->custom_fields;
@@ -328,36 +348,45 @@ class ProductController extends Controller
         
         $product = Product::where('store_id', $currentStoreId)->findOrFail($id);
         
+        $request->merge([
+            'name' => is_string($request->input('name')) ? trim($request->input('name')) : $request->input('name'),
+            'sku' => is_string($request->input('sku')) ? trim($request->input('sku')) : $request->input('sku'),
+            'barcode' => is_string($request->input('barcode')) ? trim($request->input('barcode')) : $request->input('barcode'),
+            'images' => is_string($request->input('images')) ? trim($request->input('images')) : $request->input('images'),
+        ]);
+        if ($request->input('name') === '') {
+            return redirect()->back()->withErrors(['name' => __('Product name cannot be empty.')])->withInput();
+        }
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:100',
             'barcode' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:10000',
             'short_description' => 'nullable|string|max:500',
-            'specifications' => 'nullable|string',
-            'details' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'sale_price' => 'nullable|numeric|min:0',
-            'cost_price' => 'nullable|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'low_stock_warning' => 'nullable|integer|min:0',
+            'specifications' => 'nullable|string|max:10000',
+            'details' => 'nullable|string|max:10000',
+            'price' => 'required|numeric|min:0|max:9999999',
+            'sale_price' => 'nullable|numeric|min:0|max:9999999',
+            'cost_price' => 'nullable|numeric|min:0|max:9999999',
+            'stock' => 'required|integer|min:0|max:999999',
+            'low_stock_warning' => 'nullable|integer|min:0|max:999999',
             'track_inventory' => 'nullable|boolean',
             'allow_backorder' => 'nullable|boolean',
-            'images' => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'tax_id' => 'nullable|exists:taxes,id',
+            'images' => 'required|string|max:5000',
+            'category_id' => 'required|integer|exists:categories,id',
+            'tax_id' => 'nullable|integer|exists:taxes,id',
             'is_active' => 'nullable|boolean',
             'is_published' => 'nullable|boolean',
             'is_tax_included' => 'nullable|boolean',
             'is_downloadable' => 'nullable|boolean',
-            'downloadable_file' => 'nullable|string',
+            'downloadable_file' => 'nullable|string|max:2048',
             'meta_title' => 'nullable|string|max:60',
             'meta_description' => 'nullable|string|max:160',
-            'seo_url_slug' => 'nullable|string|max:191',
-            'variants' => 'nullable|array',
-            'variant_combinations' => 'nullable|array',
-            'custom_fields' => 'nullable|array',
-            'quick_specs' => 'nullable|array',
+            'seo_url_slug' => 'nullable|string|max:191|regex:/^[a-z0-9\-_]*$/i',
+            'variants' => 'nullable|array|max:20',
+            'variant_combinations' => 'nullable|array|max:100',
+            'custom_fields' => 'nullable|array|max:20',
+            'quick_specs' => 'nullable|array|max:20',
         ], [], [
             'name' => __('Product Name'),
             'sku' => __('SKU'),
@@ -371,6 +400,12 @@ class ProductController extends Controller
         $categoryValid = Category::where('id', $request->category_id)->where('store_id', $currentStoreId)->exists();
         if (!$categoryValid) {
             return redirect()->back()->withErrors(['category_id' => __('Invalid category.')])->withInput();
+        }
+        $priceVal = (float)$request->input('price');
+        $saleVal = $request->input('sale_price') !== null && $request->input('sale_price') !== '' ? (float)$request->input('sale_price') : null;
+        if ($saleVal !== null && ($saleVal <= 0 || $saleVal >= $priceVal)) $saleVal = null;
+        if (str_contains(trim((string)$request->images), '..') || str_contains(trim((string)$request->images), '<script') || str_contains(trim((string)$request->images), 'javascript:')) {
+            return redirect()->back()->withErrors(['images' => __('Invalid image path.')])->withInput();
         }
 
         $normalizedImages = trim((string) $request->images);
@@ -403,32 +438,32 @@ class ProductController extends Controller
             }
         }
         
-        $sanitizedDescription = $request->has('description') && $request->description !== null ? preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description) : $product->description;
-        $product->name = $request->name;
-        $product->sku = $request->sku;
-        $product->barcode = $request->barcode;
-        $product->description = $sanitizedDescription;
-        $product->short_description = $request->has('short_description') ? $request->short_description : $product->short_description;
+        $sanitizedDescription = $request->has('description') && $request->description !== null ? trim(preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description)) : $product->description;
+        $product->name = trim((string)$request->input('name'));
+        $product->sku = $request->input('sku') !== null && $request->input('sku') !== '' ? trim((string)$request->input('sku')) : null;
+        $product->barcode = $request->input('barcode') !== null && $request->input('barcode') !== '' ? trim((string)$request->input('barcode')) : null;
+        $product->description = $sanitizedDescription !== null && $sanitizedDescription !== '' ? $sanitizedDescription : $product->description;
+        $product->short_description = $request->has('short_description') ? ($request->input('short_description') !== null ? trim((string)$request->input('short_description')) : null) : $product->short_description;
         $product->specifications = $effectiveSpecifications;
         $product->details = $request->has('details') ? $request->details : $product->details;
-        $product->price = $request->price;
-        $product->sale_price = $request->sale_price;
-        $product->cost_price = $request->has('cost_price') ? $request->cost_price : $product->cost_price;
-        $product->stock = $request->stock;
-        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : $product->low_stock_warning;
+        $product->price = $priceVal;
+        $product->sale_price = $saleVal;
+        $product->cost_price = $request->input('cost_price') !== null && $request->input('cost_price') !== '' ? (float)$request->input('cost_price') : $product->cost_price;
+        $product->stock = (int)$request->input('stock');
+        $product->low_stock_warning = $request->has('low_stock_warning') ? (int)$request->input('low_stock_warning') : $product->low_stock_warning;
         $product->track_inventory = $request->has('track_inventory') ? (bool)$request->track_inventory : $product->track_inventory;
         $product->allow_backorder = $request->has('allow_backorder') ? (bool)$request->allow_backorder : $product->allow_backorder;
         $product->cover_image = trim($firstImage);
         $product->images = $normalizedImages;
-        $product->category_id = $request->category_id;
-        $product->tax_id = $request->tax_id;
+        $product->category_id = (int)$request->input('category_id');
+        $product->tax_id = $request->input('tax_id') ? (int)$request->input('tax_id') : null;
         $product->is_active = $newIsActive;
         $product->is_tax_included = $request->has('is_tax_included') ? (bool)$request->is_tax_included : $product->is_tax_included;
         $product->is_downloadable = $request->has('is_downloadable') ? (bool)$request->is_downloadable : $product->is_downloadable;
-        $product->downloadable_file = $request->has('downloadable_file') ? $request->downloadable_file : $product->downloadable_file;
-        $product->meta_title = $request->has('meta_title') ? $request->meta_title : $product->meta_title;
-        $product->meta_description = $request->has('meta_description') ? $request->meta_description : $product->meta_description;
-        $product->seo_url_slug = $request->has('seo_url_slug') ? $request->seo_url_slug : $product->seo_url_slug;
+        $product->downloadable_file = $request->has('downloadable_file') ? ($request->input('downloadable_file') ? trim((string)$request->input('downloadable_file')) : null) : $product->downloadable_file;
+        $product->meta_title = $request->has('meta_title') ? ($request->input('meta_title') ? trim((string)$request->input('meta_title')) : null) : $product->meta_title;
+        $product->meta_description = $request->has('meta_description') ? ($request->input('meta_description') ? trim((string)$request->input('meta_description')) : null) : $product->meta_description;
+        $product->seo_url_slug = $request->has('seo_url_slug') ? ($request->input('seo_url_slug') ? trim((string)$request->input('seo_url_slug')) : null) : $product->seo_url_slug;
         $product->variants = $request->has('variants') ? $request->variants : $product->variants;
         $product->variant_combinations = $request->has('variant_combinations') ? $request->variant_combinations : $product->variant_combinations;
         $product->custom_fields = $request->has('custom_fields') ? $request->custom_fields : $product->custom_fields;

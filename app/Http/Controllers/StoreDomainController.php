@@ -53,21 +53,41 @@ class StoreDomainController extends Controller
     /**
      * List all domains for a store, plus the DNS setup hints.
      * Serves both Inertia page (HTML) and JSON API (XHR) from same URI.
+     *
+     * IMPORTANT: Inertia visits (X-Inertia header) must ALWAYS receive an
+     * Inertia response, never plain JSON — otherwise the frontend shows:
+     * "All Inertia requests must receive a valid Inertia response, however
+     * a plain JSON response was received."
+     * The JSON branch is only for the DomainsTab component via apiGet().
      */
     public function index(Request $request, $storeId)
     {
         $store = $this->resolveStore($storeId);
 
+        $isInertia = (bool) $request->header('X-Inertia');
+
         if ($gate = $this->requireDomainPlan($store)) {
-            // For Inertia visits, render error page; for API, JSON already handled
+            // Inertia visits should never receive plain JSON for the plan gate either
+            if ($isInertia) {
+                return redirect()->back()->with('error', 'ربط النطاق المخصص غير متاح في خطتك الحالية.');
+            }
+            // For API/XHR callers, return the JSON gate response
             if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return $gate;
             }
             return redirect()->back()->with('error', 'ربط النطاق المخصص غير متاح في خطتك الحالية.');
         }
 
+        // Inertia visits must always render the page — never JSON
+        if ($isInertia) {
+            return \Inertia\Inertia::render('stores/domains', [
+                'store' => $store,
+            ]);
+        }
+
         // JSON API branch — used by DomainsTab component via apiGet()
-        if ($request->expectsJson() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->header('Accept') === 'application/json') {
+        // Explicitly exclude Inertia requests (defense in depth)
+        if (!$isInertia && ($request->expectsJson() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->header('Accept') === 'application/json')) {
             $domains = $store->storeDomains()
                 ->orderByDesc('is_primary')
                 ->orderBy('id')
@@ -91,7 +111,7 @@ class StoreDomainController extends Controller
             ]);
         }
 
-        // Inertia page branch — canonical merchant UI
+        // Inertia page branch — canonical merchant UI (non-Inertia HTML fallback)
         return \Inertia\Inertia::render('stores/domains', [
             'store' => $store,
         ]);

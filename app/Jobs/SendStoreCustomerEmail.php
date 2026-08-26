@@ -30,7 +30,9 @@ class SendStoreCustomerEmail implements ShouldQueue
         public ?int $orderId = null,
         public ?int $shipmentId = null,
         public ?int $customerId = null
-    ) {}
+    ) {
+        $this->onQueue('notifications');
+    }
 
     public function handle(): void
     {
@@ -112,7 +114,9 @@ class SendStoreCustomerEmail implements ShouldQueue
             case 'shipment_returned':
                 return [$store->name.' — تم الإرجاع', '<p style="color:#334155;">تم إرجاع شحنتك.</p>'];
             case 'welcome_customer':
-                return ['مرحباً بك في '.$store->name, '<p style="color:#334155;">مرحباً بك في '.$store->name.'! سعداء بانضمامك.</p>'];
+                $link = $store->getStoreUrl() ?? config('app.url');
+                $safeLink = e($link);
+                return ['مرحباً بك في '.$store->name, '<p style="color:#334155;">مرحباً بك في <strong>'.e($store->name).'</strong>! تم تفعيل حسابك بنجاح.</p><p style="color:#334155;">يمكنك الآن متابعة طلباتك وإدارة حسابك.</p><p><a href="'.$safeLink.'" style="display:inline-block;background:#7c3aed;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;">الذهاب إلى المتجر</a></p>'];
             default:
                 return [$store->name.' — إشعار', '<p>لديك إشعار جديد من '.$store->name.'.</p>'];
         }

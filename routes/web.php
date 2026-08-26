@@ -273,6 +273,8 @@ Route::middleware('api.throttle')->group(function () {
     Route::post('api/cart/sync-abandoned', [CartTrackingController::class, 'track'])->name('api.cart.sync-abandoned');
     // Categories API with explicit storeId validation — fallback to empty list instead of 500
     Route::get('api/categories', [\App\Http\Controllers\CategoryController::class, 'apiIndex'])->name('api.categories.index');
+    // Storefront product search — store-scoped, active only
+    Route::get('api/storefront/search', [\App\Http\Controllers\Api\StorefrontSearchController::class, 'search'])->name('api.storefront.search');
     
     // Store content/banners API (authenticated, store owner only)
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/content')->name('api.store-content.')->group(function () {
