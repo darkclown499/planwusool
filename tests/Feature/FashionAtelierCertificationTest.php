@@ -43,11 +43,15 @@ class FashionAtelierCertificationTest extends TestCase
         $src = file_get_contents(resource_path('js/templates-v2/fashion-atelier/overlays/AtelierSearchOverlay.tsx'));
         $this->assertStringNotContainsString('فستان زفاف', $src);
         $this->assertStringNotContainsString('demo', strtolower($src));
+        // must use canonical server endpoint (store-scoped, active only) not pure client filter
+        $this->assertStringContainsString('api/storefront/search', $src);
+        $this->assertStringContainsString('store_id', $src);
         // suggestions derived from real product names
         $this->assertStringContainsString('suggestions', $src);
         $this->assertStringContainsString('products.slice', $src);
-        // empty state must be spec phrase
+        // empty state must be spec phrase + loading/error states
         $this->assertStringContainsString('لم نجد منتجات مطابقة', $src);
+        $this->assertStringContainsString('جارٍ البحث', $src);
     }
 
     public function test_loyalty_hidden_when_disabled(): void
@@ -103,6 +107,26 @@ class FashionAtelierCertificationTest extends TestCase
         // FALLBACK_SLIDES should not leak when hasDynamicHero false and slides empty
         $this->assertStringContainsString('return null', $src);
         $this->assertStringContainsString('hasDynamicHero', $src);
+        // desktop height must be clamp-based (420-520) not giant viewport aspect
+        $this->assertStringContainsString('clamp', $src);
+        $this->assertStringNotContainsString('aspect-[16/9]', $src);
+        // must use object-cover (not contain with black letterbox) for premium feel
+        $this->assertStringContainsString('object-cover', $src);
+    }
+
+    public function test_hero_height_is_responsive(): void
+    {
+        $src = file_get_contents(resource_path('js/templates-v2/fashion-atelier/components/AtelierHero.tsx'));
+        $this->assertStringContainsString('520px', $src);
+        $this->assertStringContainsString('360px', $src);
+    }
+
+    public function test_cart_free_shipping_rtl_and_empty_hidden(): void
+    {
+        $src = file_get_contents(resource_path('js/templates-v2/fashion-atelier/overlays/AtelierCartDrawer.tsx'));
+        $this->assertStringContainsString('items.length > 0', $src, 'free shipping must hide when cart empty');
+        $this->assertStringContainsString('dir="rtl"', $src);
+        $this->assertStringContainsString('marginInlineStart', $src);
     }
 
     public function test_store_isolation(): void

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Loader2, Search, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
 
@@ -9,17 +9,22 @@ interface AtelierSearchOverlayProps {
 }
 
 /**
- * Compact header search modal — replaces the previous full-screen opaque
- * overlay. Floating centered card with backdrop blur, dynamic branding, and
- * inline autocomplete grid.
+ * Compact header search — now server-backed via canonical StorefrontSearchController
+ * (GET /api/storefront/search?q=...&store_id=...). Store-scoped, active products
+ * & active categories only, Arabic/English/SKU, variant-aware availability/price.
+ * Suggestions still derive from real store data (chips), never hardcoded.
  */
 export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onClose, onProductClick }) => {
   const { product, store, config } = useStorefrontCore();
   const formatPrice = usePriceFormatter();
   const [query, setQuery] = useState('');
+  const [serverResults, setServerResults] = useState<any[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const storeName = (config as any)?.storeName || (store as any)?.name || 'المتجر';
+  const storeId = (store as any)?.id;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -34,17 +39,31 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
     };
   }, [onClose]);
 
+  // Debounced server search — canonical endpoint (store-scoped, active only)
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) { setServerResults(null); setLoading(false); setError(null); return; }
+    if (!storeId) { setServerResults([]); return; }
+    let cancelled = false;
+    setLoading(true); setError(null);
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        const url = `/api/storefront/search?q=${encodeURIComponent(q.slice(0,100))}&store_id=${encodeURIComponent(String(storeId))}&limit=8`;
+        const res = await fetch(url, { headers: { Accept:'application/json', 'X-Requested-With':'XMLHttpRequest' }, signal: ctrl.signal });
+        if (!res.ok) throw new Error(`search ${res.status}`);
+        const json: any = await res.json();
+        if (!cancelled) setServerResults(Array.isArray(json.products) ? json.products : []);
+      } catch (e:any) {
+        if (e?.name === 'AbortError') return;
+        if (!cancelled) { setError('تعذر البحث — حاول مرة أخرى'); setServerResults([]); }
+      } finally { if (!cancelled) setLoading(false); }
+    }, 320);
+    return () => { cancelled = true; ctrl.abort(); clearTimeout(t); };
+  }, [query, storeId]);
+
   const products = product?.products || [];
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (q.length < 2) return [];
-    return products
-      .filter((p: any) => {
-        const hay = `${p.name || ''} ${p.sku || ''} ${p.category || ''}`.toLowerCase();
-        return hay.includes(q);
-      })
-      .slice(0, 8);
-  }, [query, products]);
+  const results = serverResults !== null ? serverResults : [];
 
   const suggestions = useMemo(() => {
     const names = new Set<string>();
@@ -124,9 +143,13 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
             </div>
           )}
 
-          {/* Results */}
+          {/* Results — loading / error / empty / grid */}
           <div className="mt-2 max-h-[50vh] overflow-y-auto">
-            {query.trim().length >= 2 && results.length === 0 ? (
+            {query.trim().length >= 2 && loading ? (
+              <div className="flex items-center justify-center gap-2 py-8 text-sm text-stone-500"><Loader2 className="h-4 w-4 animate-spin" /> جارٍ البحث…</div>
+            ) : query.trim().length >= 2 && error ? (
+              <p className="py-8 text-center text-sm text-red-500">{error}</p>
+            ) : query.trim().length >= 2 && results.length === 0 ? (
               <p className="py-8 text-center text-sm text-stone-500">لم نجد منتجات مطابقة</p>
             ) : query.trim().length >= 2 && results.length > 0 ? (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -136,6 +159,7 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
                     type="button"
                     onClick={() => {
                       onClose();
+                      // Server result shape is V2-compatible; ProductContext will fetch full detail if needed
                       onProductClick(p);
                     }}
                     className="group flex items-center gap-3 rounded-xl border border-stone-100 bg-stone-50 p-3 text-right transition hover:border-[#9d7463]/30 hover:bg-white hover:shadow-md text-start"
@@ -150,7 +174,11 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-stone-800 group-hover:text-[#9d7463]">{p.name}</span>
-                      <span className="mt-1 block text-sm font-bold text-stone-900">{formatPrice(p.price)}</span>
+                      <span className="mt-1 flex items-baseline gap-2">
+                        <span className="text-sm font-bold text-stone-900">{formatPrice(p.price)}</span>
+                        {p.originalPrice && Number(p.originalPrice) > Number(p.price) && <span className="text-xs text-stone-400 line-through">{formatPrice(p.originalPrice)}</span>}
+                        {p.availability === 'out_of_stock' && <span className="text-[11px] font-bold text-red-500">نفذت</span>}
+                      </span>
                     </span>
                   </button>
                 ))}

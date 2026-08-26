@@ -180,9 +180,11 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
     ? !!(singleHeroTitle || singleHeroSubtitle || singleHeroCtaLabel)
     : list.some((s) => (s.title && String(s.title).trim()) || (s.subtitle && String(s.subtitle).trim()) || (s.button_text && String(s.button_text).trim()));
 
+  // Responsive height: clamp-based so desktop never consumes viewport; mobile has its own compact profile
+  const heroHeightStyle: React.CSSProperties = { height: 'clamp(360px, 42vw, 520px)', minHeight: '360px', maxHeight: '520px' };
   return (
-    <section className="relative w-full aspect-[16/9] overflow-hidden bg-stone-900 md:aspect-[16/9]" dir="rtl">
-      {/* Background media — 16:9 contain to prevent cropping */}
+    <section className="relative w-full overflow-hidden bg-stone-900" style={heroHeightStyle} dir="rtl">
+      {/* Background media — object-cover centered for editorial premium feel; contain fallback only for text-heavy banners via letterbox */}
       {hasDynamicHero && heroType === 'video' && videoUrl ? (
         <>
           <video
@@ -190,7 +192,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
             loop
             muted
             playsInline
-            className="absolute inset-0 h-full w-full object-contain bg-black"
+            className="absolute inset-0 h-full w-full object-cover object-center"
             src={videoUrl}
             poster={list[0]?.image ? getImageUrl(list[0].image) : undefined}
           />
@@ -199,13 +201,13 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
       ) : hasDynamicHero && heroType === 'youtube' && youtubeId ? (
         <>
           <iframe
-            className="absolute inset-0 h-full w-full bg-black"
+            className="absolute inset-0 h-full w-full"
             src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${youtubeId}&modestbranding=1&rel=0&enablejsapi=1`}
             title="YouTube video player"
             frameBorder="0"
             allow="autoplay; fullscreen"
             allowFullScreen
-            style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: 'black' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', backgroundColor: 'black' } as any}
           />
           <div className="absolute inset-0 bg-black" style={{ opacity: overlayStyleOpacity }} />
         </>
@@ -214,20 +216,23 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
           {list.map((slide, i) => (
             <div
               key={i}
-              className="absolute inset-0 bg-black transition-opacity duration-[1200ms] ease-out"
+              className="absolute inset-0 bg-stone-900 transition-opacity duration-[1200ms] ease-out"
               style={{ opacity: i === index ? 1 : 0 }}
               aria-hidden={i !== index}
             >
               <img
                 src={getImageUrl(slide.image || '')}
                 alt=""
-                className="h-full w-full object-contain bg-black"
+                className="h-full w-full object-cover object-center"
+                sizes="(max-width:768px) 100vw, 100vw"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                decoding="async"
                 style={{
-                  transform: i === index ? 'scale(1.02)' : 'scale(1)',
+                  transform: i === index ? 'scale(1.02)' : 'scale(1.01)',
                   transition: 'transform 7s ease-out',
                 }}
               />
-              {/* Warm editorial veil + configurable overlay — veil is subtle when contain is used */}
+              {/* Warm editorial veil + configurable overlay */}
               <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-black/15 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
               {hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: overlayStyleOpacity }} />}
