@@ -95,6 +95,11 @@ class Order extends Model
         return $this->belongsTo(Shipping::class, 'shipping_method_id');
     }
 
+    public function returns(): HasMany
+    {
+        return $this->hasMany(\App\Models\OrderReturn::class);
+    }
+
     public static function generateOrderNumber(): string
     {
         do {
@@ -108,38 +113,45 @@ class Order extends Model
      * Restore the product quantities deducted when this order was created, once
      * the order reaches a terminal state (failed / cancelled / refunded).
      * Guarded by the stock_restored flag so it only ever runs once.
+     * Variant-aware: restores to the exact combination that was decremented.
      */
     protected static function boot()
     {
         parent::boot();
 
         static::updating(function (Order $order) {
-            $terminal = in_array(strtolower((string) $order->status), ['failed', 'cancelled', 'refunded'], true)
+            // Financial refund no longer auto-restores inventory — only failed/cancelled do.
+            $terminal = in_array(strtolower((string) $order->status), ['failed', 'cancelled'], true)
                 || strtolower((string) $order->payment_status) === 'failed';
 
             if (!$terminal || (bool) $order->stock_restored || !$order->exists) {
                 // still check loyalty even if stock already restored — loyalty uses its own idempotency
             } else {
-                foreach ($order->items()->get() as $item) {
-                    if (!$item->product_id) {
-                        continue;
+                // Transaction + row locking for idempotent restore (prevents double restore race)
+                try {
+                    \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+                        // Lock the order row with CAS on stock_restored to prevent concurrent double restore
+                        $locked = \Illuminate\Support\Facades\DB::table('orders')
+                            ->where('id', $order->id)
+                            ->where('stock_restored', false)
+                            ->lockForUpdate()
+                            ->first();
+                        if (!$locked) {
+                            // Already restored by concurrent transaction
+                            return;
+                        }
+                        foreach ($order->items()->get() as $item) {
+                            if (!$item->product_id) continue;
+                            \App\Services\InventoryService::restoreForOrderItem($item, (int) $order->store_id);
+                        }
+                    });
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Stock restore transaction failed', ['order_id'=>$order->id,'error'=>$e->getMessage()]);
+                    // Fallback: attempt per-item without transaction (best-effort)
+                    foreach ($order->items()->get() as $item) {
+                        if (!$item->product_id) continue;
+                        try { \App\Services\InventoryService::restoreForOrderItem($item, (int) $order->store_id); } catch (\Throwable $ignored) {}
                     }
-                    $product = \App\Models\Product::find($item->product_id);
-                    if (!$product) {
-                        continue;
-                    }
-                    // Respect track_inventory — do not mutate stock for non-tracked products
-                    if (!$product->track_inventory) {
-                        continue;
-                    }
-                    // Store isolation guard: product must belong to order's store
-                    if ((int)$product->store_id !== (int)$order->store_id) {
-                        \Illuminate\Support\Facades\Log::warning('Stock restore skipped: product store mismatch', ['order_id'=>$order->id,'product_id'=>$product->id]);
-                        continue;
-                    }
-                    \Illuminate\Support\Facades\DB::table('products')
-                        ->where('id', $product->id)
-                        ->increment('stock', (int) $item->quantity);
                 }
 
                 $order->forceFill(['stock_restored' => true]);

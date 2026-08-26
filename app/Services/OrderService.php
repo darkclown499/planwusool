@@ -76,44 +76,22 @@ class OrderService
                 'coupon_discount' => $orderData['coupon_discount'] ?? 0,
             ]);
 
-            // Create order items and update inventory
+            // Create order items and update inventory — canonical variant-aware with row locking
+            // Store_id needed for inventory isolation
+            $storeIdForInventory = (int) $orderData['store_id'];
             foreach ($cartItems as $cartItem) {
                 $unitPrice = $cartItem['sale_price'] ?? $cartItem['price'];
                 
-                // Check and update product inventory
-                $product = Product::find($cartItem['product_id']);
-                if ($product) {
-                    $tracking = (bool) ($product->track_inventory ?? true);
-                    $backorder = (bool) $product->allow_backorder;
-
-                    if (!$tracking) {
-                        // Inventory tracking is disabled for this product.
-                    } elseif ($backorder) {
-                        // Backorders allowed: record the sale; stock may go negative.
-                        $product->decrement('stock', $cartItem['quantity']);
-                    } else {
-                        // Atomic conditional decrement prevents concurrent oversell
-                        // (two simultaneous requests can never both pass the check).
-                        $decremented = DB::table('products')
-                            ->where('id', $product->id)
-                            ->where('stock', '>=', $cartItem['quantity'])
-                            ->decrement('stock', $cartItem['quantity']);
-
-                        if (!$decremented) {
-                            throw new \Exception("Insufficient stock for product: {$cartItem['name']}");
-                        }
-                    }
-
-                    // Notify the merchant when stock drops at/below the product's
-                    // configured warning threshold (defaults to 5).
-                    if ($tracking) {
-                        $threshold = (int) ($product->low_stock_warning ?: 5);
-                        $product->refresh();
-                        if ($product->stock !== null && $product->stock <= $threshold) {
-                            MerchantNotificationService::lowStock($product, $threshold);
-                        }
-                    }
+                // Decrement inventory via canonical service (locks product row, handles variant/product/backorder)
+                $decrementResult = null;
+                try {
+                    $decrementResult = \App\Services\InventoryService::decrementForCartLine($cartItem, $storeIdForInventory);
+                } catch (\Exception $e) {
+                    throw $e;
                 }
+                $variantCombinationId = $decrementResult['combination_id'] ?? null;
+                $variantUuid = $decrementResult['variant_uuid'] ?? null;
+                $inventoryMode = $decrementResult['inventory_mode'] ?? 'product';
                 
                 // Calculate tax for this item
                 $itemTotal = $unitPrice * $cartItem['quantity'];
@@ -135,6 +113,9 @@ class OrderService
                     'product_price' => $cartItem['price'],
                     'quantity' => $cartItem['quantity'],
                     'product_variants' => $cartItem['variants'] ?? null,
+                    'variant_combination_id' => $variantCombinationId,
+                    'variant_uuid' => $variantUuid,
+                    'inventory_mode' => $inventoryMode,
                     'unit_price' => $unitPrice,
                     'total_price' => $itemTotal,
                     'tax_details' => json_encode([

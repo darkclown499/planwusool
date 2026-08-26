@@ -206,8 +206,25 @@ class OrderController extends Controller
             ],
         ];
         
+        // Returns for this order
+        $returns = \App\Models\OrderReturn::where('store_id',$storeId)->where('order_id',$order->id)->with('items.orderItem')->orderBy('created_at','desc')->get()->map(function($r){
+            return [
+                'id'=>$r->id,
+                'return_number'=>$r->return_number,
+                'status'=>$r->status,
+                'refund_status'=>$r->refund_status,
+                'refund_amount'=>(float)$r->refund_amount,
+                'reason'=>$r->reason,
+                'customer_note'=>$r->customer_note,
+                'merchant_note'=>$r->merchant_note,
+                'created_at'=>$r->created_at->format('Y-m-d H:i'),
+                'items'=>$r->items->map(fn($i)=>['id'=>$i->id,'order_item_id'=>$i->order_item_id,'product_name'=>$i->orderItem?->product_name,'quantity'=>$i->quantity,'restocked'=>$i->restocked_quantity,'refund'=>(float)$i->refund_amount,'reason'=>$i->reason])->values(),
+            ];
+        });
+
         return Inertia::render('orders/show', [
-            'order' => $formattedOrder
+            'order' => $formattedOrder,
+            'returns' => $returns,
         ]);
     }
 

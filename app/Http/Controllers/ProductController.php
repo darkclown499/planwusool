@@ -23,10 +23,24 @@ class ProductController extends Controller
 
         // Statistics are computed from the store-scoped query so they stay
         // accurate regardless of the active filters/pagination.
+        // Variant-aware low_stock: products using variant inventory are low-stock if ANY tracked variant <= threshold and stock >0, or all combos 0 with no backorder.
         $statsQuery = Product::where('store_id', $currentStoreId);
         $totalProducts = $statsQuery->count();
         $activeProducts = (clone $statsQuery)->where('is_active', true)->count();
-        $lowStockProducts = (clone $statsQuery)->where('stock', '<', $lowStockThreshold)->count();
+        $allForStats = Product::where('store_id', $currentStoreId)->get();
+        $lowStockProducts = $allForStats->filter(function($p) use ($lowStockThreshold) {
+            if (!$p->track_inventory) return false;
+            if ($p->allow_backorder) return false;
+            if (\App\Services\InventoryService::isVariantInventory($p)) {
+                foreach (($p->variant_combinations ?? []) as $c) {
+                    $s = (int)($c['stock'] ?? 0);
+                    $th = (int)($c['low_stock_warning'] ?? $p->low_stock_warning ?? $lowStockThreshold);
+                    if ($s > 0 && $s < $th) return true;
+                }
+                return false;
+            }
+            return $p->stock > 0 && $p->stock < $lowStockThreshold;
+        })->count();
         $totalValue = (clone $statsQuery)->sum(\DB::raw('price * stock')) ?: 0;
 
         // Filtered + paginated list.
@@ -51,7 +65,30 @@ class ProductController extends Controller
             } elseif ($status === 'inactive') {
                 $query->where('is_active', false);
             } elseif ($status === 'low_stock') {
-                $query->where('stock', '<', $lowStockThreshold);
+                // Variant-aware: need to include variant-tracked products whose ANY combo is low (< threshold), and exclude untracked/backordered.
+                $variantLowIds = Product::where('store_id', $currentStoreId)
+                    ->where('track_inventory', true)
+                    ->where('allow_backorder', false)
+                    ->get()
+                    ->filter(function($p) use ($lowStockThreshold) {
+                        if (!\App\Services\InventoryService::isVariantInventory($p)) return false;
+                        foreach (($p->variant_combinations ?? []) as $c) {
+                            $s = (int)($c['stock'] ?? 0);
+                            $th = (int)($c['low_stock_warning'] ?? $p->low_stock_warning ?? $lowStockThreshold);
+                            if ($s > 0 && $s < $th) return true;
+                        }
+                        return false;
+                    })->pluck('id')->all();
+                $query->where(function($q) use ($lowStockThreshold, $variantLowIds) {
+                    $q->where(function($qq) use ($lowStockThreshold) {
+                        $qq->where('stock','<',$lowStockThreshold)
+                           ->where('stock','>',0)
+                           ->where('track_inventory', true)
+                           ->where('allow_backorder', false)
+                           ->where(function($q2){ $q2->where('inventory_mode','!=','variant')->orWhereNull('inventory_mode'); });
+                    });
+                    if (!empty($variantLowIds)) $q->orWhereIn('id', $variantLowIds);
+                });
             }
         }
 
@@ -187,6 +224,7 @@ class ProductController extends Controller
             'low_stock_warning' => 'nullable|integer|min:0|max:999999',
             'track_inventory' => 'nullable|boolean',
             'allow_backorder' => 'nullable|boolean',
+            'inventory_mode' => 'nullable|string|in:product,variant',
             'images' => 'required|string|max:5000',
             'category_id' => 'required|integer|exists:categories,id',
             'tax_id' => 'nullable|integer|exists:taxes,id',
@@ -236,6 +274,14 @@ class ProductController extends Controller
             $filtered = array_values(array_filter($quickSpecs, fn($s) => is_array($s) && trim($s['key'] ?? '') !== ''));
             if (count($filtered) > 0) $specsFromQuick = json_encode($filtered, JSON_UNESCAPED_UNICODE);
         }
+        // inventory_mode: explicit merchant intent, default product for backward compatibility; variant only allowed if variants present
+        $rawMode = $request->input('inventory_mode');
+        $hasVariants = is_array($request->variants) && count(array_filter($request->variants, fn($v)=>is_array($v) && !empty(trim($v['name'] ?? ''))))>0;
+        $hasCombos = is_array($request->variant_combinations) && count($request->variant_combinations)>0;
+        if ($rawMode === 'variant' && (!$hasVariants || !$hasCombos)) {
+            $rawMode = 'product'; // can't be variant without variants
+        }
+        $inventoryMode = in_array($rawMode, ['product','variant'], true) ? $rawMode : 'product';
         $product = new Product();
         $product->name = trim((string)$request->input('name'));
         $product->sku = $request->input('sku') !== null && $request->input('sku') !== '' ? trim((string)$request->input('sku')) : null;
@@ -251,6 +297,7 @@ class ProductController extends Controller
         $product->low_stock_warning = $request->has('low_stock_warning') ? (int)$request->input('low_stock_warning') : 5;
         $product->track_inventory = $request->has('track_inventory') ? (bool)$request->track_inventory : true;
         $product->allow_backorder = $request->has('allow_backorder') ? (bool)$request->allow_backorder : false;
+        $product->inventory_mode = $inventoryMode;
         $product->cover_image = trim($firstImage);
         $product->images = $normalizedImages;
         $product->category_id = (int)$request->input('category_id');
@@ -271,11 +318,10 @@ class ProductController extends Controller
         $product->meta_description = $request->input('meta_description') ? trim((string)$request->input('meta_description')) : null;
         $product->seo_url_slug = $request->input('seo_url_slug') ? trim((string)$request->input('seo_url_slug')) : null;
         $product->variants = $request->variants;
-        $product->variant_combinations = $request->variant_combinations;
+        $combos = $request->variant_combinations ?? [];
+        $product->variant_combinations = is_array($combos) ? \App\Models\Product::ensureVariantUuids($combos) : $combos;
         $product->custom_fields = $request->custom_fields;
         $product->save();
-        
-        event(new \App\Events\ProductCreated($product));
         
         return redirect()->route('products.index')->with('success', __('Product created successfully'));
     }
@@ -372,6 +418,7 @@ class ProductController extends Controller
             'low_stock_warning' => 'nullable|integer|min:0|max:999999',
             'track_inventory' => 'nullable|boolean',
             'allow_backorder' => 'nullable|boolean',
+            'inventory_mode' => 'nullable|string|in:product,variant',
             'images' => 'required|string|max:5000',
             'category_id' => 'required|integer|exists:categories,id',
             'tax_id' => 'nullable|integer|exists:taxes,id',
@@ -439,6 +486,19 @@ class ProductController extends Controller
         }
         
         $sanitizedDescription = $request->has('description') && $request->description !== null ? trim(preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description)) : $product->description;
+        if ($request->has('inventory_mode')) {
+            $rawMode = $request->input('inventory_mode');
+            $variantsToCheck = $request->has('variants') ? $request->variants : $product->variants;
+            $combosToCheck = $request->has('variant_combinations') ? $request->variant_combinations : $product->variant_combinations;
+            if (is_string($variantsToCheck)) $variantsToCheck = json_decode($variantsToCheck, true);
+            if (is_string($combosToCheck)) $combosToCheck = json_decode($combosToCheck, true);
+            $hasV = is_array($variantsToCheck) && count(array_filter($variantsToCheck, fn($v)=>is_array($v) && !empty(trim($v['name'] ?? $v['label'] ?? ''))))>0;
+            $hasC = is_array($combosToCheck) && count($combosToCheck)>0;
+            if ($rawMode === 'variant' && (!$hasV || !$hasC)) $rawMode = 'product';
+            if (in_array($rawMode, ['product','variant'], true)) {
+                $product->inventory_mode = $rawMode;
+            }
+        }
         $product->name = trim((string)$request->input('name'));
         $product->sku = $request->input('sku') !== null && $request->input('sku') !== '' ? trim((string)$request->input('sku')) : null;
         $product->barcode = $request->input('barcode') !== null && $request->input('barcode') !== '' ? trim((string)$request->input('barcode')) : null;
@@ -465,11 +525,12 @@ class ProductController extends Controller
         $product->meta_description = $request->has('meta_description') ? ($request->input('meta_description') ? trim((string)$request->input('meta_description')) : null) : $product->meta_description;
         $product->seo_url_slug = $request->has('seo_url_slug') ? ($request->input('seo_url_slug') ? trim((string)$request->input('seo_url_slug')) : null) : $product->seo_url_slug;
         $product->variants = $request->has('variants') ? $request->variants : $product->variants;
-        $product->variant_combinations = $request->has('variant_combinations') ? $request->variant_combinations : $product->variant_combinations;
+        if ($request->has('variant_combinations')) {
+            $combos = $request->variant_combinations ?? [];
+            $product->variant_combinations = is_array($combos) ? \App\Models\Product::ensureVariantUuids($combos) : $combos;
+        }
         $product->custom_fields = $request->has('custom_fields') ? $request->custom_fields : $product->custom_fields;
         $product->save();
-        
-        return redirect()->route('products.index')->with('success', __('Product updated successfully'));
     }
 
     /**

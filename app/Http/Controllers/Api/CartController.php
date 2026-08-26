@@ -36,9 +36,15 @@ class CartController extends Controller
             $variantSel = $item->variants ? (is_string($item->variants) ? json_decode($item->variants, true) : $item->variants) : null;
             $hasVariantPrice = false;
             $variantPrice = null;
+            $resolvedInventory = null;
             if (method_exists($item->product, 'resolveVariantCombination')) {
                 $combo = $item->product->resolveVariantCombination($variantSel);
                 if ($combo && isset($combo['price']) && $combo['price'] !== '' && (float)$combo['price'] > 0) { $hasVariantPrice = true; $variantPrice = (float)$combo['price']; }
+            }
+            // Canonical variant-aware availability: specific combination if variant, else product
+            $inv = null;
+            if (method_exists(\App\Services\InventoryService::class, 'resolve')) {
+                try { $inv = \App\Services\InventoryService::resolve($item->product, $variantSel); } catch (\Throwable $e) {}
             }
             if ($hasVariantPrice) {
                 $price = $variantPrice; $originalPrice = null;
@@ -47,6 +53,23 @@ class CartController extends Controller
                 $price = $hasSale ? (float) $item->product->sale_price : (float) $item->product->price;
                 $originalPrice = $hasSale ? (float) $item->product->price : null;
             }
+            // Determine per-item availability and stockQuantity from inventory resolver
+            $availability = 'in_stock';
+            $stockQty = (int) $item->product->stock;
+            if ($inv) {
+                if (!$inv['tracking'] || $inv['backorder']) {
+                    $availability = 'in_stock';
+                    $stockQty = $inv['available_qty'] !== null ? (int)$inv['available_qty'] : $stockQty;
+                } else {
+                    $availability = $inv['purchasable'] ? 'in_stock' : 'out_of_stock';
+                    $stockQty = $inv['available_qty'] !== null ? (int)$inv['available_qty'] : $stockQty;
+                }
+            } else {
+                $availability = method_exists($item->product, 'availabilityStatus') ? $item->product->availabilityStatus() : ($item->product->stock > 0 ? 'in_stock' : 'out_of_stock');
+            }
+            $resolvedSku = $item->product->sku ?: 'SKU-' . $item->product->id;
+            if ($inv && !empty($inv['combination']['sku'])) $resolvedSku = $inv['combination']['sku'];
+            elseif (isset($combo['sku']) && $combo['sku'] !== '') $resolvedSku = $combo['sku'];
             return [
                 'id' => $item->id,
                 'product_id' => (string) $item->product_id,
@@ -57,9 +80,9 @@ class CartController extends Controller
                 'images' => $item->product->images ? (is_array($item->product->images) ? $item->product->images : (strpos($item->product->images, ',') !== false ? explode(',', $item->product->images) : json_decode($item->product->images, true))) : null,
                 'categoryId' => (string) $item->product->category_id,
                 'category' => $item->product->category ? $item->product->category->name : 'Uncategorized',
-                'availability' => method_exists($item->product, 'availabilityStatus') ? $item->product->availabilityStatus() : ($item->product->stock > 0 ? 'in_stock' : 'out_of_stock'),
-                'sku' => $item->product->sku ?: 'SKU-' . $item->product->id,
-                'stockQuantity' => (int) $item->product->stock,
+                'availability' => $availability,
+                'sku' => $resolvedSku,
+                'stockQuantity' => $stockQty,
                 'description' => $item->product->description,
                 'variants' => $item->variants ? (is_array($item->variants) ? $item->variants : json_decode($item->variants, true)) : null,
                 'customFields' => $item->product->custom_fields ? (is_array($item->product->custom_fields) ? $item->product->custom_fields : json_decode($item->product->custom_fields, true)) : null,
@@ -67,6 +90,8 @@ class CartController extends Controller
                 'taxPercentage' =>$item->product->tax->rate ?? null,
                 'quantity' => $item->quantity,
                 'total' => $item->total,
+                'inventoryMode' => $inv['mode'] ?? 'product',
+                'variantCombinationId' => $inv['combination']['id'] ?? null,
             ];
         });
         
@@ -130,7 +155,7 @@ class CartController extends Controller
                 return response()->json(['message' => __('Please select product options.')], 422);
             }
         }
-        // Stock validation
+        // Stock validation — canonical variant-aware via InventoryService (considers existing cart qty)
         $qty = (int)$request->quantity;
         $existingQty = 0;
         $variantJson = json_encode($variants);
@@ -148,12 +173,19 @@ class CartController extends Controller
         $existingItem = CartItem::where($whereConditions)->first();
         if ($existingItem) $existingQty = (int)$existingItem->quantity;
         $requestedTotal = $existingQty + $qty;
-        if ($product->track_inventory && !$product->allow_backorder) {
-            if ($product->stock <= 0) {
-                return response()->json(['message' => __('Product is out of stock.')], 422);
+
+        // Canonical inventory resolve for this selection
+        $inv = \App\Services\InventoryService::resolve($product, $variants);
+        if ($inv['tracking'] && !$inv['backorder']) {
+            if (!$inv['purchasable']) {
+                // Provide variant-specific message if variant-level
+                $msg = $inv['is_variant'] ? __('This variant is out of stock.') : __('Product is out of stock.');
+                return response()->json(['message' => $msg, 'available' => $inv['available_qty'] ?? 0], 422);
             }
-            if ($requestedTotal > (int)$product->stock) {
-                return response()->json(['message' => __('Requested quantity exceeds available stock.'), 'available' => (int)$product->stock], 422);
+            $available = $inv['available_qty'] ?? 0;
+            if ($requestedTotal > (int)$available) {
+                $msg = $inv['is_variant'] ? __('Requested quantity exceeds available stock for this variant.') : __('Requested quantity exceeds available stock.');
+                return response()->json(['message' => $msg, 'available' => (int)$available], 422);
             }
         }
 
@@ -188,14 +220,25 @@ class CartController extends Controller
     public function update(UpdateCartRequest $request, $id)
     {
         $cartItem = $this->getCartItems($request->store_id, $request)->with('product')->findOrFail($id);
-        // Stock guard on quantity update
+        // Stock guard on quantity update — variant-aware
         $product = $cartItem->product;
-        if ($product && $product->track_inventory && !$product->allow_backorder) {
-            if ((int)$request->quantity > (int)$product->stock) {
-                return response()->json(['message' => __('Requested quantity exceeds available stock.'), 'available' => (int)$product->stock], 422);
-            }
-            if ((int)$product->stock <= 0) {
-                return response()->json(['message' => __('Product is out of stock.')], 422);
+        if ($product) {
+            $variantSel = $cartItem->variants ? (is_string($cartItem->variants) ? json_decode($cartItem->variants, true) : $cartItem->variants) : null;
+            $inv = \App\Services\InventoryService::resolve($product, $variantSel);
+            if ($inv['tracking'] && !$inv['backorder']) {
+                if (!$inv['purchasable']) {
+                    $msg = $inv['is_variant'] ? __('This variant is out of stock.') : __('Product is out of stock.');
+                    return response()->json(['message' => $msg, 'available' => $inv['available_qty'] ?? 0], 422);
+                }
+                $available = $inv['available_qty'] ?? 0;
+                if ((int)$request->quantity > (int)$available) {
+                    $msg = $inv['is_variant'] ? __('Requested quantity exceeds available stock for this variant.') : __('Requested quantity exceeds available stock.');
+                    // Arabic UX expected: "الكمية المتوفرة من هذا الخيار هي X فقط."
+                    if ($inv['is_variant']) {
+                        $msg = "الكمية المتوفرة من هذا الخيار هي {$available} فقط.";
+                    }
+                    return response()->json(['message' => $msg, 'available' => (int)$available], 422);
+                }
             }
         }
         if ($product && !$product->is_active) {

@@ -410,12 +410,72 @@ export default function Products() {
                   </TableHeader>
                   <TableBody>
                     {products.map((product: any) => {
-                      const isLowStock = Number(product.stock) < Number(lowStockThreshold);
-                      const stockColor = product.stock <= 0
-                        ? 'bg-red-100 text-red-800'
-                        : isLowStock
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-emerald-100 text-emerald-800';
+                      const isVariant = (product.inventory_mode === 'variant') && !!product.track_inventory && Array.isArray(product.variant_combinations) && product.variant_combinations.length > 0;
+                      const untracked = !product.track_inventory;
+                      let stockDisplay: any = null;
+                      let stockColor = 'bg-emerald-100 text-emerald-800';
+                      let statusLabel = 'متوفر';
+                      let stockDot = 'bg-emerald-500';
+                      let isLowStock = false;
+                      if (untracked) {
+                        stockDisplay = <span className="text-xs text-muted-foreground">غير متتبع</span>;
+                        stockColor = 'bg-slate-100 text-slate-600';
+                        statusLabel = 'غير متتبع';
+                        stockDot = 'bg-slate-400';
+                      } else if (isVariant) {
+                        const combos = product.variant_combinations || [];
+                        const total = combos.reduce((a: number, c: any) => a + (parseInt(String(c.stock ?? 0)) || 0), 0);
+                        const outCount = combos.filter((c: any) => (parseInt(String(c.stock ?? 0)) || 0) <= 0 && !product.allow_backorder).length;
+                        const lowCount = combos.filter((c: any) => {
+                          const s = parseInt(String(c.stock ?? 0)) || 0;
+                          const th = parseInt(String(c.low_stock_warning ?? product.low_stock_warning ?? lowStockThreshold)) || Number(lowStockThreshold);
+                          return s > 0 && s < th;
+                        }).length;
+                        isLowStock = lowCount > 0;
+                        const allOut = combos.length > 0 && combos.every((c: any) => (parseInt(String(c.stock ?? 0)) || 0) <= 0 && !product.allow_backorder);
+                        if (product.allow_backorder) {
+                          stockColor = 'bg-emerald-100 text-emerald-800';
+                          statusLabel = 'متوفر (طلب مسبق)';
+                          stockDot = 'bg-emerald-500';
+                        } else if (allOut) {
+                          stockColor = 'bg-red-100 text-red-800';
+                          statusLabel = 'نفد المخزون';
+                          stockDot = 'bg-red-500';
+                        } else if (isLowStock) {
+                          stockColor = 'bg-amber-100 text-amber-800';
+                          statusLabel = 'مخزون منخفض';
+                          stockDot = 'bg-amber-500';
+                        }
+                        stockDisplay = (
+                          <span className="inline-flex flex-col gap-0.5">
+                            <span className="inline-flex items-center gap-1.5"><span className={`h-2 w-2 rounded-full ${stockDot}`} /><span className="ltr-num font-bold tabular-nums">{total}</span><span className="text-xs text-muted-foreground">عبر {combos.length} خيارات</span></span>
+                            {outCount > 0 && !allOut && <span className="text-[11px] text-red-600">{outCount} خيارات نفدت</span>}
+                          </span>
+                        );
+                      } else {
+                        isLowStock = Number(product.stock) < Number(lowStockThreshold) && Number(product.stock) > 0;
+                        const out = Number(product.stock) <= 0 && !product.allow_backorder;
+                        if (product.allow_backorder) {
+                          stockColor = 'bg-emerald-100 text-emerald-800';
+                          statusLabel = 'متوفر (طلب مسبق)';
+                          stockDot = 'bg-emerald-500';
+                        } else if (out) {
+                          stockColor = 'bg-red-100 text-red-800';
+                          statusLabel = 'نفد المخزون';
+                          stockDot = 'bg-red-500';
+                        } else if (isLowStock) {
+                          stockColor = 'bg-amber-100 text-amber-800';
+                          statusLabel = 'مخزون منخفض';
+                          stockDot = 'bg-amber-500';
+                        }
+                        stockDisplay = (
+                          <span className="inline-flex items-center gap-1.5">
+                            <span className={`h-2 w-2 rounded-full ${stockDot}`} />
+                            <span className="ltr-num font-bold tabular-nums">{product.stock}</span>
+                            <span className="text-xs text-muted-foreground">{product.stock === 1 ? 'قطعة' : 'قطع'}</span>
+                          </span>
+                        );
+                      }
                       return (
                         <TableRow key={product.id} className={selected.has(product.id) ? 'bg-muted/30' : undefined}>
                           <TableCell>
@@ -448,11 +508,7 @@ export default function Products() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="inline-flex items-center gap-1.5">
-                              <span className={`h-2 w-2 rounded-full ${product.stock <= 0 ? 'bg-red-500' : isLowStock ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                              <span className="ltr-num font-bold tabular-nums">{product.stock}</span>
-                              <span className="text-xs text-muted-foreground">{product.stock === 1 ? 'قطعة' : 'قطع'}</span>
-                            </span>
+                            {stockDisplay}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5 flex-wrap">
@@ -460,7 +516,7 @@ export default function Products() {
                                 {product.is_active ? t('Active') : t('Inactive')}
                               </Badge>
                               <Badge className={stockColor}>
-                                {product.stock <= 0 ? 'نفد المخزون' : isLowStock ? 'مخزون منخفض' : 'متوفر'}
+                                {statusLabel}
                               </Badge>
                             </div>
                           </TableCell>

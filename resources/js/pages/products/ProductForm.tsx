@@ -106,6 +106,12 @@ export default function ProductForm({ mode, product, categories: initialCategori
   });
   const [variantsEnabled, setVariantsEnabled] = useState(() => Boolean(product?.variants && Array.isArray(product.variants) && product.variants.length > 0));
   const [comboEdits, setComboEdits] = useState<Record<string, VariantCombination>>(() => toCombinationEditsMap(product?.variant_combinations));
+  const [inventoryMode, setInventoryMode] = useState<'product' | 'variant'>(() => {
+    const m = (product as any)?.inventory_mode;
+    if (m === 'variant' || m === 'product') return m;
+    // Backward compat: existing variant products default to product (not auto-variant)
+    return 'product';
+  });
   const [showVariantFields, setShowVariantFields] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [contentExtraOpen, setContentExtraOpen] = useState(false);
@@ -114,10 +120,10 @@ export default function ProductForm({ mode, product, categories: initialCategori
 
   const hasEditedMetaTitle = useRef(!!product?.meta_title);
   const hasEditedSlug = useRef(!!product?.seo_url_slug);
-  const initialSnapshot = useRef(JSON.stringify({ formData, quickSpecs, customFields, variants, comboEdits }));
+  const initialSnapshot = useRef(JSON.stringify({ formData, quickSpecs, customFields, variants, comboEdits, inventoryMode }));
   const isDirty = useMemo(() => {
-    try { return JSON.stringify({ formData, quickSpecs, customFields, variants, comboEdits }) !== initialSnapshot.current; } catch { return true; }
-  }, [formData, quickSpecs, customFields, variants, comboEdits]);
+    try { return JSON.stringify({ formData, quickSpecs, customFields, variants, comboEdits, inventoryMode }) !== initialSnapshot.current; } catch { return true; }
+  }, [formData, quickSpecs, customFields, variants, comboEdits, inventoryMode]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => { if (isDirty && !submitting) { e.preventDefault(); e.returnValue = ''; } };
@@ -170,6 +176,8 @@ export default function ProductForm({ mode, product, categories: initialCategori
     const cleanedVariants = variantsEnabled ? variants.map(v => ({ ...v, values: (v.values || []).map(x => x.trim()).filter(Boolean) })).filter(v => v.name.trim() !== '') : [];
     const generated = generateVariantCombinations(cleanedVariants);
     const combos = mergeCombinationEdits(generated, comboEdits);
+    // inventory_mode: explicit merchant intent; only allow variant when variants actually exist
+    const effectiveMode: 'product' | 'variant' = (formData.track_inventory && variantsEnabled && cleanedVariants.length > 0 && combos.length > 0 && inventoryMode === 'variant') ? 'variant' : 'product';
     return {
       ...formData,
       price: formData.price === '' ? 0 : formData.price,
@@ -178,6 +186,7 @@ export default function ProductForm({ mode, product, categories: initialCategori
       quick_specs: quickSpecs.filter(s => s.key.trim() !== ''),
       variants: cleanedVariants,
       variant_combinations: combos,
+      inventory_mode: effectiveMode,
       custom_fields: customFields.filter(f => f.name.trim() !== ''),
     };
   };
@@ -255,11 +264,34 @@ export default function ProductForm({ mode, product, categories: initialCategori
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="grid gap-1.5">
-                  <Label htmlFor="stock">الكمية</Label>
-                  <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleChange} placeholder="0" className="h-11" aria-invalid={!!errors.stock} />
-                  <InputError message={errors.stock} />
-                </div>
+                {/* Stock: product-level only; hidden when variant inventory active */}
+                {!(formData.track_inventory && variantsEnabled && inventoryMode === 'variant') ? (
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="stock">الكمية {formData.track_inventory && variantsEnabled ? '(للمنتج ككل — غير مُستخدم عند التتبع المنفصل)' : ''}</Label>
+                    <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleChange} placeholder="0" className="h-11" aria-invalid={!!errors.stock} />
+                    <InputError message={errors.stock} />
+                    {formData.track_inventory && variantsEnabled && inventoryMode === 'variant' && (
+                      <p className="text-xs text-muted-foreground">ستُدارة الكميات عبر جدول الخيارات أدناه.</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="grid gap-1.5">
+                    <Label>الكمية الإجمالية (محسوبة)</Label>
+                    <div className="h-11 flex items-center rounded-md border bg-slate-50 px-3 text-sm text-muted-foreground">
+                      {(() => {
+                        const sum = Object.values(comboEdits).reduce((acc: number, c: any) => acc + (parseInt(String(c.stock ?? 0)) || 0), 0);
+                        // Fallback to generated if no edits yet
+                        if (sum === 0) {
+                          const preview = generateVariantCombinations(variantsEnabled ? variants : []);
+                          const merged = mergeCombinationEdits(preview, comboEdits);
+                          return merged.reduce((a, cc) => a + (parseInt(String((cc as any).stock ?? 0)) || 0), 0);
+                        }
+                        return sum;
+                      })()} عبر الخيارات — مدارة تفصيلياً
+                    </div>
+                    <p className="text-xs text-amber-700">هذا المنتج يتتبع المخزون لكل خيار منفصل.</p>
+                  </div>
+                )}
                 <div className="grid gap-1.5">
                   <Label>الضريبة</Label>
                   <Select value={formData.tax_id} onValueChange={v => handleSelectChange('tax_id', v)}>
@@ -298,10 +330,39 @@ export default function ProductForm({ mode, product, categories: initialCategori
                   <div className="grid gap-3 rounded-xl border bg-slate-50/50 p-3">
                     <div className="flex items-center justify-between gap-3"><div><Label>تتبع المخزون</Label><p className="text-xs text-muted-foreground">إدارة الكمية وتنبيه انخفاض المخزون</p></div><Switch checked={formData.track_inventory} onCheckedChange={c => setField('track_inventory', c)} /></div>
                     {formData.track_inventory && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="grid gap-1.5"><Label htmlFor="low_stock_warning">تنبيه انخفاض</Label><Input id="low_stock_warning" name="low_stock_warning" type="number" value={formData.low_stock_warning} onChange={handleChange} placeholder="5" /></div>
-                        <div className="flex items-center justify-between gap-2 rounded-lg border bg-white p-3"><div className="text-start"><Label className="text-xs">السماح بالطلب عند النفاد</Label></div><Switch checked={formData.allow_backorder} onCheckedChange={c => setField('allow_backorder', c)} /></div>
-                      </div>
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="grid gap-1.5"><Label htmlFor="low_stock_warning">تنبيه انخفاض</Label><Input id="low_stock_warning" name="low_stock_warning" type="number" value={formData.low_stock_warning} onChange={handleChange} placeholder="5" /></div>
+                          <div className="flex items-center justify-between gap-2 rounded-lg border bg-white p-3"><div className="text-start"><Label className="text-xs">السماح بالطلب عند النفاد</Label></div><Switch checked={formData.allow_backorder} onCheckedChange={c => setField('allow_backorder', c)} /></div>
+                        </div>
+                        {/* Inventory tracking mode — only meaningful when variants enabled */}
+                        {variantsEnabled && (() => {
+                          const cleaned = variants.map(v => ({ ...v, values: (v.values || []).map((x: string) => x.trim()).filter(Boolean) })).filter(v => v.name.trim() !== '');
+                          const hasAnyVariant = cleaned.length > 0 && cleaned.every(v => v.values.length > 0);
+                          return hasAnyVariant ? (
+                            <div className="rounded-lg border bg-white p-3 space-y-2">
+                              <Label className="text-xs font-bold">كيف تريد إدارة المخزون؟</Label>
+                              <label className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer ${inventoryMode === 'product' ? 'border-primary bg-primary/5' : 'border-slate-200'}`}>
+                                <input type="radio" name="inventory_mode" value="product" checked={inventoryMode === 'product'} onChange={() => setInventoryMode('product')} className="accent-primary" />
+                                <div className="flex-1">
+                                  <div className="text-sm font-semibold">كمية واحدة لكل المنتج</div>
+                                  <div className="text-xs text-muted-foreground">كل الخيارات تشترك في نفس الكمية ({formData.stock} متوفر)</div>
+                                </div>
+                              </label>
+                              <label className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer ${inventoryMode === 'variant' ? 'border-primary bg-primary/5' : 'border-slate-200'}`}>
+                                <input type="radio" name="inventory_mode" value="variant" checked={inventoryMode === 'variant'} onChange={() => setInventoryMode('variant')} className="accent-primary" />
+                                <div className="flex-1">
+                                  <div className="text-sm font-semibold">كمية منفصلة لكل خيار</div>
+                                  <div className="text-xs text-muted-foreground">مثال: أحمر / S = 5 ، أحمر / M = 0 — جدول المخزون أدناه</div>
+                                </div>
+                              </label>
+                              {inventoryMode === 'variant' && <p className="text-[11px] text-amber-700">عند تتبع كل خيار منفصل، المخزون يُحفظ لكل تركيبة أدناه. الكمية الإجمالية للمنتج غير مُستخدمة للإتاحة.</p>}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">أدخل اسم وخيارات (مثل اللون والمقاس) أولاً لاختيار وضع التتبع المنفصل.</p>
+                          );
+                        })()}
+                      </>
                     )}
                   </div>
                   <div className="flex items-center justify-between gap-3 rounded-lg border p-3"><div><Label>السعر شامل الضريبة</Label></div><Switch checked={formData.is_tax_included} onCheckedChange={c => setField('is_tax_included', c)} /></div>
@@ -341,12 +402,13 @@ export default function ProductForm({ mode, product, categories: initialCategori
                 {variantsPreview.length > 0 && (
                   <div className="rounded-xl border overflow-hidden">
                     <div className="flex items-center justify-between bg-slate-50 px-4 py-3 border-b">
-                      <div><p className="text-sm font-semibold">التركيبات ({variantsPreview.length})</p><p className="text-xs text-muted-foreground">تُولّد تلقائياً — يمكنك تعديل السعر والكمية لكل تركيبة</p></div>
+                      <div><p className="text-sm font-semibold">التركيبات ({variantsPreview.length})</p><p className="text-xs text-muted-foreground">تُولّد تلقائياً — يمكنك تعديل السعر والكمية لكل تركيبة {inventoryMode === 'variant' && formData.track_inventory ? '(المخزون منفصل لكل خيار)' : ''}</p></div>
                       <Button type="button" variant="ghost" size="sm" onClick={() => setShowVariantFields(!showVariantFields)}>{showVariantFields ? 'إخفاء الحقول' : 'حقول إضافية'}</Button>
                     </div>
-                    <div className="overflow-x-auto">
+                    {/* Desktop table */}
+                    <div className="overflow-x-auto hidden md:block">
                       <table className="w-full text-sm">
-                        <thead><tr className="bg-slate-50/70 text-xs text-muted-foreground border-b"><th className="px-3 py-2 text-start">صورة</th><th className="px-3 py-2 text-start">التركيبة</th><th className="px-3 py-2 text-start">السعر</th><th className="px-3 py-2 text-start">الكمية</th>{showVariantFields && <><th className="px-3 py-2 text-start">التكلفة</th><th className="px-3 py-2 text-start">SKU</th></>}</tr></thead>
+                        <thead><tr className="bg-slate-50/70 text-xs text-muted-foreground border-b"><th className="px-3 py-2 text-start">صورة</th><th className="px-3 py-2 text-start">التركيبة</th><th className="px-3 py-2 text-start">السعر</th><th className="px-3 py-2 text-start">المخزون {inventoryMode === 'variant' && formData.track_inventory ? '*' : ''}</th>{showVariantFields && <><th className="px-3 py-2 text-start">التكلفة</th><th className="px-3 py-2 text-start">SKU</th></>}</tr></thead>
                         <tbody>{mergeCombinationEdits(variantsPreview, comboEdits).map(combo => (
                           <tr key={combo.id} className="border-b last:border-0">
                             <td className="px-3 py-2"><VariantImageSlot value={combo.image} onChange={v => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), image: v } as any }))} /></td>
@@ -357,6 +419,27 @@ export default function ProductForm({ mode, product, categories: initialCategori
                           </tr>
                         ))}</tbody>
                       </table>
+                    </div>
+                    {/* Mobile cards */}
+                    <div className="md:hidden divide-y">
+                      {mergeCombinationEdits(variantsPreview, comboEdits).map(combo => (
+                        <div key={combo.id} className="p-3 space-y-3 bg-white">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="font-bold text-sm">{combo.label}</div>
+                            <VariantImageSlot value={combo.image} onChange={v => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), image: v } as any }))} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="grid gap-1.5"><Label className="text-xs">السعر</Label><CurrencyInput type="number" step="0.01" placeholder="0.00" value={combo.price || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), price: e.target.value } as any }))} /></div>
+                            <div className="grid gap-1.5"><Label className="text-xs">المخزون {inventoryMode === 'variant' && formData.track_inventory ? '*' : ''}</Label><Input type="number" placeholder="0" value={combo.stock ?? ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), stock: e.target.value } as any }))} /></div>
+                          </div>
+                          {showVariantFields && (
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="grid gap-1.5"><Label className="text-xs">التكلفة</Label><CurrencyInput type="number" step="0.01" placeholder="0.00" value={(combo as any).cost_price || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), cost_price: e.target.value } as any }))} /></div>
+                              <div className="grid gap-1.5"><Label className="text-xs">SKU</Label><Input placeholder="SKU" value={(combo as any).sku || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), sku: e.target.value } as any }))} /></div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

@@ -28,9 +28,10 @@ function StatusBadge({ status, variant }: { status: string; variant?: string }) 
   return <Badge variant={variant as any}>{map[status.toLowerCase()] || status}</Badge>;
 }
 
-export default function ShowOrder({ order: initialOrder }: any) {
+export default function ShowOrder({ order: initialOrder, returns: initialReturns }: any) {
   const { auth } = usePage().props as any;
   const [order, setOrder] = useState(initialOrder);
+  const returns = (initialReturns ?? (usePage().props as any).returns ?? []) as any[];
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   React.useEffect(()=>setOrder(initialOrder), [initialOrder]);
 
@@ -246,6 +247,27 @@ export default function ShowOrder({ order: initialOrder }: any) {
                     </div>
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+
+            {/* Returns section */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between"><CardTitle>المرتجعات</CardTitle><Button size="sm" variant="outline" onClick={()=>router.visit(route('returns.index'))}>كل المرتجعات</Button></CardHeader>
+              <CardContent>
+                {(!returns || returns.length===0) ? <p className="text-sm text-muted-foreground py-4 text-center">لا توجد طلبات إرجاع</p> : (
+                  <div className="space-y-3">
+                    {returns.map((r:any)=>(
+                      <div key={r.id} className="border rounded-lg p-3 text-sm">
+                        <div className="flex items-center justify-between"><span className="font-bold">{r.return_number}</span><Badge>{r.status}</Badge></div>
+                        <p className="text-xs text-muted-foreground">السبب: {r.reason} • الاسترداد: {r.refund_amount} ({r.refund_status})</p>
+                        <div className="mt-1 space-y-1">
+                          {r.items?.map((it:any)=><div key={it.id} className="text-xs flex justify-between"><span>{it.product_name} ×{it.quantity}</span><span>معاد: {it.restocked} • مسترد: {it.refund}</span></div>)}
+                        </div>
+                        <Button size="sm" variant="outline" className="mt-2 w-full" onClick={()=>router.visit(route('returns.show', r.id))}>عرض التفاصيل</Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

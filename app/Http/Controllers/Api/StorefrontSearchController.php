@@ -61,7 +61,8 @@ class StorefrontSearchController extends Controller
             ->get()
             ->map(function ($product) {
                 $hasSale = $product->hasEffectiveSale();
-                // Variant-aware price for search: show base effectivePrice (variant selection not in search)
+                // Canonical variant-aware availability already via product->availabilityStatus()
+                $isVariant = \App\Services\InventoryService::isVariantInventory($product);
                 return [
                     'id' => (string) $product->id,
                     'name' => $product->name,
@@ -70,6 +71,7 @@ class StorefrontSearchController extends Controller
                     'price' => $hasSale ? (float) $product->sale_price : (float) $product->price,
                     'originalPrice' => $hasSale ? (float) $product->price : null,
                     'availability' => $product->availabilityStatus(),
+                    'inventoryMode' => $isVariant ? 'variant' : 'product',
                     'category' => $product->category ? $product->category->name : null,
                     'categoryId' => $product->category_id ? (string) $product->category_id : null,
                     'sku' => $product->sku,

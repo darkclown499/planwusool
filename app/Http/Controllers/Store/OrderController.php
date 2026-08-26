@@ -301,13 +301,30 @@ class OrderController extends Controller
                 }
             }
             
-            // Update coupon usage if coupon was used.
-            // $calculation['coupon'] is an Eloquent StoreCoupon model for legacy
-            // coupons, but a plain array for AdvancedCoupon (whose usage is
-            // recorded inside OrderService::handlePostOrderExtras). Only call
-            // ->increment() on the model to avoid a fatal "call on array".
+            // Update coupon usage if coupon was used — re-validate atomically at commit time to prevent race
             if ($request->coupon_code && $calculation['coupon'] instanceof \App\Models\StoreCoupon) {
-                $calculation['coupon']->increment('used_count');
+                $coupon = $calculation['coupon'];
+                // Re-check active/dates/store isolation before increment
+                $fresh = \App\Models\StoreCoupon::where('id', $coupon->id)->where('store_id', $request->store_id)->where('status', true)
+                    ->where(function($q){ $q->whereNull('start_date')->orWhere('start_date','<=',now()); })
+                    ->where(function($q){ $q->whereNull('expiry_date')->orWhere('expiry_date','>=',now()); })->first();
+                if (!$fresh) {
+                    // Coupon became invalid between calculation and order — rollback order? mark failed
+                    $order->forceFill(['status'=>'failed','payment_status'=>'failed'])->save();
+                    return response()->json(['success'=>false,'message'=>__('Coupon is no longer valid.')],422);
+                }
+                // Atomic increment with usage limit guard
+                $limit = $fresh->use_limit_per_coupon;
+                $updated = 0;
+                if ($limit) {
+                    $updated = \Illuminate\Support\Facades\DB::table('store_coupons')->where('id',$fresh->id)->where('used_count','<',$limit)->increment('used_count');
+                    if (!$updated) {
+                        $order->forceFill(['status'=>'failed','payment_status'=>'failed'])->save();
+                        return response()->json(['success'=>false,'message'=>__('Coupon usage limit reached.')],422);
+                    }
+                } else {
+                    $fresh->increment('used_count');
+                }
             }
 
             // Process payment

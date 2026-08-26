@@ -25,6 +25,7 @@ class Product extends Model
         'low_stock_warning',
         'track_inventory',
         'allow_backorder',
+        'inventory_mode',
         'cover_image',
         'images',
         'variants',
@@ -187,13 +188,22 @@ class Product extends Model
     }
 
     /**
-     * Canonical availability respecting track_inventory + allow_backorder.
+     * Canonical availability respecting track_inventory + allow_backorder + variant-level stock.
+     * Delegates to InventoryService::productAvailability() to remain variant-aware.
      */
     public function availabilityStatus(): string
     {
-        if (!$this->track_inventory) return 'in_stock';
-        if ($this->allow_backorder) return 'in_stock';
-        return $this->stock > 0 ? 'in_stock' : 'out_of_stock';
+        return \App\Services\InventoryService::productAvailability($this);
+    }
+
+    /**
+     * Resolve purchasability + stock for a given variant selection via the
+     * canonical InventoryService. Keeps Product as thin facade over the single
+     * source of truth.
+     */
+    public function inventoryStatus($selection = null): array
+    {
+        return \App\Services\InventoryService::resolve($this, $selection);
     }
 
     /**
@@ -206,9 +216,26 @@ class Product extends Model
 
     private const VARIANT_SEP = '‖';
 
+    public static function ensureVariantUuids(array $combinations): array
+    {
+        foreach ($combinations as &$c) {
+            if (empty($c['uuid'])) {
+                $c['uuid'] = (string) \Illuminate\Support\Str::uuid();
+            }
+            // Ensure id exists for backward compat
+            if (empty($c['id']) && !empty($c['values'])) {
+                $c['id'] = implode(self::VARIANT_SEP, $c['values']);
+            }
+            if (empty($c['label']) && !empty($c['values'])) {
+                $c['label'] = implode(' / ', $c['values']);
+            }
+        }
+        return $combinations;
+    }
+
     /**
      * Resolve selected variant against canonical variant_combinations.
-     * Accepts: map [Color=>Red] , id string "Red‖M" , array values, or null.
+     * Accepts: map [Color=>Red] , id string "Red‖M" , uuid, array values, or null.
      * Returns matching combination array or null if not found / not required.
      */
     public function resolveVariantCombination($selection): ?array
@@ -217,15 +244,24 @@ class Product extends Model
         if (!is_array($combinations) || empty($combinations)) return null;
         if ($selection === null || $selection === '' || (is_array($selection) && empty($selection))) return null;
 
-        // Direct id match (frontend sends id)
+        // Direct uuid or id match
         if (is_string($selection)) {
+            foreach ($combinations as $c) {
+                if (($c['uuid'] ?? null) === $selection) return $c;
+            }
             foreach ($combinations as $c) {
                 if (($c['id'] ?? null) === $selection) return $c;
             }
-            // also try label
             foreach ($combinations as $c) {
                 if (($c['label'] ?? null) === $selection) return $c;
             }
+        }
+        // Selection is array containing uuid key
+        if (is_array($selection) && isset($selection['uuid'])) {
+            foreach ($combinations as $c) if (($c['uuid'] ?? null) === $selection['uuid']) return $c;
+        }
+        if (is_array($selection) && isset($selection['id']) && is_string($selection['id'])) {
+            foreach ($combinations as $c) if (($c['id'] ?? null) === $selection['id']) return $c;
         }
 
         // Map case: {Color:Red, Size:M} — values must match combination values set

@@ -5,6 +5,7 @@ export interface VariantGroup {
 
 export interface VariantCombination {
   id: string;
+  uuid: string;
   values: string[];
   label: string;
   price?: string;
@@ -48,6 +49,7 @@ export function generateVariantCombinations(groups: VariantGroup[]): VariantComb
 
   return rows.map((values) => ({
     id: values.join(SEP),
+    uuid: (typeof crypto !== 'undefined' && (crypto as any).randomUUID) ? (crypto as any).randomUUID() : `vc_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     values,
     label: values.join(' / '),
     price: '',
@@ -59,16 +61,21 @@ export function generateVariantCombinations(groups: VariantGroup[]): VariantComb
   }));
 }
 
-/** Recompute combinations while preserving any user-entered edits by row id. */
+/** Recompute combinations while preserving edits by stable uuid/id only. No index fallback - rename is treated as new combination. */
 export function mergeCombinationEdits(
   generated: VariantCombination[],
   previous: Record<string, VariantCombination>
 ): VariantCombination[] {
+  const prevByUuid: Record<string, VariantCombination> = {};
+  const prevById: Record<string, VariantCombination> = previous;
+  Object.values(previous).forEach((c) => { if ((c as any).uuid) prevByUuid[(c as any).uuid] = c; });
   return generated.map((combo) => {
-    const prev = previous[combo.id];
+    let prev: VariantCombination | undefined = prevById[combo.id] as any;
+    if (!prev && (combo as any).uuid && prevByUuid[(combo as any).uuid]) prev = prevByUuid[(combo as any).uuid] as any;
     if (!prev) return combo;
     return {
       ...combo,
+      uuid: (prev as any).uuid || (combo as any).uuid,
       price: prev.price ?? '',
       cost_price: prev.cost_price ?? '',
       stock: prev.stock ?? '',
@@ -85,6 +92,7 @@ export function toCombinationEditsMap(combinations: VariantCombination[] | null 
   const map: Record<string, VariantCombination> = {};
   for (const c of combinations) {
     if (c && c.id) map[c.id] = c;
+    if (c && (c as any).uuid) map[(c as any).uuid] = c;
     else if (c && Array.isArray(c.values) && c.values.length) map[c.values.join(SEP)] = c;
   }
   return map;

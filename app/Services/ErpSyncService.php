@@ -154,13 +154,34 @@ class ErpSyncService
             try {
                 $product = $this->findProduct($store, $barcode, $sku);
                 if (!$product) {
-                    $errors++;
-                    $logs[] = ProductSyncLog::record($store->id, $provider, 'stock', $sku ?: $barcode, 'failed', 'لم يتم العثور على منتج مطابق', $item);
-                    continue;
+                    // Also try variant SKU inside combinations
+                    $product = $this->findProductByVariantSku($store, $sku ?? $barcode);
+                    if (!$product) {
+                        $errors++;
+                        $logs[] = ProductSyncLog::record($store->id, $provider, 'stock', $sku ?: $barcode, 'failed', 'لم يتم العثور على منتج مطابق', $item);
+                        continue;
+                    }
                 }
 
-                $product->stock = $quantity;
-                $product->save();
+                // Variant-aware: if product uses variant inventory and SKU matches a combination, update that variant stock
+                $variantUpdated = false;
+                if (\App\Services\InventoryService::isVariantInventory($product)) {
+                    $combos = $product->variant_combinations ?? [];
+                    foreach ($combos as $idx => $c) {
+                        $variantSku = $c['sku'] ?? null;
+                        if ($variantSku && $variantSku === ($sku ?? $barcode)) {
+                            $combos[$idx]['stock'] = (string) $quantity;
+                            $product->variant_combinations = $combos;
+                            $product->save();
+                            $variantUpdated = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$variantUpdated) {
+                    $product->stock = $quantity;
+                    $product->save();
+                }
                 $updated++;
                 $logs[] = ProductSyncLog::record($store->id, $provider, 'stock', $sku ?: $barcode, 'success', 'تم تحديث الكمية إلى ' . $quantity, $item);
             } catch (\Throwable $e) {
@@ -195,6 +216,18 @@ class ErpSyncService
                 }
             })
             ->first();
+    }
+
+    protected function findProductByVariantSku(Store $store, ?string $sku): ?Product
+    {
+        if (!$sku) return null;
+        $all = Product::where('store_id', $store->id)->whereNotNull('variant_combinations')->get();
+        foreach ($all as $p) {
+            foreach (($p->variant_combinations ?? []) as $c) {
+                if (($c['sku'] ?? null) === $sku) return $p;
+            }
+        }
+        return null;
     }
 
     protected function applyProductFields(Product $product, array $item, array $settings): void

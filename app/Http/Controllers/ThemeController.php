@@ -706,6 +706,14 @@ class ThemeController extends Controller
     private function formatFullProduct(Product $product): array
     {
         $hasSale = $product->hasEffectiveSale();
+        $isVariant = \App\Services\InventoryService::isVariantInventory($product);
+        $inventoryMode = $isVariant ? 'variant' : 'product';
+        // Stock quantity semantics: variant-mode returns total across combinations for display, product-mode returns product.stock
+        $stockQuantity = (int) $product->stock;
+        $inventorySummary = \App\Services\InventoryService::variantInventorySummary($product);
+        if ($isVariant) {
+            $stockQuantity = (int) $inventorySummary['total_stock'];
+        }
         return [
             'id' => (string) $product->id,
             'name' => $product->name,
@@ -717,7 +725,11 @@ class ThemeController extends Controller
             'category' => $product->category ? $product->category->name : 'Uncategorized',
             'availability' => $product->availabilityStatus(),
             'sku' => $product->sku ?: 'SKU-' . $product->id,
-            'stockQuantity' => (int) $product->stock,
+            'stockQuantity' => $stockQuantity,
+            'inventoryMode' => $inventoryMode,
+            'trackInventory' => (bool) $product->track_inventory,
+            'allowBackorder' => (bool) $product->allow_backorder,
+            'inventorySummary' => $inventorySummary,
             'metaTitle' => $product->meta_title,
             'metaDescription' => $product->meta_description,
             'seoUrlSlug' => $product->seo_url_slug ?: $product->id,

@@ -230,29 +230,45 @@ class CartCalculationService
             }
         }
 
-        // ─── Tax ───
-        $tax = 0;
+        // ─── Tax — inclusive vs exclusive, discount reduces taxable base ───
+        $pricesIncludeTax = self::isPricesIncludeTax($storeId);
+        $subtotalAfterDiscount = max(0, $subtotal - $discount);
+        $tax = 0; $exclusiveTax = 0; $inclusiveTax = 0;
         foreach ($cartItems as $item) {
             if (!$item->product || !$item->product->is_active) continue;
-            if ($item->product->tax && $item->product->tax->is_active) {
-                $variantSel = $item->variants ? (is_string($item->variants) ? json_decode($item->variants, true) : $item->variants) : null;
-                if (method_exists($item->product, 'effectivePriceForVariant')) {
-                    $itemPrice = $item->product->effectivePriceForVariant($variantSel);
+            if (!$item->product->tax || !$item->product->tax->is_active) continue;
+            $variantSel = $item->variants ? (is_string($item->variants) ? json_decode($item->variants, true) : $item->variants) : null;
+            if (method_exists($item->product, 'effectivePriceForVariant')) {
+                $itemPrice = $item->product->effectivePriceForVariant($variantSel);
+            } else {
+                $itemPrice = method_exists($item->product, 'effectivePrice') ? $item->product->effectivePrice() : ((float)($item->product->sale_price ?? $item->product->price));
+            }
+            $itemGross = $itemPrice * $item->quantity;
+            $share = $subtotal > 0 ? ($itemGross / $subtotal) : 0;
+            $itemDiscount = $discount * $share;
+            $itemGrossAfterDiscount = max(0, $itemGross - $itemDiscount);
+            $rate = (float) $item->product->tax->rate;
+            $isInclusive = $pricesIncludeTax || (bool) $item->product->is_tax_included;
+            if ($isInclusive) {
+                if ($item->product->tax->type === 'percentage' && $rate > 0) {
+                    $itemTax = $itemGrossAfterDiscount - ($itemGrossAfterDiscount / (1 + $rate / 100));
                 } else {
-                    $itemPrice = method_exists($item->product, 'effectivePrice') ? $item->product->effectivePrice() : ((float)($item->product->sale_price ?? $item->product->price));
+                    // fixed inclusive: tax component is capped at gross
+                    $itemTax = min($rate * $item->quantity, $itemGrossAfterDiscount);
                 }
-                $itemSubtotal = $itemPrice * $item->quantity;
-
+                $inclusiveTax += $itemTax;
+            } else {
                 if ($item->product->tax->type === 'percentage') {
-                    $tax += ($itemSubtotal * $item->product->tax->rate) / 100;
+                    $itemTax = ($itemGrossAfterDiscount * $rate) / 100;
                 } else {
-                    $tax += $item->product->tax->rate * $item->quantity;
+                    $itemTax = $rate * $item->quantity;
                 }
+                $exclusiveTax += $itemTax;
             }
         }
-
-        // ─── Final total ───
-        $total = $subtotal - $discount + $shipping + $tax;
+        $tax = $exclusiveTax + $inclusiveTax;
+        // Inclusive tax is already in price — do not add to total
+        $total = $subtotal - $discount + $shipping + $exclusiveTax;
 
         return [
             'subtotal' => round($subtotal, 2),
@@ -267,6 +283,20 @@ class CartCalculationService
             'advanced_coupon_discount_type' => $advancedCouponDiscountType,
             'advanced_coupon_id' => $advancedCouponId,
         ];
+    }
+
+    protected static function isPricesIncludeTax(int $storeId): bool
+    {
+        try {
+            $store = \App\Models\Store::find($storeId);
+            if (!$store) return false;
+            $userId = $store->user_id ?? null;
+            // Prefer Setting::getSetting with user+store, fallback to StoreConfiguration
+            $val = \App\Models\Setting::getSetting('prices_include_tax', $userId, $storeId);
+            if ($val !== null) return $val === '1' || $val === 1 || $val === true || $val === 'true';
+            $cfg = \App\Models\StoreConfiguration::getConfiguration($storeId);
+            return !empty($cfg['prices_include_tax']);
+        } catch (\Throwable $e) { return false; }
     }
 
     /**

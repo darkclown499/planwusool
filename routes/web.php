@@ -128,6 +128,10 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // Order routes
     Route::post('/order/place', [\App\Http\Controllers\Store\OrderController::class, 'placeOrder'])->name('store.order.place');
     Route::get('/order/{orderNumber}/pdf', [\App\Http\Controllers\ThemeController::class, 'downloadOrderPdf'])->name('store.order.pdf');
+
+    // Customer Returns (storefront)
+    Route::post('/returns/request', [\App\Http\Controllers\Store\ReturnController::class, 'request'])->name('store.returns.request');
+    Route::get('/returns/history', [\App\Http\Controllers\Store\ReturnController::class, 'history'])->name('store.returns.history');
     Route::get('/stripe/success/{orderNumber}', [\App\Http\Controllers\Store\StripeController::class, 'success'])->name('store.stripe.success');
     Route::get('/paypal/success/{orderNumber}', [\App\Http\Controllers\Store\PayPalController::class, 'success'])->name('store.paypal.success');
     Route::get('/xendit/success/{orderNumber}', [\App\Http\Controllers\Store\XenditController::class, 'success'])->name('store.xendit.success');
@@ -869,6 +873,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('orders/{id}', [\App\Http\Controllers\OrderController::class, 'update'])->middleware('permission:edit-orders')->name('orders.update');
             Route::delete('orders/{id}', [\App\Http\Controllers\OrderController::class, 'destroy'])->middleware('permission:delete-orders')->name('orders.destroy');
             Route::get('orders/{id}', [\App\Http\Controllers\OrderController::class, 'show'])->middleware('permission:view-orders')->name('orders.show');
+
+        // Returns / Refunds Management
+            Route::get('returns', [\App\Http\Controllers\ReturnController::class, 'index'])->middleware('permission:manage-orders')->name('returns.index');
+            Route::get('returns/{id}', [\App\Http\Controllers\ReturnController::class, 'show'])->middleware('permission:manage-orders')->name('returns.show');
+            Route::post('returns/{id}/approve', [\App\Http\Controllers\ReturnController::class, 'approve'])->middleware('permission:manage-orders')->name('returns.approve');
+            Route::post('returns/{id}/reject', [\App\Http\Controllers\ReturnController::class, 'reject'])->middleware('permission:manage-orders')->name('returns.reject');
+            Route::post('returns/{id}/received', [\App\Http\Controllers\ReturnController::class, 'markReceived'])->middleware('permission:manage-orders')->name('returns.received');
+            Route::post('returns/{id}/restock', [\App\Http\Controllers\ReturnController::class, 'restock'])->middleware('permission:manage-orders')->name('returns.restock');
+            Route::post('returns/{id}/refund', [\App\Http\Controllers\ReturnController::class, 'refund'])->middleware('permission:manage-orders')->name('returns.refund');
+            Route::post('returns/{id}/complete', [\App\Http\Controllers\ReturnController::class, 'complete'])->middleware('permission:manage-orders')->name('returns.complete');
+            Route::post('returns/{id}/cancel', [\App\Http\Controllers\ReturnController::class, 'cancel'])->middleware('permission:manage-orders')->name('returns.cancel');
 
         
 
