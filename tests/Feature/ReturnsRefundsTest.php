@@ -90,7 +90,9 @@ class ReturnsRefundsTest extends TestCase
     {
         $p=$this->product(); $o=$this->createOrder($p,3); $o->update(['status'=>'delivered']);
         $ret1 = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1]], 'other', null);
-        ReturnService::transition($ret1,'approved'); ReturnService::transition($ret1,'received'); ReturnService::complete($ret1);
+        ReturnService::transition($ret1,'approved'); ReturnService::transition($ret1,'received');
+        ReturnService::restock($ret1, $ret1->items->first()->id, 1);
+        ReturnService::complete($ret1);
         $ret2 = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1]], 'other', null);
         $this->assertEquals(1, $ret2->items->first()->quantity);
         // third return 2 should fail (only 1 left)
@@ -115,6 +117,7 @@ class ReturnsRefundsTest extends TestCase
         $this->assertEquals('approved',$ret->status);
         $ret = ReturnService::transition($ret,'received');
         $this->assertEquals('received',$ret->status);
+        ReturnService::restock($ret, $ret->items->first()->id, 1);
         $ret = ReturnService::complete($ret);
         $this->assertEquals('completed',$ret->status);
         // reject path

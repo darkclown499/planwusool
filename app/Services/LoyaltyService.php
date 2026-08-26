@@ -153,6 +153,12 @@ class LoyaltyService
             return;
         }
 
+        $existing = LoyaltyTransaction::where('store_id', $store->id)
+            ->where('customer_id', $customer->id)
+            ->where('type', 'signup_bonus')
+            ->exists();
+        if ($existing) return;
+
         $currentBalance = LoyaltyTransaction::balanceFor($store->id, $customer->id);
         $expiresAt = null;
         if ($settings->points_expire && $settings->expiry_days > 0) {
@@ -188,6 +194,12 @@ class LoyaltyService
         if ($bonusPoints <= 0) {
             return;
         }
+
+        $existing = LoyaltyTransaction::where('store_id', $store->id)
+            ->where('customer_id', $customer->id)
+            ->where('type', 'review_bonus')
+            ->exists();
+        if ($existing) return;
 
         $currentBalance = LoyaltyTransaction::balanceFor($store->id, $customer->id);
         $expiresAt = null;

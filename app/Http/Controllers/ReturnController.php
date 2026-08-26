@@ -126,6 +126,9 @@ class ReturnController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
         $ret = OrderReturn::where('store_id',$storeId)->where('id',$id)->firstOrFail();
+        if (!in_array($ret->status, ['received', 'approved', 'completed'], true)) {
+            return back()->with('error', __('Refund can only be processed for approved or received returns.'));
+        }
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'method' => 'nullable|string|max:50',

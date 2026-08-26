@@ -139,16 +139,20 @@ class OrderService
                 Log::warning('Failed to dispatch accounting sync', ['order_id' => $order->id, 'error' => $e->getMessage()]);
             }
 
-            // Handle post-order extras (abandoned cart recovery + loyalty points)
-            $this->handlePostOrderExtras($order);
+            // Only handle post-order extras for orders that don't require external payment processing
+            // Online payments will call handlePostOrderExtras after successful payment confirmation
+            $requiresPayment = !in_array($order->payment_method, ['cod', 'whatsapp', 'bank', 'telegram']);
+            if (!$requiresPayment) {
+                $this->handlePostOrderExtras($order);
+            }
 
             return $order;
         });
 
-        // Fire the OrderCreated event AFTER the transaction commits so slow
-        // notification listeners (email/SMS) never hold DB locks or delay the
-        // order confirmation response.
-        event(new \App\Events\OrderCreated($order));
+        // Note: OrderCreated event is NOT fired here. It is fired after
+        // successful payment for each payment method (offline methods fire
+        // it immediately in processCashOnDelivery etc.; online methods fire
+        // it in their success callbacks after payment confirmation).
 
         return $order;
     }
@@ -264,6 +268,8 @@ class OrderService
             'payment_status' => 'pending',
         ]);
 
+        event(new \App\Events\OrderCreated($order));
+
         return [
             'success' => true,
             'message' => 'تم إتمام الطلب بنجاح. سيتم تحصيل الدفع عند الاستلام.',
@@ -278,6 +284,8 @@ class OrderService
             'status' => 'pending',
             'payment_status' => 'pending',
         ]);
+
+        event(new \App\Events\OrderCreated($order));
 
         return [
             'success' => true,
@@ -295,6 +303,8 @@ class OrderService
             'payment_gateway' => $order->payment_method,
         ]);
 
+        event(new \App\Events\OrderCreated($order));
+
         return [
             'success' => true,
             'message' => 'تم إتمام الطلب بنجاح. يرجى إكمال الدفع وفقاً للتعليمات المقدمة. سيتم معالجة طلبك بعد التحقق من الدفع.',
@@ -310,6 +320,8 @@ class OrderService
             'payment_status' => 'pending',
             'payment_gateway' => 'whatsapp',
         ]);
+
+        event(new \App\Events\OrderCreated($order));
 
         // WhatsApp customer message is dispatched via OrderCreated event listener
         // (SendOrderCreatedMessaging) — do NOT send synchronously here to avoid
@@ -341,6 +353,8 @@ class OrderService
             'payment_status' => 'pending',
             'payment_gateway' => 'telegram',
         ]);
+
+        event(new \App\Events\OrderCreated($order));
 
         // Telegram message will be sent by the OrderCreated event listener
 
@@ -1154,10 +1168,11 @@ class OrderService
     private function handlePostOrderExtras(Order $order): void
     {
         try {
-            // Mark abandoned cart as recovered (based on session)
+            // Mark abandoned cart as recovered (use order's stored session_id for webhook compat)
             try {
+                $sessionId = $order->session_id ?? session()->getId();
                 $abandonedCartService = app(AbandonedCartService::class);
-                $abandonedCartService->markRecovered(session()->getId(), $order->id);
+                $abandonedCartService->markRecovered($sessionId, $order->id);
             } catch (\Exception $e) {
                 Log::warning('Failed to mark abandoned cart as recovered', ['order_id' => $order->id, 'error' => $e->getMessage()]);
             }
@@ -1178,15 +1193,21 @@ class OrderService
                         ->first();
 
                     if ($advancedCoupon && $order->discount_amount > 0) {
-                        app(AdvancedCouponService::class)->recordCouponUsage(
-                            $advancedCoupon,
-                            $order,
-                            $order->discount_amount,
-                            [
-                                'customer_id' => $order->customer_id,
-                                'customer_identifier' => $order->customer_email,
-                            ]
-                        );
+                        // Guard: skip if usage already recorded for this order (defense-in-depth)
+                        $alreadyUsed = \App\Models\CouponUsage::where('coupon_id', $advancedCoupon->id)
+                            ->where('order_id', $order->id)
+                            ->exists();
+                        if (!$alreadyUsed) {
+                            app(AdvancedCouponService::class)->recordCouponUsage(
+                                $advancedCoupon,
+                                $order,
+                                $order->discount_amount,
+                                [
+                                    'customer_id' => $order->customer_id,
+                                    'customer_identifier' => $order->customer_email,
+                                ]
+                            );
+                        }
                     }
                 } catch (\Exception $e) {
                     Log::warning('Failed to record advanced coupon usage', ['order_id' => $order->id, 'error' => $e->getMessage()]);
@@ -1207,6 +1228,47 @@ class OrderService
             }
         } catch (\Exception $e) {
             Log::warning('Post-order extras failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Idempotent post-order completion for online payment gateways.
+     *
+     * Uses an atomic compare-and-swap on `post_order_extras_at` so that
+     * regardless of whether the browser success callback or the server-to-server
+     * webhook arrives first, the extras (loyalty, cart recovery, coupon tracking)
+     * and the OrderCreated event (emails, notifications) fire exactly once.
+     *
+     * Called from: StripeController::success, PayPalController::success,
+     * RazorpayController::verifyPayment, GatewayWebhookController::stripe,
+     * GatewayWebhookController::paypal, GatewayWebhookController::razorpay.
+     */
+    public function completePostOrderExtras(Order $order): void
+    {
+        // Atomic CAS: only the first caller wins. If post_order_extras_at is
+        // already set, another request (browser callback or webhook) already
+        // completed the post-order flow — skip everything.
+        $updated = DB::table('orders')
+            ->where('id', $order->id)
+            ->whereNull('post_order_extras_at')
+            ->update(['post_order_extras_at' => now()]);
+
+        if ($updated === 0) {
+            return;
+        }
+
+        // Refresh to pick up the new timestamp
+        $order->refresh();
+
+        // Run post-order extras (loyalty points, abandoned cart, coupon tracking)
+        $this->handlePostOrderExtras($order);
+
+        // Dispatch OrderCreated event — triggers customer confirmation email,
+        // merchant notification, messaging, and webhook integrations.
+        try {
+            event(new \App\Events\OrderCreated($order));
+        } catch (\Exception $e) {
+            Log::warning('Failed to dispatch OrderCreated event', ['order_id' => $order->id, 'error' => $e->getMessage()]);
         }
     }
 
@@ -1320,9 +1382,9 @@ class OrderService
             $data = [
                 'pay_to_email'       => $skrillConfig['merchant_id'],
                 'transaction_id'     => $paymentId,
-                'return_url'         => $storeModel->route('skrill/success' . (strpos('success', 'success') !== false ? '/' . $order->order_number : '')),
+                'return_url'         => $storeModel->route('skrill/success/' . $order->order_number),
                 'cancel_url'         => $storeModel->route('checkout'),
-                'status_url'         => $storeModel->route('skrill/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : '')),
+                'status_url'         => $storeModel->route('skrill/callback/' . $order->order_number),
                 'language'           => 'EN',
                 'amount'             => number_format((float) $order->total_amount, 2, '.', ''),
                 'currency'           => getPaymentSettings($storeModel->user->id, $order->store_id)['currency'] ?? 'ILS',
@@ -1370,9 +1432,9 @@ class OrderService
             $orderId  = 'store_cg_' . $order->id . '_' . time();
             $client   = new \CoinGate\Client($coingateConfig['api_token'], ($coingateConfig['mode'] ?? 'sandbox') === 'sandbox');
 
-            $successUrl = $storeModel->route('coingate/success' . (strpos('success', 'success') !== false ? '/' . $order->order_number : ''));
+            $successUrl = $storeModel->route('coingate/success/' . $order->order_number);
             $cancelUrl  = $storeModel->route('checkout');
-            $callbackUrl = $storeModel->route('coingate/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : ''));
+            $callbackUrl = $storeModel->route('coingate/callback/' . $order->order_number);
 
             $storeSettings = settings($storeModel->user->id, $order->store_id);
             $currencyCode  = $storeSettings['defaultCurrency'] ?? 'ILS';
@@ -1452,7 +1514,7 @@ class OrderService
                     'phone'      => $order->customer_phone,
                 ],
                 'callbacks' => [
-                    'finish' => $storeModel->route('midtrans/success' . (strpos('success', 'success') !== false ? '/' . $order->order_number : '')),
+                    'finish' => $storeModel->route('midtrans/success/' . $order->order_number),
                 ],
             ];
 
@@ -1521,7 +1583,7 @@ class OrderService
                 'currency' => $mollieConfig['currency'] ?? 'ILS',
                 'value'    => number_format((float) $order->total_amount, 2, '.', ''),
             ];
-            $redirectUrl  = $storeModel->route('mollie/success' . (strpos('success', 'success') !== false ? '/' . $order->order_number : ''));
+            $redirectUrl  = $storeModel->route('mollie/success/' . $order->order_number);
 
             $paymentData = [
                 'amount'      => $amount,
@@ -1537,7 +1599,7 @@ class OrderService
             // Only add webhook URL if not localhost
             $appUrl = getSchemeAwareUrl();
             if (!str_contains($appUrl, 'localhost')) {
-                $paymentData['webhookUrl'] = $storeModel->route('mollie/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : ''));
+                $paymentData['webhookUrl'] = $storeModel->route('mollie/callback/' . $order->order_number);
             }
 
             $payment = $mollie->payments->create($paymentData);
@@ -1581,8 +1643,8 @@ class OrderService
             }
 
             $orderID     = strtoupper(str_replace('.', '', uniqid('BENEFIT_', true)));
-            $successUrl  = $storeModel->route('benefit/success' . (strpos('success', 'success') !== false ? '/' . $order->order_number : ''));
-            $callbackUrl = $storeModel->route('benefit/callback' . (strpos('callback', 'success') !== false ? '/' . $order->order_number : ''));
+            $successUrl  = $storeModel->route('benefit/success/' . $order->order_number);
+            $callbackUrl = $storeModel->route('benefit/callback/' . $order->order_number);
 
             $storeSettings = settings($storeModel->user->id, $order->store_id);
             $currencyCode  = $storeSettings['defaultCurrency'] ?? 'ILS';
@@ -1666,7 +1728,7 @@ class OrderService
             $client->setAuth((int) $yookassaConfig['shop_id'], $yookassaConfig['secret_key']);
 
             $currencyCode = $yookassaConfig['currency'] ?? 'RUB';
-            $successUrl   = $storeModel->route('yookassa/success' . (strpos('success', 'success') !== false ? '/' . $order->order_number : ''));
+            $successUrl   = $storeModel->route('yookassa/success/' . $order->order_number);
 
             $payment = $client->createPayment([
                 'amount' => [
@@ -1887,7 +1949,7 @@ class OrderService
                 'merchant_fail_url' => $storeModel->getStoreUrl(),
                 'timeout_limit' => 30,
                 'currency' => $currency,
-                'test_mode' => 1,
+                'test_mode' => ($config['mode'] ?? 'sandbox') === 'sandbox' ? 1 : 0,
             ]);
 
             $result = $response->json();

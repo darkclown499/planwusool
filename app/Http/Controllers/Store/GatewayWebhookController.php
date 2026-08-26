@@ -4,20 +4,29 @@ namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\Webhook;
 
 /**
- * Public, unauthenticated webhook endpoints for Stripe and PayPal so that an
+ * Public, unauthenticated webhook endpoints for payment gateways so that an
  * order can be flipped from pending -> paid even when the customer closes the
  * browser tab right after paying (the checkout success redirect never running).
  */
 class GatewayWebhookController extends Controller
 {
+    /**
+     * Mark an order as paid and trigger idempotent post-order extras
+     * (loyalty points, abandoned cart, coupon tracking, OrderCreated event).
+     */
     private function markOrderPaid(Order $order, string $gateway, ?string $transactionId = null, array $details = []): void
     {
         if ($order->payment_status === 'paid') {
+            // Order already paid (browser callback or prior webhook) — still
+            // run completePostOrderExtras in case it hasn't been executed yet
+            // (e.g. browser callback crashed after setting paid but before extras).
+            app(OrderService::class)->completePostOrderExtras($order);
             return;
         }
         $order->update([
@@ -29,6 +38,9 @@ class GatewayWebhookController extends Controller
                 'verified_via_webhook_at' => now(),
             ])),
         ]);
+
+        // Trigger post-order extras and OrderCreated event (idempotent CAS)
+        app(OrderService::class)->completePostOrderExtras($order);
     }
 
     public function stripe(Request $request)
@@ -67,7 +79,7 @@ class GatewayWebhookController extends Controller
             return response('Signature verification failed', 400);
         }
 
-        if ($order->payment_status !== 'paid' && ($event['type'] ?? null) === 'checkout.session.completed') {
+        if (($event['type'] ?? null) === 'checkout.session.completed') {
             $session = $object;
             $this->markOrderPaid($order, 'stripe', $session['payment_intent'] ?? $session['id'], [
                 'stripe_session_id' => $session['id'],
@@ -103,7 +115,7 @@ class GatewayWebhookController extends Controller
             return response('Signature verification failed', 400);
         }
 
-        if ($order->payment_status !== 'paid' && in_array($event['event_type'] ?? '', [
+        if (in_array($event['event_type'] ?? '', [
             'PAYMENT.CAPTURE.COMPLETED',
             'CHECKOUT.ORDER.APPROVED',
         ], true)) {
@@ -113,6 +125,58 @@ class GatewayWebhookController extends Controller
                 'paypal_capture_id' => $event['resource']['id'] ?? null,
             ]);
         }
+
+        return response('OK', 200);
+    }
+
+    public function razorpay(Request $request)
+    {
+        $payload = $request->getContent();
+        $event = json_decode($payload, true);
+
+        $eventType = $event['event'] ?? '';
+        $paymentEntity = $event['payload']['payment']['entity'] ?? [];
+
+        // Only act on successful payment events
+        if (!in_array($eventType, ['payment.captured', 'payment.authorized'], true)) {
+            return response('OK', 200);
+        }
+
+        $razorpayOrderId = $paymentEntity['order_id'] ?? null;
+        if (!$razorpayOrderId) {
+            return response('OK', 200);
+        }
+
+        // Look up the order by razorpay_order_id stored in payment_details
+        $order = Order::whereJsonContains('payment_details->razorpay_order_id', $razorpayOrderId)->first();
+        if (!$order) {
+            return response('OK', 200);
+        }
+
+        $config = getPaymentMethodConfig('razorpay', $order->store->user->id, $order->store_id);
+        if (!$config['enabled'] || !$config['key'] || !$config['secret']) {
+            return response('Razorpay not configured for this store', 400);
+        }
+
+        // Verify webhook signature (HMAC-SHA256)
+        $webhookSecret = $config['webhook_secret'] ?? $config['secret'] ?? null;
+        if ($webhookSecret) {
+            $signature = $request->header('X-Razorpay-Signature');
+            if (!$signature) {
+                return response('Missing X-Razorpay-Signature header', 400);
+            }
+            $expectedSignature = hash_hmac('sha256', $payload, $webhookSecret);
+            if (!hash_equals($expectedSignature, $signature)) {
+                Log::warning('Razorpay webhook signature verification failed', ['order_id' => $order->id]);
+                return response('Signature verification failed', 400);
+            }
+        }
+
+        $this->markOrderPaid($order, 'razorpay', $paymentEntity['id'] ?? null, [
+            'razorpay_order_id' => $razorpayOrderId,
+            'razorpay_payment_id' => $paymentEntity['id'] ?? null,
+            'razorpay_event' => $eventType,
+        ]);
 
         return response('OK', 200);
     }

@@ -193,7 +193,7 @@ class EmailTemplateService
 
             // Configure SMTP and send email
             $this->configureBusinessSMTP($context);
-            $this->sendEmail($subject, $content, $toEmail, $toName, $fromName);
+            $this->sendEmail($subject, $content, $toEmail, $toName, $fromName, $context);
             
             return true;
         } catch (Exception $e) {
@@ -280,6 +280,8 @@ class EmailTemplateService
                 'mail.mailers.smtp.username' => $emailUsername,
                 'mail.mailers.smtp.password' => $emailPassword,
                 'mail.mailers.smtp.encryption' => getSetting('email_encryption', 'tls', $userId, $storeId),
+                'mail.from.address' => getSetting('email_from_address', null, $userId, $storeId) ?: config('mail.from.address'),
+                'mail.from.name' => getSetting('email_from_name', null, $userId, $storeId) ?: config('mail.from.name'),
             ]);
         }
     }
@@ -287,10 +289,12 @@ class EmailTemplateService
     /**
      * Send email
      */
-    private function sendEmail(string $subject, string $content, string $toEmail, ?string $toName, string $fromName)
+    private function sendEmail(string $subject, string $content, string $toEmail, ?string $toName, string $fromName, array $context = [])
     {
-        $fromEmail = getSetting('email_from_address') ?: config('mail.from.address');
-        $finalFromName = getSetting('email_from_name') ?: $fromName;
+        $userId = $context['userId'] ?? null;
+        $storeId = $context['storeId'] ?? null;
+        $fromEmail = getSetting('email_from_address', null, $userId, $storeId) ?: config('mail.from.address');
+        $finalFromName = getSetting('email_from_name', null, $userId, $storeId) ?: $fromName;
 
         if (!$fromEmail) {
             throw new Exception('No email from address configured');

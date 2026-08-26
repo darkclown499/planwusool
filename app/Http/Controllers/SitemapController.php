@@ -6,6 +6,7 @@ use App\Models\Store;
 use App\Models\StorePage;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\LandingPageCustomPage;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
@@ -37,11 +38,19 @@ class SitemapController extends Controller
         $xml .= $this->urlEntry($baseUrl . '/terms', '0.3', 'yearly');
         $xml .= $this->urlEntry($baseUrl . '/privacy', '0.3', 'yearly');
 
+        // Landing custom pages (admin-created)
+        $customPages = LandingPageCustomPage::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get(['slug', 'updated_at']);
+        foreach ($customPages as $cp) {
+            $xml .= $this->urlEntry($baseUrl . '/' . $cp->slug, '0.6', 'monthly', $cp->updated_at);
+        }
+
         foreach ($stores as $store) {
             $storeUrl = $this->getStoreUrl($store);
 
             // Store home
-            $xml .= $this->urlEntry($storeUrl, '0.9', 'daily');
+            $xml .= $this->urlEntry($storeUrl, '0.9', 'daily', $store->updated_at);
 
             // Store products page
             $xml .= $this->urlEntry($storeUrl . '/products', '0.8', 'daily');
@@ -49,16 +58,17 @@ class SitemapController extends Controller
             // Categories
             $categories = Category::where('store_id', $store->id)->where('is_active', 1)->get();
             foreach ($categories as $category) {
-                $xml .= $this->urlEntry($storeUrl . '/category/' . $category->slug, '0.7', 'weekly');
+                $xml .= $this->urlEntry($storeUrl . '/category/' . $category->slug, '0.7', 'weekly', $category->updated_at);
             }
 
-            // Individual products
+            // Individual products — use seo_url_slug for SEO-friendly URLs
             $products = Product::where('store_id', $store->id)
                 ->where('is_active', 1)
-                ->get();
+                ->get(['id', 'seo_url_slug', 'updated_at']);
 
             foreach ($products as $product) {
-                $xml .= $this->urlEntry($storeUrl . '/product/' . ($product->slug ?? $product->id), '0.8', 'daily', $product->updated_at);
+                $productSlug = $product->seo_url_slug ?: $product->id;
+                $xml .= $this->urlEntry($storeUrl . '/product/' . $productSlug, '0.8', 'daily', $product->updated_at);
             }
 
             // Custom store pages (Professional plan feature)
@@ -92,6 +102,11 @@ class SitemapController extends Controller
 
     private function getStoreUrl(Store $store): string
     {
+        // Priority 1: Verified custom domain from store_domains table
+        $verifiedDomain = $store->getVerifiedDomain();
+        if ($verifiedDomain) {
+            return 'https://' . $verifiedDomain->domain_name;
+        }
         if ($store->enable_custom_domain && $store->custom_domain) {
             return 'https://' . $store->custom_domain;
         }

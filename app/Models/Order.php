@@ -62,6 +62,7 @@ class Order extends Model
         'notes',
         'coupon_code',
         'coupon_discount',
+        'post_order_extras_at',
     ];
 
     protected $casts = [
@@ -75,6 +76,7 @@ class Order extends Model
         'payment_details' => 'array',
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'post_order_extras_at' => 'datetime',
     ];
 
     public function store(): BelongsTo

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { router } from '@inertiajs/react';
 import { ChevronLeft, PackageSearch } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { useStorefrontCore } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
 import { AnnouncementBar } from './components/AnnouncementBar';
@@ -167,7 +168,7 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
+    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased pb-16 md:pb-0">
       <AnnouncementBar />
       <AtelierHeader homeHref="/" />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -259,14 +260,14 @@ function sortFor(sort: string): (a: any, b: any) => number {
 /* --------------------------- Custom page --------------------------- */
 
 const AtelierPageMode: React.FC<{ storeData: any; page?: any | null }> = ({ page }) => (
-  <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
+  <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased pb-16 md:pb-0">
     <AnnouncementBar />
     <AtelierHeader homeHref="/" />
     <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
       {page?.title && (
         <h1 className="mb-6 border-b border-stone-200 pb-4 font-serif text-3xl font-bold text-stone-900">{page.title}</h1>
       )}
-      <article className="prose-custom2" dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
+      <article className="prose-custom2" dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
     </main>
   </div>
 );

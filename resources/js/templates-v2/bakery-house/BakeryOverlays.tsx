@@ -28,7 +28,7 @@ export function BakeryCartDrawer({ onClose, onCheckout }: any) {
   return (
     <div className="fixed inset-0 z-[60]" dir="rtl" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-[#3b2412]/50 backdrop-blur-sm" onClick={onClose} />
-      <aside className="absolute inset-y-0 left-0 flex w-full max-w-md flex-col bg-[#fdf6ec] shadow-2xl">
+      <aside className="absolute inset-y-0 end-0 flex w-full max-w-md flex-col bg-[#fdf6ec] shadow-2xl">
         <div className="flex items-center justify-between border-b border-[#eaddcf] bg-white px-5 py-4">
           <h2 className="flex items-center gap-2 font-serif text-xl font-black text-[#78350f]">
             <ShoppingBag className="h-5 w-5 text-[#b45309]" /> سلّة المخبوزات ({totals.count})

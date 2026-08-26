@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { router } from '@inertiajs/react';
 import { PackageSearch } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { useStorefrontCore } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
 import { SouqDealsRail, SouqHeader, SouqHero, SouqProductCard, SouqStickyCartBar } from './SouqComponents';
@@ -29,7 +30,7 @@ export const GrocerySouqRoot: React.FC<TemplateRootProps> = ({ storeData, mode, 
         <SouqHeader />
         <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
           <h1 className="mb-6 border-b border-black/5 pb-3 text-2xl font-black text-stone-900">{page?.title}</h1>
-          <article className="prose-custom2" dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
+          <article className="prose-custom2" dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
         </main>
       </div>
     );

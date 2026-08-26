@@ -717,7 +717,10 @@ class ThemeController extends Controller
         }
         $props['isOwnerPreview'] = $isOwnerPreview;
         if ($isOwnerPreview) {
-            $props['previewBanner'] = 'وضع المعاينة — المتجر غير منشور';
+            $locale = app()->getLocale();
+            $props['previewBanner'] = $locale === 'ar'
+                ? 'وضع المعاينة — المتجر غير منشور'
+                : 'Preview Mode — Store is not published';
         }
 
         return $props;
@@ -818,11 +821,25 @@ class ThemeController extends Controller
             $query = Product::where('store_id', $store['id'])
                 ->where('is_active', true)
                 ->where(function($wq) use ($q){
-                    $wq->where(fn($s)=> $s->where('name','like',"%{$q}%")->orWhere('sku','like',"%{$q}%")->orWhere('short_description','like',"%{$q}%")->orWhere('description','like',"%{$q}%"));
+                    $escaped = addcslashes($q, '%_');
+                    $wq->where(fn($s)=> $s->where('name','like',"%{$escaped}%")->orWhere('sku','like',"%{$escaped}%")->orWhere('short_description','like',"%{$escaped}%")->orWhere('description','like',"%{$escaped}%"));
                     $wq->where(fn($catFilter)=> $catFilter->whereNull('category_id')->orWhereHas('category', fn($cq)=>$cq->where('is_active', true)));
                 });
             if ($categoryFilter) $query->where('category_id', $categoryFilter);
             if ($onSaleFilter) $query->whereNotNull('sale_price')->whereRaw('sale_price > 0 AND sale_price < price');
+            if ($availabilityFilter === 'in_stock') {
+                $query->where(function ($aq) {
+                    $aq->where('track_inventory', false)
+                      ->orWhere('allow_backorder', true)
+                      ->orWhere('stock', '>', 0);
+                });
+            } elseif ($availabilityFilter === 'out_of_stock') {
+                $query->where(function ($aq) {
+                    $aq->where('track_inventory', true)
+                      ->where('allow_backorder', false)
+                      ->where('stock', '<=', 0);
+                });
+            }
             switch($sort){
                 case 'price_asc': $query->orderByRaw('COALESCE(NULLIF(sale_price,0), price) ASC'); break;
                 case 'price_desc': $query->orderByRaw('COALESCE(NULLIF(sale_price,0), price) DESC'); break;
@@ -830,13 +847,21 @@ class ThemeController extends Controller
                 case 'name': $query->orderBy('name'); break;
                 default: $query->orderBy('created_at','desc');
             }
-            $paginator = $query->paginate($perPage)->withQueryString();
+            $totalFiltered = $query->clone()->count();
+            $tmpPaginator = $query->paginate($perPage)->withQueryString();
+            $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+                $tmpPaginator->items(),
+                $totalFiltered,
+                $perPage,
+                $tmpPaginator->currentPage(),
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
             $products = collect($paginator->items())->map(function($p){
                 $catalog = $this->formatFullProduct($p);
                 unset($catalog['description'],$catalog['customFields'],$catalog['taxName'],$catalog['taxPercentage']);
                 return $catalog;
             })->values();
-            // variant-aware availability post-filter
+            // Variant-aware availability post-filter
             if ($availabilityFilter === 'in_stock') $products = $products->filter(fn($pr)=> $pr['availability'] !== 'out_of_stock')->values();
             elseif ($availabilityFilter === 'out_of_stock') $products = $products->filter(fn($pr)=> $pr['availability'] === 'out_of_stock')->values();
 

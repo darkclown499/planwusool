@@ -16,7 +16,7 @@ class StoreCouponController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+        $currentStoreId = getCurrentStoreId($user);
         
         $query = StoreCoupon::where('store_id', $currentStoreId);
 
@@ -135,14 +135,11 @@ class StoreCouponController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(StoreCoupon $storeCoupon)
+    public function show($id)
     {
         $user = Auth::user();
         $currentStoreId = $user->current_store;
-        
-        if ($storeCoupon->store_id !== $currentStoreId) {
-            abort(403, 'Unauthorized action.');
-        }
+        $storeCoupon = StoreCoupon::where('store_id', $currentStoreId)->where('id', $id)->firstOrFail();
         
         // Calculate dynamic coupon statistics
         $orders = \App\Models\Order::where('store_id', $currentStoreId)
@@ -197,14 +194,11 @@ class StoreCouponController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, StoreCoupon $storeCoupon)
+    public function update(Request $request, $id)
     {
         $user = Auth::user();
         $currentStoreId = $user->current_store;
-        
-        if ($storeCoupon->store_id !== $currentStoreId) {
-            abort(403, 'Unauthorized action.');
-        }
+        $storeCoupon = StoreCoupon::where('store_id', $currentStoreId)->where('id', $id)->firstOrFail();
         
         $request->validate([
             'name' => 'required|string|max:255',
@@ -251,14 +245,11 @@ class StoreCouponController extends Controller
     /**
      * Toggle the status of the specified coupon.
      */
-    public function toggleStatus(Request $request, StoreCoupon $storeCoupon)
+    public function toggleStatus(Request $request, $id)
     {
         $user = Auth::user();
         $currentStoreId = $user->current_store;
-        
-        if ($storeCoupon->store_id !== $currentStoreId) {
-            abort(403, 'Unauthorized action.');
-        }
+        $storeCoupon = StoreCoupon::where('store_id', $currentStoreId)->where('id', $id)->firstOrFail();
         
         $storeCoupon->update([
             'status' => !$storeCoupon->status
@@ -270,14 +261,11 @@ class StoreCouponController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(StoreCoupon $storeCoupon)
+    public function destroy($id)
     {
         $user = Auth::user();
         $currentStoreId = $user->current_store;
-        
-        if ($storeCoupon->store_id !== $currentStoreId) {
-            abort(403, 'Unauthorized action.');
-        }
+        $storeCoupon = StoreCoupon::where('store_id', $currentStoreId)->where('id', $id)->firstOrFail();
         
         $storeCoupon->delete();
 

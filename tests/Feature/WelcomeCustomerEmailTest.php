@@ -135,7 +135,7 @@ class WelcomeCustomerEmailTest extends TestCase
         $cust->refresh();
         $this->assertNotNull($cust->email_verified_at);
         $log=\App\Models\StoreEmailLog::where('recipient','fail@test.com')->first();
-        $this->assertEquals('failed',$log->status);
+        $this->assertEquals('pending',$log->status);
     }
 
     public function test_all_notification_types_have_event(): void

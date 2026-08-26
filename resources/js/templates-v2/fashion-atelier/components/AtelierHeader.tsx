@@ -64,9 +64,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
       return Array.isArray(p) ? p : [];
     } catch { return []; }
   })();
-  const merchantContent: any = (() => {
-    try { const core: any = useStorefrontCore(); return core?.content ?? {}; } catch { return {}; }
-  })();
+  const merchantContent: any = content ?? {};
   const activePolicy = policyOpen ? getPolicyContent(policyOpen, policyVars, merchantPages, merchantContent) : null;
 
   return (

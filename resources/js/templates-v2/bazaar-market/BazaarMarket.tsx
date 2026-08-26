@@ -15,6 +15,7 @@ import {
 import { useHomepageSettings } from '../shared/CategorySections';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import type { TemplateRootProps } from '../types';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
@@ -297,11 +298,11 @@ export const BazaarMarketRoot: React.FC<TemplateRootProps> = ({ storeData, mode,
   if (mode === 'category') return <BazaarCategoryMode categoryData={categoryData} />;
   if (mode === 'page') {
     return (
-      <div dir="rtl" className="min-h-screen bg-slate-50">
+      <div dir="rtl" className="min-h-screen bg-slate-50 pb-16 md:pb-0">
         <BazaarHeader />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
           <h1 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-black text-slate-900">{page?.title}</h1>
-          <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
+          <article dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
         </main>
       </div>
     );
@@ -446,7 +447,7 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 antialiased">
+    <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 antialiased pb-16 md:pb-0">
       <BazaarHeader homeHref="/" />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500" aria-label="مسار التنقل">

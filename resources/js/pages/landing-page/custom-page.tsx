@@ -104,15 +104,28 @@ export default function CustomPage() {
   const secondaryColor = settings?.config_sections?.theme?.secondary_color || '#8b5cf6';
   const accentColor = settings?.config_sections?.theme?.accent_color || '#10b77f';
   useFavicon();
+  const pageSeoTitle = page.meta_title || page.title;
+  const pageSeoDesc = page.meta_description || metaDescription;
   return (
     <>
       <Head>
-        <title>{page.meta_title || page.title}</title>
-        {page.meta_description && (
-          <meta name="description" content={page.meta_description} />
+        <title>{pageSeoTitle}</title>
+        {pageSeoDesc && (
+          <meta name="description" content={pageSeoDesc} />
         )}
         {metaKeywords && <meta name="keywords" content={metaKeywords} />}
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:site_name" content="Wusool" />
+        <meta property="og:title" content={pageSeoTitle} />
+        {pageSeoDesc && <meta property="og:description" content={pageSeoDesc} />}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         {metaImage && <meta property="og:image" content={metaImage} />}
+        {metaImage && <meta property="og:image:width" content="1200" />}
+        {metaImage && <meta property="og:image:height" content="630" />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageSeoTitle} />
+        {pageSeoDesc && <meta name="twitter:description" content={pageSeoDesc} />}
         {metaImage && <meta name="twitter:image" content={metaImage} />}
         <style>{customCSS}</style>
       </Head>

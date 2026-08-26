@@ -13,7 +13,8 @@ class StripeController extends Controller
     public function success(Request $request, $storeSlug, $orderNumber)
     {
         try {
-            $order = Order::where('order_number', $orderNumber)->firstOrFail();
+            $store = \App\Models\Store::where('slug', $storeSlug)->firstOrFail();
+            $order = Order::where('store_id', $store->id)->where('order_number', $orderNumber)->firstOrFail();
             
             // Get store owner's Stripe settings
             $storeModel = \App\Models\Store::find($order->store_id);
@@ -44,6 +45,14 @@ class StripeController extends Controller
             $session = \Stripe\Checkout\Session::retrieve($sessionId);
             
             if ($session->payment_status === 'paid') {
+                // Verify amount matches
+                $orderAmountCents = (int) round((float) $order->total_amount * 100);
+                if (abs($session->amount_total - $orderAmountCents) > 1) {
+                    return redirect()->to($this->getStoreHomeUrl($store, $storeSlug))
+                        ->with('payment_status', 'failed')
+                        ->withErrors(['error' => 'Payment amount mismatch']);
+                }
+
                 $order->update([
                     'status' => 'confirmed',
                     'payment_status' => 'paid',
@@ -53,7 +62,12 @@ class StripeController extends Controller
                         'payment_status' => $session->payment_status,
                     ]),
                 ]);
-                
+
+                // Complete post-order extras (loyalty, cart, coupon, OrderCreated event)
+                // Idempotent: safe to call from both browser callback and webhook
+                $orderService = app(\App\Services\OrderService::class);
+                $orderService->completePostOrderExtras($order);
+
                 return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
                     ->with('payment_status', 'success')
                     ->with('order_number', $order->order_number)

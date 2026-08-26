@@ -84,7 +84,11 @@ class SendStoreCustomerEmail implements ShouldQueue
             // sanitize secrets
             $safe = preg_replace('/password[^\s]*/i','[redacted]',$safe);
             \Log::warning('Store email failed', ['store_id'=>$this->storeId,'type'=>$this->type,'recipient'=>$recipient,'error'=>$safe]);
-            $log->update(['status'=>StoreEmailLog::STATUS_FAILED,'last_error'=>$safe]);
+            if ($this->attempts() >= $this->tries) {
+                $log->update(['status'=>StoreEmailLog::STATUS_FAILED,'last_error'=>$safe]);
+            } else {
+                $log->update(['status'=>StoreEmailLog::STATUS_PENDING,'last_error'=>$safe]);
+            }
             // Do not rethrow to avoid duplicate retry loop beyond tries; job will retry once via failed handling
             if ($this->attempts() < $this->tries) throw $e;
         }

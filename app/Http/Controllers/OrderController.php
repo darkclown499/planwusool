@@ -202,7 +202,7 @@ class OrderController extends Controller
             // Canonical allowed actions — backend authoritative
             'allowed_actions' => \App\Services\OrderTransitionService::allowedActions($order),
             'allowed_payment_actions' => \App\Services\OrderTransitionService::allowedPaymentActions($order),
-            'can_edit' => !in_array(strtolower($order->status), ['cancelled','failed','refunded','delivered'], true) || strtolower($order->status)==='delivered' ? true : true, // edit allowed for address/products where policy permits; locked items still server-validated
+            'can_edit' => !in_array(strtolower($order->status), ['cancelled','failed','refunded'], true),
         ];
         
         // Returns for this order
@@ -553,18 +553,6 @@ class OrderController extends Controller
             }
         }
         
-        // Update order items variants only if provided (legacy)
-        if ($request->has('items') && is_array($request->input('items'))) {
-            foreach ($request->items as $itemData) {
-                if (isset($itemData['id'])) {
-                    $orderItem = $order->items()->find($itemData['id']);
-                    if ($orderItem && isset($itemData['variants'])) {
-                        $orderItem->update(['product_variants' => json_encode($itemData['variants'])]);
-                    }
-                }
-            }
-        }
-        
         if ($request->wantsJson() || $request->expectsJson()) {
             return response()->json(['message'=>'تم تحديث الطلب بنجاح','order'=>['id'=>$order->id,'status'=>$order->fresh()->status,'payment_status'=>$order->fresh()->payment_status]]);
         }
@@ -628,7 +616,16 @@ class OrderController extends Controller
         $order = Order::where('store_id', $storeId)
             ->where('id', $id)
             ->firstOrFail();
-            
+        
+        // Restore inventory for tracked products before deleting
+        if (in_array($order->status, ['pending', 'confirmed', 'processing'])) {
+            foreach ($order->items as $item) {
+                if ($item->track_inventory && $item->product) {
+                    app(\App\Services\InventoryService::class)->restore($item->product->id, $item->quantity, $item->product_variants ? json_decode($item->product_variants, true) : null);
+                }
+            }
+        }
+        
         $order->delete();
         
         return redirect()->route('orders.index')->with('success', __('Order deleted successfully.'));

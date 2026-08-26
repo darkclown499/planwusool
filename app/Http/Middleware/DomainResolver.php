@@ -329,8 +329,11 @@ class DomainResolver
             $orderNumber = $segments[2] ?? null;
             return app(\App\Http\Controllers\Store\GatewayReturnController::class)->{$gw . 'Callback'}($request, $store->slug, $orderNumber);
         } else {
-            // Default to home page for unknown routes
-            return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+            // Only serve homepage for root path, return 404 for unknown paths
+            if ($request->path() === '/' || $request->path() === $store->slug) {
+                return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+            }
+            abort(404);
         }
     }
 }

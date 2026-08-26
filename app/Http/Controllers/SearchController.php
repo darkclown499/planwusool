@@ -17,7 +17,7 @@ class SearchController extends Controller
         $query = trim($request->get('q', ''));
         $user = auth()->user();
 
-        if ($query === '' || $user->type === 'superadmin') {
+        if ($query === '') {
             return response()->json([
                 'products' => [],
                 'orders' => [],
@@ -34,7 +34,7 @@ class SearchController extends Controller
             ]);
         }
 
-        $term = '%' . $query . '%';
+        $term = '%' . addcslashes($query, '%_') . '%';
 
         $products = Product::where('store_id', $storeId)
             ->where(function ($q) use ($term) {

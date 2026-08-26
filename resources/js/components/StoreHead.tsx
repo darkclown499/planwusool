@@ -119,6 +119,38 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
     };
   }, [store?.name, store?.logo, store?.phone, store?.city, store?.country, store?.store_url, store?.whatsapp_number, description]);
 
+  useEffect(() => {
+    // BreadcrumbList schema for the store homepage
+    const existing = document.getElementById('store-breadcrumb-schema');
+    if (existing) existing.remove();
+
+    if (!store?.name) return;
+
+    const baseUrl = window.location.origin;
+    const breadcrumb = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: store.name,
+          item: store.store_url || baseUrl,
+        },
+      ],
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'store-breadcrumb-schema';
+    script.textContent = JSON.stringify(breadcrumb);
+    document.head.appendChild(script);
+
+    return () => {
+      document.getElementById('store-breadcrumb-schema')?.remove();
+    };
+  }, [store?.name, store?.store_url]);
+
   return (
     <Head title={title}>
       <meta name="description" content={description} />
@@ -128,9 +160,14 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
       <link rel="apple-touch-icon" href={faviconHref} />
       <meta property="og:site_name" content={store?.name || title} />
       <meta property="og:title" content={title} />
+      <meta property="og:url" content={window.location.href} />
       {description ? <meta property="og:description" content={description} /> : null}
       <meta property="og:type" content="website" />
       {ogImage ? <meta property="og:image" content={ogImage} /> : null}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      {description ? <meta name="twitter:description" content={description} /> : null}
+      {ogImage ? <meta name="twitter:image" content={ogImage} /> : null}
     </Head>
   );
 }

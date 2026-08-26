@@ -73,7 +73,9 @@ const SearchStore: React.FC<SearchStoreProps> = ({
     <>
       <DesignTokensInjector tokens={designTokens as any} />
       <Head title={seoTitle}>
+        <meta name="robots" content="noindex, follow" />
         <meta name="description" content={`نتائج البحث عن "${searchPage.query}" في ${config?.storeName || store?.name || 'المتجر'}`} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.pathname : ''} />
       </Head>
       <CustomCodeInjector
         customCss={store?.custom_css}

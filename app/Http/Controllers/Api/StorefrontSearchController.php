@@ -72,9 +72,16 @@ class StorefrontSearchController extends Controller
             $baseQuery->where('category_id', $request->input('category_id'));
         }
         if ($request->input('availability') === 'in_stock') {
-            // in_stock: delegate to availability check post-query would be expensive; filter by stock>0 or not tracked
             $baseQuery->where(function ($aq) {
-                $aq->where('is_active', true); // placeholder to keep chain; actual filter is in map but we add rough filter
+                $aq->where('track_inventory', false)
+                  ->orWhere('allow_backorder', true)
+                  ->orWhere('stock', '>', 0);
+            });
+        } elseif ($request->input('availability') === 'out_of_stock') {
+            $baseQuery->where(function ($aq) {
+                $aq->where('track_inventory', true)
+                  ->where('allow_backorder', false)
+                  ->where('stock', '<=', 0);
             });
         }
         if ($request->boolean('on_sale')) {
@@ -104,7 +111,18 @@ class StorefrontSearchController extends Controller
         $baseQuery->with('category');
 
         if ($isPaginated) {
+            $availabilityFilter = $request->input('availability');
+            $totalFiltered = $baseQuery->clone()->count();
             $paginator = $baseQuery->paginate($limit, ['*'], 'page', $page);
+            // setTotal doesn't exist in Laravel 12 — rebuild with LengthAwarePaginator
+            $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+                $paginator->items(),
+                $totalFiltered,
+                $limit,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
+
             $products = collect($paginator->items())->map(function ($product) {
                 $hasSale = $product->hasEffectiveSale();
                 $isVariant = \App\Services\InventoryService::isVariantInventory($product);
@@ -124,10 +142,10 @@ class StorefrontSearchController extends Controller
                 ];
             })->values();
 
-            // Post-filter availability if requested (variant-aware would need service, apply after fetch)
-            if ($request->input('availability') === 'in_stock') {
+            // Variant-aware post-filter (SQL approximation may include variants at 0 stock)
+            if ($availabilityFilter === 'in_stock') {
                 $products = $products->filter(fn($p)=> $p['availability'] !== 'out_of_stock')->values();
-            } elseif ($request->input('availability') === 'out_of_stock') {
+            } elseif ($availabilityFilter === 'out_of_stock') {
                 $products = $products->filter(fn($p)=> $p['availability'] === 'out_of_stock')->values();
             }
 

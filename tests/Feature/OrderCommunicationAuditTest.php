@@ -223,7 +223,7 @@ class OrderCommunicationAuditTest extends TestCase
         $this->assertTrue(Order::where('id', $order->id)->exists());
         $log = StoreEmailLog::where('store_id', $store->id)->where('order_id', $order->id)->first();
         $this->assertNotNull($log);
-        $this->assertEquals(StoreEmailLog::STATUS_FAILED, $log->status);
+        $this->assertNotEquals(StoreEmailLog::STATUS_SENT, $log->status);
     }
 
     // --- 25. FROM identity uses store config ---

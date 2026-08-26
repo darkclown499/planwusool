@@ -146,8 +146,7 @@ class ReturnService
     public static function restock(OrderReturn $ret, int $returnItemId, int $qty): OrderReturnItem
     {
         return DB::transaction(function() use ($ret, $returnItemId, $qty) {
-            if (!in_array($ret->status, ['received','approved','in_transit'], true)) {
-                // Allow restock only after approved/received, but be lenient to received
+            if ($ret->status !== 'received') {
                 throw new \Exception('لا يمكن إعادة التخزين إلا بعد استلام المرتجع');
             }
             $ri = OrderReturnItem::where('id', $returnItemId)->where('return_id', $ret->id)->lockForUpdate()->first();
@@ -229,6 +228,13 @@ class ReturnService
      */
     public static function complete(OrderReturn $ret): OrderReturn
     {
+        $ret->load('items');
+        if ($ret->refund_amount <= 0 && !$ret->items->every(fn($i) => $i->restocked_quantity > 0)) {
+            $allDamaged = $ret->items->every(fn($i) => in_array($i->reason, ['damaged','defective'], true));
+            if (!$allDamaged) {
+                throw new \Exception('يجب تسجيل استرداد المبلغ أو إعادة التخزين قبل الإكمال');
+            }
+        }
         return self::transition($ret, 'completed');
     }
 }

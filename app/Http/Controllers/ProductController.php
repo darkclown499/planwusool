@@ -534,6 +534,8 @@ class ProductController extends Controller
         }
         $product->custom_fields = $request->has('custom_fields') ? $request->custom_fields : $product->custom_fields;
         $product->save();
+
+        return redirect()->route('products.index')->with('success', __('Product updated successfully.'));
     }
 
     /**

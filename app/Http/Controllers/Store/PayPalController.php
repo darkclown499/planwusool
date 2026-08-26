@@ -87,9 +87,12 @@ class PayPalController extends Controller
                     'capture_id' => $captureData['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
                 ]),
             ]);
-            
 
-            
+            // Complete post-order extras (loyalty, cart, coupon, OrderCreated event)
+            // Idempotent: safe to call from both browser callback and webhook
+            $orderService = app(\App\Services\OrderService::class);
+            $orderService->completePostOrderExtras($order);
+
             return redirect()->to($this->getStoreHomeUrl($storeModel, $storeSlug))
                 ->with('payment_status', 'success')
                 ->with('order_number', $order->order_number)

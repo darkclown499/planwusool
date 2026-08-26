@@ -26,7 +26,8 @@ class EnsureOnboarding
             // The onboarding wizard itself needs authenticated API / JSON calls
             // (e.g. logo upload through the media library), so only full page
             // navigations are redirected back to the wizard.
-            if ($request->expectsJson()) {
+            // Only bypass for explicit onboarding API routes
+            if ($request->expectsJson() && $request->routeIs('onboarding.*')) {
                 return $next($request);
             }
 

@@ -247,6 +247,7 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
 // ---------------------------------------------------------------------------
 Route::post('store/stripe/webhook', [\App\Http\Controllers\Store\GatewayWebhookController::class, 'stripe'])->name('store.stripe.webhook');
 Route::post('store/paypal/webhook', [\App\Http\Controllers\Store\GatewayWebhookController::class, 'paypal'])->name('store.paypal.webhook');
+Route::post('store/razorpay/webhook', [\App\Http\Controllers\Store\GatewayWebhookController::class, 'razorpay'])->name('store.razorpay.webhook');
 Route::post('store/paystack/webhook', [StorePaystackController::class, 'webhook'])->middleware('webhook.signature:paystack')->name('store.paystack.webhook');
 Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->middleware('webhook.signature:mercadopago')->name('store.mercadopago.webhook');
 
@@ -268,6 +269,15 @@ Route::post('/api/plan/encrypt', [LandingPageController::class, 'encryptPlanId']
 
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// robots.txt — served by web server in production (Apache/Nginx reads from public/),
+// but needs an explicit route for environments where Laravel handles all requests.
+Route::get('/robots.txt', function () {
+    return response(file_get_contents(public_path('robots.txt')), 200, [
+        'Content-Type' => 'text/plain',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+})->name('robots.txt');
 
 // Static pages
 Route::get('/about', [LandingPageController::class, 'about'])->name('page.about');

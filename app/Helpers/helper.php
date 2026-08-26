@@ -165,6 +165,12 @@ if (! function_exists('getSetting')) {
             return $globalSettings[$key];
         }
         
+        // Only fall through to superadmin for platform-level settings, not store-specific ones
+        $storeSpecificKeys = ['email_host', 'email_port', 'email_username', 'email_password', 'email_from_address', 'email_from_name'];
+        if (in_array($key, $storeSpecificKeys)) {
+            return $default;
+        }
+
         // If still not found and user is company, try superadmin settings (cached)
         if ($user && $user->type === 'company') {
             $superAdmin = User::where('type', 'superadmin')->first();

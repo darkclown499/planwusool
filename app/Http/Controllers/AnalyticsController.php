@@ -16,7 +16,7 @@ class AnalyticsController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $storeId = $user->current_store;
+        $storeId = getCurrentStoreId($user);
         // Super admins have no store selected; for them the analytics page
         // shows platform-wide numbers aggregated across every store.
         $aggregate = $user->isSuperAdmin();

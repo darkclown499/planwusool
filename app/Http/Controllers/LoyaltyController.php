@@ -24,7 +24,7 @@ class LoyaltyController extends Controller
     public function settings()
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+        $currentStoreId = getCurrentStoreId($user);
 
         $settings = $currentStoreId ? LoyaltySetting::forStore($currentStoreId) : new LoyaltySetting();
 

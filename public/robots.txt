@@ -5,5 +5,24 @@ Disallow: /settings/
 Disallow: /admin/
 Disallow: /api/
 Disallow: /storage/private/
+Disallow: /*?action=
+Disallow: /search?
+Disallow: /*?preview=1
+
+User-agent: GPTBot
+Allow: /
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /storage/private/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /storage/private/
 
 Sitemap: https://wusool.ps/sitemap.xml

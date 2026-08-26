@@ -79,6 +79,10 @@ class CategoryController extends Controller
      */
     public function apiIndex(Request $request)
     {
+        if (!Auth::check()) {
+            return response()->json(['categories' => [], 'error' => 'Unauthenticated'], 401);
+        }
+
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'storeId' => 'nullable|integer|exists:stores,id',
             'store_id' => 'nullable|integer|exists:stores,id',
@@ -330,6 +334,7 @@ class CategoryController extends Controller
                                               ->pluck('id');
         
         $totalRevenue = \App\Models\OrderItem::whereIn('product_id', $categoryProducts)
+                                            ->whereHas('order', fn($q) => $q->where('store_id', $currentStoreId))
                                             ->sum('total_price');
         
         $stats = [

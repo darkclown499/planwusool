@@ -97,7 +97,7 @@ class CreateCourierShipment implements ShouldQueue
             $shipment->provider_status = $result['provider_status'] ?? $result['status'] ?? null;
             $shipment->payload_snapshot = $payload;
             $shipment->last_error = null;
-            $shipment->attempt_count = ($existing->attempt_count ?? 0) + 1;
+            $shipment->attempt_count = ($existing?->attempt_count ?? 0) + 1;
             $shipment->submitted_at = now();
             $shipment->save();
 
@@ -125,7 +125,7 @@ class CreateCourierShipment implements ShouldQueue
             $shipment->provider_status = $err;
             $shipment->payload_snapshot = $payload;
             $shipment->last_error = $err;
-            $shipment->attempt_count = ($existing->attempt_count ?? 0) + 1;
+            $shipment->attempt_count = ($existing?->attempt_count ?? 0) + 1;
             $shipment->save();
 
             Log::warning('Courier shipment failed', ['order_id'=>$order->id,'error'=>$err]);

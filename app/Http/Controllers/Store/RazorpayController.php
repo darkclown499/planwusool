@@ -57,6 +57,11 @@ class RazorpayController extends Controller
                 ])
             ]);
 
+            // Complete post-order extras (loyalty, cart, coupon, OrderCreated event)
+            // Idempotent: safe to call from both browser callback and webhook
+            $orderService = app(\App\Services\OrderService::class);
+            $orderService->completePostOrderExtras($order);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Payment verified successfully',

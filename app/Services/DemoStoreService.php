@@ -73,7 +73,7 @@ class DemoStoreService
      * Existing installs seeded with the old generic catalog are upgraded
      * in place to the branded «بوتيك ماسة» boutique automatically.
      */
-    public function ensureDemoStore(): Store
+    public function ensureDemoStore(): ?Store
     {
         $store = Store::where('slug', self::SLUG)->first();
 
@@ -86,6 +86,10 @@ class DemoStoreService
         $owner = User::where('type', 'superadmin')->first()
             ?? User::where('type', 'admin')->first()
             ?? User::where('type', 'company')->orderBy('id')->first();
+
+        if (! $owner) {
+            return Store::where('slug', self::SLUG)->first();
+        }
 
         $store = Store::create([
             // Brand names are not translated — «بوتيك ماسة» is the boutique identity.
@@ -162,7 +166,7 @@ class DemoStoreService
     {
         $store = $this->ensureDemoStore();
 
-        return $store->getStoreSubdomainUrl();
+        return $store ? $store->getStoreSubdomainUrl() : '';
     }
 
     /**
@@ -178,6 +182,10 @@ class DemoStoreService
             300,
             function () use ($productLimit, $categoryLimit) {
                 $store = $this->ensureDemoStore();
+
+                if (! $store) {
+                    return ['name' => '', 'products' => [], 'categories' => []];
+                }
 
                 $products = Product::where('store_id', $store->id)
                     ->where('is_active', true)

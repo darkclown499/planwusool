@@ -35,3 +35,9 @@ Schedule::command('erp:sync --interval=daily')
     ->dailyAt('03:00')
     ->withoutOverlapping()
     ->sendOutputTo(storage_path('logs/erp-sync.log'));
+
+// Expire loyalty points daily at 3:30 AM
+Schedule::command('loyalty:expire')
+    ->dailyAt('03:30')
+    ->withoutOverlapping()
+    ->sendOutputTo(storage_path('logs/loyalty-expire.log'));

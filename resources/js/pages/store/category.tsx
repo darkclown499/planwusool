@@ -83,9 +83,15 @@ const CategoryStore: React.FC<CategoryStoreProps> = ({
             <DesignTokensInjector tokens={designTokens as any} />
             <Head title={seoTitle}>
                 <meta name="description" content={seoDescription} />
+                <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+                <meta property="og:site_name" content={config?.storeName || store?.name || ''} />
                 <meta property="og:title" content={seoTitle} />
                 <meta property="og:description" content={seoDescription} />
                 <meta property="og:type" content="website" />
+                <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={seoTitle} />
+                <meta name="twitter:description" content={seoDescription} />
             </Head>
             <CustomCodeInjector
                 customCss={store?.custom_css}

@@ -47,9 +47,6 @@ class LocationController extends Controller
 
     public function getCitiesByState($stateId)
     {
-        $cityState = City::where('id', $stateId)->first();
-        // $stateId here is actually stateId param — look up state via city table fallback?
-        // Correct: $stateId is a state's id; validate its country is allowed
         $state = State::find($stateId);
         if (!$state) {
             return response()->json(['message' => 'المحافظة غير موجودة.'], 404);

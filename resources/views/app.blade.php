@@ -25,11 +25,12 @@
         'ja' => 'ja_JP',
         default => 'en_US',
     };
-    $isStoreRoute = request()->routeIs('store.*') || request()->routeIs('storefront.*');
+    $isStoreRoute = request()->routeIs('store.*') || request()->routeIs('storefront.*') || request()->attributes->has('resolved_store');
     $isStaticRoute = request()->routeIs('page.about') || request()->routeIs('page.features')
         || request()->routeIs('page.terms') || request()->routeIs('page.privacy');
     $isLandingRoute = request()->routeIs('home') || request()->routeIs('custom-page.show');
     $isSitemap = request()->routeIs('sitemap');
+    $isSearchPage = ($page['component'] ?? '') === 'store/search';
     $isPrivateRoute = !$isLandingRoute && !$isStoreRoute && !$isStaticRoute && !$isSitemap;
     $isPreview = request()->has('preview');
 @endphp
@@ -38,7 +39,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="robots" content="{{ $isPrivateRoute || $isPreview ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }}">
+        <meta name="robots" content="{{ ($isPrivateRoute || $isPreview || $isSearchPage) ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }}">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         @php
             $googleVerification = getSetting('googleVerification', '');
@@ -202,7 +203,7 @@
             @if($seoImage)
                 <meta name="twitter:image" content="{{ str_starts_with($seoImage, 'http') ? $seoImage : rtrim($appUrl, '/') . '/' . ltrim($seoImage, '/') }}">
             @endif
-            {{-- JSON-LD @graph: Organization + WebSite + FAQPage + SoftwareApplication --}}
+            {{-- JSON-LD @graph: Organization + WebSite + FAQPage + SoftwareApplication + BreadcrumbList --}}
             <script type="application/ld+json">
             {!! json_encode([
                 '@' . 'context' => 'https://schema.org',
@@ -268,6 +269,17 @@
                             'priceCurrency' => 'ILS',
                         ],
                     ],
+                    [
+                        '@type' => 'BreadcrumbList',
+                        'itemListElement' => [
+                            [
+                                '@type' => 'ListItem',
+                                'position' => 1,
+                                'name' => 'الرئيسية',
+                                'item' => $appUrl,
+                            ],
+                        ],
+                    ],
                 ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
             </script>
@@ -275,10 +287,7 @@
 
         @if($isStoreRoute)
             @php
-                $store = session('currentStore') ?? null;
-                if (!$store && request()->route('store')) {
-                    $store = request()->route('store');
-                }
+                $store = session('currentStore') ?? request()->attributes->get('resolved_store') ?? request()->route('store') ?? null;
                 $storeTitle = $store ? ($store->seo_title ?: $store->name) : config('app.name', 'Wusool');
                 $storeDesc = $store?->seo_description ?? '';
                 $storeKeywords = $store?->seo_keywords ?? '';
@@ -336,14 +345,29 @@
             <script type="application/ld+json">
             {!! json_encode([
                 '@' . 'context' => 'https://schema.org',
-                '@type' => 'Store',
-                'name' => $store->name,
-                'description' => $store->description ?? $storeDesc,
-                'url' => $storeCanonical,
-                'image' => $storeImage ?: null,
-                'merchant' => [
-                    '@type' => 'Organization',
-                    'name' => config('app.name', 'Wusool'),
+                '@graph' => [
+                    [
+                        '@type' => 'Store',
+                        'name' => $store->name,
+                        'description' => $store->description ?? $storeDesc,
+                        'url' => $storeCanonical,
+                        'image' => $storeImage ?: null,
+                        'merchant' => [
+                            '@type' => 'Organization',
+                            'name' => config('app.name', 'Wusool'),
+                        ],
+                    ],
+                    [
+                        '@type' => 'BreadcrumbList',
+                        'itemListElement' => [
+                            [
+                                '@type' => 'ListItem',
+                                'position' => 1,
+                                'name' => $store->name,
+                                'item' => $storeCanonical,
+                            ],
+                        ],
+                    ],
                 ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
             </script>

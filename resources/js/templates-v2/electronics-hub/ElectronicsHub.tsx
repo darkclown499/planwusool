@@ -15,6 +15,7 @@ import {
 } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
@@ -360,11 +361,11 @@ export const ElectronicsHubRoot: React.FC<TemplateRootProps> = ({ storeData, mod
   if (mode === 'category') return <HubCategoryMode categoryData={categoryData} />;
   if (mode === 'page') {
     return (
-      <div dir="rtl" className="min-h-screen bg-[#0b1220]">
+      <div dir="rtl" className="min-h-screen bg-[#0b1220] pb-16 md:pb-0">
         <HubHeader />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6 [&_a]:!text-blue-300 [&_h1]:!text-white [&_p]:!text-slate-300 [&_strong]:!text-white">
           <h1 className="mb-6 border-b border-slate-800 pb-3 text-2xl font-black text-white">{page?.title}</h1>
-          <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
+          <article dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
         </main>
       </div>
     );
@@ -491,7 +492,7 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0b1220] text-slate-200 antialiased">
+    <div dir="rtl" className="min-h-screen bg-[#0b1220] text-slate-200 antialiased pb-16 md:pb-0">
       <HubHeader homeHref="/" />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500">

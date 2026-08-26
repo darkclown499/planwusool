@@ -12,6 +12,7 @@ import {
   type V2Product,
 } from '../shared/hooks';
 import type { TemplateRootProps } from '../types';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 
 /* ===================================================================== */
@@ -277,11 +278,11 @@ export const RestaurantMenuRoot: React.FC<TemplateRootProps> = ({ storeData, mod
   if (mode === 'category') return <RestaurantCategoryMode categoryData={categoryData} />;
   if (mode === 'page') {
     return (
-      <div dir="rtl" className="min-h-screen bg-[#191410]">
+      <div dir="rtl" className="min-h-screen bg-[#191410] pb-16 md:pb-0">
         <RestaurantHeader />
         <main className="prose-custom2 mx-auto max-w-3xl px-4 py-10 sm:px-6 [&_a]:!text-[#fbbf24] [&_h1]:!text-[#f5e7c8] [&_p]:!text-[#c9b896]">
           <h1 className="mb-6 font-serif text-3xl font-black text-[#f5e7c8]">{page?.title}</h1>
-          <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
+          <article dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
         </main>
       </div>
     );
@@ -360,7 +361,7 @@ const RestaurantCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categ
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#191410] text-[#e8d9b8] antialiased">
+    <div dir="rtl" className="min-h-screen bg-[#191410] text-[#e8d9b8] antialiased pb-16 md:pb-0">
       <RestaurantHeader homeHref="/" />
       <RestaurantTabs categories={(product?.categories || []).slice(0, 8)} activeId={cat ? String(cat.id) : null} />
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">

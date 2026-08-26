@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { CakeSlice, ChevronLeft, Clock3, Croissant, Flame, Heart, Package, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { toast } from '@/components/custom-toast';
 import { Gift } from 'lucide-react';
 import { calcEarnedPoints, getEffectiveLoyaltyPrice, getLoyaltySettingsFromPage } from '@/utils/loyalty';
@@ -350,11 +351,11 @@ export const BakeryHouseRoot: React.FC<TemplateRootProps> = ({ storeData, mode, 
   if (mode === 'category') return <BakeryCategoryMode categoryData={categoryData} />;
   if (mode === 'page') {
     return (
-      <div dir="rtl" className="min-h-screen bg-[#fdf6ec]">
+      <div dir="rtl" className="min-h-screen bg-[#fdf6ec] pb-16 md:pb-0">
         <BakeryHeader />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
           <h1 className="mb-6 border-b border-[#eaddcf] pb-3 font-serif text-3xl font-black text-[#78350f]">{page?.title}</h1>
-          <article dangerouslySetInnerHTML={{ __html: page?.content || '' }} />
+          <article dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
         </main>
       </div>
     );
@@ -363,6 +364,22 @@ export const BakeryHouseRoot: React.FC<TemplateRootProps> = ({ storeData, mode, 
 };
 
 const byName = (a: any, b: any) => String(a.name).localeCompare(String(b.name), 'ar');
+
+const BakeryStoryStrip: React.FC = () => {
+  const { content: _bc } = useStorefrontCore() as any;
+  const storyCfg = (_bc as any)?.bakery_story ?? {};
+  if (storyCfg.enabled === false) return null;
+  const q = storyCfg.quote || '«نُخبز بشغف — كل يوم، بجودة تليق بك»';
+  const sub = storyCfg.subtitle || 'مكونات مختارة • وصفاتنا الخاصة';
+  return (
+    <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
+      <div className="rounded-3xl bg-gradient-to-l from-[#f5e7d3] to-[#fdf6ec] p-8 text-center ring-1 ring-[#eaddcf]">
+        <p className="font-serif text-2xl font-black leading-relaxed text-[#78350f]">{q}</p>
+        <p className="mt-2 text-sm text-[#92603a]">{sub}</p>
+      </div>
+    </section>
+  );
+};
 
 const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const { product } = useStorefrontCore();
@@ -468,19 +485,7 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         )}
 
         {/* Story strip — merchant content: uses store_content.bakery_story when configured, otherwise truthful defaults; hidden when disabled */}
-        {(() => {
-          const { content: _bc } = useStorefrontCore() as any;
-          const storyCfg = (_bc as any)?.bakery_story ?? {};
-          if (storyCfg.enabled === false) return null;
-          const q = storyCfg.quote || '«نُخبز بشغف — كل يوم، بجودة تليق بك»';
-          const sub = storyCfg.subtitle || 'مكونات مختارة • وصفاتنا الخاصة';
-          return (
-        <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
-          <div className="rounded-3xl bg-gradient-to-l from-[#f5e7d3] to-[#fdf6ec] p-8 text-center ring-1 ring-[#eaddcf]">
-            <p className="font-serif text-2xl font-black leading-relaxed text-[#78350f]">{q}</p>
-            <p className="mt-2 text-sm text-[#92603a]">{sub}</p>
-          </div>
-        </section> ); })()}
+        <BakeryStoryStrip />
       </main>
     </div>
   );
@@ -506,7 +511,7 @@ const BakeryCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#fdf6ec] text-[#5d3a21] antialiased">
+    <div dir="rtl" className="min-h-screen bg-[#fdf6ec] text-[#5d3a21] antialiased pb-16 md:pb-0">
       <BakeryHeader homeHref="/" />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <nav className="mb-5 flex items-center gap-1.5 text-sm text-[#92603a]" aria-label="مسار التنقل">

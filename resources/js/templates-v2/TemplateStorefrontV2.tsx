@@ -8,6 +8,54 @@ import { useStore } from '@/contexts/StoreContext';
 import { useUI } from '@/contexts/UIContext';
 import type { TemplateModule } from './types';
 import React, { useEffect } from 'react';
+
+/**
+ * Injects Product JSON-LD structured data into the document head when a
+ * product detail modal is open. Enables Google rich results (price,
+ * availability, image) for individual products.
+ */
+const ProductSchema: React.FC<{ product: any; store?: any }> = ({ product, store }) => {
+    useEffect(() => {
+        if (!product?.name) return;
+
+        const baseUrl = window.location.origin;
+        const slug = product.seoUrlSlug || product.id;
+        const img = product.image || '';
+        const availability = product.availability === 'out_of_stock'
+            ? 'https://schema.org/OutOfStock'
+            : 'https://schema.org/InStock';
+
+        const schema: Record<string, any> = {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.name,
+            url: `${baseUrl}/product/${slug}`,
+            image: img || undefined,
+            description: product.short_description || product.description || undefined,
+            sku: product.sku || undefined,
+            brand: store?.name ? { '@type': 'Brand', name: store.name } : undefined,
+            offers: {
+                '@type': 'Offer',
+                priceCurrency: store?.currency_code || 'USD',
+                price: (Number(product.price) || 0).toFixed(2),
+                availability,
+                url: `${baseUrl}/product/${slug}`,
+            },
+        };
+
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.id = 'product-schema';
+        script.textContent = JSON.stringify(schema);
+        document.head.appendChild(script);
+
+        return () => {
+            document.getElementById('product-schema')?.remove();
+        };
+    }, [product?.name, product?.price, product?.availability, store?.name, store?.currency_code]);
+
+    return null;
+};
 import { TemplateAuthForm, TemplateAuthGate } from './shared/neutral/AuthModal';
 import { TemplateAddressesModal } from './shared/neutral/AddressesModal';
 
@@ -33,15 +81,15 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
     const overlays = module.overlays || {};
     const storeSlug = (store as any)?.slug;
 
-    const CartDrawer = overlays.cart!;
-    const ProductDetailModal = overlays.product_detail!;
-    const CheckoutModal = overlays.checkout!;
-    const OrderSuccessModal = overlays.order_success!;
-    const ProfileModal = overlays.profile!;
-    const MyOrdersModal = overlays.orders!;
-    const OrderDetailsModal = overlays.order_detail!;
-    const WishlistOverlay = overlays.wishlist!;
-    const SearchOverlay = overlays.search!;
+    const CartDrawer = overlays.cart;
+    const ProductDetailModal = overlays.product_detail;
+    const CheckoutModal = overlays.checkout;
+    const OrderSuccessModal = overlays.order_success;
+    const ProfileModal = overlays.profile;
+    const MyOrdersModal = overlays.orders;
+    const OrderDetailsModal = overlays.order_detail;
+    const WishlistOverlay = overlays.wishlist;
+    const SearchOverlay = overlays.search;
 
     const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
     const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
@@ -158,7 +206,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
             {children}
 
             {/* Bespoke / neutral overlay stack */}
-            {ui.showCart && (
+            {ui.showCart && CartDrawer && (
                 <CartDrawer
                     onClose={ui.handleCloseCart}
                     onCheckout={handleCheckoutClick}
@@ -166,13 +214,16 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {product.showProductDetail && product.selectedProduct && (
-                <ProductDetailModal
-                    product={product.selectedProduct}
-                    selectedImageIndex={product.selectedImageIndex}
-                    onClose={product.handleCloseProductDetail}
-                    onImageSelect={product.handleImageSelect}
-                />
+            {product.showProductDetail && product.selectedProduct && ProductDetailModal && (
+                <>
+                    <ProductSchema product={product.selectedProduct} store={store} />
+                    <ProductDetailModal
+                        product={product.selectedProduct}
+                        selectedImageIndex={product.selectedImageIndex}
+                        onClose={product.handleCloseProductDetail}
+                        onImageSelect={product.handleImageSelect}
+                    />
+                </>
             )}
 
             {ui.showAuthModal && customerAccountsEnabled && (
@@ -204,7 +255,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {ui.showCheckout && (
+            {ui.showCheckout && CheckoutModal && (
                 <CheckoutProvider userProfile={auth.userProfile} isLoggedIn={auth.isLoggedIn} store={store} onOrderComplete={handleOrderComplete}>
                     <CheckoutModal
                         onClose={() => ui.setShowCheckout(false)}
@@ -217,7 +268,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 </CheckoutProvider>
             )}
 
-            {order.showOrderSuccess && order.orderNumber && !ui.showCheckout && (
+            {order.showOrderSuccess && order.orderNumber && !ui.showCheckout && OrderSuccessModal && (
                 <OrderSuccessModal
                     orderNumber={order.orderNumber}
                     onClose={() => {
@@ -246,7 +297,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {auth.showOrdersModal && customerAccountsEnabled && (auth.isLoggedIn || loginEnabled) && (
+            {auth.showOrdersModal && customerAccountsEnabled && (auth.isLoggedIn || loginEnabled) && MyOrdersModal && (
                 <MyOrdersModal
                     orders={order.userOrders}
                     loading={order.loadingOrders}
@@ -256,7 +307,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {order.showOrderDetailsModal && order.selectedOrderId && customerAccountsEnabled && (
+            {order.showOrderDetailsModal && order.selectedOrderId && customerAccountsEnabled && OrderDetailsModal && (
                 <OrderDetailsModal
                     orderNumber={order.selectedOrderId}
                     storeSlug={storeSlug}
@@ -264,17 +315,17 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {auth.showProfileModal && customerAccountsEnabled && (auth.isLoggedIn || loginEnabled) && (
+            {auth.showProfileModal && customerAccountsEnabled && (auth.isLoggedIn || loginEnabled) && ProfileModal && (
                 <ProfileModal userProfile={auth.userProfile} storeSlug={storeSlug} onClose={() => auth.setShowProfileModal(false)} />
             )}
 
-            {auth.showWishlistModal && <WishlistOverlay onClose={() => auth.setShowWishlistModal(false)} />}
+            {auth.showWishlistModal && WishlistOverlay && <WishlistOverlay onClose={() => auth.setShowWishlistModal(false)} />}
 
             {(auth as any).showAddressesModal && customerAccountsEnabled && auth.isLoggedIn && (
                 <TemplateAddressesModal onClose={() => (auth as any).setShowAddressesModal(false)} />
             )}
 
-            {ui.showSearch && (
+            {ui.showSearch && SearchOverlay && (
                 <SearchOverlay
                     onClose={() => ui.setShowSearch(false)}
                     onProductClick={(p: any) => product.handleProductClick(p)}

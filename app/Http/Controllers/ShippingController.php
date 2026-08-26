@@ -15,7 +15,7 @@ class ShippingController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $currentStoreId = $user->current_store;
+        $currentStoreId = getCurrentStoreId($user);
         
         // Check plan feature access for shipping
         $shippingEnabled = true;

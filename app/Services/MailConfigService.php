@@ -64,7 +64,7 @@ class MailConfigService
     public static function setDynamicConfig()
     {
         if (! self::hasDatabaseSmtpSettings()) {
-            return self::hasEnvMailer();
+        return false; // Do NOT fall back to platform SMTP — missing store email config means emails should NOT be sent
         }
 
         // Apply SMTP settings from the database
