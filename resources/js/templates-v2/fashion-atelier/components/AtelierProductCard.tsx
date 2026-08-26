@@ -181,7 +181,9 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
           )}
         </div>
         {(() => {
-          const pts = calcEarnedPoints(Number(product.price) || 0, getLoyaltySettingsFromPage());
+          const loyalty = getLoyaltySettingsFromPage();
+          if (!loyalty || !loyalty.is_enabled) return null;
+          const pts = calcEarnedPoints(Number(product.price) || 0, loyalty);
           return pts > 0 ? (
             <span className="mt-1 inline-flex items-center justify-center gap-1 text-xs font-bold text-amber-600 sm:justify-start">
               <Gift className="h-3 w-3" /> كسب {pts} نقطة

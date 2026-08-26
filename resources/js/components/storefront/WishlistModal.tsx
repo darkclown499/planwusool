@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { useStore } from '@/contexts/StoreContext';
 import { getImageUrl } from '@/utils/image-helper';
 import { getProductThumbnail } from '@/utils/product-image-helper';
 import { formatCurrency } from '@/utils/currency-formatter';
@@ -15,6 +16,9 @@ export const WishlistModal: React.FC<WishlistModalProps> = ({ onClose }) => {
   const { items, loading, remove, refresh } = useWishlist();
   const { isLoggedIn, setShowLoginModal } = useAuth();
   const { addToCart } = useCart();
+  let behavior: any = {};
+  try { behavior = useStore()?.behavior || {}; } catch { behavior = {}; }
+  const registrationEnabled = behavior?.customer_registration_enabled !== false && behavior?.enable_customer_registration !== false;
 
   const storeSettings = (window as any).page?.props?.storeSettings || {};
   const currencies = (window as any).page?.props?.currencies || [];
@@ -37,16 +41,27 @@ export const WishlistModal: React.FC<WishlistModalProps> = ({ onClose }) => {
         <div className="relative min-h-full flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-bold text-gray-900 mb-3">المفضلة</h2>
-            <p className="text-gray-600 mb-6">سجّل الدخول لعرض منتجاتك المفضلة</p>
+            <p className="text-gray-600 mb-6">سجّل الدخول لحفظ وعرض منتجاتك المفضلة</p>
             <button
               onClick={() => {
                 onClose();
                 setShowLoginModal(true);
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors cursor-pointer"
+              className="w-full bg-stone-900 hover:bg-[#9d7463] text-white font-semibold py-3 px-4 rounded-full transition-colors cursor-pointer"
             >
               تسجيل الدخول
             </button>
+            {registrationEnabled && (
+              <button
+                onClick={() => {
+                  onClose();
+                  setShowLoginModal(true);
+                }}
+                className="mt-3 w-full border border-stone-300 bg-white text-stone-700 font-semibold py-3 px-4 rounded-full hover:border-[#9d7463] hover:text-[#9d7463] transition-colors cursor-pointer"
+              >
+                إنشاء حساب
+              </button>
+            )}
           </div>
         </div>
       </div>

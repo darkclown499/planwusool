@@ -127,7 +127,7 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
           {/* Results */}
           <div className="mt-2 max-h-[50vh] overflow-y-auto">
             {query.trim().length >= 2 && results.length === 0 ? (
-              <p className="py-8 text-center text-sm text-stone-400">لا نتائج تطابق «{query}»</p>
+              <p className="py-8 text-center text-sm text-stone-500">لم نجد منتجات مطابقة</p>
             ) : query.trim().length >= 2 && results.length > 0 ? (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {results.map((p: any) => (

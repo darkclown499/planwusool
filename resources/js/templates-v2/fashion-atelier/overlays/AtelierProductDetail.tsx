@@ -50,6 +50,27 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
   const missingGroups = (product.variants || []).filter((g: any) => !selection[g.name]);
 
+  // Variant-aware price: if all groups selected, resolve variant combination price
+  const selectedCombo = (() => {
+    if (!variable || missingGroups.length > 0) return null;
+    const combos: any[] = product.variantCombinations || product.variant_combinations || [];
+    if (!combos.length) return null;
+    const selVals = Object.values(selection).map((v) => String(v).trim());
+    return combos.find((c: any) => {
+      const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
+      if (vals.length !== selVals.length) return false;
+      return selVals.every((sv) => vals.includes(sv));
+    }) || null;
+  })();
+  const displayPrice = selectedCombo && selectedCombo.price && String(selectedCombo.price).trim() !== '' ? Number(selectedCombo.price) : Number(product.price);
+  const isSelectedOOS = (() => {
+    if (!selectedCombo) return false;
+    if (product.allowBackorder) return false;
+    const stock = selectedCombo.stock !== undefined ? Number(selectedCombo.stock) : NaN;
+    if (Number.isFinite(stock)) return stock <= 0;
+    return false;
+  })();
+
   const handleAdd = async () => {
     if (outOfStock || adding) return;
     setAdding(true);
@@ -110,8 +131,8 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
             <h1 className="font-serif text-2xl font-bold leading-snug text-stone-900 sm:text-3xl">{product.name}</h1>
 
             <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-2xl font-bold text-stone-900">{formatPrice(product.price)}</span>
-              {discount > 0 && !!product.originalPrice && (
+              <span className="text-2xl font-bold text-stone-900">{formatPrice(displayPrice)}</span>
+              {discount > 0 && !!product.originalPrice && !selectedCombo && (
                 <>
                   <span className="text-base text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
                   <span className="rounded-sm bg-[#f3ece4] px-2 py-0.5 text-xs font-bold text-[#9d7463]">
@@ -119,6 +140,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                   </span>
                 </>
               )}
+              {isSelectedOOS && <span className="rounded-sm border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">غير متوفر</span>}
             </div>
 
             {!!remaining && !outOfStock && (
@@ -137,6 +159,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
             {/* Variants */}
             {(product.variants || []).map((group: any) => {
               const isColor = COLOR_HINTS.some((h) => group.name.includes(h));
+              const combos: any[] = product.variantCombinations || product.variant_combinations || [];
               return (
                 <div key={group.name} className="mt-5">
                   <p className="mb-2 text-xs font-bold tracking-wide text-stone-500">
@@ -145,11 +168,31 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                   <div className="flex flex-wrap gap-2">
                     {(group.values || group.options || []).map((val: string) => {
                       const isActive = selection[group.name] === val;
+                      // Disable unavailable combinations (stock 0 without backorder)
+                      const isUnavailable = (() => {
+                        if (!combos.length || product.allowBackorder) return false;
+                        const testSel = { ...selection, [group.name]: val };
+                        const hasCompleteCombo = combos.some((c: any) => {
+                          const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
+                          return Object.values(testSel).every((sv) => vals.includes(String(sv).trim()));
+                        });
+                        if (!hasCompleteCombo && Object.keys(testSel).length < (product.variants || []).length) return false;
+                        const match = combos.find((c: any) => {
+                          const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
+                          return String(val).trim() === vals.find((vv) => vals.includes(String(val).trim())) && Object.entries(testSel).every(([k,vv]) => {
+                            // only check values that are selected; partial match requires at least one combo containing val with finite stock
+                            return vals.includes(String(vv).trim());
+                          });
+                        });
+                        if (!match) return false;
+                        const st = match.stock !== undefined ? Number(match.stock) : NaN;
+                        return Number.isFinite(st) && st <= 0;
+                      })();
                       return (
-                        <button key={val} type="button" title={val}
-                          onClick={() => setSelection((s) => ({ ...s, [group.name]: val }))}
+                        <button key={val} type="button" title={val} disabled={isUnavailable}
+                          onClick={() => !isUnavailable && setSelection((s) => ({ ...s, [group.name]: val }))}
                           className={`flex h-9 min-w-9 items-center justify-center rounded-full border px-3 text-[13px] font-medium transition-all ${
-                            isActive ? 'border-[#9d7463] bg-[#9d7463] text-white shadow' : 'border-stone-300 bg-white text-stone-700 hover:border-[#9d7463]'
+                            isUnavailable ? 'cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400 line-through' : isActive ? 'border-[#9d7463] bg-[#9d7463] text-white shadow' : 'border-stone-300 bg-white text-stone-700 hover:border-[#9d7463]'
                           }`}>
                           {isColor ? (
                             <span className={`block h-5 w-5 rounded-full border ${isActive ? 'ring-2 ring-white' : 'border-black/10'}`} style={{ background: colorDot(val) }} />
@@ -172,10 +215,10 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
               <button
                 type="button"
                 onClick={handleAdd}
-                disabled={outOfStock || adding || (variable && missingGroups.length > 0)}
+                disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
                 className="flex-1 rounded-full bg-stone-900 py-3.5 text-sm font-bold tracking-wide text-white shadow-lg transition hover:bg-[#9d7463] disabled:cursor-not-allowed disabled:bg-stone-300"
               >
-                {outOfStock ? 'غير متوفرة حالياً' : variable && missingGroups.length > 0 ? `اختاري ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضيفي للسلّة'}
+                {outOfStock || isSelectedOOS ? 'غير متوفرة حالياً' : variable && missingGroups.length > 0 ? `اختاري ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضيفي للسلّة'}
               </button>
               <button
                 type="button"

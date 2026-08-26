@@ -56,7 +56,17 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
     STORE_PHONE: String((config as any)?.phoneNumber || (config as any)?.phone || (store as any)?.phone || ''),
     STORE_CITY: String((config as any)?.city || (config as any)?.address || (store as any)?.city || ''),
   };
-  const activePolicy = policyOpen ? getPolicyContent(policyOpen, policyVars) : null;
+  const merchantPages: any[] = (() => {
+    try {
+      const w: any = typeof window !== 'undefined' ? (window as any) : null;
+      const p = w?.page?.props?.storePages || w?.page?.props?.storeContent?.pages || (content as any)?.pages || [];
+      return Array.isArray(p) ? p : [];
+    } catch { return []; }
+  })();
+  const merchantContent: any = (() => {
+    try { const core: any = useStorefrontCore(); return core?.content ?? {}; } catch { return {}; }
+  })();
+  const activePolicy = policyOpen ? getPolicyContent(policyOpen, policyVars, merchantPages, merchantContent) : null;
 
   return (
     <header
@@ -66,7 +76,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
       dir="rtl"
     >
       {/* Masthead */}
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
         {/* Left cluster (mobile menu / desktop spacer) */}
         <div className="flex flex-1 items-center gap-1">
           <button
@@ -110,13 +120,13 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
 
         {/* Utility icons */}
         <div className="flex flex-1 items-center justify-end gap-0.5 sm:gap-1">
-          <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="rounded-full p-2 text-stone-700 transition hover:bg-stone-100">
+          <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40">
             <Search className="h-5 w-5" strokeWidth={1.7} />
           </button>
           <div className="hidden sm:block">
             <HeaderLoyaltyBadge />
           </div>
-          <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2 text-stone-700 transition hover:bg-stone-100">
+          <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40">
             <Heart className="h-5 w-5" strokeWidth={1.7} />
             {!!wishlist?.count && (
               <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#9d7463] px-1 text-[9px] font-bold text-white">
@@ -125,16 +135,16 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
             )}
           </button>
           {canShowAuth && (
-          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 sm:block">
+          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40 sm:block">
             <Package className="h-5 w-5" strokeWidth={1.7} />
           </button>
           )}
           {canShowAuth && (
-          <button type="button" onClick={openAccount} aria-label="حسابي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 sm:block">
+          <button type="button" onClick={openAccount} aria-label="حسابي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40 sm:block">
             <User className="h-5 w-5" strokeWidth={1.7} />
           </button>
           )}
-          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="سلة التسوق" className="relative rounded-full p-2 text-stone-700 transition hover:bg-stone-100">
+          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="سلة التسوق" className="relative rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40">
             <ShoppingBag className="h-5 w-5" strokeWidth={1.7} />
             {cartCount > 0 && (
               <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9d7463] px-1 text-[9px] font-bold text-white">
@@ -218,7 +228,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
       {/* Policy modals — shared for mobile drawer (desktop top bar uses AnnouncementBar dialogs) */}
       {POLICY_LINKS.map((link) => {
         if (policyOpen !== link.key || !activePolicy) return null;
-        const content = getPolicyContent(link.key, policyVars);
+        const content = getPolicyContent(link.key, policyVars, merchantPages, merchantContent);
         return (
           <Dialog key={link.key} open={policyOpen === link.key} onOpenChange={(o) => !o && setPolicyOpen(null)}>
             <DialogContent dir="rtl" className="max-h-[80vh] overflow-y-auto bg-white">
