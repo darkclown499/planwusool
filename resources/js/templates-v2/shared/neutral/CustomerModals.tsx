@@ -1,9 +1,10 @@
 import { toast } from '@/components/custom-toast';
 import { AuthFormProvider, useAuthForm } from '@/contexts/AuthFormContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePage } from '@inertiajs/react';
-import { Calendar, Copy, CreditCard, MapPin, Package, ShoppingBag, User, X } from 'lucide-react';
+import { Calendar, Copy, CreditCard, LogOut, MapPin, Package, ShoppingBag, User, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 const primary = 'var(--twc-primary-600, #059669)';
@@ -247,17 +248,39 @@ export const TemplateOrderDetailsModal: React.FC<OrderDetailsProps> = ({ orderNu
                             <p className="text-sm font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
                                 رقم الطلب: {order.order_number}
                             </p>
-                            <p className="mt-1 text-xs" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
-                                الحالة: {order.status}
+                            <p className="mt-1 text-xs font-bold" style={{ color: primary }}>
+                                الحالة: {order.status_label || order.status}
                             </p>
+                            {order.tracking_number && <p className="mt-1 text-xs break-all" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>رقم التتبع: <span className="font-mono font-bold" dir="ltr">{order.tracking_number}</span></p>}
+                            {order.shipped_at && <p className="mt-1 text-xs" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>تاريخ الشحن: {new Date(order.shipped_at).toLocaleDateString('ar-EG')}</p>}
                         </div>
+                        {Array.isArray(order.timeline) && order.timeline.length > 0 && (
+                          <div className="rounded-2xl border p-3 space-y-2" style={{borderColor:'var(--twc-border,#e5e7eb)'}}>
+                            <p className="text-xs font-bold" style={{color:'var(--twc-text-primary,#111827)'}}>تتبع الطلب</p>
+                            <div className="relative pe-4">
+                              <div className="absolute right-2 top-2 bottom-2 w-px bg-gray-200"/>
+                              {order.timeline.map((t:any, idx:number)=>(
+                                <div key={idx} className="relative flex items-center gap-3 py-1.5">
+                                  <span className="relative z-10 h-3 w-3 rounded-full border-2 bg-white" style={{borderColor: primary, background: primary}}/>
+                                  <span className="text-xs font-semibold" style={{color:'var(--twc-text-primary,#111827)'}}>{t.label}</span>
+                                  <span className="ms-auto text-[11px]" style={{color:'var(--twc-text-muted,#6b7280)'}}>{t.at ? new Date(t.at).toLocaleDateString('ar-EG') : ''}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         <div className="rounded-2xl border p-3" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
                             <p className="mb-2 flex items-center gap-2 text-xs font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
                                 <MapPin className="h-4 w-4" /> عنوان الشحن
                             </p>
-                            <p className="text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
-                                {order.shipping_address || '—'}
+                            <p className="text-sm break-words" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
+                                {(() => {
+                                  const sa = order.shipping_address;
+                                  if (!sa) return '—';
+                                  if (typeof sa === 'string') return sa;
+                                  return [sa.address, sa.city, sa.state, sa.postal_code, sa.country].filter(Boolean).join('، ') || '—';
+                                })()}
                             </p>
                         </div>
 
@@ -312,6 +335,10 @@ interface ProfileProps {
 
 const ProfileContent: React.FC<ProfileProps> = ({ userProfile, storeSlug, onClose }) => {
     const { profile, setProfile, passwords, setPasswords, isLoading, errors, handleProfileUpdate, handlePasswordUpdate } = useAuthForm();
+    let authData:any = {};
+    try { authData = useAuth(); } catch {}
+    const logout: () => void = authData.logout || (()=>{});
+    const verificationMethod = (()=>{ try{ return (require('@/contexts/StoreContext').useStore() as any)?.behavior?.customer_verification_method; }catch{ return 'email'; }})();
 
     const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
 
@@ -354,6 +381,12 @@ const ProfileContent: React.FC<ProfileProps> = ({ userProfile, storeSlug, onClos
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
+                {authData?.customer && !authData.customer.email_verified_at && verificationMethod==='email' && (
+                  <div className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800 ring-1 ring-amber-200">بريدك الإلكتروني غير مؤكد — يرجى تأكيد البريد عبر الرمز المرسل لإتمام تحديث البيانات.</div>
+                )}
+                {authData?.customer && authData.customer.email_verified_at && (
+                  <div className="mb-4 rounded-xl bg-green-50 p-3 text-sm text-green-700 ring-1 ring-green-200">✓ البريد الإلكتروني مؤكد</div>
+                )}
                 {activeTab === 'profile' ? (
                     <form
                         onSubmit={(e) => {
@@ -525,6 +558,17 @@ const ProfileContent: React.FC<ProfileProps> = ({ userProfile, storeSlug, onClos
                         </button>
                     </form>
                 )}
+            </div>
+            <div className="border-t p-4" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
+                <button
+                    type="button"
+                    onClick={() => { onClose(); logout(); }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm font-bold transition hover:bg-red-50"
+                    style={{ borderColor: '#fecaca', color: '#dc2626' }}
+                >
+                    <LogOut className="h-4 w-4" /> تسجيل الخروج
+                </button>
+                <p className="mt-2 text-center text-[11px] text-slate-400">سيتم تسجيل خروجك من هذا المتجر فقط</p>
             </div>
         </ModalShell>
     );

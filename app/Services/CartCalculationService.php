@@ -230,6 +230,27 @@ class CartCalculationService
             }
         }
 
+        // Canonical Free Shipping threshold override (business setting in StoreConfiguration)
+        // Threshold is evaluated on subtotal after discount, before tax/shipping. If qualified, shipping becomes 0
+        // regardless of selected method, as long as merchant enabled it. Coupon free_shipping already handled above.
+        if (!$freeShippingApplied) {
+            try {
+                $cfg = \App\Models\StoreConfiguration::getConfiguration($storeId);
+                $freeEnabled = \App\Models\StoreConfiguration::toBool($cfg['free_shipping_enabled'] ?? null, false);
+                $rawThreshold = $cfg['free_shipping_threshold'] ?? null;
+                $thresholdVal = is_numeric($rawThreshold) && (float)$rawThreshold > 0 ? (float)$rawThreshold : null;
+                if ($freeEnabled && $thresholdVal !== null) {
+                    $subtotalAfterDiscount = max(0, $subtotal - $discount);
+                    if ($subtotalAfterDiscount >= $thresholdVal) {
+                        $shipping = 0;
+                        $freeShippingApplied = true;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // silent fallback — never break calculation
+            }
+        }
+
         // ─── Tax — inclusive vs exclusive, discount reduces taxable base ───
         $pricesIncludeTax = self::isPricesIncludeTax($storeId);
         $subtotalAfterDiscount = max(0, $subtotal - $discount);

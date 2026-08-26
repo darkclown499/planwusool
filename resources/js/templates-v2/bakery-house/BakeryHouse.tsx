@@ -3,6 +3,8 @@ import { router } from '@inertiajs/react';
 import { CakeSlice, ChevronLeft, Clock3, Croissant, Flame, Heart, Package, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { toast } from '@/components/custom-toast';
+import { Gift } from 'lucide-react';
+import { calcEarnedPoints, getEffectiveLoyaltyPrice, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
   discountPercent,
@@ -266,6 +268,13 @@ export function BakeryCard({ product }: { product: V2Product }) {
           </div>
         ))}
 
+        {(() => {
+          const ls = getLoyaltySettingsFromPage();
+          if (!ls?.is_enabled) return null;
+          const eff = getEffectiveLoyaltyPrice(product, pick);
+          const pts = calcEarnedPoints(eff, ls);
+          return pts > 0 ? <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600"><Gift className="h-3 w-3" /> كسب {pts} نقطة</span> : null;
+        })()}
         <div className="mt-auto flex items-center justify-between pt-1">
           <div className="leading-tight">
             <p className="text-lg font-black text-[#b45309]">{formatPrice(product.price)}</p>

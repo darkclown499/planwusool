@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, Flame, Minus, Package, PackageSearch, Plus, ShoppingBag, Star, UtensilsCrossed } from 'lucide-react';
+import { ChevronLeft, Flame, Gift, Minus, Package, PackageSearch, Plus, ShoppingBag, Star, UtensilsCrossed } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
   discountPercent,
@@ -204,6 +205,12 @@ export function DishRow({ product }: { product: V2Product }) {
           <span className="border-b border-dashed border-[#4a3e33]" style={{ width: 'clamp(20px, 12vw, 90px)' }} />
           <span className="text-lg font-black text-[#f59e0b]">{formatPrice(product.price)}</span>
         </div>
+        {(() => {
+          const ls = getLoyaltySettingsFromPage();
+          if (!ls?.is_enabled) return null;
+          const pts = calcEarnedPoints(Number(product.price) || 0, ls);
+          return pts > 0 ? <span className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-amber-400"><Gift className="h-3 w-3" /> كسب {pts} نقطة</span> : null;
+        })()}
       </button>
 
       {/* Add */}

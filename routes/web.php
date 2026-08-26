@@ -462,6 +462,15 @@ Route::prefix('api/wishlist')->name('api.wishlist.')->group(function () {
     Route::post('/toggle', [\App\Http\Controllers\Api\WishlistController::class, 'toggle'])->name('toggle');
 });
 
+// Customer addresses — shared, store-isolated, customer-owned
+Route::prefix('api/customer-addresses')->name('api.customer-addresses.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\CustomerAddressController::class, 'index'])->name('index');
+    Route::post('/', [\App\Http\Controllers\Api\CustomerAddressController::class, 'store'])->name('store');
+    Route::put('/{id}', [\App\Http\Controllers\Api\CustomerAddressController::class, 'update'])->name('update');
+    Route::delete('/{id}', [\App\Http\Controllers\Api\CustomerAddressController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/default', [\App\Http\Controllers\Api\CustomerAddressController::class, 'setDefault'])->name('default');
+});
+
 
 Route::prefix('api/locations')->group(function () {
     Route::get('countries', [\App\Http\Controllers\Api\LocationController::class, 'getCountries'])->name('api.locations.countries');
@@ -846,6 +855,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('shipping/{id}', [\App\Http\Controllers\ShippingController::class, 'update'])->middleware('permission:edit-shipping')->name('shipping.update');
             Route::delete('shipping/{id}', [\App\Http\Controllers\ShippingController::class, 'destroy'])->middleware('permission:delete-shipping')->name('shipping.destroy');
             Route::get('shipping/{id}', [\App\Http\Controllers\ShippingController::class, 'show'])->middleware('permission:view-shipping')->name('shipping.show');
+            Route::put('shipping-free', [\App\Http\Controllers\ShippingController::class, 'updateFreeShipping'])->middleware('permission:manage-shipping')->name('shipping.free.update');
             // Alias routes for sidebar spec ( /store/shipping → shipping.index )
             Route::get('store/shipping', fn() => redirect()->route('shipping.index'))->name('store.shipping');
             Route::get('store/payment-methods', function (\Illuminate\Http\Request $request) {

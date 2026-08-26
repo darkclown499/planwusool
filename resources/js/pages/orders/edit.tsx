@@ -140,7 +140,7 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {customers.map((customer) => (
+                      {(customers ?? []).map((customer) => (
                         <SelectItem key={customer.id} value={customer.id.toString()}>
                           {customer.name} - {customer.email}
                         </SelectItem>
@@ -188,7 +188,7 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {orderItems.map((item, index) => (
+                {(orderItems ?? []).map((item, index) => (
                   <div key={index} className="border rounded-lg p-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium">{t('Item {{number}}', { number: index + 1 })}</h4>
@@ -220,9 +220,9 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {products.map((product) => (
+                            {(products ?? []).map((product) => (
                               <SelectItem key={product.id} value={product.id.toString()}>
-                                {product.name} - ${product.price.toFixed(2)}
+                                {product.name} - ${Number(product.price ?? 0).toFixed(2)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -284,9 +284,9 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {shippingMethods.map((method) => (
+                      {(shippingMethods ?? []).map((method) => (
                         <SelectItem key={method.id} value={method.id.toString()}>
-                          {method.name} - ${method.cost.toFixed(2)}
+                          {method.name} - ${Number(method.cost ?? 0).toFixed(2)}
                         </SelectItem>
                       ))}
                     </SelectContent>

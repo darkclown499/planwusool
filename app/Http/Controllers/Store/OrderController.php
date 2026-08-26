@@ -86,6 +86,8 @@ class OrderController extends Controller
                 'whatsapp_number' => 'nullable|string|max:20',
                 'loyalty_points' => 'nullable|integer|min:0',
                 'loyalty_points_used' => 'nullable|integer|min:0',
+                'order_source' => 'nullable|string|in:storefront,whatsapp',
+                'idempotency_key' => 'nullable|string|max:64',
             ];
             
             // Add bank transfer file validation if payment method is bank
@@ -166,7 +168,21 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            // Duplicate protection: check for recent identical order (only when cart not empty)
+            // Duplicate protection: idempotency_key server guard + debounce
+            if ($request->filled('idempotency_key')) {
+                $existing = \App\Models\Order::where('store_id', $request->store_id)
+                    ->where('idempotency_key', $request->idempotency_key)
+                    ->first();
+                if ($existing) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'تم استلام طلبك بالفعل.',
+                        'order_number' => $existing->order_number,
+                        'order_id' => $existing->id,
+                        'duplicate' => true,
+                    ]);
+                }
+            }
             $recentDuplicate = \App\Models\Order::where('store_id', $request->store_id)
                 ->where('customer_email', $request->customer_email)
                 ->where('created_at', '>=', now()->subSeconds(30))
@@ -228,6 +244,8 @@ class OrderController extends Controller
                 'coupon_discount' => $calculation['discount'],
                 'bank_transfer_receipt' => $bankTransferReceiptPath,
                 'whatsapp_number' => $request->whatsapp_number,
+                'order_source' => $request->input('order_source') ?? ($request->payment_method === 'whatsapp' ? 'whatsapp' : 'storefront'),
+                'idempotency_key' => $request->input('idempotency_key'),
             ];
 
             // Prepare cart items — variant-aware canonical price

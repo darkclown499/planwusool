@@ -49,6 +49,8 @@ class Order extends Model
         'currency',
         'stock_restored',
         'payment_method',
+        'order_source',
+        'idempotency_key',
         'whatsapp_number',
         'payment_transaction_id',
         'payment_details',
@@ -157,12 +159,20 @@ class Order extends Model
                 $order->forceFill(['stock_restored' => true]);
             }
 
-            // Loyalty reversal: idempotent per store/order, handles earn + redeem
-            $wasTerminal = in_array(strtolower((string) $order->getOriginal('status')), ['cancelled', 'refunded'], true);
-            $isNowTerminal = in_array(strtolower((string) $order->status), ['cancelled', 'refunded'], true);
-            if (!$wasTerminal && $isNowTerminal) {
+            // Loyalty reversal: idempotent per store/order, handles earn + redeem — canonical lifecycle
+            $wasTerminalStatus = in_array(strtolower((string) $order->getOriginal('status')), ['cancelled', 'refunded'], true);
+            $isNowTerminalStatus = in_array(strtolower((string) $order->status), ['cancelled', 'refunded', 'failed'], true);
+            $wasTerminalPayment = in_array(strtolower((string) $order->getOriginal('payment_status')), ['refunded', 'partially_refunded', 'failed'], true);
+            $isNowTerminalPayment = in_array(strtolower((string) $order->payment_status), ['refunded', 'failed'], true);
+            $isPartialRefund = strtolower((string) $order->payment_status) === 'partially_refunded' && !$wasTerminalPayment;
+            if ((!$wasTerminalStatus && $isNowTerminalStatus) || (!$wasTerminalPayment && $isNowTerminalPayment) || $isPartialRefund) {
                 try {
-                    app(\App\Services\LoyaltyService::class)->reversePointsForOrder($order);
+                    // For partial refund via payment_status change without ReturnService, treat as proportional
+                    $refundAmount = null;
+                    if ($isPartialRefund && isset($order->refunded_amount)) {
+                        $refundAmount = (float) $order->refunded_amount;
+                    }
+                    app(\App\Services\LoyaltyService::class)->reversePointsForOrder($order, $refundAmount);
                 } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::warning('Loyalty reversal failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
                 }

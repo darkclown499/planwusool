@@ -6,6 +6,7 @@ import { Check, CheckCircle2, CreditCard, Gift, Package, Truck, User, Wallet, X 
 import React, { useEffect } from 'react';
 import { useStorefrontCore } from '@/templates-v2/shared/contexts';
 import CheckoutLoyaltyDeduction from '@/components/storefront/CheckoutLoyaltyDeduction';
+import { useCustomerAddresses } from '@/hooks/useCustomerAddresses';
 
 interface TemplateCheckoutProps {
     onClose: () => void;
@@ -22,7 +23,8 @@ interface TemplateCheckoutProps {
  * -> payment methods (loaded from the owner's dashboard payment settings).
  */
 const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComplete }) => {
-    const { cart } = useStorefrontCore();
+    const { cart, auth } = useStorefrontCore();
+    const { addresses } = useCustomerAddresses();
     const page = usePage().props as any;
     const storeSettings = page?.storeSettings || {};
     const currencies = page?.currencies || [];
@@ -188,6 +190,36 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                     <div className="flex-1 overflow-y-auto p-4 md:p-6">
                         {step === 1 && (
                             <div className="space-y-4">
+                                {auth?.isLoggedIn && addresses.length > 0 && (
+                                    <div className="rounded-2xl border p-3" style={{borderColor:'var(--twc-border,#e5e7eb)', background:'var(--twc-primary-50,#ecfdf5)'}}>
+                                        <p className="mb-2 text-xs font-bold" style={{color:'var(--twc-text-primary,#111827)'}}>اختر من عناوينك المحفوظة</p>
+                                        <div className="space-y-2">
+                                            {addresses.filter((a:any)=>a.type==='shipping' || a.type==='billing').slice(0,3).map((a:any)=>(
+                                                <button key={a.id} type="button" onClick={()=>{
+                                                    handleInputChange('address', a.address);
+                                                    handleInputChange('postalCode', a.postal_code||'');
+                                                    // Sync country/state/city via IDs for dropdowns (no hardcoded mapping)
+                                                    const countries = (window as any).page?.props?.countries || [];
+                                                    const countryMatch = countries.find((c:any)=> c.name===a.country || String(c.id)===String(a.country));
+                                                    if (countryMatch) { handleInputChange('country', countryMatch.name); setCountryId(countryMatch.id); } else { handleInputChange('country', a.country); setCountryId(undefined as any); }
+                                                    // state/city will be resolved after country states load; set values directly and clear IDs to allow CityDropdown to fetch
+                                                    handleInputChange('state', a.state||'');
+                                                    handleInputChange('city', a.city);
+                                                    setStateId(undefined as any);
+                                                    setCityId(undefined as any);
+                                                    // If state is known, try to resolve stateId once states load via effect — trigger by setting countryId first
+                                                    if (a.state) setTimeout(()=>{
+                                                      // after states fetch, CityDropdown will handle
+                                                    }, 300);
+                                                }} className="flex w-full items-center gap-2 rounded-xl border bg-white p-3 text-start hover:border-emerald-300">
+                                                    <span className="text-sm font-semibold flex-1">{a.address} — {a.city} {a.country}</span>
+                                                    {a.is_default && <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">افتراضي</span>}
+                                                </button>
+                                            ))}
+                                            <button type="button" onClick={()=>{ (auth as any).setShowAddressesModal?.(true); }} className="text-xs font-bold hover:underline" style={{color: primary}}>إدارة عناويني</button>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div>
                                         <label className={labelClass} style={{ color: 'var(--twc-text-primary, #111827)' }}>

@@ -72,6 +72,8 @@ export const MobileAppShell: React.FC = () => {
     showAuthModal,
     showResetPasswordModal,
     handleCartClick,
+    setShowSearch,
+    showSearch,
   } = useUI();
 
   const { showOrderDetailsModal, showOrderSuccess } = useOrder();
@@ -94,7 +96,8 @@ export const MobileAppShell: React.FC = () => {
     showLoyaltyModal ||
     showOrderDetailsModal ||
     showOrderSuccess ||
-    showCategoriesSheet;
+    showCategoriesSheet ||
+    showSearch;
 
   const goHome = () => {
     setActiveTab('home');
@@ -136,17 +139,16 @@ export const MobileAppShell: React.FC = () => {
             )}
             <h1 className="hidden max-w-24 truncate text-[13px] font-bold text-gray-900 sm:block">{config.storeName}</h1>
           </div>
-          {/* Search — single canonical input for mobile */}
+          {/* Search — unified server-backed: opens shared SearchOverlay (same contract as desktop) */}
           <div className="relative min-w-0 flex-1">
             <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder={t('ابحث عن المنتجات...')}
-              className="h-9 w-full rounded-full border border-gray-200 bg-gray-50 ps-9 pe-7 text-sm text-gray-900 placeholder:text-gray-400 focus:border-transparent focus:bg-white focus:ring-2 focus:outline-none"
-              style={{ ['--tw-ring-color' as any]: `${accent}66` }}
-            />
+            <button
+              type="button"
+              onClick={() => setShowSearch(true)}
+              className="h-9 w-full rounded-full border border-gray-200 bg-gray-50 ps-9 pe-3 text-start text-sm text-gray-900 hover:bg-white"
+            >
+              <span className={searchQuery ? 'text-gray-900' : 'text-gray-400'}>{searchQuery || t('ابحث عن المنتجات...')}</span>
+            </button>
             {searchQuery && (
               <button
                 type="button"

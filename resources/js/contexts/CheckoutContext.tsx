@@ -744,6 +744,8 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         whatsapp_number: selectedPayment === 'whatsapp' ? whatsappNumber : undefined,
         loyalty_points: loyaltyPointsUsed || undefined,
         loyalty_discount: loyaltyDiscount || undefined,
+        order_source: selectedPayment === 'whatsapp' ? 'whatsapp' : 'storefront',
+        idempotency_key: (window as any).__wusoolIdempotencyKey || ((window as any).__wusoolIdempotencyKey = `${Date.now()}-${Math.random().toString(36).slice(2,9)}`),
       };
 
       // Use Razorpay utility for Razorpay payments

@@ -9,6 +9,7 @@ import { useUI } from '@/contexts/UIContext';
 import type { TemplateModule } from './types';
 import React, { useEffect } from 'react';
 import { TemplateAuthForm, TemplateAuthGate } from './shared/neutral/AuthModal';
+import { TemplateAddressesModal } from './shared/neutral/AddressesModal';
 
 /**
  * Storefront overlay host for template system v2.
@@ -213,6 +214,10 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
             )}
 
             {auth.showWishlistModal && <WishlistOverlay onClose={() => auth.setShowWishlistModal(false)} />}
+
+            {(auth as any).showAddressesModal && customerAccountsEnabled && auth.isLoggedIn && (
+                <TemplateAddressesModal onClose={() => (auth as any).setShowAddressesModal(false)} />
+            )}
 
             {ui.showSearch && (
                 <SearchOverlay

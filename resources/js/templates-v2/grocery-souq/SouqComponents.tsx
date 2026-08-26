@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, Clock3, Heart, Minus, Plus, ShoppingBasket, X } from 'lucide-react';
+import { ChevronLeft, Clock3, Gift, Heart, Minus, Plus, ShoppingBasket, X } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import {
   computeCartTotals,
   discountPercent,
@@ -354,6 +355,12 @@ export function SouqProductCard({ product }: SouqCardProps) {
         <button type="button" onClick={() => productCtx.handleProductClick(product)} className="line-clamp-2 min-h-[36px] text-start text-[13px] font-bold leading-snug text-stone-800 hover:text-black">
           {product.name}
         </button>
+        {(() => {
+          const ls = getLoyaltySettingsFromPage();
+          if (!ls?.is_enabled) return null;
+          const pts = calcEarnedPoints(Number(product.price) || 0, ls);
+          return pts > 0 ? <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600"><Gift className="h-3 w-3" /> كسب {pts} نقطة</span> : null;
+        })()}
         <div className="flex items-baseline gap-1.5 leading-none">
           <span className="text-[15px] font-black text-[#0F1620]">{formatPrice(product.price)}</span>
           {discount > 0 && !!product.originalPrice && (

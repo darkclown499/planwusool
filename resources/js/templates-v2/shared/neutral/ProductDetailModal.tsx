@@ -7,7 +7,7 @@ import { usePage } from '@inertiajs/react';
 import { Gift, Heart, MessageCircle, Minus, PackageCheck, Plus, Share2, ShoppingCart, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useStorefrontCore } from '@/templates-v2/shared/contexts';
-import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
+import { calcEarnedPoints, getEffectiveLoyaltyPrice, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 
 interface TemplateProductDetailModalProps {
     product: any;
@@ -159,7 +159,8 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
                             )}
                             {(() => {
                                 const ls: any = (storeSettings as any)?.loyalty;
-                                const pts = ls ? calcEarnedPoints(price, { is_enabled: !!ls.is_enabled, points_per_currency: Number(ls.points_per_currency ?? 1), points_value: Number(ls.points_value ?? 0.01), minimum_redemption_points: Number(ls.minimum_redemption_points ?? 100), maximum_discount_percentage: Number(ls.maximum_discount_percentage ?? 50) }) : calcEarnedPoints(price, getLoyaltySettingsFromPage());
+                                const effPrice = getEffectiveLoyaltyPrice(product, selectedVariants);
+                                const pts = ls ? calcEarnedPoints(effPrice, { is_enabled: !!ls.is_enabled, points_per_currency: Number(ls.points_per_currency ?? 1), points_value: Number(ls.points_value ?? 0.01), minimum_redemption_points: Number(ls.minimum_redemption_points ?? 100), maximum_discount_percentage: Number(ls.maximum_discount_percentage ?? 50) }) : calcEarnedPoints(effPrice, getLoyaltySettingsFromPage());
                                 return pts > 0 ? (
                                     <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
                                         <Gift className="h-3 w-3" /> كسب {pts} نقطة

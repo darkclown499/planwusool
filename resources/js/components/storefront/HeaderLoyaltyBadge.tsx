@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Gift } from 'lucide-react';
 import { AuthContext } from '@/contexts/AuthContext';
 import { StoreContext } from '@/contexts/StoreContext';
-import { fetchLoyaltyBalance } from '@/utils/loyalty';
+import { fetchLoyaltyBalance, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 
 export const HeaderLoyaltyBadge: React.FC<{ className?: string; compactOnMobile?: boolean }> = ({ className = '', compactOnMobile = true }) => {
   // Safe outside AuthProvider/StoreProvider (e.g. template gallery preview `V2PreviewProviders`)
@@ -13,17 +13,31 @@ export const HeaderLoyaltyBadge: React.FC<{ className?: string; compactOnMobile?
   const { isLoggedIn, setShowLoyaltyModal } = authCtx;
   const { store } = storeCtx;
   const [balance, setBalance] = useState<number | null>(null);
+  const [isEnabled, setIsEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn || !store?.id) return;
     let cancelled = false;
+    // Check canonical loyalty enabled first; hide badge completely when OFF
+    const pageSettings = getLoyaltySettingsFromPage();
+    if (pageSettings) {
+      setIsEnabled(pageSettings.is_enabled);
+      if (!pageSettings.is_enabled) return;
+    }
     fetchLoyaltyBalance(store.id).then((res) => {
-      if (!cancelled && res) setBalance(res.balance);
+      if (!cancelled && res) {
+        setBalance(res.balance);
+        if (res.settings) setIsEnabled(res.settings.is_enabled);
+        else if (!pageSettings) setIsEnabled(true);
+      } else if (!cancelled && pageSettings) {
+        setIsEnabled(pageSettings.is_enabled);
+      }
     });
     return () => { cancelled = true; };
   }, [isLoggedIn, store?.id]);
 
   if (!isLoggedIn) return null;
+  if (isEnabled === false) return null;
   if (balance === null) return null;
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Gift, Heart, Menu, Package, Search, ShoppingBag, User, X } from 'lucide-react';
+import { Gift, Heart, MapPin, Menu, Package, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useStorefrontCore } from '../../shared/hooks';
 import { getImageUrl } from '@/utils/image-helper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -137,6 +137,11 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
           {canShowAuth && (
           <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40 sm:block">
             <Package className="h-5 w-5" strokeWidth={1.7} />
+          </button>
+          )}
+          {canShowAuth && auth?.isLoggedIn && (
+          <button type="button" onClick={()=>auth.setShowAddressesModal(true)} aria-label="عناويني" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40 sm:block">
+            <MapPin className="h-5 w-5" strokeWidth={1.7} />
           </button>
           )}
           {canShowAuth && (

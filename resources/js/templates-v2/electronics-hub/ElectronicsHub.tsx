@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { BadgeCheck, ChevronLeft, Cpu, Headphones, Laptop, Package, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
+import { BadgeCheck, ChevronLeft, Cpu, Gift, Headphones, Laptop, Package, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
   discountPercent,
@@ -278,6 +279,12 @@ export function HubCard({ product }: { product: V2Product }) {
         <p className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
           <ShieldCheck className="h-3 w-3" /> ضمان سنة • أصلي
         </p>
+        {(() => {
+          const ls = getLoyaltySettingsFromPage();
+          if (!ls?.is_enabled) return null;
+          const pts = calcEarnedPoints(Number(product.price) || 0, ls);
+          return pts > 0 ? <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-500"><Gift className="h-3 w-3" /> كسب {pts} نقطة</span> : null;
+        })()}
         <div className="mt-auto flex items-center justify-between gap-2 pt-1.5">
           <div className="leading-tight">
             <p className="text-lg font-black text-white">{formatPrice(product.price)}</p>

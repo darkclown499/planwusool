@@ -10,14 +10,14 @@ interface AtelierCartDrawerProps {
   onProductClick: (product: any) => void;
 }
 
-const FALLBACK_FREE_SHIPPING = 250;
+const FALLBACK_FREE_SHIPPING: number | null = null;
 
 /**
  * The Atelier cart drawer. Slides in with an ivory panel, shows live
  * free-shipping progress, per-item variant chips and quiet qty steppers.
  */
 export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, onCheckout, onProductClick }) => {
-  const { cart, config, content } = useStorefrontCore() as any;
+  const { cart, config, content, behavior } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
 
   useEffect(() => {
@@ -29,17 +29,17 @@ export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, o
 
   const items = cart.cartItems || [];
   const totals = computeCartTotals(items);
-  const effectiveThreshold = resolveFreeShippingThreshold(content, FALLBACK_FREE_SHIPPING);
-  const shipping = freeShippingProgress(totals.subtotal, effectiveThreshold);
+  const effectiveThreshold = resolveFreeShippingThreshold(content, FALLBACK_FREE_SHIPPING, behavior);
+  const shipping = effectiveThreshold ? freeShippingProgress(totals.subtotal, effectiveThreshold) : null;
   const waPhone = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || '').replace(/[^0-9]/g, '');
 
   const orderViaWhatsApp = () => {
-    const lines = items.map(
-      (i: any) =>
-        `• ${i.name}${i.selectedVariants ? ` (${Object.values(i.selectedVariants).join(' / ')})` : ''} × ${i.quantity} — ${formatPrice((Number(i.price) || 0) * (Number(i.quantity) || 0))}`
-    );
-    const msg = `مرحباً، أود إتمام طلبي من ${config?.storeName || 'المتجر'}:\n\n${lines.join('\n')}\n\nالإجمالي: ${formatPrice(totals.total)}`;
-    window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    // Canonical: open checkout which creates a real Order server-side then redirects to WhatsApp.
+    // The checkout modal validates cart, creates order, gives order number, then opens WhatsApp with snapshot.
+    // Helper text explains: "أنشئ طلبك ثم تابع التفاصيل مع المتجر عبر واتساب"
+    onClose();
+    // Defer to allow drawer close animation before checkout opens
+    setTimeout(() => onCheckout(), 120);
   };
 
   const changeQty = async (index: number, delta: number) => {
@@ -149,8 +149,9 @@ export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, o
               إتمام الطلب
             </button>
             {waPhone && (
-              <button type="button" onClick={orderViaWhatsApp} className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border border-[#25D366]/40 py-2.5 text-sm font-semibold text-[#128C4B] transition hover:bg-[#25D366]/10">
-                أو أكمل طلبك عبر واتساب
+              <button type="button" onClick={orderViaWhatsApp} className="mt-2 flex w-full flex-col items-center justify-center gap-0.5 rounded-full border border-[#25D366]/40 py-2.5 text-sm font-semibold text-[#128C4B] transition hover:bg-[#25D366]/10">
+                <span>أكمل طلبك عبر واتساب</span>
+                <span className="text-[11px] font-normal text-stone-500">أنشئ طلبك ثم تابع التفاصيل مع المتجر عبر واتساب</span>
               </button>
             )}
           </div>

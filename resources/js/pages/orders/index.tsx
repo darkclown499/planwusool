@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
-import { tOrderStatus, tPaymentMethod } from '@/utils/order-status';
+import { tOrderStatus, tPaymentMethod, tPaymentStatus } from '@/utils/order-status';
 
 interface OrdersProps {
   orders: Array<{
@@ -158,11 +158,12 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                       <ShoppingCart className="h-6 w-6 text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-semibold">{order.orderNumber}</h3>
                         <Badge variant={getStatusVariant(order.status)}>
                           {tOrderStatus(order.status)}
                         </Badge>
+                        {(order as any).order_source === 'whatsapp' && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-bold">واتساب</span>}
                       </div>
                       <p className="text-sm text-muted-foreground truncate">{order.customer} • {order.email}</p>
                       <div className="flex items-center gap-4 mt-1 flex-wrap">
@@ -170,8 +171,8 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                         <span className="text-xs text-muted-foreground">{t('{{items}} items', { items: order.items })}</span>
                         <span className="text-xs text-muted-foreground">{order.date}</span>
                         <span className="text-xs text-muted-foreground">{tPaymentMethod(order.paymentMethod)}</span>
-                        {(order as any).fulfillment && <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{(order as any).fulfillment}</span>}
-                        {(order as any).paymentStatus && <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{tPaymentStatus((order as any).paymentStatus)}</span>}
+                        {(order as any).fulfillment ? <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{String((order as any).fulfillment)}</span> : null}
+                        {(order as any).paymentStatus ? <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{tPaymentStatus(String((order as any).paymentStatus))}</span> : null}
                       </div>
                     </div>
                   </div>

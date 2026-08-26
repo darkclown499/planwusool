@@ -90,6 +90,15 @@ Route::prefix('v1')->group(function () {
         Route::get('vapid-public-key', [\App\Http\Controllers\PushSubscriptionController::class, 'vapidPublicKey'])->name('vapid-public-key');
     });
 
+    // Customer addresses — shared, store-isolated, customer-owned only
+    Route::prefix('customer-addresses')->name('api.v1.customer-addresses.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\CustomerAddressController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\CustomerAddressController::class, 'store'])->name('store');
+        Route::put('{id}', [\App\Http\Controllers\Api\CustomerAddressController::class, 'update'])->name('update');
+        Route::delete('{id}', [\App\Http\Controllers\Api\CustomerAddressController::class, 'destroy'])->name('destroy');
+        Route::post('{id}/default', [\App\Http\Controllers\Api\CustomerAddressController::class, 'setDefault'])->name('default');
+    });
+
     // Advanced coupon validation
     Route::post('advanced-coupon/validate', [\App\Http\Controllers\AdvancedCouponController::class, 'validateCoupon'])
         ->name('api.v1.advanced-coupon.validate');

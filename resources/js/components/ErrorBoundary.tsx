@@ -31,6 +31,10 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught:', error, errorInfo);
+    try {
+      const Sentry = (window as any).Sentry;
+      if (Sentry?.captureException) Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+    } catch {}
   }
 
   render() {
@@ -39,6 +43,7 @@ class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      const isDev = (import.meta as any)?.env?.DEV === true;
       return (
         <div className="flex min-h-screen items-center justify-center bg-background p-6">
           <div className="w-full max-w-md rounded-2xl border bg-card p-8 text-center shadow-sm">
@@ -47,9 +52,9 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
             <h1 className="mt-4 text-lg font-bold text-foreground">{t('Something went wrong')}</h1>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {t('An unexpected error stopped this page from loading. Please reload to continue.')}
+              {t('تعذر تحميل الصفحة. حاول إعادة التحميل.')}
             </p>
-            {this.state.error && (
+            {isDev && this.state.error && (
               <div className="mt-4 rounded-lg bg-muted/50 p-3 text-start">
                 <pre className="max-h-24 overflow-auto whitespace-pre-wrap break-all text-xs text-muted-foreground" dir="ltr">
                   {this.state.error.message}

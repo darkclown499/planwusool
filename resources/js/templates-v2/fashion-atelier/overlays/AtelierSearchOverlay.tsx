@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Search, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
+import { useServerSearch } from '@/hooks/useServerSearch';
 
 interface AtelierSearchOverlayProps {
   onClose: () => void;
@@ -24,7 +25,6 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
   const inputRef = useRef<HTMLInputElement>(null);
 
   const storeName = (config as any)?.storeName || (store as any)?.name || 'المتجر';
-  const storeId = (store as any)?.id;
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -39,31 +39,11 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
     };
   }, [onClose]);
 
-  // Debounced server search — canonical endpoint (store-scoped, active only)
-  useEffect(() => {
-    const q = query.trim();
-    if (q.length < 2) { setServerResults(null); setLoading(false); setError(null); return; }
-    if (!storeId) { setServerResults([]); return; }
-    let cancelled = false;
-    setLoading(true); setError(null);
-    const ctrl = new AbortController();
-    const t = setTimeout(async () => {
-      try {
-        const url = `/api/storefront/search?q=${encodeURIComponent(q.slice(0,100))}&store_id=${encodeURIComponent(String(storeId))}&limit=8`;
-        const res = await fetch(url, { headers: { Accept:'application/json', 'X-Requested-With':'XMLHttpRequest' }, signal: ctrl.signal });
-        if (!res.ok) throw new Error(`search ${res.status}`);
-        const json: any = await res.json();
-        if (!cancelled) setServerResults(Array.isArray(json.products) ? json.products : []);
-      } catch (e:any) {
-        if (e?.name === 'AbortError') return;
-        if (!cancelled) { setError('تعذر البحث — حاول مرة أخرى'); setServerResults([]); }
-      } finally { if (!cancelled) setLoading(false); }
-    }, 320);
-    return () => { cancelled = true; ctrl.abort(); clearTimeout(t); };
-  }, [query, storeId]);
+  // REUSE shared server contract — single source of truth
+  const { results: serverResultsRaw, loading: serverLoading, error: serverError } = useServerSearch(query, 8);
+  const results = serverResultsRaw !== null ? serverResultsRaw : [];
 
   const products = product?.products || [];
-  const results = serverResults !== null ? serverResults : [];
 
   const suggestions = useMemo(() => {
     const names = new Set<string>();
@@ -145,10 +125,10 @@ export const AtelierSearchOverlay: React.FC<AtelierSearchOverlayProps> = ({ onCl
 
           {/* Results — loading / error / empty / grid */}
           <div className="mt-2 max-h-[50vh] overflow-y-auto">
-            {query.trim().length >= 2 && loading ? (
+            {query.trim().length >= 2 && serverLoading ? (
               <div className="flex items-center justify-center gap-2 py-8 text-sm text-stone-500"><Loader2 className="h-4 w-4 animate-spin" /> جارٍ البحث…</div>
-            ) : query.trim().length >= 2 && error ? (
-              <p className="py-8 text-center text-sm text-red-500">{error}</p>
+            ) : query.trim().length >= 2 && serverError ? (
+              <p className="py-8 text-center text-sm text-red-500">{serverError}</p>
             ) : query.trim().length >= 2 && results.length === 0 ? (
               <p className="py-8 text-center text-sm text-stone-500">لم نجد منتجات مطابقة</p>
             ) : query.trim().length >= 2 && results.length > 0 ? (

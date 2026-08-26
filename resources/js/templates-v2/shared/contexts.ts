@@ -33,6 +33,7 @@ export function useStorefrontCore() {
         setShowOrdersModal: () => {},
         setShowProfileModal: () => {},
         setShowWishlistModal: () => {},
+        setShowAddressesModal: () => {},
         logout: () => {},
     };
 

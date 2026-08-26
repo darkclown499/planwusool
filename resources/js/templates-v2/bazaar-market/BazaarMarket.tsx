@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { ChevronLeft, Heart, Package, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
+import { Gift } from 'lucide-react';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import {
   discountPercent,
   isVariableProduct,
@@ -255,6 +257,12 @@ export function BazaarCard({ product }: { product: V2Product }) {
         <button type="button" onClick={() => productCtx.handleProductClick(product)} className="line-clamp-2 min-h-10 text-start text-sm font-bold leading-snug text-slate-800 hover:text-teal-700">
           {product.name}
         </button>
+        {(() => {
+          const ls = getLoyaltySettingsFromPage();
+          if (!ls?.is_enabled) return null;
+          const pts = calcEarnedPoints(Number(product.price) || 0, ls);
+          return pts > 0 ? <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600"><Gift className="h-3 w-3" /> كسب {pts} نقطة</span> : null;
+        })()}
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
           <div className="leading-tight">
             <p className="text-lg font-black text-teal-700">{formatPrice(product.price)}</p>

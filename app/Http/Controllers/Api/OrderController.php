@@ -98,11 +98,36 @@ class OrderController extends Controller
 
         $storeSettings = \App\Models\Setting::getUserSettings($store->user->id, $store->id);
 
+        // Build timeline from real data only — no invented statuses
+        $timeline = [];
+        $rawStatus = strtolower(trim((string) $order->status));
+        // Known statuses in system: pending, processing, shipped, delivered, cancelled, failed, refunded, confirmed
+        // We map only those that actually exist; timeline is derived from timestamps available.
+        $statusLabels = [
+            'pending' => 'تم استلام الطلب',
+            'confirmed' => 'تم تأكيد الطلب',
+            'processing' => 'قيد التجهيز',
+            'shipped' => 'تم الشحن',
+            'delivered' => 'تم التسليم',
+            'cancelled' => 'ملغي',
+            'failed' => 'فشل',
+            'refunded' => 'تم الاسترجاع',
+        ];
+        // Always include creation
+        $timeline[] = ['key' => 'created', 'label' => $statusLabels[$rawStatus] ?? ucfirst($order->status), 'at' => $order->created_at->toISOString(), 'done' => true];
+        if ($order->shipped_at) $timeline[] = ['key' => 'shipped', 'label' => 'تم الشحن', 'at' => $order->shipped_at->toISOString(), 'done' => true];
+        if ($order->delivered_at) $timeline[] = ['key' => 'delivered', 'label' => 'تم التسليم', 'at' => $order->delivered_at->toISOString(), 'done' => true];
+
         return response()->json([
             'order' => [
                 'id' => $order->order_number,
                 'date' => $order->created_at->toISOString(),
-                'status' => ucfirst($order->status),
+                'status' => $order->status,
+                'status_label' => $statusLabels[$rawStatus] ?? ucfirst($order->status),
+                'timeline' => $timeline,
+                'tracking_number' => $order->tracking_number,
+                'shipped_at' => $order->shipped_at?->toISOString(),
+                'delivered_at' => $order->delivered_at?->toISOString(),
                 'total' => (float) $order->total_amount,
                 'subtotal' => (float) $order->subtotal,
                 'discount' => (float) $order->discount_amount,

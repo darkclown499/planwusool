@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, Search, ShoppingBag, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
 /* ===================================================================== */
@@ -24,10 +23,7 @@ export function BakeryCartDrawer({ onClose, onCheckout }: any) {
   }, []);
 
   const waPhone = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || '').replace(/[^0-9]/g, '');
-  const orderWhatsapp = () => {
-    const lines = items.map((i: any) => `• ${i.name}${i.selectedVariants ? ` (${Object.values(i.selectedVariants).join(' / ')})` : ''} × ${i.quantity}`);
-    window.open(createWhatsAppUrl(waPhone, `طلب مخبوزات من ${config?.storeName || 'المخبز'}:\n${lines.join('\n')}\nالإجمالي: ${formatPrice(totals.total)}`), '_blank');
-  };
+  const orderWhatsapp = () => { onClose(); setTimeout(() => onCheckout(), 120); };
 
   return (
     <div className="fixed inset-0 z-[60]" dir="rtl" role="dialog" aria-modal="true">

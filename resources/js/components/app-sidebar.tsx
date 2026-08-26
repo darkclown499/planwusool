@@ -254,13 +254,6 @@ export function AppSidebar() {
         if (hasPermission('manage-customers')) {
             orderChildren.push({ title: t('Customers'), href: route('customers.index') });
         }
-        if (hasPermission('manage-loyalty')) {
-            orderChildren.push({ 
-                title: t('Loyalty Points'),
-                icon: Star,
-                href: route('loyalty.settings')
-            });
-        }
         if (hasPermission('manage-pos') && routeExists('pos.index')) {
             orderChildren.push({ title: t('POS System'), href: route('pos.index') });
         }
@@ -385,6 +378,13 @@ export function AppSidebar() {
                 title: t('COD Payments'),
                 icon: DollarSign,
                 href: route('cod-payments.index')
+            });
+        }
+        if (hasPermission('manage-loyalty')) {
+            marketingChildren.push({
+                title: t('Loyalty Points'),
+                icon: Star,
+                href: route('loyalty.settings')
             });
         }
         if (marketingChildren.length > 0) {

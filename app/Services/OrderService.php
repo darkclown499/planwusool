@@ -64,6 +64,8 @@ class OrderService
                 
                 // Payment info
                 'payment_method' => $orderData['payment_method'],
+                'order_source' => $orderData['order_source'] ?? ($orderData['payment_method'] === 'whatsapp' ? 'whatsapp' : 'storefront'),
+                'idempotency_key' => $orderData['idempotency_key'] ?? null,
                 'bank_transfer_receipt' => $orderData['bank_transfer_receipt'] ?? null,
                 'whatsapp_number' => $orderData['whatsapp_number'] ?? null,
                 

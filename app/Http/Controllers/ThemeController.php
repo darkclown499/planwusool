@@ -186,6 +186,8 @@ class ThemeController extends Controller
                 'customer_accounts_enabled' => true,
                 'guest_checkout' => true,
                 'customer_verification_method' => 'email',
+                'free_shipping_enabled' => false,
+                'free_shipping_threshold' => null,
             ];
         }
 
@@ -201,6 +203,11 @@ class ThemeController extends Controller
         $verificationMethod = strtolower(trim((string)($config['customer_verification_method'] ?? 'email')));
         $verificationMethod = in_array($verificationMethod, ['none','email'], true) ? $verificationMethod : 'email';
 
+        // Canonical Free Shipping - business setting, not visual
+        $freeEnabled = $toBool($config['free_shipping_enabled'] ?? null, false);
+        $freeThresholdRaw = $config['free_shipping_threshold'] ?? '';
+        $freeThreshold = is_numeric($freeThresholdRaw) && (float)$freeThresholdRaw > 0 ? (float)$freeThresholdRaw : null;
+
         return [
             'enable_customer_login' => $effectiveLogin,
             'enable_customer_registration' => $effectiveRegistration,
@@ -210,6 +217,8 @@ class ThemeController extends Controller
             'guest_checkout' => $master ? $toBool($config['guest_checkout'] ?? null, true) : true,
             'show_auth_button' => $effectiveLogin,
             'customer_verification_method' => $verificationMethod,
+            'free_shipping_enabled' => $freeEnabled,
+            'free_shipping_threshold' => $freeThreshold,
         ];
     }
 

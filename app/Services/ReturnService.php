@@ -182,12 +182,12 @@ class ReturnService
             $order = $ret->order()->lockForUpdate()->first();
             if (!$order) throw new \Exception('Order not found');
             $paid = (float)$order->total_amount; // historical paid amount
-            // Already refunded across all returns for this order
-            $alreadyRefunded = (float) OrderReturn::where('order_id', $order->id)
+            // Already refunded across all returns for this order (avoid double count with order.refunded_amount)
+            $sumReturns = (float) OrderReturn::where('order_id', $order->id)
                 ->whereNotIn('status', ['rejected','cancelled'])
                 ->sum('refund_amount');
-            // Also include order.refunded_amount legacy
-            $alreadyRefunded += (float)($order->refunded_amount ?? 0);
+            $legacy = (float)($order->refunded_amount ?? 0);
+            $alreadyRefunded = max($sumReturns, $legacy);
             $max = $paid - $alreadyRefunded;
             if ($amount - $max > 0.01) {
                 throw new \Exception('مبلغ الاسترداد ('.$amount.') يتجاوز المبلغ القابل للاسترداد ('.number_format($max,2).')');
@@ -213,7 +213,13 @@ class ReturnService
             }
             $order->save();
 
-            // Loyalty: do not auto-reverse proportionally in v1 — log warning
+            // Loyalty: proportional reversal (canonical) — idempotent via LoyaltyService (pass total refunded)
+            try {
+                $loyaltyRefund = (float) $newTotal;
+                app(\App\Services\LoyaltyService::class)->reversePointsForOrder($order, $loyaltyRefund);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Loyalty refund reversal failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
             return $ret->fresh();
         });
     }

@@ -147,6 +147,17 @@ export default function Shipping() {
             </Card>
           </div>
 
+          {/* Free Shipping Canonical Setting */}
+          {(() => { const fs = (usePage().props as any).freeShipping || {enabled:false, threshold:null}; const [en, setEn] = React.useState(!!fs.enabled); const [thr, setThr] = React.useState(fs.threshold ? String(fs.threshold) : ''); React.useEffect(()=>{ setEn(!!fs.enabled); setThr(fs.threshold?String(fs.threshold):'');}, [fs.enabled, fs.threshold]); const save = ()=> { router.put(route('shipping.free.update'), {enabled: en, threshold: en ? thr : null}, {preserveScroll:true}); }; return (
+          <Card className="border-emerald-200">
+            <CardHeader><CardTitle className="text-start">الشحن المجاني</CardTitle><p className="text-xs text-muted-foreground text-start">عند وصول قيمة المنتجات إلى هذا الحد، تصبح تكلفة الشحن صفراً حسب طرق الشحن المؤهلة.</p></CardHeader>
+            <CardContent className="space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={en} onChange={e=>setEn(e.target.checked)} className="h-5 w-5 accent-emerald-600" /><span className="text-sm font-bold">تفعيل الشحن المجاني عند تجاوز مبلغ محدد</span></label>
+              {en && (<div className="flex items-center gap-2"><span className="text-sm">حد الشحن المجاني</span><input type="number" min="1" step="0.01" value={thr} onChange={e=>setThr(e.target.value)} placeholder="250" className="w-32 rounded border px-3 py-2 text-sm" /><span className="text-sm">₪</span></div>)}
+              <Button onClick={save} size="sm">حفظ إعدادات الشحن المجاني</Button>
+            </CardContent>
+          </Card>);})()}
+
           {/* Shipping Methods List */}
           <Card>
             <CardHeader>

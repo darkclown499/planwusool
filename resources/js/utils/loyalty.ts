@@ -22,7 +22,7 @@ export function getLoyaltySettingsFromPage(): LoyaltySettings | null {
 
 export function normalizeLoyaltySettings(raw: any): LoyaltySettings {
   return {
-    is_enabled: !!(raw.is_enabled ?? raw.enabled ?? true),
+    is_enabled: !!(raw.is_enabled ?? raw.enabled ?? false),
     points_per_currency: Number(raw.points_per_currency ?? raw.pointsPerCurrency ?? 1) || 1,
     points_value: Number(raw.points_value ?? raw.pointsValue ?? 0.01) || 0.01,
     minimum_redemption_points: Number(raw.minimum_redemption_points ?? raw.minimumRedemptionPoints ?? raw.min_redemption_points ?? 100) || 100,
@@ -36,6 +36,38 @@ export function calcEarnedPoints(amount: number, settings?: LoyaltySettings | nu
   const s = settings ?? getLoyaltySettingsFromPage();
   if (!s || !s.is_enabled || amount <= 0) return 0;
   return Math.floor(amount * s.points_per_currency);
+}
+
+/**
+ * Shared variant-aware effective price for loyalty preview.
+ * Resolves the purchasable price for the currently selected variants:
+ * - if all variant groups selected and a matching variantCombinations entry exists with a price, use that
+ * - otherwise use product.price (catalog effective price, already sale-adjusted)
+ * Single source for all 6 templates — do not duplicate logic per template.
+ */
+export function getEffectiveLoyaltyPrice(product: any, selection?: Record<string, string> | null): number {
+  try {
+    const base = Number(product?.price) || 0;
+    if (!product || !selection || !product.variants?.length) return base;
+    const groups: any[] = product.variants || [];
+    const missing = groups.filter((g: any) => !selection[g.name]);
+    if (missing.length > 0) return base;
+    const combos: any[] = product.variantCombinations || product.variant_combinations || product.variant_combinations || [];
+    if (!combos.length) return base;
+    const selVals = Object.values(selection).map((v) => String(v).trim());
+    const match = combos.find((c: any) => {
+      const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
+      if (vals.length !== selVals.length) return false;
+      return selVals.every((sv) => vals.includes(sv));
+    });
+    if (match && match.price !== undefined && String(match.price).trim() !== '') {
+      const n = Number(match.price);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    return base;
+  } catch {
+    return Number(product?.price) || 0;
+  }
 }
 
 export function cashEquivalent(points: number, settings?: LoyaltySettings | null): number {

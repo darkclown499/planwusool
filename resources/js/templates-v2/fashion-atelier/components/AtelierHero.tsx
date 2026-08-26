@@ -68,6 +68,10 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
       subtitle: rawContent.hero_subtitle ?? rawContent.heroSubtitle ?? null,
       cta_label: rawContent.hero_cta_label ?? rawContent.heroCtaLabel ?? null,
       cta_link: rawContent.hero_cta_link ?? rawContent.heroCtaLink ?? null,
+      fit: rawContent.hero_fit ?? rawContent.heroFit ?? null,
+      position: rawContent.hero_position ?? rawContent.heroPosition ?? null,
+      height_desktop: rawContent.hero_height_desktop ?? null,
+      height_mobile: rawContent.hero_height_mobile ?? null,
     };
     const flatFromSettings = {
       type: storeSettings?.hero_type ?? null,
@@ -79,6 +83,10 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
       subtitle: storeSettings?.hero_subtitle ?? null,
       cta_label: storeSettings?.hero_cta_label ?? null,
       cta_link: storeSettings?.hero_cta_link ?? null,
+      fit: storeSettings?.hero_fit ?? null,
+      position: storeSettings?.hero_position ?? null,
+      height_desktop: storeSettings?.hero_height_desktop ?? null,
+      height_mobile: storeSettings?.hero_height_mobile ?? null,
     };
     const hasFlatContent = Object.values(flatFromContent).some((v) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0));
     const hasFlatSettings = Object.values(flatFromSettings).some((v) => v !== null && v !== undefined && String(v).trim() !== '' && !(Array.isArray(v) && v.length === 0));
@@ -125,6 +133,11 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
     (heroType && textOnlyHero) ||
     (!heroType && textOnlyHero)
   );
+
+  const rawFit = String(storeHero?.fit ?? storeHero?.object_fit ?? storeHero?.media_fit ?? rawContent?.hero_fit ?? 'cover').toLowerCase().trim();
+  const heroFit: 'cover' | 'contain' = rawFit === 'contain' ? 'contain' : 'cover';
+  const rawPos = String(storeHero?.position ?? storeHero?.object_position ?? storeHero?.focal_point ?? rawContent?.hero_position ?? 'center').trim() || 'center';
+  const heroPosition = rawPos === 'centre' ? 'center' : rawPos;
 
   const youtubeId = heroType === 'youtube' && storeHero?.youtube_url ? extractYouTubeId(String(storeHero.youtube_url)) : null;
   const videoUrl = heroType === 'video' ? String(storeHero?.video_url || '').trim() : '';
@@ -180,11 +193,18 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
     ? !!(singleHeroTitle || singleHeroSubtitle || singleHeroCtaLabel)
     : list.some((s) => (s.title && String(s.title).trim()) || (s.subtitle && String(s.subtitle).trim()) || (s.button_text && String(s.button_text).trim()));
 
-  // Responsive height: clamp-based so desktop never consumes viewport; mobile has its own compact profile
-  const heroHeightStyle: React.CSSProperties = { height: 'clamp(360px, 42vw, 520px)', minHeight: '360px', maxHeight: '520px' };
+  // Responsive height + reusable fit/position controls — cover (no black bars) is default; contain keeps full video visible with letterbox
+  const heroDesktopRaw = storeHero?.height_desktop ?? storeHero?.heightDesktop ?? rawContent?.hero_height_desktop ?? null;
+  const heroMobileRaw = storeHero?.height_mobile ?? storeHero?.heightMobile ?? rawContent?.hero_height_mobile ?? null;
+  const heroDesktopHeight = heroDesktopRaw ? String(heroDesktopRaw).trim() : 'clamp(360px, 42vw, 520px)';
+  const heroMobileHeight = heroMobileRaw ? String(heroMobileRaw).trim() : null;
+  const heroHeightStyle: React.CSSProperties = { height: heroDesktopHeight, minHeight: '360px', maxHeight: '520px' };
+  const mediaFitClass = heroFit === 'contain' ? 'object-contain' : 'object-cover';
+  const mediaPositionStyle: React.CSSProperties = heroPosition && heroPosition !== 'center' ? { objectPosition: heroPosition } : {};
   return (
-    <section className="relative w-full overflow-hidden bg-stone-900" style={heroHeightStyle} dir="rtl">
-      {/* Background media — object-cover centered for editorial premium feel; contain fallback only for text-heavy banners via letterbox */}
+    <section className="atelier-hero relative w-full overflow-hidden bg-stone-900" style={heroHeightStyle} dir="rtl">
+      {heroMobileHeight && <style>{`@media (max-width: 767px) { .atelier-hero { height: ${heroMobileHeight} !important; min-height: ${heroMobileHeight} !important; max-height: none !important; } }`}</style>}
+      {/* Background media — fit/position merchant-controlled: cover (crop, no bars) vs contain (letterbox). */}
       {hasDynamicHero && heroType === 'video' && videoUrl ? (
         <>
           <video
@@ -192,7 +212,8 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
             loop
             muted
             playsInline
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className={`absolute inset-0 h-full w-full ${mediaFitClass}`}
+            style={mediaPositionStyle}
             src={videoUrl}
             poster={list[0]?.image ? getImageUrl(list[0].image) : undefined}
           />
@@ -200,15 +221,37 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
         </>
       ) : hasDynamicHero && heroType === 'youtube' && youtubeId ? (
         <>
-          <iframe
-            className="absolute inset-0 h-full w-full"
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${youtubeId}&modestbranding=1&rel=0&enablejsapi=1`}
-            title="YouTube video player"
-            frameBorder="0"
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            style={{ width: '100%', height: '100%', objectFit: 'cover', backgroundColor: 'black' } as any}
-          />
+          {/* YouTube cover technique: wrapper with overflow hidden + centered scaled iframe to avoid letterbox for portrait videos. contain => centered contain with black bars. */}
+          {heroFit === 'contain' ? (
+            <iframe
+              className="absolute inset-0 h-full w-full"
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${youtubeId}&modestbranding=1&rel=0&enablejsapi=1`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="autoplay; fullscreen"
+              allowFullScreen
+              style={{ width: '100%', height: '100%', backgroundColor: 'black' } as any}
+            />
+          ) : (
+            <div className="absolute inset-0 overflow-hidden bg-black">
+              <iframe
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${youtubeId}&modestbranding=1&rel=0&enablejsapi=1`}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                style={{
+                  width: '177.77777778vh',
+                  height: '56.25vw',
+                  minWidth: '100%',
+                  minHeight: '100%',
+                  maxWidth: 'none',
+                  maxHeight: 'none',
+                } as any}
+              />
+            </div>
+          )}
           <div className="absolute inset-0 bg-black" style={{ opacity: overlayStyleOpacity }} />
         </>
       ) : (
@@ -223,11 +266,12 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
               <img
                 src={getImageUrl(slide.image || '')}
                 alt=""
-                className="h-full w-full object-cover object-center"
+                className={`h-full w-full ${mediaFitClass}`}
                 sizes="(max-width:768px) 100vw, 100vw"
                 loading={i === 0 ? 'eager' : 'lazy'}
                 decoding="async"
                 style={{
+                  objectPosition: heroPosition !== 'center' ? heroPosition : undefined,
                   transform: i === index ? 'scale(1.02)' : 'scale(1.01)',
                   transition: 'transform 7s ease-out',
                 }}

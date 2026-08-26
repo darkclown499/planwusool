@@ -123,6 +123,9 @@ class StoreConfiguration extends Model
                     'show_auth_button' => 'true',
                     'customer_accounts_enabled' => 'true',
                     'guest_checkout' => 'true',
+                    // Canonical Free Shipping Business Settings (default OFF - never assume intent)
+                    'free_shipping_enabled' => 'false',
+                    'free_shipping_threshold' => '',
                     'customer_verification_method' => 'email',
                 ];
 
@@ -144,7 +147,7 @@ class StoreConfiguration extends Model
                 $result['customer_verification_method'] = in_array($rawMethod, ['none','email'], true) ? $rawMethod : 'email';
 
                 // Convert string values to boolean for specific keys
-                $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop', 'enable_customer_login', 'enable_customer_registration', 'customer_registration_enabled', 'require_login_checkout', 'show_whatsapp_order_button', 'show_search', 'show_cart', 'show_auth_button', 'customer_accounts_enabled', 'guest_checkout'];
+                $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop', 'enable_customer_login', 'enable_customer_registration', 'customer_registration_enabled', 'require_login_checkout', 'show_whatsapp_order_button', 'show_search', 'show_cart', 'show_auth_button', 'customer_accounts_enabled', 'guest_checkout', 'free_shipping_enabled'];
                 foreach ($booleanKeys as $key) {
                     if (isset($result[$key])) {
                         $result[$key] = $result[$key] === 'true' || $result[$key] === true;

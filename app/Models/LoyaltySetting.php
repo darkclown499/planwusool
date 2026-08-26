@@ -55,7 +55,7 @@ class LoyaltySetting extends Model
         return static::firstOrCreate(
             ['store_id' => $storeId],
             [
-                'is_enabled' => true,
+                'is_enabled' => false,
                 'points_per_currency' => 1,
                 'points_value' => 0.01,
                 'minimum_redemption_points' => 100,

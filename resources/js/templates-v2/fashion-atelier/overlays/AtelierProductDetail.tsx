@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Heart, Minus, Plus, RefreshCcw, ShieldCheck, Truck, X } from 'lucide-react';
+import { Check, Gift, Heart, Minus, Plus, RefreshCcw, ShieldCheck, Truck, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface AtelierProductDetailProps {
   product: any;
@@ -148,10 +150,20 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 ⏳ آخر {remaining} قطع في المخزون
               </p>
             )}
+            {(() => {
+              const loyalty = getLoyaltySettingsFromPage();
+              if (!loyalty || !loyalty.is_enabled) return null;
+              const pts = calcEarnedPoints(Number(displayPrice) || 0, loyalty);
+              return pts > 0 ? (
+                <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
+                  <Gift className="h-3.5 w-3.5" /> كسب {pts} نقطة
+                </span>
+              ) : null;
+            })()}
 
             {product.description && (
               <div
-                className="mt-5 text-sm leading-relaxed text-stone-600 line-clamp-6 whitespace-pre-line"
+                className="mt-5 break-words text-sm leading-relaxed text-stone-600 [overflow-wrap:anywhere] line-clamp-6 whitespace-pre-line"
                 dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
               />
             )}
@@ -256,6 +268,10 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 لستِ متأكدة من المقاس؟ اسألينا عبر واتساب
               </a>
             )}
+            {/* Reviews — REUSE existing ProductReviews (approved only, is_verified_purchase, admin_reply, loyalty bonus idempotent) */}
+            <div className="mt-8 border-t border-stone-200 pt-6">
+              <ProductReviews productId={product.id} />
+            </div>
           </div>
         </div>
       </div>

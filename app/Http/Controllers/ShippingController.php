@@ -33,6 +33,12 @@ class ShippingController extends Controller
         $shippingZones = Shipping::where('store_id', $currentStoreId)->distinct('zone_type')->count('zone_type');
         $avgShippingCost = Shipping::where('store_id', $currentStoreId)->where('type', '!=', 'free_shipping')->avg('cost') ?? 0;
 
+        // Canonical free shipping config
+        $storeConfig = \App\Models\StoreConfiguration::getConfiguration($currentStoreId);
+        $freeEnabled = \App\Models\StoreConfiguration::toBool($storeConfig['free_shipping_enabled'] ?? null, false);
+        $freeThreshold = $storeConfig['free_shipping_threshold'] ?? null;
+        $freeThresholdVal = is_numeric($freeThreshold) && (float)$freeThreshold > 0 ? (float)$freeThreshold : null;
+
         return Inertia::render('shipping/index', [
             'shippings' => $shippings,
             'shippingEnabled' => $shippingEnabled,
@@ -41,6 +47,10 @@ class ShippingController extends Controller
                 'activeShippings' => $activeShippings,
                 'shippingZones' => $shippingZones,
                 'avgShippingCost' => round($avgShippingCost, 2)
+            ],
+            'freeShipping' => [
+                'enabled' => $freeEnabled,
+                'threshold' => $freeThresholdVal,
             ]
         ]);
     }
@@ -305,6 +315,30 @@ class ShippingController extends Controller
             ->with('success', __('Shipping method deleted successfully!'));
     }
     
+    public function updateFreeShipping(Request $request)
+    {
+        $request->validate([
+            'enabled' => 'required|boolean',
+            'threshold' => 'nullable|numeric|min:0.01',
+        ]);
+        $user = Auth::user();
+        $storeId = $user->current_store;
+        $enabled = (bool) $request->boolean('enabled');
+        $threshold = $request->input('threshold');
+        \App\Models\StoreConfiguration::setConfiguration($storeId, 'free_shipping_enabled', $enabled ? 'true' : 'false');
+        if ($enabled && is_numeric($threshold) && (float)$threshold > 0) {
+            \App\Models\StoreConfiguration::setConfiguration($storeId, 'free_shipping_threshold', (string) (float) $threshold);
+        } else {
+            // When disabled, keep threshold stored but UI hides it; when enabled without threshold, clear
+            if (!$enabled) {
+                // keep existing threshold for re-enable, do not clear
+            } else {
+                return back()->withErrors(['threshold' => 'حد الشحن المجاني مطلوب عند التفعيل']);
+            }
+        }
+        return back()->with('success', __('تم حفظ إعدادات الشحن المجاني'));
+    }
+
     /**
      * Export shipping methods data as CSV.
      */

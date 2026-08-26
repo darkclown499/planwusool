@@ -88,17 +88,34 @@ export function usePriceFormatter() {
   return (amount: number | string) => formatStoreCurrency(amount, currency);
 }
 
-/** Single source for free-shipping threshold — reads every known key so Designer values propagate to every template. */
-export function resolveFreeShippingThreshold(content: any, fallback = 150): number {
+/** Single source for free-shipping threshold — reads every known key so Designer values propagate to every template.
+ *  Canonical business setting is behavior.free_shipping_enabled / threshold (StoreConfiguration).
+ *  Content Designer keys are legacy fallback; fallback param is IGNORED when behavior says disabled (null = no free shipping UI).
+ *  If behavior is provided and enabled===false, returns null immediately regardless of content/fallback.
+ */
+export function resolveFreeShippingThreshold(content: any, fallback: number | null = null, behavior?: any): number | null {
+  // Canonical behavior check first
+  if (behavior && typeof behavior === 'object' && 'free_shipping_enabled' in behavior) {
+    if (!behavior.free_shipping_enabled) return null;
+    const bThr = behavior.free_shipping_threshold;
+    if (bThr !== null && bThr !== undefined && bThr !== '') {
+      const n = Number(bThr);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+    // enabled but no threshold set -> no free shipping UI (merchant must set threshold)
+    return null;
+  }
+  // Legacy content fallback (Designer) - only used if behavior not present (preview mode)
   const raw = (content as any)?.free_shipping_threshold ?? (content as any)?.freeShippingThreshold ?? (content as any)?.settings?.free_shipping_threshold ?? (content as any)?.homepage?.free_shipping_threshold ?? fallback;
+  if (raw === null || raw === undefined) return null;
   const num = Number(raw);
-  return Number.isFinite(num) && num > 0 ? num : fallback;
+  return Number.isFinite(num) && num > 0 ? num : null;
 }
 
 /** Free-shipping progress towards a threshold (null when disabled/none set). */
 export function freeShippingProgress(
   subtotal: number,
-  threshold: number
+  threshold: number | null
 ): { percent: number; remaining: number; qualified: boolean } | null {
   if (!threshold || threshold <= 0) return null;
   const remaining = Math.max(0, threshold - subtotal);

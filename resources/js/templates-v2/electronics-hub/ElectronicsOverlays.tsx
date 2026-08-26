@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, Search, ShieldCheck, ShoppingCart, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
-import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
 /* ===================================================================== */
@@ -23,10 +22,7 @@ export function HubCartDrawer({ onClose, onCheckout }: any) {
   }, []);
 
   const waPhone = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || '').replace(/[^0-9]/g, '');
-  const orderWhatsapp = () => {
-    const lines = items.map((i: any) => `• ${i.name} × ${i.quantity} — ${formatPrice((Number(i.price) || 0) * i.quantity)}`);
-    window.open(createWhatsAppUrl(waPhone, `طلب أجهزة من ${config?.storeName || 'المتجر'}:\n${lines.join('\n')}\n\nالإجمالي: ${formatPrice(totals.total)}\n(أجهزة بضمان رسمي)`), '_blank');
-  };
+  const orderWhatsapp = () => { onClose(); setTimeout(() => onCheckout(), 120); };
 
   return (
     <div className="fixed inset-0 z-[60]" dir="rtl" role="dialog" aria-modal="true">

@@ -44,6 +44,13 @@ export interface ResolvedHero {
   ctaLink: string;
   overlayOpacity: number;
   hasDynamicHero: boolean;
+  /** Reusable fit control: cover (crop, no bars) vs contain (letterbox). Defaults to cover. */
+  fit: 'cover' | 'contain';
+  /** Object-position / focal point: center | top | bottom | custom percentage string. */
+  position: string;
+  /** Optional desktop/mobile heights (px or clamp). When absent, template default applies. */
+  heightDesktop: string | null;
+  heightMobile: string | null;
 }
 
 export function useResolvedHero(): ResolvedHero {
@@ -101,6 +108,15 @@ export function useResolvedHero(): ResolvedHero {
   const heroCtaLabel = storeHero?.cta_label ?? storeHero?.button_text ?? rawContent?.hero_cta_label ?? '';
   const heroCtaLink = storeHero?.cta_link ?? storeHero?.button_link ?? rawContent?.hero_cta_link ?? '';
 
+  // Reusable fit/position controls — merchant can control crop vs letterbox and focal point
+  const rawFit = String(storeHero?.fit ?? storeHero?.object_fit ?? storeHero?.media_fit ?? rawContent?.hero_fit ?? 'cover').toLowerCase().trim();
+  const fit: 'cover' | 'contain' = rawFit === 'contain' ? 'contain' : 'cover';
+  const rawPos = String(storeHero?.position ?? storeHero?.object_position ?? storeHero?.focal_point ?? rawContent?.hero_position ?? 'center').trim() || 'center';
+  // Normalize common aliases
+  const position = rawPos === 'centre' ? 'center' : rawPos;
+  const heightDesktop = storeHero?.height_desktop ?? storeHero?.heightDesktop ?? rawContent?.hero_height_desktop ?? null;
+  const heightMobile = storeHero?.height_mobile ?? storeHero?.heightMobile ?? rawContent?.hero_height_mobile ?? null;
+
   const heroImages: string[] = (() => {
     if (!heroType || heroType === 'image' || heroType === 'slider' || heroType === 'image_slider') {
       const raw = storeHero?.images ?? storeHero?.image_slider ?? storeHero?.slider_images ?? storeHero?.slides ?? null;
@@ -137,6 +153,10 @@ export function useResolvedHero(): ResolvedHero {
     ctaLink: String(heroCtaLink || ''),
     overlayOpacity: hasDynamicHero ? normalizedOverlay : 0.35,
     hasDynamicHero,
+    fit,
+    position,
+    heightDesktop: heightDesktop ? String(heightDesktop) : null,
+    heightMobile: heightMobile ? String(heightMobile) : null,
   };
 }
 

@@ -129,8 +129,14 @@ export default function LoyaltySettings() {
             </CardContent>
           </Card>
 
+          {!form.is_enabled && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+              البرنامج معطل حالياً — الإعدادات محفوظة لكن لا تُطبق على العملاء ولا تُمنح نقاط حتى تفعيله.
+            </div>
+          )}
+          <div className={!form.is_enabled ? 'opacity-60' : ''}>
           {/* Redemption Settings */}
-          <Card>
+          <Card className={!form.is_enabled ? 'pointer-events-none' : ''}>
             <CardHeader>
               <CardTitle>{t('Redemption Settings')}</CardTitle>
             </CardHeader>
@@ -228,8 +234,8 @@ export default function LoyaltySettings() {
               </div>
 
               {form.points_expire && (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
+                <div className="space-y-4">
+                  <div className="space-y-2 max-w-md">
                     <Label>{t('Points validity period (in days)')}</Label>
                     <p className="text-xs text-muted-foreground">{t('How long earned points stay valid')}</p>
                     <SuffixInput
@@ -244,26 +250,12 @@ export default function LoyaltySettings() {
                       aria-label={t('Points validity period (in days)')}
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label>{t('Customer reminder before expiry (in days)')}</Label>
-                    <p className="text-xs text-muted-foreground">{t('Notify customers before their points expire')}</p>
-                    <SuffixInput
-                      type="number"
-                      inputMode="numeric"
-                      min={0}
-                      max={365}
-                      step={1}
-                      value={form.expiry_reminder_days}
-                      onChange={handleIntChange('expiry_reminder_days')}
-                      suffix={t('day')}
-                      aria-label={t('Customer reminder before expiry (in days)')}
-                    />
-                  </div>
+                  <p className="text-xs text-muted-foreground">التنبيه قبل الانتهاء سيُضاف قريباً عبر نظام الإشعارات الحالي — الإعداد الحالي يحفظ صلاحية النقاط فقط.</p>
                 </div>
               )}
             </CardContent>
-          </Card>
+            </Card>
+          </div>
 
           {/* Sticky form action footer */}
           <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:-mx-6 md:px-6">

@@ -25,7 +25,8 @@ function StatusBadge({ status, variant }: { status: string; variant?: string }) 
     paid: 'مدفوع',
     failed: 'فشل',
   };
-  return <Badge variant={variant as any}>{map[status.toLowerCase()] || status}</Badge>;
+  const safe = String(status ?? '').trim();
+  return <Badge variant={variant as any}>{map[safe.toLowerCase()] || safe}</Badge>;
 }
 
 export default function ShowOrder({ order: initialOrder, returns: initialReturns }: any) {
@@ -44,10 +45,11 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
     setActionLoading(newStatus);
     try {
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const safePaymentStatus = String(order?.paymentStatus ?? 'pending').toLowerCase();
       const res = await fetch(route('orders.update', order.id), {
         method: 'PUT',
         headers: { 'Content-Type':'application/json', Accept:'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With':'XMLHttpRequest'},
-        body: JSON.stringify({ status: newStatus, payment_status: order.paymentStatus.toLowerCase(), tracking_number: order.trackingNumber || '', notes: order.notes || '' }),
+        body: JSON.stringify({ status: newStatus, payment_status: safePaymentStatus, tracking_number: order.trackingNumber || '', notes: order.notes || '' }),
       });
       if (res.ok) {
         toast.success('تم تحديث حالة الطلب');
@@ -76,13 +78,15 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
     setActionLoading(null);
   };
 
-  const isCancelled = order.status.toLowerCase()==='cancelled';
-  const isDelivered = order.status.toLowerCase()==='delivered';
-  const canConfirm = order.status.toLowerCase()==='pending';
-  const canProcess = ['pending','confirmed'].includes(order.status.toLowerCase());
-  const canReady = order.status.toLowerCase()==='processing';
-  const canOut = ['processing','shipped'].includes(order.status.toLowerCase()) && fulfillment.type!=='connected';
-  const canDeliverManual = order.status.toLowerCase()==='shipped' && fulfillment.type!=='connected';
+  const statusLower = String(order?.status ?? '').toLowerCase();
+  const paymentLower = String(order?.paymentStatus ?? '').toLowerCase();
+  const isCancelled = statusLower==='cancelled';
+  const isDelivered = statusLower==='delivered';
+  const canConfirm = statusLower==='pending';
+  const canProcess = ['pending','confirmed'].includes(statusLower);
+  const canReady = statusLower==='processing';
+  const canOut = ['processing','shipped'].includes(statusLower) && fulfillment.type!=='connected';
+  const canDeliverManual = statusLower==='shipped' && fulfillment.type!=='connected';
   const notSubmitted = fulfillment.type==='connected' && !primaryShipment;
   const isFailed = primaryShipment?.status==='failed';
 
@@ -169,8 +173,8 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
             <p className="text-sm"><span className="text-muted-foreground">نوع التنفيذ:</span> توصيل يدوي</p>
             {!isDelivered && !isCancelled && (
               <div className="flex gap-2 mt-3">
-                {order.status.toLowerCase()==='processing' && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>خرج للتوصيل</Button>}
-                {order.status.toLowerCase()==='shipped' && <Button size="sm" onClick={()=>updateOrderStatus('delivered')}>تم التسليم</Button>}
+                {statusLower==='processing' && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>خرج للتوصيل</Button>}
+                {statusLower==='shipped' && <Button size="sm" onClick={()=>updateOrderStatus('delivered')}>تم التسليم</Button>}
                 <Button size="sm" variant="outline" onClick={()=>updateOrderStatus('cancelled')}>فشل التوصيل</Button>
               </div>
             )}
@@ -185,8 +189,8 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
           {!isDelivered && !isCancelled && (
             <div className="flex gap-2">
               {canReady && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>جاهز للتوصيل</Button>}
-              {order.status.toLowerCase()==='shipped' && <Button size="sm" onClick={()=>updateOrderStatus('delivered')}>تم التسليم</Button>}
-              {order.status.toLowerCase()!=='cancelled' && <Button size="sm" variant="outline" onClick={()=>updateOrderStatus('cancelled')}>إلغاء</Button>}
+              {statusLower==='shipped' && <Button size="sm" onClick={()=>updateOrderStatus('delivered')}>تم التسليم</Button>}
+              {statusLower!=='cancelled' && <Button size="sm" variant="outline" onClick={()=>updateOrderStatus('cancelled')}>إلغاء</Button>}
             </div>
           )}
         </CardContent>
@@ -202,19 +206,19 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
           <CardContent className="p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-black">طلب {order.orderNumber}</h2>
-              <p className="text-xs text-muted-foreground">{order.date} • {order.customer.name} • {formatCurrency(order.summary.total)}</p>
+              <p className="text-xs text-muted-foreground">{order.date ?? ''} • {order.customer?.name ?? '—'} • {formatCurrency(Number(order.summary?.total) || 0)}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge>{tOrderStatus(order.status)}</Badge>
-              <Badge variant="outline">{tPaymentStatus(order.paymentStatus)}</Badge>
+              <Badge>{tOrderStatus(String(order?.status ?? ''))}</Badge>
+              <Badge variant="outline">{tPaymentStatus(String(order?.paymentStatus ?? ''))}</Badge>
               <Badge variant="secondary">{fulfillment.type==='connected' ? 'شحن متصل' : fulfillment.type==='manual' ? 'يدوي' : 'شخصي'}</Badge>
             </div>
           </CardContent>
           <div className="px-4 pb-4 flex flex-wrap gap-2">
             {canConfirm && <Button size="sm" onClick={()=>updateOrderStatus('confirmed')} disabled={!!actionLoading}>تأكيد الطلب</Button>}
-            {order.status.toLowerCase()==='confirmed' && <Button size="sm" onClick={()=>updateOrderStatus('processing')}>بدء التجهيز</Button>}
-            {order.status.toLowerCase()==='processing' && fulfillment.type!=='connected' && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>جاهز للشحن</Button>}
-            {order.status.toLowerCase()==='processing' && fulfillment.type==='connected' && notSubmitted && <Button size="sm" onClick={async()=>{
+            {statusLower==='confirmed' && <Button size="sm" onClick={()=>updateOrderStatus('processing')}>بدء التجهيز</Button>}
+            {statusLower==='processing' && fulfillment.type!=='connected' && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>جاهز للشحن</Button>}
+            {statusLower==='processing' && fulfillment.type==='connected' && notSubmitted && <Button size="sm" onClick={async()=>{
               const storeId=(auth as any)?.user?.current_store;
               const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'';
               const res=await fetch(`/api/stores/${storeId}/orders/${order.id}/shipments`,{method:'POST', headers:{'X-CSRF-TOKEN':token}});
@@ -234,7 +238,7 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-2"><Package className="h-5 w-5"/> المنتجات</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                {order.items.map((item:any)=>(
+                {(order.items ?? []).length === 0 ? <p className="text-sm text-muted-foreground text-center py-4">لا توجد منتجات</p> : (order.items ?? []).map((item:any)=>(
                   <div key={item.id} className="flex gap-3 border rounded-lg p-3">
                     <img src={getImageUrl(item.image)} alt={item.name} className="h-14 w-14 rounded object-cover border" />
                     <div className="flex-1 min-w-0">
@@ -242,8 +246,8 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                       <p className="text-xs text-muted-foreground">SKU: {item.sku} • الكمية: {item.quantity}</p>
                     </div>
                     <div className="text-left">
-                      <p className="font-bold text-sm">{formatCurrency(item.price)}</p>
-                      <p className="text-xs text-muted-foreground">{formatCurrency(item.price*item.quantity)}</p>
+                      <p className="font-bold text-sm">{formatCurrency(Number(item.price) || 0)}</p>
+                      <p className="text-xs text-muted-foreground">{formatCurrency((Number(item.price)||0)*(Number(item.quantity)||0))}</p>
                     </div>
                   </div>
                 ))}
@@ -295,9 +299,9 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5"/> الدفع</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">طريقة الدفع</span><span>{order.paymentMethod}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">حالة الدفع</span><Badge variant={order.paymentStatus.toLowerCase()==='paid' ? 'default' : 'secondary'}>{tPaymentStatus(order.paymentStatus)}</Badge></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">الإجمالي</span><span className="font-bold">{formatCurrency(order.summary.total)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">طريقة الدفع</span><span>{order.paymentMethod ?? '—'}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">حالة الدفع</span><Badge variant={paymentLower==='paid' ? 'default' : 'secondary'}>{tPaymentStatus(String(order?.paymentStatus ?? ''))}</Badge></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">الإجمالي</span><span className="font-bold">{formatCurrency(Number(order?.summary?.total) || 0)}</span></div>
                 {fulfillment.cod_amount !== undefined && (
                   <div className="flex justify-between"><span className="text-muted-foreground">المبلغ المطلوب تحصيله (COD)</span><span className="font-bold">{formatCurrency(fulfillment.cod_amount || 0)}</span></div>
                 )}

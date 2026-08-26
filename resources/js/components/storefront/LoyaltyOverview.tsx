@@ -64,7 +64,7 @@ export const LoyaltyOverview: React.FC<{ compact?: boolean }> = ({ compact = fal
 
   const effectiveSettings = settings ?? (storeSettings?.loyalty ? normalizeLoyaltySettings(storeSettings.loyalty) : null);
   const cash = cashEquivalent(balance ?? 0, effectiveSettings);
-  const isEnabled = effectiveSettings?.is_enabled ?? true;
+  const isEnabled = effectiveSettings?.is_enabled ?? false;
 
   if (!isLoggedIn) {
     return (

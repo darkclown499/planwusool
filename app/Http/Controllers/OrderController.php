@@ -63,7 +63,9 @@ class OrderController extends Controller
                 'fulfillmentRaw' => $fulfillmentStatus,
                 'items' => $order->items->count(),
                 'date' => $order->created_at->format('Y-m-d'),
-                'paymentMethod' => $order->payment_method === 'cod' ? 'Cash on Delivery' : ucfirst(str_replace('_', ' ', $order->payment_method)),
+                'paymentMethod' => $order->payment_method,
+                'paymentMethodLabel' => $order->payment_method === 'cod' ? 'Cash on Delivery' : ucfirst(str_replace('_', ' ', $order->payment_method)),
+                'order_source' => $order->order_source ?? 'storefront',
             ];
         });
         

@@ -29,6 +29,12 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->sendOutputTo(storage_path('logs/expired-trials.log'));
 
+        // Daily loyalty points expiration at 03:30 (idempotent, store-scoped)
+        $schedule->command('loyalty:expire')
+            ->dailyAt('03:30')
+            ->withoutOverlapping()
+            ->sendOutputTo(storage_path('logs/loyalty-expire.log'));
+
         // Daily backup to S3 at 3 AM
         $schedule->command('backup:s3 --all --compress --keep=7')
             ->dailyAt('03:00')

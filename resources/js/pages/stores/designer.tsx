@@ -643,6 +643,57 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                     </div>
                                 </Card>
 
+                                <Card>
+                                    <div className="space-y-3">
+                                        <SectionLabel hint="يتحكم بكيفية ملء الفيديو/الصورة للحاوية">وضع العرض (Fit)</SectionLabel>
+                                        {(() => {
+                                            const currentFit = String(getDotted(content, 'hero_banner.fit') ?? getDotted(content, 'hero_fit') ?? 'cover').toLowerCase();
+                                            return (
+                                                <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
+                                                    {[{ id: 'cover', label: 'تغطية (بدون مساحات سوداء)' }, { id: 'contain', label: 'احتواء (كامل الوسائط)' }].map((opt) => (
+                                                        <button key={opt.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.fit', opt.id); tmp = setDotted(tmp, 'hero_fit', opt.id); setContent(tmp); }} className={`flex-1 rounded-lg px-2 py-2 text-xs font-black transition ${currentFit === opt.id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}>{opt.label}</button>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
+                                        <SectionLabel>موضع التركيز (Focal point)</SectionLabel>
+                                        {(() => {
+                                            const curPos = String(getDotted(content, 'hero_banner.position') ?? getDotted(content, 'hero_position') ?? 'center');
+                                            const opts = [{ id: 'center', label: 'وسط' }, { id: 'top', label: 'أعلى' }, { id: 'bottom', label: 'أسفل' }, { id: 'left', label: 'يسار' }, { id: 'right', label: 'يمين' }];
+                                            return (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {opts.map((o) => (
+                                                        <button key={o.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.position', o.id); tmp = setDotted(tmp, 'hero_position', o.id); setContent(tmp); }} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${curPos === o.id ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'}`}>{o.label}</button>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
+                                        <p className="text-[11px] leading-relaxed text-slate-500">الوضع الافتراضي: تغطية مع تركيز وسط — يضمن عدم ظهور مساحات سوداء للفيديو العمودي مع إمكانية تحكم التاجر بالموقع.</p>
+                                    </div>
+                                </Card>
+                                <Card>
+                                    <div className="space-y-3">
+                                        <SectionLabel hint="يتحكم بارتفاع الـHero لكل جهاز">ارتفاع الواجهة</SectionLabel>
+                                        {(() => {
+                                            const desktopH = String(getDotted(content, 'hero_banner.height_desktop') ?? getDotted(content, 'hero_height_desktop') ?? '');
+                                            const mobileH = String(getDotted(content, 'hero_banner.height_mobile') ?? getDotted(content, 'hero_height_mobile') ?? '');
+                                            return (
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <SectionLabel>سطح المكتب (مثل 520px أو clamp)</SectionLabel>
+                                                        <Input dir="ltr" value={desktopH} onChange={e=>{ let tmp=setDotted(content,'hero_banner.height_desktop',e.target.value); tmp=setDotted(tmp,'hero_height_desktop',e.target.value); setContent(tmp); }} placeholder="clamp(360px, 42vw, 520px)" className="font-mono text-sm bg-white"/>
+                                                    </div>
+                                                    <div>
+                                                        <SectionLabel>الهاتف (مثل 420px)</SectionLabel>
+                                                        <Input dir="ltr" value={mobileH} onChange={e=>{ let tmp=setDotted(content,'hero_banner.height_mobile',e.target.value); tmp=setDotted(tmp,'hero_height_mobile',e.target.value); setContent(tmp); }} placeholder="420px" className="font-mono text-sm bg-white"/>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+                                        <p className="text-[11px] text-slate-500">اتركه فارغًا لاستخدام الافتراضي. كل ارتفاع لا يغير الآخر — منفصل تمامًا.</p>
+                                    </div>
+                                </Card>
+
                                 {/* Collapsed template-specific options */}
                                 <Collapsible className="rounded-xl border border-slate-200 bg-white">
                                     <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-start">

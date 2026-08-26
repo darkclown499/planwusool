@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, Search, ShoppingBasket, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { computeCartTotals, discountPercent, isVariableProduct, resolveFreeShippingThreshold, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
 /* ===================================================================== */
@@ -11,16 +10,16 @@ import { computeCartTotals, discountPercent, isVariableProduct, resolveFreeShipp
 /* and WhatsApp checkout for the neighborhood souq.                       */
 /* ===================================================================== */
 
-const FALLBACK_FREE_SHIPPING = 150;
+const FALLBACK_FREE_SHIPPING: number | null = null;
 const BIDDI_YELLOW = '#FFC20E';
 const BIDDI_BLACK = '#0F1620';
 
 export function SouqCartDrawer({ onClose, onCheckout, onProductClick }: any) {
-  const { cart, config, content } = useStorefrontCore() as any;
+  const { cart, config, content, behavior } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
   const items = cart.cartItems || [];
   const totals = computeCartTotals(items);
-  const effectiveThreshold = resolveFreeShippingThreshold(content, FALLBACK_FREE_SHIPPING);
+  const effectiveThreshold = resolveFreeShippingThreshold(content, FALLBACK_FREE_SHIPPING, behavior);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -29,17 +28,13 @@ export function SouqCartDrawer({ onClose, onCheckout, onProductClick }: any) {
     };
   }, []);
 
-  const remainingForShipping = Math.max(0, effectiveThreshold - totals.subtotal);
+  const remainingForShipping = effectiveThreshold !== null ? Math.max(0, effectiveThreshold - totals.subtotal) : 0;
+  const showFreeShipping = effectiveThreshold !== null;
   const waPhone = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || '').replace(/[^0-9]/g, '');
 
   const orderWhatsapp = () => {
-    const lines = items.map(
-      (i: any) => `• ${i.name} × ${i.quantity} — ${formatPrice((Number(i.price) || 0) * (Number(i.quantity) || 0))}`
-    );
-    window.open(
-      createWhatsAppUrl(waPhone, `طلب مشتريات من ${config?.storeName || 'المتجر'}:\n${lines.join('\n')}\n\nالإجمالي: ${formatPrice(totals.total)}`),
-      '_blank'
-    );
+    onClose();
+    setTimeout(() => onCheckout(), 120);
   };
 
   return (
@@ -55,7 +50,7 @@ export function SouqCartDrawer({ onClose, onCheckout, onProductClick }: any) {
           </button>
         </div>
 
-        {items.length > 0 && (
+        {items.length > 0 && showFreeShipping && (
           <div className="bg-[#FFC20E]/15 px-5 py-2.5 text-center text-xs font-bold text-[#0F1620] ring-1 ring-[#FFC20E]/20">
             {remainingForShipping > 0 ? `أضف ${formatPrice(remainingForShipping)} واحصل على توصيل مجاني 🚚` : '🎉 مبروك! التوصيل مجاني لهذا الطلب'}
           </div>
@@ -108,7 +103,7 @@ export function SouqCartDrawer({ onClose, onCheckout, onProductClick }: any) {
             </button>
             {waPhone && (
               <button type="button" onClick={orderWhatsapp} className="mt-2 w-full rounded-full border border-[#25D366]/40 py-2.5 text-sm font-bold text-[#128C4B] transition hover:bg-[#25D366]/10">
-                اطلب عبر واتساب
+                اطلب عبر واتساب <span className="block text-[11px] font-normal opacity-70">أنشئ طلبك ثم تابع عبر واتساب</span>
               </button>
             )}
           </div>
