@@ -182,21 +182,28 @@ class ThemeController extends Controller
                 'show_cart' => true,
                 'show_auth_button' => true,
                 'customer_accounts_enabled' => true,
+                'guest_checkout' => true,
             ];
         }
 
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
         $master = (bool) ($config['customer_accounts_enabled'] ?? true);
 
+        // show_auth_button is legacy alias for enable_customer_login — both must be true for login to be enabled
+        $loginRaw = (bool) ($config['enable_customer_login'] ?? true);
+        $showAuthRaw = (bool) ($config['show_auth_button'] ?? true);
+        $effectiveLogin = $master && $loginRaw && $showAuthRaw;
+
         return [
-            'enable_customer_login' => $master && (bool) ($config['enable_customer_login'] ?? true),
+            'enable_customer_login' => $effectiveLogin,
             'enable_customer_registration' => $master && (bool) ($config['enable_customer_registration'] ?? true),
             'require_login_checkout' => $master && (bool) ($config['require_login_checkout'] ?? false),
             'show_whatsapp_order_button' => (bool) ($config['show_whatsapp_order_button'] ?? true),
             'show_search' => (bool) ($config['show_search'] ?? true),
             'show_cart' => (bool) ($config['show_cart'] ?? true),
-            'show_auth_button' => $master && (bool) ($config['show_auth_button'] ?? true),
+            'show_auth_button' => $effectiveLogin,
             'customer_accounts_enabled' => $master,
+            'guest_checkout' => $master ? (bool) ($config['guest_checkout'] ?? true) : true,
         ];
     }
 
@@ -705,11 +712,12 @@ class ThemeController extends Controller
             'seoUrlSlug' => $product->seo_url_slug ?: $product->id,
             'description' => $product->description,
             'short_description' => $product->short_description,
+            'specifications' => $product->specifications ? (is_string($product->specifications) && str_starts_with(trim($product->specifications), '[') ? json_decode($product->specifications, true) : $product->specifications) : null,
             'variants' => $product->variants ? (is_array($product->variants) ? $product->variants : json_decode($product->variants, true)) : null,
             'variantCombinations' => $product->variant_combinations ? (is_array($product->variant_combinations) ? $product->variant_combinations : json_decode($product->variant_combinations, true)) : null,
             'customFields' => $product->custom_fields ? (is_array($product->custom_fields) ? $product->custom_fields : json_decode($product->custom_fields, true)) : null,
-            'taxName' => $product->tax_name ?? null,
-            'taxPercentage' => $product->tax_percentage ?? null,
+            'taxName' => $product->tax?->name ?? $product->tax_name ?? null,
+            'taxPercentage' => $product->tax?->rate ?? $product->tax_percentage ?? null,
         ];
     }
 

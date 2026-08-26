@@ -160,7 +160,7 @@ class ProductController extends Controller
             return redirect()->back()->with('error', $productCheck['message']);
         }
         
-        // Validation
+        // Validation — single source of truth for create+edit
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:100',
@@ -171,6 +171,7 @@ class ProductController extends Controller
             'details' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'low_stock_warning' => 'nullable|integer|min:0',
             'track_inventory' => 'nullable|boolean',
@@ -179,6 +180,8 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'tax_id' => 'nullable|exists:taxes,id',
             'is_active' => 'nullable|boolean',
+            'is_published' => 'nullable|boolean',
+            'is_tax_included' => 'nullable|boolean',
             'is_downloadable' => 'nullable|boolean',
             'downloadable_file' => 'nullable|string',
             'meta_title' => 'nullable|string|max:60',
@@ -187,6 +190,7 @@ class ProductController extends Controller
             'variants' => 'nullable|array',
             'variant_combinations' => 'nullable|array',
             'custom_fields' => 'nullable|array',
+            'quick_specs' => 'nullable|array',
         ], [], [
             'name' => __('Product Name'),
             'sku' => __('SKU'),
@@ -196,31 +200,52 @@ class ProductController extends Controller
             'stock' => __('Stock Quantity'),
         ]);
         
+        // Store isolation: category must belong to this store
+        $categoryValid = Category::where('id', $request->category_id)->where('store_id', $currentStoreId)->exists();
+        if (!$categoryValid) {
+            return redirect()->back()->withErrors(['category_id' => __('Invalid category.')])->withInput();
+        }
+
         $normalizedImages = trim((string) $request->images);
         $firstImage = explode(',', $normalizedImages)[0] ?? '';
-        // Sanitize description: replace <br> tags with newlines (biddimarket import fix)
         $sanitizedDescription = $request->description !== null ? preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description) : null;
+        // quick_specs is a structured helper for the new UX; persist as JSON-encoded specifications
+        $quickSpecs = $request->input('quick_specs');
+        $specsFromQuick = null;
+        if (is_array($quickSpecs) && count($quickSpecs) > 0) {
+            $filtered = array_values(array_filter($quickSpecs, fn($s) => is_array($s) && trim($s['key'] ?? '') !== ''));
+            if (count($filtered) > 0) $specsFromQuick = json_encode($filtered, JSON_UNESCAPED_UNICODE);
+        }
         $product = new Product();
         $product->name = $request->name;
         $product->sku = $request->sku;
         $product->barcode = $request->barcode;
         $product->description = $sanitizedDescription;
         $product->short_description = $request->short_description;
-        $product->specifications = $request->specifications;
+        $product->specifications = $specsFromQuick ?? $request->specifications;
         $product->details = $request->details;
         $product->price = $request->price;
         $product->sale_price = $request->sale_price;
+        $product->cost_price = $request->cost_price;
         $product->stock = $request->stock;
-        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : ($product->low_stock_warning ?? 5);
-        $product->track_inventory = $request->has('track_inventory') ? $request->track_inventory : true;
-        $product->allow_backorder = $request->has('allow_backorder') ? $request->allow_backorder : false;
+        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : 5;
+        $product->track_inventory = $request->has('track_inventory') ? (bool)$request->track_inventory : true;
+        $product->allow_backorder = $request->has('allow_backorder') ? (bool)$request->allow_backorder : false;
         $product->cover_image = trim($firstImage);
         $product->images = $normalizedImages;
         $product->category_id = $request->category_id;
         $product->tax_id = $request->tax_id;
         $product->store_id = $currentStoreId;
-        $product->is_active = $request->has('is_active') ? $request->is_active : true;
-        $product->is_downloadable = $request->has('is_downloadable') ? $request->is_downloadable : false;
+        // Draft support: is_published=false => is_active=false ; is_active takes precedence if both sent
+        if ($request->has('is_active')) {
+            $product->is_active = (bool)$request->is_active;
+        } elseif ($request->has('is_published')) {
+            $product->is_active = (bool)$request->is_published;
+        } else {
+            $product->is_active = true;
+        }
+        $product->is_tax_included = $request->has('is_tax_included') ? (bool)$request->is_tax_included : true;
+        $product->is_downloadable = $request->has('is_downloadable') ? (bool)$request->is_downloadable : false;
         $product->downloadable_file = $request->downloadable_file;
         $product->meta_title = $request->meta_title;
         $product->meta_description = $request->meta_description;
@@ -230,7 +255,6 @@ class ProductController extends Controller
         $product->custom_fields = $request->custom_fields;
         $product->save();
         
-        // Dispatch ProductCreated event for webhooks
         event(new \App\Events\ProductCreated($product));
         
         return redirect()->route('products.index')->with('success', __('Product created successfully'));
@@ -304,7 +328,6 @@ class ProductController extends Controller
         
         $product = Product::where('store_id', $currentStoreId)->findOrFail($id);
         
-        // Validation
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:100',
@@ -315,6 +338,7 @@ class ProductController extends Controller
             'details' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'sale_price' => 'nullable|numeric|min:0',
+            'cost_price' => 'nullable|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'low_stock_warning' => 'nullable|integer|min:0',
             'track_inventory' => 'nullable|boolean',
@@ -323,6 +347,8 @@ class ProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'tax_id' => 'nullable|exists:taxes,id',
             'is_active' => 'nullable|boolean',
+            'is_published' => 'nullable|boolean',
+            'is_tax_included' => 'nullable|boolean',
             'is_downloadable' => 'nullable|boolean',
             'downloadable_file' => 'nullable|string',
             'meta_title' => 'nullable|string|max:60',
@@ -331,6 +357,7 @@ class ProductController extends Controller
             'variants' => 'nullable|array',
             'variant_combinations' => 'nullable|array',
             'custom_fields' => 'nullable|array',
+            'quick_specs' => 'nullable|array',
         ], [], [
             'name' => __('Product Name'),
             'sku' => __('SKU'),
@@ -340,13 +367,27 @@ class ProductController extends Controller
             'stock' => __('Stock Quantity'),
         ]);
 
+        // Store isolation: category must belong to this store
+        $categoryValid = Category::where('id', $request->category_id)->where('store_id', $currentStoreId)->exists();
+        if (!$categoryValid) {
+            return redirect()->back()->withErrors(['category_id' => __('Invalid category.')])->withInput();
+        }
+
         $normalizedImages = trim((string) $request->images);
         $firstImage = explode(',', $normalizedImages)[0] ?? '';
         
-        // Check if trying to activate product
-        $newIsActive = $request->has('is_active') ? $request->is_active : $product->is_active;
+        $quickSpecs = $request->input('quick_specs');
+        $specsFromQuick = null;
+        if (is_array($quickSpecs)) {
+            $filtered = array_values(array_filter($quickSpecs, fn($s) => is_array($s) && trim($s['key'] ?? '') !== ''));
+            if (count($filtered) > 0) $specsFromQuick = json_encode($filtered, JSON_UNESCAPED_UNICODE);
+        }
+        $effectiveSpecifications = $specsFromQuick !== null ? $specsFromQuick : ($request->has('specifications') ? $request->specifications : $product->specifications);
+        // Determine new active state: is_active takes precedence, else is_published
+        $newIsActive = $product->is_active;
+        if ($request->has('is_active')) $newIsActive = (bool)$request->is_active;
+        elseif ($request->has('is_published')) $newIsActive = (bool)$request->is_published;
         if ($newIsActive && !$product->is_active) {
-            // Product is being activated, check plan limits
             $companyUser = $user->type === 'company' ? $user : $user->creator;
             if ($companyUser && $companyUser->plan) {
                 $maxProducts = $companyUser->plan->max_products_per_store ?? 0;
@@ -355,7 +396,6 @@ class ProductController extends Controller
                         ->where('is_active', true)
                         ->where('id', '!=', $product->id)
                         ->count();
-                    
                     if ($activeProducts >= $maxProducts) {
                         return redirect()->back()->with('error', __('Cannot activate product. You have reached your plan limit of :max products per store. Please upgrade your plan or deactivate another product first.', ['max' => $maxProducts]));
                     }
@@ -363,34 +403,35 @@ class ProductController extends Controller
             }
         }
         
-        // Sanitize description: replace <br> tags with newlines (biddimarket import fix)
         $sanitizedDescription = $request->has('description') && $request->description !== null ? preg_replace('/<br\s*\/?>/i', "\n", (string) $request->description) : $product->description;
         $product->name = $request->name;
         $product->sku = $request->sku;
         $product->barcode = $request->barcode;
         $product->description = $sanitizedDescription;
-        $product->short_description = $request->short_description ?? $product->short_description;
-        $product->specifications = $request->specifications ?? $product->specifications;
-        $product->details = $request->details ?? $product->details;
+        $product->short_description = $request->has('short_description') ? $request->short_description : $product->short_description;
+        $product->specifications = $effectiveSpecifications;
+        $product->details = $request->has('details') ? $request->details : $product->details;
         $product->price = $request->price;
         $product->sale_price = $request->sale_price;
+        $product->cost_price = $request->has('cost_price') ? $request->cost_price : $product->cost_price;
         $product->stock = $request->stock;
-        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : ($product->low_stock_warning ?? 5);
-        $product->track_inventory = $request->has('track_inventory') ? $request->track_inventory : true;
-        $product->allow_backorder = $request->has('allow_backorder') ? $request->allow_backorder : false;
+        $product->low_stock_warning = $request->has('low_stock_warning') ? $request->low_stock_warning : $product->low_stock_warning;
+        $product->track_inventory = $request->has('track_inventory') ? (bool)$request->track_inventory : $product->track_inventory;
+        $product->allow_backorder = $request->has('allow_backorder') ? (bool)$request->allow_backorder : $product->allow_backorder;
         $product->cover_image = trim($firstImage);
         $product->images = $normalizedImages;
         $product->category_id = $request->category_id;
         $product->tax_id = $request->tax_id;
         $product->is_active = $newIsActive;
-        $product->is_downloadable = $request->has('is_downloadable') ? $request->is_downloadable : $product->is_downloadable;
-        $product->downloadable_file = $request->downloadable_file;
-        $product->meta_title = $request->meta_title;
-        $product->meta_description = $request->meta_description;
-        $product->seo_url_slug = $request->seo_url_slug;
-        $product->variants = $request->variants;
-        $product->variant_combinations = $request->variant_combinations;
-        $product->custom_fields = $request->custom_fields;
+        $product->is_tax_included = $request->has('is_tax_included') ? (bool)$request->is_tax_included : $product->is_tax_included;
+        $product->is_downloadable = $request->has('is_downloadable') ? (bool)$request->is_downloadable : $product->is_downloadable;
+        $product->downloadable_file = $request->has('downloadable_file') ? $request->downloadable_file : $product->downloadable_file;
+        $product->meta_title = $request->has('meta_title') ? $request->meta_title : $product->meta_title;
+        $product->meta_description = $request->has('meta_description') ? $request->meta_description : $product->meta_description;
+        $product->seo_url_slug = $request->has('seo_url_slug') ? $request->seo_url_slug : $product->seo_url_slug;
+        $product->variants = $request->has('variants') ? $request->variants : $product->variants;
+        $product->variant_combinations = $request->has('variant_combinations') ? $request->variant_combinations : $product->variant_combinations;
+        $product->custom_fields = $request->has('custom_fields') ? $request->custom_fields : $product->custom_fields;
         $product->save();
         
         return redirect()->route('products.index')->with('success', __('Product updated successfully'));
