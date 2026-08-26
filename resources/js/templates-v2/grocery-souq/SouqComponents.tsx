@@ -240,14 +240,14 @@ export function SouqHero({ banners }: { banners: any[] }) {
       </section>
     );
   }
-  const fallback = [
-    { image: '/images/store/banner-store.jpg', title: 'أول طلب', subtitle: '' },
-    { image: '/images/store/banner-store.jpg', title: 'كل أغراض البيت', subtitle: '' },
-  ];
-  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider') && hero.images.length > 0
+  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && hero.images.length > 0
     ? hero.images.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
-    : null;
-  const slides = dynamicSlides ?? (banners.length > 0 ? banners : fallback);
+    : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && hero.images.length === 0
+      ? [{ title: hero.heading, subtitle: hero.subtitle, image: '', button_text: hero.ctaLabel, button_link: hero.ctaLink }]
+      : null;
+  const rawSlides = dynamicSlides ?? (banners.length > 0 ? banners : []);
+  if (rawSlides.length === 0) return null;
+  const slides = rawSlides;
   const normalized = slides.map((b: any) => ({
     image: b.image || b.src || '/images/store/vegetables.jpg',
     title: b.title || b.heading || '',

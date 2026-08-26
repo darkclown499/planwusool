@@ -114,10 +114,12 @@ export function RestaurantHero({ banner }: { banner?: any }) {
   const hero = useResolvedHero();
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
+  if (!hero.hasDynamicHero && !hasBanner) return null;
   const effective = {
-    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
-    title: hero.heading || banner?.title || 'من قائمة الشيف',
-    subtitle: hero.subtitle || banner?.subtitle || 'مشاوي على الفحم • توابل بيتية • خبز التنور',
+    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || '',
+    title: hero.heading || banner?.title || '',
+    subtitle: hero.subtitle || banner?.subtitle || '',
   };
   if (isVideo) {
     const vidSrc = getHeroImageUrl(hero.videoUrl);

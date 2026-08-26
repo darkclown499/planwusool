@@ -140,11 +140,13 @@ export function BakeryHero({ banner }: { banner?: any }) {
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const heroImg = hero.hasDynamicHero && hero.images.length > 0 ? hero.images[0] : null;
+  const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
+  if (!hero.hasDynamicHero && !hasBanner) return null;
   const effective = {
-    image: heroImg || banner?.image || '/images/store/bakery.jpg',
-    title: hero.heading || banner?.title || 'من فرننا الدافئ… إلى مائدتك',
-    subtitle: hero.subtitle || banner?.subtitle || 'مخبوزات طازجة كل يوم',
-    button_text: hero.ctaLabel || banner?.button_text || 'اكتشف تشكيلة اليوم',
+    image: heroImg || banner?.image || '',
+    title: hero.heading || banner?.title || '',
+    subtitle: hero.subtitle || banner?.subtitle || '',
+    button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#bakery-best',
   };
   if (isVideo) {

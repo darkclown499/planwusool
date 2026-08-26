@@ -11,15 +11,18 @@ import { computeCartTotals, discountPercent, isVariableProduct, usePriceFormatte
 /* and WhatsApp checkout for the neighborhood souq.                       */
 /* ===================================================================== */
 
-const FREE_SHIPPING_AT = 150;
+const FALLBACK_FREE_SHIPPING = 150;
 const BIDDI_YELLOW = '#FFC20E';
 const BIDDI_BLACK = '#0F1620';
 
 export function SouqCartDrawer({ onClose, onCheckout, onProductClick }: any) {
-  const { cart, config } = useStorefrontCore();
+  const { cart, config, content } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
   const items = cart.cartItems || [];
   const totals = computeCartTotals(items);
+  const rawThreshold = (content as any)?.free_shipping_threshold ?? (content as any)?.freeShippingThreshold ?? (content as any)?.settings?.free_shipping_threshold ?? FALLBACK_FREE_SHIPPING;
+  const thresholdNum = Number(rawThreshold);
+  const effectiveThreshold = Number.isFinite(thresholdNum) && thresholdNum > 0 ? thresholdNum : FALLBACK_FREE_SHIPPING;
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -28,7 +31,7 @@ export function SouqCartDrawer({ onClose, onCheckout, onProductClick }: any) {
     };
   }, []);
 
-  const remainingForShipping = Math.max(0, FREE_SHIPPING_AT - totals.subtotal);
+  const remainingForShipping = Math.max(0, effectiveThreshold - totals.subtotal);
   const waPhone = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || '').replace(/[^0-9]/g, '');
 
   const orderWhatsapp = () => {

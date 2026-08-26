@@ -46,6 +46,9 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
   if (effectiveVisible === false) return null;
 
   const hasSingleText = typeof effectiveText === 'string' && (effectiveText as string).trim().length > 0;
+  // When merchant has not set announcement text and no explicit messages prop is
+  // passed (live storefront: <AnnouncementBar />), hide instead of leaking demo copy.
+  if (!hasSingleText && (!messages || messages.length === 0)) return null;
   const items = hasSingleText
     ? [(effectiveText as string).trim()]
     : (messages && messages.length > 0 ? messages.filter(Boolean) : DEFAULT_MESSAGES);

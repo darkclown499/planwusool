@@ -112,11 +112,13 @@ export function useResolvedHero(): ResolvedHero {
     return [];
   })();
 
-  const hasDynamicHero = !!heroType && (
+  const textOnlyHero = !!(heroHeading || heroSubtitle || heroCtaLabel);
+  const hasDynamicHero = (
     (heroType === 'video' && !!storeHero?.video_url) ||
     (heroType === 'youtube' && !!storeHero?.youtube_url) ||
     ((heroType === 'image' || heroType === 'slider' || heroType === 'image_slider') && heroImages.length > 0) ||
-    !!(heroHeading || heroSubtitle || heroCtaLabel)
+    (heroType && textOnlyHero) ||
+    (!heroType && textOnlyHero)
   );
 
   const youtubeId = heroType === 'youtube' && storeHero?.youtube_url ? extractYouTubeId(String(storeHero.youtube_url)) : null;

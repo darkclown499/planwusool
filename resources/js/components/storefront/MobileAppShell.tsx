@@ -204,6 +204,7 @@ export const MobileAppShell: React.FC = () => {
             badge={cartItems.length}
             onClick={handleCartClick}
           />
+          {customerAccountsEnabled && (
           <TabButton
             id="orders"
             label={t('طلباتي')}
@@ -212,6 +213,7 @@ export const MobileAppShell: React.FC = () => {
             accent={accent}
             onClick={() => openAccount(() => setShowOrdersModal(true))}
           />
+          )}
           {customerAccountsEnabled && (
           <TabButton
             id="account"

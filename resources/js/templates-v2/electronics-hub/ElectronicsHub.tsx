@@ -159,11 +159,13 @@ export function HubHero({ banner }: { banner?: any }) {
   const hero = useResolvedHero();
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
+  if (!hero.hasDynamicHero && !hasBanner) return null;
   const effective = {
-    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || '/images/store/electronics.jpg',
-    title: hero.heading || banner?.title || 'تقنية تليق بك',
-    subtitle: hero.subtitle || banner?.subtitle || 'إصدارات 2026 وصلت',
-    button_text: hero.ctaLabel || banner?.button_text || 'تصفح عروض اليوم',
+    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || '',
+    title: hero.heading || banner?.title || '',
+    subtitle: hero.subtitle || banner?.subtitle || '',
+    button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
   };
   if (isVideo) {

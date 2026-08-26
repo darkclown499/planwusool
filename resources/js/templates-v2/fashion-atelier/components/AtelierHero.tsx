@@ -117,11 +117,13 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
     return [];
   })();
 
-  const hasDynamicHero = !!heroType && (
+  const textOnlyHero = !!(heroHeading || heroSubtitle || heroCtaLabel);
+  const hasDynamicHero = (
     (heroType === 'video' && !!storeHero?.video_url) ||
     (heroType === 'youtube' && !!storeHero?.youtube_url) ||
     ((heroType === 'image' || heroType === 'slider' || heroType === 'image_slider') && heroImages.length > 0) ||
-    (heroHeading || heroSubtitle || heroCtaLabel)
+    (heroType && textOnlyHero) ||
+    (!heroType && textOnlyHero)
   );
 
   const youtubeId = heroType === 'youtube' && storeHero?.youtube_url ? extractYouTubeId(String(storeHero.youtube_url)) : null;
@@ -130,8 +132,13 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const heroBg = (storeSettings as any)?.hero_images?.[0] ?? heroImages[0] ?? null;
   const heroBgUrl = heroBg ? (() => { try { return getImageUrl(String(heroBg).trim().replace(/\/+$/, '')); } catch { return String(heroBg); } })() : null;
 
-  // Fallback to static slides when no dynamic hero is configured — when dynamic hero has empty text, do NOT fallback to hardcoded text
-  const list = hasDynamicHero && heroType === 'image' && heroImages.length > 0
+  // Slider/image: use merchant images when available; otherwise fall back to legacy
+  // banners. Never show hardcoded FALLBACK_SLIDES on a merchant empty store.
+  const isSliderType = heroType === 'image' || heroType === 'slider' || heroType === 'image_slider' || !heroType;
+  const syntheticTextSlide = textOnlyHero && heroImages.length === 0 && !heroType
+    ? [{ title: heroHeading || '', subtitle: heroSubtitle || '', image: '', button_text: heroCtaLabel || '', button_link: heroCtaLink || '#atelier-new' } as HeroSlide]
+    : null;
+  const list = hasDynamicHero && isSliderType && heroImages.length > 0
     ? heroImages.map((img) => ({
         title: heroHeading || '',
         subtitle: heroSubtitle || '',
@@ -139,7 +146,9 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
         button_text: heroCtaLabel || '',
         button_link: heroCtaLink || '#atelier-new',
       }))
-    : (slides && slides.length > 0 ? slides : FALLBACK_SLIDES).filter((s) => s.image || s.title);
+    : syntheticTextSlide
+      ? syntheticTextSlide
+      : (slides && slides.length > 0 ? slides : []).filter((s) => s.image || s.title);
 
   const [index, setIndex] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);

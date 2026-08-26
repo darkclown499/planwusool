@@ -10,14 +10,14 @@ interface AtelierCartDrawerProps {
   onProductClick: (product: any) => void;
 }
 
-const FREE_SHIPPING_THRESHOLD = 250;
+const FALLBACK_FREE_SHIPPING = 250;
 
 /**
  * The Atelier cart drawer. Slides in with an ivory panel, shows live
  * free-shipping progress, per-item variant chips and quiet qty steppers.
  */
 export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, onCheckout, onProductClick }) => {
-  const { cart, config } = useStorefrontCore();
+  const { cart, config, content } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
 
   useEffect(() => {
@@ -29,7 +29,9 @@ export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, o
 
   const items = cart.cartItems || [];
   const totals = computeCartTotals(items);
-  const shipping = freeShippingProgress(totals.subtotal, FREE_SHIPPING_THRESHOLD);
+  const rawThreshold = content?.free_shipping_threshold ?? content?.freeShippingThreshold ?? (content as any)?.settings?.free_shipping_threshold ?? FALLBACK_FREE_SHIPPING;
+  const thresholdNum = Number(rawThreshold);
+  const shipping = Number.isFinite(thresholdNum) && thresholdNum > 0 ? freeShippingProgress(totals.subtotal, thresholdNum) : null;
   const waPhone = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || '').replace(/[^0-9]/g, '');
 
   const orderViaWhatsApp = () => {

@@ -122,12 +122,15 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
 
 export function BazaarHero({ banners }: { banners: any[] }) {
   const hero = useResolvedHero();
-  const fallbackSlides = [{ title: 'كل احتياجاتك في مكان واحد', subtitle: 'شحن سريع لجميع المدن', image: '/images/store/banner-store.jpg', button_text: 'ابدأ التسوق' }];
   // Prefer dynamic hero images when merchant saved them via Designer, fallback to legacy content.banners
-  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider') && hero.images.length > 0
+  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && hero.images.length > 0
     ? hero.images.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
-    : null;
-  const slides = dynamicSlides ?? (banners.length > 0 ? banners : fallbackSlides);
+    : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && hero.images.length === 0
+      ? [{ title: hero.heading, subtitle: hero.subtitle, image: '', button_text: hero.ctaLabel, button_link: hero.ctaLink }]
+      : null;
+  const rawSlides = dynamicSlides ?? (banners.length > 0 ? banners : []);
+  if (rawSlides.length === 0 && !hero.hasDynamicHero) return null;
+  const slides = rawSlides.length > 0 ? rawSlides : dynamicSlides ?? [];
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const [i, setI] = useState(0);
