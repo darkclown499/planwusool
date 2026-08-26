@@ -184,52 +184,8 @@ export function DishModal({ product, onClose }: any) {
 }
 
 export function RestaurantSearchOverlay({ onClose, onProductClick }: any) {
-  const { product } = useStorefrontCore();
-  const formatPrice = usePriceFormatter();
-  const [q, setQ] = useState('');
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  const results = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    if (query.length < 2) return [];
-    return (product?.products || []).filter((p: any) => String(p.name || '').toLowerCase().includes(query)).slice(0, 12);
-  }, [q, product?.products]);
-
-  return (
-    <div className="fixed inset-0 z-[80] bg-black/70 p-4 pt-16 backdrop-blur-sm" dir="rtl" role="dialog" aria-modal="true">
-      <div className="mx-auto max-w-xl overflow-hidden rounded-2xl bg-[#211a15] shadow-2xl ring-1 ring-[#4a3e33]">
-        <div className="flex items-center gap-3 border-b border-[#3d332b] px-5 py-4">
-          <Search className="h-5 w-5 text-[#f59e0b]" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث في القائمة… مشاوي، مقبلات، مشروبات"
-            className="w-full bg-transparent font-serif text-lg font-bold text-[#f5e7c8] placeholder:text-[#6b5c48] focus:outline-none" />
-          <button type="button" onClick={onClose} aria-label="إغلاق" className="rounded-full p-1 text-[#a89478] hover:text-[#fbbf24]">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <ul className="max-h-[55vh] overflow-y-auto p-2">
-          {results.map((p: any) => (
-            <li key={p.id}>
-              <button type="button" onClick={() => { onClose(); onProductClick(p); }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start transition hover:bg-[#2e2620]">
-                <img src={getImageUrl(p.image || '')} alt="" className="h-11 w-11 rounded-lg object-cover" loading="lazy" />
-                <span className="min-w-0 flex-1 truncate font-serif text-sm font-bold text-[#f5e7c8]">{p.name}</span>
-                <span className="text-sm font-black text-[#f59e0b]">{formatPrice(p.price)}</span>
-              </button>
-            </li>
-          ))}
-          {q.trim().length >= 2 && results.length === 0 && (
-            <li className="px-4 py-10 text-center font-serif text-[#a89478]">ما في طبق بهالاسم… جرّب شي ثاني</li>
-          )}
-        </ul>
-      </div>
-    </div>
-  );
+  const { SearchSheet } = require('../shared/SearchSheet');
+  return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#f59e0b" placeholder="ابحث في القائمة… مشاوي، مقبلات، مشروبات" variant="restaurant" />;
 }
 
 export const restaurantOverlays = {

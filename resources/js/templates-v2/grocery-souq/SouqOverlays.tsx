@@ -212,62 +212,12 @@ export function SouqProductSheet({ product, onClose }: any) {
   );
 }
 
-/* --------------------------- Search overlay --------------------------- */
-
+/* --------------------------- Search overlay — grocery dense/fast-shopping --------------------------- */
+// Shared contract: useServerSearch -> api/storefront/search with store_id, debounce, abort; no String(p.name).toLowerCase().includes client-only filter
 export function SouqSearchOverlay({ onClose, onProductClick }: any) {
-  const formatPrice = usePriceFormatter();
-  const [q, setQ] = useState('');
-  // Shared server search — store scope, active only, SKU/name/description, debounce/abort
-  const { results: serverResults, loading, error } = (() => {
-    try {
-      const { useServerSearch } = require('@/hooks/useServerSearch');
-      return useServerSearch(q, 12);
-    } catch { return { results: null, loading: false, error: null } as any; }
-  })();
-  const results: any[] = Array.isArray(serverResults) ? serverResults : [];
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  return (
-    <div className="fixed inset-0 z-[80] bg-black/50 p-4 pt-20" dir="rtl" role="dialog" aria-modal="true">
-      <div className="mx-auto max-w-xl overflow-hidden rounded-[18px] bg-white shadow-2xl ring-1 ring-black/5" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-2 border-b border-black/5 px-4 py-3">
-          <Search className="h-5 w-5 text-[#FFC20E]" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="شنو تدور عليه؟"
-            className="w-full bg-transparent text-base font-semibold text-stone-800 focus:outline-none" />
-          <button type="button" onClick={onClose} aria-label="إغلاق" className="rounded-full p-1 text-stone-400 hover:text-stone-700">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <ul className="max-h-[55vh] overflow-y-auto">
-          {q.trim().length >= 2 && loading ? (
-            <li className="py-8 text-center text-sm text-stone-500">جارٍ البحث…</li>
-          ) : error ? (
-            <li className="py-8 text-center text-sm text-red-500">{error}</li>
-          ) : (
-            results.map((p: any) => (
-              <li key={p.id}>
-                <button type="button" onClick={() => { onClose(); onProductClick(p); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-start transition hover:bg-[#FFC20E]/10">
-                  <img src={getImageUrl(p.image || '')} alt="" className="h-11 w-11 rounded-xl object-cover ring-1 ring-black/5" loading="lazy" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-bold text-stone-700">{p.name}</span>
-                  <span className="text-sm font-black text-[#0F1620]">{formatPrice(p.price)}</span>
-                </button>
-              </li>
-            ))
-          )}
-          {q.trim().length >= 2 && !loading && !error && results.length === 0 && (
-            <li className="px-4 py-8 text-center text-sm text-stone-400">ما لقينا شي مطابق لـ «{q}»</li>
-          )}
-        </ul>
-      </div>
-    </div>
-  );
+  // useServerSearch delegated via SearchSheet -> api/storefront/search
+  const { SearchSheet } = require('../shared/SearchSheet');
+  return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#FFC20E" placeholder="شنو تدور عليه؟" variant="grocery" />;
 }
 
 export const souqOverlays = {

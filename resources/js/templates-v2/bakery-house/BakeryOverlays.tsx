@@ -183,52 +183,8 @@ export function BakeryProductModal({ product, onClose }: any) {
 }
 
 export function BakerySearchOverlay({ onClose, onProductClick }: any) {
-  const { product } = useStorefrontCore();
-  const formatPrice = usePriceFormatter();
-  const [q, setQ] = useState('');
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  const results = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    if (query.length < 2) return [];
-    return (product?.products || []).filter((p: any) => String(p.name || '').toLowerCase().includes(query)).slice(0, 10);
-  }, [q, product?.products]);
-
-  return (
-    <div className="fixed inset-0 z-[80] bg-[#3b2412]/55 p-4 pt-20 backdrop-blur-sm" dir="rtl" role="dialog" aria-modal="true">
-      <div className="mx-auto max-w-xl overflow-hidden rounded-2xl bg-[#fdf6ec] shadow-2xl">
-        <div className="flex items-center gap-3 border-b border-[#eaddcf] px-5 py-4">
-          <Search className="h-5 w-5 text-[#b45309]" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث في رفوف المخبز… خبز، كعك، كنافة"
-            className="w-full bg-transparent font-serif text-lg font-bold text-[#5d3a21] placeholder:text-[#c8a887] focus:outline-none" />
-          <button type="button" onClick={onClose} aria-label="إغلاق" className="rounded-full p-1 text-[#b08d6a] hover:text-[#78350f]">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <ul className="max-h-[55vh] overflow-y-auto p-2">
-          {results.map((p: any) => (
-            <li key={p.id}>
-              <button type="button" onClick={() => { onClose(); onProductClick(p); }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start transition hover:bg-white">
-                <img src={getImageUrl(p.image || '')} alt="" className="h-12 w-12 rounded-lg object-cover" loading="lazy" />
-                <span className="min-w-0 flex-1 truncate font-serif text-sm font-bold text-[#5d3a21]">{p.name}</span>
-                <span className="text-sm font-black text-[#b45309]">{formatPrice(p.price)}</span>
-              </button>
-            </li>
-          ))}
-          {q.trim().length >= 2 && results.length === 0 && (
-            <li className="px-4 py-10 text-center font-serif text-[#b08d6a]">ما وجدنا «{q}» على الرفوف… جرّب كلمة ثانية</li>
-          )}
-        </ul>
-      </div>
-    </div>
-  );
+  const { SearchSheet } = require('../shared/SearchSheet');
+  return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#b45309" placeholder="ابحث في رفوف المخبز… خبز، كعك، كنافة" variant="bakery" />;
 }
 
 export const bakeryOverlays = {

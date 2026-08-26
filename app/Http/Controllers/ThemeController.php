@@ -756,6 +756,108 @@ class ThemeController extends Controller
     }
 
     /**
+     * Storefront search results page — GET /search?q=اندومي on store subdomain.
+     * Store-scoped, active products only, active categories only, server-authoritative,
+     * paginated, supports sort/filter. Renders Inertia store/search page reusing
+     * same chrome as category/home.
+     */
+    public function search($storeSlug, ?Request $request = null)
+    {
+        $store = $this->getStore($storeSlug, $request);
+        $storeData = $this->getStoreConfig($store);
+        $storeModel = Store::find($store['id']);
+        $theme = $store['theme'] ?? Store::DEFAULT_TEMPLATE;
+        $locale = $storeData['config']['locale'] ?? 'ar';
+
+        $raw = trim((string) ($request ? $request->input('q', $request->input('query', '')) : ''));
+        $q = $raw === '' ? '' : mb_substr(preg_replace('/\s+/', ' ', trim(strip_tags($raw))), 0, 100);
+        $q = trim($q);
+
+        // Categories for header chrome
+        $categories = \Illuminate\Support\Facades\Cache::remember(
+            "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
+            300,
+            function () use ($store) {
+                return Category::where('store_id', $store['id'])
+                    ->where('is_active', true)
+                    ->whereNull('parent_id')
+                    ->withCount(['products' => fn($q) => $q->where('is_active', true)])
+                    ->orderBy('sort_order')->orderBy('name')->orderBy('id')
+                    ->get()->map(fn($cat)=>['id'=>(string)$cat->id,'name'=>$cat->name,'slug'=>$cat->slug,'image'=>$cat->image?:null,'description'=>$cat->description,'product_count'=>$cat->products_count])->values();
+            }
+        );
+
+        // If query too short, return empty paginated state (still renders page with empty state)
+        $products = collect([]);
+        $paginator = null;
+        $total = 0;
+        $currentPage = 1;
+        $lastPage = 1;
+        $perPage = 12;
+        if (mb_strlen($q) >= 2) {
+            $perPage = max(6, min((int)($request?->input('per_page', 12) ?? 12), 24));
+            $sort = $request?->input('sort', 'relevance');
+            if (!in_array($sort, ['relevance','price_asc','price_desc','newest','name'], true)) $sort = 'relevance';
+            $categoryFilter = $request?->input('category');
+            $availabilityFilter = $request?->input('availability'); // all|in_stock|out_of_stock
+            $onSaleFilter = $request?->boolean('on_sale');
+
+            $query = Product::where('store_id', $store['id'])
+                ->where('is_active', true)
+                ->where(function($wq) use ($q){
+                    $wq->where(fn($s)=> $s->where('name','like',"%{$q}%")->orWhere('sku','like',"%{$q}%")->orWhere('short_description','like',"%{$q}%")->orWhere('description','like',"%{$q}%"));
+                    $wq->where(fn($catFilter)=> $catFilter->whereNull('category_id')->orWhereHas('category', fn($cq)=>$cq->where('is_active', true)));
+                });
+            if ($categoryFilter) $query->where('category_id', $categoryFilter);
+            if ($onSaleFilter) $query->whereNotNull('sale_price')->whereRaw('sale_price > 0 AND sale_price < price');
+            switch($sort){
+                case 'price_asc': $query->orderByRaw('COALESCE(NULLIF(sale_price,0), price) ASC'); break;
+                case 'price_desc': $query->orderByRaw('COALESCE(NULLIF(sale_price,0), price) DESC'); break;
+                case 'newest': $query->orderBy('created_at','desc'); break;
+                case 'name': $query->orderBy('name'); break;
+                default: $query->orderBy('created_at','desc');
+            }
+            $paginator = $query->paginate($perPage)->withQueryString();
+            $products = collect($paginator->items())->map(function($p){
+                $catalog = $this->formatFullProduct($p);
+                unset($catalog['description'],$catalog['customFields'],$catalog['taxName'],$catalog['taxPercentage']);
+                return $catalog;
+            })->values();
+            // variant-aware availability post-filter
+            if ($availabilityFilter === 'in_stock') $products = $products->filter(fn($pr)=> $pr['availability'] !== 'out_of_stock')->values();
+            elseif ($availabilityFilter === 'out_of_stock') $products = $products->filter(fn($pr)=> $pr['availability'] === 'out_of_stock')->values();
+
+            $total = $paginator->total();
+            $currentPage = $paginator->currentPage();
+            $lastPage = $paginator->lastPage();
+        }
+
+        $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
+
+        return Inertia::render('store/search', array_merge(
+            $this->storefrontViewProps($store, $storeData, $storeModel, $theme, $categories, collect([]), $request),
+            [
+                'action' => $this->resolveAction(),
+                'wishlistCount' => $this->getWishlistCount($store['id']),
+                'searchPage' => [
+                    'query' => $q,
+                    'rawQuery' => $raw,
+                    'products' => $products,
+                    'total' => $total,
+                    'perPage' => $perPage,
+                    'currentPage' => $currentPage,
+                    'lastPage' => $lastPage,
+                    'sort' => $request?->input('sort','relevance') ?? 'relevance',
+                    'category' => $request?->input('category'),
+                    'availability' => $request?->input('availability','all'),
+                    'onSale' => (bool)($request?->boolean('on_sale') ?? false),
+                ],
+            ],
+            $this->getCommonData()
+        ));
+    }
+
+    /**
      * On-demand product details for the storefront detail modal. Keeps heavy
      * fields (description, customFields, tax) out of the initial page payload.
      */

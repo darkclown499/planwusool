@@ -78,6 +78,12 @@ export function SouqHeader() {
     if (Array.isArray(serverResults)) return serverResults.slice(0, 7);
     return [];
   }, [serverResults]);
+  const submitHeaderSearch = () => {
+    try {
+      const { submitStorefrontSearch } = require('@/hooks/useServerSearch');
+      submitStorefrontSearch(q);
+    } catch { window.location.assign(`/search?q=${encodeURIComponent(q.trim())}`); }
+  };
 
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const storeName = config?.storeName || store?.name || 'المتجر';
@@ -123,20 +129,21 @@ export function SouqHeader() {
             </button>
           </div>
         </div>
-        {/* Mobile second row: prominent search */}
+        {/* Mobile second row: prominent search — Enter / button submit -> /search?q= */}
         <div className="relative">
-          <form onSubmit={(e) => e.preventDefault()} className="relative flex h-11 items-center overflow-hidden rounded-full bg-white px-4 shadow-sm ring-1 ring-black/5">
+          <form onSubmit={(e) => { e.preventDefault(); submitHeaderSearch(); }} className="relative flex h-11 items-center overflow-hidden rounded-full bg-white px-4 shadow-sm ring-1 ring-black/5">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="ابحث في المتجر"
+              enterKeyHint="search"
               className="w-full bg-transparent text-sm font-medium text-stone-800 placeholder:text-stone-400 focus:outline-none"
             />
-            <span className="pointer-events-none absolute left-3 text-stone-400">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </span>
+            <button type="submit" aria-label="بحث" className="absolute left-3 flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </button>
             {q && (
-              <button type="button" onClick={() => setQ('')} aria-label="مسح" className="absolute left-9 text-stone-400 hover:text-stone-600">
+              <button type="button" onClick={() => setQ('')} aria-label="مسح" className="absolute left-11 text-stone-400 hover:text-stone-600">
                 <X className="h-4 w-4" />
               </button>
             )}
@@ -221,18 +228,19 @@ export function SouqHeader() {
         </div>
         <div className="mx-auto flex max-w-[1600px] items-center gap-2 px-3 pb-3 lg:px-6 lg:pb-4">
           <div className="relative flex-1">
-            <form onSubmit={(e) => e.preventDefault()} className="relative flex h-10 items-center overflow-hidden rounded-full bg-white px-4 shadow-sm ring-1 ring-black/5">
+            <form onSubmit={(e) => { e.preventDefault(); submitHeaderSearch(); }} className="relative flex h-10 items-center overflow-hidden rounded-full bg-white px-4 shadow-sm ring-1 ring-black/5">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="ابحث في المتجر"
+                enterKeyHint="search"
                 className="w-full bg-transparent text-sm font-medium text-stone-800 placeholder:text-stone-400 focus:outline-none"
               />
-              <span className="pointer-events-none absolute left-3 text-stone-400">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              </span>
+              <button type="submit" aria-label="بحث" className="absolute left-3 flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </button>
               {q && (
-                <button type="button" onClick={() => setQ('')} aria-label="مسح" className="absolute left-9 text-stone-400 hover:text-stone-600">
+                <button type="button" onClick={() => setQ('')} aria-label="مسح" className="absolute left-11 text-stone-400 hover:text-stone-600">
                   <X className="h-4 w-4" />
                 </button>
               )}

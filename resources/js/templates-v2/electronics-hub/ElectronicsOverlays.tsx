@@ -219,52 +219,8 @@ export function HubProductModal({ product, onClose }: any) {
 }
 
 export function HubSearchOverlay({ onClose, onProductClick }: any) {
-  const { product } = useStorefrontCore();
-  const formatPrice = usePriceFormatter();
-  const [q, setQ] = useState('');
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  const results = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    if (query.length < 2) return [];
-    return (product?.products || []).filter((p: any) => String(p.name || '').toLowerCase().includes(query)).slice(0, 12);
-  }, [q, product?.products]);
-
-  return (
-    <div className="fixed inset-0 z-[80] bg-black/70 p-4 pt-16 backdrop-blur-sm" dir="rtl" role="dialog" aria-modal="true">
-      <div className="mx-auto max-w-xl overflow-hidden rounded-2xl bg-[#0b1220] shadow-2xl ring-1 ring-slate-700">
-        <div className="flex items-center gap-3 border-b border-slate-800 px-5 py-4">
-          <Search className="h-5 w-5 text-blue-400" />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث عن جهاز… آيفون، لابتوب، ساعة"
-            className="w-full bg-transparent text-base font-bold text-white placeholder:text-slate-600 focus:outline-none" />
-          <button type="button" onClick={onClose} aria-label="إغلاق" className="rounded-full p-1 text-slate-400 hover:text-white">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <ul className="max-h-[55vh] overflow-y-auto p-2">
-          {results.map((p: any) => (
-            <li key={p.id}>
-              <button type="button" onClick={() => { onClose(); onProductClick(p); }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start transition hover:bg-slate-900">
-                <img src={getImageUrl(p.image || '')} alt="" className="h-11 w-11 rounded-lg bg-slate-900 object-cover" loading="lazy" />
-                <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-200">{p.name}</span>
-                <span className="text-sm font-black text-blue-300">{formatPrice(p.price)}</span>
-              </button>
-            </li>
-          ))}
-          {q.trim().length >= 2 && results.length === 0 && (
-            <li className="px-4 py-10 text-center text-sm text-slate-500">لا نتائج لـ «{q}» — جرّب اسم الماركة</li>
-          )}
-        </ul>
-      </div>
-    </div>
-  );
+  const { SearchSheet } = require('../shared/SearchSheet');
+  return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#2563eb" placeholder="ابحث عن جهاز… آيفون، لابتوب، ساعة" variant="electronics" />;
 }
 
 export const hubOverlays = {
