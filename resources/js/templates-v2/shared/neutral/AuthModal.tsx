@@ -225,7 +225,7 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                     <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/5"><X className="h-5 w-5" /></button>
                 </div>
                 <div className="space-y-4 p-5 text-center">
-                    <p className="text-sm" style={{ color:'var(--twc-text-muted,#6b7280)' }}>أرسلنا رمز تحقق إلى<br/><span className="font-bold" dir="ltr">{(() => { const e = otpEmail || ''; const at = e.indexOf('@'); if (at<=1) return e; return e[0] + '***' + e.slice(at); })()}</span><span className="text-xs text-slate-400 block mt-1" dir="ltr">{otpEmail}</span></p>
+                    <p className="text-sm" style={{ color:'var(--twc-text-muted,#6b7280)' }}>أرسلنا رمز تحقق إلى<br/><span className="font-bold" dir="ltr">{(() => { const e = otpEmail || ''; const at = e.indexOf('@'); if (at<=1) return e; return e[0] + '***' + e.slice(at); })()}</span></p>
                     <p className="text-xs" style={{ color:'var(--twc-text-muted,#9ca3af)' }}>ينتهي الرمز خلال 10 دقائق · إذا لم تطلب إنشاء هذا الحساب، تجاهل الرسالة.</p>
                     <div className="flex justify-center gap-1.5 sm:gap-2" dir="ltr" onPaste={handleOtpPaste}>
                         {[0,1,2,3,4,5].map((i)=>(

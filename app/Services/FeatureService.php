@@ -207,7 +207,7 @@ class FeatureService
             $default = self::DEFAULT_ON[$key] ?? false;
             // Deduplicate alias: only emit canonical customer_registration_enabled
             if ($key === 'enable_customer_registration') continue;
-            $behavior[] = self::item($key, self::labelFor($key), self::descFor($key), (bool) ($config[$key] ?? $default));
+            $behavior[] = self::item($key, self::labelFor($key), self::descFor($key), StoreConfiguration::toBool($config[$key] ?? null, $default));
         }
         // Append verification method as a selectable enum item (not a boolean toggle)
         $verificationMethod = $config['customer_verification_method'] ?? self::VERIFICATION_DEFAULT;
@@ -224,7 +224,7 @@ class FeatureService
         $settings = [];
         foreach (self::SETTINGS_FEATURES as $key) {
             $default = self::DEFAULT_ON[$key] ?? false;
-            $settings[] = self::item($key, self::labelFor($key), self::descFor($key), (bool) ($config[$key] ?? $default));
+            $settings[] = self::item($key, self::labelFor($key), self::descFor($key), StoreConfiguration::toBool($config[$key] ?? null, $default));
         }
 
         return [

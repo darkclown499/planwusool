@@ -20,6 +20,37 @@ class StoreConfiguration extends Model
     protected static array $requestCache = [];
 
     /**
+     * Clear the request-level memoization cache.
+     * Useful in tests where RefreshDatabase resets the DB but static properties persist.
+     */
+    public static function flushRequestCache(): void
+    {
+        self::$requestCache = [];
+    }
+
+    /**
+     * Safely cast a configuration value to boolean.
+     *
+     * PHP's native (bool) cast treats ANY non-empty string as true,
+     * including the string 'false'. FeatureService stores boolean toggles
+     * as the strings 'true'/'false', so we must handle this explicitly.
+     *
+     * @param mixed $value     Raw config value (string 'true'/'false', bool, null)
+     * @param bool  $default   Fallback when value is null/empty
+     * @return bool
+     */
+    public static function toBool($value, bool $default = false): bool
+    {
+        if (is_bool($value)) return $value;
+        if (is_null($value) || $value === '') return $default;
+        if (is_string($value)) {
+            $v = strtolower(trim($value));
+            return in_array($v, ['1', 'true', 'yes', 'on'], true);
+        }
+        return (bool) $value;
+    }
+
+    /**
      * Get configuration for a store (cached for 5 minutes + request-level memoization).
      */
     public static function getConfiguration($storeId)

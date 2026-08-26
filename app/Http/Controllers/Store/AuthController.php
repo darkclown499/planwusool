@@ -20,13 +20,13 @@ class AuthController extends Controller
     {
         $store = $this->getStore($request, $storeSlug);
         if (!$store) {
-            abort(404, 'Store not found');
+            abort(404, 'المتجر غير موجود');
         }
         if (!$this->customerAccountsEnabled($store)) {
             abort(403, 'حسابات العملاء غير مفعلة في هذا المتجر.');
         }
         if (!$this->behavior($store)['enable_customer_login']) {
-            abort(403, 'Customer login is disabled for this store.');
+            abort(403, 'تسجيل الدخول غير متاح في هذا المتجر.');
         }
         
         if ($request->isMethod('post')) {
@@ -83,7 +83,7 @@ class AuthController extends Controller
             }
 
             throw ValidationException::withMessages([
-                'email' => [__('The provided credentials are incorrect.')],
+                'email' => ['البريد الإلكتروني أو كلمة المرور غير صحيحة.'],
             ]);
         }
 
@@ -128,7 +128,7 @@ class AuthController extends Controller
     {
         $store = $this->getStore($request, $storeSlug);
         if (!$store) {
-            abort(404, 'Store not found');
+            abort(404, 'المتجر غير موجود');
         }
         if (!$this->customerAccountsEnabled($store)) {
             abort(403, 'حسابات العملاء غير مفعلة في هذا المتجر.');
@@ -520,11 +520,12 @@ class AuthController extends Controller
     private function behavior(Store $store): array
     {
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
-        $master = (bool) ($config['customer_accounts_enabled'] ?? true);
-        $loginRaw = (bool) ($config['enable_customer_login'] ?? true);
-        $showAuthRaw = (bool) ($config['show_auth_button'] ?? true);
+        $toBool = [\App\Models\StoreConfiguration::class, 'toBool'];
+        $master = $toBool($config['customer_accounts_enabled'] ?? null, true);
+        $loginRaw = $toBool($config['enable_customer_login'] ?? null, true);
+        $showAuthRaw = $toBool($config['show_auth_button'] ?? null, true);
         $effectiveLogin = $master && $loginRaw && $showAuthRaw;
-        $effectiveRegistration = $master && (bool) ($config['customer_registration_enabled'] ?? $config['enable_customer_registration'] ?? true);
+        $effectiveRegistration = $master && $toBool($config['customer_registration_enabled'] ?? $config['enable_customer_registration'] ?? null, true);
         $verificationMethod = strtolower(trim((string)($config['customer_verification_method'] ?? 'email')));
         $verificationMethod = in_array($verificationMethod, ['none','email'], true) ? $verificationMethod : 'email';
 
@@ -532,9 +533,9 @@ class AuthController extends Controller
             'enable_customer_login' => $effectiveLogin,
             'enable_customer_registration' => $effectiveRegistration,
             'customer_registration_enabled' => $effectiveRegistration,
-            'require_login_checkout' => $master && (bool) ($config['require_login_checkout'] ?? false),
+            'require_login_checkout' => $master && $toBool($config['require_login_checkout'] ?? null, false),
             'customer_accounts_enabled' => $master,
-            'guest_checkout' => $master ? (bool) ($config['guest_checkout'] ?? true) : true,
+            'guest_checkout' => $master ? $toBool($config['guest_checkout'] ?? null, true) : true,
             'show_auth_button' => $effectiveLogin,
             'customer_verification_method' => $verificationMethod,
         ];

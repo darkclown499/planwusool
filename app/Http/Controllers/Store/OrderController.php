@@ -26,38 +26,34 @@ class OrderController extends Controller
             $storeModel = \App\Models\Store::find($request->store_id);
             if ($storeModel) {
                 $config = \App\Models\StoreConfiguration::getConfiguration($storeModel->id);
-                $accountsOn = (bool) ($config['customer_accounts_enabled'] ?? true);
+                $toBool = [\App\Models\StoreConfiguration::class, 'toBool'];
+                $accountsOn = $toBool($config['customer_accounts_enabled'] ?? null, true);
                 // Effective login enabled respects both enable_customer_login and legacy show_auth_button
-                $loginRaw = $config['enable_customer_login'] ?? true;
-                $showAuthRaw = $config['show_auth_button'] ?? true;
-                $loginOn = $loginRaw === true || $loginRaw === 'true' || $loginRaw === 1 || $loginRaw === '1';
-                $showAuthOn = $showAuthRaw === true || $showAuthRaw === 'true' || $showAuthRaw === 1 || $showAuthRaw === '1';
-                $effectiveLoginOn = $accountsOn && $loginOn && $showAuthOn;
+                $effectiveLoginOn = $accountsOn && $toBool($config['enable_customer_login'] ?? null, true) && $toBool($config['show_auth_button'] ?? null, true);
 
                 // Master-off => guest checkout always allowed (store works without accounts)
                 // When accounts on: require_login_checkout OR guest_checkout==false both imply login required
-                if ($accountsOn && ($config['require_login_checkout'] ?? false) && !Auth::guard('customer')->check()) {
+                if ($accountsOn && $toBool($config['require_login_checkout'] ?? null, false) && !Auth::guard('customer')->check()) {
                     if ($request->expectsJson() || $request->ajax()) {
                         return response()->json([
                             'success' => false,
-                            'message' => __('Please log in to your account to complete your order.'),
+                            'message' => 'يرجى تسجيل الدخول لإتمام طلبك.',
                             'requires_login' => true,
                         ], 401);
                     }
-                    return redirect()->back()->withErrors(['login' => __('Please log in to your account to complete your order.')]);
+                    return redirect()->back()->withErrors(['login' => 'يرجى تسجيل الدخول لإتمام طلبك.']);
                 }
-                $guestCheckoutEnabled = $config['guest_checkout'] ?? true;
-                $guestAllowed = $guestCheckoutEnabled === true || $guestCheckoutEnabled === 'true' || $guestCheckoutEnabled === 1 || $guestCheckoutEnabled === '1';
                 // If login is disabled, guest checkout must remain allowed even if guest_checkout is off
+                $guestAllowed = $toBool($config['guest_checkout'] ?? null, true);
                 if ($effectiveLoginOn && !$guestAllowed && !Auth::guard('customer')->check()) {
                     if ($request->expectsJson() || $request->ajax()) {
                         return response()->json([
                             'success' => false,
-                            'message' => __('Guest checkout is disabled. Please create an account or log in to continue.'),
+                            'message' => 'الدفع كزائر غير متاح — يرجى إنشاء حساب أو تسجيل الدخول للمتابعة.',
                             'requires_login' => true,
                         ], 401);
                     }
-                    return redirect()->back()->withErrors(['login' => __('Guest checkout is disabled. Please log in.')]);
+                    return redirect()->back()->withErrors(['login' => 'الدفع كزائر غير متاح — يرجى تسجيل الدخول للمتابعة.']);
                 }
                 // When login is disabled but guest is also disabled (contradictory config), allow guest to prevent deadlock
                 if (!$effectiveLoginOn && !$guestAllowed && !Auth::guard('customer')->check()) {

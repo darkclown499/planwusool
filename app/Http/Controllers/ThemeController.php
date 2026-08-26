@@ -190,13 +190,14 @@ class ThemeController extends Controller
         }
 
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
-        $master = (bool) ($config['customer_accounts_enabled'] ?? true);
+        $toBool = [\App\Models\StoreConfiguration::class, 'toBool'];
+        $master = $toBool($config['customer_accounts_enabled'] ?? null, true);
 
         // show_auth_button is legacy alias for enable_customer_login — both must be true for login to be enabled
-        $loginRaw = (bool) ($config['enable_customer_login'] ?? true);
-        $showAuthRaw = (bool) ($config['show_auth_button'] ?? true);
+        $loginRaw = $toBool($config['enable_customer_login'] ?? null, true);
+        $showAuthRaw = $toBool($config['show_auth_button'] ?? null, true);
         $effectiveLogin = $master && $loginRaw && $showAuthRaw;
-        $effectiveRegistration = $master && (bool) ($config['customer_registration_enabled'] ?? $config['enable_customer_registration'] ?? true);
+        $effectiveRegistration = $master && $toBool($config['customer_registration_enabled'] ?? $config['enable_customer_registration'] ?? null, true);
         $verificationMethod = strtolower(trim((string)($config['customer_verification_method'] ?? 'email')));
         $verificationMethod = in_array($verificationMethod, ['none','email'], true) ? $verificationMethod : 'email';
 
@@ -204,13 +205,10 @@ class ThemeController extends Controller
             'enable_customer_login' => $effectiveLogin,
             'enable_customer_registration' => $effectiveRegistration,
             'customer_registration_enabled' => $effectiveRegistration,
-            'require_login_checkout' => $master && (bool) ($config['require_login_checkout'] ?? false),
-            'show_whatsapp_order_button' => (bool) ($config['show_whatsapp_order_button'] ?? true),
-            'show_search' => (bool) ($config['show_search'] ?? true),
-            'show_cart' => (bool) ($config['show_cart'] ?? true),
-            'show_auth_button' => $effectiveLogin,
+            'require_login_checkout' => $master && $toBool($config['require_login_checkout'] ?? null, false),
             'customer_accounts_enabled' => $master,
-            'guest_checkout' => $master ? (bool) ($config['guest_checkout'] ?? true) : true,
+            'guest_checkout' => $master ? $toBool($config['guest_checkout'] ?? null, true) : true,
+            'show_auth_button' => $effectiveLogin,
             'customer_verification_method' => $verificationMethod,
         ];
     }
