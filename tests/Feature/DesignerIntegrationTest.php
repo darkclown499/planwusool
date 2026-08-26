@@ -263,4 +263,88 @@ class DesignerIntegrationTest extends TestCase
         // Ensure storeContent preview path also sees announcement
         $this->assertSame('Preview Test', $store->getMergedStoreContent()['announcement']['text']);
     }
+
+    /**
+     * Regression: designer page must include 'settings' prop so the React
+     * component can read store_status. A missing destructuring caused
+     * ReferenceError at render time, surfacing as the ErrorBoundary message
+     * "حدث خطأ غير متوقع".
+     */
+    public function test_designer_page_inertia_render_includes_settings_prop(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        try {
+            $perm = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'settings-stores', 'guard_name' => 'web']);
+            $user->givePermissionTo($perm);
+        } catch (\Throwable $e) {
+            $user->type = 'superadmin';
+            $user->save();
+        }
+        $this->actingAs($user);
+
+        $res = $this->get(route('stores.designer', $store->id));
+        $res->assertStatus(200);
+
+        $page = $res->inertiaPage();
+        $this->assertArrayHasKey('settings', $page['props'], 'Inertia props must include "settings"');
+        $this->assertArrayHasKey('store', $page['props']);
+        $this->assertArrayHasKey('storeUrl', $page['props']);
+        $this->assertArrayHasKey('availableThemes', $page['props']);
+
+        // settings must have store_status key (used by React component for preview button label)
+        $this->assertArrayHasKey('store_status', $page['props']['settings']);
+    }
+
+    /**
+     * Regression: designer page must render for stores with legacy/empty
+     * settings — even when store has no StoreConfiguration rows, the page
+     * should return defaults and not crash.
+     */
+    public function test_designer_page_renders_for_legacy_store_without_configuration(): void
+    {
+        $plan = Plan::factory()->create([
+            'name' => 'Legacy-' . uniqid(),
+            'price' => 0,
+            'themes' => ['all'],
+        ]);
+
+        $user = User::factory()->create([
+            'type' => 'company',
+            'plan_id' => $plan->id,
+            'plan_expire_date' => now()->addMonth(),
+            'onboarded_at' => now(),
+            'email_verified_at' => now(),
+        ]);
+
+        // Create a store with no StoreConfiguration rows (legacy store)
+        $store = new Store();
+        $store->user_id = $user->id;
+        $store->name = 'Legacy Store';
+        $store->slug = 'legacy-' . uniqid();
+        $store->theme = 'bazaar-market';
+        $store->email = 'legacy@example.com';
+        // Deliberately do NOT create any StoreConfiguration rows
+        $store->save();
+
+        $user->current_store = $store->id;
+        $user->save();
+
+        try {
+            $perm = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'settings-stores', 'guard_name' => 'web']);
+            $user->givePermissionTo($perm);
+        } catch (\Throwable $e) {
+            $user->type = 'superadmin';
+            $user->save();
+        }
+
+        $this->actingAs($user);
+
+        $res = $this->get(route('stores.designer', $store->id));
+        $res->assertStatus(200);
+
+        $page = $res->inertiaPage();
+        $this->assertArrayHasKey('settings', $page['props']);
+        // store_status should be the default boolean value from StoreConfiguration defaults
+        $this->assertIsBool($page['props']['settings']['store_status']);
+    }
 }

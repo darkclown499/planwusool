@@ -129,7 +129,7 @@ function CompactTemplateThumb({ slug, preview }: { slug: string; preview: string
     );
 }
 
-export default function StoreDesigner({ store, availableThemes, storeUrl }: Props) {
+export default function StoreDesigner({ store, availableThemes, settings, storeUrl }: Props) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
