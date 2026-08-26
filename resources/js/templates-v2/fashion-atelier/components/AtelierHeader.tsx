@@ -70,7 +70,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
 
   return (
     <header
-      className={`hidden md:block sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${
+      className={`sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${
         scrolled ? 'shadow-[0_8px_30px_rgba(60,45,35,0.08)]' : ''
       }`}
       dir="rtl"

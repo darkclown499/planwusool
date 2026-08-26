@@ -199,6 +199,9 @@ class DomainResolver
             // Product detail page (single-page storefront: render the homepage)
             $request->merge(['action' => 'product', 'product_id' => $segments[1]]);
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+        } elseif ($segments[0] === 'search') {
+            // Dedicated storefront search results page — store-scoped, paginated, server-authoritative.
+            return app(\App\Http\Controllers\ThemeController::class)->search($store->slug, $request);
         } elseif ($segments[0] === 'category' && isset($segments[1])) {
             // Dedicated category listing page (server-side pagination + SEO).
             // Accepts both the category slug and legacy numeric ids.

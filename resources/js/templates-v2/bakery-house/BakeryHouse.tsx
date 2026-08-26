@@ -59,7 +59,7 @@ export function BakeryHeader({ homeHref = '/' }: { homeHref?: string }) {
   };
 
   return (
-    <header className={`hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-md' : ''}`} dir="rtl">
+    <header className={`sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-md' : ''}`} dir="rtl">
       {/* Freshness ribbon */}
       <div className="bg-gradient-to-l from-[#92400e] via-[#b45309] to-[#92400e] px-4 py-1.5 text-center text-xs font-bold text-[#ffedd5]">
         {greeting}

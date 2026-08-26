@@ -38,7 +38,7 @@ export function RestaurantHeader({ homeHref = '/' }: { homeHref?: string }) {
   };
 
   return (
-    <header className="hidden md:block sticky top-0 z-50 border-b border-[#3d332b] bg-[#191410]/97 backdrop-blur" dir="rtl">
+    <header className="sticky top-0 z-50 border-b border-[#3d332b] bg-[#191410]/97 backdrop-blur" dir="rtl">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
         <a href={homeHref} className="flex items-center gap-2.5">
           {(config?.logo || store?.logo) ? (

@@ -64,7 +64,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   }, [q, product?.products]);
 
   return (
-    <header className="hidden md:block sticky top-0 z-50 border-b border-slate-800 bg-[#0b1220]/97 backdrop-blur" dir="rtl">
+    <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#0b1220]/97 backdrop-blur" dir="rtl">
       {/* Trust strip */}
       <div className="border-b border-slate-800/70 bg-[#0e1729]">
         <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 py-1.5 text-[11px] font-semibold text-slate-400 sm:px-6 lg:px-8">

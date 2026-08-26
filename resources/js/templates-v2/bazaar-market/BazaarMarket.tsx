@@ -52,7 +52,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
   };
 
   return (
-    <header className={`hidden md:block sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-lg shadow-teal-950/5' : ''}`} dir="rtl">
+    <header className={`sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-lg shadow-teal-950/5' : ''}`} dir="rtl">
       {/* Masthead */}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <a href={homeHref} className="flex items-center gap-2.5">

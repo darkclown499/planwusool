@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { router as inertiaRouter } from '@inertiajs/react';
 import { useStore } from '@/contexts/StoreContext';
 
 /**
@@ -79,16 +80,19 @@ export function normalizeSearchQuery(raw: string): string {
 /**
  * Navigate to dedicated storefront search results page (store subdomain /search?q=...).
  * Single canonical submit handler for keyboard Enter, icon click, mobile search button.
+ * Preserves store host (subdomain or custom domain) by using relative /search URL.
  */
 export function submitStorefrontSearch(rawQuery: string) {
   const q = normalizeSearchQuery(rawQuery);
   if (!q) return false;
   const url = `/search?q=${encodeURIComponent(q)}`;
-  // Prefer Inertia router when available for SPA navigation + history preservation
   try {
-    const { router } = require('@inertiajs/react') as any;
-    if (router?.visit || router?.get) {
-      (router.visit || router.get)(url);
+    if (inertiaRouter && (inertiaRouter as any).visit) {
+      (inertiaRouter as any).visit(url, { preserveScroll: false, preserveState: false });
+      return true;
+    }
+    if (inertiaRouter && (inertiaRouter as any).get) {
+      (inertiaRouter as any).get(url);
       return true;
     }
   } catch {}

@@ -48,9 +48,17 @@ export interface ResolvedHero {
   fit: 'cover' | 'contain';
   /** Object-position / focal point: center | top | bottom | custom percentage string. */
   position: string;
+  /** Mobile-specific overrides — when null, desktop value applies. */
+  fitMobile: 'cover' | 'contain' | null;
+  positionMobile: string | null;
   /** Optional desktop/mobile heights (px or clamp). When absent, template default applies. */
   heightDesktop: string | null;
   heightMobile: string | null;
+  /** Optional mobile-specific media source — when set, mobile uses vertical alternative. */
+  imagesMobile: string[];
+  videoUrlMobile: string | null;
+  youtubeUrlMobile: string | null;
+  youtubeIdMobile: string | null;
 }
 
 export function useResolvedHero(): ResolvedHero {
@@ -114,8 +122,21 @@ export function useResolvedHero(): ResolvedHero {
   const rawPos = String(storeHero?.position ?? storeHero?.object_position ?? storeHero?.focal_point ?? rawContent?.hero_position ?? 'center').trim() || 'center';
   // Normalize common aliases
   const position = rawPos === 'centre' ? 'center' : rawPos;
+  // Mobile-specific overrides — independent so merchant can fix cropped video on phone without breaking desktop
+  const rawFitMobile = storeHero?.fit_mobile ?? storeHero?.fitMobile ?? storeHero?.mobile_fit ?? rawContent?.hero_fit_mobile ?? rawContent?.heroFitMobile ?? null;
+  const fitMobile: 'cover' | 'contain' | null = rawFitMobile ? (String(rawFitMobile).toLowerCase().trim() === 'contain' ? 'contain' : 'cover') : null;
+  const rawPosMobile = storeHero?.position_mobile ?? storeHero?.positionMobile ?? storeHero?.mobile_position ?? rawContent?.hero_position_mobile ?? rawContent?.heroPositionMobile ?? null;
+  const positionMobile = rawPosMobile ? String(rawPosMobile).trim() : null;
   const heightDesktop = storeHero?.height_desktop ?? storeHero?.heightDesktop ?? rawContent?.hero_height_desktop ?? null;
   const heightMobile = storeHero?.height_mobile ?? storeHero?.heightMobile ?? rawContent?.hero_height_mobile ?? null;
+  // Optional mobile-specific media source (vertical promo for phone)
+  const rawImagesMobile = storeHero?.images_mobile ?? storeHero?.imagesMobile ?? storeHero?.mobile_images ?? rawContent?.hero_images_mobile ?? null;
+  const imagesMobile: string[] = Array.isArray(rawImagesMobile) ? rawImagesMobile.filter(Boolean).map((v:any)=>String(v)) : (typeof rawImagesMobile === 'string' && rawImagesMobile.trim() ? [rawImagesMobile.trim()] : []);
+  const rawVideoMobile = storeHero?.video_url_mobile ?? storeHero?.videoUrlMobile ?? storeHero?.mobile_video_url ?? rawContent?.hero_video_url_mobile ?? null;
+  const videoUrlMobile = rawVideoMobile ? String(rawVideoMobile).trim() : null;
+  const rawYoutubeMobile = storeHero?.youtube_url_mobile ?? storeHero?.youtubeUrlMobile ?? storeHero?.mobile_youtube_url ?? rawContent?.hero_youtube_url_mobile ?? null;
+  const youtubeUrlMobile = rawYoutubeMobile ? String(rawYoutubeMobile).trim() : null;
+  const youtubeIdMobile = youtubeUrlMobile ? extractYouTubeId(youtubeUrlMobile) : null;
 
   const heroImages: string[] = (() => {
     if (!heroType || heroType === 'image' || heroType === 'slider' || heroType === 'image_slider') {
@@ -155,8 +176,14 @@ export function useResolvedHero(): ResolvedHero {
     hasDynamicHero,
     fit,
     position,
+    fitMobile,
+    positionMobile,
     heightDesktop: heightDesktop ? String(heightDesktop) : null,
     heightMobile: heightMobile ? String(heightMobile) : null,
+    imagesMobile,
+    videoUrlMobile,
+    youtubeUrlMobile,
+    youtubeIdMobile,
   };
 }
 

@@ -138,8 +138,48 @@ class SharedStorefrontSearchCertificationTest extends TestCase
         // Hit the store subdomain search page via host header simulation
         $host = $store->slug . '.' . config('app.store_domain', 'localhost');
         $res = $this->get("http://{$host}/search?q=اندومي");
-        // Should be 200 Inertia page, not 404
+        // Should be 200 Inertia page with dedicated search component, not homepage fallback
         $res->assertOk();
+        // Must be search page, not homepage (catch-all would render store/dynamic)
+        $content = $res->getContent();
+        // Inertia page rendering: component name in JSON or HTML contains searchPage query
+        $this->assertTrue(str_contains($content, 'searchPage') || str_contains($content, 'نتائج البحث'), 'search must render dedicated search page, not homepage, got '.substr($content,0,600));
+    }
+
+    public function test_domain_resolver_search_not_home(): void
+    {
+        $resolver = file_get_contents(app_path('Http/Middleware/DomainResolver.php'));
+        $this->assertStringContainsString("segments[0] === 'search'", $resolver, 'DomainResolver must handle /search explicitly, not fallback to home');
+        $this->assertStringContainsString("ThemeController::class)->search", $resolver);
+        // Also ensure ThemeController::search exists and is store-scoped
+        $theme = file_get_contents(app_path('Http/Controllers/ThemeController.php'));
+        $this->assertStringContainsString("function search", $theme);
+        $this->assertStringContainsString("where('store_id', \$store['id'])", $theme);
+        $this->assertStringContainsString("searchPage", $theme);
+    }
+
+    public function test_hero_mobile_independent(): void
+    {
+        $hero = file_get_contents(resource_path('js/templates-v2/shared/heroMedia.ts'));
+        $this->assertStringContainsString('fitMobile', $hero, 'heroMedia must support independent mobile fit');
+        $this->assertStringContainsString('positionMobile', $hero, 'heroMedia must support independent mobile position');
+        $this->assertStringContainsString('heightMobile', $hero);
+        $this->assertStringContainsString('imagesMobile', $hero, 'optional mobile media source');
+        $this->assertStringContainsString('videoUrlMobile', $hero);
+        $this->assertStringContainsString('youtubeUrlMobile', $hero);
+        // Souq hero consumes mobile overrides
+        $souq = file_get_contents(resource_path('js/templates-v2/grocery-souq/SouqComponents.tsx'));
+        $this->assertStringContainsString('fitMobile', $souq, 'SouqHero must use mobile fit override');
+        $this->assertStringContainsString('positionMobile', $souq);
+        // Headers must be intentional mobile (not hidden md:block for 4 templates)
+        foreach (['fashion-atelier/components/AtelierHeader.tsx','bazaar-market/BazaarMarket.tsx','bakery-house/BakeryHouse.tsx','electronics-hub/ElectronicsHub.tsx','restaurant-menu/RestaurantMenu.tsx'] as $p) {
+            $src = file_get_contents(resource_path('js/templates-v2/'.$p));
+            $this->assertStringNotContainsString('hidden md:block sticky top-0', $src, "$p mobile header must not be hidden md:block (intentional mobile)");
+        }
+        // useServerSearch must use Inertia router properly
+        $hook = file_get_contents(resource_path('js/hooks/useServerSearch.ts'));
+        $this->assertStringContainsString('inertiaRouter', $hook);
+        $this->assertStringContainsString('submitStorefrontSearch', $hook);
     }
 
     public function test_all_templates_consume_shared_search_contract(): void
