@@ -125,10 +125,13 @@ class OrderController extends Controller
         $formattedOrder = [
             'id' => $order->id,
             'orderNumber' => $order->order_number,
+            'store_id' => $order->store_id,
+            'order_source' => $order->order_source ?? 'storefront',
+            'whatsapp_number' => $order->whatsapp_number,
             'date' => $order->created_at->format('F j, Y'),
-            'status' => ucfirst($order->status),
-            'paymentStatus' => ucfirst($order->payment_status),
-            'paymentMethod' => $order->payment_method === 'cod' ? 'Cash on Delivery' : ucfirst(str_replace('_', ' ', $order->payment_method)),
+            'status' => $order->status,
+            'paymentStatus' => $order->payment_status,
+            'paymentMethod' => $order->payment_method,
             'bankTransferReceipt' => $order->bank_transfer_receipt ? '/storage/' . $order->bank_transfer_receipt : null,
             'customer' => [
                 'name' => $order->customer_first_name . ' ' . $order->customer_last_name,
@@ -151,6 +154,8 @@ class OrderController extends Controller
                     'quantity' => $item->quantity,
                     'price' => (float) $item->unit_price,
                     'image' => $item->product->cover_image ?? '/placeholder.jpg',
+                    'variant' => $item->product_variants,
+                    'product_variants' => $item->product_variants,
                 ];
             }),
             'summary' => [
@@ -442,7 +447,11 @@ class OrderController extends Controller
         ]);
 
         if (!$this->isValidOrderTransition($oldStatus, $request->status)) {
-            return redirect()->back()->withErrors(['status' => __('Invalid status transition from :from to :to', ['from'=>$oldStatus, 'to'=>$request->status])]);
+            $msg = 'الانتقال غير مسموح من "' . $oldStatus . '" إلى "' . $request->status . '"';
+            if ($request->wantsJson() || $request->expectsJson()) {
+                return response()->json(['message'=>$msg, 'errors'=>['status'=>[$msg]]], 422);
+            }
+            return redirect()->back()->withErrors(['status' => $msg]);
         }
 
         // Prevent cancelled order from submitting courier shipment later (job will also check)
