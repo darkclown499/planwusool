@@ -81,21 +81,39 @@ class StoreConfiguration extends Model
                     'whatsapp_widget_show_on_mobile' => 'true',
                     'whatsapp_widget_show_on_desktop' => 'true',
                     'low_stock_threshold' => '10',
-                    // Storefront behavior toggles
+                    // Storefront behavior toggles — canonical keys
                     'enable_customer_login' => 'true',
                     'enable_customer_registration' => 'true',
+                    'customer_registration_enabled' => 'true',
                     'require_login_checkout' => 'false',
                     'show_whatsapp_order_button' => 'true',
                     'show_search' => 'true',
                     'show_cart' => 'true',
                     'show_auth_button' => 'true',
                     'customer_accounts_enabled' => 'true',
+                    'guest_checkout' => 'true',
+                    'customer_verification_method' => 'email',
                 ];
 
                 $result = array_merge($defaults, $configs);
 
+                // Canonical alias sync: customer_registration_enabled is the single source of truth
+                // Legacy key enable_customer_registration is kept for BC but both must stay in sync.
+                // If both exist in DB, canonical wins.
+                if (array_key_exists('customer_registration_enabled', $configs) || array_key_exists('enable_customer_registration', $configs)) {
+                    $canonical = $configs['customer_registration_enabled'] ?? $configs['enable_customer_registration'] ?? 'true';
+                    $normalized = ($canonical === 'true' || $canonical === true || $canonical === 1 || $canonical === '1') ? 'true' : 'false';
+                    $result['customer_registration_enabled'] = $normalized;
+                    $result['enable_customer_registration'] = $normalized;
+                }
+
+                // Normalize verification method enum: none | email
+                $rawMethod = $result['customer_verification_method'] ?? 'email';
+                $rawMethod = is_string($rawMethod) ? strtolower(trim($rawMethod)) : 'email';
+                $result['customer_verification_method'] = in_array($rawMethod, ['none','email'], true) ? $rawMethod : 'email';
+
                 // Convert string values to boolean for specific keys
-                $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop', 'enable_customer_login', 'enable_customer_registration', 'require_login_checkout', 'show_whatsapp_order_button', 'show_search', 'show_cart', 'show_auth_button', 'customer_accounts_enabled'];
+                $booleanKeys = ['store_status', 'maintenance_mode', 'plan_disabled', 'whatsapp_widget_enabled', 'whatsapp_widget_show_on_mobile', 'whatsapp_widget_show_on_desktop', 'enable_customer_login', 'enable_customer_registration', 'customer_registration_enabled', 'require_login_checkout', 'show_whatsapp_order_button', 'show_search', 'show_cart', 'show_auth_button', 'customer_accounts_enabled', 'guest_checkout'];
                 foreach ($booleanKeys as $key) {
                     if (isset($result[$key])) {
                         $result[$key] = $result[$key] === 'true' || $result[$key] === true;

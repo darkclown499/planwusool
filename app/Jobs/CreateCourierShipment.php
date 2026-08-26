@@ -105,6 +105,13 @@ class CreateCourierShipment implements ShouldQueue
             if (!empty($shipment->tracking_number) && empty($order->tracking_number)) {
                 $order->forceFill(['tracking_number'=>$shipment->tracking_number])->saveQuietly();
             }
+
+            // Merchant-owned email: shipment_created (store isolated, afterCommit, failure never breaks shipment)
+            try {
+                if (($shipment->status ?? '') === 'created' && $order->customer_email) {
+                    \App\Jobs\SendStoreCustomerEmail::dispatch($order->store_id, 'shipment_created', $order->customer_email, $order->id, $shipment->id, $order->customer_id)->afterCommit();
+                }
+            } catch (\Throwable $e) { \Log::warning('Shipment email dispatch failed', ['order_id'=>$order->id,'error'=>$e->getMessage()]); }
         } else {
             $err = $result['error'] ?? 'Unknown courier error';
             // create or update failed record for retry visibility

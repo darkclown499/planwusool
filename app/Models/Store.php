@@ -85,12 +85,15 @@ protected $fillable = [
     public const BEHAVIOR_KEYS = [
         'enable_customer_login',
         'enable_customer_registration',
+        'customer_registration_enabled',
         'require_login_checkout',
         'show_whatsapp_order_button',
         'show_search',
         'show_cart',
         'show_auth_button',
         'customer_accounts_enabled',
+        'guest_checkout',
+        'customer_verification_method',
     ];
 
     /**

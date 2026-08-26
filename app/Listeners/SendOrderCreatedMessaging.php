@@ -24,13 +24,12 @@ class SendOrderCreatedMessaging
         $storeId = $store->id;
         
         // ---- Merchant WhatsApp notification (for EVERY order, not only whatsapp payment) ----
-        // This is the fix for Production bug: merchant expects WhatsApp on new order.
-        // Honest architecture: if no provider configured, we log clearly and rely on DB bell.
-        // Order creation is never rolled back by notification failure.
+        // Dispatched as queued job AFTER commit on dedicated 'notifications' queue so checkout never waits for Meta API.
+        // Job handles idempotency, retry/backoff, and never rolls back the order.
         try {
-            app(\App\Services\MerchantWhatsAppNotifier::class)->notify($order);
+            \App\Jobs\SendMerchantWhatsAppNotification::dispatch($order->id)->onQueue(config('services.whatsapp.queue','notifications'))->afterCommit();
         } catch (\Throwable $e) {
-            \Log::warning('Merchant WhatsApp notifier threw (order still created)', [
+            \Log::warning('Merchant WhatsApp dispatch failed (order still created)', [
                 'order_id' => $order->id,
                 'store_id' => $storeId,
                 'error' => $e->getMessage(),

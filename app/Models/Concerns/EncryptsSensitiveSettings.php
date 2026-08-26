@@ -23,6 +23,8 @@ trait EncryptsSensitiveSettings
     protected static function sensitiveSettingKeys(): array
     {
         return [
+            // Store mail credentials (merchant-owned delivery)
+            'email_password',
             // Payment gateway credentials
             'stripe_secret', 'stripe_key',
             'paypal_secret_key', 'paypal_client_id',

@@ -78,7 +78,9 @@ WEB_USER="${WEB_USER:-www}"
 chown -R "${WEB_USER}:${WEB_USER}" storage bootstrap/cache public 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-echo "==> [8/8] Reloading services + queue worker"
+echo "==> [8/9] Restarting queue workers (pick up new code)"
+"$PHP" artisan queue:restart 2>/dev/null || true
+echo "==> [8/9] Reloading services"
 if command -v systemctl >/dev/null 2>&1 && systemctl list-units --type=service 2>/dev/null | grep -q "$FPM_SERVICE"; then
     systemctl reload "$FPM_SERVICE" 2>/dev/null || systemctl restart "$FPM_SERVICE"
 else
@@ -87,6 +89,9 @@ fi
 nginx -s reload 2>/dev/null || service nginx reload 2>/dev/null || true
 if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q '^queue-worker'; then
     systemctl restart queue-worker 2>/dev/null || true
+fi
+if command -v supervisorctl >/dev/null 2>&1; then
+    supervisorctl restart all 2>/dev/null || supervisorctl restart wusool-worker:* 2>/dev/null || true
 fi
 
 echo "==> Done. Verify:"

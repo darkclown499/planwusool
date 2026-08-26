@@ -168,14 +168,16 @@ class ThemeController extends Controller
     }
 
     /**
-     * Read storefront behavior toggles (login/checkout/buttons) for the store.
-     */
+      * Read storefront behavior toggles (login/checkout/buttons) for the store.
+      * Single source of truth including canonical registration + verification enum.
+      */
     protected function getStoreBehavior(Store $store = null): array
     {
         if (!$store) {
             return [
                 'enable_customer_login' => true,
                 'enable_customer_registration' => true,
+                'customer_registration_enabled' => true,
                 'require_login_checkout' => false,
                 'show_whatsapp_order_button' => true,
                 'show_search' => true,
@@ -183,6 +185,7 @@ class ThemeController extends Controller
                 'show_auth_button' => true,
                 'customer_accounts_enabled' => true,
                 'guest_checkout' => true,
+                'customer_verification_method' => 'email',
             ];
         }
 
@@ -193,10 +196,14 @@ class ThemeController extends Controller
         $loginRaw = (bool) ($config['enable_customer_login'] ?? true);
         $showAuthRaw = (bool) ($config['show_auth_button'] ?? true);
         $effectiveLogin = $master && $loginRaw && $showAuthRaw;
+        $effectiveRegistration = $master && (bool) ($config['customer_registration_enabled'] ?? $config['enable_customer_registration'] ?? true);
+        $verificationMethod = strtolower(trim((string)($config['customer_verification_method'] ?? 'email')));
+        $verificationMethod = in_array($verificationMethod, ['none','email'], true) ? $verificationMethod : 'email';
 
         return [
             'enable_customer_login' => $effectiveLogin,
-            'enable_customer_registration' => $master && (bool) ($config['enable_customer_registration'] ?? true),
+            'enable_customer_registration' => $effectiveRegistration,
+            'customer_registration_enabled' => $effectiveRegistration,
             'require_login_checkout' => $master && (bool) ($config['require_login_checkout'] ?? false),
             'show_whatsapp_order_button' => (bool) ($config['show_whatsapp_order_button'] ?? true),
             'show_search' => (bool) ($config['show_search'] ?? true),
@@ -204,6 +211,7 @@ class ThemeController extends Controller
             'show_auth_button' => $effectiveLogin,
             'customer_accounts_enabled' => $master,
             'guest_checkout' => $master ? (bool) ($config['guest_checkout'] ?? true) : true,
+            'customer_verification_method' => $verificationMethod,
         ];
     }
 

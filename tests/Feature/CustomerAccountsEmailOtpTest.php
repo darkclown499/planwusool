@@ -33,6 +33,14 @@ class CustomerAccountsEmailOtpTest extends TestCase
         return [$user,$store];
     }
 
+    private function connectStoreMail(Store $store): void
+    {
+        \App\Services\StoreMailService::updateConfig($store, [
+            'host'=>'smtp.example.test','port'=>'587','username'=>'shop@example.com','password'=>'secret123','encryption'=>'tls','from_address'=>'noreply@example.com','from_name'=>$store->name,
+        ]);
+        \App\Services\StoreMailService::setStatus($store, \App\Services\StoreMailService::STATUS_CONNECTED);
+    }
+
     private function reqForStore(Store $store, string $method, string $uri, array $data=[]): \Illuminate\Http\Request
     {
         $req = \Illuminate\Http\Request::create($uri, $method, $data);
@@ -88,6 +96,7 @@ class CustomerAccountsEmailOtpTest extends TestCase
     {
         Mail::fake();
         [$user,$store]=$this->ownerWithStore();
+        $this->connectStoreMail($store);
         StoreConfiguration::setConfiguration($store->id,'customer_accounts_enabled','true');
         $c = new \App\Http\Controllers\Store\AuthController();
         $req = $this->reqForStore($store,'POST','/register',['first_name'=>'Ali','last_name'=>'Ahmad','email'=>'ali@example.com','password'=>'Password123!','password_confirmation'=>'Password123!','phone'=>'+970599000001']);
@@ -103,6 +112,7 @@ class CustomerAccountsEmailOtpTest extends TestCase
     {
         Mail::fake();
         [$user,$store]=$this->ownerWithStore();
+        $this->connectStoreMail($store);
         $c = new \App\Http\Controllers\Store\AuthController();
         $req = $this->reqForStore($store,'POST','/register',['first_name'=>'A','last_name'=>'B','email'=>'u1@ex.com','password'=>'Password123!','password_confirmation'=>'Password123!','phone'=>'+970599000001']);
         $c->register($req,$store->slug);
@@ -115,6 +125,7 @@ class CustomerAccountsEmailOtpTest extends TestCase
     {
         Mail::fake();
         [$user,$store]=$this->ownerWithStore();
+        $this->connectStoreMail($store);
         $cust = Customer::create(['store_id'=>$store->id,'first_name'=>'A','last_name'=>'B','email'=>'h@ex.com','password'=>'Password123!','phone'=>'+970599000001','is_active'=>true]);
         $svc = app(CustomerEmailOtpService::class);
         $otp = $svc->generate($cust,$store);
@@ -128,6 +139,7 @@ class CustomerAccountsEmailOtpTest extends TestCase
     {
         Mail::fake();
         [$user,$store]=$this->ownerWithStore();
+        $this->connectStoreMail($store);
         $cust = Customer::create(['store_id'=>$store->id,'first_name'=>'A','last_name'=>'B','email'=>'e@ex.com','password'=>'Password123!','phone'=>'+970599000001','is_active'=>true]);
         $svc = app(CustomerEmailOtpService::class);
         $otp = $svc->generate($cust,$store);
@@ -199,6 +211,7 @@ class CustomerAccountsEmailOtpTest extends TestCase
     {
         Mail::fake();
         [$user,$store]=$this->ownerWithStore();
+        $this->connectStoreMail($store);
         $cust = Customer::create(['store_id'=>$store->id,'first_name'=>'A','last_name'=>'B','email'=>'resend@ex.com','password'=>'Password123!','phone'=>'+970599000001','is_active'=>true]);
         $svc = app(CustomerEmailOtpService::class);
         $svc->generate($cust,$store);
@@ -213,6 +226,7 @@ class CustomerAccountsEmailOtpTest extends TestCase
     {
         Mail::fake();
         [$user,$store]=$this->ownerWithStore();
+        $this->connectStoreMail($store);
         $cust = Customer::create(['store_id'=>$store->id,'first_name'=>'A','last_name'=>'B','email'=>'rl@ex.com','password'=>'Password123!','phone'=>'+970599000001','is_active'=>true]);
         $svc = app(CustomerEmailOtpService::class);
         $svc->generate($cust,$store);
@@ -224,6 +238,7 @@ class CustomerAccountsEmailOtpTest extends TestCase
     {
         Mail::fake();
         [$user,$store]=$this->ownerWithStore();
+        $this->connectStoreMail($store);
         $c = new \App\Http\Controllers\Store\AuthController();
         // register unverified
         $req = $this->reqForStore($store,'POST','/register',['first_name'=>'A','last_name'=>'B','email'=>'login@ex.com','password'=>'Password123!','password_confirmation'=>'Password123!','phone'=>'+970599000001']);

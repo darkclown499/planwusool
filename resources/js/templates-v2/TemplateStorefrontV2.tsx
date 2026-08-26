@@ -43,7 +43,8 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
     const SearchOverlay = overlays.search!;
 
     const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
-    const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false;
+    const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
+    const guestEnabled = !customerAccountsEnabled ? true : behavior?.guest_checkout !== false;
     const requireLogin = customerAccountsEnabled && behavior?.require_login_checkout === true;
 
     // Payment redirects (Paystack, Skrill, Flutterwave...) return to the store
@@ -68,16 +69,38 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
         ui.setShowCart(false);
         if (auth.isLoggedIn) {
             ui.setShowCheckout(true);
-        } else if (!customerAccountsEnabled) {
+            return;
+        }
+        if (!customerAccountsEnabled) {
             ui.setShowCheckout(true);
-        } else if (requireLogin) {
+            return;
+        }
+        // Guest disabled + login enabled => must login
+        if (!guestEnabled && loginEnabled) {
             ui.setShowAuthModal(false);
             auth.setShowLoginModal(true);
-        } else if (!loginEnabled) {
-            ui.setShowCheckout(true);
-        } else {
-            ui.setShowAuthModal(true);
+            return;
         }
+        // Guest disabled + login disabled => deadlock, allow guest checkout
+        if (!guestEnabled && !loginEnabled) {
+            ui.setShowCheckout(true);
+            return;
+        }
+        if (requireLogin) {
+            ui.setShowAuthModal(false);
+            auth.setShowLoginModal(true);
+            return;
+        }
+        if (!loginEnabled) {
+            ui.setShowCheckout(true);
+            return;
+        }
+        if (!guestEnabled) {
+            ui.setShowAuthModal(false);
+            auth.setShowLoginModal(true);
+            return;
+        }
+        ui.setShowAuthModal(true);
     };
 
     const handleOrderComplete = () => {
@@ -117,12 +140,15 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {ui.showAuthModal && (
+            {ui.showAuthModal && customerAccountsEnabled && (
                 <TemplateAuthGate
+                    loginEnabled={loginEnabled}
+                    guestEnabled={guestEnabled}
                     onClose={() => ui.setShowAuthModal(false)}
                     onLogin={() => {
                         ui.setShowAuthModal(false);
-                        auth.setShowLoginModal(true);
+                        if (loginEnabled) auth.setShowLoginModal(true);
+                        else ui.setShowCheckout(true);
                     }}
                     onContinueAsGuest={() => {
                         ui.setShowAuthModal(false);
@@ -131,7 +157,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {auth.showLoginModal && (
+            {auth.showLoginModal && customerAccountsEnabled && loginEnabled && (
                 <TemplateAuthForm
                     onClose={() => auth.setShowLoginModal(false)}
                     storeSlug={storeSlug}
@@ -164,7 +190,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {auth.showOrdersModal && (
+            {auth.showOrdersModal && customerAccountsEnabled && (auth.isLoggedIn || loginEnabled) && (
                 <MyOrdersModal
                     orders={order.userOrders}
                     loading={order.loadingOrders}
@@ -174,7 +200,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {order.showOrderDetailsModal && order.selectedOrderId && (
+            {order.showOrderDetailsModal && order.selectedOrderId && customerAccountsEnabled && (
                 <OrderDetailsModal
                     orderNumber={order.selectedOrderId}
                     storeSlug={storeSlug}
@@ -182,7 +208,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
                 />
             )}
 
-            {auth.showProfileModal && (
+            {auth.showProfileModal && customerAccountsEnabled && (auth.isLoggedIn || loginEnabled) && (
                 <ProfileModal userProfile={auth.userProfile} storeSlug={storeSlug} onClose={() => auth.setShowProfileModal(false)} />
             )}
 

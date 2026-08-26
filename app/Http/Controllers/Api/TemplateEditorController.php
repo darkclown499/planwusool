@@ -164,20 +164,32 @@ class TemplateEditorController extends Controller
     }
 
     /**
-     * Behavior toggles stored in store_configurations.
-     */
+      * Behavior toggles stored in store_configurations.
+      * Single source of truth — mirrors ThemeController::getStoreBehavior.
+      */
     protected function getBehavior(Store $store): array
     {
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
+        $master = (bool) ($config['customer_accounts_enabled'] ?? true);
+        $loginRaw = (bool) ($config['enable_customer_login'] ?? true);
+        $showAuthRaw = (bool) ($config['show_auth_button'] ?? true);
+        $effectiveLogin = $master && $loginRaw && $showAuthRaw;
+        $effectiveRegistration = $master && (bool) ($config['customer_registration_enabled'] ?? $config['enable_customer_registration'] ?? true);
+        $verificationMethod = strtolower(trim((string)($config['customer_verification_method'] ?? 'email')));
+        $verificationMethod = in_array($verificationMethod, ['none','email'], true) ? $verificationMethod : 'email';
 
         return [
-            'enable_customer_login' => (bool) ($config['enable_customer_login'] ?? true),
-            'enable_customer_registration' => (bool) ($config['enable_customer_registration'] ?? true),
-            'require_login_checkout' => (bool) ($config['require_login_checkout'] ?? false),
+            'customer_accounts_enabled' => $master,
+            'enable_customer_login' => $effectiveLogin,
+            'enable_customer_registration' => $effectiveRegistration,
+            'customer_registration_enabled' => $effectiveRegistration,
+            'require_login_checkout' => $master && (bool) ($config['require_login_checkout'] ?? false),
             'show_whatsapp_order_button' => (bool) ($config['show_whatsapp_order_button'] ?? true),
             'show_search' => (bool) ($config['show_search'] ?? true),
             'show_cart' => (bool) ($config['show_cart'] ?? true),
-            'show_auth_button' => (bool) ($config['show_auth_button'] ?? true),
+            'show_auth_button' => $effectiveLogin,
+            'guest_checkout' => $master ? (bool) ($config['guest_checkout'] ?? true) : true,
+            'customer_verification_method' => $verificationMethod,
         ];
     }
 
@@ -185,11 +197,32 @@ class TemplateEditorController extends Controller
     {
         foreach (Store::BEHAVIOR_KEYS as $key) {
             if (array_key_exists($key, $behavior)) {
-                \App\Models\StoreConfiguration::updateConfiguration(
+                \App\Models\StoreConfiguration::setConfiguration(
                     $store->id,
                     $key,
                     (bool) $behavior[$key] ? 'true' : 'false'
                 );
+            }
+        }
+        // guest_checkout is not in BEHAVIOR_KEYS but is a customer-accounts toggle
+        if (array_key_exists('guest_checkout', $behavior)) {
+            \App\Models\StoreConfiguration::setConfiguration(
+                $store->id,
+                'guest_checkout',
+                (bool) $behavior['guest_checkout'] ? 'true' : 'false'
+            );
+        }
+        // canonical registration alias — keep both in sync
+        if (array_key_exists('customer_registration_enabled', $behavior)) {
+            $val = (bool) $behavior['customer_registration_enabled'] ? 'true' : 'false';
+            \App\Models\StoreConfiguration::setConfiguration($store->id, 'customer_registration_enabled', $val);
+            \App\Models\StoreConfiguration::setConfiguration($store->id, 'enable_customer_registration', $val);
+        }
+        // verification enum
+        if (array_key_exists('customer_verification_method', $behavior)) {
+            $m = strtolower(trim((string)$behavior['customer_verification_method']));
+            if (in_array($m, ['none','email'], true)) {
+                \App\Models\StoreConfiguration::setConfiguration($store->id, 'customer_verification_method', $m);
             }
         }
 

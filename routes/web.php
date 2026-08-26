@@ -298,6 +298,21 @@ Route::middleware('api.throttle')->group(function () {
         Route::put('/', [\App\Http\Controllers\Api\FeatureController::class, 'update'])->name('update');
     });
 
+    // Store email delivery API (merchant-owned SMTP, store-scoped, encrypted)
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/email-config')->name('api.store-email-config.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreEmailConfigController::class, 'show'])->name('show');
+        Route::put('/', [\App\Http\Controllers\Api\StoreEmailConfigController::class, 'update'])->name('update');
+        Route::post('/test', [\App\Http\Controllers\Api\StoreEmailConfigController::class, 'test'])->middleware('throttle:5,1')->name('test');
+    });
+
+    // Store email notification preferences API
+    Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/email-notifications')->name('api.store-email-notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\StoreEmailNotificationController::class, 'show'])->name('show');
+        Route::put('/', [\App\Http\Controllers\Api\StoreEmailNotificationController::class, 'update'])->name('update');
+        Route::get('/preview', [\App\Http\Controllers\Api\StoreEmailNotificationController::class, 'preview'])->name('preview');
+        Route::get('/logs', [\App\Http\Controllers\Api\StoreEmailNotificationController::class, 'logs'])->name('logs');
+    });
+
     // ERP & inventory integration API
     Route::middleware(['auth', 'store.owner'])->prefix('api/stores/{store}/erp')->name('api.store-erp.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StoreErpController::class, 'index'])->name('index');
@@ -728,6 +743,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/themes', fn ($id) => redirect()->route('stores.templates', ['id' => $id]))->middleware('permission:settings-stores')->name('stores.themes');
         Route::get('stores/{id}/features', [\App\Http\Controllers\StoreFeaturesController::class, 'show'])->middleware('permission:settings-stores')->name('stores.features');
         Route::get('stores/{id}/customer-accounts', [\App\Http\Controllers\StoreCustomerAccountsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.customer-accounts');
+        Route::get('stores/{id}/email-settings', [\App\Http\Controllers\StoreEmailSettingsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.email-settings');
+        Route::get('stores/{id}/notifications/email', [\App\Http\Controllers\StoreEmailNotificationsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.notifications.email');
         Route::get('stores/{id}/integrations', [\App\Http\Controllers\StoreIntegrationsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.integrations');
         Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
         Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');

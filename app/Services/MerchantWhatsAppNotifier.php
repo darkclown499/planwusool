@@ -65,12 +65,21 @@ class MerchantWhatsAppNotifier
             return ['sent' => false, 'reason' => 'incomplete_config', 'provider' => $integration->provider];
         }
 
-        $message = $this->buildMerchantMessage($order);
+        $payload = $this->buildOrderPayload($order);
+        $mode = $this->resolveMessageMode($integration);
+
+        // Validate template config early
+        if ($mode === 'template') {
+            if (empty($integration->template_name) && empty(config('services.whatsapp.template_name'))) {
+                Log::warning('Merchant WhatsApp template name missing', ['store_id'=>$storeId]);
+                return ['sent'=>false,'reason'=>'template_config_missing','provider'=>$integration->provider];
+            }
+        }
 
         try {
             $sent = $integration->provider === 'twilio'
-                ? $this->sendViaTwilio($normalizedRecipient, $message, $integration)
-                : $this->sendViaMeta($normalizedRecipient, $message, $integration);
+                ? $this->sendViaTwilio($normalizedRecipient, $payload, $integration)
+                : $this->sendViaMeta($normalizedRecipient, $payload, $integration, $mode);
 
             if ($sent) {
                 Cache::put($idempotencyKey, true, 86400);
@@ -82,11 +91,24 @@ class MerchantWhatsAppNotifier
             Log::warning('Merchant WhatsApp provider returned failure', ['store_id' => $storeId, 'order_id' => $order->id, 'provider' => $integration->provider]);
             return ['sent' => false, 'reason' => 'provider_error', 'provider' => $integration->provider];
         } catch (\Throwable $e) {
+            $msg = $e->getMessage();
+            $code = $e->getCode();
+            if (str_starts_with($msg, 'auth_error') || $code === 401 || $code === 403) {
+                Log::warning('Merchant WhatsApp auth error', ['store_id'=>$storeId,'order_id'=>$order->id,'error'=>$msg]);
+                return ['sent'=>false,'reason'=>'auth_error','provider'=>$integration->provider];
+            }
+            if (str_starts_with($msg, 'rate_limited') || $code === 429) {
+                Log::warning('Merchant WhatsApp rate limited', ['store_id'=>$storeId,'order_id'=>$order->id,'error'=>$msg]);
+                return ['sent'=>false,'reason'=>'rate_limited','provider'=>$integration->provider];
+            }
+            if (str_contains($msg, 'cURL') || str_contains($msg, 'timed out') || str_contains($msg, 'Connection')) {
+                return ['sent'=>false,'reason'=>'timeout','provider'=>$integration->provider];
+            }
             Log::error('Merchant WhatsApp exception (order not rolled back)', [
                 'store_id' => $storeId,
                 'order_id' => $order->id,
                 'provider' => $integration->provider,
-                'error' => $e->getMessage(),
+                'error' => $msg,
             ]);
             return ['sent' => false, 'reason' => 'exception', 'provider' => $integration->provider];
         }
@@ -117,12 +139,20 @@ class MerchantWhatsAppNotifier
             return ['sent' => false, 'reason' => 'incomplete_config', 'message' => 'إعداد واتساب غير مكتمل'];
         }
 
-        $message = "هذه رسالة اختبار من وصول. إشعارات الطلبات تعمل بنجاح ✅";
+        $mode = $this->resolveMessageMode($integration);
+        if ($mode === 'template' && empty($integration->template_name) && empty(config('services.whatsapp.template_name'))) {
+            return ['sent'=>false,'reason'=>'template_config_missing','message'=>'قالب واتساب غير مُكوّن — أدخل اسم القالب واللغة'];
+        }
+        $store = \App\Models\Store::find($storeId);
+        $testPayload = [
+            'store_name'=>$store->name ?? 'متجر','order_number'=>'TEST-0000','customer'=>'اختبار','phone'=>$normalized,'total'=>'0.00','currency'=>'ILS','symbol'=>'₪','payment'=>'اختبار','shipping'=>'اختبار','address'=>'—','items_summary'=>'منتج اختبار × 1','items'=>[['name'=>'منتج اختبار','qty'=>1,'variant'=>'']],'items_count'=>1,'order_url'=>config('app.url'),
+        ];
+        $messageOrPayload = $mode === 'template' ? $testPayload : "هذه رسالة اختبار من وصول. إشعارات الطلبات تعمل بنجاح ✅";
 
         try {
             $sent = $integration->provider === 'twilio'
-                ? $this->sendViaTwilio($normalized, $message, $integration)
-                : $this->sendViaMeta($normalized, $message, $integration);
+                ? $this->sendViaTwilio($normalized, $messageOrPayload, $integration)
+                : $this->sendViaMeta($normalized, $messageOrPayload, $integration, $mode);
 
             if ($sent) {
                 Log::info('Merchant WhatsApp test sent', ['store_id' => $storeId, 'masked' => PhoneNormalizer::mask($normalized)]);
@@ -131,8 +161,15 @@ class MerchantWhatsAppNotifier
             return ['sent' => false, 'reason' => 'provider_error', 'message' => 'تعذر إرسال رسالة الاختبار'];
         } catch (\Throwable $e) {
             Log::error('Merchant WhatsApp test exception', ['store_id' => $storeId, 'error' => $e->getMessage()]);
-            return ['sent' => false, 'reason' => 'exception', 'message' => 'تعذر إرسال رسالة الاختبار'];
+            return ['sent' => false, 'reason' => 'exception', 'message' => 'تعذر إرسال رسالة الاختبار', 'error' => $e->getMessage()];
         }
+    }
+
+    private function graphBase(): string
+    {
+        $base = rtrim(config('services.whatsapp.graph_url', 'https://graph.facebook.com'), '/');
+        $ver = ltrim(config('services.whatsapp.graph_version', 'v18.0'), '/');
+        return "{$base}/{$ver}";
     }
 
     public function verifyConnection(StoreWhatsappIntegration $integration): array
@@ -145,9 +182,8 @@ class MerchantWhatsAppNotifier
         }
 
         try {
-            // Verify by fetching phone number details from Meta
-            $url = "https://graph.facebook.com/v18.0/{$phoneNumberId}?fields=display_phone_number,verified_name";
-            $response = \Illuminate\Support\Facades\Http::withToken($token)->get($url);
+            $url = $this->graphBase() . "/{$phoneNumberId}?fields=display_phone_number,verified_name";
+            $response = \Illuminate\Support\Facades\Http::withToken($token)->timeout((int) config('services.whatsapp.timeout', 15))->get($url);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -303,24 +339,115 @@ class MerchantWhatsAppNotifier
         return $hasAny ? 'incomplete' : 'not_configured';
     }
 
-    private function buildMerchantMessage(Order $order): string
+    // ---------- Shared payload (single source of truth) ----------
+    public function buildOrderPayload(Order $order): array
     {
-        $customer = trim($order->customer_first_name . ' ' . $order->customer_last_name);
+        $customer = trim(($order->customer_first_name ?? '') . ' ' . ($order->customer_last_name ?? ''));
+        if ($customer === '') $customer = $order->customer_email ?? '—';
         $store = $order->store;
         $total = number_format((float) $order->total_amount, 2);
-        $payment = $this->formatPaymentMethod($order->payment_method);
-        $shipping = $order->shippingMethod ? $order->shippingMethod->name : 'غير محدد';
+        $currency = $order->currency ?? 'ILS';
+        $symbol = $currency === 'ILS' ? '₪' : $currency;
+        $payment = $this->formatPaymentMethod($order->payment_method ?? 'cod');
+        $shippingName = 'توصيل شخصي';
+        if ($order->shippingMethod) {
+            $shippingName = $order->shippingMethod->name;
+            try {
+                if ($order->shippingMethod->courier_integration_id) {
+                    $ci = \App\Models\StoreCourierIntegration::find($order->shippingMethod->courier_integration_id);
+                    if ($ci && $ci->provider) $shippingName .= ' (' . $ci->provider . ')';
+                }
+            } catch (\Throwable $e) {}
+        }
         $orderUrl = $this->getMerchantOrderUrl($order);
+        $addrParts = array_filter([$order->shipping_address, $order->shipping_city, $order->shipping_state]);
+        $address = $addrParts ? implode(' - ', $addrParts) : '—';
+        $items = [];
+        $itemsSummary = '';
+        try {
+            $collection = $order->items()->with('product')->get();
+            if ($collection->count() > 0) {
+                $summaryParts = [];
+                foreach ($collection->take(10) as $it) {
+                    $name = $it->product_name ?? $it->name ?? 'منتج';
+                    $qty = (int) $it->quantity;
+                    $variant = '';
+                    if (!empty($it->product_variants)) {
+                        $v = $it->product_variants;
+                        if (is_string($v)) { $decoded = json_decode($v, true); $v = is_array($decoded) ? $decoded : $v; }
+                        if (is_array($v)) {
+                            $parts = [];
+                            foreach ($v as $k=>$val) {
+                                if (is_numeric($k)) $parts[] = is_string($val) ? $val : json_encode($val, JSON_UNESCAPED_UNICODE);
+                                else $parts[] = "$k: $val";
+                            }
+                            if ($parts) $variant = ' (' . implode('، ', $parts) . ')';
+                        } elseif (is_string($v) && $v !== '') $variant = " ($v)";
+                    }
+                    $items[] = ['name'=>$name,'qty'=>$qty,'variant'=>$variant];
+                    $summaryParts[] = "{$name} × {$qty}";
+                }
+                if ($collection->count() > 10) $summaryParts[] = "و " . ($collection->count()-10) . " أخرى";
+                $itemsSummary = implode('، ', $summaryParts);
+                if ($itemsSummary === '') $itemsSummary = $collection->count() . ' منتجات';
+            }
+        } catch (\Throwable $e) {}
+        if ($itemsSummary === '') $itemsSummary = '—';
+        return [
+            'store_name' => $store->name ?? '',
+            'order_number' => $order->order_number,
+            'customer' => $customer,
+            'phone' => $order->customer_phone ?? '',
+            'total' => $total,
+            'currency' => $currency,
+            'symbol' => $symbol,
+            'payment' => $payment,
+            'shipping' => $shippingName,
+            'address' => $address,
+            'items' => $items,
+            'items_summary' => $itemsSummary,
+            'items_count' => count($items) ?: (int) $order->items()->count(),
+            'notes' => $order->notes ?? '',
+            'order_url' => $orderUrl,
+        ];
+    }
 
-        return "🔔 طلب جديد على متجرك\n\n"
-            . "المتجر: {$store->name}\n"
-            . "رقم الطلب: #{$order->order_number}\n"
-            . "العميل: {$customer}\n"
-            . "الهاتف: {$order->customer_phone}\n"
-            . "الإجمالي: {$total} ₪\n"
-            . "طريقة الدفع: {$payment}\n"
-            . "طريقة التوصيل: {$shipping}\n\n"
-            . "مراجعة الطلب:\n{$orderUrl}";
+    public function resolveMessageMode(StoreWhatsappIntegration $integration): string
+    {
+        $mode = strtolower(trim((string) ($integration->message_mode ?? '')));
+        if (in_array($mode, ['template','text'], true)) return $mode;
+        $envMode = strtolower(trim((string) config('services.whatsapp.message_mode', 'text')));
+        return in_array($envMode, ['template','text'], true) ? $envMode : 'text';
+    }
+
+    public function buildTextMessage(array $payload): string
+    {
+        $itemsLine = '';
+        if (!empty($payload['items'])) {
+            $lines = [];
+            foreach ($payload['items'] as $it) $lines[] = "• {$it['name']}{$it['variant']} × {$it['qty']}";
+            $itemsLine = "\nالمنتجات:\n" . implode("\n", $lines) . "\n";
+        } elseif (!empty($payload['items_summary']) && $payload['items_summary'] !== '—') {
+            $itemsLine = "\nالمنتجات: {$payload['items_summary']}\n";
+        }
+        $notes = !empty($payload['notes']) ? "\nملاحظات: {$payload['notes']}\n" : '';
+        return "طلب جديد 🛍️\n\n"
+            . "المتجر: {$payload['store_name']}\n"
+            . "رقم الطلب: #{$payload['order_number']}\n"
+            . "العميل: {$payload['customer']}\n"
+            . "الهاتف: {$payload['phone']}\n"
+            . "الإجمالي: {$payload['total']} {$payload['symbol']}\n"
+            . "الدفع: {$payload['payment']}\n"
+            . "التوصيل: {$payload['shipping']}\n"
+            . "العنوان: {$payload['address']}\n"
+            . $itemsLine . $notes
+            . "\nرابط الطلب:\n{$payload['order_url']}";
+    }
+
+    // Kept for backward compat — delegates to new payload/text
+    private function buildMerchantMessage(Order $order): string
+    {
+        return $this->buildTextMessage($this->buildOrderPayload($order));
     }
 
     private function formatPaymentMethod(string $method): string
@@ -350,11 +477,9 @@ class MerchantWhatsAppNotifier
         return PhoneNormalizer::normalize($number);
     }
 
-    private function sendViaTwilio(string $to, string $message, StoreWhatsappIntegration $integration): array|bool
+    private function sendViaTwilio(string $to, $payloadOrMessage, StoreWhatsappIntegration $integration): array|bool
     {
-        // For per-store twilio, use integration's token (if stored) or fallback to env
-        $sid = $integration->access_token ? explode(':', $integration->access_token)[0] ?? null : null;
-        // For simplicity, per-store twilio not fully implemented; use env fallback
+        $message = is_array($payloadOrMessage) ? $this->buildTextMessage($payloadOrMessage) : (string) $payloadOrMessage;
         $sid = config('services.whatsapp.twilio_sid') ?: env('TWILIO_SID');
         $token = config('services.whatsapp.twilio_token') ?: env('TWILIO_AUTH_TOKEN');
         $from = config('services.whatsapp.twilio_from') ?: env('TWILIO_WHATSAPP_FROM');
@@ -376,60 +501,106 @@ class MerchantWhatsAppNotifier
         return false;
     }
 
-    private function sendViaMeta(string $to, string $message, StoreWhatsappIntegration $integration): array|bool
+    private function sendViaMeta(string $to, $payloadOrMessage, StoreWhatsappIntegration $integration, string $mode = 'text'): array|bool
     {
         $token = $integration->access_token;
         $phoneId = $integration->phone_number_id;
         if (!$token || !$phoneId) return false;
 
         $toClean = ltrim($to, '+');
-        $url = "https://graph.facebook.com/v18.0/{$phoneId}/messages";
+        $url = $this->graphBase() . "/{$phoneId}/messages";
+        $timeout = (int) config('services.whatsapp.timeout', 15);
 
-        // Try plain text first
-        $response = \Illuminate\Support\Facades\Http::withToken($token)
-            ->post($url, [
-                'messaging_product' => 'whatsapp',
-                'to' => $toClean,
-                'type' => 'text',
-                'text' => ['body' => $message],
-            ]);
+        $isPayload = is_array($payloadOrMessage);
+        $payload = $isPayload ? $payloadOrMessage : null;
+        $textMessage = $isPayload ? $this->buildTextMessage($payload) : (string) $payloadOrMessage;
 
-        if ($response->successful()) {
-            $data = $response->json();
-            $messageId = $data['messages'][0]['id'] ?? null;
-            return ['sent' => true, 'message_id' => $messageId];
-        }
-
-        // If Meta requires template, try to fallback to template if configured
-        $error = $response->json()['error']['message'] ?? '';
-        if (str_contains(strtolower($error), 'template')) {
-            // Attempt to send as template (merchant_new_order) if available
-            $templateResponse = \Illuminate\Support\Facades\Http::withToken($token)
-                ->post($url, [
+        // Template mode: build template request only
+        if ($mode === 'template') {
+            $templateName = $integration->template_name ?: config('services.whatsapp.template_name');
+            $templateLang = $integration->template_language ?: config('services.whatsapp.template_language', 'ar');
+            if (!$templateName) {
+                \Illuminate\Support\Facades\Log::warning('Meta WhatsApp template name missing', ['store_id'=>$integration->store_id]);
+                return false;
+            }
+            $components = $this->buildTemplateComponents($payload ?? ['order_number'=>'','customer'=>'','total'=>'','symbol'=>'','payment'=>'','order_url'=>'','items_summary'=>'']);
+            try {
+                $response = \Illuminate\Support\Facades\Http::withToken($token)->timeout($timeout)->post($url, [
                     'messaging_product' => 'whatsapp',
                     'to' => $toClean,
                     'type' => 'template',
                     'template' => [
-                        'name' => 'merchant_new_order',
-                        'language' => ['code' => 'ar'],
-                        'components' => [
-                            [
-                                'type' => 'body',
-                                'parameters' => [
-                                    ['type' => 'text', 'text' => $message],
-                                ],
-                            ],
-                        ],
+                        'name' => $templateName,
+                        'language' => ['code' => $templateLang],
+                        'components' => $components,
                     ],
                 ]);
-            if ($templateResponse->successful()) {
-                $data = $templateResponse->json();
-                $messageId = $data['messages'][0]['id'] ?? null;
-                return ['sent' => true, 'message_id' => $messageId];
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Meta WhatsApp template timeout/exception', ['error'=>$e->getMessage()]);
+                throw $e;
             }
+            if ($response->successful()) {
+                $data = $response->json();
+                return ['sent'=>true,'message_id'=>$data['messages'][0]['id'] ?? null];
+            }
+            $status = $response->status();
+            $errorMsg = $response->json()['error']['message'] ?? $response->body();
+            if ($status===401||$status===403) throw new \RuntimeException("auth_error: {$errorMsg}", $status);
+            if ($status===429) throw new \RuntimeException("rate_limited: {$errorMsg}", 429);
+            if ($status>=500) throw new \RuntimeException("provider_error: {$errorMsg}", $status);
+            \Illuminate\Support\Facades\Log::warning('Meta WhatsApp template failed (no fallback)', ['status'=>$status,'body'=>$response->body()]);
+            return false;
         }
 
-        \Illuminate\Support\Facades\Log::warning('Meta WhatsApp failed', ['status' => $response->status(), 'body' => $response->body()]);
+        // Text mode only — no silent template fallback
+        try {
+            $response = \Illuminate\Support\Facades\Http::withToken($token)->timeout($timeout)->post($url, [
+                'messaging_product' => 'whatsapp',
+                'to' => $toClean,
+                'type' => 'text',
+                'text' => ['body' => $textMessage],
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Meta WhatsApp timeout/exception', ['error' => $e->getMessage()]);
+            throw $e;
+        }
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return ['sent' => true, 'message_id' => $data['messages'][0]['id'] ?? null];
+        }
+
+        $status = $response->status();
+        $body = $response->json();
+        $errorMsg = $body['error']['message'] ?? $response->body();
+
+        if ($status === 401 || $status === 403) throw new \RuntimeException("auth_error: {$errorMsg}", $status);
+        if ($status === 429) throw new \RuntimeException("rate_limited: {$errorMsg}", 429);
+        if ($status >= 500) throw new \RuntimeException("provider_error: {$errorMsg}", $status);
+        \Illuminate\Support\Facades\Log::warning('Meta WhatsApp failed', ['status' => $status, 'body' => $response->body()]);
         return false;
+    }
+
+    private function buildTemplateComponents(array $payload): array
+    {
+        // Meta template expects ordered {{1}},{{2}}... params — map from single payload
+        // Keep summary short to fit template limits (1024 chars per param)
+        $orderNumber = substr((string)($payload['order_number'] ?? ''),0,64);
+        $customer = substr((string)($payload['customer'] ?? ''),0,64);
+        $total = substr(trim(($payload['total'] ?? '').' '.($payload['symbol'] ?? '')),0,64);
+        $payment = substr((string)($payload['payment'] ?? ''),0,64);
+        $items = substr((string)($payload['items_summary'] ?? ''),0,200);
+        if ($items === '' || $items === '—') $items = ($payload['items_count'] ?? 0) . ' منتجات';
+        $orderUrl = substr((string)($payload['order_url'] ?? ''),0,200);
+        return [
+            ['type'=>'body','parameters'=>[
+                ['type'=>'text','text'=>$orderNumber],
+                ['type'=>'text','text'=>$customer],
+                ['type'=>'text','text'=>$total],
+                ['type'=>'text','text'=>$payment],
+                ['type'=>'text','text'=>$items],
+                ['type'=>'text','text'=>$orderUrl],
+            ]]
+        ];
     }
 }

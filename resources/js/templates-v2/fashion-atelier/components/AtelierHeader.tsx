@@ -19,6 +19,8 @@ interface AtelierHeaderProps {
 export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) => {
   const { config, store, cart, auth, ui, wishlist, product, content, order, behavior } = useStorefrontCore() as any;
   const accountsOn = behavior?.customer_accounts_enabled !== false;
+  const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
+  const canShowAuth = accountsOn && (auth?.isLoggedIn || loginEnabled);
   const [scrolled, setScrolled] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -122,12 +124,12 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
               </span>
             )}
           </button>
-          {accountsOn && (
+          {canShowAuth && (
           <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 sm:block">
             <Package className="h-5 w-5" strokeWidth={1.7} />
           </button>
           )}
-          {accountsOn && (
+          {canShowAuth && (
           <button type="button" onClick={openAccount} aria-label="حسابي" className="hidden rounded-full p-2 text-stone-700 transition hover:bg-stone-100 sm:block">
             <User className="h-5 w-5" strokeWidth={1.7} />
           </button>
@@ -198,7 +200,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
                 ))}
               </div>
             </nav>
-            {accountsOn && (
+            {canShowAuth && (
             <div className="border-t border-stone-200 p-4">
               <button
                 type="button"

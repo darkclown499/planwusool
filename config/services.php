@@ -98,6 +98,13 @@ return [
         'cloud_token' => env('WHATSAPP_CLOUD_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
         'business_account_id' => env('WHATSAPP_BUSINESS_ACCOUNT_ID'),
+        'graph_version' => env('WHATSAPP_GRAPH_VERSION', 'v18.0'),
+        'graph_url' => env('WHATSAPP_GRAPH_URL', 'https://graph.facebook.com'),
+        'timeout' => 15,
+        'message_mode' => env('WHATSAPP_MESSAGE_MODE', 'text'), // text | template
+        'template_name' => env('WHATSAPP_ORDER_TEMPLATE_NAME', ''),
+        'template_language' => env('WHATSAPP_ORDER_TEMPLATE_LANGUAGE', 'ar'),
+        'queue' => env('WHATSAPP_QUEUE', 'notifications'),
         'twilio_sid' => env('TWILIO_SID'),
         'twilio_token' => env('TWILIO_AUTH_TOKEN'),
         'twilio_from' => env('TWILIO_WHATSAPP_FROM'),

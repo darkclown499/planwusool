@@ -29,7 +29,14 @@ class FeatureService
         'show_auth_button',
         'show_whatsapp_order_button',
         'customer_accounts_enabled',
+        'enable_customer_login',
+        'customer_registration_enabled',
+        'enable_customer_registration', // legacy alias — mapped to customer_registration_enabled
     ];
+
+    /** Enum-like verification method values */
+    public const VERIFICATION_METHODS = ['none', 'email'];
+    public const VERIFICATION_DEFAULT = 'email';
 
     /**
      * Advanced checkout/store settings toggles (Phase 5):
@@ -59,6 +66,10 @@ class FeatureService
         'whatsapp_widget_show_on_mobile' => true,
         'whatsapp_widget_show_on_desktop' => true,
         'customer_accounts_enabled' => true,
+        'guest_checkout' => true,
+        'enable_customer_login' => true,
+        'enable_customer_registration' => true,
+        'customer_registration_enabled' => true,
     ];
 
     /** Payment gateways catalog (method => label). */
@@ -185,6 +196,7 @@ class FeatureService
 
     /**
      * Feature tree for the UI. Only UI/UX toggles live here.
+     * Also exposes customer_verification_method as enum-like setting.
      */
     public static function getFeatures(Store $store, ?int $ownerId = null): array
     {
@@ -193,8 +205,21 @@ class FeatureService
         $behavior = [];
         foreach (self::BEHAVIOR_FEATURES as $key) {
             $default = self::DEFAULT_ON[$key] ?? false;
+            // Deduplicate alias: only emit canonical customer_registration_enabled
+            if ($key === 'enable_customer_registration') continue;
             $behavior[] = self::item($key, self::labelFor($key), self::descFor($key), (bool) ($config[$key] ?? $default));
         }
+        // Append verification method as a selectable enum item (not a boolean toggle)
+        $verificationMethod = $config['customer_verification_method'] ?? self::VERIFICATION_DEFAULT;
+        $behavior[] = [
+            'key' => 'customer_verification_method',
+            'label' => self::labelFor('customer_verification_method'),
+            'description' => self::descFor('customer_verification_method'),
+            'enabled' => $verificationMethod === 'email',
+            'value' => $verificationMethod,
+            'locked' => false,
+            'lockReason' => '',
+        ];
 
         $settings = [];
         foreach (self::SETTINGS_FEATURES as $key) {
@@ -208,12 +233,42 @@ class FeatureService
         ];
     }
 
+    public static function getCustomerVerificationMethod(Store $store): string
+    {
+        $config = StoreConfiguration::getConfiguration($store->id);
+        $raw = strtolower(trim((string)($config['customer_verification_method'] ?? self::VERIFICATION_DEFAULT)));
+        return in_array($raw, self::VERIFICATION_METHODS, true) ? $raw : self::VERIFICATION_DEFAULT;
+    }
+
+    public static function setCustomerVerificationMethod(Store $store, string $method): bool
+    {
+        $method = strtolower(trim($method));
+        if (!in_array($method, self::VERIFICATION_METHODS, true)) return false;
+        // Gate email verification behind connected mail
+        if ($method === 'email' && !\App\Services\StoreMailService::isConnected($store)) {
+            return false;
+        }
+        StoreConfiguration::setConfiguration($store->id, 'customer_verification_method', $method);
+        return true;
+    }
+
     /**
      * Set a single UI/UX toggle. Returns true on success; false when the key
      * is unknown or locked by the plan.
+     * Handles canonical alias for registration: both keys map to same storage.
      */
     public static function setFeature(Store $store, string $key, bool $enabled): bool
     {
+        // Registration alias: both map to canonical customer_registration_enabled
+        if (in_array($key, ['customer_registration_enabled','enable_customer_registration'], true)) {
+            StoreConfiguration::setConfiguration($store->id, 'customer_registration_enabled', $enabled ? 'true' : 'false');
+            StoreConfiguration::setConfiguration($store->id, 'enable_customer_registration', $enabled ? 'true' : 'false');
+            return true;
+        }
+        // Verification method is enum — not handled via boolean
+        if ($key === 'customer_verification_method') {
+            return false;
+        }
         // Storefront behavior toggles
         if (in_array($key, self::BEHAVIOR_FEATURES, true)) {
             StoreConfiguration::setConfiguration($store->id, $key, $enabled ? 'true' : 'false');
@@ -276,9 +331,11 @@ class FeatureService
             'show_auth_button' => 'تسجيل الدخول',
             'show_whatsapp_order_button' => 'الطلب عبر واتساب',
             'enable_customer_login' => 'تسجيل دخول العملاء',
+            'customer_registration_enabled' => 'تسجيل عملاء جدد',
             'enable_customer_registration' => 'تسجيل عملاء جدد',
             'require_login_checkout' => 'إلزام الدخول قبل الدفع',
             'customer_accounts_enabled' => 'حسابات العملاء',
+            'customer_verification_method' => 'تفعيل الحسابات الجديدة',
             'whatsapp_widget_enabled' => 'زر واتساب العائم',
             'whatsapp_widget_show_on_mobile' => 'إظهار في الجوال',
             'whatsapp_widget_show_on_desktop' => 'إظهار في الكمبيوتر',
@@ -296,9 +353,11 @@ class FeatureService
             'show_auth_button' => 'زر تسجيل الدخول/الحساب للعملاء.',
             'show_whatsapp_order_button' => 'زر إتمام الطلب عبر واتساب.',
             'enable_customer_login' => 'السماح للعملاء بتسجيل الدخول ومتابعة طلباتهم.',
+            'customer_registration_enabled' => 'السماح بإنشاء حسابات عملاء جديدة.',
             'enable_customer_registration' => 'السماح بإنشاء حسابات عملاء جديدة.',
             'require_login_checkout' => 'يتطلب تسجيل الدخول قبل إتمام الطلب.',
             'customer_accounts_enabled' => 'تفعيل نظام حسابات العملاء بالكامل — عند الإيقاف يختفي زر الدخول ويمنع التسجيل.',
+            'customer_verification_method' => 'كيف تريد تفعيل حساب العميل بعد التسجيل؟ بدون تحقق أو برمز عبر البريد.',
             'whatsapp_widget_enabled' => 'زر واتساب العائم في زاوية المتجر.',
             'whatsapp_widget_show_on_mobile' => 'إظهار الزر العائم على شاشات الجوال.',
             'whatsapp_widget_show_on_desktop' => 'إظهار الزر العائم على شاشات الكمبيوتر.',

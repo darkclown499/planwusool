@@ -55,11 +55,24 @@ class CourierWebhookController extends Controller
 
         // Map status
         $canonical = $registryProvider->mapStatus($status);
+        $old = $shipment->status;
         $shipment->update([
             'status'=>$canonical,
             'provider_status'=>$status,
             'delivered_at'=> $canonical === 'delivered' ? now() : $shipment->delivered_at,
         ]);
+
+        // Dispatch merchant email for shipment status changes (afterCommit, store isolated)
+        try {
+            $order = $shipment->order;
+            if ($order && $order->customer_email && $old !== $canonical) {
+                $map = ['in_transit'=>'shipment_in_transit','out_for_delivery'=>'shipment_out_for_delivery','delivered'=>'shipment_delivered','failed'=>'shipment_failed','returned'=>'shipment_returned'];
+                $type = $map[$canonical] ?? null;
+                if ($type) {
+                    \App\Jobs\SendStoreCustomerEmail::dispatch($shipment->store_id, $type, $order->customer_email, $order->id, $shipment->id, $order->customer_id)->afterCommit();
+                }
+            }
+        } catch (\Throwable $e) { \Log::warning('Shipment webhook email failed', ['shipment_id'=>$shipment->id,'error'=>$e->getMessage()]); }
 
         return response()->json(['success'=>true]);
     }

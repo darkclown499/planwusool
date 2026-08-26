@@ -40,6 +40,8 @@ function categoryIcon(name: string) {
 export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   const { config, store, cart, auth, ui, wishlist, product, content, order, behavior } = useStorefrontCore() as any;
   const accountsOn = behavior?.customer_accounts_enabled !== false;
+  const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
+  const canShowAuth = accountsOn && (auth?.isLoggedIn || loginEnabled);
   const [q, setQ] = useState('');
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
@@ -110,15 +112,15 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
           <div className="hidden sm:block">
             <HeaderLoyaltyBadge />
           </div>
-          {accountsOn && (
+          {canShowAuth && (
           <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-lg border border-white/20 bg-white/10 p-2 text-white transition-colors hover:bg-white/20 sm:block">
             <Package className="h-5 w-5" strokeWidth={1.8} />
           </button>
           )}
-          {accountsOn && (
+          {canShowAuth && (
           <button
             type="button"
-            onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))}
+            onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)))}
             aria-label="حسابي"
             className="hidden rounded-lg border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 sm:block"
           >

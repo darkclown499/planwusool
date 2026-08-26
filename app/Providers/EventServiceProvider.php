@@ -31,7 +31,8 @@ class EventServiceProvider extends ServiceProvider
             HandleWebhooks::class . '@handleUserCreated',
         ],
         OrderCreated::class => [
-            SendOrderCreatedEmail::class,
+            // Merchant-owned transactional email (store isolated, queued, no Wusool fallback)
+            \App\Listeners\DispatchStoreCustomerEmails::class . '@handleOrderCreated',
             SendOrderCreatedMessaging::class,
             SendUniversalNotification::class . '@handleOrderCreated',
             HandleWebhooks::class . '@handleOrderCreated',
@@ -41,7 +42,7 @@ class EventServiceProvider extends ServiceProvider
             SendStoreCreatedEmail::class,
         ],
         OrderStatusChanged::class => [
-            SendOrderStatusChangedEmail::class,
+            \App\Listeners\DispatchStoreCustomerEmails::class . '@handleOrderStatusChanged',
             SendUniversalNotification::class . '@handleOrderStatusChanged',
             HandleWebhooks::class . '@handleOrderStatusChanged',
             CreateMerchantNotifications::class . '@onOrderStatusChanged',

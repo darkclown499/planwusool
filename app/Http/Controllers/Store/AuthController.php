@@ -48,18 +48,27 @@ class AuthController extends Controller
                     $customer->refresh();
                 }
                 if (is_null($customer->email_verified_at)) {
-                    // Unverified — do not login, prompt verification
-                    if ($request->expectsJson() || $request->header('X-Inertia')) {
-                        return response()->json([
-                            'success' => false,
-                            'requires_verification' => true,
-                            'email' => $customer->email,
-                            'message' => 'يجب تأكيد بريدك الإلكتروني أولاً.',
-                        ], 401);
+                    // Only enforce verification when store requires email verification
+                    $method = $this->verificationMethod($store);
+                    if ($method === 'none') {
+                        // Auto-verify legacy unverified when store switched to none
+                        $customer->update(['email_verified_at' => now()]);
+                        $customer->refresh();
+                    } else {
+                        // Unverified — do not login, prompt verification
+                        if ($request->expectsJson() || $request->header('X-Inertia')) {
+                            return response()->json([
+                                'success' => false,
+                                'requires_verification' => true,
+                                'email_verification_required' => true,
+                                'email' => $customer->email,
+                                'message' => 'يجب تأكيد بريدك الإلكتروني قبل تسجيل الدخول.',
+                            ], 401);
+                        }
+                        throw ValidationException::withMessages([
+                            'email' => ['يجب تأكيد بريدك الإلكتروني قبل تسجيل الدخول.'],
+                        ]);
                     }
-                    throw ValidationException::withMessages([
-                        'email' => ['يجب تأكيد بريدك الإلكتروني أولاً.'],
-                    ]);
                 }
 
                 Auth::guard('customer')->login($customer, $request->boolean('remember'));
@@ -124,8 +133,11 @@ class AuthController extends Controller
         if (!$this->customerAccountsEnabled($store)) {
             abort(403, 'حسابات العملاء غير مفعلة في هذا المتجر.');
         }
-        if (!$this->behavior($store)['enable_customer_registration']) {
-            abort(403, 'Customer registration is disabled for this store.');
+        if (!$this->behavior($store)['customer_registration_enabled']) {
+            if ($request->expectsJson() || $request->header('X-Inertia') || $request->wantsJson()) {
+                return response()->json(['success'=>false,'registration_disabled'=>true,'message'=>'إنشاء الحسابات غير متاح في هذا المتجر.'], 403);
+            }
+            abort(403, 'إنشاء الحسابات غير متاح في هذا المتجر.');
         }
         
         if ($request->isMethod('post')) {
@@ -142,8 +154,9 @@ class AuthController extends Controller
                 ->first();
 
             if ($existingCustomer) {
-                // If existing is unverified (recent), allow resend instead of duplicate error
-                if (is_null($existingCustomer->email_verified_at) && $existingCustomer->created_at && $existingCustomer->created_at->gt(now()->subHour())) {
+                $methodForExisting = $this->verificationMethod($store);
+                // If existing is unverified (recent) and verification is email, allow resend instead of duplicate error
+                if ($methodForExisting === 'email' && is_null($existingCustomer->email_verified_at) && $existingCustomer->created_at && $existingCustomer->created_at->gt(now()->subHour())) {
                     // Resend OTP for unverified recent duplicate
                     try {
                         app(\App\Services\CustomerEmailOtpService::class)->generate($existingCustomer, $store);
@@ -162,6 +175,33 @@ class AuthController extends Controller
                 throw ValidationException::withMessages([
                     'email' => [__('A customer with this email already exists.')],
                 ]);
+            }
+
+            $verificationMethod = $this->verificationMethod($store);
+
+            // CASE: verification none → create active customer and authenticate immediately
+            if ($verificationMethod === 'none') {
+                $customer = Customer::create([
+                    'store_id' => $store->id,
+                    'first_name' => $request->first_name,
+                    'last_name' => $request->last_name,
+                    'email' => $request->email,
+                    'password' => $request->password,
+                    'phone' => $request->phone,
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                ]);
+                Auth::guard('customer')->login($customer);
+                $request->session()->regenerate();
+                // Loyalty bonus after immediate verification
+                try {
+                    $existing = \App\Models\LoyaltyTransaction::where('store_id',$store->id)->where('customer_id',$customer->id)->where('type','signup_bonus')->exists();
+                    if (!$existing) app(\App\Services\LoyaltyService::class)->awardSignupBonus($customer);
+                } catch (\Throwable $e) {}
+                if ($request->expectsJson() || $request->header('X-Inertia') || $request->wantsJson()) {
+                    return response()->json(['success'=>true,'requires_verification'=>false,'email'=>$customer->email,'message'=>'تم إنشاء الحساب بنجاح'], 200);
+                }
+                return back()->with('success','تم إنشاء الحساب بنجاح');
             }
 
             $customer = Customer::create([
@@ -473,19 +513,34 @@ class AuthController extends Controller
     }
 
     /**
-     * Read storefront behavior toggles for this store.
+     * Read storefront behavior toggles for this store — single source of truth.
      */
     private function behavior(Store $store): array
     {
         $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
         $master = (bool) ($config['customer_accounts_enabled'] ?? true);
+        $loginRaw = (bool) ($config['enable_customer_login'] ?? true);
+        $showAuthRaw = (bool) ($config['show_auth_button'] ?? true);
+        $effectiveLogin = $master && $loginRaw && $showAuthRaw;
+        $effectiveRegistration = $master && (bool) ($config['customer_registration_enabled'] ?? $config['enable_customer_registration'] ?? true);
+        $verificationMethod = strtolower(trim((string)($config['customer_verification_method'] ?? 'email')));
+        $verificationMethod = in_array($verificationMethod, ['none','email'], true) ? $verificationMethod : 'email';
 
         return [
-            'enable_customer_login' => $master && (bool) ($config['enable_customer_login'] ?? true),
-            'enable_customer_registration' => $master && (bool) ($config['enable_customer_registration'] ?? true),
+            'enable_customer_login' => $effectiveLogin,
+            'enable_customer_registration' => $effectiveRegistration,
+            'customer_registration_enabled' => $effectiveRegistration,
             'require_login_checkout' => $master && (bool) ($config['require_login_checkout'] ?? false),
             'customer_accounts_enabled' => $master,
+            'guest_checkout' => $master ? (bool) ($config['guest_checkout'] ?? true) : true,
+            'show_auth_button' => $effectiveLogin,
+            'customer_verification_method' => $verificationMethod,
         ];
+    }
+
+    private function verificationMethod(Store $store): string
+    {
+        return $this->behavior($store)['customer_verification_method'];
     }
 
     private function customerAccountsEnabled(Store $store): bool

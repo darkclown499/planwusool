@@ -39,9 +39,42 @@ interface AuthGateProps {
     onClose: () => void;
     onLogin: () => void;
     onContinueAsGuest: () => void;
+    loginEnabled?: boolean;
+    guestEnabled?: boolean;
 }
 
-export const TemplateAuthGate: React.FC<AuthGateProps> = ({ onClose, onLogin, onContinueAsGuest }) => {
+export const TemplateAuthGate: React.FC<AuthGateProps> = ({ onClose, onLogin, onContinueAsGuest, loginEnabled = true, guestEnabled = true }) => {
+    // If only one option is available, auto-route: show only that button
+    if (!loginEnabled && guestEnabled) {
+        return (
+            <ModalShell onClose={onClose}>
+                <div className="relative p-6 text-center" style={{ background: primarySoft }}>
+                    <button type="button" onClick={onClose} aria-label="إغلاق" className="absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/10"><X className="h-5 w-5" /></button>
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg" style={{ background: primary }}><ShoppingBag className="h-8 w-8" /></div>
+                    <h2 className="text-xl font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>المتابعة كضيف</h2>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>تسجيل الدخول غير متاح حالياً — تابع طلبك كضيف</p>
+                </div>
+                <div className="space-y-3 p-6">
+                    <button type="button" onClick={onContinueAsGuest} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 py-3.5 font-bold transition hover:opacity-90" style={{ background: 'var(--twc-background, #ffffff)', borderColor: primary, color: primary }}><UserCheck className="h-5 w-5" />المتابعة كضيف</button>
+                </div>
+            </ModalShell>
+        );
+    }
+    if (loginEnabled && !guestEnabled) {
+        return (
+            <ModalShell onClose={onClose}>
+                <div className="relative p-6 text-center" style={{ background: primarySoft }}>
+                    <button type="button" onClick={onClose} aria-label="إغلاق" className="absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/10"><X className="h-5 w-5" /></button>
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg" style={{ background: primary }}><ShoppingBag className="h-8 w-8" /></div>
+                    <h2 className="text-xl font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>سجل الدخول للمتابعة</h2>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>الدفع كزائر غير متاح — سجل الدخول لإتمام الطلب</p>
+                </div>
+                <div className="space-y-3 p-6">
+                    <button type="button" onClick={onLogin} className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-white transition hover:opacity-90" style={{ background: primary }}><User className="h-5 w-5" />تسجيل الدخول إلى حسابك</button>
+                </div>
+            </ModalShell>
+        );
+    }
     return (
         <ModalShell onClose={onClose}>
             <div className="relative p-6 text-center" style={{ background: primarySoft }}>
@@ -140,8 +173,8 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
     } = useAuthForm();
     const { behavior } = useStore();
     const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
-    const registerEnabled = customerAccountsEnabled && behavior?.enable_customer_registration !== false;
-    const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false;
+    const registerEnabled = customerAccountsEnabled && (behavior?.customer_registration_enabled ?? behavior?.enable_customer_registration) !== false;
+    const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -192,7 +225,8 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                     <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/5"><X className="h-5 w-5" /></button>
                 </div>
                 <div className="space-y-4 p-5 text-center">
-                    <p className="text-sm" style={{ color:'var(--twc-text-muted,#6b7280)' }}>أرسلنا رمز تحقق إلى <span className="font-bold" dir="ltr">{otpEmail}</span></p>
+                    <p className="text-sm" style={{ color:'var(--twc-text-muted,#6b7280)' }}>أرسلنا رمز تحقق إلى<br/><span className="font-bold" dir="ltr">{(() => { const e = otpEmail || ''; const at = e.indexOf('@'); if (at<=1) return e; return e[0] + '***' + e.slice(at); })()}</span><span className="text-xs text-slate-400 block mt-1" dir="ltr">{otpEmail}</span></p>
+                    <p className="text-xs" style={{ color:'var(--twc-text-muted,#9ca3af)' }}>ينتهي الرمز خلال 10 دقائق · إذا لم تطلب إنشاء هذا الحساب، تجاهل الرسالة.</p>
                     <div className="flex justify-center gap-1.5 sm:gap-2" dir="ltr" onPaste={handleOtpPaste}>
                         {[0,1,2,3,4,5].map((i)=>(
                             <input key={i} ref={(el)=>{otpRefs.current[i]=el}} type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={1} value={digits[i]?.trim()||''} onChange={(e)=>handleOtpInput(i,e.target.value)} onKeyDown={(e)=>handleOtpKeyDown(i,e)} className="h-12 w-10 rounded-xl border text-center text-lg font-bold focus:outline-none focus:ring-2 sm:h-12 sm:w-11" style={{ borderColor:'var(--twc-border,#e5e7eb)' }} />
@@ -200,7 +234,7 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                     </div>
                     {otpError && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{otpError}</div>}
                     {errors && Object.keys(errors).length>0 && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{Object.entries(errors).map(([k,m])=> <p key={k}>{String(m)}</p>)}</div>}
-                    <button type="button" disabled={isLoading || otpCode.length!==6} onClick={()=>handleVerifyOtp(storeSlug!, ()=>{ onLoginSuccess(); onClose(); })} className="w-full rounded-xl py-3.5 font-bold text-white disabled:opacity-60" style={{ background:primary }}>{isLoading?'جاري التحقق...':'تأكيد الحساب'}</button>
+                    <button type="button" disabled={isLoading || otpCode.length!==6} onClick={()=>handleVerifyOtp(storeSlug!, ()=>{ onLoginSuccess(); onClose(); })} className="w-full rounded-xl py-3.5 font-bold text-white disabled:opacity-60" style={{ background:primary }}>{isLoading?'جاري التحقق...':'تأكيد الرمز'}</button>
                     <div className="flex items-center justify-between text-sm">
                         <button type="button" disabled={resendIn>0 || isLoading} onClick={()=>handleResendOtp(storeSlug!)} className="font-semibold disabled:opacity-50 hover:underline" style={{ color:primary }}>{resendIn>0 ? `إعادة الإرسال بعد ${resendIn} ثانية` : 'إعادة إرسال الرمز'}</button>
                         <button type="button" onClick={()=>{ setOtpStep('form'); setOtpCode(''); }} className="font-semibold hover:underline" style={{ color:'var(--twc-text-muted,#6b7280)' }}>العودة</button>

@@ -10,6 +10,9 @@ class StoreWhatsappIntegration extends Model
     protected $fillable = [
         'store_id',
         'provider',
+        'message_mode',
+        'template_name',
+        'template_language',
         'access_token',
         'phone_number_id',
         'waba_id',

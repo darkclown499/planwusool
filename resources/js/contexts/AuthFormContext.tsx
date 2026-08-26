@@ -121,7 +121,7 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
         return;
       }
       // Unverified case: 401 with requires_verification
-      if (data?.requires_verification) {
+      if (data?.requires_verification || data?.email_verification_required) {
         setOtpEmail(data.email || email);
         setOtpStep('otp');
         setOtpCode('');
@@ -148,6 +148,11 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
       body: JSON.stringify({ first_name:firstName, last_name:lastName, email, phone, password, password_confirmation:confirmPassword }),
     }).then(async (res) => {
       const data = await res.json().catch(()=> ({}));
+      if (data?.registration_disabled) {
+        setErrors({ email:[data.message || 'إنشاء الحسابات غير متاح في هذا المتجر.'] });
+        setIsLoading(false);
+        return;
+      }
       if (data?.requires_verification) {
         setOtpEmail(data.email || email);
         setOtpStep('otp');
@@ -157,7 +162,7 @@ export const AuthFormProvider: React.FC<AuthFormProviderProps> = ({
         return;
       }
       if (res.ok && data?.success!==false) {
-        // Fallback: if server logged in directly (legacy), treat as success
+        // Verification none: direct login
         try { document.cookie = `wusool_customer=1; domain=.wusool.ps; path=/; SameSite=Lax`; } catch {}
         router.reload({ only:['isLoggedIn','customer','customer_address'] });
         onSuccess();

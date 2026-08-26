@@ -40,10 +40,16 @@ class MerchantWhatsAppController extends Controller
                 'business_phone' => $integration->business_phone ?? '',
                 'notification_phone' => $integration->notification_phone ?? '',
                 'notification_phone_masked' => $integration && $integration->notification_phone ? PhoneNormalizer::mask(PhoneNormalizer::normalize($integration->notification_phone) ?: $integration->notification_phone) : '',
+                'message_mode' => $integration->message_mode ?? config('services.whatsapp.message_mode','text'),
+                'template_name' => $integration->template_name ?? config('services.whatsapp.template_name',''),
+                'template_language' => $integration->template_language ?? config('services.whatsapp.template_language','ar'),
                 'status' => $status,
                 'integration' => $integration ? [
                     'id' => $integration->id,
                     'provider' => $integration->provider,
+                    'message_mode' => $integration->message_mode ?? 'text',
+                    'template_name' => $integration->template_name,
+                    'template_language' => $integration->template_language,
                     'connection_status' => $integration->connection_status,
                     'last_verified_at' => $integration->last_verified_at,
                     'last_error' => $integration->last_error,
@@ -71,6 +77,9 @@ class MerchantWhatsAppController extends Controller
             'business_phone' => 'nullable|string|max:20',
             'notification_phone' => 'nullable|string|max:20',
             'is_enabled' => 'required|boolean',
+            'message_mode' => 'nullable|in:text,template',
+            'template_name' => 'nullable|string|max:100',
+            'template_language' => 'nullable|string|max:20',
         ]);
 
         [$userId, $storeId] = $this->resolveStoreContext($user, $id);
@@ -107,6 +116,24 @@ class MerchantWhatsAppController extends Controller
         $isEnabled = $request->boolean('is_enabled');
         $integration->is_enabled = $isEnabled;
 
+        // Message mode & template
+        if ($request->has('message_mode')) {
+            $mode = strtolower(trim((string)$request->input('message_mode')));
+            if (in_array($mode, ['text','template'], true)) $integration->message_mode = $mode;
+        } elseif (!$integration->exists || empty($integration->message_mode)) {
+            $integration->message_mode = config('services.whatsapp.message_mode','text');
+        }
+        if ($request->has('template_name')) $integration->template_name = trim((string)$request->input('template_name')) ?: null;
+        if ($request->has('template_language')) $integration->template_language = trim((string)$request->input('template_language')) ?: null;
+        if (($integration->message_mode ?? 'text') === 'template') {
+            if ($isEnabled && empty($integration->template_name)) {
+                return back()->withErrors(['template_name'=>'اسم القالب مطلوب عند اختيار وضع القالب']);
+            }
+            if ($isEnabled && empty($integration->template_language)) {
+                $integration->template_language = config('services.whatsapp.template_language','ar');
+            }
+        }
+
         // Notification phone (recipient)
         $notifPhone = trim((string) $request->input('notification_phone', ''));
         if ($notifPhone !== '') {
@@ -122,8 +149,8 @@ class MerchantWhatsAppController extends Controller
             }
         }
 
-        // If credentials changed, reset connection status to disconnected
-        $wasDirty = $integration->isDirty(['access_token', 'phone_number_id', 'waba_id']);
+        // If credentials or template changed, reset connection status to disconnected
+        $wasDirty = $integration->isDirty(['access_token', 'phone_number_id', 'waba_id','message_mode','template_name','template_language']);
         if ($wasDirty) {
             $integration->connection_status = 'disconnected';
             $integration->last_verified_at = null;

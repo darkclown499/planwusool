@@ -33,6 +33,9 @@ export default function MerchantWhatsapp({ whatsappSettings, storeId }: Props) {
     business_phone: whatsappSettings.business_phone || '',
     notification_phone: whatsappSettings.notification_phone || '',
     is_enabled: isEnabled || false,
+    message_mode: whatsappSettings.message_mode || 'text',
+    template_name: whatsappSettings.template_name || '',
+    template_language: whatsappSettings.template_language || 'ar',
   });
 
   const [verifyLoading, setVerifyLoading] = useState(false);
@@ -234,6 +237,35 @@ export default function MerchantWhatsapp({ whatsappSettings, storeId }: Props) {
                   <p className="text-xs text-muted-foreground mt-1">سيتم إرسال إشعارات الطلبات الجديدة إلى هذا الرقم حتى عندما لا تكون داخل لوحة التحكم.</p>
                   {errors.notification_phone && <p className="text-sm text-red-600">{errors.notification_phone}</p>}
                 </div>
+                {/* Advanced template mode */}
+                <details className="rounded-xl border p-3 bg-muted/20">
+                  <summary className="cursor-pointer text-sm font-semibold">إعدادات متقدمة — قالب رسالة الطلب</summary>
+                  <p className="text-xs text-muted-foreground mt-2 mb-3">قد تتطلب Meta استخدام قالب رسالة معتمد للإشعارات الاستباقية خارج نافذة 24 ساعة. الافتراضي <b>نص حر</b> يعمل عندما يكون الرقم ضمن النافذة أو في بيئة الاختبار؛ إذا رفضت Meta النص ستحتاج قالباً معتمداً.</p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label>وضع الإرسال</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Button type="button" size="sm" variant={data.message_mode==='text'?'default':'outline'} onClick={()=>setData('message_mode','text')}>نص حر (text)</Button>
+                        <Button type="button" size="sm" variant={data.message_mode==='template'?'default':'outline'} onClick={()=>setData('message_mode','template')}>قالب معتمد (template)</Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">في وضع القالب لن يرسل النظام نصاً حراً أبداً — سيُسجل فشلاً واضحاً إذا كان القالب غير مهيأ.</p>
+                    </div>
+                    {data.message_mode==='template' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <Label>اسم القالب <span className="text-red-500">*</span></Label>
+                          <Input dir="ltr" placeholder="order_notification" value={data.template_name} onChange={(e)=>setData('template_name',e.target.value)} className="text-left" />
+                          {errors.template_name && <p className="text-sm text-red-600">{errors.template_name}</p>}
+                        </div>
+                        <div>
+                          <Label>اللغة</Label>
+                          <Input dir="ltr" placeholder="ar" value={data.template_language} onChange={(e)=>setData('template_language',e.target.value)} className="text-left" />
+                          <p className="text-xs text-muted-foreground mt-1">مثل ar أو en_US</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </details>
                 <div className="flex items-center justify-between rounded-xl border p-3">
                   <div>
                     <Label>تفعيل إشعارات الطلبات عبر واتساب</Label>

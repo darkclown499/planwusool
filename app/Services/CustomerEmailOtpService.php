@@ -55,17 +55,33 @@ class CustomerEmailOtpService
             'used' => false,
         ]);
 
-        // Send email using store mail config if available
+        // Send email using THIS STORE's merchant-owned config — NO Wusool fallback
+        $storeMailReady = \App\Services\StoreMailService::isConnected($store);
+        if (!$storeMailReady) {
+            // Do not fallback to Wusool; fail gracefully and keep OTP for resend after merchant fixes config
+            \Log::warning('Customer OTP email blocked: store mail not connected', ['customer_id'=>$customer->id,'store_id'=>$store->id,'status'=>\App\Services\StoreMailService::getStatus($store)]);
+            throw new \RuntimeException('email_failed:store_mail_not_connected');
+        }
         try {
-            \App\Services\MailConfigService::setStoreMailConfig($store->user_id, $store->id);
-        } catch (\Throwable $e) {}
-        try {
-            Mail::to($customer->email)->send(new CustomerEmailVerificationMail($code, $store->name));
+            $logo = null;
+            try {
+                $conf = \App\Models\StoreConfiguration::getConfiguration($store->id);
+                $logo = $conf['logo'] ?? ($store->store_content['brand']['logo'] ?? null);
+                if ($logo) { $logo = \Illuminate\Support\Facades\Storage::url($logo); }
+                if ($logo && !str_starts_with($logo, 'http')) {
+                    $logo = $logo;
+                }
+            } catch (\Throwable $e) { $logo = null; }
+            \App\Services\StoreMailService::sendViaStore($store, new CustomerEmailVerificationMail($code, $store->name, $logo), $customer->email);
         } catch (\Throwable $e) {
-            // Do not expose code; log without secret
-            \Log::warning('Customer OTP email failed', ['customer_id'=>$customer->id,'store_id'=>$store->id,'error'=>$e->getMessage()]);
-            // Keep OTP so resend can work, but inform caller email failed
-            throw new \RuntimeException('email_failed:'.$e->getMessage());
+            $msg = $e->getMessage();
+            // Mask sensitive details: never expose mail config in message to frontend
+            if (str_contains($msg, 'store_mail_not')) {
+                \Log::warning('Customer OTP email failed: store mail not ready', ['customer_id'=>$customer->id,'store_id'=>$store->id,'error'=>$msg]);
+                throw new \RuntimeException('email_failed:store_mail_not_connected');
+            }
+            \Log::warning('Customer OTP email failed', ['customer_id'=>$customer->id,'store_id'=>$store->id,'error'=>'send_failed']);
+            throw new \RuntimeException('email_failed:send_failed');
         }
 
         return $otp;

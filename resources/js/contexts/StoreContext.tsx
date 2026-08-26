@@ -65,12 +65,15 @@ interface StoreContextType {
     behavior?: {
         enable_customer_login?: boolean;
         enable_customer_registration?: boolean;
+        customer_registration_enabled?: boolean;
         require_login_checkout?: boolean;
         show_whatsapp_order_button?: boolean;
         show_search?: boolean;
         show_cart?: boolean;
         show_auth_button?: boolean;
         customer_accounts_enabled?: boolean;
+        guest_checkout?: boolean;
+        customer_verification_method?: 'none' | 'email';
     };
 }
 

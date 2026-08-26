@@ -323,6 +323,18 @@ export function AppSidebar() {
                         activePaths: [`/stores/${currentStoreId}/customer-accounts`],
                     },
                     {
+                        title: 'إعدادات البريد',
+                        href: `/stores/${currentStoreId}/email-settings`,
+                        icon: Mail,
+                        activePaths: [`/stores/${currentStoreId}/email-settings`],
+                    },
+                    {
+                        title: 'إشعارات البريد',
+                        href: `/stores/${currentStoreId}/notifications/email`,
+                        icon: Mail,
+                        activePaths: [`/stores/${currentStoreId}/notifications/email`],
+                    },
+                    {
                         title: 'إشعارات الطلبات',
                         href: `/stores/${currentStoreId}/notifications/whatsapp`,
                         icon: Bell,

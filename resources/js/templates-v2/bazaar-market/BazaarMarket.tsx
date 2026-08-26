@@ -27,6 +27,8 @@ import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
 export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
   const { config, store, cart, auth, ui, wishlist, product, content, order, behavior } = useStorefrontCore() as any;
   const accountsOn = behavior?.customer_accounts_enabled !== false;
+  const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
+  const canShowAuth = accountsOn && (auth?.isLoggedIn || loginEnabled);
   const [scrolled, setScrolled] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   useEffect(() => {
@@ -75,15 +77,15 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
               <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">{wishlist.count}</span>
             )}
           </button>
-          {accountsOn && (
+          {canShowAuth && (
           <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 sm:block">
             <Package className="h-5 w-5" strokeWidth={1.8} />
           </button>
           )}
-          {accountsOn && (
+          {canShowAuth && (
           <button
             type="button"
-            onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))}
+            onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)))}
             aria-label="حسابي"
             className="hidden rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 sm:block"
           >

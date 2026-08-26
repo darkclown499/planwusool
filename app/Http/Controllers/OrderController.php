@@ -438,6 +438,11 @@ class OrderController extends Controller
         if ($oldStatus !== $request->status) {
             event(new \App\Events\OrderStatusChanged($order, $oldStatus, $request->status));
         }
+        // Dispatch payment email if payment_status changed to paid (store isolated, afterCommit)
+        $oldPayment = $order->getOriginal('payment_status');
+        if ($oldPayment !== $request->payment_status && strtolower((string)$request->payment_status)==='paid') {
+            try { \App\Jobs\SendStoreCustomerEmail::dispatch($order->store_id, 'payment_received', $order->customer_email, $order->id, null, $order->customer_id)->afterCommit(); } catch (\Throwable $e) {}
+        }
         
         // Update order items if provided
         if ($request->has('items')) {
