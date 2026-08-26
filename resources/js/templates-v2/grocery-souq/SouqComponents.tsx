@@ -208,12 +208,21 @@ export function SouqHero({ banners }: { banners: any[] }) {
   const hero = useResolvedHero();
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  // Shared media engine: fit/position/height contract
+  const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
+  const heightStyle: any = (() => {
+    if (hero.heightDesktop) return { height: hero.heightDesktop };
+    return {};
+  })();
+  const aspectFallback = 'aspect-[343/96] md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]';
   if (isVideo) {
     const vidSrc = getHeroImageUrl(hero.videoUrl);
     return (
       <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
-        <div className="relative aspect-[343/96] w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]">
-          <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover" src={vidSrc} />
+        {hero.heightMobile && <style>{`@media (max-width:767px){ .souq-hero-media{ height:${hero.heightMobile} !important; }}`}</style>}
+        <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 ${hero.heightDesktop ? '' : aspectFallback}`} style={heightStyle}>
+          <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle} src={vidSrc} />
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           {(hero.heading || hero.subtitle || hero.ctaLabel) && (
             <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
@@ -229,8 +238,15 @@ export function SouqHero({ banners }: { banners: any[] }) {
   if (isYoutube) {
     return (
       <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
-        <div className="relative aspect-[343/96] w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]">
-          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        {hero.heightMobile && <style>{`@media (max-width:767px){ .souq-hero-media{ height:${hero.heightMobile} !important; }}`}</style>}
+        <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 ${hero.heightDesktop ? '' : aspectFallback}`} style={heightStyle}>
+          {hero.fit === 'contain' ? (
+            <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          ) : (
+            <div className="absolute inset-0 overflow-hidden bg-black">
+              <iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} />
+            </div>
+          )}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           {(hero.heading || hero.subtitle || hero.ctaLabel) && (
             <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
@@ -265,12 +281,16 @@ export function SouqHero({ banners }: { banners: any[] }) {
     return () => clearInterval(t);
   }, [normalized.length]);
 
+  // Image slider also respects shared fit/position/height
+  const imgFit = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const imgPos: any = posStyle;
   return (
     <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
-      <div className="relative aspect-[343/96] w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5 md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]">
+      {hero.heightMobile && <style>{`@media (max-width:767px){ .souq-hero-media{ height:${hero.heightMobile} !important; }}`}</style>}
+      <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5 ${hero.heightDesktop ? '' : 'aspect-[343/96] md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]'}`} style={heightStyle}>
         {normalized.map((b: any, idx: number) => (
           <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === i ? 1 : 0 }} aria-hidden={idx !== i}>
-            <img src={getOptimizedImageUrl(b.image || '', 'medium')} alt={b.title} className="h-full w-full object-cover" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
+            <img src={getOptimizedImageUrl(b.image || '', 'medium')} alt={b.title} className={`h-full w-full ${imgFit}`} style={imgPos} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
             {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
             {(b.title || b.subtitle || b.button_text) && (
               <>

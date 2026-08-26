@@ -621,12 +621,16 @@ class ThemeController extends Controller
     {
         $currencies = $this->getCurrencies($storeModel);
 
-        // Get countries for checkout modal (cached for 24h)
+        // Get countries for checkout modal (cached for 24h) — restricted to platform allow-list
+        $allowedCodes = config('storefront.supported_customer_countries', ['PSE', 'ISR', 'JOR']);
+        $countriesCacheKey = 'countries_active_storefront_' . implode('_', $allowedCodes);
         $countries = \Illuminate\Support\Facades\Cache::remember(
-            'countries_active',
+            $countriesCacheKey,
             86400,
-            function () {
-                return \App\Models\Country::active()->orderBy('name')->get()->map(function ($country) {
+            function () use ($allowedCodes) {
+                return \App\Models\Country::active()
+                    ->whereIn('code', $allowedCodes)
+                    ->orderBy('name')->get()->map(function ($country) {
                     return [
                         'id' => $country->id,
                         'name' => $country->name,

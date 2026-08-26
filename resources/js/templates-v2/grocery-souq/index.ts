@@ -31,7 +31,6 @@ const grocerySouq: TemplateModule = {
     { key: 'banners', label: 'شرائح الواجهة (صور الهيرو)', type: 'image', group: 'الواجهة' },
     { key: 'accent_color', label: 'اللون الأساسي (أصفر Biddi)', type: 'color', group: 'الألوان', default: '#FFC20E' },
     { key: 'header_bg', label: 'لون خلفية الهيدر', type: 'color', group: 'الألوان', default: '#FDF9F1' },
-    { key: 'free_shipping_threshold', label: 'حد التوصيل المجاني (₪)', type: 'text', group: 'السلة', default: '150' },
   ],
 };
 

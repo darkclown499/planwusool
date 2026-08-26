@@ -25,7 +25,6 @@ const bazaarMarket: TemplateModule = {
   overlays: NEUTRAL_OVERLAYS,
   contentSchema: [
     { key: 'banners', label: 'شرائح الواجهة', type: 'image', group: 'الواجهة' },
-    { key: 'free_shipping_threshold', label: 'حد التوصيل المجاني', type: 'text', group: 'الشحن' },
   ],
 };
 

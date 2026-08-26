@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
                 WorldCountriesSeeder::class,
                 RegionalCountriesSeeder::class,
                 CountryArabicNamesSeeder::class,
+                IsraelGeographySeeder::class,
                 ExpressCheckoutSeeder::class,
                 PlanOrderSeeder::class,
                 PlanRequestSeeder::class,
@@ -67,6 +68,7 @@ class DatabaseSeeder extends Seeder
                 LocationSeeder::class,
                 WorldCountriesSeeder::class,
                 RegionalCountriesSeeder::class,
+                IsraelGeographySeeder::class,
                 CurrencySeeder::class,
                 
                 ReferralSettingSeeder::class,

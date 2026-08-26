@@ -67,11 +67,12 @@ const StateDropdown: React.FC<{
       });
   }, [countryId]);
 
+  // When states reload, invalidate stale state value
   useEffect(() => {
     if (value && states.length > 0 && !states.find(s => s.name === value)) {
       onChange('', undefined);
     }
-  }, [states, value, onChange]);
+  }, [states]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const store = (window as any).page?.props?.store || {};
   const theme = store?.theme || 'gadgets';
@@ -167,7 +168,7 @@ const CityDropdown: React.FC<{
     if (value && cities.length > 0 && !cities.find(c => c.name === value)) {
       onChange('', undefined);
     }
-  }, [cities, value, onChange]);
+  }, [cities]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const store = (window as any).page?.props?.store || {};
   const theme = store?.theme || 'gadgets';
@@ -441,9 +442,26 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setCustomerInfo(prev => ({ ...prev, [field]: value }));
+    setCustomerInfo(prev => {
+      const next: any = { ...prev, [field]: value };
+      // Hierarchical invalidation: changing country clears state/city, changing state clears city
+      if (field === 'country') {
+        next.state = '';
+        next.city = '';
+      } else if (field === 'state') {
+        next.city = '';
+      }
+      return next;
+    });
     if (field === 'email') setEmailError('');
     if (field === 'phone') setPhoneError('');
+    // Keep id refs in sync — immediate clear, no race
+    if (field === 'country') {
+      setStateId(undefined);
+      setCityId(undefined);
+    } else if (field === 'state') {
+      setCityId(undefined);
+    }
   };
 
   // Trigger abandoned cart draft save on email/phone input (debounced 500ms per spec)
@@ -754,7 +772,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
           orderData,
           store,
           (orderNumber: string) => {
-            // Success callback
+            try { sessionStorage.setItem('wusool_order_success_consumed', `${orderNumber}:success`); } catch {}
             const storeUrl = getStoreUrl();
             window.location.href = storeUrl + '?payment_status=success&order_number=' + orderNumber;
           },
@@ -914,16 +932,11 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
 
           // onSuccess: only toast after server confirms order
           toast.success("تم إنشاء طلبك بنجاح!");
+          try { sessionStorage.setItem('wusool_order_success_consumed', `${data.order_number}:success`); } catch {}
 
           // Handle success state without page refresh if possible
           if (onOrderComplete) {
-            // Update URL silently
-            const url = new URL(window.location.href);
-            url.searchParams.set('payment_status', 'success');
-            url.searchParams.set('order_number', data.order_number);
-            window.history.replaceState({}, '', url.toString());
-
-            // Trigger success modal via event
+            // Trigger success modal via event (one-time, no URL params needed)
             window.dispatchEvent(new CustomEvent('showOrderSuccess', {
               detail: { orderNumber: data.order_number }
             }));
@@ -931,27 +944,19 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
             // Call the complete callback (usually closes checkout modal)
             onOrderComplete();
           } else {
-            // Redirect to success page (legacy/fallback)
+            // Legacy fallback — set marker then redirect (marker allows one-time display on return)
             const storeUrl = getStoreUrl();
             window.location.href = storeUrl + '?payment_status=success&order_number=' + data.order_number;
           }
         } else {
           // onSuccess: only toast after server confirms order
           toast.success("تم إنشاء طلبك بنجاح!");
+          try { sessionStorage.setItem('wusool_order_success_consumed', `${data.order_number}:success`); } catch {}
 
           if (onOrderComplete) {
-            // Update URL silently
-            const url = new URL(window.location.href);
-            url.searchParams.set('payment_status', 'success');
-            url.searchParams.set('order_number', data.order_number);
-            window.history.replaceState({}, '', url.toString());
-
-            // Trigger success modal via event
             window.dispatchEvent(new CustomEvent('showOrderSuccess', {
               detail: { orderNumber: data.order_number }
             }));
-
-            // Call the complete callback (usually closes checkout modal)
             onOrderComplete();
           } else {
             const storeUrl = getStoreUrl();

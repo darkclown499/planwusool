@@ -55,9 +55,16 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber || '');
   
-  // Handle initial payment status
+  // Handle initial payment status — one-time consumption, URL params cleaned by TemplateStorefrontV2.
+  // This effect remains for SSR-injected props fallback but also respects consumed marker.
   useEffect(() => {
     if (paymentStatus === 'success' && initialOrderNumber) {
+      try {
+        const marker = `${initialOrderNumber}:success`;
+        const consumed = sessionStorage.getItem('wusool_order_success_consumed');
+        if (consumed === marker) return;
+        sessionStorage.setItem('wusool_order_success_consumed', marker);
+      } catch {}
       setOrderNumber(initialOrderNumber);
       setShowOrderSuccess(true);
     }

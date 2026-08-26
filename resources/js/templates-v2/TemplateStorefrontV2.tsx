@@ -49,13 +49,47 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
     const requireLogin = customerAccountsEnabled && behavior?.require_login_checkout === true;
 
     // Payment redirects (Paystack, Skrill, Flutterwave...) return to the store
-    // with payment_status + order_number in the URL -> show the success modal.
+    // with payment_status + order_number in the URL -> show the success modal ONCE.
+    // One-time consumption: sessionStorage guards replay + URL cleanup prevents refresh/back replay.
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('payment_status') === 'success' && urlParams.get('order_number')) {
-            order.setOrderNumber(urlParams.get('order_number')!);
-            order.setShowOrderSuccess(true);
-        }
+        const CONSUMED_KEY = 'wusool_order_success_consumed';
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('payment_status');
+            const ord = urlParams.get('order_number');
+            if (status === 'success' && ord) {
+                const marker = `${ord}:${status}`;
+                const already = sessionStorage.getItem(CONSUMED_KEY);
+                // Query params are NOT trusted authority. Only honour if a real order
+                // previously set the marker via CheckoutContext (server-confirmed).
+                // Manual ?order_number=FAKE... with no marker -> silently clean, no modal, no state change.
+                const shouldShow = already === marker;
+                // Always clean URL immediately (transient state consumed)
+                urlParams.delete('payment_status');
+                urlParams.delete('order_number');
+                const qs = urlParams.toString();
+                const clean = window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash;
+                window.history.replaceState({}, '', clean);
+                if (shouldShow) {
+                    order.setOrderNumber(ord);
+                    order.setShowOrderSuccess(true);
+                }
+            }
+        } catch {}
+        // Listen for in-app checkout success event (CheckoutContext dispatch)
+        const handler = (e: any) => {
+            try {
+                const ord = e?.detail?.orderNumber;
+                if (ord) {
+                    const marker = `${ord}:success`;
+                    sessionStorage.setItem(CONSUMED_KEY, marker);
+                    order.setOrderNumber(ord);
+                    order.setShowOrderSuccess(true);
+                }
+            } catch {}
+        };
+        window.addEventListener('showOrderSuccess' as any, handler);
+        return () => window.removeEventListener('showOrderSuccess' as any, handler);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -186,8 +220,29 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
             {order.showOrderSuccess && order.orderNumber && !ui.showCheckout && (
                 <OrderSuccessModal
                     orderNumber={order.orderNumber}
-                    onClose={() => order.setShowOrderSuccess(false)}
-                    onContinueShopping={() => order.setShowOrderSuccess(false)}
+                    onClose={() => {
+                        order.setShowOrderSuccess(false);
+                        // Prevent stale URL replay if user manually re-adds params
+                        try {
+                            const url = new URL(window.location.href);
+                            if (url.searchParams.has('payment_status') || url.searchParams.has('order_number')) {
+                                url.searchParams.delete('payment_status');
+                                url.searchParams.delete('order_number');
+                                window.history.replaceState({}, '', url.toString());
+                            }
+                        } catch {}
+                    }}
+                    onContinueShopping={() => {
+                        order.setShowOrderSuccess(false);
+                        try {
+                            const url = new URL(window.location.href);
+                            if (url.searchParams.has('payment_status') || url.searchParams.has('order_number')) {
+                                url.searchParams.delete('payment_status');
+                                url.searchParams.delete('order_number');
+                                window.history.replaceState({}, '', url.toString());
+                            }
+                        } catch {}
+                    }}
                 />
             )}
 

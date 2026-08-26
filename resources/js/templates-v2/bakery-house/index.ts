@@ -30,7 +30,6 @@ const bakeryHouse: TemplateModule = {
   contentSchema: [
     { key: 'banners', label: 'بانر الواجهة', type: 'image', group: 'الواجهة' },
     { key: 'last_batch.time', label: 'وقت آخر دفعة', type: 'text', group: 'المخبز', default: '21:00' },
-    { key: 'free_shipping_threshold', label: 'حد التوصيل المجاني', type: 'text', group: 'السلة', default: '100' },
   ],
 };
 

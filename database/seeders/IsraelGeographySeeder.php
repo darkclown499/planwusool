@@ -27,11 +27,17 @@ class IsraelGeographySeeder extends Seeder
             ['name' => 'اللواء الشمالي',      'code' => 'NEN'],
             ['name' => 'اللواء الجنوبي',      'code' => 'SDN'],
             ['name' => 'لواء القدس',          'code' => 'JMS'],
+            ['name' => 'اللواء الجنوبي - النقب', 'code' => 'NQD'],
+        ];
+        // RSG merged into MCD; duplicate district removed — keep original RSG code for BC but map to separate? keep for legacy compatibility: re-add RSG alias
+        $districtAliases = [
             ['name' => 'لواء ريشون لتسيون',   'code' => 'RSG'],
         ];
 
+        // Normal districts + alias districts share same creation path
+        $allDistricts = array_merge($districts, $districtAliases);
         $districtIds = [];
-        foreach ($districts as $district) {
+        foreach ($allDistricts as $district) {
             $existing = DB::table('states')
                 ->where('country_id', $countryId)
                 ->where('code', $district['code'])
@@ -52,28 +58,37 @@ class IsraelGeographySeeder extends Seeder
         $cities = [
             'TLV' => [
                 'تل أبيب', 'بات يام', 'هرتسليا', 'رامات هاشارون',
-                'غفعاتاييم', 'كفار عصا',
+                'غفعاتاييم', 'كفار عصا', 'يافا', 'حولون', 'بني براك',
+                'رمات غان', 'أور يهودا', 'كريات أونو', 'جفعت شموئيل',
             ],
             'HFA' => [
                 'حيفا', 'كرميئيل', 'عتليت', 'أبو سنان',
-                'طيرة الكرمل', 'الخضيرة',
+                'طيرة الكرمل', 'الخضيرة', 'عكا', 'نهاريا', 'سخنين',
+                'شفاعمرو', 'طمرة', 'الناصرة', 'أم الفحم', 'الطيبة',
+                'باقة الغربية', 'عرابة', 'كفر كنا',
             ],
             'MCD' => [
                 'لود', 'رعنانة', 'بيت شيمش', 'المجدل',
+                'العفولة', 'الخضيرة', 'نتانيا', 'قلنسوة', 'كفر قاسم',
+                'جلجولية', 'الطيرة', 'رهط',
             ],
             'NEN' => [
                 'نتانيا', 'كريات أتا', 'عمك افا',
-                'حيفا الجديدة', 'عنوتا',
+                'حيفا الجديدة', 'عنوتا', 'صفد', 'طبريا', 'كريات شمونة',
+                'بيسان', 'الناصرة العليا', 'معلوت ترشيحا', 'عرابة',
             ],
             'SDN' => [
                 'أشدود', 'بئر السبع', 'عراد', 'سديروت',
-                'نتيفوت', 'متسبي رامون', 'عسقلان',
+                'نتيفوت', 'متسبي رامون', 'عسقلان', 'إيلات', 'ديمونا',
+                'أوفاكيم', 'رهط', 'كريات غات', 'كريات ملاخي',
             ],
             'JMS' => [
                 'القدس', 'بيت حنينا', 'معاليه أدوخيم',
+                'أبو غوش', 'مفسيرت تسيون', 'بيت شيمش', 'غفعات زئيف',
             ],
             'RSG' => [
                 'ريشون لتسيون', 'بيت داغان', 'نيس زيونا',
+                'رحوفوت', 'رمليه', 'موديعين', 'يافنيه', 'غديرا',
             ],
         ];
 
@@ -101,7 +116,7 @@ class IsraelGeographySeeder extends Seeder
 
         $this->command->info('✓ Israel geography seeded successfully.');
         $this->command->info('  Country: Israel (ISR)');
-        $this->command->info('  Districts: ' . count($districts));
+        $this->command->info('  Districts: ' . count($allDistricts));
         $this->command->info('  Cities: ' . DB::table('cities')->whereIn('state_id', array_values($districtIds))->count());
     }
 }

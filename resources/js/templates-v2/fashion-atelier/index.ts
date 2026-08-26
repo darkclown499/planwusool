@@ -29,7 +29,6 @@ const fashionAtelier: TemplateModule = {
     { key: 'hero.title', label: 'عنوان الواجهة', type: 'text', group: 'الواجهة', default: '' },
     { key: 'hero.subtitle', label: 'وصف الواجهة', type: 'text', group: 'الواجهة', default: '' },
     { key: 'banners', label: 'شرائح وبانرات الواجهة', type: 'image', group: 'الواجهة', hint: 'من مكتبة الوسائط' },
-    { key: 'free_shipping_threshold', label: 'حد الشحن المجاني', type: 'text', group: 'السلة', default: '250' },
   ],
 };
 

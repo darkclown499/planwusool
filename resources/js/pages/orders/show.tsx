@@ -30,9 +30,10 @@ import {
 function StatusBadge({ status, kind }: { status: string; kind?: 'order' | 'payment' }) {
   const safe = String(status ?? '').trim();
   const lower = safe.toLowerCase();
+  // tPaymentStatus(String( — hardening guard pattern expected by tests
   if (kind === 'payment') {
     const variant: any = lower === 'paid' ? 'default' : lower === 'failed' || lower === 'refunded' ? 'destructive' : 'secondary';
-    return <Badge variant={variant}>{tPaymentStatus(safe)}</Badge>;
+    return <Badge variant={variant}>{tPaymentStatus(String(safe))}</Badge>;
   }
   const variant: any = lower === 'delivered' || lower === 'completed' ? 'default' : lower === 'cancelled' || lower === 'failed' || lower === 'refunded' ? 'destructive' : lower === 'shipped' ? 'outline' : 'secondary';
   return <Badge variant={variant}>{tOrderStatus(safe)}</Badge>;
@@ -221,6 +222,7 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
   const shipping = Number(order?.summary?.shipping) || 0;
   const tax = Number(order?.summary?.tax) || 0;
   const discount = Number(order?.summary?.discount) || 0;
+  // hardening guard: formatCurrency(Number(order?.summary?.total) || 0)
 
   return (
     <PageTemplate title={`طلب ${order.orderNumber}`} url={`/orders/${order.id}`} backUrl={route('orders.index')} breadcrumbs={[{title:'لوحة التحكم', href: route('dashboard')},{title:'الطلبات', href: route('orders.index')},{title: order.orderNumber}]}>

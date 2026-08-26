@@ -21,10 +21,19 @@ class Country extends Model
     {
         static::saved(function ($country) {
             \Illuminate\Support\Facades\Cache::forget('countries_active');
+            // Invalidate storefront filtered cache too
+            try {
+                $codes = config('storefront.supported_customer_countries', ['PSE', 'ISR', 'JOR']);
+                \Illuminate\Support\Facades\Cache::forget('countries_active_storefront_' . implode('_', $codes));
+            } catch (\Throwable $e) {}
         });
 
         static::deleted(function ($country) {
             \Illuminate\Support\Facades\Cache::forget('countries_active');
+            try {
+                $codes = config('storefront.supported_customer_countries', ['PSE', 'ISR', 'JOR']);
+                \Illuminate\Support\Facades\Cache::forget('countries_active_storefront_' . implode('_', $codes));
+            } catch (\Throwable $e) {}
         });
     }
 

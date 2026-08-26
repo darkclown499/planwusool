@@ -195,22 +195,53 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                         <p className="mb-2 text-xs font-bold" style={{color:'var(--twc-text-primary,#111827)'}}>اختر من عناوينك المحفوظة</p>
                                         <div className="space-y-2">
                                             {addresses.filter((a:any)=>a.type==='shipping' || a.type==='billing').slice(0,3).map((a:any)=>(
-                                                <button key={a.id} type="button" onClick={()=>{
-                                                    handleInputChange('address', a.address);
-                                                    handleInputChange('postalCode', a.postal_code||'');
-                                                    // Sync country/state/city via IDs for dropdowns (no hardcoded mapping)
+                                                <button key={a.id} type="button" onClick={async ()=>{
                                                     const countries = (window as any).page?.props?.countries || [];
                                                     const countryMatch = countries.find((c:any)=> c.name===a.country || String(c.id)===String(a.country));
-                                                    if (countryMatch) { handleInputChange('country', countryMatch.name); setCountryId(countryMatch.id); } else { handleInputChange('country', a.country); setCountryId(undefined as any); }
-                                                    // state/city will be resolved after country states load; set values directly and clear IDs to allow CityDropdown to fetch
-                                                    handleInputChange('state', a.state||'');
-                                                    handleInputChange('city', a.city);
+                                                    const resolvedCountryId = countryMatch?.id;
+                                                    // Sequential, dependency-aware restore: country → stateId → cityId
+                                                    handleInputChange('address', a.address);
+                                                    handleInputChange('postalCode', a.postal_code||'');
+                                                    if (countryMatch) {
+                                                        setCountryId(resolvedCountryId);
+                                                        handleInputChange('country', countryMatch.name);
+                                                    } else {
+                                                        setCountryId(undefined as any);
+                                                        handleInputChange('country', a.country);
+                                                    }
                                                     setStateId(undefined as any);
                                                     setCityId(undefined as any);
-                                                    // If state is known, try to resolve stateId once states load via effect — trigger by setting countryId first
-                                                    if (a.state) setTimeout(()=>{
-                                                      // after states fetch, CityDropdown will handle
-                                                    }, 300);
+                                                    // Resolve stateId by fetching states for country, then cityId for that state
+                                                    if (resolvedCountryId && a.state) {
+                                                        try {
+                                                            const sRes = await fetch(route('api.locations.states', resolvedCountryId));
+                                                            const sData = await sRes.json();
+                                                            const statesArr: any[] = Array.isArray(sData) ? sData : (sData.states || []);
+                                                            const stateMatch = statesArr.find((s:any)=> s.name===a.state || String(s.id)===String(a.state));
+                                                            if (stateMatch) {
+                                                                setStateId(stateMatch.id);
+                                                                handleInputChange('state', stateMatch.name);
+                                                                if (a.city) {
+                                                                    const cRes = await fetch(route('api.locations.cities', stateMatch.id));
+                                                                    const cData = await cRes.json();
+                                                                    const citiesArr: any[] = Array.isArray(cData) ? cData : (cData.cities || []);
+                                                                    const cityMatch = citiesArr.find((c:any)=> c.name===a.city || String(c.id)===String(a.city));
+                                                                    if (cityMatch) {
+                                                                        setCityId(cityMatch.id);
+                                                                        handleInputChange('city', cityMatch.name);
+                                                                    } else {
+                                                                        handleInputChange('city', a.city);
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                handleInputChange('state', a.state||'');
+                                                                handleInputChange('city', a.city||'');
+                                                            }
+                                                        } catch { handleInputChange('state', a.state||''); handleInputChange('city', a.city||''); }
+                                                    } else {
+                                                        handleInputChange('state', a.state||'');
+                                                        handleInputChange('city', a.city||'');
+                                                    }
                                                 }} className="flex w-full items-center gap-2 rounded-xl border bg-white p-3 text-start hover:border-emerald-300">
                                                     <span className="text-sm font-semibold flex-1">{a.address} — {a.city} {a.country}</span>
                                                     {a.is_default && <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">افتراضي</span>}

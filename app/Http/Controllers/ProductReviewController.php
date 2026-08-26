@@ -102,6 +102,15 @@ class ProductReviewController extends Controller
             'order_id' => 'nullable|exists:orders,id',
         ]);
 
+        // Store isolation: product must belong to store_id
+        $product = Product::find($request->product_id);
+        if (!$product || (int) $product->store_id !== (int) $request->store_id) {
+            return response()->json(['success' => false, 'message' => 'Product does not belong to this store'], 422);
+        }
+        if (!$product->is_active || ($product->category && !$product->category->is_active)) {
+            return response()->json(['success' => false, 'message' => 'Product not available'], 422);
+        }
+
         // Check if customer can review this product for the given order
         $customerId = Auth::guard('customer')->id();
         $orderId = $request->order_id;
@@ -164,11 +173,22 @@ class ProductReviewController extends Controller
     }
 
     /**
-     * API: Get reviews for a product (public).
+     * API: Get reviews for a product (public). Store isolation enforced.
      */
     public function productReviews(Request $request, $productId)
     {
+        // Enforce store isolation: product must belong to requested store (if store_id provided) or we resolve it
+        $product = Product::find($productId);
+        if (!$product) {
+            return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+        }
+        // If store_id supplied, reject cross-store leak
+        if ($request->filled('store_id') && (int) $request->store_id !== (int) $product->store_id) {
+            return response()->json(['success' => false, 'message' => 'Product does not belong to this store'], 403);
+        }
+
         $reviews = ProductReview::where('product_id', $productId)
+            ->where('store_id', $product->store_id)
             ->approved()
             ->with('customer:id,first_name,last_name,avatar')
             ->latest()
