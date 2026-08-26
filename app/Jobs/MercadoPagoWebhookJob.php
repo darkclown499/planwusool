@@ -115,13 +115,15 @@ class MercadoPagoWebhookJob extends WebhookJob
         }
 
         if ($payment['status'] === 'approved') {
+            $oldStatus = $order->status;
             $order->update([
                 'status' => 'confirmed',
                 'payment_status' => 'paid',
                 'payment_transaction_id' => $payment['id'],
             ]);
-
-            event(new \App\Events\OrderCreated($order));
+            $fresh = $order->fresh();
+            try { event(new \App\Events\OrderStatusChanged($fresh, $oldStatus, 'confirmed')); } catch (\Throwable $e) {}
+            try { if ($fresh->customer_email) \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
         } elseif (in_array($payment['status'], ['rejected', 'failed'])) {
             $order->update([
                 'payment_status' => 'failed',

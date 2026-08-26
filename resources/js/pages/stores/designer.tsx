@@ -34,6 +34,7 @@ import { Separator } from '@/components/ui/separator';
 import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
 import { getImageUrl } from '@/utils/image-helper';
+import { getCsrfToken } from '@/utils/csrf';
 import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2';
 import { usePage } from '@inertiajs/react';
 
@@ -394,8 +395,29 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                             <button type="button" aria-label="معاينة سطح المكتب" onClick={() => setPreviewMode('desktop')} className={`flex h-7 w-7 items-center justify-center rounded-full transition ${previewMode === 'desktop' ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}><Monitor className="h-3.5 w-3.5" /></button>
                             <button type="button" aria-label="معاينة الجوال" onClick={() => setPreviewMode('mobile')} className={`flex h-7 w-7 items-center justify-center rounded-full transition ${previewMode === 'mobile' ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}><Smartphone className="h-3.5 w-3.5" /></button>
                         </div>
-                        <a href={storeUrl} target="_blank" rel="noopener" className="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 sm:inline-flex"><Eye className="h-3.5 w-3.5" /> معاينة المتجر</a>
-                        <a href={storeUrl} target="_blank" rel="noopener" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm sm:hidden" aria-label="معاينة المتجر"><Eye className="h-3.5 w-3.5" /></a>
+                        <button type="button" onClick={async () => {
+                            const isUnpublished = settings?.store_status === 'false' || settings?.store_status === false;
+                            const label = isUnpublished ? 'معاينة المتجر' : 'فتح المتجر';
+                            if (isUnpublished) {
+                                try {
+                                    const res = await fetch(route('stores.preview-token', store.id), { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() || '' } });
+                                    const data = await res.json();
+                                    if (data.preview_url) { window.open(data.preview_url, '_blank'); return; }
+                                } catch {}
+                            }
+                            window.open(storeUrl, '_blank');
+                        }} className="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 sm:inline-flex"><Eye className="h-3.5 w-3.5" /> {settings?.store_status === 'false' || settings?.store_status === false ? 'معاينة المتجر' : 'فتح المتجر'}</button>
+                        <button type="button" onClick={async () => {
+                            const isUnpublished = settings?.store_status === 'false' || settings?.store_status === false;
+                            if (isUnpublished) {
+                                try {
+                                    const res = await fetch(route('stores.preview-token', store.id), { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() || '' } });
+                                    const data = await res.json();
+                                    if (data.preview_url) { window.open(data.preview_url, '_blank'); return; }
+                                } catch {}
+                            }
+                            window.open(storeUrl, '_blank');
+                        }} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm sm:hidden" aria-label="معاينة المتجر"><Eye className="h-3.5 w-3.5" /></button>
                         <Button onClick={handleSaveAll} disabled={saving || !isDirty} className={`gap-1.5 rounded-full px-4 sm:px-5 text-xs sm:text-sm font-black transition ${isDirty ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm ring-1 ring-emerald-700' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'}`} title={isDirty ? 'حفظ التغييرات' : 'لا توجد تغييرات'}>
                             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} <span className="hidden sm:inline">حفظ التغييرات</span><span className="sm:hidden">حفظ</span>{isDirty && !saving && <span className="ms-1 h-2 w-2 rounded-full bg-amber-400 animate-pulse" aria-hidden />}
                         </Button>
@@ -693,6 +715,71 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
                                         <p className="text-[11px] text-slate-500">اتركه فارغًا لاستخدام الافتراضي. كل ارتفاع لا يغير الآخر — منفصل تمامًا.</p>
                                     </div>
                                 </Card>
+
+                                <Card>
+                                    <div className="space-y-3">
+                                        <SectionLabel hint="اختياري — نسخة عمودية للهاتف لتجنب قص الفيديو/الصورة">وسائط خاصة بالهاتف (اختياري)</SectionLabel>
+                                        <p className="text-[11px] leading-relaxed text-slate-500">إن تركتها فارغة سيُستخدم نفس وسائط سطح المكتب. للهاتف يفضل صورة عمودية أو فيديو قصير.</p>
+                                        {heroType === 'image' && (() => {
+                                            const mobImages = sanitizeHeroImages((getDotted(content,'hero_banner.images_mobile') ?? []) as any);
+                                            return (
+                                                <div className="space-y-2">
+                                                    {mobImages.length>0 && <div className="flex gap-2 flex-wrap">{mobImages.map((img:string,idx:number)=><div key={idx} className="relative h-16 w-16 overflow-hidden rounded-lg border"><img src={normalizeImageUrl(img)} className="h-full w-full object-cover"/><button type="button" onClick={()=>{const next=mobImages.filter((_:string,i:number)=>i!==idx); setContent(setDotted(content,'hero_banner.images_mobile',next));}} className="absolute inset-0 bg-black/40 text-white text-xs">×</button></div>)}</div>}
+                                                    <DropzoneUploader label="رفع صورة عمودية للهاتف" hint="اختياري — 1080×1920" multiple uploading={heroUploading} onFiles={async(files)=>{ const valid=Array.from(files).filter(f=>f.type.startsWith('image/')); if(!valid.length) return; setHeroUploading(true); try{ const fd=new FormData(); valid.forEach(f=>fd.append('files[]',f)); const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content')||''}}); const json:any=await res.json(); if(res.ok&&json?.data?.length){ const urls:string[]=(json.data as any[]).map((d:any)=>normalizeImageUrl(String(d.url||''))).filter(Boolean); const next=[...mobImages,...urls].slice(0,5); setContent(setDotted(content,'hero_banner.images_mobile',next)); toast.success('تم الرفع'); } }catch{} finally{setHeroUploading(false);}} }/>
+                                                </div>
+                                            );
+                                        })()}
+                                        {heroType === 'video' && (
+                                            <div className="space-y-2">
+                                                <Input dir="ltr" value={String(getDotted(content,'hero_banner.video_url_mobile') ?? '')} onChange={e=> setContent(setDotted(content,'hero_banner.video_url_mobile',e.target.value.trim()))} placeholder="رابط فيديو عمودي للهاتف (اختياري)" className="bg-white font-mono text-sm"/>
+                                            </div>
+                                        )}
+                                        {heroType === 'youtube' && (
+                                            <div className="space-y-2">
+                                                <Input dir="ltr" value={String(getDotted(content,'hero_banner.youtube_url_mobile') ?? '')} onChange={e=> setContent(setDotted(content,'hero_banner.youtube_url_mobile',e.target.value.trim()))} placeholder="رابط يوتيوب للهاتف (اختياري)" className="bg-white font-mono text-sm"/>
+                                            </div>
+                                        )}
+                                    </div>
+                                </Card>
+
+                                {theme === 'bakery-house' && (
+                                    <>
+                                        <Card>
+                                            <div className="space-y-3">
+                                                <p className="text-xs font-black text-slate-800">قصة المخبز — شريط القصة</p>
+                                                <p className="text-[11px] text-slate-500">يظهر أسفل المنتجات في قالب المخبز. يمكنك إخفاؤه أو تعديل نصه.</p>
+                                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
+                                                    <span className="text-xs font-bold text-slate-700">إظهار هذا القسم</span>
+                                                    <Switch checked={(() => { const v=getDotted(content,'bakery_story.enabled'); return v===undefined ? true : !!v; })()} onCheckedChange={(v)=> setContent(setDotted(content,'bakery_story.enabled',v))} />
+                                                </div>
+                                                <div>
+                                                    <SectionLabel>النص الرئيسي (الاقتباس)</SectionLabel>
+                                                    <Input value={String(getDotted(content,'bakery_story.quote') ?? '')} onChange={e=> setContent(setDotted(content,'bakery_story.quote',e.target.value))} placeholder="«نُخبز بشغف — كل يوم، بجودة تليق بك»" className="bg-white" />
+                                                </div>
+                                                <div>
+                                                    <SectionLabel>النص المساعد</SectionLabel>
+                                                    <Input value={String(getDotted(content,'bakery_story.subtitle') ?? '')} onChange={e=> setContent(setDotted(content,'bakery_story.subtitle',e.target.value))} placeholder="مكونات مختارة • وصفاتنا الخاصة" className="bg-white" />
+                                                </div>
+                                            </div>
+                                        </Card>
+                                        <Card>
+                                            <div className="space-y-3">
+                                                <p className="text-xs font-black text-slate-800">آخر دفعة — عداد اليوم</p>
+                                                <p className="text-[11px] text-slate-500">عدّ تنازلي حتى وقت آخر خَبزة في اليوم.</p>
+                                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
+                                                    <span className="text-xs font-bold text-slate-700">إظهار عداد آخر دفعة</span>
+                                                    <Switch checked={(() => { const v=getDotted(content,'bakery_last_batch.enabled'); return v===undefined ? true : !!v; })()} onCheckedChange={(v)=> setContent(setDotted(content,'bakery_last_batch.enabled',v))} />
+                                                </div>
+                                                <div>
+                                                    <SectionLabel>وقت آخر دفعة (ساعة 0-23)</SectionLabel>
+                                                    <select value={String(getDotted(content,'bakery_last_batch.hour') ?? '21')} onChange={e=> setContent(setDotted(content,'bakery_last_batch.hour', Number(e.target.value)))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">
+                                                        {Array.from({length:24},(_,i)=> <option key={i} value={String(i)}>{String(i).padStart(2,'0')}:00</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    </>
+                                )}
 
                                 {/* Collapsed template-specific options */}
                                 <Collapsible className="rounded-xl border border-slate-200 bg-white">

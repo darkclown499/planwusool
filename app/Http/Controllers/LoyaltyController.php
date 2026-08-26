@@ -151,6 +151,10 @@ class LoyaltyController extends Controller
             return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
         }
         $customer = Auth::guard('customer')->user();
+        // Cross-store guard: customer must belong to requested store
+        if ($customer && (int)$customer->store_id !== (int)$storeId) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
         $enforcedAt = \App\Services\CustomerEmailOtpService::ENFORCED_AT;
         if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gte(\Carbon\Carbon::parse($enforcedAt))) {
             return response()->json(['success' => false, 'message' => 'يجب تأكيد البريد الإلكتروني أولاً'], 403);
@@ -214,6 +218,9 @@ class LoyaltyController extends Controller
             return response()->json(['success' => false, 'message' => 'Authentication required'], 401);
         }
         $customer = Auth::guard('customer')->user();
+        if ($customer && (int)$customer->store_id !== (int)$storeId) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
         $enforcedAt = \App\Services\CustomerEmailOtpService::ENFORCED_AT;
         if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gte(\Carbon\Carbon::parse($enforcedAt))) {
             return response()->json(['success' => false, 'message' => 'يجب تأكيد البريد الإلكتروني أولاً'], 403);

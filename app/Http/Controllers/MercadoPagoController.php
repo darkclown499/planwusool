@@ -339,14 +339,17 @@ class MercadoPagoController extends Controller
             
             // Update order payment status
             if ($status === 'approved' || $paymentId) {
+                $oldStatus = $order->status;
                 $order->update([
                     'status' => 'confirmed',
                     'payment_status' => 'paid',
                     'payment_transaction_id' => $paymentId,
                 ]);
-                
-                // Fire order created event for notifications
-                event(new \App\Events\OrderCreated($order));
+                $fresh = $order->fresh();
+                // Correct lifecycle event — NOT OrderCreated (order already existed)
+                try { event(new \App\Events\OrderStatusChanged($fresh, $oldStatus, 'confirmed')); } catch (\Throwable $e) {}
+                // Customer transactional email for paid confirmation (store isolated, no Wusool fallback)
+                try { if ($fresh->customer_email) \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
                 
                 return redirect()->route('store.checkout.success', ['orderNumber' => $orderNumber])
                     ->with('success', __('Payment successful! Your order has been confirmed.'));
@@ -516,14 +519,15 @@ class MercadoPagoController extends Controller
                 
                 // Update order based on payment status
                 if ($paymentStatus === 'approved') {
+                    $oldStatus = $order->status;
                     $order->update([
                         'status' => 'confirmed',
                         'payment_status' => 'paid',
                         'payment_transaction_id' => $paymentId,
                     ]);
-                    
-                    // Fire order created event for notifications
-                    event(new \App\Events\OrderCreated($order));
+                    $fresh = $order->fresh();
+                    try { event(new \App\Events\OrderStatusChanged($fresh, $oldStatus, 'confirmed')); } catch (\Throwable $e) {}
+                    try { if ($fresh->customer_email) \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
                 } elseif ($paymentStatus === 'rejected' || $paymentStatus === 'failed') {
                     $order->update([
                         'payment_status' => 'failed',

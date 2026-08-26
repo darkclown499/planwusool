@@ -338,8 +338,11 @@ class ProductController extends Controller
                         ->where('store_id', $currentStoreId)
                         ->findOrFail($id);
         
-        // Calculate dynamic stats for the product
-        $orderItems = \App\Models\OrderItem::where('product_id', $product->id)->get();
+        // Calculate dynamic stats for the product — scoped to this store's orders only
+        // (order_items.product_id is global auto-increment; without store isolation a
+        // product with same numeric id in another store could leak revenue counts).
+        $orderItems = \App\Models\OrderItem::where('product_id', $product->id)
+            ->whereHas('order', fn($q)=>$q->where('store_id', $currentStoreId))->get();
         
         $stats = [
             'revenue' => $orderItems->sum('total_price'),

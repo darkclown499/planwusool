@@ -33,6 +33,14 @@ class MerchantNotificationService
             return;
         }
 
+        // Idempotency: exactly once per order for new_order
+        $exists = MerchantNotification::where('store_id', $order->store_id)
+            ->where('related_id', $order->id)
+            ->where('related_type', 'order')
+            ->where('type', 'new_order')
+            ->exists();
+        if ($exists) return;
+
         $customerName = trim($order->customer_first_name . ' ' . $order->customer_last_name);
         $amount = $order->total_amount;
 

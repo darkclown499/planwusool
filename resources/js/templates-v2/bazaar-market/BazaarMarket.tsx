@@ -381,17 +381,18 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        {/* Promo band */}
+        {/* Promo band — truthful: only shown when real discounted products exist, no fake 40% claim */}
+        {(() => { const dealsCount = products.filter((p:any)=> p.originalPrice && Number(p.originalPrice) > Number(p.price)).length; if (dealsCount===0) return null; return (
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-l from-emerald-600 to-teal-700 p-7 text-white sm:p-10">
             <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
             <p className="text-sm font-black tracking-wide text-emerald-100">عروض الأسبوع</p>
-            <h2 className="mt-1.5 max-w-md text-2xl font-black leading-snug sm:text-3xl">خصومات تصل إلى 40% على مختارات مميزة</h2>
+            <h2 className="mt-1.5 max-w-md text-2xl font-black leading-snug sm:text-3xl">عروض مميزة على منتجات مختارة</h2>
             <a href="#popular" className="mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">
               اكتشف العروض
             </a>
           </div>
-        </section>
+        </section> ); })()}
 
         {/* Popular picks — toggle show_best_sellers */}
         {showBest && popular.length > 0 && (

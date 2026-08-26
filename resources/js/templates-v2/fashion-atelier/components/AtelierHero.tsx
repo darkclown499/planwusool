@@ -197,13 +197,14 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const heroDesktopRaw = storeHero?.height_desktop ?? storeHero?.heightDesktop ?? rawContent?.hero_height_desktop ?? null;
   const heroMobileRaw = storeHero?.height_mobile ?? storeHero?.heightMobile ?? rawContent?.hero_height_mobile ?? null;
   const heroDesktopHeight = heroDesktopRaw ? String(heroDesktopRaw).trim() : 'clamp(360px, 42vw, 520px)';
-  const heroMobileHeight = heroMobileRaw ? String(heroMobileRaw).trim() : null;
+  // Mobile-first: default to compact editorial height so first viewport shows commerce content quickly
+  const heroMobileHeight = heroMobileRaw ? String(heroMobileRaw).trim() : 'min(54vh, 380px)';
   const heroHeightStyle: React.CSSProperties = { height: heroDesktopHeight, minHeight: '360px', maxHeight: '520px' };
   const mediaFitClass = heroFit === 'contain' ? 'object-contain' : 'object-cover';
   const mediaPositionStyle: React.CSSProperties = heroPosition && heroPosition !== 'center' ? { objectPosition: heroPosition } : {};
   return (
     <section className="atelier-hero relative w-full overflow-hidden bg-stone-900" style={heroHeightStyle} dir="rtl">
-      {heroMobileHeight && <style>{`@media (max-width: 767px) { .atelier-hero { height: ${heroMobileHeight} !important; min-height: ${heroMobileHeight} !important; max-height: none !important; } }`}</style>}
+      <style>{`@media (max-width: 767px) { .atelier-hero { height: ${heroMobileHeight} !important; min-height: 0 !important; max-height: none !important; } }`}</style>
       {/* Background media — fit/position merchant-controlled: cover (crop, no bars) vs contain (letterbox). */}
       {hasDynamicHero && heroType === 'video' && videoUrl ? (
         <>

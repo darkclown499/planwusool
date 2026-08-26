@@ -79,11 +79,15 @@ class DomainResolver
             }
         }
         
-        // Check store status via configuration
+        // Check store status via configuration — preserve unpublished store
+        // when the request is an owner preview (session or signed token) so
+        // DomainResolver does not nullify it before CheckStoreStatus can allow it.
         if ($store) {
             $config = StoreConfiguration::getConfiguration($store->id);
             if (!($config['store_status'] ?? true)) {
-                $store = null;
+                if (!\App\Services\StorePreviewService::canPreview($request, $store)) {
+                    $store = null;
+                }
             }
         }
         
@@ -94,11 +98,13 @@ class DomainResolver
                         ->where('enable_custom_subdomain', true)
                         ->first();
             
-            // Check store status via configuration
+            // Check store status via configuration — preserve owner preview
             if ($store) {
                 $config = StoreConfiguration::getConfiguration($store->id);
                 if (!($config['store_status'] ?? true)) {
-                    $store = null;
+                    if (!\App\Services\StorePreviewService::canPreview($request, $store)) {
+                        $store = null;
+                    }
                 }
             }
         }
@@ -117,7 +123,9 @@ class DomainResolver
                 if ($store) {
                     $config = StoreConfiguration::getConfiguration($store->id);
                     if (!($config['store_status'] ?? true)) {
-                        $store = null;
+                        if (!\App\Services\StorePreviewService::canPreview($request, $store)) {
+                            $store = null;
+                        }
                     }
                 }
             }
@@ -146,15 +154,20 @@ class DomainResolver
             
             // Handle direct domain/subdomain access (clean URLs)
             if (!$isStorePath) {
-                // Check if store is active and not in maintenance
+                // Check if store is active and not in maintenance — allow owner preview
                 $config = StoreConfiguration::getConfiguration($store->id);
-                
+
                 if (!($config['store_status'] ?? true)) {
-                    $reason = ($config['plan_disabled'] ?? false) ? 'تم تجاوز حد الاشتراك' : 'تم تعطيل المتجر بواسطة المالك';
-                    return Inertia::render('store/StoreDisabled', [
-                        'store' => $store->only(['id', 'name', 'slug']),
-                        'reason' => $reason
-                    ])->toResponse($request)->setStatusCode(503);
+                    if (\App\Services\StorePreviewService::canPreview($request, $store)) {
+                        $request->attributes->set('store_preview', true);
+                        $request->attributes->set('preview_store_id', $store->id);
+                    } else {
+                        $reason = ($config['plan_disabled'] ?? false) ? 'تم تجاوز حد الاشتراك' : 'تم تعطيل المتجر بواسطة المالك';
+                        return Inertia::render('store/StoreDisabled', [
+                            'store' => $store->only(['id', 'name', 'slug']),
+                            'reason' => $reason
+                        ])->toResponse($request)->setStatusCode(503);
+                    }
                 }
                 
                 if ($config['maintenance_mode'] ?? false) {

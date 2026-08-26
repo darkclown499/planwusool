@@ -49,7 +49,7 @@ export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, o
   return (
     <div className="fixed inset-0 z-[60]" dir="rtl" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-stone-900/45 backdrop-blur-sm" onClick={onClose} />
-      <aside className="absolute inset-y-0 left-0 flex w-full max-w-md flex-col bg-[#faf7f2] shadow-2xl" style={{ animation: 'atelierSlideLeft .35s cubic-bezier(.22,.9,.3,1)' }}>
+      <aside className="absolute inset-y-0 left-0 flex w-full max-w-md flex-col bg-[#faf7f2] shadow-2xl pb-[env(safe-area-inset-bottom)]" style={{ animation: 'atelierSlideLeft .35s cubic-bezier(.22,.9,.3,1)' }}>
         {/* Head */}
         <div className="flex items-center justify-between border-b border-stone-200 px-6 py-5">
           <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-stone-900">

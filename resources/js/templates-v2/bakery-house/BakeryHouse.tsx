@@ -143,9 +143,12 @@ export function BakeryHero({ banner }: { banner?: any }) {
   const hero = useResolvedHero();
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
-  const heroImg = hero.hasDynamicHero && hero.images.length > 0 ? hero.images[0] : null;
+  const heroImg = hero.hasDynamicHero && hero.imagesMobile.length > 0 ? hero.imagesMobile[0] : (hero.hasDynamicHero && hero.images.length > 0 ? hero.images[0] : null);
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   if (!hero.hasDynamicHero && !hasBanner) return null;
+  const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
+  const heightStyle: any = hero.heightDesktop ? { height: hero.heightDesktop } : {};
   const effective = {
     image: heroImg || banner?.image || '',
     title: hero.heading || banner?.title || '',
@@ -154,11 +157,11 @@ export function BakeryHero({ banner }: { banner?: any }) {
     button_link: hero.ctaLink || banner?.button_link || '#bakery-best',
   };
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
       <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
-        <div className="relative overflow-hidden rounded-3xl bg-black shadow-lg">
-          <video autoPlay loop muted playsInline className="h-64 w-full object-cover sm:h-80" src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        <div className="relative overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
+          <video autoPlay loop muted playsInline className={`h-64 w-full sm:h-80 ${fitClass}`} style={posStyle} src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           <div className="absolute inset-0 bg-gradient-to-l from-[#3b2412]/70 via-black/20 to-transparent" />
           <div className="absolute inset-y-0 right-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
@@ -297,13 +300,16 @@ export function BakeryCard({ product }: { product: V2Product }) {
 /* ------------------------- Last-batch countdown ------------------------- */
 
 export function BakeryLastBatch() {
-  // Today at 21:00 local — the day's final bake.
+  const { content: _cc } = useStorefrontCore() as any;
+  const lastCfg = (_cc as any)?.bakery_last_batch ?? {};
+  if (lastCfg.enabled === false) return null;
   const deadline = useMemo(() => {
     const d = new Date();
-    d.setHours(21, 0, 0, 0);
+    const h = parseInt(String(lastCfg.hour ?? 21),10) || 21;
+    d.setHours(h, 0, 0, 0);
     if (d.getTime() < Date.now()) d.setDate(d.getDate() + 1);
     return d;
-  }, []);
+  }, [lastCfg.hour]);
   const cd = useCountdown(deadline);
   if (!cd) return null;
 
@@ -461,15 +467,20 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        {/* Story strip */}
+        {/* Story strip — merchant content: uses store_content.bakery_story when configured, otherwise truthful defaults; hidden when disabled */}
+        {(() => {
+          const { content: _bc } = useStorefrontCore() as any;
+          const storyCfg = (_bc as any)?.bakery_story ?? {};
+          if (storyCfg.enabled === false) return null;
+          const q = storyCfg.quote || '«نُخبز بشغف — كل يوم، بجودة تليق بك»';
+          const sub = storyCfg.subtitle || 'مكونات مختارة • وصفاتنا الخاصة';
+          return (
         <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
           <div className="rounded-3xl bg-gradient-to-l from-[#f5e7d3] to-[#fdf6ec] p-8 text-center ring-1 ring-[#eaddcf]">
-            <p className="font-serif text-2xl font-black leading-relaxed text-[#78350f]">
-              «نبدأ العجن قبل الفجر… حتى يصلك الخبز وهو ما زال يتنفس»
-            </p>
-            <p className="mt-2 text-sm text-[#92603a]">دقيق مختار • خميرة طبيعية • بلا مواد حافظة</p>
+            <p className="font-serif text-2xl font-black leading-relaxed text-[#78350f]">{q}</p>
+            <p className="mt-2 text-sm text-[#92603a]">{sub}</p>
           </div>
-        </section>
+        </section> ); })()}
       </main>
     </div>
   );

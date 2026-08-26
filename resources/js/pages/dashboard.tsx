@@ -82,6 +82,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<number>>(new Set());
   const [qrOpen, setQrOpen] = useState(false);
   const qrDialogRef = useRef<HTMLDivElement>(null);
+  const [checklistExpanded, setChecklistExpanded] = useState(false);
 
   const formatPrice = (value: number | string) => {
     const formatted = formatCurrency(value);
@@ -172,6 +173,24 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
 
   const getThemeColorValue = () => {
     return themeColor === 'custom' ? customColor : THEME_COLORS[themeColor];
+  };
+
+  const openStorePreview = async () => {
+    if (!currentStore || !storeUrl) return;
+    const isUnpublished = onboarding && onboarding.isPublishable === false;
+    if (isUnpublished) {
+      try {
+        const res = await fetch(route('stores.preview-token', currentStore.id), {
+          headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() || '' },
+        });
+        const data = await res.json();
+        if (data.preview_url) {
+          window.open(data.preview_url, '_blank');
+          return;
+        }
+      } catch {}
+    }
+    window.open(storeUrl!, '_blank');
   };
 
   const copyToClipboard = async () => {
@@ -648,9 +667,9 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? t('Copied!') : t('نسخ رابط المتجر')}
               </Button>
-              <Button size="sm" variant="outline" onClick={() => window.open(storeUrl!, '_blank')} className="h-8 gap-1.5">
+              <Button size="sm" variant="outline" onClick={openStorePreview} className="h-8 gap-1.5">
                 <ExternalLink className="h-3.5 w-3.5" />
-                {t('عرض المتجر')}
+                {onboarding && onboarding.isPublishable === false ? t('معاينة المتجر') : t('عرض المتجر')}
               </Button>
               {userHasPermission('manage-analytics') && (
                 <Button size="sm" variant="ghost" onClick={() => router.visit(route('analytics.index'))} className="h-8 gap-1.5">
@@ -681,7 +700,10 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
         {onboarding?.show && !isSuperAdmin && (() => {
           const doneCount = Math.max(onboarding.totalCount - (onboarding.pendingCount || 0), 0);
           const percent = onboarding.totalCount > 0 ? Math.round((doneCount / onboarding.totalCount) * 100) : 0;
-          const isComplete = percent === 100 && onboarding.isReadyToPublish;
+          // Commerce-ready takes precedence over 100% checklist — a store with
+          // products+shipping+payments is order-capable even if optional steps
+          // (taxes/domain) remain. Show celebration as soon as commerce-ready.
+          const isComplete = onboarding.isReadyToPublish;
           return (
             <Card className={isComplete ? "border-emerald-200 bg-emerald-50" : "border-primary/30 bg-primary/5"}>
               <CardHeader className="pb-3">
@@ -711,7 +733,21 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                   </div>
                 )}
               </CardHeader>
+              {isComplete && !checklistExpanded ? (
+                <CardContent>
+                  <button type="button" onClick={() => setChecklistExpanded(true)} className="flex w-full items-center justify-between rounded-lg border border-dashed border-emerald-300 bg-white px-3 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50">
+                    <span>تحسينات اختيارية — الضرائب، الدومين والمزيد</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </CardContent>
+              ) : (
               <CardContent>
+                {isComplete && (
+                  <div className="mb-3 flex justify-between">
+                    <span className="text-xs font-semibold text-emerald-700">تحسينات اختيارية</span>
+                    <button type="button" onClick={() => setChecklistExpanded(false)} className="text-xs text-muted-foreground hover:text-foreground">تصغير</button>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {onboarding.steps.map((step) => {
                     const stepMeta = {
@@ -743,6 +779,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                   })}
                 </div>
               </CardContent>
+              )}
             </Card>
           );
         })()}

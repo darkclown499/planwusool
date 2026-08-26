@@ -98,7 +98,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6" dir="rtl" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-t-2xl bg-[#faf7f2] shadow-2xl sm:rounded-xl">
+      <div className="relative max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-t-2xl bg-[#faf7f2] shadow-2xl sm:rounded-xl pb-[env(safe-area-inset-bottom)]">
         <button type="button" onClick={onClose} aria-label="إغلاق"
           className="absolute left-4 top-4 z-10 rounded-full bg-white/90 p-2 text-stone-600 shadow transition hover:text-stone-900">
           <X className="h-5 w-5" />

@@ -87,7 +87,7 @@ class NotificationController extends Controller
             'type' => 'required|string|in:' . implode(',', array_keys(CustomerNotification::TYPES)),
             'channel' => 'required|string|in:' . implode(',', array_keys(CustomerNotification::CHANNELS)),
             'customer_ids' => 'required|array|min:1',
-            'customer_ids.*' => 'integer|exists:customers,id',
+            'customer_ids.*' => ['integer', \Illuminate\Validation\Rule::exists('customers', 'id')->where('store_id', $currentStoreId)],
             'action_url' => 'nullable|string|max:500',
             'data' => 'nullable|array',
         ]);

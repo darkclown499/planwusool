@@ -65,12 +65,12 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#0b1220]/97 backdrop-blur" dir="rtl">
-      {/* Trust strip */}
+      {/* Trust strip — truthful neutral claims, not hardcoded 24h guarantee */}
       <div className="border-b border-slate-800/70 bg-[#0e1729]">
         <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 py-1.5 text-[11px] font-semibold text-slate-400 sm:px-6 lg:px-8">
-          <span className="flex items-center gap-1 whitespace-nowrap"><ShieldCheck className="h-3.5 w-3.5 text-blue-400" /> ضمان رسمي سنة</span>
-          <span className="flex items-center gap-1 whitespace-nowrap"><Truck className="h-3.5 w-3.5 text-blue-400" /> توصيل 24 ساعة داخل المدينة</span>
-          <span className="flex items-center gap-1 whitespace-nowrap"><BadgeCheck className="h-3.5 w-3.5 text-blue-400" /> أجهزة أصلية 100%</span>
+          <span className="flex items-center gap-1 whitespace-nowrap"><ShieldCheck className="h-3.5 w-3.5 text-blue-400" /> منتجات مضمونة</span>
+          <span className="flex items-center gap-1 whitespace-nowrap"><Truck className="h-3.5 w-3.5 text-blue-400" /> توصيل سريع</span>
+          <span className="flex items-center gap-1 whitespace-nowrap"><BadgeCheck className="h-3.5 w-3.5 text-blue-400" /> أجهزة أصلية</span>
         </div>
       </div>
 
@@ -164,18 +164,21 @@ export function HubHero({ banner }: { banner?: any }) {
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   if (!hero.hasDynamicHero && !hasBanner) return null;
+  const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
+  const vidOrImg = hero.imagesMobile.length>0 ? hero.imagesMobile[0] : (hero.images[0] || '');
   const effective = {
-    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || '',
+    image: (hero.hasDynamicHero && vidOrImg) || banner?.image || '',
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
     button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
   };
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
       <section className="relative overflow-hidden bg-black" dir="rtl">
-        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-60" src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass}`} style={posStyle} src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
         <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
         <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">

@@ -311,11 +311,10 @@ class OrderService
             'payment_gateway' => 'whatsapp',
         ]);
 
-        // Send WhatsApp message
-        if ($order->whatsapp_number) {
-            $whatsappService = new \App\Services\WhatsAppService();
-            $result = $whatsappService->sendOrderConfirmation($order, $order->whatsapp_number);
-        } else {
+        // WhatsApp customer message is dispatched via OrderCreated event listener
+        // (SendOrderCreatedMessaging) — do NOT send synchronously here to avoid
+        // duplicate delivery. The listener is afterCommit + cache-deduplicated.
+        if (!$order->whatsapp_number) {
             \Log::warning('No WhatsApp number provided for order', ['order_id' => $order->id]);
         }
 

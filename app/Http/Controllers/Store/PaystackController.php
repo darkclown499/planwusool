@@ -90,6 +90,7 @@ class PaystackController extends Controller
             }
             
             // Update order
+            $oldStatus = $order->status;
             $order->update([
                 'status' => 'confirmed',
                 'payment_status' => 'paid',
@@ -101,9 +102,9 @@ class PaystackController extends Controller
                     'status' => $result['data']['status'],
                 ]),
             ]);
-            
-            // Fire order created event for notifications
-            event(new \App\Events\OrderCreated($order));
+            $fresh = $order->fresh();
+            try { event(new \App\Events\OrderStatusChanged($fresh, $oldStatus, 'confirmed')); } catch (\Throwable $e) {}
+            try { if ($fresh->customer_email) \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
             
             // Redirect to store home with success parameters (like Stripe)
             return redirect()->to($this->getStoreHomeUrl($store, $storeSlug))
@@ -179,6 +180,7 @@ class PaystackController extends Controller
                 $result = json_decode($response, true);
                 
                 if ($result && $result['status'] && $result['data']['status'] === 'success') {
+                    $oldStatus = $order->status;
                     $order->update([
                         'status' => 'confirmed',
                         'payment_status' => 'paid',
@@ -190,9 +192,9 @@ class PaystackController extends Controller
                             'status' => $result['data']['status'],
                     ]),
                 ]);
-                
-                // Fire order created event for notifications
-                event(new \App\Events\OrderCreated($order));
+                    $fresh = $order->fresh();
+                    try { event(new \App\Events\OrderStatusChanged($fresh, $oldStatus, 'confirmed')); } catch (\Throwable $e) {}
+                    try { if ($fresh->customer_email) \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
             }
             
 return response()->json(['status' => 'success']);

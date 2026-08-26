@@ -26,6 +26,8 @@ interface DynamicStoreProps {
     behavior?: any;
     page?: any;
     isPreview?: boolean;
+    isOwnerPreview?: boolean;
+    previewBanner?: string | null;
     userPlanName?: string | null;
     userPlanTier?: 'starter' | 'growth' | 'professional' | null;
     isSuperAdmin?: boolean;
@@ -57,6 +59,8 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     behavior = {},
     page = null,
     isPreview = false,
+    isOwnerPreview = false,
+    previewBanner = null,
     isLoggedIn = false,
     customer = null,
     customer_address = [],
@@ -105,8 +109,18 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             >
                 <StoreBoundary>
                     <TemplateStorefrontV2 module={templateModule}>
-                        {/* Preview Mode banner — subtle so it doesn't shift store header */}
-                        {isPreview && (
+                        {/* Owner preview banner for unpublished stores — Arabic, non-intrusive */}
+                        {isOwnerPreview && (
+                            <div className="sticky top-0 z-50 w-full bg-slate-900/95 text-white backdrop-blur border-b border-slate-700">
+                                <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-4 py-1.5 text-xs">
+                                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400 animate-pulse" />
+                                    <span className="font-medium">{previewBanner || 'وضع المعاينة — المتجر غير منشور'}</span>
+                                    <span className="hidden sm:inline text-slate-300">· الطلبات معطّلة في المعاينة</span>
+                                </div>
+                            </div>
+                        )}
+                        {/* Template Preview Mode banner */}
+                        {isPreview && !isOwnerPreview && (
                             <div className="sticky top-0 z-50 w-full bg-amber-500/90 text-white opacity-80 backdrop-blur border-b border-amber-600">
                                 <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1 text-xs">
                                     <div className="flex items-center gap-2">

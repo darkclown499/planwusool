@@ -68,6 +68,7 @@ class MercadoPagoController extends Controller
                 && abs((float) $payment->transaction_amount - (float) $order->total_amount) < 0.01;
 
             if ($payment->status === 'approved' && $amountMatches) {
+                $oldStatus = $order->status;
                 $order->update([
                     'status' => 'confirmed',
                     'payment_status' => 'paid',
@@ -80,9 +81,9 @@ class MercadoPagoController extends Controller
                         'transaction_amount' => $payment->transaction_amount ?? null,
                     ]),
                 ]);
-                
-                // Fire order created event for notifications
-                event(new \App\Events\OrderCreated($order));
+                $fresh = $order->fresh();
+                try { event(new \App\Events\OrderStatusChanged($fresh, $oldStatus, 'confirmed')); } catch (\Throwable $e) {}
+                try { if ($fresh->customer_email) \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
                 
                 // Redirect to store home with success parameters (like Stripe)
                 return redirect()->to($this->getStoreHomeUrl($store, $storeSlug))
@@ -191,6 +192,7 @@ class MercadoPagoController extends Controller
                     // Update order based on payment status
                     switch ($payment->status) {
                         case 'approved':
+                            $oldStatus = $order->status;
                             $order->update([
                                 'status' => 'confirmed',
                                 'payment_status' => 'paid',
@@ -203,9 +205,9 @@ class MercadoPagoController extends Controller
                                 'status_detail' => $payment->status_detail,
                             ]),
                         ]);
-                        
-                        // Fire order created event for notifications
-                        event(new \App\Events\OrderCreated($order));
+                            $fresh = $order->fresh();
+                            try { event(new \App\Events\OrderStatusChanged($fresh, $oldStatus, 'confirmed')); } catch (\Throwable $e) {}
+                            try { if ($fresh->customer_email) \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
                         break;
                         
                     case 'rejected':

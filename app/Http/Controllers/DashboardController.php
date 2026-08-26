@@ -136,8 +136,12 @@ class DashboardController extends Controller
         $hasDomain = !empty($store->custom_domain) || !empty($store->custom_subdomain);
         $hasSeo = !empty($config['meta_title']) || !empty($config['seo_title']);
         $storePublished = ($config['store_status'] ?? null) === true || ($config['store_status'] ?? null) === 'true' || !array_key_exists('store_status', $config);
-        // Publish readiness: must have shipping, payment, and at least one product
+        // Commerce-ready vs publishable distinction:
+        // - PUBLISHABLE = store_status can be true at any time (preview before inventory complete)
+        // - READY TO ACCEPT ORDERS = at least one active product + shipping + payment
+        // Keep publish step about store visibility, commerce-ready about order capability
         $isReadyToPublish = $hasProducts && $hasShipping && $hasPayments;
+        $isPublishable = $storePublished;
 
         try {
             $canManageStoreSettings = $user->can('settings-stores') || $user->type === 'company';
@@ -193,22 +197,23 @@ class DashboardController extends Controller
             ],
             [
                 'key' => 'published',
-                'done' => $storePublished && $isReadyToPublish,
-                'href' => ($storePublished && $isReadyToPublish) ? null : route('stores.settings', $store->id) . '?tab=general',
+                'done' => $isPublishable,
+                'href' => $isPublishable ? null : route('stores.settings', $store->id) . '?tab=general',
             ],
         ];
 
         // Keep payments step as canonical for backward compatibility, but ensure it points to the unified tab
         // (already handled in shipping/payments above)
-        
+
         $pendingCount = collect($steps)->where('done', false)->count();
-        
+
         return [
             'show' => true, // Always show until fully published and ready — don't hide when pending
             'pendingCount' => $pendingCount,
             'totalCount' => count($steps),
             'steps' => $steps,
             'isReadyToPublish' => $isReadyToPublish,
+            'isPublishable' => $isPublishable,
             'missingForPublish' => array_values(array_filter([
                 !$hasShipping ? 'الشحن والتوصيل' : null,
                 !$hasPayments ? 'طرق الدفع' : null,

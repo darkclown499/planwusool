@@ -80,6 +80,15 @@ use Inertia\Inertia;
 // ===========================================================================
 if (! file_exists(public_path('storage'))) {
     Route::get('storage/{path}', function (string $path) {
+        // Explicit traversal rejection before any disk lookup
+        $decoded = urldecode($path);
+        if (str_contains($path, '..') || str_contains($decoded, '..') || str_contains($path, '\\') || str_contains($decoded, '\\')) {
+            abort(404);
+        }
+        // Normalized check: reject if path after removing ./ still contains traversal or null byte
+        if (str_contains($decoded, "\0")) {
+            abort(404);
+        }
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
         if ($disk->exists($path)) {
             return $disk->response($path);
@@ -758,6 +767,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/designer', [\App\Http\Controllers\StoreDesignerController::class, 'show'])->middleware('permission:settings-stores')->name('stores.designer');
         Route::get('stores/{id}/templates', [\App\Http\Controllers\StoreDesignerController::class, 'templates'])->middleware('permission:settings-stores')->name('stores.templates');
         Route::get('stores/{id}/templates/{slug}/preview', [\App\Http\Controllers\StoreDesignerController::class, 'previewTemplate'])->middleware('permission:settings-stores')->name('stores.templates.preview');
+        Route::get('stores/{id}/preview-token', [\App\Http\Controllers\StorePreviewController::class, 'token'])->middleware('permission:settings-stores')->name('stores.preview-token');
+        Route::post('stores/{id}/preview-token', [\App\Http\Controllers\StorePreviewController::class, 'token'])->middleware('permission:settings-stores')->name('stores.preview-token.post');
         Route::get('stores/{id}/themes', fn ($id) => redirect()->route('stores.templates', ['id' => $id]))->middleware('permission:settings-stores')->name('stores.themes');
         Route::get('stores/{id}/features', [\App\Http\Controllers\StoreFeaturesController::class, 'show'])->middleware('permission:settings-stores')->name('stores.features');
         Route::get('stores/{id}/customer-accounts', [\App\Http\Controllers\StoreCustomerAccountsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.customer-accounts');

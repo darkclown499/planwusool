@@ -62,7 +62,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const lookbookB = banners[2] || banners[banners.length - 1];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
+    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased pb-16 md:pb-0">
       <AnnouncementBar />
       <AtelierHeader />
       <main>

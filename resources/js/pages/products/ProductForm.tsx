@@ -191,8 +191,15 @@ export default function ProductForm({ mode, product, categories: initialCategori
     };
   };
 
+  const noCategories = !categoriesList || categoriesList.length === 0;
+
   const handleSubmit = (draft = false) => {
     if (planLimits && !planLimits.can_create && !isEdit) { toast.error(t('Product limit reached')); return; }
+    if (noCategories) {
+      toast.error('أنشئ تصنيفاً أولاً قبل إضافة المنتج — استخدم زر "تصنيف جديد" أدناه');
+      setNewCategoryOpen(true);
+      return;
+    }
     if (!formData.name.trim() || !formData.category_id || !formData.images || formData.price === '') {
       toast.error('يرجى إكمال الحقول المطلوبة: الاسم، التصنيف، الصور، السعر');
       return;
@@ -244,6 +251,11 @@ export default function ProductForm({ mode, product, categories: initialCategori
                       <button type="button" onClick={() => setNewCategoryOpen(v => !v)} className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:bg-primary/10 rounded px-1.5 py-0.5"><FolderPlus className="h-3 w-3" /> تصنيف جديد</button>
                     )}
                   </div>
+                  {noCategories && (
+                    <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800">
+                      <strong>لا يوجد تصنيفات بعد.</strong> أنشئ تصنيفاً أولاً — اضغط <span className="font-bold">تصنيف جديد</span> ثم أعد اختيار التصنيف.
+                    </div>
+                  )}
                   <Select value={formData.category_id} onValueChange={v => handleSelectChange('category_id', v)}>
                     <SelectTrigger className="h-11" aria-invalid={!!errors.category_id}><SelectValue placeholder="اختر التصنيف" /></SelectTrigger>
                     <SelectContent>{categoriesList?.map((cat: any) => <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>)}</SelectContent>

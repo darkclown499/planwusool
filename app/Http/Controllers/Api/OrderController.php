@@ -39,18 +39,15 @@ class OrderController extends Controller
             return response()->json(['orders' => $orders]);
         }
 
-        // Guest: match by session_id and optionally by email
+        // Guest: strictly session-bound. Email alone must NOT retrieve orders without
+        // knowing the session that created them; otherwise an attacker who knows a
+        // victim's email + store_id could enumerate leaked PII (IDOR). Authenticated
+        // customers are handled above via customer_id.
         $sessionId = session()->getId();
-        $email = $request->input('email') ?: $request->input('customer_email');
 
-        $query = Order::where('store_id', $storeId)->with('items')->orderBy('created_at', 'desc');
-
-        $query->where(function ($q) use ($sessionId, $email) {
-            $q->where('session_id', $sessionId);
-            if ($email) {
-                $q->orWhere('customer_email', $email);
-            }
-        });
+        $query = Order::where('store_id', $storeId)
+            ->where('session_id', $sessionId)
+            ->with('items')->orderBy('created_at', 'desc');
 
         // If no session match and no email, still try session_id only; empty result will be returned
         $orders = $query->get()->map(function ($order) {

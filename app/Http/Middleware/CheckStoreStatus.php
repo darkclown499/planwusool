@@ -53,13 +53,22 @@ class CheckStoreStatus
             
             $config = StoreConfiguration::getConfiguration($store->id);
             
-            // Check if store is disabled
+            // Check if store is disabled — allow authenticated owner preview via
+            // session ownership or a signed preview_token scoped to this store.
+            // Anonymous and cross-merchant requests remain blocked (503).
             if (!($config['store_status'] ?? true)) {
-                $reason = ($config['plan_disabled'] ?? false) ? 'تم تجاوز حد الاشتراك' : 'تم تعطيل المتجر بواسطة المالك';
-                return Inertia::render('store/StoreDisabled', [
-                    'store' => $store,
-                    'reason' => $reason
-                ])->toResponse($request)->setStatusCode(503);
+                if (\App\Services\StorePreviewService::canPreview($request, $store)) {
+                    // Owner preview: mark request so ThemeController can expose
+                    // isPreview flag and block real order creation.
+                    $request->attributes->set('store_preview', true);
+                    $request->attributes->set('preview_store_id', $store->id);
+                } else {
+                    $reason = ($config['plan_disabled'] ?? false) ? 'تم تجاوز حد الاشتراك' : 'تم تعطيل المتجر بواسطة المالك';
+                    return Inertia::render('store/StoreDisabled', [
+                        'store' => $store,
+                        'reason' => $reason
+                    ])->toResponse($request)->setStatusCode(503);
+                }
             }
             
             // Check if store is in maintenance mode

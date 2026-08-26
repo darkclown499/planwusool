@@ -22,6 +22,24 @@ class OrderController extends Controller
     public function placeOrder(Request $request, $storeSlug)
     {
         try {
+            // Preview mode for unpublished stores must not create real orders
+            // (merchant inspection only — block checkout server-side).
+            if ($request->store_id) {
+                $previewStore = \App\Models\Store::find($request->store_id);
+                if ($previewStore) {
+                    $cfg = \App\Models\StoreConfiguration::getConfiguration($previewStore->id);
+                    if (!($cfg['store_status'] ?? true)) {
+                        // Check if this is an owner preview (session or signed token)
+                        if (\App\Services\StorePreviewService::canPreview($request, $previewStore) || $request->attributes->get('store_preview')) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'المتجر في وضع المعاينة — الطلبات غير متاحة حتى نشر المتجر.',
+                                'preview_mode' => true,
+                            ], 403);
+                        }
+                    }
+                }
+            }
             // SECURITY: store owner can require login before checkout.
             $storeModel = \App\Models\Store::find($request->store_id);
             if ($storeModel) {

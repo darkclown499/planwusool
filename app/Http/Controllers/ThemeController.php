@@ -706,6 +706,19 @@ class ThemeController extends Controller
         $props['userPlanName'] = $ownerPlan ? $ownerPlan->name : null;
         $props['userPlanTier'] = $this->planTierFor($ownerPlan);
         $props['isPreview'] = $request ? $request->boolean('preview') : false;
+        // Owner preview of an unpublished store: set by CheckStoreStatus/DomainResolver
+        $isOwnerPreview = $request ? (bool) $request->attributes->get('store_preview', false) : false;
+        // Also detect direct token/session preview without middleware flag
+        if (!$isOwnerPreview && $request && $storeModel) {
+            $cfg = \App\Models\StoreConfiguration::getConfiguration($storeModel->id);
+            if (!($cfg['store_status'] ?? true)) {
+                $isOwnerPreview = \App\Services\StorePreviewService::canPreview($request, $storeModel);
+            }
+        }
+        $props['isOwnerPreview'] = $isOwnerPreview;
+        if ($isOwnerPreview) {
+            $props['previewBanner'] = 'وضع المعاينة — المتجر غير منشور';
+        }
 
         return $props;
     }
