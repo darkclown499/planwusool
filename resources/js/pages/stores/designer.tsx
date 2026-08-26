@@ -362,7 +362,10 @@ export default function StoreDesigner({ store, availableThemes, storeUrl }: Prop
             setPreviewVersion((v) => v + 1);
             toast.success('تم تطبيق القالب بنجاح');
             setConfirmTemplateSlug(null);
-        } catch { toast.error('تعذر تطبيق القالب'); } finally { setApplyingTemplate(null); }
+        } catch (e: any) {
+            const msg = e?.data?.error || e?.data?.message || (e?.status === 422 ? 'القالب غير متاح في خطتك الحالية' : e?.status === 403 ? 'ليس لديك صلاحية لتغيير القالب' : '');
+            toast.error(msg ? `تعذر تطبيق القالب: ${msg}` : 'تعذر تطبيق القالب — حاول مرة أخرى');
+        } finally { setApplyingTemplate(null); }
     };
     const previewModule = useMemo(() => (previewTemplateSlug ? modules.find((m) => m.meta.slug === previewTemplateSlug) ?? null : null), [previewTemplateSlug, modules]);
     const confirmModule = useMemo(() => (confirmTemplateSlug ? modules.find((m) => m.meta.slug === confirmTemplateSlug) ?? null : null), [confirmTemplateSlug, modules]);

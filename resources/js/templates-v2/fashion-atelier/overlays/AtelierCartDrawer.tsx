@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { toast } from '@/components/custom-toast';
-import { computeCartTotals, freeShippingProgress, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
+import { computeCartTotals, freeShippingProgress, resolveFreeShippingThreshold, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
 
 interface AtelierCartDrawerProps {
   onClose: () => void;
@@ -29,9 +29,8 @@ export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, o
 
   const items = cart.cartItems || [];
   const totals = computeCartTotals(items);
-  const rawThreshold = content?.free_shipping_threshold ?? content?.freeShippingThreshold ?? (content as any)?.settings?.free_shipping_threshold ?? FALLBACK_FREE_SHIPPING;
-  const thresholdNum = Number(rawThreshold);
-  const shipping = Number.isFinite(thresholdNum) && thresholdNum > 0 ? freeShippingProgress(totals.subtotal, thresholdNum) : null;
+  const effectiveThreshold = resolveFreeShippingThreshold(content, FALLBACK_FREE_SHIPPING);
+  const shipping = freeShippingProgress(totals.subtotal, effectiveThreshold);
   const waPhone = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || '').replace(/[^0-9]/g, '');
 
   const orderViaWhatsApp = () => {

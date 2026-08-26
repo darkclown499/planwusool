@@ -88,6 +88,13 @@ export function usePriceFormatter() {
   return (amount: number | string) => formatStoreCurrency(amount, currency);
 }
 
+/** Single source for free-shipping threshold — reads every known key so Designer values propagate to every template. */
+export function resolveFreeShippingThreshold(content: any, fallback = 150): number {
+  const raw = (content as any)?.free_shipping_threshold ?? (content as any)?.freeShippingThreshold ?? (content as any)?.settings?.free_shipping_threshold ?? (content as any)?.homepage?.free_shipping_threshold ?? fallback;
+  const num = Number(raw);
+  return Number.isFinite(num) && num > 0 ? num : fallback;
+}
+
 /** Free-shipping progress towards a threshold (null when disabled/none set). */
 export function freeShippingProgress(
   subtotal: number,

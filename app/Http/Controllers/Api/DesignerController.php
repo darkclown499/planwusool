@@ -127,6 +127,13 @@ class DesignerController extends Controller
                 data_set($merged, $key, $sanitized);
             }
             $store->store_content = $merged;
+            // Sync store description / welcome / copyright to StoreConfiguration so ThemeController::getStoreConfig sees them via both paths (preview + live share same source)
+            foreach (['welcome_message' => 'welcome_message', 'store_description' => 'store_description', 'copyright_text' => 'copyright_text'] as $contentKey => $configKey) {
+                if (array_key_exists($contentKey, $merged) || data_get($merged, $contentKey) !== null) {
+                    $val = data_get($merged, $contentKey, '');
+                    try { \App\Models\StoreConfiguration::setConfiguration($store->id, $configKey, (string) ($val ?? '')); } catch (\Throwable $e) {}
+                }
+            }
         }
 
         // Custom code assets (code editor mode) — sanitized before storage so

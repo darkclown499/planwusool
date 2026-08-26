@@ -3,7 +3,7 @@ import { Minus, Plus, Search, ShoppingBasket, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
-import { computeCartTotals, discountPercent, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
+import { computeCartTotals, discountPercent, isVariableProduct, resolveFreeShippingThreshold, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
 /* ===================================================================== */
 /* Souq overlays — a working cart drawer and a quick product sheet, both  */
@@ -20,9 +20,7 @@ export function SouqCartDrawer({ onClose, onCheckout, onProductClick }: any) {
   const formatPrice = usePriceFormatter();
   const items = cart.cartItems || [];
   const totals = computeCartTotals(items);
-  const rawThreshold = (content as any)?.free_shipping_threshold ?? (content as any)?.freeShippingThreshold ?? (content as any)?.settings?.free_shipping_threshold ?? FALLBACK_FREE_SHIPPING;
-  const thresholdNum = Number(rawThreshold);
-  const effectiveThreshold = Number.isFinite(thresholdNum) && thresholdNum > 0 ? thresholdNum : FALLBACK_FREE_SHIPPING;
+  const effectiveThreshold = resolveFreeShippingThreshold(content, FALLBACK_FREE_SHIPPING);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';

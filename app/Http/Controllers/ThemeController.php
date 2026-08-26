@@ -314,9 +314,9 @@ class ThemeController extends Controller
                 'country' => $configuration['country'] ?? '',
                 'postalCode' => $configuration['postal_code'] ?? '',
                 'email' => $store['email'] ?? '',
-                'description' => $configuration['store_description'] ? $configuration['store_description'] : ($store['description'] ?? ''),
-                'welcomeMessage' => $configuration['welcome_message'] ?? null,
-                'copyrightText' => $configuration['copyright_text'] ?? null,
+                'description' => ($configuration['store_description'] ?? ($storeModel?->store_content['store_description'] ?? ($storeModel?->store_content['description'] ?? ($store['description'] ?? '')))),
+                'welcomeMessage' => $configuration['welcome_message'] ?? ($storeModel?->store_content['welcome_message'] ?? null),
+                'copyrightText' => $configuration['copyright_text'] ?? ($storeModel?->store_content['copyright_text'] ?? null),
                 'locale' => $storeSettings['language'] ?? 'ar',
                 'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
                 'vat' => [
