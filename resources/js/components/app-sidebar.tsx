@@ -190,26 +190,12 @@ export function AppSidebar() {
         const user = auth.user;
         const plan = user?.plan;
         const currentStoreIdEarly = auth.user?.current_store as string | number | undefined;
-        
-        const hasFeatureAccess = (feature: string) => {
-            if (userRole === 'superadmin') return true;
-            if (!plan) return true;
-            const featureMap: { [key: string]: string } = {
-                'shipping_method': 'enable_shipping_method',
-                'pwa': 'pwa_business',
-                'custom_domain': 'enable_custdomain',
-                'custom_subdomain': 'enable_custsubdomain',
-                'chatgpt': 'enable_chatgpt',
-                'mobile_app': 'enable_mobile_app',
-                'branding': 'enable_branding',
-                'accounting_integration': 'enable_accounting_integration',
-                'theme_editor': 'enable_theme_editor',
-            };
-            const planFeature = featureMap[feature];
-            return planFeature ? plan[planFeature] === 'on' : true;
+
+        const safeRoute = (name: string, params: any, fallback: string) => {
+            try { return route(name, params); } catch { return fallback; }
         };
-        
-        // ── Dashboard ──
+
+        // ── الرئيسية ──
         items.push({
             title: t('Dashboard'),
             href: route('dashboard'),
@@ -217,15 +203,25 @@ export function AppSidebar() {
             groupLabel: t('Main'),
         });
 
-        // ── الإشعارات ──
-        items.push({
-            title: t('Notifications'),
-            href: route('merchant-notifications.index'),
-            icon: Bell,
-            groupLabel: t('Main'),
-        });
+        // ── الطلبات — primary command center ──
+        const orderChildren: NavItem[] = [];
+        if (hasPermission('manage-orders')) {
+            orderChildren.push({ title: t('Orders'), href: route('orders.index') });
+            orderChildren.push({ title: t('Returns'), href: route('returns.index') });
+        }
+        if (hasPermission('manage-pos') && routeExists('pos.index')) {
+            orderChildren.push({ title: t('POS System'), href: route('pos.index') });
+        }
+        if (orderChildren.length > 0) {
+            items.push({
+                title: t('Orders'),
+                icon: ShoppingCart,
+                groupLabel: t('Operations'),
+                children: orderChildren,
+            });
+        }
 
-        // ── المنتجات والمتجر ──
+        // ── المنتجات ──
         const productChildren: NavItem[] = [];
         if (hasPermission('manage-products')) {
             productChildren.push({ title: t('Products'), href: route('products.index') });
@@ -233,229 +229,136 @@ export function AppSidebar() {
         if (hasPermission('manage-categories')) {
             const categoriesHref = currentStoreIdEarly ? `/stores/${currentStoreIdEarly}/categories` : (() => { try { return route('categories.index'); } catch { return '/categories'; } })();
             const categoriesActive = currentStoreIdEarly ? [`/stores/${currentStoreIdEarly}/categories`, '/categories'] : ['/categories'];
-            // ensure also legacy route considered active
             try { categoriesActive.push(route('categories.index')); } catch {}
             productChildren.push({ title: t('Categories'), href: categoriesHref, activePaths: [...new Set(categoriesActive)] });
         }
+        if (hasPermission('manage-product-reviews')) {
+            productChildren.push({ title: t('Product Reviews'), href: route('product-reviews.index') });
+        }
+        if (hasPermission('manage-digital-downloads')) {
+            productChildren.push({ title: t('Digital Downloads'), href: route('digital-downloads.index') });
+        }
         if (productChildren.length > 0) {
             items.push({
-                title: t('Product Management'),
+                title: t('Products'),
                 icon: Package,
-                groupLabel: t('Store'),
+                groupLabel: t('Operations'),
                 children: productChildren,
             });
         }
 
-        // ── الطلبات والعملاء ──
-        const orderChildren: NavItem[] = [];
-        if (hasPermission('manage-orders')) {
-            orderChildren.push({ title: t('Orders'), href: route('orders.index') });
-        }
+        // ── العملاء ──
+        const customerChildren: NavItem[] = [];
         if (hasPermission('manage-customers')) {
-            orderChildren.push({ title: t('Customers'), href: route('customers.index') });
+            customerChildren.push({ title: t('Customers'), href: route('customers.index') });
         }
-        if (hasPermission('manage-pos') && routeExists('pos.index')) {
-            orderChildren.push({ title: t('POS System'), href: route('pos.index') });
+        if (currentStoreIdEarly && hasPermission('settings-stores')) {
+            customerChildren.push({
+                title: t('Customer Accounts'),
+                href: `/stores/${currentStoreIdEarly}/customer-accounts`,
+                activePaths: [`/stores/${currentStoreIdEarly}/customer-accounts`],
+            });
         }
-        if (orderChildren.length > 0) {
+        if (hasPermission('manage-loyalty')) {
+            customerChildren.push({ title: t('Loyalty Points'), icon: Star, href: route('loyalty.settings') });
+        }
+        if (customerChildren.length > 0) {
             items.push({
-                title: t('Order Management'),
-                icon: ShoppingCart,
-                groupLabel: t('Store'),
-                children: orderChildren,
+                title: t('Customers'),
+                icon: Users,
+                groupLabel: t('Operations'),
+                children: customerChildren,
             });
         }
 
-        // ── إدارة المتاجر ──
+        // ── المتجر ──
         const currentStoreId = auth.user?.current_store;
-
-        // المتاجر (قائمة المتاجر الخاصة بالمتاجر) — عنصر مستقل خارج قائمة المتجر
+        const storeChildren: NavItem[] = [];
         if (hasPermission('manage-stores')) {
-            items.push({
-                title: t('Stores'),
-                href: route('stores.index'),
-                icon: Store,
-                groupLabel: t('Store'),
-            });
+            storeChildren.push({ title: t('Stores'), href: route('stores.index') });
         }
-
-        // إدارة المتجر — IA cleaned: one feature = one page, one canonical route
         if (hasPermission('settings-stores') && currentStoreId) {
-            const safeRoute = (name: string, params: any, fallback: string) => {
-                try { return route(name, params); } catch { return fallback; }
-            };
+            storeChildren.push({ title: t('Store Design'), href: safeRoute('stores.designer', currentStoreId, `/stores/${currentStoreId}/designer`) });
+            storeChildren.push({ title: t('Store Settings'), href: safeRoute('stores.settings', currentStoreId, `/stores/${currentStoreId}/settings`), activePaths: [`/stores/${currentStoreId}/settings`] });
+        }
+        if (storeChildren.length > 0) {
             items.push({
-                title: 'إدارة المتجر',
-                icon: Building2,
-                groupLabel: t('Store'),
-                children: [
-                    { title: 'تصميم المتجر', href: safeRoute('stores.designer', currentStoreId, `/stores/${currentStoreId}/designer`), icon: Paintbrush },
-                    { title: 'إعدادات المتجر', href: safeRoute('stores.settings', currentStoreId, `/stores/${currentStoreId}/settings`), icon: Settings, activePaths: [`/stores/${currentStoreId}/settings`] },
-                    {
-                        title: 'الشحن والتوصيل',
-                        href: `/stores/${currentStoreId}/shipping`,
-                        icon: Truck,
-                        activePaths: [`/stores/${currentStoreId}/shipping`, '/shipping'],
-                    },
-                    {
-                        title: 'طرق الدفع',
-                        href: `/stores/${currentStoreId}/payments`,
-                        icon: CreditCard,
-                        activePaths: [`/stores/${currentStoreId}/payments`],
-                    },
-                    {
-                        title: 'الضرائب',
-                        href: `/stores/${currentStoreId}/taxes`,
-                        icon: Percent,
-                        activePaths: [`/stores/${currentStoreId}/taxes`, '/tax'],
-                    },
-                    {
-                        title: 'حسابات العملاء',
-                        href: `/stores/${currentStoreId}/customer-accounts`,
-                        icon: UserCheck,
-                        activePaths: [`/stores/${currentStoreId}/customer-accounts`],
-                    },
-                    {
-                        title: 'إعدادات البريد',
-                        href: `/stores/${currentStoreId}/email-settings`,
-                        icon: Mail,
-                        activePaths: [`/stores/${currentStoreId}/email-settings`],
-                    },
-                    {
-                        title: 'إشعارات البريد',
-                        href: `/stores/${currentStoreId}/notifications/email`,
-                        icon: Mail,
-                        activePaths: [`/stores/${currentStoreId}/notifications/email`],
-                    },
-                    {
-                        title: 'إشعارات الطلبات',
-                        href: `/stores/${currentStoreId}/notifications/whatsapp`,
-                        icon: Bell,
-                        activePaths: [`/stores/${currentStoreId}/notifications/whatsapp`, `/stores/${currentStoreId}/notifications`],
-                    },
-                    {
-                        title: 'الدومين',
-                        href: `/stores/${currentStoreId}/domains`,
-                        icon: Globe,
-                        activePaths: [`/stores/${currentStoreId}/domains`],
-                    },
-                    {
-                        title: 'التكاملات',
-                        href: `/stores/${currentStoreId}/integrations`,
-                        icon: Webhook,
-                        activePaths: [`/stores/${currentStoreId}/integrations`, `/stores/${currentStoreId}/integrations/erp`],
-                    },
-                ],
+                title: t('Store'),
+                icon: Store,
+                groupLabel: t('Operations'),
+                children: storeChildren,
             });
         }
 
-        // ── التسويق والمبيعات ──
+        // ── التسويق ──
         const marketingChildren: NavItem[] = [];
         if (hasPermission('manage-coupon-system')) {
             marketingChildren.push({ title: t('Coupons'), href: route('coupon-system.index') });
         }
         if (hasPermission('manage-advanced-coupons')) {
-            marketingChildren.push({ 
-                title: t('Advanced Coupons'),
-                icon: Sparkles,
-                href: route('advanced-coupons.index')
-            });
-        }
-        if (hasPermission('manage-express-checkout')) {
-            marketingChildren.push({ title: t('Express Checkout'), href: route('express-checkout.index') });
+            marketingChildren.push({ title: t('Advanced Coupons'), icon: Sparkles, href: route('advanced-coupons.index') });
         }
         if (hasPermission('manage-abandoned-carts')) {
             const storeId = auth.user?.current_store;
             const abandonedHref = storeId ? `/stores/${storeId}/abandoned-carts` : route('abandoned-carts.index');
-            marketingChildren.push({ 
-                title: t('Abandoned Carts'),
-                icon: ShoppingCart,
-                href: abandonedHref
-            });
+            marketingChildren.push({ title: t('Abandoned Carts'), icon: ShoppingCart, href: abandonedHref });
         }
-        if (hasPermission('manage-cod-payments')) {
-            marketingChildren.push({ 
-                title: t('COD Payments'),
-                icon: DollarSign,
-                href: route('cod-payments.index')
-            });
-        }
-        if (hasPermission('manage-loyalty')) {
-            marketingChildren.push({
-                title: t('Loyalty Points'),
-                icon: Star,
-                href: route('loyalty.settings')
-            });
+        if (hasPermission('manage-express-checkout')) {
+            marketingChildren.push({ title: 'روابط البيع السريع', icon: Zap, href: route('express-checkout.index') });
         }
         if (marketingChildren.length > 0) {
             items.push({
-                title: t('Marketing & Sales'),
+                title: t('Marketing'),
                 icon: Megaphone,
-                groupLabel: t('Sales'),
+                groupLabel: t('Growth'),
                 children: marketingChildren,
             });
         }
 
-        // ── المراجعات والمنتجات الرقمية ──
-        const contentChildren: NavItem[] = [];
-        if (hasPermission('manage-product-reviews')) {
-            contentChildren.push({ 
-                title: t('Product Reviews'),
-                href: route('product-reviews.index')
-            });
-        }
-        if (hasPermission('manage-digital-downloads')) {
-            contentChildren.push({ 
-                title: t('Digital Downloads'),
-                href: route('digital-downloads.index')
-            });
-        }
-        if (contentChildren.length > 0) {
-            items.push({
-                title: t('Content & Reviews'),
-                icon: MessageSquare,
-                groupLabel: t('Store'),
-                children: contentChildren,
-            });
-        }
-
-        // ── التقارير والتحليلات ──
+        // ── التقارير ──
         if (hasPermission('manage-analytics')) {
             items.push({
                 title: t('Analytics & Reporting'),
                 href: route('analytics.index'),
                 icon: BarChart,
-                groupLabel: t('Sales'),
+                groupLabel: t('Growth'),
             });
         }
 
-        // ── الموظفين والإعدادات ──
+        // ── الإعدادات — all configuration consolidated ──
         const settingsChildren: NavItem[] = [];
-        if (hasPermission('manage-users')) {
-            settingsChildren.push({ title: t('Users'), href: route('users.index') });
+        if (currentStoreIdEarly && hasPermission('settings-stores')) {
+            settingsChildren.push({ title: t('Payment Methods'), icon: CreditCard, href: `/stores/${currentStoreIdEarly}/payments`, activePaths: [`/stores/${currentStoreIdEarly}/payments`] });
+            settingsChildren.push({ title: t('Shipping & Delivery'), icon: Truck, href: `/stores/${currentStoreIdEarly}/shipping`, activePaths: [`/stores/${currentStoreIdEarly}/shipping`, '/shipping'] });
+            settingsChildren.push({ title: t('Taxes'), icon: Percent, href: `/stores/${currentStoreIdEarly}/taxes`, activePaths: [`/stores/${currentStoreIdEarly}/taxes`, '/tax'] });
+            settingsChildren.push({ title: t('Email & Notifications'), icon: Mail, href: `/stores/${currentStoreIdEarly}/email-settings`, activePaths: [`/stores/${currentStoreIdEarly}/email-settings`, `/stores/${currentStoreIdEarly}/notifications/email`, `/stores/${currentStoreIdEarly}/notifications/whatsapp`] });
+            settingsChildren.push({ title: t('Domain'), icon: Globe, href: `/stores/${currentStoreIdEarly}/domains`, activePaths: [`/stores/${currentStoreIdEarly}/domains`] });
+            settingsChildren.push({ title: t('Integrations'), icon: Webhook, href: `/stores/${currentStoreIdEarly}/integrations`, activePaths: [`/stores/${currentStoreIdEarly}/integrations`, `/stores/${currentStoreIdEarly}/integrations/erp`] });
         }
-        if (hasPermission('manage-roles')) {
-            settingsChildren.push({ title: t('Roles'), href: route('roles.index') });
+        if (hasPermission('manage-users')) {
+            settingsChildren.push({ title: t('Users & Roles'), icon: Users, href: route('users.index') });
         }
         if (hasPermission('manage-media')) {
-            settingsChildren.push({ title: t('Media Library'), href: route('media-library') });
+            settingsChildren.push({ title: t('Media Library'), icon: Image, href: route('media-library') });
+        }
+        if (hasPermission('manage-cod-payments')) {
+            settingsChildren.push({ title: t('COD Payments'), icon: DollarSign, href: route('cod-payments.index') });
         }
         if (hasPermission('manage-notifications')) {
-            settingsChildren.push({ title: t('Customer Notifications'), href: route('notifications.index') });
+            settingsChildren.push({ title: t('Customer Notifications'), icon: Bell, href: route('notifications.index') });
         }
         if (hasPermission('manage-plans')) {
-            settingsChildren.push({ title: t('My Plan'), href: route('plans.index') });
+            settingsChildren.push({ title: t('My Plan'), icon: CreditCard, href: route('plans.index') });
         }
         if (hasPermission('manage-referral')) {
-            settingsChildren.push({ title: t('Referral Program'), href: route('referral.index') });
+            settingsChildren.push({ title: t('Referral Program'), icon: Gift, href: route('referral.index') });
         }
-        // إعدادات المنصة العالمية — SuperAdmin / مدير النظام فقط (للتجار تُدار من /stores/{id}/*)
         if (hasPermission('manage-settings') && (user.type === 'superadmin' || user.type === 'admin')) {
-            settingsChildren.push({ title: t('Settings'), href: route('settings') });
+            settingsChildren.push({ title: t('Platform Settings'), icon: Settings, href: route('settings') });
         }
         if (settingsChildren.length > 0) {
             items.push({
-                title: t('Staff & Settings'),
+                title: t('Settings'),
                 icon: Settings,
                 groupLabel: t('Settings'),
                 children: settingsChildren,

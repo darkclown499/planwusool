@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Package, User, CreditCard, Truck, MapPin, Phone, Mail, Copy, ExternalLink, CheckCircle2, AlertTriangle, Clock, MoreVertical, Pencil, Trash2, RotateCcw, Send, Box, MessageCircle } from 'lucide-react';
+import { Package, User, CreditCard, Truck, MapPin, Phone, Mail, Copy, ExternalLink, CheckCircle2, AlertTriangle, Clock, MoreVertical, Pencil, Trash2, RotateCcw, Send, Box, MessageCircle, FileText, RotateCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -305,6 +305,11 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56" dir="rtl">
+                    {order.invoice_pdf_url && (
+                      <DropdownMenuItem onClick={() => window.open(order.invoice_pdf_url, '_blank')} className="gap-2">
+                        <FileText className="h-4 w-4"/> تحميل الفاتورة (PDF)
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={()=>router.visit(route('orders.edit', order.id))} className="gap-2">
                       <Pencil className="h-4 w-4"/> تحرير الطلب
                     </DropdownMenuItem>
@@ -405,7 +410,14 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
             <Card>
               <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-sm font-bold"><User className="h-4 w-4"/> العميل</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <p className="font-bold text-base">{order.customer.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-base">{order.customer.name}</p>
+                  {order.customer.order_count != null && order.customer.order_count > 1 && (
+                    <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                      <RotateCw className="h-2.5 w-2.5" /> {order.customer.order_count} طلب
+                    </span>
+                  )}
+                </div>
                 {order.customer.phone && (
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 text-slate-700"><Phone className="h-4 w-4 text-muted-foreground"/>{order.customer.phone}</span>
@@ -468,6 +480,9 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
           <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><MoreVertical className="h-5 w-5"/></Button></DropdownMenuTrigger>
             <DropdownMenuContent align="end" dir="rtl" className="w-56">
+              {order.invoice_pdf_url && (
+                <DropdownMenuItem onClick={() => window.open(order.invoice_pdf_url, '_blank')}><FileText className="h-4 w-4 me-2"/> تحميل الفاتورة</DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={()=>router.visit(route('orders.edit', order.id))}><Pencil className="h-4 w-4 me-2"/> تحرير الطلب</DropdownMenuItem>
               {!isTerminal && <DropdownMenuItem variant="destructive" onClick={()=>openDanger('cancel','cancelled','إلغاء الطلب','هل أنت متأكد؟')}>إلغاء الطلب</DropdownMenuItem>}
               {statusLower==='shipped' && <DropdownMenuItem variant="destructive" onClick={()=>openDanger('failed','failed','فشل التوصيل','تأكيد فشل التوصيل؟')}>فشل التوصيل</DropdownMenuItem>}

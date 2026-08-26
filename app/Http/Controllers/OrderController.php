@@ -16,37 +16,78 @@ use Inertia\Inertia;
 class OrderController extends Controller
 {
     /**
-     * Display a listing of orders.
+     * Display a listing of orders with search, filtering, and pagination.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
-        
-        // Get orders for current store
-        $orders = Order::where('store_id', $storeId)
-            ->with(['customer', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
-        // Calculate stats
-        $totalOrders = $orders->count();
-        $pendingOrders = $orders->where('status', 'pending')->count();
-        $paidOrders = $orders->where('payment_status', 'paid');
+
+        $query = Order::where('store_id', $storeId)
+            ->with(['customer', 'items']);
+
+        // ── Search by order number, customer name, phone, email ──
+        if ($search = $request->input('search')) {
+            $search = trim($search);
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                  ->orWhere('customer_first_name', 'like', "%{$search}%")
+                  ->orWhere('customer_last_name', 'like', "%{$search}%")
+                  ->orWhere('customer_email', 'like', "%{$search}%")
+                  ->orWhere('customer_phone', 'like', "%{$search}%");
+            });
+        }
+
+        // ── Filter by status ──
+        if ($status = $request->input('status')) {
+            $query->where('status', strtolower($status));
+        }
+
+        // ── Filter by payment status ──
+        if ($paymentStatus = $request->input('payment_status')) {
+            $query->where('payment_status', strtolower($paymentStatus));
+        }
+
+        // ── Filter by payment method ──
+        if ($paymentMethod = $request->input('payment_method')) {
+            $query->where('payment_method', strtolower($paymentMethod));
+        }
+
+        // ── Filter by order source ──
+        if ($source = $request->input('source')) {
+            $query->where('order_source', $source);
+        }
+
+        // ── Date range filter ──
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
+        // ── Stats (computed on filtered set for context) ──
+        $statsQuery = Order::where('store_id', $storeId);
+        $totalOrders = $statsQuery->count();
+        $pendingOrders = (clone $statsQuery)->where('status', 'pending')->count();
+        $paidOrders = (clone $statsQuery)->where('payment_status', 'paid');
         $totalRevenue = $paidOrders->sum('total_amount');
         $avgOrderValue = $paidOrders->count() > 0 ? $totalRevenue / $paidOrders->count() : 0;
-        // Format orders for frontend with fulfillment column
-        $formattedOrders = $orders->map(function ($order) {
+
+        // ── Pagination ──
+        $perPage = min((int) $request->input('per_page', 15), 50);
+        $paginated = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        $formattedOrders = $paginated->getCollection()->map(function ($order) {
             $ship = $order->shippingMethod;
             $fulfillmentLabel = 'توصيل شخصي';
             $fulfillmentStatus = $order->status;
             if ($ship) {
                 if (!empty($ship->courier_integration_id)) {
-                    // try to get shipment status if exists
-                    $shipment = \App\Models\OrderShipment::where('order_id',$order->id)->first();
+                    $shipment = \App\Models\OrderShipment::where('order_id', $order->id)->first();
                     if ($shipment) $fulfillmentStatus = $shipment->status;
                     $fulfillmentLabel = ($ship->delivery_company ?: $ship->courierIntegration?->provider ?? 'شركة مربوطة') . ' — ' . ($shipment ? $shipment->status : 'قيد التجهيز');
-                    if ($shipment && $shipment->status==='delivered') $fulfillmentLabel = ($ship->delivery_company ?: 'شركة') . ' — تم التسليم';
+                    if ($shipment && $shipment->status === 'delivered') $fulfillmentLabel = ($ship->delivery_company ?: 'شركة') . ' — تم التسليم';
                 } elseif (!empty($ship->delivery_company)) {
                     $fulfillmentLabel = $ship->delivery_company . ' — يدوي';
                 }
@@ -56,6 +97,7 @@ class OrderController extends Controller
                 'orderNumber' => $order->order_number,
                 'customer' => $order->customer_first_name . ' ' . $order->customer_last_name,
                 'email' => $order->customer_email,
+                'phone' => $order->customer_phone,
                 'total' => (float) $order->total_amount,
                 'status' => ucfirst($order->status),
                 'paymentStatus' => ucfirst($order->payment_status),
@@ -68,15 +110,30 @@ class OrderController extends Controller
                 'order_source' => $order->order_source ?? 'storefront',
             ];
         });
-        
+
         return Inertia::render('orders/index', [
             'orders' => $formattedOrders,
+            'pagination' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
+            'filters' => [
+                'search' => $request->input('search', ''),
+                'status' => $request->input('status', ''),
+                'payment_status' => $request->input('payment_status', ''),
+                'payment_method' => $request->input('payment_method', ''),
+                'source' => $request->input('source', ''),
+                'date_from' => $request->input('date_from', ''),
+                'date_to' => $request->input('date_to', ''),
+            ],
             'stats' => [
                 'totalOrders' => $totalOrders,
                 'pendingOrders' => $pendingOrders,
                 'totalRevenue' => $totalRevenue,
                 'avgOrderValue' => $avgOrderValue,
-            ]
+            ],
         ]);
     }
 
@@ -110,6 +167,16 @@ class OrderController extends Controller
             elseif (($shipping->fulfillment_type ?? '') === 'manual') $fulfillmentType = 'manual';
         }
             
+        // Customer order count for history context
+        $customerOrderCount = Order::where('store_id', $storeId)
+            ->where(function ($q) use ($order) {
+                if (!empty($order->customer_email)) {
+                    $q->where('customer_email', $order->customer_email);
+                } elseif (!empty($order->customer_phone)) {
+                    $q->where('customer_phone', $order->customer_phone);
+                }
+            })->count();
+
         $formattedOrder = [
             'id' => $order->id,
             'orderNumber' => $order->order_number,
@@ -125,7 +192,10 @@ class OrderController extends Controller
                 'name' => $order->customer_first_name . ' ' . $order->customer_last_name,
                 'email' => $order->customer_email,
                 'phone' => $order->customer_phone,
+                'order_count' => $customerOrderCount,
             ],
+            // invoice_pdf_url: storefront route is in a domain group — frontend must construct via store slug
+            'invoice_pdf_url' => null,
             'shippingAddress' => [
                 'name' => $order->customer_first_name . ' ' . $order->customer_last_name,
                 'street' => $order->shipping_address,
