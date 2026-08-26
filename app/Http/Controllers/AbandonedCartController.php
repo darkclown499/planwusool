@@ -7,6 +7,7 @@ use App\Models\Store;
 use App\Services\AbandonedCartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class AbandonedCartController extends Controller
@@ -19,110 +20,14 @@ class AbandonedCartController extends Controller
     }
 
     /**
-     * Display a listing of abandoned carts.
-     * Supports both global (/abandoned-carts) and store-scoped (/stores/{store}/abandoned-carts) routes.
-     * RBAC: STORE_OWNER / STORE_ADMIN can access filtered by activeStoreId without superAdmin.
+     * Resolve the target store from request and verify authorization.
      */
-    public function index(Request $request, Store $store = null)
+    private function resolveStoreAndAuthorize(Request $request): ?int
     {
-        $user = Auth::user();
-
-        // Resolve target store: route-bound store takes precedence, else current_store
-        $routeStore = $request->route('store');
-        if ($routeStore instanceof Store) {
-            $targetStore = $routeStore;
-        } elseif (is_numeric($routeStore)) {
-            $targetStore = Store::find($routeStore);
-        } elseif ($store instanceof Store && $store->exists) {
-            $targetStore = $store;
-        } else {
-            $targetStore = null;
-        }
-
-        if ($targetStore) {
-            // Store-scoped access: verify ownership or store-admin without requiring superAdmin
-            $currentStoreId = $targetStore->id;
-            $isOwner = (int) $targetStore->user_id === (int) $user->id;
-            $isActiveStore = (int) $user->current_store === (int) $currentStoreId;
-            $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
-            $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
-            if (!$isSuper && !$isAdmin && !$isOwner && !$isActiveStore) {
-                // Also allow if user has explicit store access via permission
-                abort(403, 'Unauthorized store access');
-            }
-        } else {
-            // Global route: filter strictly by activeStoreId for non-superAdmins
-            $currentStoreId = $user->current_store;
-            $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
-            $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
-            if (!$isSuper && !$isAdmin && !$currentStoreId) {
-                abort(403, 'No active store selected');
-            }
-            // Non-super users are strictly scoped to their activeStoreId
-        }
-
-        $query = AbandonedCart::where('store_id', $currentStoreId);
-
-        // Exclude completed orders by default — dashboard should only show pending recoveries
-        // This fixes the "0 pending recoveries" bug where recovered carts were cluttering the list
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        } else {
-            $query->whereNotIn('status', ['recovered', 'expired', 'unsubscribed']);
-        }
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('customer_name', 'like', "%{$search}%")
-                    ->orWhere('customer_email', 'like', "%{$search}%")
-                    ->orWhere('customer_phone', 'like', "%{$search}%");
-            });
-        }
-        if ($request->has('date_from') && $request->date_from) {
-            $query->whereDate('last_activity_at', '>=', $request->date_from);
-        }
-        if ($request->has('date_to') && $request->date_to) {
-            $query->whereDate('last_activity_at', '<=', $request->date_to);
-        }
-
-        $perPage = $request->get('per_page', 15);
-        $carts = $query->latest('last_activity_at')->paginate($perPage);
-
-        $stats = $currentStoreId ? $this->abandonedCartService->getStats($currentStoreId) : [];
-
-        $currencySymbol = '₪';
-        if ($currentStoreId) {
-            try {
-                $currencySettings = app(\App\Services\Currency\CurrencyService::class)
-                    ->getCurrencySettings($user->id, $currentStoreId);
-                $currency = \App\Models\Currency::where('code', $currencySettings['defaultCurrency'] ?? 'ILS')->first();
-                $currencySymbol = $currency ? $currency->symbol : '₪';
-            } catch (\Throwable $e) {
-                $currencySymbol = '₪';
-            }
-        }
-
-        return Inertia::render('abandoned-carts/index', [
-            'carts' => $carts,
-            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'per_page']),
-            'stats' => $stats,
-            'currency_symbol' => $currencySymbol,
-            'activeStoreId' => $currentStoreId,
-        ]);
-    }
-
-    /**
-     * Send a manual reminder for a specific abandoned cart.
-     * Store-scoped: validates against route store or activeStoreId without superAdmin requirement.
-     */
-    public function sendReminder(Request $request, AbandonedCart|string $abandonedCart)
-    {
-        if (is_string($abandonedCart)) {
-            $abandonedCart = AbandonedCart::findOrFail($abandonedCart);
-        }
         $user = Auth::user();
         $routeStore = $request->route('store');
         $targetStoreId = null;
+
         if ($routeStore instanceof Store) {
             $targetStoreId = $routeStore->id;
         } elseif (is_numeric($routeStore)) {
@@ -131,112 +36,217 @@ class AbandonedCartController extends Controller
             $targetStoreId = $user->current_store;
         }
 
-        if ((int) $abandonedCart->store_id !== (int) $targetStoreId) {
-            abort(403, 'Unauthorized action.');
-        }
-        if ($routeStore) {
-            $storeModel = $routeStore instanceof Store ? $routeStore : Store::find($targetStoreId);
-            if ($storeModel) {
-                $isOwner = (int) $storeModel->user_id === (int) $user->id;
-                $isActive = (int) $user->current_store === (int) $targetStoreId;
-                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
-                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
-                if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
-                    abort(403, 'Unauthorized store access');
-                }
+        if ($targetStoreId) {
+            $storeModel = ($routeStore instanceof Store) ? $routeStore : Store::find($targetStoreId);
+            $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+            $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+            $isOwner = $storeModel ? ((int) $storeModel->user_id === (int) $user->id) : false;
+            $isActive = (int) $user->current_store === (int) $targetStoreId;
+
+            if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
+                abort(403, 'Unauthorized store access');
             }
         }
 
-        $this->abandonedCartService->sendReminder($abandonedCart);
+        return $targetStoreId;
+    }
 
-        return redirect()->back()->with('success', __('Reminder sent successfully!'));
+    /**
+     * Manually resolve AbandonedCart from route parameter.
+     * This avoids implicit route model binding issues when the route has
+     * multiple parameters (e.g., stores/{store}/abandoned-carts/{abandonedCart})
+     * where positional parameter passing causes the {store} value to displace
+     * the {abandonedCart} model binding.
+     */
+    private function resolveAbandonedCart(Request $request): AbandonedCart
+    {
+        $cartId = $request->route('abandonedCart');
+        if (!$cartId) {
+            abort(404, 'Abandoned cart not found.');
+        }
+        $cart = AbandonedCart::find($cartId);
+        if (!$cart) {
+            abort(404, 'Abandoned cart not found.');
+        }
+        return $cart;
+    }
+
+    /**
+     * Verify that a cart belongs to the target store.
+     */
+    private function verifyCartOwnership(AbandonedCart $cart, ?int $targetStoreId): void
+    {
+        if ($targetStoreId && (int) $cart->store_id !== (int) $targetStoreId) {
+            abort(403, 'Unauthorized action.');
+        }
+    }
+
+    /**
+     * Display a listing of abandoned carts.
+     */
+    public function index(Request $request, Store $store = null)
+    {
+        try {
+            $user = Auth::user();
+
+            $routeStore = $request->route('store');
+            if ($routeStore instanceof Store) {
+                $targetStore = $routeStore;
+            } elseif (is_numeric($routeStore)) {
+                $targetStore = Store::find($routeStore);
+            } elseif ($store instanceof Store && $store->exists) {
+                $targetStore = $store;
+            } else {
+                $targetStore = null;
+            }
+
+            if ($targetStore) {
+                $currentStoreId = $targetStore->id;
+                $isOwner = (int) $targetStore->user_id === (int) $user->id;
+                $isActiveStore = (int) $user->current_store === (int) $currentStoreId;
+                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+                if (!$isSuper && !$isAdmin && !$isOwner && !$isActiveStore) {
+                    abort(403, 'Unauthorized store access');
+                }
+            } else {
+                $currentStoreId = $user->current_store;
+                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
+                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
+                if (!$isSuper && !$isAdmin && !$currentStoreId) {
+                    abort(403, 'No active store selected');
+                }
+            }
+
+            $query = AbandonedCart::where('store_id', $currentStoreId);
+
+            if ($request->has('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            } else {
+                $query->whereNotIn('status', ['recovered', 'expired', 'unsubscribed']);
+            }
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('customer_name', 'like', "%{$search}%")
+                        ->orWhere('customer_email', 'like', "%{$search}%")
+                        ->orWhere('customer_phone', 'like', "%{$search}%");
+                });
+            }
+            if ($request->has('date_from') && $request->date_from) {
+                $query->whereDate('last_activity_at', '>=', $request->date_from);
+            }
+            if ($request->has('date_to') && $request->date_to) {
+                $query->whereDate('last_activity_at', '<=', $request->date_to);
+            }
+
+            $perPage = $request->get('per_page', 15);
+            $carts = $query->latest('last_activity_at')->paginate($perPage);
+
+            $stats = $currentStoreId ? $this->abandonedCartService->getStats($currentStoreId) : [];
+
+            $currencySymbol = '₪';
+            if ($currentStoreId) {
+                try {
+                    $currencySettings = app(\App\Services\Currency\CurrencyService::class)
+                        ->getCurrencySettings($user->id, $currentStoreId);
+                    $currency = \App\Models\Currency::where('code', $currencySettings['defaultCurrency'] ?? 'ILS')->first();
+                    $currencySymbol = $currency ? $currency->symbol : '₪';
+                } catch (\Throwable $e) {
+                    $currencySymbol = '₪';
+                }
+            }
+
+            return Inertia::render('abandoned-carts/index', [
+                'carts' => $carts,
+                'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'per_page']),
+                'stats' => $stats,
+                'currency_symbol' => $currencySymbol,
+                'activeStoreId' => $currentStoreId,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Abandoned carts index failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            abort(500, 'Failed to load abandoned carts.');
+        }
+    }
+
+    /**
+     * Send a manual reminder for a specific abandoned cart.
+     */
+    public function sendReminder(Request $request)
+    {
+        $abandonedCart = $this->resolveAbandonedCart($request);
+        $targetStoreId = $this->resolveStoreAndAuthorize($request);
+        $this->verifyCartOwnership($abandonedCart, $targetStoreId);
+
+        try {
+            $result = $this->abandonedCartService->sendReminder($abandonedCart);
+
+            if ($result['success']) {
+                return redirect()->back()->with('success', $result['message']);
+            }
+            return redirect()->back()->withErrors(['error' => $result['message']]);
+        } catch (\Throwable $e) {
+            Log::error('Send reminder failed: ' . $e->getMessage(), [
+                'cart_id' => $request->route('abandonedCart'),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء إرسال التذكير.']);
+        }
     }
 
     /**
      * Mark an abandoned cart as recovered manually.
      */
-    public function markRecovered(Request $request, AbandonedCart|string $abandonedCart)
+    public function markRecovered(Request $request)
     {
-        if (is_string($abandonedCart)) {
-            $abandonedCart = AbandonedCart::findOrFail($abandonedCart);
-        }
-        $user = Auth::user();
-        $routeStore = $request->route('store');
-        $targetStoreId = null;
-        if ($routeStore instanceof Store) {
-            $targetStoreId = $routeStore->id;
-        } elseif (is_numeric($routeStore)) {
-            $targetStoreId = (int) $routeStore;
-        } else {
-            $targetStoreId = $user->current_store;
-        }
+        $abandonedCart = $this->resolveAbandonedCart($request);
+        $targetStoreId = $this->resolveStoreAndAuthorize($request);
+        $this->verifyCartOwnership($abandonedCart, $targetStoreId);
 
-        if ((int) $abandonedCart->store_id !== (int) $targetStoreId) {
-            abort(403, 'Unauthorized action.');
-        }
-        if ($routeStore) {
-            $storeModel = $routeStore instanceof Store ? $routeStore : Store::find($targetStoreId);
-            if ($storeModel) {
-                $isOwner = (int) $storeModel->user_id === (int) $user->id;
-                $isActive = (int) $user->current_store === (int) $targetStoreId;
-                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
-                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
-                if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
-                    abort(403, 'Unauthorized store access');
-                }
+        try {
+            if ($abandonedCart->status === 'recovered') {
+                return redirect()->back()->with('success', 'هذه السلة مستردة بالفعل.');
             }
+
+            $abandonedCart->update([
+                'status' => 'recovered',
+                'recovered_at' => now(),
+            ]);
+
+            return redirect()->back()->with('success', 'تم تحديد السلة كمستردة!');
+        } catch (\Throwable $e) {
+            Log::error('Mark recovered failed: ' . $e->getMessage(), [
+                'cart_id' => $request->route('abandonedCart'),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء تحديد السلة كمستردة.']);
         }
-
-        $abandonedCart->update([
-            'status' => 'recovered',
-            'recovered_at' => now(),
-        ]);
-
-        return redirect()->back()->with('success', __('Cart marked as recovered!'));
     }
 
     /**
      * Remove the specified abandoned cart.
      */
-    public function destroy(Request $request, AbandonedCart|string $abandonedCart)
+    public function destroy(Request $request)
     {
-        if (is_string($abandonedCart)) {
-            $abandonedCart = AbandonedCart::findOrFail($abandonedCart);
-        }
-        $user = Auth::user();
-        $routeStore = $request->route('store');
-        $targetStoreId = null;
-        if ($routeStore instanceof Store) {
-            $targetStoreId = $routeStore->id;
-        } elseif (is_numeric($routeStore)) {
-            $targetStoreId = (int) $routeStore;
-        } else {
-            $targetStoreId = $user->current_store;
-        }
+        $abandonedCart = $this->resolveAbandonedCart($request);
+        $targetStoreId = $this->resolveStoreAndAuthorize($request);
+        $this->verifyCartOwnership($abandonedCart, $targetStoreId);
 
-        if ((int) $abandonedCart->store_id !== (int) $targetStoreId) {
-            abort(403, 'Unauthorized action.');
-        }
-        if ($routeStore) {
-            $storeModel = $routeStore instanceof Store ? $routeStore : Store::find($targetStoreId);
-            if ($storeModel) {
-                $isOwner = (int) $storeModel->user_id === (int) $user->id;
-                $isActive = (int) $user->current_store === (int) $targetStoreId;
-                $isSuper = method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin();
-                $isAdmin = method_exists($user, 'isAdmin') && $user->isAdmin();
-                if (!$isSuper && !$isAdmin && !$isOwner && !$isActive) {
-                    abort(403, 'Unauthorized store access');
-                }
+        try {
+            $abandonedCart->delete();
+
+            if ($targetStoreId) {
+                return redirect()->route('stores.abandoned-carts.index', $targetStoreId)->with('success', __('Cart deleted successfully!'));
             }
+            return redirect()->route('abandoned-carts.index')->with('success', __('Cart deleted successfully!'));
+        } catch (\Throwable $e) {
+            Log::error('Delete abandoned cart failed: ' . $e->getMessage(), [
+                'cart_id' => $request->route('abandonedCart'),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return redirect()->back()->withErrors(['error' => 'حدث خطأ أثناء حذف السلة.']);
         }
-
-        $abandonedCart->delete();
-
-        if ($routeStore) {
-            $storeId = $routeStore instanceof Store ? $routeStore->id : $targetStoreId;
-            return redirect()->route('stores.abandoned-carts.index', $storeId)->with('success', __('Cart deleted successfully!'));
-        }
-        return redirect()->route('abandoned-carts.index')->with('success', __('Cart deleted successfully!'));
     }
 
     /**
@@ -272,43 +282,58 @@ class AbandonedCartController extends Controller
             $currentStoreId = $user->current_store;
         }
 
-        $carts = AbandonedCart::where('store_id', $currentStoreId)
-            ->orderBy('last_activity_at', 'desc')
-            ->get();
-
-        $csvData = [];
-        $csvData[] = ['Customer Name', 'Email', 'Phone', 'Cart Total', 'Status', 'Items Count', 'Reminders Sent', 'Last Activity', 'Recovered At'];
-
-        foreach ($carts as $cart) {
-            $items = is_array($cart->cart_items) ? $cart->cart_items : [];
-            $csvData[] = [
-                $cart->customer_name ?? 'N/A',
-                $cart->customer_email ?? 'N/A',
-                $cart->customer_phone ?? 'N/A',
-                number_format($cart->cart_total, 2),
-                ucfirst($cart->status),
-                count($items),
-                $cart->reminder_count,
-                $cart->last_activity_at ? $cart->last_activity_at->format('Y-m-d H:i:s') : 'N/A',
-                $cart->recovered_at ? $cart->recovered_at->format('Y-m-d H:i:s') : 'N/A',
+        try {
+            $statusLabels = [
+                'new' => 'جديدة',
+                'draft' => 'مسودة',
+                'abandoned' => 'متروكة',
+                'reminder_sent' => 'تم إرسال تذكير',
+                'recovered' => 'مستردة',
+                'expired' => 'منتهية',
+                'unsubscribed' => 'إلغاء الاشتراك',
             ];
-        }
 
-        $filename = 'abandoned-carts-export-' . now()->format('Y-m-d') . '.csv';
+            $carts = AbandonedCart::where('store_id', $currentStoreId)
+                ->orderBy('last_activity_at', 'desc')
+                ->get();
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
+            $csvData = [];
+            $csvData[] = ['اسم العميل', 'البريد الإلكتروني', 'الهاتف', 'إجمالي السلة', 'الحالة', 'عدد المنتجات', 'عدد التذكيرات', 'آخر نشاط', 'تاريخ الاسترداد'];
 
-        $callback = function () use ($csvData) {
-            $file = fopen('php://output', 'w');
-            foreach ($csvData as $row) {
-                fputcsv($file, $row);
+            foreach ($carts as $cart) {
+                $items = is_array($cart->cart_items) ? $cart->cart_items : [];
+                $csvData[] = [
+                    $cart->customer_name ?? 'N/A',
+                    $cart->customer_email ?? 'N/A',
+                    $cart->customer_phone ?? 'N/A',
+                    number_format($cart->cart_total, 2),
+                    $statusLabels[$cart->status] ?? ucfirst($cart->status),
+                    count($items),
+                    $cart->reminder_count,
+                    $cart->last_activity_at ? $cart->last_activity_at->format('Y-m-d H:i:s') : 'N/A',
+                    $cart->recovered_at ? $cart->recovered_at->format('Y-m-d H:i:s') : 'N/A',
+                ];
             }
-            fclose($file);
-        };
 
-        return response()->stream($callback, 200, $headers);
+            $filename = 'abandoned-carts-export-' . now()->format('Y-m-d') . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+
+            $callback = function () use ($csvData) {
+                $file = fopen('php://output', 'w');
+                foreach ($csvData as $row) {
+                    fputcsv($file, $row);
+                }
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        } catch (\Throwable $e) {
+            Log::error('Export abandoned carts failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            abort(500, 'Failed to export abandoned carts.');
+        }
     }
 }

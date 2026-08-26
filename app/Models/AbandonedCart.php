@@ -118,8 +118,10 @@ class AbandonedCart extends Model
     {
         return $query->whereIn('status', [self::STATUSES['new'], self::STATUSES['draft']])
             ->where('last_activity_at', '<=', now()->subMinutes($minutes))
-            ->whereNotNull('customer_email')
-            ->orWhereNotNull('customer_phone');
+            ->where(function ($q) {
+                $q->whereNotNull('customer_email')
+                    ->orWhereNotNull('customer_phone');
+            });
     }
 }
 

@@ -89,7 +89,6 @@ class AbandonedCartService
                 'expires_at' => $cart->expires_at,
             ]);
             $count++;
-            // WhatsApp Automation Gateway — ضبط أوتوماتيكية التذكير
             $this->triggerAbandonedAutomation($cart);
         }
 
@@ -98,13 +97,11 @@ class AbandonedCartService
 
     protected function triggerAbandonedAutomation(AbandonedCart $cart): void
     {
-        // Check store setting for automation trigger: ضبط أوتوماتيكية التذكير
         try {
             $store = Store::find($cart->store_id);
             if (!$store || !$store->user) return;
             $settings = \App\Models\Setting::getUserSettings($store->user->id, $cart->store_id);
             $autoEnabled = $settings['abandoned_cart_automation'] ?? $settings['whatsapp_automation'] ?? $settings['hotsms_automation'] ?? true;
-            // If explicitly disabled, skip
             if ($autoEnabled === false || $autoEnabled === 'off' || $autoEnabled === 0 || $autoEnabled === '0') {
                 return;
             }
@@ -112,13 +109,11 @@ class AbandonedCartService
             if ($hasPhone && $this->canSendWhatsApp($cart->store_id)) {
                 $token = $cart->recovery_token ?: $cart->ensureRecoveryToken();
                 $recoverUrl = url('/checkout?recover_token=' . $token);
-                $message = "مرحباً! تركت منتجات في سلتك 🛒\nأكمل طلبك الآن: {$recoverUrl}\nالمجموع: " . number_format($cart->cart_total, 2);
-                // Try WhatsApp API first
+                $message = "مرحباً! تركت منتجات في سلتك\nأكمل طلبك الآن: {$recoverUrl}\nالمجموع: " . number_format($cart->cart_total, 2);
                 try {
                     $whatsappService = app(WhatsAppService::class);
                     $whatsappService->sendMessage($cart->customer_phone, $message);
                 } catch (\Throwable $e) {
-                    // Fallback to HotSMS
                     try {
                         $smsService = app(HotsmsService::class);
                         if (method_exists($smsService, 'sendSms')) {
@@ -160,37 +155,40 @@ class AbandonedCartService
 
     /**
      * Send a reminder for a single abandoned cart.
+     *
+     * @return array{success: bool, message: string}
      */
-    public function sendReminder(AbandonedCart $cart): void
+    public function sendReminder(AbandonedCart $cart): array
     {
         try {
-            // Determine what channel to use
             $hasEmail = !empty($cart->customer_email);
             $hasPhone = !empty($cart->customer_phone);
 
             if (!$hasEmail && !$hasPhone) {
-                return;
+                return ['success' => false, 'message' => 'لا توجد وسيلة تواصل متاحة لهذه السلة.'];
             }
 
-            // Build cart items summary for the message
             $itemsSummary = '';
             $items = is_array($cart->cart_items) ? $cart->cart_items : [];
             foreach ($items as $item) {
-                $itemName = $item['name'] ?? 'Product';
+                $itemName = $item['name'] ?? 'منتج';
                 $itemQty = $item['quantity'] ?? 1;
                 $itemsSummary .= "- {$itemName} x{$itemQty}\n";
             }
 
-            $message = "Hello! You left some items in your cart:\n\n{$itemsSummary}\n"
-                . "Don't miss out! Complete your order now.\n"
-                . "Total: " . number_format($cart->cart_total, 2);
+            $message = "مرحباً! تركت منتجات في سلتك:\n\n{$itemsSummary}\n"
+                . "لا تفوت الفرصة! أكمل طلبك الآن.\n"
+                . "المجموع: " . number_format($cart->cart_total, 2);
 
-            // Send WhatsApp reminder if phone is available
+            $whatsappSent = false;
+            $emailSent = false;
+
             if ($hasPhone && $this->canSendWhatsApp($cart->store_id)) {
                 try {
                     $whatsappService = app(WhatsAppService::class);
                     $whatsappService->sendMessage($cart->customer_phone, $message);
-                } catch (\Exception $e) {
+                    $whatsappSent = true;
+                } catch (\Throwable $e) {
                     Log::error('Abandoned cart WhatsApp reminder failed: ' . $e->getMessage(), [
                         'cart_id' => $cart->id,
                         'store_id' => $cart->store_id,
@@ -198,11 +196,13 @@ class AbandonedCartService
                 }
             }
 
-            // Send email reminder if email is available
             if ($hasEmail) {
                 try {
+                    $store = $cart->store;
+                    $storeName = $store->name ?? 'المتجر';
                     \Mail::to($cart->customer_email)->send(new \App\Mail\AbandonedCartReminderMail($cart));
-                } catch (\Exception $e) {
+                    $emailSent = true;
+                } catch (\Throwable $e) {
                     Log::error('Abandoned cart email reminder failed: ' . $e->getMessage(), [
                         'cart_id' => $cart->id,
                         'store_id' => $cart->store_id,
@@ -210,16 +210,27 @@ class AbandonedCartService
                 }
             }
 
+            if (!$whatsappSent && !$emailSent) {
+                return ['success' => false, 'message' => 'تعذر إرسال التذكير. تحقق من إعدادات التواصل.'];
+            }
+
             $cart->update([
                 'status' => 'reminder_sent',
                 'reminder_sent_at' => now(),
                 'reminder_count' => $cart->reminder_count + 1,
             ]);
-        } catch (\Exception $e) {
+
+            $sentVia = [];
+            if ($whatsappSent) $sentVia[] = 'واتساب';
+            if ($emailSent) $sentVia[] = 'البريد الإلكتروني';
+
+            return ['success' => true, 'message' => 'تم إرسال التذكير بنجاح عبر ' . implode(' و ', $sentVia) . '.'];
+        } catch (\Throwable $e) {
             Log::error('Abandoned cart reminder failed: ' . $e->getMessage(), [
                 'cart_id' => $cart->id,
                 'store_id' => $cart->store_id,
             ]);
+            return ['success' => false, 'message' => 'حدث خطأ أثناء إرسال التذكير.'];
         }
     }
 
@@ -236,7 +247,7 @@ class AbandonedCartService
 
             $settings = \App\Models\Setting::getUserSettings($store->user->id, $storeId);
             return !empty($settings['whatsapp_phone'] ?? '');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return false;
         }
     }
@@ -248,6 +259,8 @@ class AbandonedCartService
     {
         $total = AbandonedCart::where('store_id', $storeId)->count();
         $new = AbandonedCart::where('store_id', $storeId)->where('status', 'new')->count();
+        $draft = AbandonedCart::where('store_id', $storeId)->where('status', 'draft')->count();
+        $abandoned = AbandonedCart::where('store_id', $storeId)->where('status', 'abandoned')->count();
         $reminderSent = AbandonedCart::where('store_id', $storeId)->where('status', 'reminder_sent')->count();
         $recovered = AbandonedCart::where('store_id', $storeId)->where('status', 'recovered')->count();
         $expired = AbandonedCart::where('store_id', $storeId)->where('status', 'expired')->count();
@@ -257,17 +270,21 @@ class AbandonedCartService
             ->sum('cart_total');
 
         $totalAbandonedAmount = AbandonedCart::where('store_id', $storeId)
-            ->whereIn('status', ['new', 'reminder_sent'])
+            ->whereIn('status', ['new', 'draft', 'abandoned', 'reminder_sent'])
             ->sum('cart_total');
 
+        $pendingCount = $new + $draft + $abandoned + $reminderSent;
         $recoveryRate = $total > 0 ? round(($recovered / $total) * 100, 1) : 0;
 
         return [
             'total' => $total,
             'new' => $new,
+            'draft' => $draft,
+            'abandoned' => $abandoned,
             'reminder_sent' => $reminderSent,
             'recovered' => $recovered,
             'expired' => $expired,
+            'pending' => $pendingCount,
             'recovered_amount' => $recoveredAmount,
             'total_abandoned_amount' => $totalAbandonedAmount,
             'recovery_rate' => $recoveryRate,

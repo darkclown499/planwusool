@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,18 +8,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
-import { ShoppingCart, ShoppingBag, Download, Trash2, Send, CheckCircle, DollarSign, Search, MessageCircle } from 'lucide-react';
+import { ShoppingCart, ShoppingBag, Download, Trash2, Send, CheckCircle, DollarSign, Search, MessageCircle, Loader2 } from 'lucide-react';
 import { hasPermission } from '@/utils/permissions';
+import { toast } from '@/components/custom-toast';
+
+const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+  new: { label: 'جديدة', variant: 'default' },
+  draft: { label: 'مسودة', variant: 'secondary' },
+  abandoned: { label: 'متروكة', variant: 'destructive' },
+  reminder_sent: { label: 'تم إرسال تذكير', variant: 'outline' },
+  recovered: { label: 'مستردة', variant: 'default' },
+  expired: { label: 'منتهية', variant: 'destructive' },
+  unsubscribed: { label: 'إلغاء الاشتراك', variant: 'destructive' },
+};
 
 export default function AbandonedCarts() {
   const { t } = useTranslation();
-  const { carts = { data: [] }, stats = { total: 0, new: 0, reminder_sent: 0, recovered: 0, expired: 0, recovered_amount: 0, total_abandoned_amount: 0, recovery_rate: 0 }, filters = {}, currency_symbol, activeStoreId } = usePage().props as any;
+  const { carts = { data: [] }, stats = { total: 0, new: 0, draft: 0, abandoned: 0, reminder_sent: 0, recovered: 0, expired: 0, pending: 0, recovered_amount: 0, total_abandoned_amount: 0, recovery_rate: 0 }, filters = {}, currency_symbol, activeStoreId, errors = {} } = usePage().props as any;
   const [cartToDelete, setCartToDelete] = useState<number | null>(null);
+  const [cartToRecover, setCartToRecover] = useState<number | null>(null);
   const [search, setSearch] = useState(filters.search || '');
   const [status, setStatus] = useState(filters.status || 'all');
+  const [loadingActions, setLoadingActions] = useState<Record<number, string>>({});
   const didMount = useRef(false);
 
   const currencySymbol: string = typeof currency_symbol === 'string' && currency_symbol ? currency_symbol : '₪';
+
+  useEffect(() => {
+    if (errors?.error) {
+      toast.error(errors.error);
+    }
+  }, [errors]);
 
   const formatCurrency = (amount: number) => {
     const value = (Number(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -27,14 +46,8 @@ export default function AbandonedCarts() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: any = {
-      new: { variant: 'default' as const, label: t('New') },
-      reminder_sent: { variant: 'secondary' as const, label: t('Reminder Sent') },
-      recovered: { variant: 'outline' as const, label: t('Recovered') },
-      expired: { variant: 'destructive' as const, label: t('Expired') },
-      unsubscribed: { variant: 'destructive' as const, label: t('Unsubscribed') },
-    };
-    return variants[status] || { variant: 'default' as const, label: status };
+    const info = STATUS_MAP[status] || { label: status, variant: 'default' as const };
+    return { variant: info.variant, label: info.label };
   };
 
   const getIndexRoute = () => {
@@ -46,24 +59,65 @@ export default function AbandonedCarts() {
     return route('abandoned-carts.index');
   };
 
+  const setLoading = useCallback((cartId: number, action: string) => {
+    setLoadingActions(prev => ({ ...prev, [cartId]: action }));
+  }, []);
+
+  const clearLoading = useCallback((cartId: number) => {
+    setLoadingActions(prev => {
+      const next = { ...prev };
+      delete next[cartId];
+      return next;
+    });
+  }, []);
+
   const handleSendReminder = (cartId: number) => {
+    setLoading(cartId, 'reminder');
     try {
       if (activeStoreId && route().has('stores.abandoned-carts.send-reminder')) {
-        router.post(route('stores.abandoned-carts.send-reminder', [activeStoreId, cartId]), {}, { preserveScroll: true });
+        router.post(route('stores.abandoned-carts.send-reminder', [activeStoreId, cartId]), {}, {
+          preserveScroll: true,
+          onFinish: () => clearLoading(cartId),
+          onSuccess: () => toast.success('تم إرسال التذكير بنجاح'),
+          onError: (errs) => toast.error(errs?.error || 'حدث خطأ أثناء إرسال التذكير'),
+        });
         return;
       }
     } catch {}
-    router.post(route('abandoned-carts.send-reminder', cartId), {}, { preserveScroll: true });
+    router.post(route('abandoned-carts.send-reminder', cartId), {}, {
+      preserveScroll: true,
+      onFinish: () => clearLoading(cartId),
+      onSuccess: () => toast.success('تم إرسال التذكير بنجاح'),
+      onError: (errs) => toast.error(errs?.error || 'حدث خطأ أثناء إرسال التذكير'),
+    });
   };
 
-  const handleMarkRecovered = (cartId: number) => {
+  const confirmMarkRecovered = (cartId: number) => {
+    setCartToRecover(cartId);
+  };
+
+  const handleMarkRecovered = () => {
+    if (!cartToRecover) return;
+    const cartId = cartToRecover;
+    setLoading(cartId, 'recover');
+    setCartToRecover(null);
     try {
       if (activeStoreId && route().has('stores.abandoned-carts.mark-recovered')) {
-        router.post(route('stores.abandoned-carts.mark-recovered', [activeStoreId, cartId]), {}, { preserveScroll: true });
+        router.post(route('stores.abandoned-carts.mark-recovered', [activeStoreId, cartId]), {}, {
+          preserveScroll: true,
+          onFinish: () => clearLoading(cartId),
+          onSuccess: () => toast.success('تم تحديد السلة كمستردة'),
+          onError: (errs) => toast.error(errs?.error || 'حدث خطأ أثناء التحديد'),
+        });
         return;
       }
     } catch {}
-    router.post(route('abandoned-carts.mark-recovered', cartId), {}, { preserveScroll: true });
+    router.post(route('abandoned-carts.mark-recovered', cartId), {}, {
+      preserveScroll: true,
+      onFinish: () => clearLoading(cartId),
+      onSuccess: () => toast.success('تم تحديد السلة كمستردة'),
+      onError: (errs) => toast.error(errs?.error || 'حدث خطأ أثناء التحديد'),
+    });
   };
 
   const handleExport = () => {
@@ -77,17 +131,25 @@ export default function AbandonedCarts() {
   };
 
   const handleDelete = () => {
-    if (cartToDelete) {
-      try {
-        if (activeStoreId && route().has('stores.abandoned-carts.destroy')) {
-          router.delete(route('stores.abandoned-carts.destroy', [activeStoreId, cartToDelete]));
-          setCartToDelete(null);
-          return;
-        }
-      } catch {}
-      router.delete(route('abandoned-carts.destroy', cartToDelete));
-      setCartToDelete(null);
-    }
+    if (!cartToDelete) return;
+    const cartId = cartToDelete;
+    setLoading(cartId, 'delete');
+    setCartToDelete(null);
+    try {
+      if (activeStoreId && route().has('stores.abandoned-carts.destroy')) {
+        router.delete(route('stores.abandoned-carts.destroy', [activeStoreId, cartId]), {
+          onFinish: () => clearLoading(cartId),
+          onSuccess: () => toast.success('تم حذف السلة بنجاح'),
+          onError: () => toast.error('حدث خطأ أثناء حذف السلة'),
+        });
+        return;
+      }
+    } catch {}
+    router.delete(route('abandoned-carts.destroy', cartId), {
+      onFinish: () => clearLoading(cartId),
+      onSuccess: () => toast.success('تم حذف السلة بنجاح'),
+      onError: () => toast.error('حدث خطأ أثناء حذف السلة'),
+    });
   };
 
   useEffect(() => {
@@ -102,7 +164,6 @@ export default function AbandonedCarts() {
       );
     }, 400);
     return () => clearTimeout(debounce);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   useEffect(() => {
@@ -115,10 +176,11 @@ export default function AbandonedCarts() {
       { search: search.trim() || undefined, status: status === 'all' ? undefined : status },
       { preserveState: true, replace: true, preserveScroll: true }
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
   const pageUrl = activeStoreId ? `/stores/${activeStoreId}/abandoned-carts` : '/abandoned-carts';
+  const pendingCount = (stats.new || 0) + (stats.draft || 0) + (stats.abandoned || 0) + (stats.reminder_sent || 0);
+
   return (
     <PageTemplate
       title={t('Abandoned Cart Recovery')}
@@ -167,7 +229,7 @@ export default function AbandonedCarts() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">{t('Pending Recovery')}</p>
-                  <div className="mt-2 text-2xl font-bold text-amber-600">{(stats.new || 0) + (stats.reminder_sent || 0)}</div>
+                  <div className="mt-2 text-2xl font-bold text-amber-600">{pendingCount}</div>
                 </div>
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                   <ShoppingCart className="h-6 w-6" />
@@ -212,7 +274,9 @@ export default function AbandonedCarts() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('All Statuses')}</SelectItem>
-                <SelectItem value="new">{t('Pending Recovery')}</SelectItem>
+                <SelectItem value="new">{t('New')}</SelectItem>
+                <SelectItem value="draft">{t('Draft')}</SelectItem>
+                <SelectItem value="abandoned">{t('Abandoned')}</SelectItem>
                 <SelectItem value="reminder_sent">{t('Reminder Sent')}</SelectItem>
                 <SelectItem value="recovered">{t('Recovered')}</SelectItem>
               </SelectContent>
@@ -271,6 +335,8 @@ export default function AbandonedCarts() {
                         const badge = getStatusBadge(cart.status);
                         const items = Array.isArray(cart.cart_items) ? cart.cart_items : [];
                         const hasEmailOrPhone = cart.customer_email || cart.customer_phone;
+                        const isLoading = !!loadingActions[cart.id];
+                        const loadingAction = loadingActions[cart.id];
 
                         return (
                           <tr key={cart.id} className="border-b hover:bg-muted/50">
@@ -291,20 +357,50 @@ export default function AbandonedCarts() {
                               {cart.last_activity_at ? new Date(cart.last_activity_at).toLocaleDateString() : '-'}
                             </td>
                             <td className="py-3 px-4">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-1">
                                 {hasPermission('send-abandoned-cart-reminders') && cart.status !== 'recovered' && cart.status !== 'expired' && hasEmailOrPhone && (
-                                  <Button variant="ghost" size="sm" onClick={() => handleSendReminder(cart.id)}>
-                                    <Send className="h-4 w-4 text-blue-600" />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={isLoading}
+                                    onClick={() => handleSendReminder(cart.id)}
+                                    title={t('Send reminder')}
+                                  >
+                                    {loadingAction === 'reminder' ? (
+                                      <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                                    ) : (
+                                      <Send className="h-4 w-4 text-blue-600" />
+                                    )}
                                   </Button>
                                 )}
-                                {cart.status !== 'recovered' && (
-                                  <Button variant="ghost" size="sm" onClick={() => handleMarkRecovered(cart.id)}>
-                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                {cart.status !== 'recovered' && cart.status !== 'expired' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={isLoading}
+                                    onClick={() => confirmMarkRecovered(cart.id)}
+                                    title={t('Mark as recovered')}
+                                  >
+                                    {loadingAction === 'recover' ? (
+                                      <Loader2 className="h-4 w-4 text-green-600 animate-spin" />
+                                    ) : (
+                                      <CheckCircle className="h-4 w-4 text-green-600" />
+                                    )}
                                   </Button>
                                 )}
                                 {hasPermission('delete-abandoned-carts') && (
-                                  <Button variant="ghost" size="sm" onClick={() => setCartToDelete(cart.id)}>
-                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={isLoading}
+                                    onClick={() => setCartToDelete(cart.id)}
+                                    title={t('Delete cart')}
+                                  >
+                                    {loadingAction === 'delete' ? (
+                                      <Loader2 className="h-4 w-4 text-red-600 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4 text-red-600" />
+                                    )}
                                   </Button>
                                 )}
                               </div>
@@ -326,11 +422,25 @@ export default function AbandonedCarts() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('Delete Cart')}</DialogTitle>
-            <DialogDescription>{t('Are you sure you want to delete this abandoned cart record?')}</DialogDescription>
+            <DialogDescription>{t('Are you sure you want to delete this abandoned cart record? This action cannot be undone.')}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCartToDelete(null)}>{t('Cancel')}</Button>
             <Button variant="destructive" onClick={handleDelete}>{t('Delete')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark Recovered Confirmation Dialog */}
+      <Dialog open={!!cartToRecover} onOpenChange={(open) => !open && setCartToRecover(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('Mark as Recovered')}</DialogTitle>
+            <DialogDescription>{t('Are you sure you want to mark this cart as recovered?')}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCartToRecover(null)}>{t('Cancel')}</Button>
+            <Button onClick={handleMarkRecovered}>{t('Confirm')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

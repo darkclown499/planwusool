@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('customer_name')->nullable();
             $table->json('cart_items')->nullable();
             $table->decimal('cart_total', 10, 2)->default(0);
-            $table->enum('status', ['new', 'reminder_sent', 'recovered', 'expired', 'unsubscribed'])->default('new');
+            $table->string('status', 32)->default('new');
             $table->timestamp('last_activity_at')->nullable();
             $table->timestamp('reminder_sent_at')->nullable();
             $table->timestamp('recovered_at')->nullable();
