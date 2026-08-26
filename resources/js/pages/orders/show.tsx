@@ -1,362 +1,288 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, Edit, Package, User, CreditCard, Truck, MapPin } from 'lucide-react';
+import { ArrowLeft, Package, User, CreditCard, Truck, MapPin, Phone, Mail, Copy, ExternalLink, CheckCircle2, AlertCircle, Clock, XCircle, RotateCcw, Send, Box } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useTranslation } from 'react-i18next';
-import { router, usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { getImageUrl } from '../../utils/image-helper';
-import { hasPermission, checkPermission } from '@/utils/permissions';
-import { tOrderStatus, tPaymentStatus, tPaymentMethod } from '@/utils/order-status';
+import { hasPermission } from '@/utils/permissions';
+import { tOrderStatus, tPaymentStatus } from '@/utils/order-status';
+import { CourierLogo } from '@/components/courier-logo';
+import { toast } from 'sonner';
 
-interface OrderShowProps {
-  order: {
-    id: number;
-    orderNumber: string;
-    date: string;
-    status: string;
-    paymentStatus: string;
-    paymentMethod: string;
-    bankTransferReceipt?: string;
-    customer: {
-      name: string;
-      email: string;
-      phone: string;
-    };
-    shippingAddress: {
-      name: string;
-      street: string;
-      city: string;
-      state: string;
-      zip: string;
-      country: string;
-    };
-    items: Array<{
-      id: number;
-      name: string;
-      sku: string;
-      quantity: number;
-      price: number;
-      image: string;
-    }>;
-    summary: {
-      subtotal: number;
-      shipping: number;
-      tax: number;
-      discount: number;
-      total: number;
-    };
-    shippingMethod: string;
-    trackingNumber?: string;
-    timeline?: Array<{
-      status: string;
-      date?: string;
-      completed?: boolean;
-    }>;
+function StatusBadge({ status, variant }: { status: string; variant?: string }) {
+  const map: Record<string, string> = {
+    pending: 'قيد الانتظار',
+    confirmed: 'مؤكد',
+    processing: 'قيد التجهيز',
+    shipped: 'تم الشحن',
+    delivered: 'تم التسليم',
+    cancelled: 'ملغي',
+    refunded: 'مسترجع',
+    paid: 'مدفوع',
+    failed: 'فشل',
   };
+  return <Badge variant={variant as any}>{map[status.toLowerCase()] || status}</Badge>;
 }
 
-export default function ShowOrder({ order: initialOrder }: OrderShowProps) {
-  const { t } = useTranslation();
+export default function ShowOrder({ order: initialOrder }: any) {
   const { auth } = usePage().props as any;
-  const [order, setOrder] = React.useState(initialOrder);
-  const [statusSaving, setStatusSaving] = React.useState(false);
-  React.useEffect(() => setOrder(initialOrder), [initialOrder]);
+  const [order, setOrder] = useState(initialOrder);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  React.useEffect(()=>setOrder(initialOrder), [initialOrder]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (!newStatus || newStatus === order.status.toLowerCase()) return;
-    setStatusSaving(true);
+  const fulfillment = order.fulfillment || {};
+  const shipments = order.shipments || [];
+  const primaryShipment = shipments[0] || fulfillment.primary_shipment || null;
+  const timeline = order.timeline || [];
+
+  const updateOrderStatus = async (newStatus: string) => {
+    setActionLoading(newStatus);
     try {
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
       const res = await fetch(route('orders.update', order.id), {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'X-CSRF-TOKEN': token,
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ status: newStatus, payment_status: order.paymentStatus.toLowerCase(), tracking_number: order.trackingNumber || '', notes: (order as any).notes || '' }),
+        headers: { 'Content-Type':'application/json', Accept:'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With':'XMLHttpRequest'},
+        body: JSON.stringify({ status: newStatus, payment_status: order.paymentStatus.toLowerCase(), tracking_number: order.trackingNumber || '', notes: order.notes || '' }),
       });
       if (res.ok) {
-        // Optimistic update — rebuild timeline locally
-        const statusMap: Record<string, number> = { pending: 0, processing: 2, shipped: 3, delivered: 4, completed: 4, cancelled: -1 };
-        const idx = statusMap[newStatus] ?? -1;
-        setOrder((prev: any) => ({
-          ...prev,
-          status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1),
-          timeline: (prev.timeline || []).map((step: any, i: number) => {
-            const stepKey = step.status.toLowerCase();
-            const stepIdxMap: Record<string, number> = { 'order placed': 0, 'payment confirmed': 1, 'order processing': 2, shipped: 3, delivered: 4 };
-            const sIdx = stepIdxMap[stepKey] ?? 99;
-            if (newStatus === 'cancelled') return { ...step, completed: sIdx === 0 };
-            return { ...step, completed: sIdx <= idx, date: sIdx <= idx ? new Date().toLocaleString() : step.date };
-          }),
-        }));
+        toast.success('تم تحديث حالة الطلب');
+        router.reload();
+      } else {
+        const j = await res.json();
+        toast.error(j.errors?.status?.[0] || 'تعذر تحديث الحالة');
       }
-    } catch {}
-    setStatusSaving(false);
+    } catch { toast.error('خطأ في التحديث'); }
+    setActionLoading(null);
   };
 
-  const handleActionClick = (action: string, permission: string) => {
-    if (!checkPermission(permission, auth)) {
-      return;
-    }
-    
-    switch (action) {
-      case 'edit':
-        router.visit(route('orders.edit', order.id));
-        break;
-    }
+  const handleShipmentAction = async (action: 'retry'|'cancel', shipment:any) => {
+    setActionLoading(action);
+    try {
+      const url = action==='retry' ? `/api/stores/${order.store_id || ''}/orders/${order.id}/shipments/${shipment.id}/retry` : `/api/stores/${order.store_id || ''}/orders/${order.id}/shipments/${shipment.id}/cancel`;
+      // fallback to order.store_id from auth if not in order
+      const storeId = (order as any).store_id || (auth as any)?.user?.current_store;
+      const finalUrl = `/api/stores/${storeId}/orders/${order.id}/shipments/${shipment.id}/${action}`;
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const res = await fetch(finalUrl, { method:'POST', headers:{'X-CSRF-TOKEN':token, Accept:'application/json'}});
+      const j = await res.json();
+      if (res.ok) { toast.success(action==='retry' ? 'تمت إعادة المحاولة' : 'تم الإلغاء'); router.reload(); }
+      else toast.error(j.error || 'فشل العملية');
+    } catch { toast.error('فشل'); }
+    setActionLoading(null);
   };
 
-  const pageActions = [
-    ...(hasPermission('edit-orders') ? [{
-      label: t('Edit Order'),
-      icon: <Edit className="h-4 w-4" />,
-      variant: 'default' as const,
-      onClick: () => handleActionClick('edit', 'edit-orders')
-    }] : [])
-  ];
+  const isCancelled = order.status.toLowerCase()==='cancelled';
+  const isDelivered = order.status.toLowerCase()==='delivered';
+  const canConfirm = order.status.toLowerCase()==='pending';
+  const canProcess = ['pending','confirmed'].includes(order.status.toLowerCase());
+  const canReady = order.status.toLowerCase()==='processing';
+  const canOut = ['processing','shipped'].includes(order.status.toLowerCase()) && fulfillment.type!=='connected';
+  const canDeliverManual = order.status.toLowerCase()==='shipped' && fulfillment.type!=='connected';
+  const notSubmitted = fulfillment.type==='connected' && !primaryShipment;
+  const isFailed = primaryShipment?.status==='failed';
+
+  const renderTimeline = () => (
+    <div className="space-y-0 border-s-2 border-slate-100 ms-2">
+      {timeline.map((step:any, idx:number)=>(
+        <div key={idx} className="relative flex gap-3 pb-6 last:pb-0">
+          <div className={`absolute -start-[9px] top-1 h-4 w-4 rounded-full border-2 bg-white flex items-center justify-center ${step.completed ? 'border-emerald-500 bg-emerald-500' : step.current ? 'border-amber-500 bg-amber-500' : 'border-slate-200'}`}>
+            {step.completed && <CheckCircle2 className="h-3 w-3 text-white" />}
+          </div>
+          <div className="ms-4">
+            <p className={`text-sm font-bold ${step.completed ? 'text-slate-800' : 'text-slate-400'}`}>{step.status}</p>
+            {step.date && <p className="text-xs text-slate-500">{step.date}</p>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderCourierCard = () => {
+    if (fulfillment.type==='connected') {
+      if (!primaryShipment) {
+        return (
+          <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><Truck className="h-5 w-5"/> الشحن</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">لم يتم إرسال الطلب إلى شركة التوصيل بعد</p>
+              <Button size="sm" onClick={async()=>{
+                const storeId = (auth as any)?.user?.current_store;
+                const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'';
+                const res=await fetch(`/api/stores/${storeId}/orders/${order.id}/shipments`,{method:'POST', headers:{'X-CSRF-TOKEN':token, Accept:'application/json'}});
+                if(res.ok){ toast.success('تم إرسال الشحنة'); router.reload(); } else toast.error('تعذر الإرسال');
+              }}><Send className="h-4 w-4 me-2"/> إرسال إلى شركة التوصيل</Button>
+            </CardContent>
+          </Card>
+        );
+      }
+      const provider = primaryShipment.provider;
+      const logoMap:Record<string,string> = {aramex:'/images/couriers/aramex-official2.webp', dhl:'/images/couriers/dhl.svg', fedex:'/images/couriers/fedex-remote.svg', ups:'/images/couriers/ups-remote.svg'};
+      return (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><Truck className="h-5 w-5"/> الشحن — {provider}</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-3">
+              <CourierLogo src={logoMap[provider] || null} name={provider} size={48} />
+              <div>
+                <p className="font-bold text-sm">{provider}</p>
+                <Badge variant={primaryShipment.status==='delivered' ? 'default' : primaryShipment.status==='failed' ? 'destructive' : 'secondary'}>{primaryShipment.status}</Badge>
+                {primaryShipment.last_error && <p className="text-xs text-red-600 mt-1">{primaryShipment.last_error}</p>}
+              </div>
+            </div>
+            {primaryShipment.tracking_number && (
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">رقم التتبع</span><span className="font-mono flex items-center gap-1">{primaryShipment.tracking_number} <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>{navigator.clipboard.writeText(primaryShipment.tracking_number); toast.success('تم النسخ');}}><Copy className="h-3 w-3"/></Button></span></div>
+            )}
+            {primaryShipment.tracking_url && <a href={primaryShipment.tracking_url} target="_blank" className="text-sm text-emerald-700 flex items-center gap-1 underline">تتبع الشحنة <ExternalLink className="h-3 w-3"/></a>}
+            {primaryShipment.label_url && <a href={primaryShipment.label_url} target="_blank" className="text-sm text-emerald-700 flex items-center gap-1 underline">تحميل/طباعة البوليصة <ExternalLink className="h-3 w-3"/></a>}
+            {primaryShipment.submitted_at && <p className="text-xs text-muted-foreground">آخر تحديث: {primaryShipment.submitted_at}</p>}
+            <div className="flex flex-wrap gap-2">
+              {primaryShipment.tracking_url && <Button variant="outline" size="sm" onClick={()=>window.open(primaryShipment.tracking_url,'_blank')}>تتبع الشحنة</Button>}
+              {primaryShipment.label_url && <Button variant="outline" size="sm" onClick={()=>window.open(primaryShipment.label_url,'_blank')}>البوليصة</Button>}
+              {primaryShipment.can_retry && <Button variant="outline" size="sm" onClick={()=>handleShipmentAction('retry', primaryShipment)} disabled={!!actionLoading}><RotateCcw className="h-4 w-4 me-1"/> إعادة المحاولة</Button>}
+              {primaryShipment.can_cancel && <Button variant="destructive" size="sm" onClick={()=>handleShipmentAction('cancel', primaryShipment)}>إلغاء الشحنة</Button>}
+            </div>
+            {isFailed && (
+              <div className="rounded bg-red-50 border border-red-200 p-3">
+                <p className="text-sm font-bold text-red-700">تعذر إرسال الشحنة</p>
+                <p className="text-xs text-red-600">{primaryShipment.last_error || 'بيانات الربط غير صالحة'}</p>
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" variant="outline" onClick={()=>window.location.href=`/stores/${(auth as any)?.user?.current_store}/shipping/integrations`}>إصلاح الربط</Button>
+                  <Button size="sm" onClick={()=>handleShipmentAction('retry', primaryShipment)}>إعادة المحاولة</Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      );
+    }
+    if (fulfillment.type==='manual') {
+      return (
+        <Card>
+          <CardHeader><CardTitle className="flex items-center gap-2"><Truck className="h-5 w-5"/> الشحن</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-sm"><span className="text-muted-foreground">شركة التوصيل:</span> {fulfillment.delivery_company || 'غير محدد'}</p>
+            <p className="text-sm"><span className="text-muted-foreground">نوع التنفيذ:</span> توصيل يدوي</p>
+            {!isDelivered && !isCancelled && (
+              <div className="flex gap-2 mt-3">
+                {order.status.toLowerCase()==='processing' && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>خرج للتوصيل</Button>}
+                {order.status.toLowerCase()==='shipped' && <Button size="sm" onClick={()=>updateOrderStatus('delivered')}>تم التسليم</Button>}
+                <Button size="sm" variant="outline" onClick={()=>updateOrderStatus('cancelled')}>فشل التوصيل</Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      );
+    }
+    return (
+      <Card>
+        <CardHeader><CardTitle>التنفيذ: توصيل شخصي</CardTitle></CardHeader>
+        <CardContent>
+          {!isDelivered && !isCancelled && (
+            <div className="flex gap-2">
+              {canReady && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>جاهز للتوصيل</Button>}
+              {order.status.toLowerCase()==='shipped' && <Button size="sm" onClick={()=>updateOrderStatus('delivered')}>تم التسليم</Button>}
+              {order.status.toLowerCase()!=='cancelled' && <Button size="sm" variant="outline" onClick={()=>updateOrderStatus('cancelled')}>إلغاء</Button>}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
-    <PageTemplate 
-      title={t('Order Details')}
-      url="/orders/show"
-      actions={pageActions}
-      backUrl={route('orders.index')}
-      breadcrumbs={[
-        { title: t('Dashboard'), href: route('dashboard') },
-        { title: t('Order Management'), href: route('orders.index') },
-        { title: t(`Order Details`) }
-      ]}
-    >
-      <div className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <CardTitle>{t('Order {{number}}', { number: order.orderNumber })}</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge variant={order.status.toLowerCase() === 'completed' ? 'default' : 'secondary'}>{tOrderStatus(order.status)}</Badge>
-                  {hasPermission('edit-orders') && (
-                    <select
-                      value={order.status.toLowerCase()}
-                      disabled={statusSaving}
-                      onChange={(e) => handleStatusChange(e.target.value)}
-                      className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-700"
-                    >
-                      <option value="pending">قيد الانتظار</option>
-                      <option value="processing">قيد التجهيز</option>
-                      <option value="shipped">تم الشحن</option>
-                      <option value="delivered">تم التسليم</option>
-                      <option value="cancelled">ملغي</option>
-                    </select>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className={`grid gap-4 ${order.bankTransferReceipt ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{t('Order Date')}</p>
-                    <p>{order.date}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{t('Payment Status')}</p>
-                    <Badge variant={order.paymentStatus.toLowerCase() === 'paid' ? 'default' : 'secondary'}>{tPaymentStatus(order.paymentStatus)}</Badge>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{t('Payment Method')}</p>
-                    <p>{tPaymentMethod(order.paymentMethod)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{t('Fulfillment Status')}</p>
-                    <Badge variant={order.status.toLowerCase() === 'delivered' ? 'default' : 'secondary'}>{tOrderStatus(order.status)}</Badge>
-                  </div>
-                </div>
-                
-                {order.bankTransferReceipt && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-2">{t('Payment Receipt')}</p>
-                    <img 
-                      src={getImageUrl(order.bankTransferReceipt)}
-                      alt="Payment Receipt"
-                      className="w-full h-auto rounded-lg border shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => window.open(getImageUrl(order.bankTransferReceipt ?? ''), '_blank')}
-                      style={{ maxHeight: '200px', objectFit: 'cover' }}
-                    />
-                    <p className="text-xs text-muted-foreground text-center mt-1">{t('Click to view')}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+    <PageTemplate title={`طلب ${order.orderNumber}`} url={`/orders/${order.id}`} backUrl={route('orders.index')} breadcrumbs={[{title:'لوحة التحكم', href: route('dashboard')},{title:'الطلبات', href: route('orders.index')},{title: order.orderNumber}]}>
+      <div className="space-y-6" dir="rtl">
+        {/* HEADER */}
+        <Card>
+          <CardContent className="p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-black">طلب {order.orderNumber}</h2>
+              <p className="text-xs text-muted-foreground">{order.date} • {order.customer.name} • {formatCurrency(order.summary.total)}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge>{tOrderStatus(order.status)}</Badge>
+              <Badge variant="outline">{tPaymentStatus(order.paymentStatus)}</Badge>
+              <Badge variant="secondary">{fulfillment.type==='connected' ? 'شحن متصل' : fulfillment.type==='manual' ? 'يدوي' : 'شخصي'}</Badge>
+            </div>
+          </CardContent>
+          <div className="px-4 pb-4 flex flex-wrap gap-2">
+            {canConfirm && <Button size="sm" onClick={()=>updateOrderStatus('confirmed')} disabled={!!actionLoading}>تأكيد الطلب</Button>}
+            {order.status.toLowerCase()==='confirmed' && <Button size="sm" onClick={()=>updateOrderStatus('processing')}>بدء التجهيز</Button>}
+            {order.status.toLowerCase()==='processing' && fulfillment.type!=='connected' && <Button size="sm" onClick={()=>updateOrderStatus('shipped')}>جاهز للشحن</Button>}
+            {order.status.toLowerCase()==='processing' && fulfillment.type==='connected' && notSubmitted && <Button size="sm" onClick={async()=>{
+              const storeId=(auth as any)?.user?.current_store;
+              const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'';
+              const res=await fetch(`/api/stores/${storeId}/orders/${order.id}/shipments`,{method:'POST', headers:{'X-CSRF-TOKEN':token}});
+              if(res.ok) {toast.success('تم الإرسال'); router.reload();} else toast.error('تعذر الإرسال');
+            }}>إرسال إلى شركة التوصيل</Button>}
+            {!isCancelled && !isDelivered && <Button size="sm" variant="outline" onClick={()=>updateOrderStatus('cancelled')}>إلغاء الطلب</Button>}
+          </div>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('Order Summary')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm">{t('Subtotal')}</span>
-                <span>{formatCurrency(order.summary.subtotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">{t('Shipping')}</span>
-                <span>{formatCurrency(order.summary.shipping)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">{t('Tax')}</span>
-                <span>{formatCurrency(order.summary.tax)}</span>
-              </div>
-              {order.summary.discount > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span className="text-sm">{t('Discount')}</span>
-                  <span>-{formatCurrency(order.summary.discount)}</span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between font-semibold">
-                <span>{t('Total')}</span>
-                <span>{formatCurrency(order.summary.total)}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {hasPermission('manage-customers') && (
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
             <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
-                  <CardTitle>{t('Customer Information')}</CardTitle>
-                </div>
-              </CardHeader>
+              <CardHeader><CardTitle>مراحل التنفيذ</CardTitle></CardHeader>
+              <CardContent>{renderTimeline()}</CardContent>
+            </Card>
+            {renderCourierCard()}
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><Package className="h-5 w-5"/> المنتجات</CardTitle></CardHeader>
               <CardContent className="space-y-3">
-                <div>
-                  <p className="font-medium">{order.customer.name}</p>
-                  <p className="text-sm text-muted-foreground">{order.customer.email}</p>
-                  {order.customer.phone && (
-                    <p className="text-sm text-muted-foreground">{order.customer.phone}</p>
-                  )}
-                </div>
+                {order.items.map((item:any)=>(
+                  <div key={item.id} className="flex gap-3 border rounded-lg p-3">
+                    <img src={getImageUrl(item.image)} alt={item.name} className="h-14 w-14 rounded object-cover border" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">SKU: {item.sku} • الكمية: {item.quantity}</p>
+                    </div>
+                    <div className="text-left">
+                      <p className="font-bold text-sm">{formatCurrency(item.price)}</p>
+                      <p className="text-xs text-muted-foreground">{formatCurrency(item.price*item.quantity)}</p>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
-          )}
-
-          <Card className={!hasPermission('manage-customers') ? 'md:col-span-2' : ''}>
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-5 w-5" />
-                <CardTitle>{t('Shipping Address')}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <p>{order.shippingAddress.name}</p>
+          </div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><User className="h-5 w-5"/> العميل</CardTitle></CardHeader>
+              <CardContent className="space-y-1 text-sm">
+                <p className="font-bold">{order.customer.name}</p>
+                {order.customer.phone && <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground"/>{order.customer.phone} <a href={`tel:${order.customer.phone}`} className="text-emerald-700 underline text-xs">اتصال</a> <a href={`https://wa.me/${order.customer.phone.replace(/[^0-9]/g,'')}`} target="_blank" className="text-emerald-700 underline text-xs">واتساب</a></p>}
+                {order.customer.email && <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground"/>{order.customer.email}</p>}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5"/> عنوان التوصيل</CardTitle></CardHeader>
+              <CardContent className="text-sm space-y-1">
                 <p>{order.shippingAddress.street}</p>
-                <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zip}</p>
+                <p>{order.shippingAddress.city}، {order.shippingAddress.state} {order.shippingAddress.zip}</p>
                 <p>{order.shippingAddress.country}</p>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" variant="outline" onClick={()=>{navigator.clipboard.writeText(`${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state}`); toast.success('تم النسخ');}}><Copy className="h-3 w-3 me-1"/> نسخ العنوان</Button>
+                </div>
+                {order.notes && <div className="mt-3 border-t pt-2"><p className="text-xs font-bold">ملاحظات:</p><p className="text-xs text-muted-foreground">{order.notes}</p></div>}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5"/> الدفع</CardTitle></CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">طريقة الدفع</span><span>{order.paymentMethod}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">حالة الدفع</span><Badge variant={order.paymentStatus.toLowerCase()==='paid' ? 'default' : 'secondary'}>{tPaymentStatus(order.paymentStatus)}</Badge></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">الإجمالي</span><span className="font-bold">{formatCurrency(order.summary.total)}</span></div>
+                {fulfillment.cod_amount !== undefined && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">المبلغ المطلوب تحصيله (COD)</span><span className="font-bold">{formatCurrency(fulfillment.cod_amount || 0)}</span></div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Package className="h-5 w-5" />
-              <CardTitle>{t('Order Items')}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {order.items.map((item) => (
-                <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden border">
-                    <img
-                      src={getImageUrl(item.image)}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder.jpg';
-                      }}
-                      alt={item.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{item.name}</h4>
-                    <p className="text-sm text-muted-foreground">{t('SKU: {{sku}}', { sku: item.sku })}</p>
-                    <p className="text-sm text-muted-foreground">{t('Quantity: {{quantity}}', { quantity: item.quantity })}</p>
-                  </div>
-                  <div className="text-end">
-                    <p className="font-medium">{formatCurrency(item.price)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('{{total}} total', { total: formatCurrency(item.price * item.quantity) })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {hasPermission('manage-shipping') && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Truck className="h-5 w-5" />
-                <CardTitle>{t('Shipping Information')}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-muted-foreground">{t('Shipping Method')}</span>
-                <span>{order.shippingMethod}</span>
-              </div>
-              {order.trackingNumber && (
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">{t('Tracking Number')}</span>
-                  <span className="font-mono">{order.trackingNumber}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-muted-foreground">{t('Shipping Status')}</span>
-                <Badge variant={order.status.toLowerCase() === 'delivered' ? 'default' : 'secondary'}>{tOrderStatus(order.status)}</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('Order Timeline')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {order.timeline?.map((timeline: any, index: any) => (
-                <div key={index} className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${timeline.completed ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  <div className="flex-1">
-                    <p className="font-medium">{tOrderStatus(timeline.status)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {timeline.date || tOrderStatus('Pending')}
-                    </p>
-                  </div>
-                </div>
-              )) || (
-                <p className="text-muted-foreground">{t('No timeline data available')}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </PageTemplate>
   );

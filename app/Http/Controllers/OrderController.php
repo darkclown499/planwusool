@@ -35,8 +35,22 @@ class OrderController extends Controller
         $paidOrders = $orders->where('payment_status', 'paid');
         $totalRevenue = $paidOrders->sum('total_amount');
         $avgOrderValue = $paidOrders->count() > 0 ? $totalRevenue / $paidOrders->count() : 0;
-        // Format orders for frontend
+        // Format orders for frontend with fulfillment column
         $formattedOrders = $orders->map(function ($order) {
+            $ship = $order->shippingMethod;
+            $fulfillmentLabel = 'توصيل شخصي';
+            $fulfillmentStatus = $order->status;
+            if ($ship) {
+                if (!empty($ship->courier_integration_id)) {
+                    // try to get shipment status if exists
+                    $shipment = \App\Models\OrderShipment::where('order_id',$order->id)->first();
+                    if ($shipment) $fulfillmentStatus = $shipment->status;
+                    $fulfillmentLabel = ($ship->delivery_company ?: $ship->courierIntegration?->provider ?? 'شركة مربوطة') . ' — ' . ($shipment ? $shipment->status : 'قيد التجهيز');
+                    if ($shipment && $shipment->status==='delivered') $fulfillmentLabel = ($ship->delivery_company ?: 'شركة') . ' — تم التسليم';
+                } elseif (!empty($ship->delivery_company)) {
+                    $fulfillmentLabel = $ship->delivery_company . ' — يدوي';
+                }
+            }
             return [
                 'id' => $order->id,
                 'orderNumber' => $order->order_number,
@@ -44,6 +58,9 @@ class OrderController extends Controller
                 'email' => $order->customer_email,
                 'total' => (float) $order->total_amount,
                 'status' => ucfirst($order->status),
+                'paymentStatus' => ucfirst($order->payment_status),
+                'fulfillment' => $fulfillmentLabel,
+                'fulfillmentRaw' => $fulfillmentStatus,
                 'items' => $order->items->count(),
                 'date' => $order->created_at->format('Y-m-d'),
                 'paymentMethod' => $order->payment_method === 'cod' ? 'Cash on Delivery' : ucfirst(str_replace('_', ' ', $order->payment_method)),
@@ -64,6 +81,23 @@ class OrderController extends Controller
     /**
      * Display the specified order.
      */
+    private function isValidOrderTransition(string $from, string $to): bool
+    {
+        $from = strtolower($from); $to = strtolower($to);
+        if ($from === $to) return true;
+        $allowed = [
+            'pending' => ['confirmed','processing','cancelled'],
+            'confirmed' => ['processing','cancelled'],
+            'processing' => ['shipped','delivered','cancelled'],
+            'shipped' => ['delivered','cancelled','failed','returned'],
+            'delivered' => ['returned','refunded'],
+            'cancelled' => [],
+            'refunded' => [],
+            'failed' => [],
+        ];
+        return in_array($to, $allowed[$from] ?? [], true);
+    }
+
     public function show($id)
     {
         $user = Auth::user();
@@ -71,8 +105,20 @@ class OrderController extends Controller
         
         $order = Order::where('store_id', $storeId)
             ->where('id', $id)
-            ->with(['items.product', 'shippingMethod'])
+            ->with(['items.product', 'shippingMethod.courierIntegration', 'shippingMethod'])
             ->firstOrFail();
+
+        // Load shipments
+        $shipments = \App\Models\OrderShipment::where('store_id', $storeId)->where('order_id', $order->id)->with('courierIntegration')->orderBy('created_at')->get();
+        $primaryShipment = $shipments->first();
+        $shipping = $order->shippingMethod;
+        $fulfillmentType = 'personal';
+        if ($shipping) {
+            if (!empty($shipping->courier_integration_id)) $fulfillmentType = 'connected';
+            elseif (!empty($shipping->delivery_company)) $fulfillmentType = 'manual';
+            elseif (($shipping->fulfillment_type ?? '') === 'courier') $fulfillmentType = 'connected';
+            elseif (($shipping->fulfillment_type ?? '') === 'manual') $fulfillmentType = 'manual';
+        }
             
         $formattedOrder = [
             'id' => $order->id,
@@ -122,38 +168,82 @@ class OrderController extends Controller
                 'total_quantity' => $order->items->sum('quantity'),
                 'avg_item_price' => $order->items->count() > 0 ? $order->items->avg('unit_price') : 0,
             ],
-            'timeline' => [
-                [
-                    'status' => 'Order Placed',
-                    'date' => $order->created_at->format('M j, Y g:i A'),
-                    'completed' => true
-                ],
-                [
-                    'status' => 'Payment Confirmed',
-                    'date' => $order->payment_status === 'paid' ? $order->updated_at->format('M j, Y g:i A') : null,
-                    'completed' => $order->payment_status === 'paid'
-                ],
-                [
-                    'status' => 'Order Processing',
-                    'date' => in_array($order->status, ['processing', 'shipped', 'delivered']) ? $order->updated_at->format('M j, Y g:i A') : null,
-                    'completed' => in_array($order->status, ['processing', 'shipped', 'delivered'])
-                ],
-                [
-                    'status' => 'Shipped',
-                    'date' => in_array($order->status, ['shipped', 'delivered']) ? $order->updated_at->format('M j, Y g:i A') : null,
-                    'completed' => in_array($order->status, ['shipped', 'delivered'])
-                ],
-                [
-                    'status' => 'Delivered',
-                    'date' => $order->status === 'delivered' ? $order->updated_at->format('M j, Y g:i A') : null,
-                    'completed' => $order->status === 'delivered'
-                ]
-            ]
+            'timeline' => $this->buildFulfillmentTimeline($order, $primaryShipment, $fulfillmentType),
+            'shipments' => $shipments->map(fn($s)=>[
+                'id'=>$s->id,
+                'provider'=>$s->provider,
+                'provider_ar'=> $s->courierIntegration?->display_name ?? $s->provider,
+                'status'=>$s->status,
+                'provider_status'=>$s->provider_status,
+                'tracking_number'=>$s->tracking_number,
+                'tracking_url'=>$s->tracking_url,
+                'label_url'=>$s->label_url,
+                'last_error'=>$s->last_error,
+                'submitted_at'=>$s->submitted_at?->format('Y-m-d H:i'),
+                'delivered_at'=>$s->delivered_at?->format('Y-m-d H:i'),
+                'can_cancel'=> in_array($s->status, ['pending','created','picked_up','in_transit'], true),
+                'can_retry'=> $s->status==='failed',
+            ])->values(),
+            'fulfillment' => [
+                'type'=>$fulfillmentType,
+                'shipping_name'=>$shipping->name ?? null,
+                'delivery_company'=>$shipping->delivery_company ?? null,
+                'courier_integration'=>$primaryShipment?->courierIntegration ? ['provider'=>$primaryShipment->provider, 'status'=>$primaryShipment->courierIntegration->status] : null,
+                'primary_shipment'=>$primaryShipment ? [
+                    'status'=>$primaryShipment->status,
+                    'tracking_number'=>$primaryShipment->tracking_number,
+                    'tracking_url'=>$primaryShipment->tracking_url,
+                    'label_url'=>$primaryShipment->label_url,
+                    'last_error'=>$primaryShipment->last_error,
+                ] : null,
+                'cod_amount'=> (strtolower($order->payment_method ?? '')==='cod' && strtolower($order->payment_status ?? '')!=='paid') ? (float)$order->total_amount : 0,
+            ],
+            'payment' => [
+                'method'=>$order->payment_method,
+                'status'=>$order->payment_status,
+                'total'=>(float)$order->total_amount,
+                'cod_amount'=> (strtolower($order->payment_method ?? '')==='cod' && strtolower($order->payment_status ?? '')!=='paid') ? (float)$order->total_amount : 0,
+            ],
         ];
         
         return Inertia::render('orders/show', [
             'order' => $formattedOrder
         ]);
+    }
+
+    private function buildFulfillmentTimeline($order, $shipment, string $fulfillmentType): array
+    {
+        $isConnected = $fulfillmentType==='connected' && $shipment;
+        if ($isConnected) {
+            $s = $shipment->status;
+            $map = [
+                'pending'=>0, 'created'=>1, 'picked_up'=>2, 'in_transit'=>3, 'out_for_delivery'=>3, 'delivered'=>4, 'failed'=>-1, 'returned'=>-1, 'cancelled'=>-1,
+            ];
+            $idx = $map[$s] ?? 0;
+            return [
+                ['status'=>'تم استلام الطلب','date'=>$order->created_at->format('Y-m-d H:i'),'completed'=>true, 'current'=>false],
+                ['status'=>'قيد التجهيز','date'=>in_array($order->status, ['confirmed','processing','shipped','delivered']) ? $order->updated_at->format('Y-m-d H:i') : null,'completed'=> $idx>=1 || in_array($order->status,['processing','shipped','delivered']),'current'=> $idx===1],
+                ['status'=>'جاهز للشحن','date'=> $shipment->submitted_at?->format('Y-m-d H:i'), 'completed'=> $idx>=1,'current'=>false],
+                ['status'=>'تم إرسال الطلب إلى شركة التوصيل','date'=>$shipment->submitted_at?->format('Y-m-d H:i'),'completed'=> $idx>=1,'current'=> $idx===1],
+                ['status'=>'قيد التوصيل','date'=> in_array($s,['picked_up','in_transit','out_for_delivery']) ? ($shipment->updated_at->format('Y-m-d H:i')) : null,'completed'=> $idx>=3,'current'=> in_array($s,['picked_up','in_transit','out_for_delivery'])],
+                ['status'=>'تم التسليم','date'=> $s==='delivered' ? ($shipment->delivered_at?->format('Y-m-d H:i') ?? $shipment->updated_at->format('Y-m-d H:i')) : null,'completed'=> $s==='delivered','current'=> $s==='delivered'],
+            ];
+        }
+        if ($fulfillmentType==='manual') {
+            return [
+                ['status'=>'تم استلام الطلب','date'=>$order->created_at->format('Y-m-d H:i'),'completed'=>true,'current'=>false],
+                ['status'=>'قيد التجهيز','date'=>in_array($order->status,['confirmed','processing','shipped','delivered']) ? $order->updated_at->format('Y-m-d H:i') : null,'completed'=> in_array($order->status,['processing','shipped','delivered']),'current'=> $order->status==='processing'],
+                ['status'=>'خرج للتوصيل','date'=>in_array($order->status,['shipped','delivered']) ? $order->updated_at->format('Y-m-d H:i') : null,'completed'=> in_array($order->status,['shipped','delivered']),'current'=> $order->status==='shipped'],
+                ['status'=>'تم التسليم','date'=>$order->status==='delivered' ? $order->updated_at->format('Y-m-d H:i') : null,'completed'=> $order->status==='delivered','current'=> $order->status==='delivered'],
+            ];
+        }
+        // personal
+        return [
+            ['status'=>'تم استلام الطلب','date'=>$order->created_at->format('Y-m-d H:i'),'completed'=>true,'current'=>false],
+            ['status'=>'قيد التجهيز','date'=>in_array($order->status,['confirmed','processing','shipped','delivered']) ? $order->updated_at->format('Y-m-d H:i') : null,'completed'=> in_array($order->status,['processing','shipped','delivered']),'current'=> $order->status==='processing'],
+            ['status'=>'جاهز للتوصيل','date'=> $order->status==='shipped' ? $order->updated_at->format('Y-m-d H:i') : null,'completed'=> in_array($order->status,['shipped','delivered']),'current'=> $order->status==='shipped'],
+            ['status'=>'تم التسليم','date'=>$order->status==='delivered' ? $order->updated_at->format('Y-m-d H:i') : null,'completed'=> $order->status==='delivered','current'=> $order->status==='delivered'],
+        ];
     }
 
     /**
@@ -332,6 +422,11 @@ class OrderController extends Controller
             'payment_status' => __('Payment Status'),
         ]);
 
+        if (!$this->isValidOrderTransition($oldStatus, $request->status)) {
+            return redirect()->back()->withErrors(['status' => __('Invalid status transition from :from to :to', ['from'=>$oldStatus, 'to'=>$request->status])]);
+        }
+
+        // Prevent cancelled order from submitting courier shipment later (job will also check)
         $order->update([
             'status' => $request->status,
             'payment_status' => $request->payment_status,

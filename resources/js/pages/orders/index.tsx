@@ -19,6 +19,8 @@ interface OrdersProps {
     email: string;
     total: number;
     status: string;
+    paymentStatus?: string;
+    fulfillment?: string;
     items: number;
     date: string;
     paymentMethod: string;
@@ -168,6 +170,8 @@ export default function Orders({ orders = [], stats }: OrdersProps) {
                         <span className="text-xs text-muted-foreground">{t('{{items}} items', { items: order.items })}</span>
                         <span className="text-xs text-muted-foreground">{order.date}</span>
                         <span className="text-xs text-muted-foreground">{tPaymentMethod(order.paymentMethod)}</span>
+                        {(order as any).fulfillment && <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{(order as any).fulfillment}</span>}
+                        {(order as any).paymentStatus && <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{tPaymentStatus((order as any).paymentStatus)}</span>}
                       </div>
                     </div>
                   </div>
