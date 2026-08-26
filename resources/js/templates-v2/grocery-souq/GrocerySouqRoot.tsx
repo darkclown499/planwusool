@@ -49,8 +49,14 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
   const { showLatest, showBest, homepageCategories, productsPerCategory } = useHomepageSettings(storeData);
 
-  const fresh = useMemo(() => [...products].slice(-14).reverse(), [products]);
+  // Truthful latest — products already desc by created_at from ThemeController
+  const fresh = useMemo(() => [...products].slice(0, 14), [products]);
   const pantry = useMemo(() => [...products].sort(byPriceAsc).slice(0, 10), [products]);
+
+  // Category wall scalable: initial limit, expand via [عرض جميع الأقسام]
+  const [catsExpanded, setCatsExpanded] = React.useState(false);
+  const CATS_INITIAL = 12;
+  const visibleCats = catsExpanded ? categories : categories.slice(0, CATS_INITIAL);
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#FDF9F1] text-stone-800 antialiased">
@@ -58,40 +64,63 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       <main>
         <SouqHero banners={banners} />
 
-        {/* Category tiles — Biddi square 3/5/6 all categories */}
+        {/* Category scalable — desktop grid limited, mobile horizontal scroll */}
         {categories.length > 0 && (
           <section className="mx-auto max-w-[1600px] px-3 py-5 lg:px-6">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-base font-black text-stone-900">التصنيفات</h2>
               <span className="text-xs text-stone-500">{categories.length} قسم</span>
             </div>
-            <div className="grid grid-cols-3 gap-3 sm:gap-3 md:grid-cols-5 xl:grid-cols-6">
-              {categories.map((c: any) => (
+            {/* Mobile: horizontal scroll chips */}
+            <div className="flex gap-3 overflow-x-auto pb-2 md:hidden scrollbar-none snap-x">
+              {visibleCats.map((c: any) => (
+                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex shrink-0 snap-start flex-col items-center gap-1.5 rounded-[18px] bg-white p-2 shadow-sm ring-1 ring-black/5 transition hover:shadow-md w-[92px]">
+                  <span className="flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-[14px] bg-[#F5F5F4]">
+                    {c.image ? (
+                      <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 to-stone-200 text-[11px] font-black text-stone-600">{String(c.name).slice(0,2)}</span>
+                    )}
+                  </span>
+                  <span className="line-clamp-2 min-h-[28px] max-w-[76px] break-words px-1 text-center text-xs font-bold leading-tight text-stone-700 group-hover:text-black">{c.name}</span>
+                </a>
+              ))}
+            </div>
+            {/* Desktop: grid limited */}
+            <div className="hidden md:grid grid-cols-4 gap-3 lg:grid-cols-6 xl:grid-cols-6">
+              {visibleCats.map((c: any) => (
                 <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-[18px] bg-white p-2 shadow-sm ring-1 ring-black/5 transition hover:shadow-md">
                   <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-[14px] bg-[#F5F5F4]">
                     {c.image ? (
                       <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="flex h-full w-full items-center justify-center bg-[#FDF9F1] text-lg">🥬</span>
+                      <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 to-stone-200 text-xs font-black text-stone-600">{String(c.name).slice(0,2)}</span>
                     )}
                   </span>
                   <span className="line-clamp-2 min-h-[28px] max-w-full break-words px-1 text-center text-xs font-bold leading-tight text-stone-700 group-hover:text-black">{c.name}</span>
                 </a>
               ))}
             </div>
+            {categories.length > CATS_INITIAL && (
+              <div className="mt-4 flex justify-center">
+                <button type="button" onClick={() => setCatsExpanded((v) => !v)} className="rounded-full border border-black/10 bg-white px-5 py-2 text-xs font-black text-stone-700 hover:bg-black hover:text-white transition">
+                  {catsExpanded ? 'عرض أقل' : `عرض جميع الأقسام (${categories.length})`}
+                </button>
+              </div>
+            )}
           </section>
         )}
 
         <SouqDealsRail products={products} />
 
-        {/* Fresh arrivals — toggle show_latest_products */}
+        {/* Truthful sections — neutral titles, real latest */}
         {showLatest && (
           <section className="mx-auto max-w-[1600px] px-3 pb-6 lg:px-6">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-base font-black text-stone-900">وصل طازج اليوم 🥕</h2>
+              <h2 className="text-base font-black text-stone-900">وصل حديثاً</h2>
               <span className="text-xs text-stone-500">{fresh.length} منتج</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {fresh.map((p) => (
                 <SouqProductCard key={p.id} product={p} />
               ))}
@@ -99,15 +128,15 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        {/* Pantry essentials — toggle show_best_sellers */}
+        {/* Pantry — renamed to truthful selected */}
         {showBest && pantry.length > 0 && (
           <section className="bg-white py-6">
             <div className="mx-auto max-w-[1600px] px-3 lg:px-6">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-base font-black text-stone-900">أساسيات المؤونة 🏺</h2>
+                <h2 className="text-base font-black text-stone-900">منتجات مختارة</h2>
                 <span className="text-xs text-stone-500">{pantry.length} منتج</span>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                 {pantry.map((p) => (
                   <SouqProductCard key={p.id} product={p} />
                 ))}
@@ -116,7 +145,7 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        {/* Dynamic category sections */}
+        {/* Dynamic category sections — sparse-aware */}
         {homepageCategories.length > 0 && (
           <div className="space-y-6 bg-white py-6">
             {homepageCategories.map((catId: string) => {
@@ -124,17 +153,28 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
               if (!cat) return null;
               const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
               if (!catProducts.length) return null;
+              const sparse = catProducts.length <= 3;
               return (
                 <section key={cat.id} className="mx-auto max-w-[1600px] px-3 lg:px-6">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-base font-black text-stone-900">{cat.name}</h2>
                     <a href={`/category/${cat.slug || cat.id}`} className="text-xs font-bold text-stone-600 hover:text-black">عرض الكل ←</a>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                    {catProducts.map((p: any) => (
-                      <SouqProductCard key={p.id} product={p} />
-                    ))}
-                  </div>
+                  {sparse ? (
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
+                      {catProducts.map((p: any) => (
+                        <div key={p.id} className="w-[48%] shrink-0 snap-start sm:w-[32%] md:w-[28%] lg:w-[22%] xl:w-[18%]">
+                          <SouqProductCard product={p} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                      {catProducts.map((p: any) => (
+                        <SouqProductCard key={p.id} product={p} />
+                      ))}
+                    </div>
+                  )}
                 </section>
               );
             })}
@@ -184,7 +224,7 @@ const SouqCategoryMode: React.FC<{ categoryData?: any | null; storeData?: any }>
               return (
                 <a key={c.id} href={`/category/${c.slug || c.id}`} className="flex shrink-0 flex-col items-center gap-1">
                   <span className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] shadow-sm ring-1 ${active ? 'bg-[#FFC20E] ring-[#FFC20E] text-black' : 'bg-white ring-black/5'}`}>
-                    {c.image ? <img src={c.image} alt={c.name} className="h-full w-full object-cover" /> : <span className="text-lg">🥬</span>}
+                    {c.image ? <img src={c.image} alt={c.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 to-stone-200 text-xs font-black text-stone-600">{String(c.name).slice(0,2)}</span>}
                   </span>
                   <span className={`max-w-[64px] truncate text-xs ${active ? 'font-black text-black' : 'font-semibold text-stone-600'}`}>{c.name}</span>
                 </a>

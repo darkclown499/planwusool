@@ -81,23 +81,11 @@ class OrderController extends Controller
     }
 
     /**
-     * Display the specified order.
+     * Canonical fulfillment validation — delegated to OrderTransitionService
      */
     private function isValidOrderTransition(string $from, string $to): bool
     {
-        $from = strtolower($from); $to = strtolower($to);
-        if ($from === $to) return true;
-        $allowed = [
-            'pending' => ['confirmed','processing','cancelled'],
-            'confirmed' => ['processing','cancelled'],
-            'processing' => ['shipped','delivered','cancelled'],
-            'shipped' => ['delivered','cancelled','failed','returned'],
-            'delivered' => ['returned','refunded'],
-            'cancelled' => [],
-            'refunded' => [],
-            'failed' => [],
-        ];
-        return in_array($to, $allowed[$from] ?? [], true);
+        return \App\Services\OrderTransitionService::isValidTransition($from, $to);
     }
 
     public function show($id)
@@ -211,6 +199,10 @@ class OrderController extends Controller
                 'total'=>(float)$order->total_amount,
                 'cod_amount'=> (strtolower($order->payment_method ?? '')==='cod' && strtolower($order->payment_status ?? '')!=='paid') ? (float)$order->total_amount : 0,
             ],
+            // Canonical allowed actions — backend authoritative
+            'allowed_actions' => \App\Services\OrderTransitionService::allowedActions($order),
+            'allowed_payment_actions' => \App\Services\OrderTransitionService::allowedPaymentActions($order),
+            'can_edit' => !in_array(strtolower($order->status), ['cancelled','failed','refunded','delivered'], true) || strtolower($order->status)==='delivered' ? true : true, // edit allowed for address/products where policy permits; locked items still server-validated
         ];
         
         // Returns for this order
@@ -422,71 +414,207 @@ class OrderController extends Controller
     }
 
     /**
-     * Update the specified order.
+     * Update the specified order — hardened, transactional, Arabic domain errors.
+     * Fulfillment transitions are canonical via OrderTransitionService.
+     * Payment status is domain-aware (COD collect semantic, online gateway authority).
+     * Edit page: corrects customer/shipping/tracking/notes; status is not edited here — use primary action.
      */
     public function update(Request $request, $id)
     {
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
-        
+         
         $order = Order::where('store_id', $storeId)
             ->where('id', $id)
             ->firstOrFail();
             
-        // Store old status for event
-        $oldStatus = $order->status;
-        
+        $oldStatus = strtolower((string)$order->status);
+        $oldPayment = strtolower((string)$order->payment_status);
+
+        // Validation: status/payment_status now nullable because edit page does not drive workflow.
+        // Show page primary action still sends them. Generic edit form omits them.
         $request->validate([
-            'status' => 'required|string',
-            'payment_status' => 'required|string',
-            'tracking_number' => 'nullable|string',
-            'notes' => 'nullable|string',
+            'status' => 'nullable|string',
+            'payment_status' => 'nullable|string',
+            'tracking_number' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:2000',
+            // Editable customer/shipping fields (edit page)
+            'customer_first_name' => 'nullable|string|max:255',
+            'customer_last_name' => 'nullable|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+            'customer_phone' => 'nullable|string|max:20',
+            'shipping_address' => 'nullable|string|max:255',
+            'shipping_city' => 'nullable|string|max:255',
+            'shipping_state' => 'nullable|string|max:255',
+            'shipping_postal_code' => 'nullable|string|max:20',
+            'shipping_country' => 'nullable|string|max:255',
+            'shipping_method_id' => 'nullable|exists:shippings,id',
+            'items' => 'nullable|array',
         ], [], [
             'status' => __('Order Status'),
             'payment_status' => __('Payment Status'),
         ]);
 
-        if (!$this->isValidOrderTransition($oldStatus, $request->status)) {
-            $msg = 'الانتقال غير مسموح من "' . $oldStatus . '" إلى "' . $request->status . '"';
-            if ($request->wantsJson() || $request->expectsJson()) {
-                return response()->json(['message'=>$msg, 'errors'=>['status'=>[$msg]]], 422);
+        // --- Fulfillment transition (if requested) ---
+        $newStatus = $request->filled('status') ? strtolower(trim((string)$request->status)) : $oldStatus;
+        if ($newStatus !== $oldStatus) {
+            // Prevent delivered/cancelled edits via generic update — use dedicated flows
+            if (in_array($oldStatus, ['delivered','cancelled','refunded','failed'], true) && !\App\Services\OrderTransitionService::isValidTransition($oldStatus, $newStatus)) {
+                $msg = 'الطلب في حالة نهائية ولا يمكن تغييره';
+                if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['status'=>[$msg]]], 422);
+                return redirect()->back()->withErrors(['status'=>$msg]);
             }
-            return redirect()->back()->withErrors(['status' => $msg]);
+            if (!\App\Services\OrderTransitionService::isValidTransition($oldStatus, $newStatus)) {
+                $msg = \App\Services\OrderTransitionService::errorMessage($oldStatus, $newStatus);
+                if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['status'=>[$msg]]], 422);
+                return redirect()->back()->withErrors(['status'=>$msg]);
+            }
+            // Connected courier: processing → shipped should go via shipment creation, but manual/personal uses this transition.
+            // Allow it — service will handle timestamps.
+            try {
+                $order = \App\Services\OrderTransitionService::transition($order, $newStatus);
+            } catch (\Exception $e) {
+                $msg = $e->getMessage() ?: 'تعذر تحديث حالة الطلب';
+                if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['status'=>[$msg]]], 422);
+                return redirect()->back()->withErrors(['status'=>$msg]);
+            }
+            $oldStatus = $newStatus; // for payment checks below
         }
 
-        // Prevent cancelled order from submitting courier shipment later (job will also check)
-        $order->update([
-            'status' => $request->status,
-            'payment_status' => $request->payment_status,
-            'tracking_number' => $request->tracking_number,
-            'notes' => $request->notes,
-        ]);
-        
-        // Dispatch OrderStatusChanged event if status changed
-        if ($oldStatus !== $request->status) {
-            event(new \App\Events\OrderStatusChanged($order, $oldStatus, $request->status));
+        // --- Payment transition (if requested) ---
+        $newPayment = $request->filled('payment_status') ? strtolower(trim((string)$request->payment_status)) : $oldPayment;
+        if ($newPayment !== $oldPayment) {
+            $pm = strtolower((string)($order->payment_method ?? ''));
+            // Block arbitrary online gateway marking as paid
+            if ($newPayment === 'paid' && $oldPayment !== 'paid') {
+                $canManual = \App\Services\OrderTransitionService::canManuallyMarkPaid($order);
+                if (!$canManual) {
+                    $msg = 'لا يمكن تأكيد هذا الدفع يدوياً — يتم التحقق عبر بوابة الدفع. استخدم سجل الدفع أو انتظر تأكيد البوابة.';
+                    if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['payment_status'=>[$msg]]], 422);
+                    return redirect()->back()->withErrors(['payment_status'=>$msg]);
+                }
+                // COD pending → paid must use semantic collect (clearer workflow), but allow here for backwards compat with transition
+                if (in_array($pm, ['cod','cash','cash_on_delivery'], true)) {
+                    try {
+                        $order = \App\Services\OrderTransitionService::collectCod($order);
+                    } catch (\Exception $e) {
+                        $msg = $e->getMessage();
+                        if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['payment_status'=>[$msg]]], 422);
+                        return redirect()->back()->withErrors(['payment_status'=>$msg]);
+                    }
+                    $newPayment = 'paid';
+                } else {
+                    // bank/offline: allow direct
+                    $order->forceFill(['payment_status'=>'paid'])->save();
+                    try { \App\Jobs\SendStoreCustomerEmail::dispatch($order->store_id, 'payment_received', $order->customer_email, $order->id, null, $order->customer_id)->afterCommit(); } catch (\Throwable $e) {}
+                }
+            } elseif (in_array($newPayment, ['refunded','partially_refunded','failed'], true)) {
+                $msg = 'حالة الدفع هذه تتم عبر مسار الاسترجاع/فشل الدفع النظامي — لا يمكن تغييرها يدوياً من هنا';
+                if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['payment_status'=>[$msg]]], 422);
+                return redirect()->back()->withErrors(['payment_status'=>$msg]);
+            } else {
+                // generic pending change — allow only for offline if needed
+                $order->forceFill(['payment_status'=>$newPayment])->save();
+            }
         }
-        // Dispatch payment email if payment_status changed to paid (store isolated, afterCommit)
-        $oldPayment = $order->getOriginal('payment_status');
-        if ($oldPayment !== $request->payment_status && strtolower((string)$request->payment_status)==='paid') {
-            try { \App\Jobs\SendStoreCustomerEmail::dispatch($order->store_id, 'payment_received', $order->customer_email, $order->id, null, $order->customer_id)->afterCommit(); } catch (\Throwable $e) {}
+
+        // --- Editable fields ---
+        $updates = [];
+        if ($request->filled('tracking_number') || $request->has('tracking_number')) $updates['tracking_number'] = $request->input('tracking_number');
+        if ($request->has('notes')) $updates['notes'] = $request->input('notes');
+        if ($request->filled('customer_first_name')) $updates['customer_first_name'] = $request->input('customer_first_name');
+        if ($request->filled('customer_last_name')) $updates['customer_last_name'] = $request->input('customer_last_name');
+        if ($request->filled('customer_email')) $updates['customer_email'] = $request->input('customer_email');
+        if ($request->filled('customer_phone')) $updates['customer_phone'] = $request->input('customer_phone');
+        if ($request->filled('shipping_address')) $updates['shipping_address'] = $request->input('shipping_address');
+        if ($request->filled('shipping_city')) $updates['shipping_city'] = $request->input('shipping_city');
+        if ($request->filled('shipping_state')) $updates['shipping_state'] = $request->input('shipping_state');
+        if ($request->filled('shipping_postal_code')) $updates['shipping_postal_code'] = $request->input('shipping_postal_code');
+        if ($request->filled('shipping_country')) $updates['shipping_country'] = $request->input('shipping_country');
+        if ($request->filled('shipping_method_id')) {
+            $ship = \App\Models\Shipping::where('id', $request->input('shipping_method_id'))->where('store_id', $storeId)->where('is_active', true)->first();
+            if (!$ship) {
+                $msg = 'طريقة الشحن غير صالحة لهذا المتجر';
+                if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['shipping_method_id'=>[$msg]]], 422);
+                return redirect()->back()->withErrors(['shipping_method_id'=>$msg]);
+            }
+            $updates['shipping_method_id'] = $ship->id;
+        }
+        if (!empty($updates)) {
+            try {
+                \Illuminate\Support\Facades\DB::transaction(function () use ($order, $updates) {
+                    \App\Models\Order::where('id',$order->id)->lockForUpdate()->first();
+                    $order->update($updates);
+                });
+            } catch (\Throwable $e) {
+                $msg = 'تعذر حفظ التعديلات: '.$e->getMessage();
+                if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg], 500);
+                return redirect()->back()->withErrors(['general'=>$msg]);
+            }
         }
         
-        // Update order items if provided
-        if ($request->has('items')) {
+        // Update order items variants only if provided (legacy)
+        if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->items as $itemData) {
                 if (isset($itemData['id'])) {
                     $orderItem = $order->items()->find($itemData['id']);
                     if ($orderItem && isset($itemData['variants'])) {
-                        $orderItem->update([
-                            'product_variants' => json_encode($itemData['variants'])
-                        ]);
+                        $orderItem->update(['product_variants' => json_encode($itemData['variants'])]);
                     }
                 }
             }
         }
         
+        if ($request->wantsJson() || $request->expectsJson()) {
+            return response()->json(['message'=>'تم تحديث الطلب بنجاح','order'=>['id'=>$order->id,'status'=>$order->fresh()->status,'payment_status'=>$order->fresh()->payment_status]]);
+        }
         return redirect()->route('orders.show', $id)->with('success', __('Order updated successfully.'));
+    }
+
+    /**
+     * Semantic: transition via action name — preferred for primary CTA.
+     */
+    public function transition(Request $request, $id)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+        $order = Order::where('store_id',$storeId)->where('id',$id)->firstOrFail();
+        $request->validate(['action'=>'required|string']);
+        $action = strtolower((string)$request->input('action'));
+        $map = [
+            'confirm' => 'confirmed',
+            'start_processing' => 'processing',
+            'mark_shipped' => 'shipped',
+            'mark_delivered' => 'delivered',
+            'cancel' => 'cancelled',
+            'mark_failed' => 'failed',
+        ];
+        if (!isset($map[$action])) {
+            return response()->json(['message'=>'إجراء غير معروف'], 422);
+        }
+        $target = $map[$action];
+        try {
+            $fresh = \App\Services\OrderTransitionService::transition($order, $target);
+            return response()->json(['message'=>'تم تحديث حالة الطلب','order'=>['id'=>$fresh->id,'status'=>$fresh->status,'payment_status'=>$fresh->payment_status]]);
+        } catch (\Exception $e) {
+            return response()->json(['message'=>$e->getMessage(),'errors'=>['status'=>[$e->getMessage()]]], 422);
+        }
+    }
+
+    /**
+     * Semantic COD collect.
+     */
+    public function collectCod(Request $request, $id)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+        $order = Order::where('store_id',$storeId)->where('id',$id)->firstOrFail();
+        try {
+            $fresh = \App\Services\OrderTransitionService::collectCod($order);
+            return response()->json(['message'=>'تم تأكيد استلام المبلغ','order'=>['id'=>$fresh->id,'status'=>$fresh->status,'payment_status'=>$fresh->payment_status]]);
+        } catch (\Exception $e) {
+            return response()->json(['message'=>$e->getMessage(),'errors'=>['payment_status'=>[$e->getMessage()]]], 422);
+        }
     }
 
     /**

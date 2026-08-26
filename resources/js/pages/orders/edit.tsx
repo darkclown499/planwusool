@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Save, Plus, Trash2, AlertTriangle, Info } from 'lucide-react';
+import { Save, Plus, Trash2, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,9 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { router } from '@inertiajs/react';
-import { tOrderStatus, tPaymentStatus, tPaymentMethod } from '@/utils/order-status';
+import { tPaymentMethod } from '@/utils/order-status';
 import { formatCurrency } from '@/utils/currency-helper';
 import { toast } from 'sonner';
 
@@ -47,11 +46,8 @@ export default function EditOrder({ order, customers, products, shippingMethods 
   const [shippingPostal, setShippingPostal] = useState((safeOrder as any)?.shippingAddress?.postalCode?.toString() ?? '');
   const [shippingMethodId, setShippingMethodId] = useState((safeOrder as any)?.shippingMethodId?.toString() ?? '');
   const [formData, setFormData] = useState({
-    status: (safeOrder as any)?.status?.toString() ?? '',
-    payment_status: (safeOrder as any)?.paymentStatus?.toString() ?? (safeOrder as any)?.payment_status?.toString() ?? '',
     tracking_number: (safeOrder as any)?.trackingNumber?.toString() ?? (safeOrder as any)?.tracking_number?.toString() ?? '',
     notes: (safeOrder as any)?.notes?.toString() ?? '',
-    phone: ((safeOrder as any)?.customer as any)?.phone?.toString() ?? (safeOrder as any)?.phone?.toString() ?? '',
     items: initialItems,
   });
   const [saving, setSaving] = useState(false);
@@ -60,19 +56,25 @@ export default function EditOrder({ order, customers, products, shippingMethods 
   const handleSave = () => {
     if (saving) return;
     setSaving(true);
-    // Validate basics
     if (orderItems.length===0) { toast.error('يجب أن يحتوي الطلب على منتج واحد على الأقل'); setSaving(false); return; }
     for (const it of orderItems) {
       if (!it.productId || it.productId===0) { toast.error('اختر المنتج لكل بند'); setSaving(false); return; }
       if (Number(it.quantity) <1) { toast.error('الكمية يجب أن تكون 1 على الأقل'); setSaving(false); return; }
     }
+    const parts = customerName.trim().split(' ');
+    const first = parts.shift() || customerName.trim();
+    const last = parts.join(' ') || ' ';
     router.put(route('orders.update', order.id), {
-      status: formData.status,
-      payment_status: formData.payment_status,
+      customer_first_name: first,
+      customer_last_name: last || '—',
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      shipping_address: shippingAddress,
+      shipping_city: shippingCity,
+      shipping_postal_code: shippingPostal,
+      shipping_method_id: shippingMethodId ? parseInt(shippingMethodId) : null,
       tracking_number: formData.tracking_number,
       notes: formData.notes,
-      // merchant editable fields — server will recalculate totals
-      // For now keep existing controller contract; items update handled via notes in controller's items loop (variants)
       items: orderItems.map((it:any)=>({ id: it.id, variants: it.variants })),
     }, {
       onSuccess: ()=> toast.success('تم حفظ التعديلات'),
@@ -94,7 +96,6 @@ export default function EditOrder({ order, customers, products, shippingMethods 
     setOrderItems(n); setFormData(prev => ({ ...prev, items: n }));
   };
 
-  // Read-only computed totals notice
   const summary = safeOrder?.summary ?? { subtotal:0, shipping:0, tax:0, total:0, discount:0 };
 
   return (
@@ -110,12 +111,11 @@ export default function EditOrder({ order, customers, products, shippingMethods 
       ]}
     >
       <div className="space-y-4" dir="rtl">
-        {/* Info banner */}
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex gap-3 items-start">
-          <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 flex gap-3 items-start">
+          <Info className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
           <div className="text-sm leading-relaxed">
-            <p className="font-bold text-amber-900">المبالغ تُحتسب تلقائياً من الخادم</p>
-            <p className="text-amber-800">يمكنك تعديل المنتجات والكميات وطريقة الشحن وبيانات العميل. سيتم إعادة حساب <span className="font-bold">المجموع الفرعي / الضريبة / الشحن / الإجمالي</span> تلقائياً ولن يُسمح بتعديلها يدوياً.</p>
+            <p className="font-bold text-emerald-900">تصحيح بيانات الطلب</p>
+            <p className="text-emerald-800">سيتم إعادة احتساب الأسعار والخصومات والضريبة والشحن تلقائياً عند حفظ التعديلات. حالة التنفيذ تُدار من صفحة تفاصيل الطلب عبر الإجراء الرئيسي.</p>
           </div>
         </div>
 
@@ -123,10 +123,9 @@ export default function EditOrder({ order, customers, products, shippingMethods 
           <TabsList className="grid w-full grid-cols-3 h-auto p-1 gap-1">
             <TabsTrigger value="customer" className="text-xs sm:text-sm py-2">العميل</TabsTrigger>
             <TabsTrigger value="items" className="text-xs sm:text-sm py-2">المنتجات</TabsTrigger>
-            <TabsTrigger value="shipping" className="text-xs sm:text-sm py-2">الشحن والدفع</TabsTrigger>
+            <TabsTrigger value="shipping" className="text-xs sm:text-sm py-2">الشحن</TabsTrigger>
           </TabsList>
 
-          {/* Tab: Customer */}
           <TabsContent value="customer" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3">
@@ -147,7 +146,7 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>رقم الهاتف / واتساب</Label>
-                    <Input value={customerPhone} onChange={e=>{setCustomerPhone(e.target.value); setFormData(p=>({...p, phone:e.target.value}))}} placeholder="+970..." dir="ltr" className="text-left" />
+                    <Input value={customerPhone} onChange={e=>setCustomerPhone(e.target.value)} placeholder="+970..." dir="ltr" className="text-left" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>ملاحظات الطلب</Label>
@@ -158,7 +157,6 @@ export default function EditOrder({ order, customers, products, shippingMethods 
             </Card>
           </TabsContent>
 
-          {/* Tab: Items */}
           <TabsContent value="items" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3">
@@ -247,12 +245,11 @@ export default function EditOrder({ order, customers, products, shippingMethods 
             </Card>
           </TabsContent>
 
-          {/* Tab: Shipping & Payment */}
           <TabsContent value="shipping" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">الشحن والدفع</CardTitle>
-                <CardDescription>طريقة الشحن والعنوان وحالة الدفع</CardDescription>
+                <CardTitle className="text-base">الشحن</CardTitle>
+                <CardDescription>طريقة الشحن والعنوان ورقم التتبع — حالة الطلب تُدار من صفحة التفاصيل</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -288,46 +285,23 @@ export default function EditOrder({ order, customers, products, shippingMethods 
                   </div>
                 </div>
 
-                <Separator />
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>طريقة الدفع</Label>
                     <div className="h-9 flex items-center px-3 border rounded-md bg-muted text-sm">
                       {tPaymentMethod(String(safeOrder?.paymentMethod ?? '')) || '—'}
                     </div>
-                    <p className="text-xs text-muted-foreground">طريقة الدفع لا تُعدل من هنا</p>
+                    <p className="text-xs text-muted-foreground">طريقة الدفع لا تُعدل من هنا — تُدار حسب نوع الدفع (بوابة / عند الاستلام)</p>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>حالة الدفع</Label>
-                    <Select value={formData.payment_status} onValueChange={(value) => setFormData(prev => ({ ...prev, payment_status: value }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">{tPaymentStatus('Pending')}</SelectItem>
-                        <SelectItem value="paid">{tPaymentStatus('Paid')}</SelectItem>
-                        <SelectItem value="failed">{tPaymentStatus('Failed')}</SelectItem>
-                        <SelectItem value="refunded">{tPaymentStatus('Refunded')}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>حالة الطلب الحالية</Label>
+                    <div className="h-9 flex items-center px-3 border rounded-md bg-slate-50 text-sm font-bold">
+                      {String(safeOrder?.status ?? '—')}
+                    </div>
+                    <p className="text-xs text-muted-foreground">لتغيير حالة التنفيذ استخدم الإجراء الرئيسي في صفحة تفاصيل الطلب</p>
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label>حالة الطلب</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">{tOrderStatus('pending')}</SelectItem>
-                      <SelectItem value="confirmed">{tOrderStatus('confirmed')}</SelectItem>
-                      <SelectItem value="processing">{tOrderStatus('processing')}</SelectItem>
-                      <SelectItem value="shipped">{tOrderStatus('shipped')}</SelectItem>
-                      <SelectItem value="delivered">{tOrderStatus('delivered')}</SelectItem>
-                      <SelectItem value="cancelled">{tOrderStatus('cancelled')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Read-only totals */}
                 <div className="rounded-xl border bg-slate-50 p-4 space-y-2">
                   <p className="text-sm font-bold">ملخص مالي <Badge variant="secondary" className="ms-2 text-xs">للقراءة فقط</Badge></p>
                   <div className="grid grid-cols-2 gap-3 text-sm">
@@ -344,7 +318,6 @@ export default function EditOrder({ order, customers, products, shippingMethods 
           </TabsContent>
         </Tabs>
 
-        {/* Save bar — sticky on mobile */}
         <div className="flex flex-col sm:flex-row gap-2 justify-end pt-2 sticky bottom-0 bg-white/95 backdrop-blur border-t -mx-6 px-6 py-3 sm:static sm:bg-transparent sm:border-0 sm:p-0">
           <Button variant="outline" onClick={()=>router.visit(route('orders.show', order.id))} disabled={saving}>إلغاء</Button>
           <Button onClick={handleSave} disabled={saving} className="min-w-[140px] font-bold">

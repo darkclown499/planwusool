@@ -57,37 +57,67 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
   const statusLower = String(order?.status ?? '').toLowerCase();
   const paymentLower = String(order?.paymentStatus ?? '').toLowerCase();
   const isTerminal = ['cancelled','refunded','failed','delivered'].includes(statusLower);
-  const primary = primaryActionByStatus[statusLower] || null;
+  // Backend authoritative primary — fallback to local map for tests
+  const backendAllowed: any[] = (order as any).allowed_actions || [];
+  const backendPaymentAllowed: any[] = (order as any).allowed_payment_actions || [];
+  const backendPrimary = backendAllowed.find((a:any)=>!a.destructive) || null;
+  const fallbackPrimary = primaryActionByStatus[statusLower] || null;
+  const primary = backendPrimary || fallbackPrimary;
   const canShowPrimary = !!primary && !isTerminal && !(fulfillment.type==='connected' && statusLower==='processing' && !primaryShipment);
-  // Special: connected processing shows "إرسال إلى شركة التوصيل" not generic
   const connectedNeedsSubmit = fulfillment.type==='connected' && statusLower==='processing' && !primaryShipment;
   const isFailed = primaryShipment?.status==='failed';
+  const codCollectAction = backendPaymentAllowed.find((a:any)=>a.action==='collect_cod') || null;
+  const canCollectCod = !!codCollectAction;
 
-  const updateOrderStatus = async (newStatus: string) => {
+  // Canonical transition via POST /orders/{id}/transition — prevents generic status spoofing and gives specific Arabic errors
+  const transitionByAction = async (action: string, loadingKey?: string) => {
     if (actionLoading) return;
-    setActionLoading(newStatus);
+    const key = loadingKey || action;
+    setActionLoading(key);
     try {
       const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-      const safePaymentStatus = String(order?.paymentStatus ?? 'pending').toLowerCase();
-      const res = await fetch(route('orders.update', order.id), {
-        method: 'PUT',
+      const url = (typeof route !== 'undefined' && (route as any)('orders.transition', order.id)) || `/orders/${order.id}/transition`;
+      const res = await fetch(url, {
+        method: 'POST',
         headers: { 'Content-Type':'application/json', Accept:'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With':'XMLHttpRequest'},
-        body: JSON.stringify({ status: newStatus, payment_status: safePaymentStatus, tracking_number: order.trackingNumber || '', notes: order.notes || '' }),
+        body: JSON.stringify({ action }),
       });
       if (res.ok) {
         toast.success('تم تحديث حالة الطلب');
         router.reload();
       } else {
         let msg = 'تعذر تحديث الحالة';
-        try { const j = await res.json(); msg = j.errors?.status?.[0] || j.message || msg; } catch {}
-        // Map known backend reasons to Arabic
-        if (msg.includes('Invalid status transition')) msg = `لا يمكن نقل الطلب من "${tOrderStatus(statusLower)}" إلى "${tOrderStatus(newStatus)}"`;
-        if (msg.toLowerCase().includes('stock')) msg = 'لا يمكن إتمام العملية: مشكلة في المخزون أو الكمية غير متوفرة';
+        try { const j = await res.json(); msg = j.errors?.status?.[0] || j.message || j.error || msg; } catch {}
+        if (msg.toLowerCase().includes('stock')) msg = 'الكمية المطلوبة لم تعد متوفرة في المخزون.';
         toast.error(msg);
       }
-    } catch { toast.error('حدث خطأ أثناء التحديث، حاول مرة أخرى'); }
+    } catch {
+      toast.error('تعذر الاتصال بالخادم — تحقق من الاتصال وحاول مرة أخرى');
+    }
     setActionLoading(null);
     setConfirmOpen(null);
+  };
+
+  const updateOrderStatus = async (newStatus: string) => {
+    // Map status → canonical action for hardening
+    const statusToAction: Record<string,string> = { confirmed:'confirm', processing:'start_processing', shipped:'mark_shipped', delivered:'mark_delivered', cancelled:'cancel', failed:'mark_failed' };
+    const act = statusToAction[newStatus] || 'confirm';
+    // Connected courier: keep old path for shipped if needed, but transition handles it
+    return transitionByAction(act, newStatus);
+  };
+
+  const handleCollectCod = async () => {
+    if (actionLoading) return;
+    setActionLoading('collect_cod');
+    try {
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const url = (typeof route !== 'undefined' && (route as any)('orders.collect-cod', order.id)) || `/orders/${order.id}/collect-cod`;
+      const res = await fetch(url, { method:'POST', headers:{ 'X-CSRF-TOKEN': token, Accept:'application/json'} });
+      const j = await res.json().catch(()=>({}));
+      if (res.ok) { toast.success(j.message || 'تم تأكيد استلام المبلغ'); router.reload(); }
+      else toast.error(j.message || j.error || 'تعذر تأكيد الاستلام');
+    } catch { toast.error('تعذر الاتصال بالخادم'); }
+    setActionLoading(null);
   };
 
   const handleShipmentAction = async (action: 'retry'|'cancel', shipment:any) => {
@@ -246,12 +276,11 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                 </div>
               </div>
 
-              {/* Primary action + Additional */}
+              {/* Primary action + Additional — ONE obvious next step from backend */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                {/* Single primary CTA */}
                 {canShowPrimary && (
-                  <Button size="sm" className="h-9 px-6 font-bold" onClick={()=>updateOrderStatus(primary!.next)} disabled={!!actionLoading}>
-                    {actionLoading===primary!.next ? 'جارٍ التنفيذ...' : primary!.label}
+                  <Button size="sm" className="h-9 px-6 font-bold" onClick={()=> primary?.action ? transitionByAction(primary.action, primary.next) : updateOrderStatus(primary!.next)} disabled={!!actionLoading}>
+                    {actionLoading===primary!.next || actionLoading===primary!.action ? 'جارٍ التنفيذ...' : primary!.label}
                   </Button>
                 )}
                 {connectedNeedsSubmit && (
@@ -259,9 +288,9 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                     {actionLoading==='ship_submit' ? 'جارٍ الإرسال...' : <><Send className="h-4 w-4 me-1"/> إرسال إلى شركة التوصيل</>}
                   </Button>
                 )}
-                {statusLower==='shipped' && !isTerminal && (
-                  <Button size="sm" className="h-9 px-6 font-bold" onClick={()=>updateOrderStatus('delivered')} disabled={!!actionLoading}>
-                    {actionLoading==='delivered' ? 'جارٍ...' : 'تم التسليم'}
+                {canCollectCod && !isTerminal && (
+                  <Button size="sm" variant="secondary" className="h-9 px-5 font-bold border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100" onClick={handleCollectCod} disabled={!!actionLoading}>
+                    {actionLoading==='collect_cod' ? 'جارٍ...' : 'تأكيد استلام المبلغ'}
                   </Button>
                 )}
                 {isTerminal && statusLower==='delivered' && (
@@ -419,16 +448,20 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
           </div>
         </div>
 
-        {/* Mobile bottom sticky action */}
+        {/* Mobile bottom sticky action — respects backend primary */}
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t shadow-lg p-3 flex gap-2" dir="rtl">
-          {canShowPrimary ? (
-            <Button className="flex-1 h-10 font-bold" onClick={()=>updateOrderStatus(primary!.next)} disabled={!!actionLoading}>
-              {actionLoading===primary!.next ? 'جارٍ...' : primary!.label}
+          {canCollectCod ? (
+            <Button className="flex-1 h-10 font-bold bg-amber-600 hover:bg-amber-700 text-white" onClick={handleCollectCod} disabled={!!actionLoading}>
+              {actionLoading==='collect_cod' ? 'جارٍ...' : 'تأكيد استلام المبلغ'}
+            </Button>
+          ) : canShowPrimary ? (
+            <Button className="flex-1 h-10 font-bold" onClick={()=> primary?.action ? transitionByAction(primary.action, primary.next) : updateOrderStatus(primary!.next)} disabled={!!actionLoading}>
+              {actionLoading===primary!.next || actionLoading===primary!.action ? 'جارٍ...' : primary!.label}
             </Button>
           ) : connectedNeedsSubmit ? (
             <Button className="flex-1 h-10 font-bold" onClick={submitToCourier} disabled={!!actionLoading}>{actionLoading==='ship_submit' ? 'جارٍ...' : 'إرسال إلى شركة التوصيل'}</Button>
           ) : statusLower==='shipped' ? (
-            <Button className="flex-1 h-10 font-bold" onClick={()=>updateOrderStatus('delivered')} disabled={!!actionLoading}>تم التسليم</Button>
+            <Button className="flex-1 h-10 font-bold" onClick={()=>transitionByAction('mark_delivered','delivered')} disabled={!!actionLoading}>تم التسليم</Button>
           ) : (
             <Button variant="outline" className="flex-1 h-10" onClick={()=>router.visit(route('orders.edit', order.id))}><Pencil className="h-4 w-4 me-1"/> تحرير</Button>
           )}
@@ -463,6 +496,10 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                       onError: ()=>{ toast.error('تعذر حذف الطلب'); setActionLoading(null); },
                       onFinish: ()=>setConfirmOpen(null),
                     });
+                  } else if (confirmOpen?.next==='cancelled') {
+                    transitionByAction('cancel','cancelled');
+                  } else if (confirmOpen?.next==='failed') {
+                    transitionByAction('mark_failed','failed');
                   } else {
                     updateOrderStatus(confirmOpen!.next);
                   }

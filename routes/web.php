@@ -881,6 +881,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('orders/create', [\App\Http\Controllers\OrderController::class, 'create'])->middleware('permission:create-orders')->name('orders.create');
             Route::get('orders/{id}/edit', [\App\Http\Controllers\OrderController::class, 'edit'])->middleware('permission:edit-orders')->name('orders.edit');
             Route::put('orders/{id}', [\App\Http\Controllers\OrderController::class, 'update'])->middleware('permission:edit-orders')->name('orders.update');
+            Route::post('orders/{id}/transition', [\App\Http\Controllers\OrderController::class, 'transition'])->middleware('permission:edit-orders')->name('orders.transition');
+            Route::post('orders/{id}/collect-cod', [\App\Http\Controllers\OrderController::class, 'collectCod'])->middleware('permission:edit-orders')->name('orders.collect-cod');
             Route::delete('orders/{id}', [\App\Http\Controllers\OrderController::class, 'destroy'])->middleware('permission:delete-orders')->name('orders.destroy');
             Route::get('orders/{id}', [\App\Http\Controllers\OrderController::class, 'show'])->middleware('permission:view-orders')->name('orders.show');
 

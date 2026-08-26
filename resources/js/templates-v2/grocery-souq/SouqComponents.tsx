@@ -37,7 +37,7 @@ function SafeLoyaltyBadge() {
 /* ------------------------------ Header — Biddi exact ------------------------------ */
 
 export function SouqHeader() {
-  const { config, store, cart, auth, ui, wishlist, product, order, behavior } = useStorefrontCore() as any;
+  const { config, store, cart, auth, ui, wishlist, order, behavior, content } = useStorefrontCore() as any;
   const accountsOn = behavior?.customer_accounts_enabled !== false;
   const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
   const canShowAuth = accountsOn && (auth?.isLoggedIn || loginEnabled);
@@ -53,94 +53,83 @@ export function SouqHeader() {
     }
   };
 
-  const matches = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    if (query.length < 2) return [];
-    return (product?.products || [])
-      .filter((p: any) => String(p.name || '').toLowerCase().includes(query))
-      .slice(0, 7);
-  }, [q, product?.products]);
+  // Design tokens — propagated from Designer via content / designTokens
+  const rawContent = (content ?? store?.content ?? {}) as any;
+  const designTokens = (store as any)?.design_tokens ?? {};
+  const accent = rawContent?.accent_color ?? designTokens?.accent_color ?? (config as any)?.accent_color ?? '#FFC20E';
+  const headerBg = rawContent?.header_bg ?? designTokens?.header_bg ?? '#FDF9F1';
+
+  // WhatsApp support — real merchant config only (no hardcoded demo)
+  const waPhoneRaw = String(config?.socialMedia?.whatsapp || config?.whatsapp_widget_phone || config?.phoneNumber || '').replace(/[^0-9]/g, '');
+  const waHref = waPhoneRaw ? `https://wa.me/${waPhoneRaw}` : null;
+
+  // Server-backed search via shared contract (store scope, active only, Arabic/English/SKU, debounce)
+  const { results: serverResults, loading: searchLoading } = (() => {
+    try {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const { useServerSearch } = require('@/hooks/useServerSearch');
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      return useServerSearch(q, 7);
+    } catch {
+      return { results: null, loading: false } as any;
+    }
+  })();
+  const matches: any[] = useMemo(() => {
+    if (Array.isArray(serverResults)) return serverResults.slice(0, 7);
+    return [];
+  }, [serverResults]);
 
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const storeName = config?.storeName || store?.name || 'المتجر';
 
-  // Active pill helper - simple path check
   const isActive = (href: string) => {
     if (typeof window === 'undefined') return false;
     return window.location.pathname === href;
   };
 
   return (
-    <header className="hidden md:block sticky top-0 z-50 bg-gradient-to-b from-[#FDFCF9] to-[#FDF9F1] shadow-sm" dir="rtl">
-      {/* Top row: logo + hamburger + desktop nav pills + support/address */}
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 px-3 py-2.5 lg:px-6">
-        <div className="flex items-center gap-2">
-          {/* Hamburger mobile */}
-          <button type="button" onClick={() => setMobileNav((v) => !v)} aria-label="القائمة" className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 lg:hidden">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-stone-700"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-          </button>
-          {/* Logo */}
-          <a href="/" className="flex items-center gap-2">
+    <header className="sticky top-0 z-50 shadow-sm" dir="rtl" style={{ background: headerBg, paddingTop: 'env(safe-area-inset-top)' } as any}>
+      {/* CSS variables for propagated design tokens */}
+      <style>{`:root{--souq-accent:${accent};--souq-header-bg:${headerBg}}`}</style>
+
+      {/* MOBILE HEADER — 375/390/430 compact */}
+      <div className="flex flex-col gap-2 px-3 py-2.5 md:hidden" style={{ background: headerBg }}>
+        {/* Mobile top row: logo + wishlist + cart + account/menu */}
+        <div className="flex items-center justify-between gap-2">
+          <a href="/" className="flex min-w-0 items-center gap-2">
             {(config?.logo || store?.logo) ? (
-              <img src={getImageUrl(config.logo || store.logo)} alt={storeName} className="h-9 w-auto object-contain lg:h-11" />
+              <img src={getImageUrl(config.logo || store.logo)} alt={storeName} className="h-8 w-auto object-contain" />
             ) : (
-              <div className="flex items-center gap-1.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFC20E] text-sm font-black text-black">س</span>
-                <span className="hidden text-base font-black text-stone-800 sm:block">{storeName}</span>
-              </div>
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl text-xs font-black text-black" style={{ background: accent }}>س</span>
             )}
+            <span className="truncate text-sm font-black text-stone-900">{storeName}</span>
           </a>
-          {/* Desktop nav pills */}
-          <nav className="hidden items-center gap-1 ms-4 lg:flex">
-            <a href="/" className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${isActive('/') ? 'bg-[#FFC20E] text-black shadow-sm' : 'text-stone-600 hover:bg-black/5'}`}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              الرئيسية
-            </a>
-            <button type="button" onClick={() => ui.setShowCart(true)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
-              <ShoppingBasket className="h-3.5 w-3.5" /> السلة {count > 0 && <span className="rounded-full bg-black px-1.5 text-[10px] text-white">{count}</span>}
+          <div className="flex items-center gap-1.5">
+            {/* Wishlist single */}
+            <button type="button" onClick={() => (auth as any).setShowWishlistModal ? (auth as any).setShowWishlistModal(true) : window.location.assign('/wishlist')} aria-label="المفضلة" className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 text-slate-700">
+              <Heart className="h-5 w-5" strokeWidth={1.8} />
+              {!!wishlist?.count && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-black text-black" style={{ background: accent }}>{wishlist.count}</span>}
             </button>
-            {canShowAuth && (
-            <button type="button" onClick={handleMyOrders} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-              طلباتي
+            <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="relative flex h-9 items-center gap-1 rounded-full px-3 text-sm font-black text-white shadow-sm" style={{ background: '#0F1620' }}>
+              <ShoppingBasket className="h-4 w-4" /> {count > 0 && <span className="rounded-full px-1.5 py-0.5 text-xs font-black text-black" style={{ background: accent }}>{count}</span>}
             </button>
-            )}
-            {canShowAuth && (
-            <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)))} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              حسابي
+            {canShowAuth ? (
+              <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} aria-label="حسابي" className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 text-stone-700">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </button>
+            ) : null}
+            <button type="button" onClick={() => setMobileNav((v) => !v)} aria-label="القائمة" className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 text-stone-700">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
             </button>
-            )}
-          </nav>
+          </div>
         </div>
-
-        {/* Right: support + address */}
-        <div className="flex items-center gap-2">
-          <div className="hidden sm:block"><SafeLoyaltyBadge /></div>
-          <a href="https://wa.me/970599000000" target="_blank" rel="noreferrer" className="hidden items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-stone-700 shadow-sm ring-1 ring-black/5 hover:bg-stone-50 lg:inline-flex">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
-            الدعم
-          </a>
-          <a href="#address" className="hidden items-center gap-1 text-xs font-semibold text-stone-500 underline decoration-dotted underline-offset-4 hover:text-stone-700 lg:inline-flex">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            ادخل عنوانك
-          </a>
-          {/* Wishlist - Heart icon next to Cart */}
-          <a href="/wishlist" aria-label="المفضلة" className="relative hidden h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 sm:inline-flex text-slate-700 hover:text-emerald-600 transition-colors">
-            <Heart className="h-5 w-5" strokeWidth={1.8} />
-            {!!wishlist?.count && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FFC20E] px-1 text-[9px] font-black text-black">{wishlist.count}</span>}
-          </a>
-        </div>
-      </div>
-
-      {/* Search row + cart pill — Biddi's second row */}
-      <div className="mx-auto flex max-w-[1600px] items-center gap-2 px-3 pb-3 lg:px-6 lg:pb-4">
-        <div className="relative flex-1">
-          <form onSubmit={(e) => e.preventDefault()} className="relative flex h-10 items-center overflow-hidden rounded-full bg-white px-4 shadow-sm ring-1 ring-black/5">
+        {/* Mobile second row: prominent search */}
+        <div className="relative">
+          <form onSubmit={(e) => e.preventDefault()} className="relative flex h-11 items-center overflow-hidden rounded-full bg-white px-4 shadow-sm ring-1 ring-black/5">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="ابحث في 5000 منتج"
+              placeholder="ابحث في المتجر"
               className="w-full bg-transparent text-sm font-medium text-stone-800 placeholder:text-stone-400 focus:outline-none"
             />
             <span className="pointer-events-none absolute left-3 text-stone-400">
@@ -152,35 +141,121 @@ export function SouqHeader() {
               </button>
             )}
           </form>
-          {matches.length > 0 && (
+          {q.trim().length >= 2 && (searchLoading || matches.length > 0) && (
             <ul className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl bg-white py-2 shadow-2xl ring-1 ring-black/5">
-              {matches.map((p: any) => (
-                <SouqSearchRow key={p.id} product={p} onPick={() => setQ('')} />
-              ))}
+              {searchLoading ? (
+                <li className="py-6 text-center text-sm text-stone-500">جارٍ البحث…</li>
+              ) : (
+                matches.map((p: any) => (
+                  <SouqSearchRow key={p.id} product={p} onPick={() => setQ('')} />
+                ))
+              )}
+              {!searchLoading && matches.length === 0 && q.trim().length >= 2 && (
+                <li className="py-6 text-center text-sm text-stone-500">لم نجد منتجات مطابقة</li>
+              )}
             </ul>
           )}
         </div>
-        <a href="/wishlist" aria-label="المفضلة" className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 text-slate-700 hover:text-emerald-600 transition-colors">
-          <Heart className="h-5 w-5" strokeWidth={1.8} />
-          {!!wishlist?.count && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FFC20E] px-1 text-[9px] font-black text-black">{wishlist.count}</span>}
-        </a>
-        <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-[#0F1620] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-black">
-          <ShoppingBasket className="h-4 w-4" /> السلة {count > 0 && <span className="rounded-full bg-[#FFC20E] px-1.5 py-0.5 text-xs font-black text-black">{count}</span>}
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex-1"><SafeLoyaltyBadge /></div>
+        </div>
+        {mobileNav && (
+          <div className="rounded-2xl bg-white p-3 shadow-lg ring-1 ring-black/5">
+            <nav className="grid grid-cols-2 gap-2">
+              <a href="/" onClick={() => setMobileNav(false)} className="rounded-xl px-4 py-3 text-center text-sm font-black text-black" style={{ background: accent }}>الرئيسية</a>
+              <button type="button" onClick={() => { setMobileNav(false); ui.setShowCart(true); }} className="rounded-xl bg-stone-900 px-4 py-3 text-sm font-bold text-white">السلة ({count})</button>
+              {canShowAuth && (<button type="button" onClick={() => { setMobileNav(false); handleMyOrders(); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">طلباتي</button>)}
+              {canShowAuth && (<button type="button" onClick={() => { setMobileNav(false); auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">حسابي</button>)}
+              {waHref && <a href={waHref} target="_blank" rel="noreferrer" className="col-span-2 rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-stone-700 ring-1 ring-black/5">الدعم واتساب</a>}
+            </nav>
+          </div>
+        )}
       </div>
 
-      {/* Mobile nav dropdown */}
-      {mobileNav && (
-        <div className="border-t border-black/5 bg-white px-3 py-3 lg:hidden">
-          <nav className="grid grid-cols-2 gap-2">
-            <a href="/" onClick={() => setMobileNav(false)} className="rounded-xl bg-[#FFC20E] px-4 py-3 text-center text-sm font-black text-black">الرئيسية</a>
-            <button type="button" onClick={() => { setMobileNav(false); ui.setShowCart(true); }} className="rounded-xl bg-stone-900 px-4 py-3 text-sm font-bold text-white">السلة ({count})</button>
-            {canShowAuth && (<button type="button" onClick={() => { setMobileNav(false); handleMyOrders(); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">طلباتي</button>)}
-            {canShowAuth && (<button type="button" onClick={() => { setMobileNav(false); auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)); }} className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-stone-700 ring-1 ring-black/5">حسابي</button>)}
-            <a href="https://wa.me/970599000000" target="_blank" rel="noreferrer" className="col-span-2 rounded-xl bg-white px-4 py-3 text-center text-sm font-bold text-stone-700 ring-1 ring-black/5">الدعم</a>
-          </nav>
+      {/* DESKTOP / TABLET HEADER — md+ */}
+      <div className="hidden md:block" style={{ background: headerBg }}>
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 px-3 py-2.5 lg:px-6">
+          <div className="flex items-center gap-2">
+            <a href="/" className="flex items-center gap-2">
+              {(config?.logo || store?.logo) ? (
+                <img src={getImageUrl(config.logo || store.logo)} alt={storeName} className="h-9 w-auto object-contain lg:h-11" />
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black text-black" style={{ background: accent }}>س</span>
+                  <span className="text-base font-black text-stone-800">{storeName}</span>
+                </div>
+              )}
+            </a>
+            <nav className="hidden items-center gap-1 ms-4 lg:flex">
+              <a href="/" className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${isActive('/') ? 'text-black shadow-sm' : 'text-stone-600 hover:bg-black/5'}`} style={isActive('/') ? { background: accent } : {}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                الرئيسية
+              </a>
+              {canShowAuth && (
+              <button type="button" onClick={handleMyOrders} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                طلباتي
+              </button>
+              )}
+              {canShowAuth && (
+              <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)))} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-black/5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                حسابي
+              </button>
+              )}
+            </nav>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:block"><SafeLoyaltyBadge /></div>
+            {waHref && (
+              <a href={waHref} target="_blank" rel="noreferrer" className="hidden items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-stone-700 shadow-sm ring-1 ring-black/5 hover:bg-stone-50 lg:inline-flex">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                الدعم
+              </a>
+            )}
+            <button type="button" onClick={() => (auth as any).setShowWishlistModal ? (auth as any).setShowWishlistModal(true) : window.location.assign('/wishlist')} aria-label="المفضلة" className="relative hidden h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 sm:inline-flex text-slate-700 hover:text-emerald-600 transition-colors">
+              <Heart className="h-5 w-5" strokeWidth={1.8} />
+              {!!wishlist?.count && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-black text-black" style={{ background: accent }}>{wishlist.count}</span>}
+            </button>
+          </div>
         </div>
-      )}
+        <div className="mx-auto flex max-w-[1600px] items-center gap-2 px-3 pb-3 lg:px-6 lg:pb-4">
+          <div className="relative flex-1">
+            <form onSubmit={(e) => e.preventDefault()} className="relative flex h-10 items-center overflow-hidden rounded-full bg-white px-4 shadow-sm ring-1 ring-black/5">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="ابحث في المتجر"
+                className="w-full bg-transparent text-sm font-medium text-stone-800 placeholder:text-stone-400 focus:outline-none"
+              />
+              <span className="pointer-events-none absolute left-3 text-stone-400">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </span>
+              {q && (
+                <button type="button" onClick={() => setQ('')} aria-label="مسح" className="absolute left-9 text-stone-400 hover:text-stone-600">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </form>
+            {q.trim().length >= 2 && (searchLoading || matches.length > 0) && (
+              <ul className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl bg-white py-2 shadow-2xl ring-1 ring-black/5">
+                {searchLoading ? (
+                  <li className="py-6 text-center text-sm text-stone-500">جارٍ البحث…</li>
+                ) : matches.length > 0 ? (
+                  matches.map((p: any) => (
+                    <SouqSearchRow key={p.id} product={p} onPick={() => setQ('')} />
+                  ))
+                ) : (
+                  <li className="py-6 text-center text-sm text-stone-500">لم نجد منتجات مطابقة</li>
+                )}
+              </ul>
+            )}
+          </div>
+          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full px-5 text-sm font-bold text-white shadow-sm transition hover:bg-black" style={{ background: '#0F1620' }}>
+            <ShoppingBasket className="h-4 w-4" /> السلة {count > 0 && <span className="rounded-full px-1.5 py-0.5 text-xs font-black text-black" style={{ background: accent }}>{count}</span>}
+          </button>
+        </div>
+      </div>
     </header>
   );
 }
@@ -338,6 +413,9 @@ export function SouqProductCard({ product }: SouqCardProps) {
   const remaining = lowStockRemaining(product);
   const variable = isVariableProduct(product);
   const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
+  const cartIndex = (cart?.cartItems || []).findIndex((ci: any) => String(ci.id ?? ci.product_id) === String(product.id));
+  const inCart = cartIndex !== -1;
+  const cartQty = inCart ? Number((cart.cartItems[cartIndex] as any)?.quantity || 0) : 0;
 
   const quickAdd = async () => {
     if (variable) {
@@ -348,16 +426,17 @@ export function SouqProductCard({ product }: SouqCardProps) {
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-[18px] border border-black/5 bg-white shadow-sm transition hover:shadow-md" dir="rtl">
-      <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative aspect-square w-full overflow-hidden bg-white p-2" aria-label={product.name}>
-        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 20vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" width={400} height={400} />
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-black/5 bg-white shadow-sm transition hover:shadow-md" dir="rtl">
+      <div className="relative aspect-square w-full overflow-hidden bg-[#F5F5F4] p-2">
+        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="absolute inset-0 p-2" aria-label={product.name}>
+          <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 20vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" width={400} height={400} />
+        </button>
         {discount > 0 && !out && (
-          <span className="absolute top-2 right-2 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-600 ring-1 ring-red-200">-{discount}%</span>
+          <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-600 ring-1 ring-red-200">-{discount}%</span>
         )}
         {!!remaining && !out && (
-          <span className="absolute top-2 left-2 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">آخر {remaining}</span>
+          <span className="pointer-events-none absolute top-2 left-10 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">آخر {remaining}</span>
         )}
-        {/* Wishlist heart toggle */}
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); wishlist?.toggle?.(product.id); }}
@@ -367,12 +446,12 @@ export function SouqProductCard({ product }: SouqCardProps) {
           <Heart className={`h-4 w-4 ${wished ? 'fill-red-500' : ''}`} strokeWidth={1.8} />
         </button>
         {out && (
-          <span className="absolute inset-0 flex items-center justify-center bg-white/80 text-sm font-black text-stone-500">نفذت</span>
+          <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/80 text-sm font-black text-stone-500">نفذت</span>
         )}
-      </button>
+      </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-3 pt-1">
-        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="line-clamp-2 min-h-[36px] text-start text-[13px] font-bold leading-snug text-stone-800 hover:text-black">
+      <div className="flex flex-1 flex-col gap-2 p-3 pt-2">
+        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="line-clamp-2 min-h-[40px] text-start text-[13px] font-bold leading-snug text-stone-800 hover:text-black">
           {product.name}
         </button>
         {(() => {
@@ -388,17 +467,25 @@ export function SouqProductCard({ product }: SouqCardProps) {
           )}
         </div>
         {!out ? (
-          <button
-            type="button"
-            onClick={quickAdd}
-            aria-label="أضف للسلة"
-            className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0F1620] py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-black active:scale-[0.98]"
-          >
-            <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-            إضافة للسلة
-          </button>
+          inCart && !variable ? (
+            <div className="mt-1 flex w-full items-center justify-between rounded-full border border-black/10 bg-stone-50 px-1 py-1">
+              <button type="button" onClick={() => cart.updateQuantity(cartIndex, 1)} className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-stone-800" aria-label="زيادة"><Plus className="h-4 w-4" /></button>
+              <span className="text-sm font-black text-stone-900">{cartQty}</span>
+              <button type="button" onClick={() => cart.updateQuantity(cartIndex, -1)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-black/10 hover:bg-stone-100" aria-label="تقليل"><Minus className="h-4 w-4" /></button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={quickAdd}
+              aria-label="أضف للسلة"
+              className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0F1620] py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-black active:scale-[0.98] min-h-[44px]"
+            >
+              <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+              إضافة للسلة
+            </button>
+          )
         ) : (
-          <span className="mt-1 flex w-full items-center justify-center rounded-full bg-stone-100 py-2.5 text-xs font-bold text-stone-400">نفذت</span>
+          <span className="mt-1 flex w-full items-center justify-center rounded-full bg-stone-100 py-2.5 text-xs font-bold text-stone-400 min-h-[44px]">نفذت</span>
         )}
       </div>
     </div>
