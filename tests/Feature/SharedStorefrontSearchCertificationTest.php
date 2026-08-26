@@ -176,6 +176,11 @@ class SharedStorefrontSearchCertificationTest extends TestCase
             $src = file_get_contents(resource_path('js/templates-v2/'.$p));
             $this->assertStringNotContainsString('hidden md:block sticky top-0', $src, "$p mobile header must not be hidden md:block (intentional mobile)");
         }
+        // MobileAppShell must not duplicate header for v2 (ownership)
+        $shell = file_get_contents(resource_path('js/components/storefront/MobileAppShell.tsx'));
+        $this->assertStringContainsString('isV2', $shell, 'MobileAppShell must detect v2');
+        $this->assertStringContainsString('!isV2', $shell, 'MobileAppShell header must be hidden for v2 to prevent duplication');
+        $this->assertStringContainsString('getTemplateModule', $shell);
         // useServerSearch must use Inertia router properly
         $hook = file_get_contents(resource_path('js/hooks/useServerSearch.ts'));
         $this->assertStringContainsString('inertiaRouter', $hook);

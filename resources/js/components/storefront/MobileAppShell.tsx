@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Heart, Home, LayoutGrid, Package, Search, ShoppingCart, Store, User, X } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
+import { getTemplateModule } from '@/templates-v2/registry';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { useProduct } from '@/contexts/ProductContext';
@@ -42,8 +43,10 @@ const TabButton: React.FC<TabButtonProps> = ({ id, label, icon: Icon, active, ac
 );
 
 export const MobileAppShell: React.FC = () => {
-  const { config, behavior } = useStore();
+  const { config, behavior, store } = useStore() as any;
   const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
+  // V2 templates own their intentional mobile header; global header would duplicate search/wishlist/logo
+  const isV2 = !!getTemplateModule(store?.theme);
   const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
   const { t } = useStorefrontLocale();
 
@@ -125,7 +128,8 @@ export const MobileAppShell: React.FC = () => {
 
   return (
     <>
-      {/* App header — single compact top header for mobile (Logo right / collapsed Search trigger left) — secondary icon bar (bag/heart/search) hidden, BottomNav handles primary actions */}
+      {/* App header — legacy global header; hidden for v2 templates which own intentional mobile header (prevents duplicated search/wishlist/logo) */}
+      {!isV2 && (
       <header dir="rtl" data-app-shell="header" className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md shadow-sm md:hidden">
         <div className="flex items-center gap-2 px-3 py-2.5">
           {/* Logo on right (RTL start) — single brand mark */}
@@ -177,6 +181,7 @@ export const MobileAppShell: React.FC = () => {
 
         </div>
       </header>
+      )}
 
       {/* Bottom tab bar — native app navigation */}
       <nav data-app-shell="tabs" className={`fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden ${anyOverlayOpen ? 'hidden' : ''}`}>
