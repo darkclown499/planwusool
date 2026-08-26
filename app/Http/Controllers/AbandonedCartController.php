@@ -115,8 +115,11 @@ class AbandonedCartController extends Controller
      * Send a manual reminder for a specific abandoned cart.
      * Store-scoped: validates against route store or activeStoreId without superAdmin requirement.
      */
-    public function sendReminder(Request $request, AbandonedCart $abandonedCart)
+    public function sendReminder(Request $request, AbandonedCart|string $abandonedCart)
     {
+        if (is_string($abandonedCart)) {
+            $abandonedCart = AbandonedCart::findOrFail($abandonedCart);
+        }
         $user = Auth::user();
         $routeStore = $request->route('store');
         $targetStoreId = null;
@@ -128,11 +131,9 @@ class AbandonedCartController extends Controller
             $targetStoreId = $user->current_store;
         }
 
-        // Allow STORE_OWNER / STORE_ADMIN filtered by activeStoreId; verify cart belongs to target store
         if ((int) $abandonedCart->store_id !== (int) $targetStoreId) {
             abort(403, 'Unauthorized action.');
         }
-        // Extra ownership check for store-scoped routes
         if ($routeStore) {
             $storeModel = $routeStore instanceof Store ? $routeStore : Store::find($targetStoreId);
             if ($storeModel) {
@@ -154,8 +155,11 @@ class AbandonedCartController extends Controller
     /**
      * Mark an abandoned cart as recovered manually.
      */
-    public function markRecovered(Request $request, AbandonedCart $abandonedCart)
+    public function markRecovered(Request $request, AbandonedCart|string $abandonedCart)
     {
+        if (is_string($abandonedCart)) {
+            $abandonedCart = AbandonedCart::findOrFail($abandonedCart);
+        }
         $user = Auth::user();
         $routeStore = $request->route('store');
         $targetStoreId = null;
@@ -194,8 +198,11 @@ class AbandonedCartController extends Controller
     /**
      * Remove the specified abandoned cart.
      */
-    public function destroy(Request $request, AbandonedCart $abandonedCart)
+    public function destroy(Request $request, AbandonedCart|string $abandonedCart)
     {
+        if (is_string($abandonedCart)) {
+            $abandonedCart = AbandonedCart::findOrFail($abandonedCart);
+        }
         $user = Auth::user();
         $routeStore = $request->route('store');
         $targetStoreId = null;
