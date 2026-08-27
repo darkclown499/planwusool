@@ -118,7 +118,11 @@ class StoreErpController extends Controller
         $validated = $request->validate([
             'provider' => ['required', 'string', 'in:' . implode(',', StoreErpConfig::PROVIDERS)],
             'name' => ['nullable', 'string', 'max:120'],
-            'api_endpoint' => ['required', 'string', 'url'],
+            'api_endpoint' => ['required', 'string', 'url', function ($attr, $val, $fail) {
+                if (\App\Services\ErpSyncService::isBlockedUrl((string) $val)) {
+                    $fail('Endpoint URL not allowed (private/localhost blocked).');
+                }
+            }],
             'api_key' => ['nullable', 'string'],
             'api_username' => ['nullable', 'string', 'max:120'],
             'api_password' => ['nullable', 'string', 'max:120'],

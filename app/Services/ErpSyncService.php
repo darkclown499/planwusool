@@ -309,9 +309,38 @@ class ErpSyncService
     /* Outbound / testing                                                  */
     /* ------------------------------------------------------------------ */
 
+    public static function isBlockedUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+        if (!$parts || empty($parts['host'])) return true;
+        $scheme = strtolower($parts['scheme'] ?? '');
+        if (!in_array($scheme, ['http','https'], true)) return true;
+        $host = strtolower($parts['host']);
+        // block localhost and metadata
+        if (in_array($host, ['localhost','metadata.google.internal'], true)) return true;
+        if ($host === '169.254.169.254') return true;
+        // check IP literal
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            if (!filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) return true;
+            // also block 127.0.0.0/8 and ::1 handled by above but explicit
+            if (str_starts_with($host, '127.') || $host === '::1') return true;
+        } else {
+            // resolve DNS for host and check if it resolves to private (best-effort)
+            $ip = @gethostbyname($host);
+            if ($ip !== $host && filter_var($ip, FILTER_VALIDATE_IP)) {
+                if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) return true;
+                if (str_starts_with($ip, '127.') ) return true;
+            }
+        }
+        return false;
+    }
+
     public function testConnection(StoreErpConfig $config): array
     {
         $endpoint = rtrim((string) $config->api_endpoint, '/');
+        if (self::isBlockedUrl($endpoint)) {
+            return ['success' => false, 'status' => 0, 'message' => 'URL غير مسموح (private/localhost محظور).'];
+        }
 
         try {
             $headers = ['Accept' => 'application/json', 'X-API-Key' => (string) $config->api_key];
@@ -336,6 +365,9 @@ class ErpSyncService
     public function initialSync(StoreErpConfig $config): array
     {
         $endpoint = rtrim((string) $config->api_endpoint, '/');
+        if (self::isBlockedUrl($endpoint)) {
+            return ['success' => false, 'message' => 'URL غير مسموح (private/localhost محظور).'];
+        }
         $settings = $config->syncSettings();
 
         try {

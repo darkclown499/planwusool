@@ -73,14 +73,23 @@ class GdprController extends Controller
         }
 
         $filePath = $export->file_path;
+        // file_path stored as "disk://path" — parse disk
+        $disk = 'public';
+        $path = $filePath;
+        if (str_contains($filePath, '://')) {
+            [$disk, $path] = explode('://', $filePath, 2);
+        } else {
+            // legacy s3-only path fallback
+            $disk = Storage::disk('s3')->exists($filePath) ? 's3' : config('filesystems.default', 'public');
+        }
 
-        if (!Storage::disk('s3')->exists($filePath)) {
+        if (!Storage::disk($disk)->exists($path)) {
             return response()->json([
                 'message' => 'Export file not found.',
             ], 404);
         }
 
-        return Storage::disk('s3')->download($filePath, "gdpr-export-{$user->id}-{$export->id}.zip");
+        return Storage::disk($disk)->download($path, "gdpr-export-{$user->id}-{$export->id}.zip");
     }
 
     /**
@@ -105,7 +114,14 @@ class GdprController extends Controller
         ]);
 
         // Send confirmation email
-        Mail::to($user->email)->send(new \App\Mail\GdprDeletionConfirmation($deletionRequest));
+        try {
+            Mail::to($user->email)->send(new \App\Mail\GdprDeletionConfirmation($deletionRequest));
+        } catch (\Throwable $e) {
+            Log::warning('GdprDeletionConfirmation mail failed', ['request_id' => $deletionRequest->id]);
+        }
+
+        // Dispatch queued deletion job (Phase 1 executes anonymization lifecycle; merchant hard-delete deferred to Phase 2)
+        \App\Jobs\GdprDeletionJob::dispatch($deletionRequest->id)->afterCommit();
 
         return response()->json([
             'message' => 'Your account deletion request has been received. You will receive a confirmation email. The deletion will be processed within 30 days.',
@@ -158,285 +174,5 @@ class GdprController extends Controller
             ->paginate(10);
 
         return response()->json($requests);
-    }
-}
-
-// Job for generating GDPR data export
-class GdprDataExportJob
-{
-    public $exportId;
-
-    public function __construct(int $exportId)
-    {
-        $this->exportId = $exportId;
-    }
-
-    public function handle()
-    {
-        $export = \App\Models\GdprExport::find($this->exportId);
-        if (!$export) {
-            return;
-        }
-
-        $export->update(['status' => 'processing']);
-
-        try {
-            $user = \App\Models\User::find($export->user_id);
-            if (!$user) {
-                throw new \Exception('User not found');
-            }
-
-            $zipPath = storage_path("app/exports/gdpr-export-{$export->id}.zip");
-            $zip = new ZipArchive();
-
-            if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-                throw new \Exception('Could not create zip archive');
-            }
-
-            // Export user profile
-            $this->addUserDataToZip($zip, $user);
-
-            // Export stores
-            $this->addStoresToZip($zip, $user);
-
-            // Export orders
-            $this->addOrdersToZip($zip, $user);
-
-            // Export products
-            $this->addProductsToZip($zip, $user);
-
-            // Export customers
-            $this->addCustomersToZip($zip, $user);
-
-            // Export settings
-            $this->addSettingsToZip($zip, $user);
-
-            // Export notifications
-            $this->addNotificationsToZip($zip, $user);
-
-            // Export referrals
-            $this->addReferralsToZip($zip, $user);
-
-            // Export payout requests
-            $this->addPayoutRequestsToZip($zip, $user);
-
-            // Export plan orders
-            $this->addPlanOrdersToZip($zip, $user);
-
-            // Export media
-            $this->addMediaToZip($zip, $user);
-
-            $zip->close();
-
-            // Upload to S3
-            $filePath = "exports/gdpr-export-{$export->id}.zip";
-            Storage::disk('s3')->put($filePath, fopen($zip->getStreamName(), 'r'));
-
-            // Update export record
-            $expiresAt = now()->addDays(30);
-            $export->update([
-                'status' => 'completed',
-                'file_path' => $filePath,
-                'completed_at' => now(),
-                'expires_at' => $expiresAt,
-            ]);
-
-            // Send notification email
-            Mail::to($user->email)->send(new \App\Mail\GdprDataExportReady($export));
-
-        } catch (\Exception $e) {
-            $export->update([
-                'status' => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
-            Log::error('GDPR export failed: ' . $e->getMessage());
-        }
-    }
-
-    private function addUserDataToZip(ZipArchive $zip, $user)
-    {
-        $data = [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'type' => $user->type,
-            'avatar' => $user->avatar,
-            'lang' => $user->lang,
-            'current_store' => $user->current_store,
-            'plan_id' => $user->plan_id,
-            'plan_duration' => $user->plan_duration,
-            'plan_expire_date' => $user->plan_expire_date,
-            'plan_is_active' => $user->plan_is_active,
-            'is_enable_login' => $user->is_enable_login,
-            'storage_limit' => $user->storage_limit,
-            'mode' => $user->mode,
-            'created_by' => $user->created_by,
-            'referral_code' => $user->referral_code,
-            'used_referral_code' => $user->used_referral_code,
-            'google2fa_enable' => $user->google2fa_enable,
-            'status' => $user->status,
-            'is_trial' => $user->is_trial,
-            'trial_day' => $user->trial_day,
-            'trial_expire_date' => $user->trial_expire_date,
-            'active_module' => $user->active_module,
-            'commission_amount' => $user->commission_amount,
-            'terms_accepted_at' => $user->terms_accepted_at,
-            'onboarded_at' => $user->onboarded_at,
-            'last_login_at' => $user->last_login_at,
-            'last_login_ip' => $user->last_login_ip,
-            'last_login_ua' => $user->last_login_ua,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-        ];
-
-        $zip->addFromString('user/profile.json', json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addStoresToZip(ZipArchive $zip, $user)
-    {
-        $stores = Store::where('user_id', $user->id)->get();
-        $storesData = [];
-
-        foreach ($stores as $store) {
-            $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
-            $settings = \App\Models\Setting::getUserSettings($user->id, $store->id);
-
-            $storesData[] = [
-                'store' => $store->toArray(),
-                'configuration' => $config,
-                'settings' => $settings,
-            ];
-        }
-
-        $zip->addFromString('stores/stores.json', json_encode($storesData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addOrdersToZip(ZipArchive $zip, $user)
-    {
-        $storeIds = Store::where('user_id', $user->id)->pluck('id');
-        $orders = Order::whereIn('store_id', $storeIds)->get();
-
-        $ordersData = $orders->map(function ($order) {
-            return [
-                'order' => $order->toArray(),
-                'items' => $order->items->map(function ($item) {
-                    return $item->toArray();
-                })->toArray(),
-            ];
-        })->toArray();
-
-        $zip->addFromString('orders/orders.json', json_encode($ordersData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addProductsToZip(ZipArchive $zip, $user)
-    {
-        $storeIds = Store::where('user_id', $user->id)->pluck('id');
-        $products = Product::whereIn('store_id', $storeIds)->get();
-
-        $productsData = $products->map(function ($product) {
-            return $product->toArray();
-        })->toArray();
-
-        $zip->addFromString('products/products.json', json_encode($productsData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addCustomersToZip(ZipArchive $zip, $user)
-    {
-        $storeIds = Store::where('user_id', $user->id)->pluck('id');
-        $customers = Customer::whereIn('store_id', $storeIds)->get();
-
-        $customersData = $customers->map(function ($customer) {
-            return $customer->toArray();
-        })->toArray();
-
-        $zip->addFromString('customers/customers.json', json_encode($customersData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addSettingsToZip(ZipArchive $zip, $user)
-    {
-        $storeIds = Store::where('user_id', $user->id)->pluck('id');
-        $allSettings = [];
-
-        // Global settings
-        $globalSettings = Setting::where('user_id', $user->id)
-            ->whereNull('store_id')
-            ->get()
-            ->pluck('value', 'key')
-            ->toArray();
-        $allSettings['global'] = $globalSettings;
-
-        // Per-store settings
-        $stores = Store::where('user_id', $user->id)->get();
-        foreach ($stores as $store) {
-            $storeSettings = Setting::where('user_id', $user->id)
-                ->where('store_id', $store->id)
-                ->get()
-                ->pluck('value', 'key')
-                ->toArray();
-            $allSettings["store_{$store->id}"] = $storeSettings;
-        }
-
-        $zip->addFromString('settings/settings.json', json_encode($allSettings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addNotificationsToZip(ZipArchive $zip, $user)
-    {
-        $notifications = \App\Models\Notification::where('user_id', $user->id)->get();
-        $notificationsData = $notifications->map(function ($n) {
-            return $n->toArray();
-        })->toArray();
-
-        $zip->addFromString('notifications/notifications.json', json_encode($notificationsData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addReferralsToZip(ZipArchive $zip, $user)
-    {
-        $referrals = Referral::where('company_id', $user->id)->get();
-        $referralsData = $referrals->map(function ($r) {
-            return $r->toArray();
-        })->toArray();
-
-        $zip->addFromString('referrals/referrals.json', json_encode($referralsData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addPayoutRequestsToZip(ZipArchive $zip, $user)
-    {
-        $payouts = PayoutRequest::where('company_id', $user->id)->get();
-        $payoutsData = $payouts->map(function ($p) {
-            return $p->toArray();
-        })->toArray();
-
-        $zip->addFromString('payouts/payout_requests.json', json_encode($payoutsData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addPlanOrdersToZip(ZipArchive $zip, $user)
-    {
-        $orders = PlanOrder::where('user_id', $user->id)->get();
-        $ordersData = $orders->map(function ($o) {
-            return $o->toArray();
-        })->toArray();
-
-        $zip->addFromString('plan_orders/plan_orders.json', json_encode($ordersData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function addMediaToZip(ZipArchive $zip, $user)
-    {
-        $storeIds = Store::where('user_id', $user->id)->pluck('id');
-        $media = Media::whereIn('model_id', $storeIds)
-            ->where('model_type', Store::class)
-            ->get();
-
-        $mediaData = $media->map(function ($m) {
-            return [
-                'id' => $m->id,
-                'file_name' => $m->file_name,
-                'mime_type' => $m->mime_type,
-                'size' => $m->size,
-                'url' => $m->url,
-                'created_at' => $m->created_at,
-            ];
-        })->toArray();
-
-        $zip->addFromString('media/media.json', json_encode($mediaData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 }

@@ -51,6 +51,18 @@ class NewPasswordController extends Controller
                     'remember_token' => Str::random(60),
                 ])->save();
 
+                // Invalidate other sessions/tokens where sessions table exists (dual-guard safe)
+                try {
+                    if (\Illuminate\Support\Facades\Schema::hasTable('sessions')) {
+                        $hasUserId = \Illuminate\Support\Facades\Schema::hasColumn('sessions', 'user_id');
+                        if ($hasUserId) {
+                            \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $user->id)->delete();
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // file driver or missing column — best effort only
+                }
+
                 event(new PasswordReset($user));
             }
         );

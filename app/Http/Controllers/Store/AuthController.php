@@ -451,14 +451,21 @@ class AuthController extends Controller
             ]);
         }
 
-        // Update customer password
+        // Update customer password + invalidate remember token / sessions
         $customer = Customer::where('store_id', $store->id)
             ->where('email', $request->email)
             ->firstOrFail();
 
-        $customer->update([
-            'password' => Hash::make($request->password)
-        ]);
+        $customer->forceFill([
+            'password' => Hash::make($request->password),
+            'remember_token' => \Illuminate\Support\Str::random(60),
+        ])->save();
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('sessions') && \Illuminate\Support\Facades\Schema::hasColumn('sessions', 'user_id')) {
+                \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $customer->id)->delete();
+            }
+        } catch (\Throwable $e) {}
 
         // Delete the reset token (scoped to store + email)
         \DB::table('store_password_reset_tokens')

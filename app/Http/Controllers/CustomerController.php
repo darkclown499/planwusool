@@ -367,7 +367,8 @@ class CustomerController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage — GDPR-compliant erasure.
+     * Anonymizes order snapshots and removes PII while retaining financial history.
      */
     public function destroy($id)
     {
@@ -375,7 +376,7 @@ class CustomerController extends Controller
         $currentStoreId = getCurrentStoreId($user);
         
         $customer = Customer::where('store_id', $currentStoreId)->findOrFail($id);
-        $customer->delete();
+        app(\App\Services\CustomerDataErasureService::class)->erase($customer);
 
         return redirect()->route('customers.index')
             ->with('success', __('Customer deleted successfully!'));

@@ -13,21 +13,43 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MediaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
 
         DynamicStorageService::configureDynamicDisks();
 
+        // Store-scoped listing: superadmin sees all, others only their current store's media
+        $storeId = null;
+        try { $storeId = getCurrentStoreId($user); } catch (\Throwable $e) {}
+        $hasStoreColumn = \Illuminate\Support\Facades\Schema::hasColumn('media', 'store_id');
+
         $mediaItems = MediaItem::with('media')->latest()->get();
 
-        $media = $mediaItems->flatMap(function ($item) use ($user) {
+        $media = $mediaItems->flatMap(function ($item) use ($user, $storeId, $hasStoreColumn, $request) {
             $mediaQuery = $item->getMedia('images');
 
             if ($user->type === 'superadmin') {
+                // superadmin optionally filtered by ?store_id for isolation tests
+                if ($hasStoreColumn && $request->filled('store_id')) {
+                    $mediaQuery = $mediaQuery->where('store_id', (int) $request->input('store_id'));
+                }
             } elseif ($user->hasPermissionTo('manage-any-media')) {
+                if ($hasStoreColumn && $storeId) {
+                    $mediaQuery = $mediaQuery->where(function ($q) use ($storeId, $user) {
+                        $q->where('store_id', $storeId)->orWhere(function ($qq) use ($user) {
+                            $qq->whereNull('store_id')->where('user_id', $user->id);
+                        });
+                    });
+                } else {
+                    $mediaQuery = $mediaQuery->where('user_id', $user->id);
+                }
             } else {
-                $mediaQuery = $mediaQuery->where('user_id', $user->id);
+                if ($hasStoreColumn && $storeId) {
+                    $mediaQuery = $mediaQuery->where('store_id', $storeId);
+                } else {
+                    $mediaQuery = $mediaQuery->where('user_id', $user->id);
+                }
             }
 
             return $mediaQuery->map(function ($media) {
@@ -152,17 +174,21 @@ class MediaController extends Controller
 
         $uploadedMedia = [];
         $errors = [];
+        $storeIdForUpload = null;
+        try { $storeIdForUpload = getCurrentStoreId(auth()->user()); } catch (\Throwable $e) {}
+        $hasStoreColItem = \Illuminate\Support\Facades\Schema::hasColumn('media_items', 'store_id');
+        $hasStoreColMedia = \Illuminate\Support\Facades\Schema::hasColumn('media', 'store_id');
 
-        DB::transaction(function () use ($request, &$uploadedMedia, &$errors, $allowedMimes, $allowedTypes) {
+        DB::transaction(function () use ($request, &$uploadedMedia, &$errors, $allowedMimes, $allowedTypes, $storeIdForUpload, $hasStoreColItem, $hasStoreColMedia) {
             foreach ($request->file('files') as $file) {
                 $tempFilePath = null;
                 $optimizedPath = null;
                 try {
                     $sanitizedName = $this->sanitizeFilename($file->getClientOriginalName());
 
-                    $mediaItem = MediaItem::create([
-                        'name' => $sanitizedName,
-                    ]);
+                    $itemData = ['name' => $sanitizedName];
+                    if ($hasStoreColItem && $storeIdForUpload) $itemData['store_id'] = $storeIdForUpload;
+                    $mediaItem = MediaItem::create($itemData);
 
                     $isSvg = strtolower(pathinfo($sanitizedName, PATHINFO_EXTENSION)) === 'svg';
 
@@ -204,6 +230,9 @@ class MediaController extends Controller
                     }
 
                     $media->user_id = auth()->id();
+                    if ($hasStoreColMedia && $storeIdForUpload) {
+                        $media->store_id = $storeIdForUpload;
+                    }
                     $media->save();
 
                     $this->updateStorageUsage(auth()->user(), $media->size);
@@ -268,7 +297,16 @@ class MediaController extends Controller
         $query = Media::where('id', $id);
 
         if ($user->type !== 'superadmin' && !$user->hasPermissionTo('manage-any-media')) {
-            $query->where('user_id', $user->id);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('media', 'store_id')) {
+                try {
+                    $storeId = getCurrentStoreId($user);
+                    $query->where('store_id', $storeId);
+                } catch (\Throwable $e) {
+                    $query->where('user_id', $user->id);
+                }
+            } else {
+                $query->where('user_id', $user->id);
+            }
         }
 
         $media = $query->firstOrFail();
@@ -305,7 +343,16 @@ class MediaController extends Controller
         $query = Media::where('id', $id);
 
         if ($user->type !== 'superadmin' && !$user->hasPermissionTo('manage-any-media')) {
-            $query->where('user_id', $user->id);
+            if (\Illuminate\Support\Facades\Schema::hasColumn('media', 'store_id')) {
+                try {
+                    $storeId = getCurrentStoreId($user);
+                    $query->where('store_id', $storeId);
+                } catch (\Throwable $e) {
+                    $query->where('user_id', $user->id);
+                }
+            } else {
+                $query->where('user_id', $user->id);
+            }
         }
 
         $media = $query->firstOrFail();

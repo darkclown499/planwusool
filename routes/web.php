@@ -381,8 +381,8 @@ Route::middleware('api.throttle')->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\StoreCourierConnectionRequestController::class, 'store'])->name('store');
     });
 
-    // Admin courier requests management
-    Route::middleware(['auth'])->prefix('api/admin/courier-requests')->name('api.admin-courier-requests.')->group(function () {
+    // Admin courier requests management — platform admin only
+    Route::middleware(['auth', 'platform.admin'])->prefix('api/admin/courier-requests')->name('api.admin-courier-requests.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\StoreCourierConnectionRequestController::class, 'adminIndex'])->name('index');
         Route::put('{id}/status', [\App\Http\Controllers\Api\StoreCourierConnectionRequestController::class, 'updateStatus'])->name('updateStatus');
     });
@@ -891,7 +891,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // Customer Management routes with permissions
             Route::get('customers', [\App\Http\Controllers\CustomerController::class, 'index'])->middleware('permission:manage-customers')->name('customers.index');
-            Route::get('customers/export', [\App\Http\Controllers\CustomerController::class, 'export'])->middleware('permission:export-customers')->name('customers.export');
+            Route::get('customers/export', [\App\Http\Controllers\CustomerController::class, 'export'])->middleware(['permission:export-customers','throttle:5,60'])->name('customers.export');
             Route::get('customers/create', [\App\Http\Controllers\CustomerController::class, 'create'])->middleware('permission:create-customers')->name('customers.create');
             Route::post('customers', [\App\Http\Controllers\CustomerController::class, 'store'])->middleware('permission:create-customers')->name('customers.store');
             Route::get('customers/{id}/edit', [\App\Http\Controllers\CustomerController::class, 'edit'])->middleware('permission:edit-customers')->name('customers.edit');
@@ -1217,13 +1217,13 @@ require __DIR__ . '/auth.php';
 Route::match(['GET', 'POST'], 'payments/easebuzz/success', [EasebuzzPaymentController::class, 'success'])->name('easebuzz.success');
 Route::post('payments/easebuzz/callback', [EasebuzzPaymentController::class, 'callback'])->middleware('webhook.signature:easebuzz')->name('easebuzz.callback');
 
-// GDPR Routes
+// GDPR Routes — throttled to prevent bulk PII exfiltration/DoS
 Route::middleware(['auth'])->prefix('gdpr')->name('gdpr.')->group(function () {
-    Route::get('export', [\App\Http\Controllers\GDPR\GdprController::class, 'requestExport'])->name('export.request');
-    Route::get('export/{exportId}', [\App\Http\Controllers\GDPR\GdprController::class, 'downloadExport'])->name('export.download');
+    Route::get('export', [\App\Http\Controllers\GDPR\GdprController::class, 'requestExport'])->middleware('throttle:3,60')->name('export.request');
+    Route::get('export/{exportId}', [\App\Http\Controllers\GDPR\GdprController::class, 'downloadExport'])->middleware('throttle:10,60')->name('export.download');
     Route::get('export/status', [\App\Http\Controllers\GDPR\GdprController::class, 'exportStatus'])->name('export.status');
 
-    Route::post('deletion', [\App\Http\Controllers\GDPR\GdprController::class, 'requestDeletion'])->name('deletion.request');
+    Route::post('deletion', [\App\Http\Controllers\GDPR\GdprController::class, 'requestDeletion'])->middleware('throttle:3,60')->name('deletion.request');
     Route::get('deletion/status', [\App\Http\Controllers\GDPR\GdprController::class, 'deletionStatus'])->name('deletion.status');
     Route::post('deletion/{requestId}/cancel', [\App\Http\Controllers\GDPR\GdprController::class, 'cancelDeletion'])->name('deletion.cancel');
 });
