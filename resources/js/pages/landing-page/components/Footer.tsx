@@ -88,25 +88,21 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
     product: [
       { name: 'الميزات', href: '#features' },
       { name: 'الأسعار', href: '#pricing' },
-      { name: 'القوالب', href: '#' },
-      { name: 'التكاملات', href: '#' },
+      { name: 'القوالب', href: '#features' },
+      { name: 'التكاملات', href: '#features' },
     ],
     company: [
       { name: 'عن وصول', href: '/about' },
       { name: 'المميزات', href: '/features' },
-      { name: 'وظائف', href: '#' },
       { name: 'اتصل بنا', href: '#contact' },
     ],
     support: [
-      { name: 'مركز المساعدة', href: '#' },
-      { name: 'التوثيق', href: '#' },
-      { name: 'واجهة برمجة التطبيقات', href: '#' },
-      { name: 'حالة النظام', href: '#' },
+      { name: 'مركز المساعدة', href: '/features' },
+      { name: 'اتصل بنا', href: '#contact' },
     ],
     legal: [
       { name: 'سياسة الخصوصية', href: '/privacy' },
       { name: 'اتفاقية المستخدم', href: '/terms' },
-      { name: 'حماية البيانات', href: '#' },
     ],
   };
 
@@ -147,7 +143,7 @@ export default function Footer({ settings, sectionData = {}, brandColor = '#10b7
         <div className="mt-16 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-800 px-8 py-12 text-center sm:px-12 sm:py-16">
           <h3 className="text-2xl font-bold text-white sm:text-3xl">{t('جاهز للبدء؟')}</h3>
           <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-emerald-50">
-            {t('انضم إلى آلاف أصحاب المتاجر الذين يبنون حضورهم الرقمي مع منصتنا.')}
+            {t('ابدأ متجرك اليوم واستقبل طلباتك عبر واتساب بأدوات جاهزة ومتكاملة.')}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

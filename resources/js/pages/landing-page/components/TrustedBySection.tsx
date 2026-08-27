@@ -100,14 +100,14 @@ export default function TrustedBySection({
           }`}
         >
           <span className="mb-4 inline-block rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1 text-xs font-bold tracking-wide text-emerald-700">
-            معتمد لدى
+            تقنيات وخدمات داعمة
           </span>
           <h2 className="mb-2 text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
-            {sectionData?.title || 'ثقة كبرى شركات الدفع والتقنية'}
+            {sectionData?.title || 'تقنيات وخدمات تدعم منظومة وصول'}
           </h2>
           <p className="mt-3 text-center text-base leading-relaxed text-slate-600 sm:text-lg">
             {sectionData?.subtitle ||
-              'بوابات دفع وبنية تقنية موثوقة من أبرز العلامات العالمية تضمن أمان متجرك وعملياتك.'}
+              'متجرك يعمل عبر بنية تقنية وبوابات دفع وخدمات مراسلة يستخدمها وصول لتأمين المتجر والمدفوعات والتواصل — دون ادعاء شراكة أو اعتماد رسمي من تلك الجهات.'}
           </p>
         </div>
       </div>

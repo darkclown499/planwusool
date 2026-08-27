@@ -124,7 +124,7 @@ const fallbackPlans: Plan[] = [
     price: 299,
     yearly_price: 299,
     duration: 'yearly',
-    domain_type: 'subdomain',
+    domain_type: 'custom',
     support_hours: 12,
     support_type: 'whatsapp,email',
     max_stores: 1,
@@ -133,7 +133,7 @@ const fallbackPlans: Plan[] = [
     max_warehouses: 2,
     storage_limit: 10,
     themes: [],
-    enable_custdomain: 'off',
+    enable_custdomain: 'on',
     enable_custsubdomain: 'on',
     enable_branding: 'off',
     pwa_business: 'on',
@@ -210,7 +210,7 @@ const COMPARE_GROUPS: CompareGroup[] = [
       { label: 'نوع النطاق', tooltip: 'نطاق مخصص (custom) أو نطاق فرعي (subdomain).', get: (p) => ({ kind: 'text', text: p.domain_type === 'custom' ? 'نطاق مخصص' : 'نطاق فرعي' }) },
       { label: 'نطاق فرعي مجاني', get: (p) => yesNo(p.enable_custsubdomain) },
       { label: 'تطبيق ويب PWA', tooltip: 'تطبيق ويب يمكن للعملاء تثبيته على أجهزتهم مثل التطبيقات العادية، بسرعة وأداء مميز.', get: (p) => yesNo(p.pwa_business) },
-      { label: 'تطبيق موبايل أصلي', tooltip: 'تطبيق أندرويد وآيفون لمتجرك وتقديمه على متجري Google Play و App Store.', get: (p) => yesNo(p.enable_mobile_app) },
+      { label: 'تطبيق موبايل أصلي (قيد التوفير)', tooltip: 'خيار مخصص لبناء تطبيق أصلي لمتجرك حسب الطلب — يُفعّل فقط في الباقة الاحترافية وبتنسيق مع فريق وصول.', get: (p) => yesNo(p.enable_mobile_app) },
       { label: 'إشعارات SMS', tooltip: 'رسائل نصية تلقائية للعملاء عند إنشاء الطلب وتغيير حالته.', get: (p) => yesNo(p.enable_sms) },
       { label: 'إزالة علامة المنصة', tooltip: 'إخفاء هوية المنصة وإظهار علامتك التجارية فقط (White Label).', get: (p) => yesNo(p.enable_branding) },
     ],
@@ -281,7 +281,7 @@ function getProminentFeatures(plan: Plan): Array<{ icon: IconType; text: string 
   };
 
   push(isOn(plan.enable_custdomain), Globe, 'ربط نطاق مخصص خاص بك');
-  push(isOn(plan.enable_mobile_app), Smartphone, 'تطبيق موبايل + نشر على المتاجر');
+  push(isOn(plan.enable_mobile_app), Smartphone, 'خيار تطبيق موبايل أصلي (حسب الطلب)');
   push(isOn(plan.enable_chatgpt), Bot, 'ذكاء اصطناعي لأوصاف وترجمة المنتجات');
   push(isOn(plan.enable_branding), Shield, 'إزالة علامة المنصة (White Label)');
   push(isOn(plan.pwa_business), Smartphone, 'تطبيق ويب PWA قابل للتثبيت');

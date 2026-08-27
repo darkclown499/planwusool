@@ -190,7 +190,7 @@ export default function HeroSection({
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm text-slate-600">
             <Star size={16} className="fill-amber-400 text-amber-400" />
             <span>
-              انضم لأكثر من <span dir="ltr" className="font-bold text-emerald-600">+500</span> متجر نشط على المنصة
+              منصة موثوقة لبناء متاجر واتساب في فلسطين والمنطقة
             </span>
           </div>
 
