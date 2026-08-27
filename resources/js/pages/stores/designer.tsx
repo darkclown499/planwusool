@@ -167,6 +167,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
     const [confirmTemplateSlug, setConfirmTemplateSlug] = useState<string | null>(null);
     const [applyingTemplate, setApplyingTemplate] = useState<string | null>(null);
     const [interfaceVideoUploading, setInterfaceVideoUploading] = useState(false);
+    const [focusedSlot, setFocusedSlot] = useState<string | null>(null);
 
     const page = usePage<any>();
     useEffect(() => {
@@ -209,12 +210,12 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
         } catch { return true; }
     }, [tokens, content, customCss, customJs, headInject, initialSnapshot]);
 
-    // Live preview without save: post draft to iframe via postMessage
+    // Live preview without save: post draft to iframe via postMessage (includes focused slot + previewMode for mobile fallback)
     useEffect(() => {
         if (loading) return;
         const iframe = previewIframeRef.current?.contentWindow;
         if (!iframe) return;
-        const draft = { designTokens: tokens, content, customCss, customJs, headInject, theme: previewTemplateSlug || theme };
+        const draft = { designTokens: tokens, content, customCss, customJs, headInject, theme: previewTemplateSlug || theme, highlight: focusedSlot, previewMode };
         // debounce to avoid spam on keystrokes
         const t = setTimeout(() => {
             try {
@@ -222,20 +223,20 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
             } catch {}
         }, 120);
         return () => clearTimeout(t);
-    }, [tokens, content, customCss, customJs, headInject, theme, previewTemplateSlug, loading]);
+    }, [tokens, content, customCss, customJs, headInject, theme, previewTemplateSlug, focusedSlot, previewMode, loading]);
 
     useEffect(() => {
         const handler = (e: MessageEvent) => {
             if (e.data?.type === 'wusool:preview:ready' && !loading) {
                 const iframe = previewIframeRef.current?.contentWindow;
                 if (!iframe) return;
-                const draft = { designTokens: tokens, content, customCss, customJs, headInject, theme: previewTemplateSlug || theme };
+                const draft = { designTokens: tokens, content, customCss, customJs, headInject, theme: previewTemplateSlug || theme, highlight: focusedSlot, previewMode };
                 try { iframe.postMessage({ type: 'wusool:preview:draft', payload: draft }, window.location.origin); } catch {}
             }
         };
         window.addEventListener('message', handler);
         return () => window.removeEventListener('message', handler);
-    }, [tokens, content, customCss, customJs, headInject, theme, previewTemplateSlug, loading]);
+    }, [tokens, content, customCss, customJs, headInject, theme, previewTemplateSlug, focusedSlot, previewMode, loading]);
 
     const activeModule: TemplateModule | null = useMemo(() => { try { return getTemplateModule(theme); } catch { return null; } }, [theme]);
     const modules = useMemo(() => listTemplateModules(), []);
@@ -254,8 +255,16 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
             if (heroType !== undefined) { payloadContent = setDotted(payloadContent, 'hero_banner.type', String(heroType).trim().replace(/\/+$/, '')); payloadContent = setDotted(payloadContent, 'hero_type', String(heroType).trim().replace(/\/+$/, '')); }
             const heroVideo = getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url');
             if (heroVideo !== undefined) { const cleanVideo = stripTrailingSlash(String(heroVideo).trim()); const normVideo = cleanVideo ? (cleanVideo.startsWith('http') ? cleanVideo : normalizeImageUrl(cleanVideo)) : ''; payloadContent = setDotted(payloadContent, 'hero_banner.video_url', normVideo); payloadContent = setDotted(payloadContent, 'hero_video_url', normVideo); }
+            const heroVideoMobile = getDotted(content, 'hero_banner.video_url_mobile') ?? getDotted(content, 'hero_video_url_mobile');
+            if (heroVideoMobile !== undefined) { const cleanM = stripTrailingSlash(String(heroVideoMobile).trim()); const normM = cleanM ? (cleanM.startsWith('http') ? cleanM : normalizeImageUrl(cleanM)) : ''; payloadContent = setDotted(payloadContent, 'hero_banner.video_url_mobile', normM); payloadContent = setDotted(payloadContent, 'hero_video_url_mobile', normM); }
             const heroYoutube = getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url');
             if (heroYoutube !== undefined) { const cleanYt = stripTrailingSlash(String(heroYoutube).trim()); payloadContent = setDotted(payloadContent, 'hero_banner.youtube_url', cleanYt); payloadContent = setDotted(payloadContent, 'hero_youtube_url', cleanYt); }
+            const heroYoutubeMobile = getDotted(content, 'hero_banner.youtube_url_mobile') ?? getDotted(content, 'hero_youtube_url_mobile');
+            if (heroYoutubeMobile !== undefined) { const cleanYtm = stripTrailingSlash(String(heroYoutubeMobile).trim()); payloadContent = setDotted(payloadContent, 'hero_banner.youtube_url_mobile', cleanYtm); payloadContent = setDotted(payloadContent, 'hero_youtube_url_mobile', cleanYtm); }
+            const rawMobileNested = getDotted(content, 'hero_banner.images_mobile');
+            const rawMobileFlat = getDotted(content, 'hero_images_mobile');
+            const rawMobileImages = rawMobileNested !== undefined ? rawMobileNested : rawMobileFlat;
+            if (rawMobileImages !== undefined) { const cleanMob = sanitizeHeroImages((rawMobileImages as any) ?? []); payloadContent = setDotted(payloadContent, 'hero_banner.images_mobile', cleanMob); payloadContent = setDotted(payloadContent, 'hero_images_mobile', cleanMob); }
             const overlay = getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity');
             if (overlay !== undefined) { const num = Math.min(100, Math.max(0, Number(overlay))); payloadContent = setDotted(payloadContent, 'hero_banner.overlay_opacity', num); payloadContent = setDotted(payloadContent, 'overlay_opacity', num); }
             for (const k of ['heading', 'subtitle', 'cta_label', 'cta_link'] as const) {
@@ -372,8 +381,11 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
     const rawHeroImages = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any;
     const heroImages = sanitizeHeroImages(rawHeroImages);
     const heroVideoUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url') ?? ''));
+    const heroVideoUrlMobile = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url_mobile') ?? getDotted(content, 'hero_banner.videoUrlMobile') ?? getDotted(content, 'hero_video_url_mobile') ?? ''));
     const heroYoutubeUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url') ?? ''));
+    const heroYoutubeUrlMobile = stripTrailingSlash(String(getDotted(content, 'hero_banner.youtube_url_mobile') ?? getDotted(content, 'hero_banner.youtubeUrlMobile') ?? getDotted(content, 'hero_youtube_url_mobile') ?? ''));
     const heroOverlay = Number(getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity') ?? 35);
+    const youtubeIdMobile = heroYoutubeUrlMobile ? getYoutubeId(heroYoutubeUrlMobile) : null;
     const heroHeading = (getDotted(content, 'hero_banner.heading') ?? '') as string;
     const heroSubtitle = (getDotted(content, 'hero_banner.subtitle') ?? '') as string;
     const heroCtaLabel = (getDotted(content, 'hero_banner.cta_label') ?? '') as string;
@@ -640,46 +652,159 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                     </div>
                                 </Card>
 
-                                {heroType === 'image' && (
+                                {heroType === 'image' && (() => {
+                                    const isSlider = ['grocery-souq','bazaar-market','fashion-atelier'].includes(theme);
+                                    const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopImage || MEDIA_SPECS['bazaar-market'].hero.desktopImage;
+                                    const mobileSpec = MEDIA_SPECS[theme]?.hero?.mobileImage || MEDIA_SPECS['grocery-souq'].hero.mobileImage;
+                                    const mobImages = sanitizeHeroImages((getDotted(content,'hero_banner.images_mobile') ?? getDotted(content,'hero_images_mobile') ?? []) as any);
+                                    const handleReplaceDesktop = async (idx: number, files: FileList) => {
+                                        const f = Array.from(files)[0]; if (!f) return;
+                                        const fd = new FormData(); fd.append('files[]', f);
+                                        try { const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json:any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url||''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const norm = normalizeImageUrl(url); const next = [...heroImages]; next[idx]=norm; let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp); toast.success('تم استبدال الصورة'); } } catch { toast.error('فشل الاستبدال'); }
+                                    };
+                                    const handleReplaceMobile = async (idx: number, files: FileList) => {
+                                        const f = Array.from(files)[0]; if (!f) return;
+                                        const fd = new FormData(); fd.append('files[]', f);
+                                        try { const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json:any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url||''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const norm = normalizeImageUrl(url); const next = [...mobImages]; next[idx]=norm; let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp); toast.success('تم استبدال صورة الهاتف'); } } catch { toast.error('فشل الاستبدال'); }
+                                    };
+                                    const handleAddMobile = async (files: FileList) => {
+                                        const valid = Array.from(files).filter(f=>f.type.startsWith('image/')); if(!valid.length) return;
+                                        const fd = new FormData(); valid.forEach(f=>fd.append('files[]',f));
+                                        try { const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json',...csrfHeaders()}}); const json:any=await res.json(); if(res.ok && json?.data?.length){ const urls:string[]=(json.data as any[]).map((d:any)=>{const raw=String(d.url||''); return raw.startsWith('/storage')?raw:(raw.match(/\/storage\/.*$/)?.[0]??raw)}).filter(Boolean).map(u=>normalizeImageUrl(u)); const next=[...mobImages,...urls].slice(0,10); let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp); toast.success('تم رفع صور الهاتف'); }} catch {toast.error('فشل الرفع')}
+                                    };
+                                    return (
                                     <Card>
-                                        <SectionLabel>صور الواجهة</SectionLabel>
-                                        <p className="mb-2 text-[11px] leading-relaxed text-slate-500">{mediaSpecHelp(MEDIA_SPECS[theme]?.hero?.desktopImage || MEDIA_SPECS['bazaar-market'].hero.desktopImage)}</p>
-                                        {heroImages.length > 0 && (
-                                            <div className="mb-3 grid grid-cols-2 gap-2">
-                                                {heroImages.map((img: string, idx: number) => (
-                                                    <div key={idx} className="group relative overflow-hidden rounded-xl border bg-slate-100">
-                                                        <img src={normalizeImageUrl(img)} alt="" className="aspect-[16/10] w-full object-cover" />
-                                                        <button type="button" onClick={() => { const next = heroImages.filter((_: string, i: number) => i !== idx); let tmp = setDotted(content, 'hero_banner.images', next); tmp = setDotted(tmp, 'hero_images', next); setContent(tmp); }} className="absolute left-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur hover:bg-red-600" aria-label="حذف الصورة"><X className="h-3 w-3" /></button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                        <DropzoneUploader label={heroImages.length === 0 ? 'اسحب صور الواجهة هنا' : 'إضافة المزيد'} hint={`حتى 10 صور — ${mediaSpecHelp(MEDIA_SPECS[theme]?.hero?.desktopImage || MEDIA_SPECS['bazaar-market'].hero.desktopImage)}`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />
-                                        <input ref={heroFileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && uploadHeroFiles(e.target.files)} />
-                                    </Card>
-                                )}
-                                {heroType === 'video' && (
-                                    <Card>
-                                        <div className="space-y-3">
-                                            <SectionLabel>رابط فيديو MP4</SectionLabel>
-                                            <Input dir="ltr" value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url', norm); tmp = setDotted(tmp, 'hero_video_url', norm); setContent(tmp); }} placeholder="https://example.com/video.mp4" className="bg-white font-mono text-sm" />
-                                            <DropzoneUploader label="أو اسحب ملف الفيديو هنا" hint="MP4 — حتى 15MB" accept="video/mp4,video/*" uploading={interfaceVideoUploading || heroUploading} onFiles={async (files) => {
-                                                const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
-                                                try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع الفيديو'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
-                                            }} />
-                                            {heroVideoUrl && <video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-40 w-full rounded-xl border object-cover" />}
+                                        <div onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)} className="space-y-4">
+                                        <div>
+                                            <SectionLabel>{desktopSpec.label} {previewMode==='mobile' && <span className="ms-1 text-[10px] text-amber-600">(معاينة الهاتف نشطة)</span>}</SectionLabel>
+                                            <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{desktopSpec.description}</p>
+                                            <p className="mb-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-slate-600 ring-1 ring-slate-100">{desktopSpec.help} — {desktopSpec.formats} — {desktopSpec.maxSize} — الوضع: {desktopSpec.desktop.fit}</p>
+                                            <p className="mb-2 text-[11px] text-emerald-700">المعاينة: أعلى الصفحة الرئيسية {previewMode==='mobile' && mobImages.length>0 ? '— يُعرض الآن نسخة الهاتف' : ''}</p>
+                                            {isSlider ? (
+                                                <div className="space-y-2">
+                                                    {heroImages.length===0 && <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">لا توجد شرائح — اسحب الصور هنا (حتى 10 شرائح)</p>}
+                                                    {heroImages.map((img:string, idx:number)=>(
+                                                        <div key={idx} className="flex gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
+                                                            <img src={normalizeImageUrl(img)} alt={`شريحة ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" />
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="text-xs font-black text-slate-800">الشريحة {idx+1} <span className="ms-1 text-[10px] font-normal text-slate-400">— ترتيب {idx+1}</span></p>
+                                                                <p className="text-[11px] text-slate-500 truncate" dir="ltr">{img}</p>
+                                                                <div className="mt-1.5 flex gap-1.5">
+                                                                    <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(idx, e.target.files)} />استبدال</label>
+                                                                    <button type="button" onClick={()=>{const next=heroImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);}} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
+                                                                </div>
+                                                            </div>
+                                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
+                                                        </div>
+                                                    ))}
+                                                    {heroImages.length < 10 && <DropzoneUploader label={heroImages.length===0 ? 'اسحب شرائح الهيرو هنا' : `إضافة شرائح (${heroImages.length}/10)`} hint={`حتى 10 شرائح — ${desktopSpec.help}`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />}
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    {heroImages[0] ? (
+                                                        <div className="group relative overflow-hidden rounded-xl border bg-slate-50 p-2">
+                                                            <img src={normalizeImageUrl(heroImages[0])} alt="الصورة الرئيسية" className="aspect-[16/7] w-full rounded-lg object-cover" />
+                                                            <div className="absolute inset-2 flex items-start justify-between">
+                                                                <span className="rounded-full bg-black/60 px-2 py-1 text-[11px] font-bold text-white backdrop-blur">سطح المكتب — Cover</span>
+                                                                <div className="flex gap-1">
+                                                                    <label className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/90 text-slate-700 shadow hover:bg-white"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(0, e.target.files)} /><Pencil className="h-3.5 w-3.5" /></label>
+                                                                    <button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.images',[]); tmp=setDotted(tmp,'hero_images',[]); setContent(tmp);}} className="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : <DropzoneUploader label="اسحب الصورة الرئيسية هنا — سطح المكتب" hint={`${desktopSpec.help} — ${desktopSpec.formats}`} multiple={false} uploading={heroUploading} onFiles={uploadHeroFiles} />}
+                                                    <input ref={heroFileRef} type="file" accept="image/*" multiple={isSlider} className="hidden" onChange={e=>e.target.files && uploadHeroFiles(e.target.files)} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="border-t border-slate-100 pt-4">
+                                            <SectionLabel>{mobileSpec.label}</SectionLabel>
+                                            <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{mobileSpec.description}</p>
+                                            <p className="mb-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-800 ring-1 ring-amber-100">{mobileSpec.help} — {mobileSpec.formats} — {mobileSpec.maxSize} — الوضع: {mobileSpec.desktop.fit} {mobImages.length===0 && "— سيتم استخدام صورة سطح المكتب على الهاتف"}</p>
+                                            {mobImages.length>0 ? (
+                                                <div className="space-y-2">
+                                                    {mobImages.map((img:string, idx:number)=>(
+                                                        <div key={idx} className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50/30 p-2.5">
+                                                            <img src={normalizeImageUrl(img)} alt={`هاتف ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-amber-100" />
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="text-xs font-black text-slate-800">شريحة هاتف {idx+1}</p>
+                                                                <p className="text-[11px] text-slate-500 truncate" dir="ltr">{img}</p>
+                                                                <div className="mt-1.5 flex gap-1.5">
+                                                                    <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceMobile(idx, e.target.files)} />استبدال</label>
+                                                                    <button type="button" onClick={()=>{const next=mobImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp);}} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
+                                                                </div>
+                                                            </div>
+                                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-600 text-xs font-black text-white">{idx+1}</span>
+                                                        </div>
+                                                    ))}
+                                                    {mobImages.length < 10 && <DropzoneUploader label={`إضافة صور هاتف (${mobImages.length}/10)`} hint={`${mobileSpec.help} — ${mobileSpec.formats}`} multiple uploading={heroUploading} onFiles={handleAddMobile} />}
+                                                </div>
+                                            ) : (
+                                                <DropzoneUploader label="اسحب الصورة العمودية للهاتف هنا (اختياري)" hint={`${mobileSpec.help} — ${mobileSpec.formats} — ${mobileSpec.maxSize}`} multiple={isSlider} uploading={heroUploading} onFiles={handleAddMobile} />
+                                            )}
+                                        </div>
                                         </div>
                                     </Card>
-                                )}
-                                {heroType === 'youtube' && (
+                                    );
+                                })()}
+                                {heroType === 'video' && (() => {
+                                    const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopVideo || MEDIA_SPECS['bazaar-market'].hero.desktopVideo;
+                                    const mobileSpec = MEDIA_SPECS[theme]?.hero?.mobileVideo || MEDIA_SPECS['grocery-souq'].hero.mobileVideo;
+                                    return (
+                                    <div className="space-y-3" onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)}>
                                     <Card>
-                                        <div className="space-y-3">
-                                            <SectionLabel>رابط يوتيوب</SectionLabel>
-                                            <Input dir="ltr" value={heroYoutubeUrl ? stripTrailingSlash(heroYoutubeUrl) : heroYoutubeUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.youtube_url', clean); tmp = setDotted(tmp, 'hero_youtube_url', clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm" />
-                                            {youtubeId && <div className="overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`} title="YouTube preview" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /></div>}
+                                        <SectionLabel>{desktopSpec.label}</SectionLabel>
+                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{desktopSpec.description}</p>
+                                        <p className="mb-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-slate-600 ring-1 ring-slate-100">{desktopSpec.help} — {desktopSpec.formats} — {desktopSpec.maxSize}</p>
+                                        <p className="mb-2 text-[11px] text-emerald-700">المعاينة: أعلى الصفحة الرئيسية — سطح المكتب</p>
+                                        <Input dir="ltr" value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url', norm); tmp = setDotted(tmp, 'hero_video_url', norm); setContent(tmp); }} placeholder="https://example.com/video.mp4" className="bg-white font-mono text-sm" />
+                                        <div className="mt-2">
+                                        <DropzoneUploader label={heroVideoUrl ? 'استبدال فيديو سطح المكتب' : 'اسحب فيديو سطح المكتب هنا'} hint={`${desktopSpec.help} — ${desktopSpec.formats}`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
+                                            const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
+                                            try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع فيديو سطح المكتب'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                        }} />
                                         </div>
+                                        {heroVideoUrl ? <div className="group relative mt-2"><video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-40 w-full rounded-xl border object-cover" /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.video_url',''); tmp=setDotted(tmp,'hero_video_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-xs text-slate-500">لا يوجد فيديو لسطح المكتب — فارغ</p>}
                                     </Card>
-                                )}
+                                    <Card>
+                                        <SectionLabel>{mobileSpec.label}</SectionLabel>
+                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{mobileSpec.description}</p>
+                                        <p className="mb-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-800 ring-1 ring-amber-100">{mobileSpec.help} — {mobileSpec.formats} — {mobileSpec.maxSize} {heroVideoUrlMobile ? '' : '— سيتم استخدام فيديو سطح المكتب على الهاتف'}</p>
+                                        <Input dir="ltr" value={heroVideoUrlMobile ? normalizeImageUrl(heroVideoUrlMobile) : heroVideoUrlMobile} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url_mobile', norm); tmp = setDotted(tmp, 'hero_video_url_mobile', norm); setContent(tmp); }} placeholder="https://example.com/video-mobile.mp4 (اختياري)" className="bg-white font-mono text-sm" />
+                                        <div className="mt-2">
+                                        <DropzoneUploader label={heroVideoUrlMobile ? 'استبدال فيديو الهاتف' : 'اسحب فيديو الهاتف هنا (اختياري)'} hint={`${mobileSpec.help} — ${mobileSpec.formats}`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
+                                            const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
+                                            try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url_mobile', normalized); tmp = setDotted(tmp, 'hero_video_url_mobile', normalized); setContent(tmp); toast.success('تم رفع فيديو الهاتف'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                        }} />
+                                        </div>
+                                        {heroVideoUrlMobile ? <div className="group relative mt-2"><video src={normalizeImageUrl(heroVideoUrlMobile)} controls className="max-h-40 w-full rounded-xl border object-cover" /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.video_url_mobile',''); tmp=setDotted(tmp,'hero_video_url_mobile',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-amber-200 bg-amber-50 px-3 py-2 text-center text-xs text-amber-700">لا يوجد فيديو للهاتف — سيتم استخدام فيديو سطح المكتب على الهاتف</p>}
+                                    </Card>
+                                    </div>
+                                    );
+                                })()}
+                                {heroType === 'youtube' && (() => {
+                                    const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopYoutube || MEDIA_SPECS['bazaar-market'].hero.desktopYoutube;
+                                    const mobileSpec = MEDIA_SPECS[theme]?.hero?.mobileYoutube || MEDIA_SPECS['grocery-souq'].hero.mobileYoutube;
+                                    return (
+                                    <div className="space-y-3" onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)}>
+                                    <Card>
+                                        <SectionLabel>{desktopSpec.label}</SectionLabel>
+                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{desktopSpec.description}</p>
+                                        <p className="mb-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-slate-600 ring-1 ring-slate-100">{desktopSpec.help} — {desktopSpec.formats}</p>
+                                        <p className="mb-2 text-[11px] text-emerald-700">المعاينة: أعلى الصفحة الرئيسية — سطح المكتب</p>
+                                        <Input dir="ltr" value={heroYoutubeUrl ? stripTrailingSlash(heroYoutubeUrl) : heroYoutubeUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.youtube_url', clean); tmp = setDotted(tmp, 'hero_youtube_url', clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm" />
+                                        {youtubeId ? <div className="group relative mt-2 overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`} title="YouTube preview" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.youtube_url',''); tmp=setDotted(tmp,'hero_youtube_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">لا يوجد رابط يوتيوب لسطح المكتب</p>}
+                                    </Card>
+                                    <Card>
+                                        <SectionLabel>{mobileSpec.label}</SectionLabel>
+                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{mobileSpec.description}</p>
+                                        <p className="mb-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-800 ring-1 ring-amber-100">{mobileSpec.help} — {mobileSpec.formats} {youtubeIdMobile ? '' : '— سيتم استخدام رابط سطح المكتب على الهاتف'}</p>
+                                        <Input dir="ltr" value={heroYoutubeUrlMobile ? stripTrailingSlash(heroYoutubeUrlMobile) : heroYoutubeUrlMobile} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.youtube_url_mobile', clean); tmp = setDotted(tmp, 'hero_youtube_url_mobile', clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=... (اختياري)" className="bg-white font-mono text-sm" />
+                                        {youtubeIdMobile ? <div className="group relative mt-2 overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeIdMobile}?autoplay=0&mute=1&controls=1`} title="YouTube preview mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.youtube_url_mobile',''); tmp=setDotted(tmp,'hero_youtube_url_mobile',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-amber-200 bg-amber-50 px-3 py-2 text-center text-xs text-amber-700">لا يوجد رابط للهاتف — سيتم استخدام رابط سطح المكتب على الهاتف</p>}
+                                    </Card>
+                                    </div>
+                                    );
+                                })()}
 
                                 <Card>
                                     <div className="space-y-2.5">

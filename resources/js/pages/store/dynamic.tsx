@@ -85,6 +85,28 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
         return () => window.removeEventListener('message', handler);
     }, []);
 
+    // Mirror previewMode to DOM for hero media queries and slot highlight
+    React.useEffect(() => {
+        try {
+            if (draft?.previewMode) document.documentElement.setAttribute('data-preview-mode', draft.previewMode);
+        } catch {}
+    }, [draft?.previewMode]);
+    React.useEffect(() => {
+        try {
+            document.querySelectorAll('.wusool-highlight-hero').forEach((el) => el.classList.remove('wusool-highlight-hero'));
+            if (draft?.highlight === 'hero') {
+                const el = document.querySelector('.souq-hero-media, .bazaar-hero-media, .bakery-hero-media, .atelier-hero, .hub-hero, .restaurant-hero');
+                if (el) el.classList.add('wusool-highlight-hero');
+                if (!document.getElementById('wusool-highlight-style')) {
+                    const s = document.createElement('style');
+                    s.id = 'wusool-highlight-style';
+                    s.textContent = '.wusool-highlight-hero{outline:3px solid #FFC20E;outline-offset:2px;box-shadow:0 0 0 4px rgba(255,194,14,0.2)}';
+                    document.head.appendChild(s);
+                }
+            }
+        } catch {}
+    }, [draft?.highlight]);
+
     const effectiveTemplate = (draft?.theme as string) || template;
     const effectiveDesignTokens = draft?.designTokens ?? designTokens;
     const effectiveStoreContent = draft?.content ?? storeContent;
@@ -131,7 +153,7 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 store={store}
                 categories={categories}
                 products={products}
-                content={storeContent}
+                content={effectiveStoreContent}
                 isLoggedIn={isLoggedIn}
                 customer={customer}
                 customerAddress={customer_address}

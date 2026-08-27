@@ -279,8 +279,13 @@ function SouqSearchRow({ product, onPick }: { product: any; onPick: () => void }
 
 export function SouqHero({ banners }: { banners: any[] }) {
   const hero = useResolvedHero();
-  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
-  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  const hasVideo = !!(hero.videoUrl || hero.videoUrlMobile);
+  const hasYoutube = !!(hero.youtubeId || hero.youtubeIdMobile);
+  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hasVideo;
+  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hasYoutube;
+  const previewMode = typeof document !== 'undefined' ? document.documentElement.getAttribute('data-preview-mode') : null;
+  const isMobilePreview = previewMode === 'mobile';
+  const safeBanners: any[] = Array.isArray(banners) ? banners : [];
   // Shared media engine: fit/position/height contract — mobile overrides independent so cropped video can be fixed on phone
   const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
   const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
@@ -291,7 +296,8 @@ export function SouqHero({ banners }: { banners: any[] }) {
   const aspectFallback = 'aspect-[343/96] md:aspect-[704/198] lg:aspect-[960/270] xl:aspect-[1376/388]';
   const mobileHeroStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .souq-hero-media video, .souq-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.souq-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
   if (isVideo) {
-    const vidSrc = hero.videoUrlMobile || hero.videoUrl ? getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl) : getHeroImageUrl(hero.videoUrl);
+    const effectiveVideo = isMobilePreview && hero.videoUrlMobile ? hero.videoUrlMobile : hero.videoUrl;
+    const vidSrc = getHeroImageUrl(effectiveVideo);
     return (
       <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
@@ -310,7 +316,7 @@ export function SouqHero({ banners }: { banners: any[] }) {
     );
   }
   if (isYoutube) {
-    const ytId = hero.youtubeIdMobile || hero.youtubeId;
+    const ytId = isMobilePreview && hero.youtubeIdMobile ? hero.youtubeIdMobile : hero.youtubeId;
     return (
       <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
@@ -334,13 +340,28 @@ export function SouqHero({ banners }: { banners: any[] }) {
       </section>
     );
   }
-  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && hero.images.length > 0
-    ? hero.images.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
-    : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && hero.images.length === 0
+  const effectiveImages = isMobilePreview && hero.imagesMobile.length > 0 ? hero.imagesMobile : hero.images;
+  const effectiveHasImages = effectiveImages.length > 0;
+  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && effectiveHasImages
+    ? effectiveImages.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
+    : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && !effectiveHasImages
       ? [{ title: hero.heading, subtitle: hero.subtitle, image: '', button_text: hero.ctaLabel, button_link: hero.ctaLink }]
       : null;
-  const rawSlides = dynamicSlides ?? (banners.length > 0 ? banners : []);
-  if (rawSlides.length === 0) return null;
+  const rawSlides = dynamicSlides ?? (safeBanners.length > 0 ? safeBanners : []);
+  if (rawSlides.length === 0) {
+    if (!hero.heading && !hero.subtitle && !hero.ctaLabel) return null;
+    return (
+      <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
+        <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-gradient-to-l from-[#FFC20E]/20 to-[#FDF9F1] shadow-sm ring-1 ring-black/5 ${hero.heightDesktop ? '' : aspectFallback}`} style={heightStyle}>
+          <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
+            {hero.subtitle && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{hero.subtitle}</p>}
+            {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{hero.heading}</h1>}
+            {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{hero.ctaLabel} ←</a>}
+          </div></div>
+        </div>
+      </section>
+    );
+  }
   const slides = rawSlides;
   const normalized = slides.map((b: any) => ({
     image: b.image || b.src || '/images/store/vegetables.jpg',
