@@ -75,8 +75,8 @@ export function TourOverlay() {
     const dismissLabel = isLast ? t('Finish') : t('Skip');
 
     return (
-        <div className="fixed inset-0 z-[90]">
-            <div className="absolute inset-0" onClick={stop} />
+        <div className="fixed inset-0 z-[90] pointer-events-none">
+            <div className="absolute inset-0 pointer-events-none" />
             {rect && (
                 <div
                     className="pointer-events-none absolute z-[91] rounded-lg border-2 border-primary"
@@ -92,8 +92,8 @@ export function TourOverlay() {
             <div
                 className={
                     centered
-                        ? 'absolute z-[92] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
-                        : 'absolute z-[92] left-1/2 bottom-6 -translate-x-1/2'
+                        ? 'absolute z-[92] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto'
+                        : 'absolute z-[92] left-1/2 bottom-6 -translate-x-1/2 pointer-events-auto'
                 }
                 onClick={(e) => e.stopPropagation()}
             >

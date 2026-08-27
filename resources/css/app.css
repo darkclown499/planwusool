@@ -376,6 +376,15 @@ a[style*="background-color"]:hover:not(.social-auth-btn) {
   display: none;
 }
 
+/* NProgress overlay must never block merchant actions (fix product Save intercept) */
+html.nprogress-busy,
+html.nprogress-busy * {
+  pointer-events: auto !important;
+}
+#nprogress .bar {
+  pointer-events: none !important;
+}
+
 /* Hide native scrollbars when the page is embedded in a device preview
    (onboarding phone/desktop previews) so it feels like an app screen. */
 html.in-iframe,
