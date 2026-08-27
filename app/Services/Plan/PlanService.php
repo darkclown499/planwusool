@@ -32,14 +32,14 @@ class PlanService
         try {
             DB::beginTransaction();
 
-            $updated = $user->update([
+            $updated = $user->forceFill([
                 'plan_id' => $plan->id,
                 'plan_duration' => $billingCycle,
                 'plan_expire_date' => $expiresAt,
                 'plan_is_active' => 1,
                 'is_trial' => 0,
                 'trial_expire_date' => null,
-            ]);
+            ])->save();
 
             if ($updated) {
                 $user = $user->fresh();

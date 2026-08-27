@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 namespace Tests\Feature;
 
 use App\Events\OrderCreated;
