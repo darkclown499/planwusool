@@ -36,26 +36,37 @@ class RoleRequest extends FormRequest
     }
 
     /**
-     * Validate that user can assign this permission
+     * Validate that user can assign this permission — grant-what-you-have
      */
     private function validatePermissionAccess($permissionName, $fail)
     {
         $user = Auth::user();
-        $userType = $user->type ?? 'company';
-        
-        // Superadmin can assign any permission
-        if ($userType === 'superadmin' || $userType === 'superadmin') {
+        if (!$user) {
+            $fail('Unauthenticated');
             return;
         }
-        
-        // Get allowed modules for current user role
+        $userType = $user->type ?? 'company';
+
+        // Superadmin can assign any permission
+        if ($userType === 'superadmin') {
+            return;
+        }
+
+        // Check allowed modules first
         $allowedModules = config('role-permissions.' . $userType, config('role-permissions.company'));
-        
-        // Check if permission belongs to allowed module
         $permission = Permission::where('name', $permissionName)->first();
-        
+
         if ($permission && !in_array($permission->module, $allowedModules)) {
             $fail('You are not authorized to assign this permission.');
+            return;
+        }
+
+        // Grant-what-you-have: actor must actually possess the permission they try to grant
+        // (company owners are seeded with most perms, but custom staff may have limited set)
+        if ($permission && !$user->hasPermissionTo($permissionName)) {
+            // Allow company type to still create broad roles? No — phase 2 strictly enforces grant-what-you-have for non-superadmin.
+            // Company owner is still bound; if they need a perm they must have it first (they do via seeded company role).
+            $fail('You cannot grant a permission you do not possess: ' . $permissionName);
         }
     }
 

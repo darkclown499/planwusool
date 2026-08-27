@@ -294,16 +294,12 @@ class DesignerController extends Controller
     protected function authorizeStoreAccess(Request $request, Store $store): bool
     {
         $user = $request->user();
-
-        if (!$user) {
-            return false;
+        if (!$user) return false;
+        if ($user->isSuperAdmin() || $user->isAdmin()) return true;
+        if ((int)$store->user_id === (int)$user->id) return true;
+        if ((int)$store->id === (int)($user->current_store ?? 0)) {
+            try { return $user->hasPermissionTo('settings-stores'); } catch (\Throwable $e) { return false; }
         }
-
-        if ($user->isSuperAdmin() || $user->isAdmin()) {
-            return true;
-        }
-
-        return (int) $store->user_id === (int) $user->id
-            || (int) $store->id === (int) ($user->current_store ?? 0);
+        return false;
     }
 }

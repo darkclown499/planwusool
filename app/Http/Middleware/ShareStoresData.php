@@ -26,10 +26,17 @@ class ShareStoresData
             if ($user->type === 'company') {
                 $stores = Store::where('user_id', $user->id)->get();
                 Inertia::share('stores', $stores);
-            } elseif ($user->created_by && $user->hasPermissionTo('manage-stores')) {
-                // Sub-users with manage-stores permission get their company's stores
-                $stores = Store::where('user_id', $user->created_by)->get();
-                Inertia::share('stores', $stores);
+            } elseif ($user->created_by) {
+                try {
+                    if ($user->hasPermissionTo('manage-stores')) {
+                        $stores = Store::where('user_id', $user->created_by)->get();
+                        Inertia::share('stores', $stores);
+                    } else {
+                        Inertia::share('stores', collect());
+                    }
+                } catch (\Throwable $e) {
+                    Inertia::share('stores', collect());
+                }
             } else {
                 Inertia::share('stores', collect());
             }

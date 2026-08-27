@@ -109,36 +109,36 @@ class RoleController extends BaseController
     }
 
     /**
-     * Validate permissions against user's allowed modules
+     * Validate permissions against user's allowed modules AND grant-what-you-have.
+     * Returns only permissions the actor actually possesses.
      */
     private function validatePermissions(array $permissionNames)
     {
         $user = Auth::user();
         $userType = $user->type ?? 'company';
-        
+
         // Superadmin can assign any permission
-        if ($userType === 'superadmin' || $userType === 'superadmin') {
+        if ($userType === 'superadmin') {
             return $permissionNames;
         }
-        
+
         // Get allowed modules for current user role
         $allowedModules = config('role-permissions.' . $userType, config('role-permissions.company'));
-        
-        // Build query to get valid permissions
+
+        // Build query to get valid permissions by module
         $query = Permission::whereIn('module', $allowedModules)
             ->whereIn('name', $permissionNames);
-        
+
         // For company users, exclude superadmin-only permissions and restrict settings
         if ($userType === 'company') {
             $query->whereNotIn('name', [
-                'manage-any-users', 
+                'manage-any-users',
                 'manage-own-users',
                 'manage-any-roles',
                 'manage-own-roles',
                 'manage-any-plans',
                 'manage-own-plans',
                 'manage-any-media',
-                // Plans superadmin-only permissions
                 'view-plans',
                 'create-plans',
                 'edit-plans',
@@ -147,12 +147,11 @@ class RoleController extends BaseController
                 'reject-plan-requests',
                 'approve-plan-orders',
                 'reject-plan-orders',
-                // Referral superadmin-only permissions
                 'manage-setting-referral',
                 'approve-payout-referral',
                 'reject-payout-referral'
             ]);
-            
+
             $query->where(function($q) {
                 $q->where('module', '!=', 'settings')
                   ->orWhereIn('name', [
@@ -160,10 +159,43 @@ class RoleController extends BaseController
                   ]);
             });
         }
-        
+
         $validPermissions = $query->pluck('name')->toArray();
-        
+
+        // Grant-what-you-have: intersect with actor's actual permissions
+        $actorPerms = $user->getAllPermissions()->pluck('name')->toArray();
+        $validPermissions = array_values(array_intersect($validPermissions, $actorPerms));
+
         return $validPermissions;
+    }
+
+    /**
+     * Ensure tenant user cannot edit system roles and cannot edit their own current role.
+     */
+    private function authorizeRoleTarget(Role $role): void
+    {
+        $actor = Auth::user();
+
+        if ($actor->isSuperAdmin()) {
+            return;
+        }
+
+        if ($role->is_system_role) {
+            abort(403, 'System roles cannot be modified');
+        }
+
+        // Tenant scope: created_by must match hierarchy
+        if ($actor->type === 'company' && (int) $role->created_by !== (int) $actor->id) {
+            abort(403, 'Unauthorized to modify this role');
+        } elseif ($actor->type !== 'superadmin' && $actor->type !== 'company' && (int) $role->created_by !== (int) $actor->created_by) {
+            abort(403, 'Unauthorized to modify this role');
+        }
+
+        // Block editing own current role (privilege escalation)
+        $actorRoleIds = $actor->roles()->pluck('roles.id')->toArray();
+        if (in_array($role->id, $actorRoleIds, true)) {
+            abort(403, 'Cannot edit your own role');
+        }
     }
 
     /**
@@ -285,12 +317,14 @@ class RoleController extends BaseController
      */
     public function update(RoleRequest $request, Role $role)
     {
+        $this->authorizeRoleTarget($role);
+
         if ($role) {
-            // Validate permissions against user's allowed modules
+            // Validate permissions against user's allowed modules + grant-what-you-have
             $validatedPermissions = $this->validatePermissions($request->permissions ?? []);
-            
+
             $role->name = $this->generateUniqueSlug($request->label, $role->id);
-            
+
             $role->label       = $request->label;
             $role->description = $request->description;
 
@@ -313,15 +347,11 @@ class RoleController extends BaseController
         if (!Auth::user()->can('delete-roles')) {
             return redirect()->back()->with('error', __('You do not have permission to delete roles.'));
         }
-        
+
+        // Reuse same hierarchy + own-role + system-role checks
+        $this->authorizeRoleTarget($role);
+
         $authUser = Auth::user();
-        
-        // Check if user can delete this role based on hierarchy
-        if ($authUser->type === 'company' && $role->created_by !== $authUser->id) {
-            return redirect()->back()->with('error', __('Unauthorized to delete this role'));
-        } elseif ($authUser->type !== 'superadmin' && $authUser->type !== 'company' && $role->created_by !== $authUser->created_by) {
-            return redirect()->back()->with('error', __('Unauthorized to delete this role'));
-        }
         
         if ($role) {
             // Prevent deletion of system roles

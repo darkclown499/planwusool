@@ -62,5 +62,5 @@ class StoreEmailNotificationController extends Controller
             .'<p style="color:#334155;">هذا مثال لإشعار نوع <strong>'.StoreEmailNotificationService::TYPES[$type]['label'].'</strong> من متجر '.e($store->name).'.</p>';
     }
 
-    private function authorize(Request $request, Store $store): bool { $u=$request->user(); if(!$u) return false; if($u->isSuperAdmin()||$u->isAdmin()) return true; return (int)$store->user_id===(int)$u->id || (int)$store->id===(int)($u->current_store??0); }
+    private function authorize(Request $request, Store $store): bool { $u=$request->user(); if(!$u) return false; if($u->isSuperAdmin()||$u->isAdmin()) return true; if((int)$store->user_id===(int)$u->id) return true; if((int)$store->id===(int)($u->current_store??0)) { try { return $u->hasPermissionTo('manage-email-settings') || $u->hasPermissionTo('manage-settings'); } catch (\Throwable $e) { return false; } } return false; }
 }

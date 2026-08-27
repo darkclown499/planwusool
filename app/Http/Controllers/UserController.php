@@ -202,10 +202,49 @@ class UserController extends BaseController
     }
 
     /**
+     * Ensure actor is authorized to manage target user (tenant scope).
+     * Returns 403 if cross-company, targets superadmin, or staff targets owner.
+     */
+    private function authorizeUserTarget(User $actor, User $target): void
+    {
+        // Block targeting superadmin ever (except superadmin acting on non-superadmin per index rule)
+        if ($target->type === 'superadmin' || $target->hasRole('superadmin')) {
+            abort(403, 'Cannot manage superadmin user');
+        }
+
+        if ($actor->isSuperAdmin()) {
+            // Superadmin can manage company/staff users globally (but not other superadmins - blocked above)
+            return;
+        }
+
+        if ($actor->type === 'company') {
+            if ((int) $target->created_by !== (int) $actor->id) {
+                abort(403, 'Unauthorized to manage user outside your tenant');
+            }
+            return;
+        }
+
+        // Staff / sub-user
+        if ((int) $target->created_by !== (int) $actor->created_by) {
+            abort(403, 'Unauthorized to manage user outside your tenant');
+        }
+
+        // Staff must never target company owner
+        if ($target->type === 'company') {
+            abort(403, 'Staff cannot manage company owner');
+        }
+
+        // Staff cannot self-target via this path for privilege escalation? Allow self profile via separate flow, but block here if needed
+        // (self-update would be captured; we allow but role escalation is handled in update logic)
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(UserRequest $request, User $user)
     {
+        $this->authorizeUserTarget(Auth::user(), $user);
+
         if ($user) {
             $user->name  = $request->name;
             $user->email = $request->email;
@@ -233,6 +272,15 @@ class UserController extends BaseController
                 }
                 
                 $role = $roleQuery->first();
+
+                if (!$role) {
+                    return redirect()->back()->with('error', __('Invalid role selection'));
+                }
+
+                // Prevent assigning system roles via id spoofing
+                if (in_array($role->name, ['superadmin', 'company'], true)) {
+                    abort(403, 'Cannot assign system role');
+                }
                 
                 $user->roles()->sync([$role->id]);
                 $user->type = $role->name;
@@ -249,7 +297,14 @@ class UserController extends BaseController
      */
     public function destroy(User $user)
     {
+        $this->authorizeUserTarget(Auth::user(), $user);
+
         if ($user) {
+            // Prevent deleting yourself
+            if ((int) $user->id === (int) Auth::id()) {
+                return redirect()->back()->with('error', __('Cannot delete your own account'));
+            }
+
             $user->delete();
             return redirect()->route('users.index')->with('success', __('User deleted with roles'));
         }
@@ -261,6 +316,8 @@ class UserController extends BaseController
      */
     public function resetPassword(Request $request, User $user)
     {
+        $this->authorizeUserTarget(Auth::user(), $user);
+
         $request->validate([
             'password' => 'required|min:8|confirmed',
         ]);
@@ -276,6 +333,13 @@ class UserController extends BaseController
      */
     public function toggleStatus(User $user)
     {
+        $this->authorizeUserTarget(Auth::user(), $user);
+
+        // Prevent toggling your own status or owner's status by staff (already blocked) but double-guard company self
+        if ((int) $user->id === (int) Auth::id()) {
+            return redirect()->back()->with('error', __('Cannot change your own status'));
+        }
+
         $user->status = $user->status === 'active' ? 'inactive' : 'active';
         $user->save();
 

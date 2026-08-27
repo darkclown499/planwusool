@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentSetting;
 use App\Models\Store;
 use App\Services\FeatureService;
+use App\Services\Payment\PaymentProviderCatalog;
 use Illuminate\Http\Request;
 
 /**
@@ -28,10 +29,12 @@ class StorePaymentController extends Controller
         foreach (FeatureService::PAYMENT_METHODS as $method => $label) {
             $enabled = (bool) ($settings['is_' . $method . '_enabled'] ?? false);
 
-            // ALWAYS expose the input fields for each gateway, whether or not
-            // a record already exists — the merchant must be able to add the
-            // API keys the very first time without touching the legacy page.
+            $catalog = PaymentProviderCatalog::get($method);
             $fieldDefs = self::credentialFields()[$method] ?? [];
+            // Partner: no fake connect form — fields intentionally empty until real adapter
+            if ($catalog && $catalog['type'] === PaymentProviderCatalog::TYPE_PARTNER) {
+                $fieldDefs = [];
+            }
             $fields = [];
             foreach ($fieldDefs as $def) {
                 $saved = $settings[$def['key']] ?? null;
@@ -44,18 +47,51 @@ class StorePaymentController extends Controller
                 ];
             }
 
+            $badge = PaymentProviderCatalog::statusBadge($method, $enabled);
+
             $methods[] = [
                 'method' => $method,
-                'label' => $label,
+                'label' => $catalog['label'] ?? $label,
                 'enabled' => $enabled,
                 'fields' => $fields,
+                'type' => $catalog['type'] ?? 'international',
+                'section' => $catalog['section'] ?? 'international',
+                'region' => $catalog['region'] ?? 'international',
+                'currencies' => $catalog['currencies'] ?? [],
+                'catalog_desc' => $catalog['desc'] ?? '',
+                'badge_label' => $badge['label'],
+                'badge_variant' => $badge['variant'],
+                'is_partner' => ($catalog['type'] ?? '') === PaymentProviderCatalog::TYPE_PARTNER,
             ];
+        }
+
+        // Partner catalog entries not in PAYMENT_METHODS (BoP gateway etc.) — expose as disabled partner cards
+        foreach (PaymentProviderCatalog::PROVIDERS as $pid => $p) {
+            if (!isset(FeatureService::PAYMENT_METHODS[$pid])) {
+                $badge = PaymentProviderCatalog::statusBadge($pid, false);
+                $methods[] = [
+                    'method' => $pid,
+                    'label' => $p['label'],
+                    'enabled' => false,
+                    'fields' => [],
+                    'type' => $p['type'],
+                    'section' => $p['section'],
+                    'region' => $p['region'],
+                    'currencies' => $p['currencies'] ?? [],
+                    'catalog_desc' => $p['desc'] ?? '',
+                    'badge_label' => $badge['label'],
+                    'badge_variant' => $badge['variant'],
+                    'is_partner' => $p['type'] === PaymentProviderCatalog::TYPE_PARTNER,
+                ];
+            }
         }
 
         return response()->json([
             'success' => true,
             'methods' => $methods,
             'groups' => self::methodGroups($methods),
+            'sections' => PaymentProviderCatalog::SECTIONS,
+            'catalog' => PaymentProviderCatalog::PROVIDERS,
         ]);
     }
 
@@ -97,6 +133,10 @@ class StorePaymentController extends Controller
      * Credential field definitions per gateway. The keys here MATCH exactly
      * what getPaymentMethodConfig()/the runtime adapters read, so what the
      * merchant enters in the UI is exactly what the checkout engine consumes.
+     *
+     * PHASE 1 — Payment Hub: fake regional api_key fields removed.
+     * Manual methods expose ONLY phone_number/merchant_name/instructions/wallet_address.
+     * Partner methods expose NO form until real adapter exists (explained in UI).
      */
     public static function credentialFields(): array
     {
@@ -320,8 +360,9 @@ class StorePaymentController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        $allIds = array_unique(array_merge(array_keys(FeatureService::PAYMENT_METHODS), array_keys(PaymentProviderCatalog::PROVIDERS)));
         $validated = $request->validate([
-            'method' => ['required', 'string', 'in:' . implode(',', array_keys(FeatureService::PAYMENT_METHODS))],
+            'method' => ['required', 'string', 'in:' . implode(',', $allIds)],
         ]);
 
         $method = $validated['method'];
@@ -444,13 +485,14 @@ class StorePaymentController extends Controller
     protected function authorize(Request $request, Store $store): bool
     {
         $user = $request->user();
-        if (!$user) {
-            return false;
+        if (!$user) return false;
+        if ($user->isSuperAdmin() || $user->isAdmin()) return true;
+        // Direct owner — preserve access (do not weaken)
+        if ((int) $store->user_id === (int) $user->id) return true;
+        // Delegated staff via current_store — require explicit payment permission
+        if ((int) $store->id === (int) ($user->current_store ?? 0)) {
+            try { return $user->hasPermissionTo('manage-payment-settings') || $user->hasPermissionTo('manage-settings'); } catch (\Throwable $e) { return false; }
         }
-        if ($user->isSuperAdmin() || $user->isAdmin()) {
-            return true;
-        }
-        return (int) $store->user_id === (int) $user->id
-            || (int) $store->id === (int) ($user->current_store ?? 0);
+        return false;
     }
 }

@@ -255,15 +255,15 @@ class MerchantWhatsAppController extends Controller
 
     private function userCanManageStore($user, $store): bool
     {
-        if (!$store) return $user->type === 'company' || $user->type === 'superadmin';
-        if ($user->type === 'superadmin') return true;
+        if (!$store) return false;
+        if ($user->isSuperAdmin() || $user->isAdmin()) return true;
+        // Company owner — preserve access (owner has manage-settings via seed, but don't weaken)
         if ($user->type === 'company' && (int) $user->id === (int) $store->user_id) return true;
-        if ($user->created_by && (int) $user->created_by === (int) $store->user_id) return true;
-        try {
-            return $user->hasPermissionTo('manage-settings') || $user->hasPermissionTo('manage-orders');
-        } catch (\Throwable $e) {
-            return false;
+        // Staff: must be same tenant AND have manage-settings (no dedicated whatsapp permission exists — reuse narrowest existing)
+        if ($user->created_by && (int) $user->created_by === (int) $store->user_id) {
+            try { return $user->hasPermissionTo('manage-settings'); } catch (\Throwable $e) { return false; }
         }
+        return false;
     }
 
     private function resolveStoreContext($user, $id = null): array
