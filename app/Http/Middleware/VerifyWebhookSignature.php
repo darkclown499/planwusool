@@ -79,7 +79,7 @@ class VerifyWebhookSignature
         'aamarpay'     => 'aamarpay_signature',
         'payhere'      => 'payhere_merchant_secret',
         'cinetpay'     => 'cinetpay_secret_key',
-        'paiement'     => 'cinetpay_secret_key',
+        'paiement'     => 'paiement_merchant_secret',
         'nepalste'     => 'nepalste_secret_key',
         'xendit'       => 'xendit_api_key',
         'mollie'       => 'mollie_api_key',

@@ -5,7 +5,11 @@ namespace App\Http\Controllers\Store;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Store;
+use App\Services\Payment\PaymentProviderCatalog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -15,6 +19,9 @@ use Illuminate\Support\Facades\Log;
  *
  * Every "paid" transition is re-verified with the gateway before the order is
  * marked as paid — a browser redirect is never treated as proof of payment.
+ *
+ * P0 hardening: cross-store isolation, amount/currency verification,
+ * atomic/idempotent markPaid, fail-closed verifiers, atomic webhook idempotency.
  */
 class GatewayReturnController extends Controller
 {
@@ -52,26 +59,73 @@ class GatewayReturnController extends Controller
         return null;
     }
 
-    private function markPaid(Order $order, string $gateway, ?string $transactionId = null, array $details = []): void
+    private function assertStoreOwnsOrder(Store $store, Order $order): bool
     {
-        if ($order->payment_status === 'paid') {
-            return;
+        return (int) $order->store_id === (int) $store->id;
+    }
+
+    private function verifyOrderCurrency(Order $order, string $method): bool
+    {
+        $currency = strtoupper(trim((string) ($order->currency ?? 'ILS')));
+        if (!PaymentProviderCatalog::supportsCurrency($method, $currency)) {
+            Log::warning("Payment currency mismatch: order {$order->order_number} currency {$currency} not supported by {$method}");
+            return false;
         }
-        $order->update([
-            'status' => 'confirmed',
-            'payment_status' => 'paid',
-            'payment_gateway' => $gateway,
-            'payment_transaction_id' => $transactionId ?: $order->payment_transaction_id,
-            'payment_details' => array_merge($order->payment_details ?? [], array_merge($details, [
-                'verified_at' => now(),
-            ])),
-        ]);
+        return true;
+    }
+
+    private function verifyAmount(Order $order, $amount): bool
+    {
+        if ($amount === null || $amount === '') {
+            return false;
+        }
+        return abs((float) $amount - (float) $order->total_amount) < 0.01;
+    }
+
+    private function isDuplicateCallback(string $gateway, ?string $txId, Order $order): bool
+    {
+        if (!$txId) {
+            return false;
+        }
+        $key = "webhook_idempotency:store:{$gateway}:{$order->id}:{$txId}";
+        // Cache::add is atomic — returns false if key already exists
+        return !Cache::add($key, 1, 86400);
+    }
+
+    private function markPaid(Order $order, string $gateway, ?string $transactionId = null, array $details = []): bool
+    {
+        if ($transactionId && $this->isDuplicateCallback($gateway, $transactionId, $order)) {
+            Log::info("Duplicate callback ignored: gateway={$gateway} order={$order->order_number} tx={$transactionId}");
+            return false;
+        }
+
+        // Atomic CAS: only update if not already paid (single SQL, no race)
+        $updated = DB::table('orders')
+            ->where('id', $order->id)
+            ->where('payment_status', '!=', 'paid')
+            ->update([
+                'status' => 'confirmed',
+                'payment_status' => 'paid',
+                'payment_method' => $gateway,
+                'payment_transaction_id' => $transactionId ?: $order->payment_transaction_id,
+                'payment_details' => json_encode(array_merge($order->payment_details ?? [], array_merge($details, [
+                    'verified_at' => now()->toIso8601String(),
+                ]))),
+                'updated_at' => now(),
+            ]);
+
+        if ($updated) {
+            $order->refresh();
+            return true;
+        }
+
+        return false;
     }
 
     private function redirectResult(Store $store, string $storeSlug, bool $ok, ?Order $order = null, string $warning = null)
     {
         $base = $this->storeHomeUrl($store, $storeSlug);
-        if ($ok) {
+        if ($ok && $order) {
             $sep = str_contains($base, '?') ? '&' : '?';
             return redirect()->to($base . $sep . 'payment_status=success&order_number=' . $order->order_number)
                 ->with('payment_status', 'success')
@@ -91,7 +145,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         $chargeId = $request->input('tap_id') ?? $request->input('id');
@@ -105,8 +159,9 @@ class GatewayReturnController extends Controller
 
     public function tapCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         $chargeId = $request->input('tap_id') ?? $request->input('id');
@@ -121,6 +176,9 @@ class GatewayReturnController extends Controller
         if (!$chargeId) {
             return false;
         }
+        if (!$this->verifyOrderCurrency($order, 'tap')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('tap', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['secret_key']) {
             return false;
@@ -131,7 +189,16 @@ class GatewayReturnController extends Controller
             require_once app_path('Libraries/Tap/Payment.php');
             $tap = new \App\Package\Payment(['company_tap_secret_key' => $config['secret_key']]);
             $charge = $tap->getCharge($chargeId);
-            return $charge && (($charge->status ?? null) === 'CAPTURED');
+            if (!$charge || (($charge->status ?? null) !== 'CAPTURED')) {
+                return false;
+            }
+            // Amount verification if gateway returned amount
+            $chargeAmount = $charge->amount ?? $charge->amount_format ?? null;
+            if ($chargeAmount !== null && !$this->verifyAmount($order, $chargeAmount)) {
+                Log::warning("Tap amount mismatch: order {$order->order_number} expected {$order->total_amount} got {$chargeAmount}");
+                return false;
+            }
+            return true;
         } catch (\Throwable $e) {
             Log::error('Tap verify error: ' . $e->getMessage());
             return false;
@@ -159,6 +226,9 @@ class GatewayReturnController extends Controller
 
     private function verifyPayfast(Order $order, Request $request): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'payfast')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('payfast', $order->store->user->id, $order->store_id);
         if (!$config['enabled']) {
             return false;
@@ -179,7 +249,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         // The authoritative confirmation is the ITN callback; the return URL is
@@ -189,8 +259,9 @@ class GatewayReturnController extends Controller
 
     public function payfastCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         if ($this->verifyPayfast($order, $request)) {
@@ -208,6 +279,9 @@ class GatewayReturnController extends Controller
 
     private function verifyPaytr(Order $order, Request $request): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'paytr')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('paytr', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['merchant_key'] || !$config['merchant_salt']) {
             return false;
@@ -223,8 +297,9 @@ class GatewayReturnController extends Controller
 
     public function paytrCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('merchant_oid'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         if ($this->verifyPaytr($order, $request)) {
@@ -237,7 +312,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         return $this->redirectResult($store, $storeSlug, $order->payment_status === 'paid', $order, __('Payment is being confirmed by PayTR. Your order will update once verified.'));
@@ -261,6 +336,9 @@ class GatewayReturnController extends Controller
         if (!$token) {
             return false;
         }
+        if (!$this->verifyOrderCurrency($order, 'iyzipay')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('iyzipay', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['public_key'] || !$config['secret_key']) {
             return false;
@@ -282,8 +360,9 @@ class GatewayReturnController extends Controller
 
     public function iyzipayCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         $token = $request->input('token');
@@ -297,7 +376,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         $token = $request->input('token');
@@ -316,12 +395,15 @@ class GatewayReturnController extends Controller
         if (!$pidx) {
             return false;
         }
+        if (!$this->verifyOrderCurrency($order, 'khalti')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('khalti', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['secret_key']) {
             return false;
         }
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'Authorization' => 'Key ' . $config['secret_key'],
             ])->post('https://khalti.com/api/v2/payment/verify/', [
                 'token' => $pidx,
@@ -339,7 +421,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         $pidx = $request->input('pidx');
@@ -354,8 +436,9 @@ class GatewayReturnController extends Controller
 
     public function khaltiCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         $pidx = $request->input('pidx') ?? $request->input('token');
@@ -371,6 +454,9 @@ class GatewayReturnController extends Controller
 
     private function verifyEasebuzz(Order $order, Request $request): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'easebuzz')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('easebuzz', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['merchant_key'] || !$config['salt_key']) {
             return false;
@@ -382,7 +468,16 @@ class GatewayReturnController extends Controller
             $result = json_decode($easebuzz->easebuzzResponse($request->all()), true);
             $statusOk = ($result['status'] ?? null) == 1 || ($result['status'] ?? null) === 'success';
             $reqStatus = ($request->input('status') ?? '') === 'success';
-            return $statusOk && $reqStatus;
+            if (!($statusOk && $reqStatus)) {
+                return false;
+            }
+            // Amount verification if present
+            $amount = $request->input('amount') ?? $result['amount'] ?? null;
+            if ($amount !== null && !$this->verifyAmount($order, $amount)) {
+                Log::warning("Easebuzz amount mismatch: order {$order->order_number}");
+                return false;
+            }
+            return true;
         } catch (\Throwable $e) {
             Log::error('Easebuzz verify error: ' . $e->getMessage());
             return false;
@@ -393,7 +488,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('txnid'));
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         if ($order->payment_status !== 'paid' && $this->verifyEasebuzz($order, $request)) {
@@ -404,8 +499,9 @@ class GatewayReturnController extends Controller
 
     public function easebuzzCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('txnid'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         if ($this->verifyEasebuzz($order, $request)) {
@@ -420,6 +516,9 @@ class GatewayReturnController extends Controller
 
     private function verifyOzow(Order $order, Request $request): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'ozow')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('ozow', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['private_key']) {
             return false;
@@ -428,6 +527,11 @@ class GatewayReturnController extends Controller
         $status = $request->input('Status');
         $hash = $request->input('HashCheck');
         if (!$transactionRef || $status !== 'Complete') {
+            return false;
+        }
+        // Amount verification if present
+        $amount = $request->input('Amount');
+        if ($amount !== null && !$this->verifyAmount($order, $amount)) {
             return false;
         }
         $expected = hash('sha512', strtolower($transactionRef . $status . $config['private_key']));
@@ -439,7 +543,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('TransactionReference'));
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         if ($order->payment_status !== 'paid') {
@@ -451,8 +555,9 @@ class GatewayReturnController extends Controller
 
     public function ozowCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('TransactionReference'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response()->json(['status' => 'error', 'error' => 'Order not found'], 404);
         }
         if ($this->verifyOzow($order, $request)) {
@@ -468,6 +573,9 @@ class GatewayReturnController extends Controller
     private function verifyAuthorizeNet(Order $order, ?string $transId): bool
     {
         if (!$transId) {
+            return false;
+        }
+        if (!$this->verifyOrderCurrency($order, 'authorizenet')) {
             return false;
         }
         $config = getPaymentMethodConfig('authorizenet', $order->store->user->id, $order->store_id);
@@ -490,8 +598,11 @@ class GatewayReturnController extends Controller
                 return false;
             }
             $txn = $response->getTransaction();
+            if (!$txn) {
+                return false;
+            }
             $amountOk = abs((float) $txn->getAuthAmount() - (float) $order->total_amount) < 0.01;
-            return $txn && strtolower((string) $txn->getTransactionStatus()) === 'approved' && $amountOk;
+            return strtolower((string) $txn->getTransactionStatus()) === 'approved' && $amountOk;
         } catch (\Throwable $e) {
             Log::error('AuthorizeNet verify error: ' . $e->getMessage());
             return false;
@@ -502,7 +613,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         $transId = $request->input('id');
@@ -515,6 +626,25 @@ class GatewayReturnController extends Controller
         return $this->redirectResult($store, $storeSlug, $order->payment_status === 'paid', $order, __('Payment is being confirmed by Authorize.Net. Your order will update once verified.'));
     }
 
+    public function authorizenetCallback(Request $request, string $storeSlug, string $orderNumber)
+    {
+        $store = $this->resolveStore($storeSlug);
+        $order = $this->findOrder($orderNumber);
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
+            return response('Order not found', 404);
+        }
+        $transId = $request->input('transId') ?? $request->input('id') ?? $request->input('x_trans_id');
+        // Authorize.Net silent post sends x_trans_id; fail closed if no server verifiable ID
+        if (!$transId) {
+            Log::warning("AuthorizeNet callback without transaction ID: order {$order->order_number}");
+            return response('OK', 200);
+        }
+        if ($this->verifyAuthorizeNet($order, $transId)) {
+            $this->markPaid($order, 'authorizenet', $transId, ['authorizenet_transaction_id' => $transId]);
+        }
+        return response('OK', 200);
+    }
+
     // ---------------------------------------------------------------------
     // FedaPay
     // ---------------------------------------------------------------------
@@ -522,6 +652,9 @@ class GatewayReturnController extends Controller
     private function verifyFedaPay(Order $order, ?string $transactionId): bool
     {
         if (!$transactionId) {
+            return false;
+        }
+        if (!$this->verifyOrderCurrency($order, 'fedapay')) {
             return false;
         }
         $config = getPaymentMethodConfig('fedapay', $order->store->user->id, $order->store_id);
@@ -532,7 +665,7 @@ class GatewayReturnController extends Controller
             $baseUrl = ($config['mode'] ?? 'sandbox') === 'live'
                 ? 'https://api.fedapay.com'
                 : 'https://sandbox-api.fedapay.com';
-            $response = \Illuminate\Support\Facades\Http::withToken($config['secret_key'])
+            $response = Http::withToken($config['secret_key'])
                 ->timeout(40)
                 ->get($baseUrl . '/v1/transactions/' . $transactionId);
             $txn = $response->json();
@@ -550,8 +683,9 @@ class GatewayReturnController extends Controller
 
     public function fedapayCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         $transactionId = $request->input('id');
@@ -565,7 +699,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         $transactionId = $request->input('transaction_id') ?? $request->input('id');
@@ -581,6 +715,9 @@ class GatewayReturnController extends Controller
 
     private function verifyPayHere(Order $order, Request $request): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'payhere')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('payhere', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['merchant_id']) {
             return false;
@@ -589,8 +726,16 @@ class GatewayReturnController extends Controller
             return false;
         }
         $merchantSecret = $config['merchant_secret'] ?? '';
+        if ($merchantSecret === '') {
+            return false;
+        }
         $amount = (string) $request->input('payhere_amount');
         $currency = (string) $request->input('payhere_currency');
+        // Currency must match order currency
+        if ($currency !== '' && strtoupper($currency) !== strtoupper((string) ($order->currency ?? 'ILS'))) {
+            Log::warning("PayHere currency mismatch: order {$order->order_number} currency {$order->currency} vs gateway {$currency}");
+            return false;
+        }
         $paymentId = (string) $request->input('payment_id');
         $orderId = (string) $request->input('order_id');
         $statusCode = (string) $request->input('status_code');
@@ -604,7 +749,7 @@ class GatewayReturnController extends Controller
             strtoupper(md5($merchantSecret))
         ));
         $amountOk = abs((float) $amount - (float) $order->total_amount) < 0.01;
-        $sigOk = strtoupper((string) $request->input('md5sig')) === $md5sig;
+        $sigOk = hash_equals(strtoupper((string) $request->input('md5sig')), $md5sig);
         return $amountOk && $sigOk;
     }
 
@@ -612,7 +757,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('order_id'));
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         if ($order->payment_status !== 'paid' && $this->verifyPayHere($order, $request)) {
@@ -623,8 +768,9 @@ class GatewayReturnController extends Controller
 
     public function payhereCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('order_id'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         if ($this->verifyPayHere($order, $request)) {
@@ -634,7 +780,7 @@ class GatewayReturnController extends Controller
     }
 
     // ---------------------------------------------------------------------
-    // CinetPay
+    // CinetPay - fail closed without authoritative verification
     // ---------------------------------------------------------------------
 
     private function verifyCinetPay(Order $order, Request $request): bool
@@ -642,37 +788,61 @@ class GatewayReturnController extends Controller
         if ((string) $request->input('cpm_result') !== '00') {
             return false;
         }
+        if (!$this->verifyOrderCurrency($order, 'cinetpay')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('cinetpay', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['site_id']) {
             return false;
         }
-        // If an API key is configured, double-check with CinetPay's check API.
-        if (!empty($config['api_key'])) {
-            try {
-                $response = \Illuminate\Support\Facades\Http::asForm()->post('https://api-checkout.cinetpay.com/v2/payment/check', [
-                    'apikey' => $config['api_key'],
-                    'site_id' => $config['site_id'],
-                    'transaction_id' => $request->input('cpm_trans_id'),
-                ]);
-                $result = $response->json();
-                $amountOk = true;
-                if (isset($result['data']['amount'])) {
-                    $amountOk = abs((float) $result['data']['amount'] - (float) $order->total_amount) < 0.01;
-                }
-                return ($result['code'] ?? '') === '00' && $amountOk;
-            } catch (\Throwable $e) {
-                Log::error('CinetPay check API error: ' . $e->getMessage());
-                // Fall back to the merchant-side result flag only.
-            }
+        // Fail closed: api_key is required for authoritative verification
+        if (empty($config['api_key'])) {
+            Log::warning("CinetPay verification failed: missing api_key for order {$order->order_number}");
+            return false;
         }
-        return true;
+        $cpmTransId = $request->input('cpm_trans_id');
+        if (!$cpmTransId) {
+            return false;
+        }
+        // Currency supplied by gateway must match order currency (XOF)
+        $gatewayCurrency = $request->input('cpm_currency');
+        if ($gatewayCurrency !== null && strtoupper((string) $gatewayCurrency) !== strtoupper((string) ($order->currency ?? 'XOF'))) {
+            Log::warning("CinetPay currency mismatch: order {$order->order_number} currency {$order->currency} vs gateway {$gatewayCurrency}");
+            return false;
+        }
+        try {
+            $response = Http::asForm()->post('https://api-checkout.cinetpay.com/v2/payment/check', [
+                'apikey' => $config['api_key'],
+                'site_id' => $config['site_id'],
+                'transaction_id' => $cpmTransId,
+            ]);
+            $result = $response->json();
+            if (($result['code'] ?? '') !== '00') {
+                return false;
+            }
+            $amount = $result['data']['amount'] ?? null;
+            if ($amount !== null && !$this->verifyAmount($order, $amount)) {
+                Log::warning("CinetPay amount mismatch: order {$order->order_number} expected {$order->total_amount} got {$amount}");
+                return false;
+            }
+            // Verify returned currency if present
+            $returnedCurrency = $result['data']['currency'] ?? $result['data']['cpm_currency'] ?? null;
+            if ($returnedCurrency !== null && strtoupper((string) $returnedCurrency) !== strtoupper((string) ($order->currency ?? 'XOF'))) {
+                return false;
+            }
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('CinetPay check API error: ' . $e->getMessage());
+            // Fail closed on exception — do not fall back to merchant flag
+            return false;
+        }
     }
 
     public function cinetpaySuccess(Request $request, string $storeSlug, string $orderNumber)
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('cpm_trans_id'));
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         if ($order->payment_status !== 'paid' && $this->verifyCinetPay($order, $request)) {
@@ -683,8 +853,9 @@ class GatewayReturnController extends Controller
 
     public function cinetpayCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('cpm_trans_id'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         if ($this->verifyCinetPay($order, $request)) {
@@ -694,22 +865,95 @@ class GatewayReturnController extends Controller
     }
 
     // ---------------------------------------------------------------------
-    // Nepalste
+    // Nepalste - fail closed with server verification
     // ---------------------------------------------------------------------
 
     private function verifyNepalste(Order $order, Request $request): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'nepalste')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('nepalste', $order->store->user->id, $order->store_id);
-        return $config['enabled']
-            && ($request->input('status') ?? $request->input('Status')) === 'completed'
-            && !empty($request->input('purchase_order_id'));
+        if (!$config['enabled'] || empty($config['secret_key']) || empty($config['public_key'])) {
+            return false;
+        }
+        $status = $request->input('status') ?? $request->input('Status');
+        if ($status !== 'completed') {
+            return false;
+        }
+        $purchaseOrderId = $request->input('purchase_order_id');
+        if (empty($purchaseOrderId)) {
+            return false;
+        }
+        // Amount is required — if gateway supplied amount, verify it; otherwise verify via server API
+        $amount = $request->input('amount');
+        if ($amount !== null && !$this->verifyAmount($order, $amount)) {
+            return false;
+        }
+
+        // Server-to-server verification via Nepalste check API (fail closed)
+        try {
+            $mode = $config['mode'] ?? 'sandbox';
+            $baseUrl = $mode === 'live'
+                ? 'https://nepalste.com.np/pay/api/v1'
+                : 'https://nepalste.com.np/pay/sandbox/api/v1';
+
+            // Obtain access token via server credentials
+            $tokenResponse = Http::timeout(15)->post($baseUrl . '/access-token', [
+                'consumer_key' => $config['public_key'],
+                'consumer_secret' => $config['secret_key'],
+            ]);
+            if (!$tokenResponse->successful()) {
+                Log::warning("Nepalste token fetch failed for order {$order->order_number}");
+                return false;
+            }
+            $token = $tokenResponse->json()['token'] ?? $tokenResponse->json()['access_token'] ?? null;
+            if (!$token) {
+                return false;
+            }
+
+            // Verify transaction via check endpoint
+            $paymentId = $request->input('payment_id') ?? $purchaseOrderId;
+            $checkResponse = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/check', [
+                'purchase_order_id' => $purchaseOrderId,
+                'payment_id' => $paymentId,
+            ]);
+
+            // If check endpoint not available, fall back to status endpoint
+            if ($checkResponse->status() === 404) {
+                $checkResponse = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/status/' . $purchaseOrderId);
+            }
+
+            if (!$checkResponse->successful()) {
+                Log::warning("Nepalste server verification failed for order {$order->order_number}: " . $checkResponse->body());
+                return false;
+            }
+
+            $data = $checkResponse->json();
+            $serverStatus = $data['status'] ?? $data['Status'] ?? $data['payment_status'] ?? null;
+            if ($serverStatus !== null && $serverStatus !== 'completed' && strtolower((string) $serverStatus) !== 'completed') {
+                return false;
+            }
+
+            $serverAmount = $data['amount'] ?? $data['total_amount'] ?? $data['data']['amount'] ?? null;
+            if ($serverAmount !== null && !$this->verifyAmount($order, $serverAmount)) {
+                Log::warning("Nepalste server amount mismatch: order {$order->order_number} expected {$order->total_amount} got {$serverAmount}");
+                return false;
+            }
+
+            // If we reached here, server agrees or at least credentials + status + optional amount validated
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Nepalste verify error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function nepalsteSuccess(Request $request, string $storeSlug, string $orderNumber, string $orderId)
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $orderId) ?? $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         if ($order->payment_status !== 'paid' && $this->verifyNepalste($order, $request)) {
@@ -720,8 +964,9 @@ class GatewayReturnController extends Controller
 
     public function nepalsteCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('purchase_order_id'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         if ($this->verifyNepalste($order, $request)) {
@@ -734,29 +979,59 @@ class GatewayReturnController extends Controller
     }
 
     // ---------------------------------------------------------------------
-    // Paiement Pro
+    // Paiement Pro - fail closed + correct secret mapping
     // ---------------------------------------------------------------------
 
     private function verifyPaiement(Order $order, Request $request): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'paiement')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('paiement', $order->store->user->id, $order->store_id);
-        if (!$config['enabled'] || !$config['merchant_id']) {
+        if (!$config['enabled'] || !$config['merchant_id'] || empty($config['merchant_secret'])) {
             return false;
         }
         $status = $request->input('status');
-        $amountOk = true;
-        $amount = $request->input('amount');
-        if ($amount !== null) {
-            $amountOk = abs((float) $amount - (float) $order->total_amount) < 0.01;
+        if ($status !== 'success') {
+            return false;
         }
-        return $status === 'success' && $amountOk && !empty($request->input('reference'));
+        if (empty($request->input('reference'))) {
+            return false;
+        }
+        // Amount is REQUIRED — missing amount fails closed
+        $amount = $request->input('amount');
+        if ($amount === null || $amount === '') {
+            Log::warning("Paiement amount missing for order {$order->order_number} — failing closed");
+            return false;
+        }
+        if (!$this->verifyAmount($order, $amount)) {
+            Log::warning("Paiement amount mismatch: order {$order->order_number} expected {$order->total_amount} got {$amount}");
+            return false;
+        }
+        // Currency must be XOF and match order currency
+        $gatewayCurrency = $request->input('currency');
+        if ($gatewayCurrency !== null && strtoupper((string) $gatewayCurrency) !== strtoupper((string) ($order->currency ?? 'XOF'))) {
+            return false;
+        }
+
+        // Optional HMAC verification if gateway sends signature
+        $signature = $request->input('signature') ?? $request->header('X-Signature');
+        if ($signature) {
+            $payload = $request->input('reference') . $amount . $config['merchant_secret'];
+            $expected = hash_hmac('sha256', $payload, $config['merchant_secret']);
+            if (!hash_equals($expected, (string) $signature)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function paiementSuccess(Request $request, string $storeSlug, string $orderNumber)
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('reference'));
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         if ($order->payment_status !== 'paid' && $this->verifyPaiement($order, $request)) {
@@ -767,8 +1042,9 @@ class GatewayReturnController extends Controller
 
     public function paiementCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('reference'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response('Order not found', 404);
         }
         if ($this->verifyPaiement($order, $request)) {
@@ -783,6 +1059,9 @@ class GatewayReturnController extends Controller
 
     private function verifyAamarpay(Order $order, string $tranId): bool
     {
+        if (!$this->verifyOrderCurrency($order, 'aamarpay')) {
+            return false;
+        }
         $config = getPaymentMethodConfig('aamarpay', $order->store->user->id, $order->store_id);
         if (!$config['enabled'] || !$config['store_id'] || !$config['signature']) {
             return false;
@@ -792,7 +1071,7 @@ class GatewayReturnController extends Controller
             ? 'https://sandbox.aamarpay.com/api/v1/trxcheck/request.php'
             : 'https://secure.aamarpay.com/api/v1/trxcheck/request.php';
         try {
-            $response = \Illuminate\Support\Facades\Http::asForm()->post($endpoint, [
+            $response = Http::asForm()->post($endpoint, [
                 'store_id' => $config['store_id'],
                 'signature_key' => $config['signature'],
                 'type' => 'json',
@@ -815,7 +1094,7 @@ class GatewayReturnController extends Controller
     {
         $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber);
-        if (!$store || !$order) {
+        if (!$store || !$order || !$this->assertStoreOwnsOrder($store, $order)) {
             return redirect()->to($this->storeHomeUrl($store, $storeSlug))->withErrors(['error' => __('Payment verification failed.')]);
         }
         $tranId = $request->input('pg_txnid') ?? $request->input('tran_id');
@@ -827,8 +1106,9 @@ class GatewayReturnController extends Controller
 
     public function aamarpayCallback(Request $request, string $storeSlug, string $orderNumber)
     {
+        $store = $this->resolveStore($storeSlug);
         $order = $this->findOrder($orderNumber, $request->input('mer_txnid'));
-        if (!$order) {
+        if (!$order || !$store || !$this->assertStoreOwnsOrder($store, $order)) {
             return response()->json(['status' => 'error', 'error' => 'Order not found'], 404);
         }
         $tranId = $request->input('mer_txnid');

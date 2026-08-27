@@ -102,32 +102,45 @@ abstract class PaymentGatewayController extends Controller
     }
 
     /**
-     * Create the PlanOrder and activate the subscription idempotently.
+     * Create the PlanOrder and activate the subscription idempotently (atomic).
      */
     protected function createPlanOrderAndActivate($user, Plan $plan, Request $request, array $pricing, string $paymentId): void
     {
-        // Idempotency guard: avoid duplicate plan orders for the same payment.
-        if (PlanOrder::where('payment_id', $paymentId)->exists()) {
-            return;
+        // Atomic idempotency via DB transaction + unique constraint fallback
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($user, $plan, $request, $pricing, $paymentId) {
+                // Use lock + check inside transaction to avoid race
+                $exists = PlanOrder::where('payment_id', $paymentId)->lockForUpdate()->exists();
+                if ($exists) {
+                    return;
+                }
+
+                $planOrder = PlanOrder::create([
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                    'coupon_id' => $pricing['coupon_id'] ?? null,
+                    'original_price' => $pricing['original_price'],
+                    'discount_amount' => $pricing['discount_amount'],
+                    'final_price' => $pricing['final_price'],
+                    'billing_cycle' => $request->billing_cycle,
+                    'payment_method' => $this->gatewayName(),
+                    'payment_id' => $paymentId,
+                    'status' => 'approved',
+                    'coupon_code' => $request->coupon_code,
+                    'order_number' => 'PO-' . strtoupper(Str::random(8)),
+                    'ordered_at' => now(),
+                    'processed_at' => now(),
+                ]);
+
+                $planOrder->activateSubscription();
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Unique violation (1062 MySQL / 23505 PG) — already processed by concurrent request
+            if (str_contains($e->getMessage(), 'Duplicate') || str_contains($e->getMessage(), 'unique') || $e->getCode() === '23000') {
+                Log::info("Duplicate plan order ignored: payment_id={$paymentId} gateway=" . $this->gatewayName());
+                return;
+            }
+            throw $e;
         }
-
-        $planOrder = PlanOrder::create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-            'coupon_id' => $pricing['coupon_id'] ?? null,
-            'original_price' => $pricing['original_price'],
-            'discount_amount' => $pricing['discount_amount'],
-            'final_price' => $pricing['final_price'],
-            'billing_cycle' => $request->billing_cycle,
-            'payment_method' => $this->gatewayName(),
-            'payment_id' => $paymentId,
-            'status' => 'approved',
-            'coupon_code' => $request->coupon_code,
-            'order_number' => 'PO-' . strtoupper(Str::random(8)),
-            'ordered_at' => now(),
-            'processed_at' => now(),
-        ]);
-
-        $planOrder->activateSubscription();
     }
 }

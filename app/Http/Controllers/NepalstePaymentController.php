@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class NepalstePaymentController extends Controller
 {
@@ -17,28 +19,95 @@ class NepalstePaymentController extends Controller
         try {
             $plan = Plan::findOrFail($validated['plan_id']);
             $settings = getPaymentGatewaySettings();
-            
+
             if (!isset($settings['payment_settings']['nepalste_public_key']) || !isset($settings['payment_settings']['nepalste_secret_key'])) {
                 return back()->withErrors(['error' => __('Nepalste not configured')]);
             }
 
-            if ($validated['status'] === 'completed') {
-                processPaymentSuccess([
-                    'user_id' => auth()->id(),
-                    'plan_id' => $plan->id,
-                    'billing_cycle' => $validated['billing_cycle'],
-                    'payment_method' => 'nepalste',
-                    'coupon_code' => $validated['coupon_code'] ?? null,
-                    'payment_id' => $validated['payment_id'],
-                ]);
-
-                return back()->with('success', __('Payment successful and plan activated'));
+            if ($validated['status'] !== 'completed') {
+                return back()->withErrors(['error' => __('Payment failed or cancelled')]);
             }
 
-            return back()->withErrors(['error' => __('Payment failed or cancelled')]);
+            // Fail closed: verify server-side before activating
+            if (!$this->verifyNepalstePlan($validated['payment_id'], $plan, $validated)) {
+                return back()->withErrors(['error' => __('Payment could not be verified.')]);
+            }
+
+            processPaymentSuccess([
+                'user_id' => auth()->id(),
+                'plan_id' => $plan->id,
+                'billing_cycle' => $validated['billing_cycle'],
+                'payment_method' => 'nepalste',
+                'coupon_code' => $validated['coupon_code'] ?? null,
+                'payment_id' => $validated['payment_id'],
+            ]);
+
+            return back()->with('success', __('Payment successful and plan activated'));
 
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Payment processing failed']);
+        }
+    }
+
+    private function verifyNepalstePlan(string $paymentId, Plan $plan, array $validated): bool
+    {
+        $settings = getPaymentGatewaySettings();
+        $publicKey = $settings['payment_settings']['nepalste_public_key'] ?? null;
+        $secretKey = $settings['payment_settings']['nepalste_secret_key'] ?? null;
+        $mode = $settings['payment_settings']['nepalste_mode'] ?? 'sandbox';
+        if (empty($publicKey) || empty($secretKey)) {
+            return false;
+        }
+
+        $pricing = calculatePlanPricing($plan, $validated['coupon_code'] ?? null, $validated['billing_cycle'], auth()->id());
+
+        $baseUrl = $mode === 'live'
+            ? 'https://nepalste.com.np/pay/api/v1'
+            : 'https://nepalste.com.np/pay/sandbox/api/v1';
+
+        try {
+            $tokenResponse = Http::timeout(15)->post($baseUrl . '/access-token', [
+                'consumer_key' => $publicKey,
+                'consumer_secret' => $secretKey,
+            ]);
+            if (!$tokenResponse->successful()) {
+                Log::warning('Nepalste plan token fetch failed');
+                return false;
+            }
+            $token = $tokenResponse->json()['token'] ?? $tokenResponse->json()['access_token'] ?? null;
+            if (!$token) {
+                return false;
+            }
+
+            $check = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/check', [
+                'payment_id' => $paymentId,
+            ]);
+            if ($check->status() === 404) {
+                $check = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/status/' . $paymentId);
+            }
+            if (!$check->successful()) {
+                return false;
+            }
+            $data = $check->json();
+            $status = $data['status'] ?? $data['Status'] ?? $data['payment_status'] ?? null;
+            if ($status !== null && strtolower((string) $status) !== 'completed') {
+                return false;
+            }
+            $amount = $data['amount'] ?? $data['total_amount'] ?? $data['data']['amount'] ?? null;
+            if ($amount !== null && abs((float) $amount - (float) $pricing['final_price']) >= 0.01) {
+                Log::warning('Nepalste plan amount mismatch');
+                return false;
+            }
+            // Currency should be NPR
+            $currency = $data['currency'] ?? $data['data']['currency'] ?? null;
+            if ($currency !== null && strtoupper((string) $currency) !== 'NPR') {
+                return false;
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Nepalste plan verify error: ' . $e->getMessage());
+            return false;
         }
     }
 
@@ -50,7 +119,7 @@ class NepalstePaymentController extends Controller
             $plan = Plan::findOrFail($validated['plan_id']);
             $pricing = calculatePlanPricing($plan, $validated['coupon_code'] ?? null, $validated['billing_cycle']);
             $settings = getPaymentGatewaySettings();
-            
+
             if (!isset($settings['payment_settings']['nepalste_public_key']) || !isset($settings['payment_settings']['nepalste_secret_key'])) {
                 return response()->json(['error' => 'Nepalste not configured'], 400);
             }
@@ -72,8 +141,8 @@ class NepalstePaymentController extends Controller
                 'website_url' => route('plans.index'),
             ];
 
-            $baseUrl = $settings['payment_settings']['nepalste_mode'] === 'live' 
-                ? 'https://nepalste.com.np/pay/api/v1' 
+            $baseUrl = $settings['payment_settings']['nepalste_mode'] === 'live'
+                ? 'https://nepalste.com.np/pay/api/v1'
                 : 'https://nepalste.com.np/pay/sandbox/api/v1';
 
             $response = $this->initiateNepalstePayment($baseUrl . '/payment/initiate', $paymentData, $accessToken);
@@ -89,7 +158,7 @@ class NepalstePaymentController extends Controller
             return response()->json(['error' => 'Payment initiation failed'], 500);
 
         } catch (\Exception $e) {
-            \Log::error('Nepalste payment creation error: ' . $e->getMessage());
+            Log::error('Nepalste payment creation error: ' . $e->getMessage());
             return response()->json(['error' => 'Payment creation failed'], 500);
         }
     }
@@ -99,34 +168,79 @@ class NepalstePaymentController extends Controller
         try {
             $orderId = $request->input('order_id');
             $planId = $request->input('plan_id');
-            $billingCycle = $request->input('billing_cycle');
-            
-            if ($orderId && $planId) {
-                $plan = Plan::find($planId);
-                $user = auth()->user();
-                
-                if ($plan && $user) {
-                    // Assign plan to user
-                    $user->plan_id = $plan->id;
-                    $user->plan_expire_date = $billingCycle === 'yearly' ? now()->addYear() : now()->addMonth();
-                    $user->save();
-                    
-                    processPaymentSuccess([
-                        'user_id' => $user->id,
-                        'plan_id' => $plan->id,
-                        'billing_cycle' => $billingCycle,
-                        'payment_method' => 'nepalste',
-                        'payment_id' => $orderId,
-                    ]);
-                    
-                    return redirect()->route('plans.index')->with('success', __('Payment successful and plan activated'));
-                }
+            $billingCycle = $request->input('billing_cycle') ?? 'monthly';
+
+            if (!$orderId || !$planId) {
+                return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
             }
-            
-            return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
-            
+
+            $plan = Plan::find($planId);
+            $user = auth()->user();
+            if (!$plan || !$user) {
+                return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+            }
+
+            // Server verification before activating (fail closed)
+            $settings = getPaymentGatewaySettings();
+            $publicKey = $settings['payment_settings']['nepalste_public_key'] ?? null;
+            $secretKey = $settings['payment_settings']['nepalste_secret_key'] ?? null;
+            if (empty($publicKey) || empty($secretKey)) {
+                return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+            }
+
+            $pricing = calculatePlanPricing($plan, null, $billingCycle, $user->id);
+            $mode = $settings['payment_settings']['nepalste_mode'] ?? 'sandbox';
+            $baseUrl = $mode === 'live'
+                ? 'https://nepalste.com.np/pay/api/v1'
+                : 'https://nepalste.com.np/pay/sandbox/api/v1';
+
+            try {
+                $tokenResponse = Http::timeout(15)->post($baseUrl . '/access-token', [
+                    'consumer_key' => $publicKey,
+                    'consumer_secret' => $secretKey,
+                ]);
+                if (!$tokenResponse->successful()) {
+                    return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+                }
+                $token = $tokenResponse->json()['token'] ?? $tokenResponse->json()['access_token'] ?? null;
+                if (!$token) {
+                    return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+                }
+                $check = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/check', [
+                    'purchase_order_id' => $orderId,
+                ]);
+                if ($check->status() === 404) {
+                    $check = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/status/' . $orderId);
+                }
+                if (!$check->successful()) {
+                    return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+                }
+                $data = $check->json();
+                $status = $data['status'] ?? $data['Status'] ?? null;
+                if ($status !== null && strtolower((string) $status) !== 'completed') {
+                    return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+                }
+                $amount = $data['amount'] ?? $data['data']['amount'] ?? null;
+                if ($amount !== null && abs((float) $amount - (float) $pricing['final_price']) >= 0.01) {
+                    return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+                }
+            } catch (\Throwable $e) {
+                Log::error('Nepalste success verify error: ' . $e->getMessage());
+                return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
+            }
+
+            processPaymentSuccess([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'billing_cycle' => $billingCycle,
+                'payment_method' => 'nepalste',
+                'payment_id' => $orderId,
+            ]);
+
+            return redirect()->route('plans.index')->with('success', __('Payment successful and plan activated'));
+
         } catch (\Exception $e) {
-            \Log::error('Nepalste success error: ' . $e->getMessage());
+            Log::error('Nepalste success error: ' . $e->getMessage());
             return redirect()->route('plans.index')->with('error', __('Payment processing failed'));
         }
     }
@@ -136,37 +250,95 @@ class NepalstePaymentController extends Controller
         try {
             $orderId = $request->input('purchase_order_id');
             $status = $request->input('status');
-            
-            if ($orderId && $status === 'completed') {
-                $parts = explode('_', $orderId);
-                
-                if (count($parts) >= 3) {
-                    $planId = $parts[1];
-                    $userId = $parts[2];
-                    
-                    $plan = Plan::find($planId);
-                    $user = \App\Models\User::find($userId);
-                    
-                    if ($plan && $user) {
-                        $user->plan_id = $plan->id;
-                        $user->plan_expire_date = now()->addMonth();
-                        $user->save();
-                        
-                        processPaymentSuccess([
-                            'user_id' => $user->id,
-                            'plan_id' => $plan->id,
-                            'billing_cycle' => 'monthly',
-                            'payment_method' => 'nepalste',
-                            'payment_id' => $request->input('payment_id'),
-                        ]);
-                    }
-                }
+
+            if (!$orderId || $status !== 'completed') {
+                return response()->json(['status' => 'failed'], 400);
             }
+
+            $parts = explode('_', $orderId);
+            if (count($parts) < 3) {
+                return response()->json(['status' => 'failed'], 400);
+            }
+
+            $planId = $parts[1];
+            $userId = $parts[2];
+
+            $plan = Plan::find($planId);
+            $user = \App\Models\User::find($userId);
+            if (!$plan || !$user) {
+                return response()->json(['status' => 'failed'], 404);
+            }
+
+            // Server verification
+            $settings = getPaymentGatewaySettings();
+            $publicKey = $settings['payment_settings']['nepalste_public_key'] ?? null;
+            $secretKey = $settings['payment_settings']['nepalste_secret_key'] ?? null;
+            if (empty($publicKey) || empty($secretKey)) {
+                return response()->json(['status' => 'failed'], 403);
+            }
+
+            // Recover billing_cycle from cpm_custom if present, else infer
+            $billingCycle = 'monthly';
+            $custom = $request->input('cpm_custom');
+            if ($custom) {
+                $decoded = json_decode($custom, true);
+                $billingCycle = $decoded['billing_cycle'] ?? $billingCycle;
+            }
+
+            $pricing = calculatePlanPricing($plan, null, $billingCycle, $user->id);
+            $mode = $settings['payment_settings']['nepalste_mode'] ?? 'sandbox';
+            $baseUrl = $mode === 'live'
+                ? 'https://nepalste.com.np/pay/api/v1'
+                : 'https://nepalste.com.np/pay/sandbox/api/v1';
+
+            try {
+                $tokenResponse = Http::timeout(15)->post($baseUrl . '/access-token', [
+                    'consumer_key' => $publicKey,
+                    'consumer_secret' => $secretKey,
+                ]);
+                if (!$tokenResponse->successful()) {
+                    return response()->json(['status' => 'failed'], 403);
+                }
+                $token = $tokenResponse->json()['token'] ?? $tokenResponse->json()['access_token'] ?? null;
+                if (!$token) {
+                    return response()->json(['status' => 'failed'], 403);
+                }
+                $check = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/check', [
+                    'purchase_order_id' => $orderId,
+                    'payment_id' => $request->input('payment_id') ?? $orderId,
+                ]);
+                if ($check->status() === 404) {
+                    $check = Http::withToken($token)->timeout(15)->get($baseUrl . '/payment/status/' . $orderId);
+                }
+                if (!$check->successful()) {
+                    return response()->json(['status' => 'failed'], 403);
+                }
+                $data = $check->json();
+                $serverStatus = $data['status'] ?? $data['Status'] ?? null;
+                if ($serverStatus !== null && strtolower((string) $serverStatus) !== 'completed') {
+                    return response()->json(['status' => 'failed'], 403);
+                }
+                $serverAmount = $data['amount'] ?? $data['data']['amount'] ?? null;
+                if ($serverAmount !== null && abs((float) $serverAmount - (float) $pricing['final_price']) >= 0.01) {
+                    return response()->json(['status' => 'failed'], 403);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Nepalste callback verify error: ' . $e->getMessage());
+                return response()->json(['status' => 'failed'], 403);
+            }
+
+            processPaymentSuccess([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'billing_cycle' => $billingCycle,
+                'payment_method' => 'nepalste',
+                'payment_id' => $request->input('payment_id') ?? $orderId,
+            ]);
 
             return response()->json(['status' => 'success']);
 
         } catch (\Exception $e) {
-            \Log::error('Nepalste callback error: ' . $e->getMessage());
+            Log::error('Nepalste callback error: ' . $e->getMessage());
             return response()->json(['error' => 'Callback processing failed'], 500);
         }
     }
@@ -174,8 +346,8 @@ class NepalstePaymentController extends Controller
     private function getAccessToken($settings)
     {
         try {
-            $baseUrl = $settings['nepalste_mode'] === 'live' 
-                ? 'https://nepalste.com.np/pay/api/v1' 
+            $baseUrl = $settings['nepalste_mode'] === 'live'
+                ? 'https://nepalste.com.np/pay/api/v1'
                 : 'https://nepalste.com.np/pay/sandbox/api/v1';
 
             $ch = curl_init();
@@ -203,7 +375,7 @@ class NepalstePaymentController extends Controller
             return null;
 
         } catch (\Exception $e) {
-            \Log::error('Nepalste access token error: ' . $e->getMessage());
+            Log::error('Nepalste access token error: ' . $e->getMessage());
             return null;
         }
     }
@@ -236,7 +408,7 @@ class NepalstePaymentController extends Controller
             return false;
 
         } catch (\Exception $e) {
-            \Log::error('Nepalste payment request error: ' . $e->getMessage());
+            Log::error('Nepalste payment request error: ' . $e->getMessage());
             return false;
         }
     }

@@ -53,34 +53,52 @@ trait HandlesWebhookIdempotency
     protected function processWebhookIdempotently(Request $request, string $gateway, callable $handler): mixed
     {
         $eventId = $this->extractEventId($request, $gateway);
-        
+
         if (!$eventId) {
             Log::warning("Webhook idempotency: Could not extract event ID for {$gateway}", [
                 'gateway' => $gateway,
                 'headers' => $request->headers->all(),
             ]);
-            
-            // If we can't extract an event ID, process anyway but log warning
-            return $handler($request);
+            // Fail closed: without an event ID we cannot deduplicate atomically
+            // Use body hash as idempotency key and enforce atomic add
+            $fallbackId = $gateway . '_' . hash('sha256', $request->getContent());
+            $key = $this->getIdempotencyKey($gateway, $fallbackId);
+            if (!Cache::add($key, true, $this->idempotencyTtl)) {
+                return response()->json(['status' => 'already_processed'], 200);
+            }
+            try {
+                $result = $handler($request);
+                Cache::put($key, $result, $this->idempotencyTtl);
+                return $result;
+            } catch (\Throwable $e) {
+                Cache::forget($key);
+                throw $e;
+            }
         }
 
-        if ($this->isWebhookProcessed($gateway, $eventId)) {
+        $key = $this->getIdempotencyKey($gateway, $eventId);
+
+        // Atomic claim: Cache::add only succeeds if key does not exist
+        if (!Cache::add($key, 'processing', $this->idempotencyTtl)) {
             Log::info("Webhook idempotency: Duplicate event ignored for {$gateway}", [
                 'gateway' => $gateway,
                 'event_id' => $eventId,
             ]);
-            
-            // Return cached result or success response
-            $cached = Cache::get($this->getIdempotencyKey($gateway, $eventId));
-            
+            $cached = Cache::get($key);
+            if ($cached === 'processing') {
+                return response()->json(['status' => 'already_processed'], 200);
+            }
             return $cached ?? response()->json(['status' => 'already_processed'], 200);
         }
 
-        $result = $handler($request);
-        
-        $this->markWebhookProcessed($gateway, $eventId, $result);
-        
-        return $result;
+        try {
+            $result = $handler($request);
+            Cache::put($key, $result, $this->idempotencyTtl);
+            return $result;
+        } catch (\Throwable $e) {
+            Cache::forget($key);
+            throw $e;
+        }
     }
 
     /**
@@ -244,6 +262,9 @@ trait HandlesWebhookIdempotency
         // For CinetPay, the event ID is in the body
         if ($gateway === 'cinetpay') {
             $payload = $request->json()->all();
+            if (isset($payload['cpm_trans_id'])) {
+                return 'cinetpay_' . $payload['cpm_trans_id'];
+            }
             if (isset($payload['transaction_id'])) {
                 return 'cinetpay_' . $payload['transaction_id'];
             }
@@ -252,6 +273,9 @@ trait HandlesWebhookIdempotency
         // For Paiement, the event ID is in the body
         if ($gateway === 'paiement') {
             $payload = $request->json()->all();
+            if (isset($payload['reference'])) {
+                return 'paiement_' . $payload['reference'];
+            }
             if (isset($payload['transaction_id'])) {
                 return 'paiement_' . $payload['transaction_id'];
             }
@@ -340,6 +364,9 @@ trait HandlesWebhookIdempotency
         // For Nepalste, the event ID is in the body
         if ($gateway === 'nepalste') {
             $payload = $request->json()->all();
+            if (isset($payload['purchase_order_id'])) {
+                return 'nepalste_' . $payload['purchase_order_id'];
+            }
             if (isset($payload['transaction_id'])) {
                 return 'nepalste_' . $payload['transaction_id'];
             }
