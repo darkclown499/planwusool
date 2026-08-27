@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -28,6 +28,9 @@ class AbandonedCart extends Model
         'recovery_token',
         'abandoned_at',
         'expires_at',
+        'whatsapp_status',
+        'whatsapp_message_id',
+        'whatsapp_sent_at',
     ];
 
     protected $casts = [
@@ -38,6 +41,7 @@ class AbandonedCart extends Model
         'recovered_at' => 'datetime',
         'abandoned_at' => 'datetime',
         'expires_at' => 'datetime',
+        'whatsapp_sent_at' => 'datetime',
         'reminder_count' => 'integer',
     ];
 
@@ -51,25 +55,16 @@ class AbandonedCart extends Model
         'unsubscribed' => 'unsubscribed',
     ];
 
-    /**
-     * Get the store that owns the abandoned cart.
-     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
-    /**
-     * Get the customer that owns the abandoned cart.
-     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    /**
-     * Get the recovered order.
-     */
     public function recoveredOrder(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'recovered_order_id');
@@ -93,13 +88,9 @@ class AbandonedCart extends Model
         $token = $this->recovery_token ?: $this->ensureRecoveryToken();
         $store = $this->store;
         $base = $store ? (method_exists($store, 'getStoreUrl') ? '' : '') : '';
-        // Use generic checkout route with token
         return url('/checkout?recover_token=' . $token);
     }
 
-    /**
-     * Scope a query to carts that are candidates for a reminder.
-     */
     public function scopePendingReminder($query, int $storeId, int $hours = 24)
     {
         return $query->where('store_id', $storeId)
@@ -124,4 +115,3 @@ class AbandonedCart extends Model
             });
     }
 }
-

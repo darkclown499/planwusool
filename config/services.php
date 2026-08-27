@@ -105,6 +105,7 @@ return [
         'template_name' => env('WHATSAPP_ORDER_TEMPLATE_NAME', ''),
         'template_language' => env('WHATSAPP_ORDER_TEMPLATE_LANGUAGE', 'ar'),
         'queue' => env('WHATSAPP_QUEUE', 'notifications'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN', ''),
         'twilio_sid' => env('TWILIO_SID'),
         'twilio_token' => env('TWILIO_AUTH_TOKEN'),
         'twilio_from' => env('TWILIO_WHATSAPP_FROM'),

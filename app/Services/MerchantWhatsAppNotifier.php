@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\StoreWhatsappIntegration;
+use App\Models\WhatsappMessage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -76,6 +77,31 @@ class MerchantWhatsAppNotifier
             }
         }
 
+        // DB-backed idempotency
+        try {
+            $existing = WhatsappMessage::where('store_id', $storeId)->where('order_id', $order->id)->first();
+            if ($existing && in_array($existing->status, ['sent','delivered','read'], true)) {
+                Log::info('Merchant WhatsApp duplicate (DB)', ['store_id'=>$storeId,'order_id'=>$order->id]);
+                return ['sent'=>false,'reason'=>'duplicate','provider'=>$integration->provider];
+            }
+            if (!$existing) {
+                try {
+                    WhatsappMessage::create([
+                        'store_id' => $storeId,
+                        'order_id' => $order->id,
+                        'recipient_phone' => $normalizedRecipient,
+                        'provider' => $integration->provider ?? 'meta',
+                        'direction' => 'outbound',
+                        'message_type' => 'order_notification',
+                        'status' => 'queued',
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::info('Merchant WhatsApp duplicate race', ['store_id'=>$storeId,'order_id'=>$order->id]);
+                    return ['sent'=>false,'reason'=>'duplicate','provider'=>$integration->provider];
+                }
+            }
+        } catch (\Throwable $e) {}
+
         try {
             $sent = $integration->provider === 'twilio'
                 ? $this->sendViaTwilio($normalizedRecipient, $payload, $integration)
@@ -83,11 +109,20 @@ class MerchantWhatsAppNotifier
 
             if ($sent) {
                 Cache::put($idempotencyKey, true, 86400);
+                try {
+                    WhatsappMessage::where('store_id', $storeId)->where('order_id', $order->id)->update([
+                        'provider_message_id' => $sent['message_id'] ?? null,
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                        'recipient_phone' => $normalizedRecipient,
+                    ]);
+                } catch (\Throwable $e) {}
                 $masked = PhoneNormalizer::mask($normalizedRecipient);
                 Log::info('Merchant WhatsApp sent', ['store_id' => $storeId, 'order_id' => $order->id, 'provider' => $integration->provider, 'masked' => $masked, 'message_id' => $sent['message_id'] ?? null]);
                 return ['sent' => true, 'reason' => 'sent', 'provider' => $integration->provider, 'message_id' => $sent['message_id'] ?? null];
             }
 
+            try { WhatsappMessage::where('store_id', $storeId)->where('order_id', $order->id)->update(['status'=>'failed','last_error'=>'provider_error']); } catch (\Throwable $e) {}
             Log::warning('Merchant WhatsApp provider returned failure', ['store_id' => $storeId, 'order_id' => $order->id, 'provider' => $integration->provider]);
             return ['sent' => false, 'reason' => 'provider_error', 'provider' => $integration->provider];
         } catch (\Throwable $e) {
@@ -299,7 +334,6 @@ class MerchantWhatsAppNotifier
             'is_enabled' => true,
             'has_number' => !empty($normalized),
             'has_integration' => true,
-            'number_normalized' => $normalized,
             'number_masked' => $recipientMasked,
             'business_phone_masked' => $businessMasked,
             'provider' => $integration->provider,

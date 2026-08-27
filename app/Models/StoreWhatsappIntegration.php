@@ -14,6 +14,7 @@ class StoreWhatsappIntegration extends Model
         'template_name',
         'template_language',
         'access_token',
+        'webhook_verify_token',
         'phone_number_id',
         'waba_id',
         'business_phone',
@@ -26,12 +27,14 @@ class StoreWhatsappIntegration extends Model
 
     protected $casts = [
         'access_token' => 'encrypted',
+        'webhook_verify_token' => 'encrypted',
         'is_enabled' => 'boolean',
         'last_verified_at' => 'datetime',
     ];
 
     protected $hidden = [
         'access_token',
+        'webhook_verify_token',
     ];
 
     public function store(): BelongsTo

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 namespace Tests\Feature;
 
 use App\Events\OrderCreated;
@@ -84,11 +84,12 @@ class WhatsAppTemplatePolicyAndQueueTest extends TestCase
         $ordA=$this->order($sA); $ordB=$this->order($sB);
         app(\App\Services\MerchantWhatsAppNotifier::class)->notify($ordA);
         app(\App\Services\MerchantWhatsAppNotifier::class)->notify($ordB);
-        // Need to capture both? first fake will handle both, check both types sent
-        // Use separate asserts
+        Http::assertSent(fn($r)=>($r->data()['template']['name']??'')==='tplA');
+        Http::assertSent(fn($r)=>($r->data()['type']??'')==='text');
         \Illuminate\Support\Facades\Cache::flush();
-        Http::fake(['graph.facebook.com/*'=>Http::response(['messages'=>[['id'=>'wamid']]],200)]);
-        app(\App\Services\MerchantWhatsAppNotifier::class)->notify($ordA);
+        Http::fake(['graph.facebook.com/*'=>Http::response(['messages'=>[['id'=>'wamid2']]],200)]);
+        $ordA2=$this->order($sA);
+        app(\App\Services\MerchantWhatsAppNotifier::class)->notify($ordA2);
         Http::assertSent(fn($r)=>($r->data()['template']['name']??'')==='tplA');
     }
     public function test_job_uses_dedicated_queue_and_after_commit(): void {
@@ -126,7 +127,8 @@ class WhatsAppTemplatePolicyAndQueueTest extends TestCase
         // job handle should fail fast via $this->fail()
         // It calls $this->fail which throws JobFailed? In test we can check it doesn't throw retryable
         try{ $job->handle(app(\App\Services\MerchantWhatsAppNotifier::class)); } catch(\Throwable $e){ $this->fail('should not throw retryable for auth'); }
-        // If no exception, means job handled auth as fail() not throw — pass
+        // If no exception, means job handled auth as fail() not throw â€” pass
         $this->assertTrue(true);
     }
 }
+

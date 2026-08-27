@@ -143,6 +143,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'nepalste/callback/*',
             'paiement/callback/*',
             'aamarpay/callback/*',
+            'authorizenet/callback/*',
             'payhere/success/*',
             'cinetpay/success/*',
             'paiement/success/*',
@@ -153,6 +154,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'store/paypal/webhook',
             'store/paystack/webhook',
             'store/mercadopago/webhook',
+            'webhooks/whatsapp',
+            'webhook/whatsapp',
+            'api/whatsapp/webhook',
             ],
         );
 
