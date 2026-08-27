@@ -121,8 +121,10 @@ export function AppSidebar() {
 
     const hasContext = !!contextNav && contextNav.items.length > 0;
 
-    // Sidebar width: primary 64px + context 224px = 288px when context visible
-    const sidebarWidth = isMerchant ? (hasContext ? '18rem' : '5rem') : undefined;
+    // Visual polish: primary 92px (5.75rem) + context 212px (13.25rem) = 304px (19rem)
+    // Keeps Arabic labels comfortable without stealing content width at 1440.
+    // Empty context (Reports etc.) collapses to primary only.
+    const sidebarWidth = isMerchant ? (hasContext ? '19rem' : '5.75rem') : undefined;
 
     const filteredNavItems = getSuperAdminNavItems();
 
@@ -145,7 +147,7 @@ export function AppSidebar() {
                 dir={position === 'right' ? 'rtl' : 'ltr'}
                 style={sidebarWidth ? ({ '--sidebar-width': sidebarWidth } as React.CSSProperties) : undefined}
             >
-                <SidebarHeader className={style !== 'plain' ? 'sidebar-styled' : ''} style={sidebarStyle}>
+                <SidebarHeader className={`h-14 justify-center border-b border-gray-200/50 ${style !== 'plain' ? 'sidebar-styled' : ''}`} style={sidebarStyle}>
                     <div className="flex justify-center items-center">
                         <Link href={route('dashboard')} prefetch className="flex items-center justify-center">
                             <div className="flex items-center">
@@ -188,15 +190,15 @@ export function AppSidebar() {
                 </SidebarHeader>
 
                 <SidebarContent className="p-0">
-                    {/* Desktop: two columns */}
-                    <div className="hidden md:flex h-full w-full">
-                        {/* Level 1 — compact primary */}
-                        <div className="w-20 shrink-0 border-e border-gray-200 bg-gray-50 flex flex-col overflow-y-auto" style={sidebarStyle as any}>
+                    {/* Desktop: cohesive two-column nav — lg+ only, tablet uses mobile switcher */}
+                    <div className="hidden lg:flex h-full w-full">
+                        {/* Level 1 — structural, muted */}
+                        <div className="w-[92px] shrink-0 border-e border-gray-200/60 bg-gray-50/40 flex flex-col overflow-y-auto overflow-x-hidden" style={sidebarStyle as any}>
                             <MerchantPrimaryNav activePrimary={activePrimary} />
                         </div>
-                        {/* Level 2 — contextual */}
+                        {/* Level 2 — secondary, text-first */}
                         {hasContext && contextNav ? (
-                            <div className="w-56 shrink-0 bg-white border-e border-gray-200 overflow-y-auto">
+                            <div className="w-[212px] shrink-0 bg-white border-e border-gray-200/60 overflow-y-auto overflow-x-hidden">
                                 <MerchantContextNav title={contextNav.title} items={contextNav.items} storeId={currentStoreId} />
                             </div>
                         ) : (
@@ -204,13 +206,13 @@ export function AppSidebar() {
                         )}
                     </div>
 
-                    {/* Mobile: drawer content shows primary + context stacked */}
-                    <div className="md:hidden flex flex-col h-full overflow-y-auto bg-gray-50">
+                    {/* Mobile/Tablet drawer: stacked, reused components */}
+                    <div className="lg:hidden flex flex-col h-full overflow-y-auto bg-gray-50/40">
                         <div className="p-2">
-                            <p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">{t('Main')}</p>
+                            <p className="ps-2 pe-2 py-1 text-[11px] font-semibold uppercase tracking-widest text-gray-400">{t('Main')}</p>
                             <MerchantPrimaryNav activePrimary={activePrimary} />
                             {hasContext && contextNav && (
-                                <div className="mt-3 border-t border-gray-200 pt-3">
+                                <div className="mt-4 border-t border-gray-200/60 pt-4">
                                     <MerchantContextNav title={contextNav.title} items={contextNav.items} storeId={currentStoreId} />
                                 </div>
                             )}
@@ -220,8 +222,8 @@ export function AppSidebar() {
 
                 <SidebarFooter>
                     {auth.user?.plan && (
-                        <div className="mx-2 mb-2 hidden md:block">
-                            <div className="rounded-xl bg-white border border-gray-200 p-3">
+                        <div className="mx-2 mb-2 hidden lg:block">
+                            <div className="rounded-xl bg-gray-50/60 border border-gray-200/60 p-3">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="h-7 w-7 rounded-lg bg-emerald-50 flex items-center justify-center">
                                         <Zap className="h-3.5 w-3.5 text-emerald-600" />

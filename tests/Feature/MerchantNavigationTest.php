@@ -126,12 +126,16 @@ class MerchantNavigationTest extends TestCase
     {
         $content = file_get_contents(resource_path('js/layouts/app/app-sidebar-layout.tsx'));
         $this->assertStringContainsString("MerchantMobileSectionSwitcher", $content);
-        // Mobile switcher should be conditional and not show desktop context permanently
+        // Mobile switcher should be conditional and not show desktop context permanently — lg breakpoint for tablet polish
         $ctx = file_get_contents(resource_path('js/components/merchant/MerchantMobileSectionSwitcher.tsx'));
-        $this->assertStringContainsString("md:hidden", $ctx);
-        // Desktop context should be md:flex
+        $this->assertStringContainsString("lg:hidden", $ctx);
+        // Desktop context should be lg:flex (tablet 768-1024 uses switcher to avoid crushing content)
         $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
-        $this->assertStringContainsString("hidden md:flex", $sidebar);
+        $this->assertStringContainsString("hidden lg:flex", $sidebar);
+        $this->assertStringContainsString("lg:hidden", $sidebar);
+        // use-mobile hook breakpoint must be 1024
+        $hook = file_get_contents(resource_path('js/hooks/use-mobile.tsx'));
+        $this->assertStringContainsString("1024", $hook);
     }
 
     /** Build artifact exists (vite build already ran) */
