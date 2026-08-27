@@ -68,7 +68,30 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    const templateModule = React.useMemo(() => requireTemplateModule(template), [template]);
+    const [draft, setDraft] = React.useState<any>(null);
+
+    React.useEffect(() => {
+        const handler = (e: MessageEvent) => {
+            if (!e.data || e.data.type !== 'wusool:preview:draft') return;
+            // only accept from same origin parent
+            try {
+                if (e.origin !== window.location.origin) return;
+            } catch {}
+            setDraft(e.data.payload);
+        };
+        window.addEventListener('message', handler);
+        // notify parent that preview is ready to receive draft
+        try { window.parent.postMessage({ type: 'wusool:preview:ready' }, window.location.origin); } catch {}
+        return () => window.removeEventListener('message', handler);
+    }, []);
+
+    const effectiveTemplate = (draft?.theme as string) || template;
+    const effectiveDesignTokens = draft?.designTokens ?? designTokens;
+    const effectiveStoreContent = draft?.content ?? storeContent;
+    const effectiveCustomCss = draft?.customCss ?? (store as any)?.custom_css;
+    const effectiveCustomJs = draft?.customJs ?? (store as any)?.custom_javascript;
+
+    const templateModule = React.useMemo(() => requireTemplateModule(effectiveTemplate), [effectiveTemplate]);
 
     const storeData = React.useMemo(
         () => ({
@@ -77,20 +100,23 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             products,
             config,
             storeSettings,
-            content: storeContent,
+            content: effectiveStoreContent,
             offers,
             pages: storePages,
             behavior,
+            custom_css: effectiveCustomCss,
+            custom_javascript: effectiveCustomJs,
         }),
-        [store, categories, products, config, storeSettings, storeContent, offers, storePages, behavior],
+        [store, categories, products, config, storeSettings, effectiveStoreContent, offers, storePages, behavior, effectiveCustomCss, effectiveCustomJs],
     );
 
+    const hasDraft = !!draft;
     return (
         <>
-            <DesignTokensInjector tokens={designTokens as any} />
+            <DesignTokensInjector tokens={effectiveDesignTokens as any} />
             <CustomCodeInjector
-                customCss={store?.custom_css}
-                customJavascript={store?.custom_javascript}
+                customCss={effectiveCustomCss}
+                customJavascript={effectiveCustomJs}
                 customHeadScripts={store?.custom_head_scripts}
                 customBodyScripts={store?.custom_body_scripts}
             />

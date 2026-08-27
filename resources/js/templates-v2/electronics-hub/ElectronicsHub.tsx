@@ -411,17 +411,25 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       <main className="pb-16">
         <HubHero banner={banners[0]} />
 
-        {/* Brand rail */}
-        {brands.length > 1 && (
+        {/* Brand rail — merchant editable via electronics_brands_heading */}
+        {brands.length > 1 && (() => {
+          let headingLabel = 'الماركات';
+          try {
+            const c = (storeData as any)?.content ?? {};
+            const v = c.electronics_brands_heading ?? c.electronics?.brands_heading;
+            if (typeof v === 'string' && v.trim()) headingLabel = v.trim();
+          } catch {}
+          return (
           <section className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black text-slate-500">{heading}</span>
+              <span className="text-xs font-black text-slate-500">{headingLabel}</span>
               {brands.map((b) => (
                 <span key={b} className="rounded-full border border-slate-700 bg-slate-900 px-3.5 py-1 text-xs font-bold text-slate-300">{b}</span>
               ))}
             </div>
           </section>
-        )}
+          );
+        })()}
 
         <HubDealOfTheDay products={products} />
 

@@ -36,6 +36,7 @@ import { apiGet, apiPut } from '@/utils/api';
 import { getImageUrl } from '@/utils/image-helper';
 import { csrfHeaders, getCsrfToken } from '@/utils/csrf';
 import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2';
+import { MEDIA_SPECS, mediaSpecHelp } from '@/templates-v2/shared/mediaSpecs';
 import { usePage } from '@inertiajs/react';
 
 interface SlotField { key: string; label: string; type: 'text' | 'image'; group?: string; default?: string; }
@@ -207,6 +208,34 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
             return cur !== snap;
         } catch { return true; }
     }, [tokens, content, customCss, customJs, headInject, initialSnapshot]);
+
+    // Live preview without save: post draft to iframe via postMessage
+    useEffect(() => {
+        if (loading) return;
+        const iframe = previewIframeRef.current?.contentWindow;
+        if (!iframe) return;
+        const draft = { designTokens: tokens, content, customCss, customJs, headInject, theme: previewTemplateSlug || theme };
+        // debounce to avoid spam on keystrokes
+        const t = setTimeout(() => {
+            try {
+                iframe.postMessage({ type: 'wusool:preview:draft', payload: draft }, window.location.origin);
+            } catch {}
+        }, 120);
+        return () => clearTimeout(t);
+    }, [tokens, content, customCss, customJs, headInject, theme, previewTemplateSlug, loading]);
+
+    useEffect(() => {
+        const handler = (e: MessageEvent) => {
+            if (e.data?.type === 'wusool:preview:ready' && !loading) {
+                const iframe = previewIframeRef.current?.contentWindow;
+                if (!iframe) return;
+                const draft = { designTokens: tokens, content, customCss, customJs, headInject, theme: previewTemplateSlug || theme };
+                try { iframe.postMessage({ type: 'wusool:preview:draft', payload: draft }, window.location.origin); } catch {}
+            }
+        };
+        window.addEventListener('message', handler);
+        return () => window.removeEventListener('message', handler);
+    }, [tokens, content, customCss, customJs, headInject, theme, previewTemplateSlug, loading]);
 
     const activeModule: TemplateModule | null = useMemo(() => { try { return getTemplateModule(theme); } catch { return null; } }, [theme]);
     const modules = useMemo(() => listTemplateModules(), []);
@@ -534,30 +563,32 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                             <div className="space-y-3">
                                 <Card>
                                     <SectionLabel>شعار المتجر <span className="text-[9px] font-normal tracking-wide text-slate-400/70">Logo</span></SectionLabel>
+                                    <p className="mb-2 text-[11px] leading-relaxed text-slate-500">{mediaSpecHelp(MEDIA_SPECS.shared.branding.logo)}</p>
                                     {logoValue ? (
                                         <div className="group relative flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                                             <img src={getImageUrl(logoValue)} alt="شعار المتجر" className="h-12 w-12 rounded-xl bg-white object-contain p-1 shadow" />
-                                            <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-700" dir="ltr">{logoValue}</p><p className="text-[11px] text-slate-500">اضغط لتغيير الشعار</p></div>
+                                            <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-700" dir="ltr">{logoValue}</p><p className="text-[11px] text-slate-500">اضغط لتغيير الشعار — يحافظ على نسبة العرض</p></div>
                                             <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => logoFileRef.current?.click()} disabled={logoUploading}>{logoUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}</Button>
                                             <button type="button" onClick={() => { setTokens({ ...tokens, logo: '' }); setContent(setDotted(setDotted(content, 'brand.logo', ''), 'logo', '')); }} className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600" aria-label="حذف"><X className="h-3 w-3" /></button>
                                         </div>
                                     ) : (
-                                        <DropzoneUploader label="اسحب الشعار هنا أو اضغط للاختيار" hint="PNG بخلفية شفافة — 512×512 يفضل" accept="image/*" multiple={false} uploading={logoUploading} onFiles={uploadLogoFile} />
+                                        <DropzoneUploader label="اسحب الشعار هنا أو اضغط للاختيار" hint={mediaSpecHelp(MEDIA_SPECS.shared.branding.logo)} accept="image/*" multiple={false} uploading={logoUploading} onFiles={uploadLogoFile} />
                                     )}
                                     <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadLogoFile(e.target.files)} />
                                 </Card>
 
                                 <Card>
                                     <SectionLabel>أيقونة المتجر <span className="text-[9px] font-normal tracking-wide text-slate-400/70">Favicon</span></SectionLabel>
+                                    <p className="mb-2 text-[11px] leading-relaxed text-slate-500">{mediaSpecHelp(MEDIA_SPECS.shared.branding.favicon)}</p>
                                     {faviconValue ? (
                                         <div className="group relative flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                                             <img src={getImageUrl(faviconValue)} alt="أيقونة المتجر" className="h-10 w-10 rounded-xl bg-white object-contain p-1 shadow" />
-                                            <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-700" dir="ltr">{faviconValue}</p><p className="text-[11px] text-slate-500">تظهر في تبويب المتصفح</p></div>
+                                            <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-slate-700" dir="ltr">{faviconValue}</p><p className="text-[11px] text-slate-500">تظهر في تبويب المتصفح — تتحدث فوراً بالمعاينة</p></div>
                                             <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => faviconFileRef.current?.click()} disabled={faviconUploading}>{faviconUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}</Button>
                                             <button type="button" onClick={() => { setTokens({ ...tokens, favicon: '' }); setContent(setDotted(setDotted(content, 'brand.favicon', ''), 'favicon', '')); }} className="absolute -left-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600" aria-label="حذف"><X className="h-3 w-3" /></button>
                                         </div>
                                     ) : (
-                                        <DropzoneUploader label="اسحب الأيقونة هنا" hint="32×32 — PNG" accept="image/*" multiple={false} uploading={faviconUploading} onFiles={uploadFaviconFile} />
+                                        <DropzoneUploader label="اسحب الأيقونة هنا" hint={mediaSpecHelp(MEDIA_SPECS.shared.branding.favicon)} accept="image/*" multiple={false} uploading={faviconUploading} onFiles={uploadFaviconFile} />
                                     )}
                                     <input ref={faviconFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && uploadFaviconFile(e.target.files)} />
                                 </Card>
@@ -612,6 +643,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                 {heroType === 'image' && (
                                     <Card>
                                         <SectionLabel>صور الواجهة</SectionLabel>
+                                        <p className="mb-2 text-[11px] leading-relaxed text-slate-500">{mediaSpecHelp(MEDIA_SPECS[theme]?.hero?.desktopImage || MEDIA_SPECS['bazaar-market'].hero.desktopImage)}</p>
                                         {heroImages.length > 0 && (
                                             <div className="mb-3 grid grid-cols-2 gap-2">
                                                 {heroImages.map((img: string, idx: number) => (
@@ -622,7 +654,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                 ))}
                                             </div>
                                         )}
-                                        <DropzoneUploader label={heroImages.length === 0 ? 'اسحب صور الواجهة هنا' : 'إضافة المزيد'} hint="حتى 10 صور — 1920×1080" multiple uploading={heroUploading} onFiles={uploadHeroFiles} />
+                                        <DropzoneUploader label={heroImages.length === 0 ? 'اسحب صور الواجهة هنا' : 'إضافة المزيد'} hint={`حتى 10 صور — ${mediaSpecHelp(MEDIA_SPECS[theme]?.hero?.desktopImage || MEDIA_SPECS['bazaar-market'].hero.desktopImage)}`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />
                                         <input ref={heroFileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && uploadHeroFiles(e.target.files)} />
                                     </Card>
                                 )}
