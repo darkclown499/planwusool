@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { apiPut } from '@/utils/api';
-import { listTemplateModules, type TemplateModule } from '@/templates-v2';
+import { listTemplateModules, type TemplateModule } from '@/templates-v2/registry';
 
 interface Props {
     store: any;

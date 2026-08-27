@@ -15,6 +15,7 @@ import {
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import { AuthContext } from '@/contexts/AuthContext';
 import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
+import { useServerSearch, submitStorefrontSearch } from '@/hooks/useServerSearch';
 
 /* ===================================================================== */
 /* Souq grocery — components.                                             */
@@ -65,14 +66,13 @@ export function SouqHeader() {
 
   // Server-backed search via shared contract (store scope, active only, Arabic/English/SKU, debounce)
   // uses useServerSearch -> api/storefront/search with store_id, debounce 280
-  const { useServerSearch, submitStorefrontSearch: submitFn } = require('@/hooks/useServerSearch') as any;
   const { results: serverResults, loading: searchLoading } = useServerSearch(q, 7) as any;
   const matches: any[] = useMemo(() => {
     if (Array.isArray(serverResults)) return serverResults.slice(0, 7);
     return [];
   }, [serverResults]);
   const submitHeaderSearch = () => {
-    try { submitFn(q); } catch { window.location.assign(`/search?q=${encodeURIComponent(q.trim())}`); }
+    try { submitStorefrontSearch(q); } catch { window.location.assign(`/search?q=${encodeURIComponent(q.trim())}`); }
   };
 
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, Search, ShoppingBag, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { SearchSheet } from '../shared/SearchSheet';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
@@ -183,7 +184,6 @@ export function BakeryProductModal({ product, onClose }: any) {
 }
 
 export function BakerySearchOverlay({ onClose, onProductClick }: any) {
-  const { SearchSheet } = require('../shared/SearchSheet');
   return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#b45309" placeholder="ابحث في رفوف المخبز… خبز، كعك، كنافة" variant="bakery" />;
 }
 

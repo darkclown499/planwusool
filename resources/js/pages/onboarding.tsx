@@ -44,7 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { COUNTRIES } from '@/lib/countries';
 import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
-import { listTemplateModules, type PlanTier } from '@/templates-v2';
+import { listTemplateModules, type PlanTier } from '@/templates-v2/registry';
 
 interface Currency {
     code: string;

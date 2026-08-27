@@ -1,3 +1,4 @@
+import { useStore } from '@/contexts/StoreContext';
 import { toast } from '@/components/custom-toast';
 import { AuthFormProvider, useAuthForm } from '@/contexts/AuthFormContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -338,7 +339,8 @@ const ProfileContent: React.FC<ProfileProps> = ({ userProfile, storeSlug, onClos
     let authData:any = {};
     try { authData = useAuth(); } catch {}
     const logout: () => void = authData.logout || (()=>{});
-    const verificationMethod = (()=>{ try{ return (require('@/contexts/StoreContext').useStore() as any)?.behavior?.customer_verification_method; }catch{ return 'email'; }})();
+    const { behavior } = useStore() as any;
+    const verificationMethod = behavior?.customer_verification_method || 'email';
 
     const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
 

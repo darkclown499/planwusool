@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, Search, ShieldCheck, ShoppingCart, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { SearchSheet } from '../shared/SearchSheet';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 
 /* ===================================================================== */
@@ -219,7 +220,6 @@ export function HubProductModal({ product, onClose }: any) {
 }
 
 export function HubSearchOverlay({ onClose, onProductClick }: any) {
-  const { SearchSheet } = require('../shared/SearchSheet');
   return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#2563eb" placeholder="ابحث عن جهاز… آيفون، لابتوب، ساعة" variant="electronics" />;
 }
 

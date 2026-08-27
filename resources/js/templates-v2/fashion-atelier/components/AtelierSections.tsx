@@ -33,7 +33,7 @@ function getCategoryFallbackIcon(name: string): React.ReactNode {
 export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[] }> = ({ categories }) => {
   if (!categories || categories.length === 0) return null;
   let catHeading = 'تسوقي حسب الفئة';
-  try { const { useStorefrontCore } = require('../../shared/hooks'); const ctx = (useStorefrontCore as any)(); const raw = ctx?.content?.fashion_category_heading ?? ctx?.content?.fashion?.category_heading; if (typeof raw === 'string' && raw.trim()) catHeading = raw.trim(); } catch {}
+  try { const ctx = (useStorefrontCore as any)(); const raw = ctx?.content?.fashion_category_heading ?? ctx?.content?.fashion?.category_heading; if (typeof raw === 'string' && raw.trim()) catHeading = raw.trim(); } catch {}
 
   return (
     <section className="border-y border-stone-200/70 bg-white py-12 sm:py-16" dir="rtl">

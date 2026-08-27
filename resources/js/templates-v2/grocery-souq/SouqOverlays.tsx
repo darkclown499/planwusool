@@ -3,6 +3,7 @@ import { Minus, Plus, Search, ShoppingBasket, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { computeCartTotals, discountPercent, isVariableProduct, resolveFreeShippingThreshold, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
+import { SearchSheet } from '../shared/SearchSheet';
 
 /* ===================================================================== */
 /* Souq overlays — a working cart drawer and a quick product sheet, both  */
@@ -215,8 +216,6 @@ export function SouqProductSheet({ product, onClose }: any) {
 /* --------------------------- Search overlay — grocery dense/fast-shopping --------------------------- */
 // Shared contract: useServerSearch -> api/storefront/search with store_id, debounce, abort; no String(p.name).toLowerCase().includes client-only filter
 export function SouqSearchOverlay({ onClose, onProductClick }: any) {
-  // useServerSearch delegated via SearchSheet -> api/storefront/search
-  const { SearchSheet } = require('../shared/SearchSheet');
   return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#FFC20E" placeholder="شنو تدور عليه؟" variant="grocery" />;
 }
 

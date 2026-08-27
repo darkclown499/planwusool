@@ -5,12 +5,9 @@ import { Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPut } from '@/utils/api';
 import { ProductContext, useProduct } from '@/contexts/ProductContext';
-import {
-  requireTemplateModule,
-  V2PreviewProviders,
-  buildV2PreviewStoreData,
-  type TemplateModule,
-} from '@/templates-v2';
+import { requireTemplateModule } from '@/templates-v2/registry';
+import { V2PreviewProviders, buildV2PreviewStoreData } from '@/templates-v2/shared/preview';
+import type { TemplateModule } from '@/templates-v2/types';
 
 interface Props {
   store: any;

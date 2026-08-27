@@ -3,7 +3,8 @@ import { CustomCodeInjector } from '@/components/CustomCodeInjector';
 import DesignTokensInjector from '@/components/DesignTokensInjector';
 import { ThemeProvider } from '@/contexts/ThemeProvider';
 import type { TemplateCategoryPageData } from '@/templates-v2';
-import { requireTemplateModule, TemplateStorefrontV2 } from '@/templates-v2';
+import { requireTemplateModule } from '@/templates-v2/registry';
+import { TemplateStorefrontV2 } from '@/templates-v2/TemplateStorefrontV2';
 import React from 'react';
 import { Head } from '@inertiajs/react';
 

@@ -35,7 +35,7 @@ import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
 import { getImageUrl } from '@/utils/image-helper';
 import { csrfHeaders, getCsrfToken } from '@/utils/csrf';
-import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2';
+import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2/registry';
 import { MEDIA_SPECS, mediaSpecHelp } from '@/templates-v2/shared/mediaSpecs';
 import { usePage } from '@inertiajs/react';
 

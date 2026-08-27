@@ -3,6 +3,7 @@ import { Minus, Plus, ReceiptText, Search, Trash2, X } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
+import { SearchSheet } from '../shared/SearchSheet';
 
 /* ===================================================================== */
 /* Restaurant overlays — an "order ticket" cart drawer and a dish detail  */
@@ -184,7 +185,6 @@ export function DishModal({ product, onClose }: any) {
 }
 
 export function RestaurantSearchOverlay({ onClose, onProductClick }: any) {
-  const { SearchSheet } = require('../shared/SearchSheet');
   return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#f59e0b" placeholder="ابحث في القائمة… مشاوي، مقبلات، مشروبات" variant="restaurant" />;
 }
 
