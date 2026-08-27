@@ -120,10 +120,13 @@ export default function CourierIntegrations() {
   };
   const handleDelete = async (integ:any) => {
     if(!confirm('حذف الربط؟')) return;
-    await apiPost(`/api/stores/${store.id}/courier-integrations/${integ.id}`, {}); // placeholder
-    // use delete
-    await fetch(`/api/stores/${store.id}/courier-integrations/${integ.id}`, {method:'DELETE', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'', 'Accept':'application/json'}});
-    toast.success('تم الحذف'); refresh();
+    try {
+      const res:any = await fetch(`/api/stores/${store.id}/courier-integrations/${integ.id}`, {method:'DELETE', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'', 'Accept':'application/json'}});
+      if (!res.ok) { toast.error((res.status===422) ? 'لا يمكن الحذف — الربط مستخدم' : 'فشل الحذف'); return; }
+      const data = await res.json().catch(()=>({}));
+      if (data.success === false) { toast.error(data.message || 'فشل الحذف'); return; }
+      toast.success('تم الحذف'); refresh();
+    } catch(e:any){ toast.error(e?.message || 'فشل الحذف'); }
   };
 
   const locals = catalog.filter((c:any)=>c.region==='local');
@@ -179,7 +182,7 @@ export default function CourierIntegrations() {
                     <Button size="sm" variant="ghost" onClick={()=>handleTest(integ)}>اختبار الاتصال</Button>
                     <Button size="sm" variant="ghost" onClick={()=>handleToggleActive(integ, !integ.is_active)}>{integ.is_active ? 'إيقاف الربط' : 'تفعيل'}</Button>
                   </div>
-                  <Button size="sm" variant="ghost" className="w-full text-red-600" onClick={async()=>{ if(confirm('حذف الربط؟')){ await fetch(`/api/stores/${store.id}/courier-integrations/${integ.id}`, {method:'DELETE', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')||'', 'Accept':'application/json'}}); toast.success('تم الحذف'); refresh(); }}}>حذف الربط</Button>
+                  <Button size="sm" variant="ghost" className="w-full text-red-600" onClick={()=>handleDelete(integ)}>حذف الربط</Button>
                   <Button size="sm" className="w-full mt-1" onClick={()=>window.location.href=`/stores/${store.id}/shipping`}>ربط شركة التوصيل بطريقة شحن</Button>
                 </div>
               ) : (

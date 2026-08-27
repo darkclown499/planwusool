@@ -246,7 +246,21 @@ class MerchantWhatsAppController extends Controller
         $user = auth()->user();
         if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
 
+        // Ownership guard: users may only read the WhatsApp status of a store
+        // they manage. Without this, any authenticated tenant could query any
+        // store id and read its (previously unmasked) notification phone.
+        if ($id) {
+            $store = \App\Models\Store::find($id);
+            if (!$store || !$this->userCanManageStore($user, $store)) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        }
+
         [$userId, $storeId] = $this->resolveStoreContext($user, $id);
+        if (!$storeId) {
+            return response()->json(['message' => 'Not Found'], 404);
+        }
+
         $notifier = app(MerchantWhatsAppNotifier::class);
         $status = $notifier->getStatusForStore($userId, $storeId);
 
@@ -289,13 +303,19 @@ class MerchantWhatsAppController extends Controller
             return [$user->id, $id ? (int) $id : null];
         }
 
+        // Non-superadmin users may only resolve a store id they manage. The
+        // $id branch above already returned for owners; if we reach here with
+        // an explicit $id it is a store the caller does NOT own, so refuse
+        // rather than falling through to read a foreign tenant's data.
+        if ($id) {
+            return [$user->type === 'company' ? $user->id : (int) ($user->created_by ?: 0), null];
+        }
+
         if ($user->type === 'company') {
-            $storeId = $id ? (int) $id : getCurrentStoreId($user);
-            return [$user->id, $storeId];
+            return [$user->id, getCurrentStoreId($user)];
         }
 
         $companyUser = \App\Models\User::find($user->created_by);
-        $storeId = $id ? (int) $id : ($companyUser ? getCurrentStoreId($companyUser) : null);
-        return [$user->created_by, $storeId];
+        return [$user->created_by ?? 0, $companyUser ? getCurrentStoreId($companyUser) : null];
     }
 }

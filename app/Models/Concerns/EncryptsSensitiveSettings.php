@@ -55,6 +55,11 @@ trait EncryptsSensitiveSettings
             'easebuzz_salt_key', 'easebuzz_merchant_key',
             'ozow_private_key', 'ozow_api_key',
             'cashfree_secret_key', 'cashfree_public_key',
+            // Webhook signature-verification secrets (forging these lets an
+            // attacker mark orders paid) and gateway identifiers.
+            'stripe_webhook_secret',
+            'paypal_webhook_id',
+            'paiement_merchant_secret',
             // Mobile / chat credentials
             'telegram_bot_token', 'telegram_chat_id',
             'whatsapp_number',
