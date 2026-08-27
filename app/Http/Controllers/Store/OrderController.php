@@ -224,11 +224,11 @@ class OrderController extends Controller
                 ], 409);
             }
 
-            // Handle bank transfer receipt upload
+            // Handle bank transfer receipt upload — private storage, server-generated name, mime/size guarded above
             $bankTransferReceiptPath = null;
             if ($request->payment_method === 'bank' && $request->hasFile('bank_transfer_receipt')) {
                 $file = $request->file('bank_transfer_receipt');
-                $bankTransferReceiptPath = $file->store('bank_transfers', 'public');
+                $bankTransferReceiptPath = $file->store('bank_transfers', 'local');
             }
 
             // Resolve the store's default currency so every order records what

@@ -16,6 +16,7 @@ use App\Services\MerchantNotificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Services\Payment\PaymentCurrencyGuard;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Checkout\Session;
@@ -159,6 +160,14 @@ class OrderService
 
     public function processPayment(Order $order, ?string $storeSlug = null): array
     {
+        try {
+            if (!in_array($order->payment_method, ['cod','bank','whatsapp','telegram','jawwal_pay','pal_pay','zain_cash','orange_money','cliq','zain_cash_jo','orange_money_jo','etihad_wallet','dinar_pay','bit','paybox','bank_palestine','al_quds_bank','arab_islamic_bank','cairo_amman_bank','housing_bank','safad_bank','jordan_kuwait_bank','arab_bank','housing_bank_jo','cairo_amman_bank_jo','safad_bank_jo','usdt_trc20','usdt_erc20','usdt_bep20','usdt_polygon','usdt_solana'])) {
+                PaymentCurrencyGuard::assertOrderCurrency($order);
+            }
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+
         switch ($order->payment_method) {
             case 'cod':
                 return $this->processCashOnDelivery($order);

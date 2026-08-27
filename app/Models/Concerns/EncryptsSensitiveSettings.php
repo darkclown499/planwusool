@@ -61,32 +61,10 @@ trait EncryptsSensitiveSettings
             // Storage credentials (S3 / Wasabi-compatible)
             'aws_access_key_id', 'aws_secret_access_key',
             'wasabi_access_key', 'wasabi_secret_key',
-            // Regional wallet / mobile-money gateways
-            'jawwal_pay_api_key', 'jawwal_pay_secret_key',
-            'pal_pay_api_key', 'pal_pay_secret_key',
-            'zain_cash_api_key', 'zain_cash_secret_key',
-            'orange_money_api_key', 'orange_money_secret_key',
-            'cliq_api_key', 'cliq_secret_key',
-            'zain_cash_jo_api_key', 'zain_cash_jo_secret_key',
-            'orange_money_jo_api_key', 'orange_money_jo_secret_key',
-            'etihad_wallet_api_key', 'etihad_wallet_secret_key',
-            'dinar_pay_api_key', 'dinar_pay_secret_key',
-            'bank_palestine_api_key', 'bank_palestine_secret_key',
-            'al_quds_bank_api_key', 'al_quds_bank_secret_key',
-            'arab_islamic_bank_api_key', 'arab_islamic_bank_secret_key',
-            'cairo_amman_bank_api_key', 'cairo_amman_bank_secret_key',
-            'housing_bank_api_key', 'housing_bank_secret_key',
-            'safad_bank_api_key', 'safad_bank_secret_key',
-            'jordan_kuwait_bank_api_key', 'jordan_kuwait_bank_secret_key',
-            'arab_bank_api_key', 'arab_bank_secret_key',
-            'housing_bank_jo_api_key', 'housing_bank_jo_secret_key',
-            'cairo_amman_bank_jo_api_key', 'cairo_amman_bank_jo_secret_key',
-            'safad_bank_jo_api_key', 'safad_bank_jo_secret_key',
-            'usdt_trc20_api_key', 'usdt_trc20_secret_key',
-            'usdt_erc20_api_key', 'usdt_erc20_secret_key',
-            'usdt_bep20_api_key', 'usdt_bep20_secret_key',
-            'usdt_polygon_api_key', 'usdt_polygon_secret_key',
-            'usdt_solana_api_key', 'usdt_solana_secret_key',
+            // Regional wallet / mobile-money — NO fake API fields.
+            // These are MANUAL — credentials are phone_number/merchant_name/instructions/wallet_address
+            // stored plaintext intentionally. Do NOT encrypt fake api_key here.
+            // Partner gateways (BoP, CliQ via Bank al Etihad) will use real keys only when adapter exists.
         ];
     }
 
