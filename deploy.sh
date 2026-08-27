@@ -119,14 +119,27 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 4) Frontend build (park HTTPS requests to a maintenance page)
-#    Build assets are emitted to public/build; we keep this as the invoking
-#    user (root) for node/npm, then the ownership contract (step 7) re-owns
-#    public/ so nginx reads consistent www:www files. npm does not touch
-#    storage/framework or bootstrap/cache runtime state.
+# 4) Frontend build — ATOMIC STAGING (fixes rm -rf public/build incident)
+#    Previous incident: `rm -rf public/build; npm run build` + SSH
+#    disconnect/build failure left production with NO assets (white screen).
+#    New guarantee: live public/build is NEVER deleted before the new
+#    build is fully verified. Build goes to public/build.next, is
+#    verified (manifest + assets + valid JSON), then atomically swapped
+#    via mv (inode rename). Failed build leaves live assets untouched.
+#    Previous build is preserved as public/build.prev.<ts> for instant
+#    rollback. Park (503) is held only for the integer-ms swap window.
 # ------------------------------------------------------------------
-echo "==> [3/8] Building frontend assets"
+echo "==> [3/8] Building frontend assets (atomic staging)"
 BACKUP_INDEX="public/index.php.deploy-bak"
+BUILD_DIR="build"
+STAGE_DIR="build.next"
+PREV_PREFIX="build.prev"
+LIVE_BUILD="public/${BUILD_DIR}"
+STAGE_BUILD="public/${STAGE_DIR}"
+PREV_BUILD=""
+cleanup_prev_builds() {
+    ls -dt public/${PREV_PREFIX}.* 2>/dev/null | tail -n +4 | xargs -r rm -rf 2>/dev/null || true
+}
 park_app() {
     cp -f public/index.php "$BACKUP_INDEX"
     cat > public/index.php <<'INDEXPHP'
@@ -141,20 +154,93 @@ restore_app() {
         mv -f "$BACKUP_INDEX" public/index.php
     fi
 }
+verify_staging() {
+    local manifest="$STAGE_BUILD/manifest.json"
+    if [ ! -f "$manifest" ]; then
+        echo "FATAL: Vite manifest missing in staging build ($manifest)" >&2
+        return 1
+    fi
+    "$PHP" -r "json_decode(file_get_contents('$manifest')); if (json_last_error()!==0) exit(1);" 2>/dev/null || {
+        echo "FATAL: staging manifest is not valid JSON ($manifest)" >&2
+        return 1
+    }
+    local assets_dir="$STAGE_BUILD/assets"
+    if [ ! -d "$assets_dir" ] || ! ls "$assets_dir"/*.js >/dev/null 2>&1; then
+        echo "FATAL: No JS assets in staging build ($assets_dir)" >&2
+        return 1
+    fi
+    if [ -f "public/hot" ]; then
+        echo "FATAL: Vite hot file exists - dev server leak, refusing to deploy" >&2
+        return 1
+    fi
+    return 0
+}
 trap restore_app EXIT
 
-park_app
+# npm install (does NOT touch public/build)
 if [ -d node_modules ]; then
     npm install --no-audit --no-fund --silent || npm ci --no-audit --no-fund --silent
 else
     npm ci --no-audit --no-fund --silent
 fi
-rm -rf public/build
-npm run build
+
+# ensure clean staging dir
+rm -rf "$STAGE_BUILD"
+
+# build to STAGING — live assets remain untouched during the whole compile
+echo "==> building to staging: $STAGE_BUILD (live $LIVE_BUILD untouched)"
+if ! VITE_BUILD_DIR="$STAGE_DIR" npm run build; then
+    echo "FATAL: Vite build failed - live assets untouched at $LIVE_BUILD" >&2
+    rm -rf "$STAGE_BUILD"
+    restore_app
+    trap - EXIT
+    chmod 644 public/index.php 2>/dev/null || true
+    rm -f public/index.php.deploy-bak
+    exit 1
+fi
+
+# verify staging BEFORE any live mutation
+if ! verify_staging; then
+    echo "FATAL: staging verification failed - live assets untouched, aborting swap" >&2
+    rm -rf "$STAGE_BUILD"
+    restore_app
+    trap - EXIT
+    exit 1
+fi
+
+# park only for the atomic swap window (milliseconds)
+park_app
+
+# preserve current live as rollback artifact (timestamped) before swap
+if [ -d "$LIVE_BUILD" ]; then
+    PREV_BUILD="public/${PREV_PREFIX}.$(date +%s)"
+    echo "==> preserving previous build: $LIVE_BUILD -> $PREV_BUILD"
+    mv "$LIVE_BUILD" "$PREV_BUILD" || {
+        echo "FATAL: failed to preserve previous build" >&2
+        restore_app; trap - EXIT; exit 1
+    }
+    cleanup_prev_builds
+fi
+
+# atomic rename: staging becomes live (same filesystem -> inode rename, no partial state)
+if ! mv "$STAGE_BUILD" "$LIVE_BUILD"; then
+    echo "FATAL: atomic swap failed ($STAGE_BUILD -> $LIVE_BUILD)" >&2
+    if [ -n "$PREV_BUILD" ] && [ -d "$PREV_BUILD" ]; then
+        mv "$PREV_BUILD" "$LIVE_BUILD" 2>/dev/null || true
+        echo "==> rolled back to $PREV_BUILD" >&2
+    fi
+    restore_app; trap - EXIT; exit 1
+fi
+
+echo "==> atomic swap OK: $STAGE_BUILD -> $LIVE_BUILD (previous: ${PREV_BUILD:-none})"
+
 restore_app
 trap - EXIT
 chmod 644 public/index.php
 rm -f public/index.php.deploy-bak
+# correct ownership immediately after root-owned mv so nginx/php-fpm can serve
+chown -R "${WEB_USER}:${WEB_USER}" "$LIVE_BUILD" 2>/dev/null || true
+echo "==> frontend assets deployed atomically; failed build would have left $LIVE_BUILD untouched"
 
 # ------------------------------------------------------------------
 # 5) Database migrations (FORWARD ONLY â€” never fresh/reset) â€” AS WWW
