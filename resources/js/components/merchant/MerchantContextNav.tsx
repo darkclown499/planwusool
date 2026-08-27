@@ -40,11 +40,11 @@ export function MerchantContextNav({ title, items }: Props) {
     if (!items || items.length === 0) return null;
 
     return (
-        <nav aria-label={`${title} navigation`} className="flex flex-col gap-3 py-4">
-            <div className="ps-3.5 pe-3 pt-0.5">
-                <h2 className="text-[12px] font-semibold tracking-tight text-gray-900 leading-none text-start">{title}</h2>
+        <nav aria-label={`${title} navigation`} className="flex flex-col gap-2.5 py-3">
+            <div className="ps-3 pe-3">
+                <h2 className="text-[11px] font-semibold tracking-wide text-gray-400 uppercase leading-none text-start">{title}</h2>
             </div>
-            <ul className="flex flex-col gap-0.5 px-2.5">
+            <ul className="flex flex-col gap-0.5 px-1.5">
                 {items.map((item) => {
                     const active = isActive(item.href, item.activePaths, url);
                     return (
@@ -55,11 +55,11 @@ export function MerchantContextNav({ title, items }: Props) {
                                 aria-current={active ? 'page' : undefined}
                                 data-active={active}
                                 className={cn(
-                                    'relative flex w-full items-center rounded-lg ps-3 pe-2.5 py-2.5 text-[13px] leading-5 font-normal transition-colors duration-150 min-h-[40px]',
-                                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-1',
+                                    'relative flex w-full items-center rounded-md ps-2.5 pe-2 py-2 text-[12.5px] leading-none font-normal transition-colors duration-150 min-h-[36px]',
+                                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600',
                                     active
-                                        ? 'bg-emerald-50/80 text-emerald-700 font-medium border-s-2 border-emerald-600 -ms-px ps-[10px]'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border border-transparent'
+                                        ? 'bg-emerald-50 text-emerald-700 font-medium border-s-2 border-emerald-600 -ms-px ps-[8px]'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                                 )}
                             >
                                 <span className="truncate">{item.title}</span>

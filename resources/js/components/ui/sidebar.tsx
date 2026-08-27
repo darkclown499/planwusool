@@ -216,17 +216,16 @@ function Sidebar({
       data-side={side}
       data-slot="sidebar"
     >
-      {/* This is what handles the sidebar gap on desktop */}
+      {/* This is what handles the sidebar gap on desktop — now reflects merchant 16rem/5rem via wrapper var */}
       <div
         className={cn(
-          "relative h-svh w-(--sidebar-width) transition-[width] duration-200 ease-linear",
+          "relative h-svh w-(--sidebar-width) shrink-0 transition-[width] duration-200 ease-linear",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
             ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
         )}
-        style={{ display: 'none' }}
       />
       <div
         className={cn(

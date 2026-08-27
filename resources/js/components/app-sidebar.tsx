@@ -19,7 +19,7 @@ import { getImageUrl } from '@/utils/image-helper';
 import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 import { MerchantPrimaryNav } from '@/components/merchant/MerchantPrimaryNav';
 import { MerchantContextNav } from '@/components/merchant/MerchantContextNav';
-import { getMerchantContextNav, resolvePrimaryId } from '@/config/merchant-navigation';
+import { getMerchantContextNav, MERCHANT_PRIMARY_AREAS, resolvePrimaryId } from '@/config/merchant-navigation';
 
 export function AppSidebar() {
     const { t } = useTranslation();
@@ -124,10 +124,20 @@ export function AppSidebar() {
 
     const hasContext = !!contextNav && contextNav.items.length > 0;
 
-    // Visual polish: primary 92px (5.75rem) + context 212px (13.25rem) = 304px (19rem)
-    // Keeps Arabic labels comfortable without stealing content width at 1440.
-    // Empty context (Reports etc.) collapses to primary only.
-    const sidebarWidth = isMerchant ? (hasContext ? '19rem' : '5.75rem') : undefined;
+    // Premium SaaS: primary 80px (5rem) + context 176px (11rem) = 256px (16rem)
+    // Lighter hierarchy, less horizontal weight, more content space at 1440+.
+    // No context (dashboard, analytics) collapses to primary only.
+    const sidebarWidth = isMerchant ? (hasContext ? '16rem' : '5rem') : undefined;
+
+    // Sync CSS variable to provider wrapper so SidebarInset offset equals actual width
+    // (Sidebar component's fixed element alone doesn't affect peer offset)
+    useEffect(() => {
+        if (!isMerchant) return;
+        const wrapper = document.querySelector('[data-slot="sidebar-wrapper"]') as HTMLElement | null;
+        if (!wrapper) return;
+        if (sidebarWidth) wrapper.style.setProperty('--sidebar-width', sidebarWidth);
+        else wrapper.style.removeProperty('--sidebar-width');
+    }, [isMerchant, sidebarWidth]);
 
     const filteredNavItems = getSuperAdminNavItems();
 
@@ -140,6 +150,27 @@ export function AppSidebar() {
     };
 
     if (isMerchant) {
+        // Compact plan row + user row helpers reuse same markup in desktop footer & mobile drawer
+        const compactPlanRow = auth.user?.plan ? (
+            <div className="flex items-center gap-2 px-2 py-2.5">
+                <div className="h-6 w-6 rounded-md bg-emerald-50 flex items-center justify-center shrink-0">
+                    <Zap className="h-3 w-3 text-emerald-600" />
+                </div>
+                <div className="flex-1 min-w-0 text-start flex items-center gap-1.5">
+                    <span className="text-[12px] font-medium text-gray-700 truncate">{t(auth.user.plan?.name || 'Free')}</span>
+                    <span className="text-[11px] text-gray-400 hidden sm:inline">•</span>
+                    <span className="text-[11px] text-gray-500 hidden sm:inline truncate">{t('Plan')}</span>
+                </div>
+                <Link
+                    href={route('plans.index')}
+                    prefetch
+                    className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 whitespace-nowrap px-2 py-1 rounded-md hover:bg-emerald-50 transition-colors"
+                >
+                    {t('Upgrade')}
+                </Link>
+            </div>
+        ) : null;
+
         return (
             <Sidebar
                 side={position}
@@ -148,9 +179,9 @@ export function AppSidebar() {
                 className={style !== 'plain' ? 'sidebar-custom-style' : ''}
                 data-sidebar-style={style}
                 dir={position === 'right' ? 'rtl' : 'ltr'}
-                style={sidebarWidth ? ({ '--sidebar-width': sidebarWidth } as React.CSSProperties) : undefined}
+                style={sidebarWidth ? ({ '--sidebar-width': sidebarWidth, '--sidebar-width-icon': '5rem' } as React.CSSProperties) : undefined}
             >
-                <SidebarHeader className={`h-14 justify-center border-b border-gray-200/50 ${style !== 'plain' ? 'sidebar-styled' : ''}`} style={sidebarStyle}>
+                <SidebarHeader className={`h-13 shrink-0 justify-center border-b border-gray-100 ${style !== 'plain' ? 'sidebar-styled' : ''}`} style={sidebarStyle}>
                     <div className="flex justify-center items-center">
                         <Link href={route('dashboard')} prefetch className="flex items-center justify-center">
                             <div className="flex items-center">
@@ -160,22 +191,22 @@ export function AppSidebar() {
                                     return currentLogo ? (
                                         <img key={currentLogo} src={getImageUrl(currentLogo)} alt="Logo" className="w-auto h-6 object-contain" onError={() => updateBrandSettings({ [isDark ? 'logoLight' : 'logoDark']: '' })} />
                                     ) : (
-                                        <div className="h-8 text-inherit font-semibold flex items-center text-lg tracking-tight">{titleText || 'Wusool'}</div>
+                                        <div className="h-7 text-inherit font-semibold flex items-center text-[16px] tracking-tight">{titleText || 'وصول'}</div>
                                     );
                                 })()}
                             </div>
                         </Link>
                     </div>
                     {businesses.length > 1 && (
-                        <div className="px-2 pb-2">
+                        <div className="px-2 pt-1 pb-1.5">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="w-full justify-between h-8 px-2 text-xs" style={{ color: style !== 'plain' ? 'inherit' : undefined }}>
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <Building2 className="h-3 w-3 flex-shrink-0" />
+                                    <Button variant="ghost" className="w-full justify-between h-7 px-2 text-[11px] font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50" style={{ color: style !== 'plain' ? 'inherit' : undefined }}>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <Building2 className="h-3 w-3 flex-shrink-0 opacity-60" />
                                             <span className="truncate">{currentBusiness?.name || t('Select Business')}</span>
                                         </div>
-                                        <ChevronDown className="h-3 w-3 flex-shrink-0" />
+                                        <ChevronDown className="h-3 w-3 flex-shrink-0 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start" className="w-56">
@@ -193,15 +224,15 @@ export function AppSidebar() {
                 </SidebarHeader>
 
                 <SidebarContent className="p-0 min-h-0">
-                    {/* Desktop: cohesive two-column nav — xl+ only, tablet uses mobile switcher */}
+                    {/* Desktop: premium two-column — xl+ only (1280+). <1280 uses Sheet drawer */}
                     <div className="hidden xl:flex h-full w-full min-h-0">
-                        {/* Level 1 — structural, muted */}
-                        <div className="w-[92px] shrink-0 border-e border-gray-200/60 bg-gray-50/40 flex flex-col overflow-y-auto overflow-x-hidden min-h-0" style={sidebarStyle as any}>
+                        {/* Level 1 — primary, quiet */}
+                        <div className="w-[80px] shrink-0 border-e border-gray-100 bg-[#fcfcfc] flex flex-col overflow-y-auto overflow-x-hidden min-h-0" style={sidebarStyle as any}>
                             <MerchantPrimaryNav activePrimary={activePrimary} />
                         </div>
-                        {/* Level 2 — secondary, text-first */}
+                        {/* Level 2 — contextual, light sub-nav */}
                         {hasContext && contextNav ? (
-                            <div className="w-[212px] shrink-0 bg-white border-e border-gray-200/60 overflow-y-auto overflow-x-hidden min-h-0">
+                            <div className="w-[176px] shrink-0 bg-white border-e border-gray-100 overflow-y-auto overflow-x-hidden min-h-0">
                                 <MerchantContextNav title={contextNav.title} items={contextNav.items} storeId={currentStoreId} />
                             </div>
                         ) : (
@@ -209,75 +240,39 @@ export function AppSidebar() {
                         )}
                     </div>
 
-                    {/* Mobile/Tablet drawer: stacked, reused components — visible < xl */}
-                    <div className="xl:hidden flex flex-col h-full min-h-0 overflow-y-auto bg-gray-50/40">
-                        <div className="p-2">
-                            <p className="ps-2 pe-2 py-1 text-[11px] font-semibold uppercase tracking-widest text-gray-400">{t('Main')}</p>
-                            <MerchantPrimaryNav activePrimary={activePrimary} variant="horizontal" />
-                            {hasContext && contextNav && (
-                                <div className="mt-4 border-t border-gray-200/60 pt-4">
-                                    <MerchantContextNav title={contextNav.title} items={contextNav.items} storeId={currentStoreId} />
-                                </div>
-                            )}
+                    {/* Mobile/Tablet drawer (<xl): ONE Sheet from right, nested hierarchy */}
+                    <div className="xl:hidden flex flex-col h-full min-h-0 overflow-y-auto bg-white">
+                        <div className="flex-1 min-h-0">
+                            <MerchantDrawerNav activePrimary={activePrimary} contextNav={contextNav} />
                         </div>
-                        {/* Keep plan + user close to nav on tablet/mobile drawer — avoids detached footer gap */}
-                        {auth.user?.plan && (
-                            <div className="px-2 py-3 mt-2 border-t border-gray-200/50">
-                                <div className="rounded-xl bg-white border border-gray-200/60 p-3 shadow-sm">
-                                    <div className="flex items-center gap-2.5 mb-2.5">
-                                        <div className="h-7 w-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                                            <Zap className="h-3.5 w-3.5 text-emerald-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0 text-start">
-                                            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider leading-none mb-1">{t('Current Plan')}</p>
-                                            <p className="text-[13px] font-semibold text-gray-800 truncate leading-none">{t(auth.user.plan?.name || 'Free')}</p>
-                                        </div>
-                                    </div>
-                                    <Link href={route('plans.index')} prefetch className="flex items-center justify-center w-full rounded-lg bg-emerald-50 py-2 text-[12px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors">
-                                        {t('Upgrade Plan')}
-                                    </Link>
-                                </div>
+                        {/* Drawer footer: compact plan + user — single system, no big cards */}
+                        <div className="shrink-0 border-t border-gray-100 bg-gray-50/50">
+                            {compactPlanRow && <div className="border-b border-gray-100">{compactPlanRow}</div>}
+                            <div className="px-1.5 py-2">
+                                <NavUser position={position} compact />
                             </div>
-                        )}
-                        <div className="px-2 pb-3 pt-1 border-t border-gray-200/40 mt-auto bg-white/60">
-                            <NavUser position={position} />
                         </div>
                     </div>
                 </SidebarContent>
 
-                <SidebarFooter className="hidden xl:flex xl:flex-col shrink-0 border-t border-gray-200/50 bg-white/80 backdrop-blur-sm p-0 gap-0">
-                    {auth.user?.plan && hasContext && (
-                        <div className="mx-2 mt-2 mb-2">
-                            <div className="rounded-xl bg-gray-50/80 border border-gray-200/60 p-2.5">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="h-7 w-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                                        <Zap className="h-3.5 w-3.5 text-emerald-600" />
-                                    </div>
-                                    <div className="flex-1 min-w-0 text-start">
-                                        <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider leading-none mb-1">{t('Current Plan')}</p>
-                                        <p className="text-[13px] font-semibold text-gray-800 truncate leading-none">{t(auth.user.plan?.name || 'Free')}</p>
-                                    </div>
-                                </div>
-                                <Link href={route('plans.index')} prefetch className="flex items-center justify-center w-full rounded-lg bg-emerald-50 py-2 text-[12px] font-medium text-emerald-700 hover:bg-emerald-100 transition-colors">
-                                    {t('Upgrade Plan')}
-                                </Link>
-                            </div>
-                        </div>
-                    )}
-                    <div className="px-2 pt-2 pb-2 min-w-0">
+                <SidebarFooter className="hidden xl:flex xl:flex-col shrink-0 border-t border-gray-100 bg-white p-0 gap-0">
+                    {compactPlanRow && hasContext && <div className="mx-1 mt-1 border-b border-gray-100 pb-1">{compactPlanRow}</div>}
+                    {!hasContext && compactPlanRow && <div className="mx-1 mt-1 border-b border-gray-100 pb-1 hidden">{compactPlanRow}</div>}
+                    {/* User row — single compact row, no clipped text */}
+                    <div className="px-1.5 pt-2 pb-2 min-w-0">
                         {hasContext ? (
-                            <NavUser position={position} />
+                            <NavUser position={position} compact />
                         ) : (
                             <div className="flex justify-center">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button
                                             aria-label={auth.user?.name || 'Account'}
-                                            className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200/60 bg-white hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+                                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200/60 bg-white hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
                                         >
-                                            <Avatar className="h-8 w-8 overflow-hidden rounded-full">
+                                            <Avatar className="h-7 w-7 overflow-hidden rounded-full">
                                                 <AvatarImage src={auth.user?.avatar ?? undefined} alt={auth.user?.name || 'User'} />
-                                                <AvatarFallback className="rounded-full bg-neutral-200 text-black text-xs">
+                                                <AvatarFallback className="rounded-full bg-neutral-100 text-black text-[11px]">
                                                     {(auth.user?.name || 'U').slice(0, 2).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
@@ -293,6 +288,85 @@ export function AppSidebar() {
                 </SidebarFooter>
                 <DesignerNavigationModal open={designerOpen} onOpenChange={setDesignerOpen} storeId={designerStoreId} />
             </Sidebar>
+        );
+    }
+
+    function MerchantDrawerNav({ activePrimary, contextNav }: { activePrimary: any; contextNav: any }) {
+        const { t } = useTranslation();
+        const { url } = usePage();
+        return (
+            <nav aria-label={t('Main navigation') || 'التنقل الرئيسي'} className="flex flex-col gap-0.5 py-2 px-1.5">
+                {MERCHANT_PRIMARY_AREAS.map((area: any) => {
+                    const isActive = activePrimary === area.id;
+                    const label = t(area.labelKey) !== area.labelKey ? t(area.labelKey) : area.labelAr;
+                    const Icon = area.icon;
+                    // compute href same as primary nav
+                    const storeId = (usePage().props as any)?.auth?.user?.current_store ?? null;
+                    const sid = storeId ? String(storeId) : '';
+                    let href = '/dashboard';
+                    try {
+                        switch (area.id) {
+                            case 'dashboard': href = route('dashboard'); break;
+                            case 'orders': href = route('orders.index'); break;
+                            case 'products': href = route('products.index'); break;
+                            case 'customers': href = route('customers.index'); break;
+                            case 'store': try { href = route('stores.index'); } catch { href = sid ? `/stores/${sid}/designer` : '/stores'; } break;
+                            case 'marketing': try { href = route('coupon-system.index'); } catch { href = '/coupon-system'; } break;
+                            case 'analytics': href = route('analytics.index'); break;
+                            case 'settings': href = sid ? `/stores/${sid}/settings` : route('dashboard'); break;
+                            default: href = route('dashboard');
+                        }
+                    } catch { href = '/dashboard'; }
+                    const showChildren = isActive && contextNav && contextNav.items?.length > 0;
+                    return (
+                        <div key={area.id} className="flex flex-col">
+                            <Link
+                                href={href}
+                                prefetch
+                                aria-current={isActive ? 'page' : undefined}
+                                data-active={isActive}
+                                className={
+                                    (isActive
+                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 '
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border border-transparent ') +
+                                    'group relative flex w-full items-center gap-2.5 rounded-lg ps-2.5 pe-2 py-2.5 text-start transition-colors duration-150 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600'
+                                }
+                            >
+                                {isActive && <span aria-hidden="true" className="absolute inset-y-1 start-0 w-[2.5px] rounded-full bg-emerald-600" />}
+                                <Icon className={(isActive ? 'text-emerald-600 ' : 'text-gray-400 group-hover:text-gray-500 ') + 'h-[16px] w-[16px] shrink-0'} strokeWidth={1.7} />
+                                <span className={'flex-1 truncate text-[13px] font-medium leading-none ' + (isActive ? 'text-emerald-700' : 'text-gray-700')}>{label}</span>
+                            </Link>
+                            {showChildren && (
+                                <ul className="ms-3 mt-1 flex flex-col gap-0.5 border-s border-gray-200/70 ps-2 py-1">
+                                    {contextNav.items.map((item: any) => {
+                                        const cur = (url as string).split('?')[0].replace(/\/+$/, '') || '/';
+                                        const normalize = (p: string) => p.replace(/\/+$/, '') || '/';
+                                        const parsePath = (u: string) => (u.startsWith('http') ? (()=>{ try{return new URL(u).pathname;}catch{return u.split('?')[0];}})() : u.split('?')[0]);
+                                        let active = false;
+                                        if (item.activePaths?.length) { for (const ap of item.activePaths) if (normalize(parsePath(ap))===normalize(cur)) active=true; }
+                                        else if (item.href) active = normalize(parsePath(item.href))===normalize(cur);
+                                        return (
+                                            <li key={item.title}>
+                                                <Link
+                                                    href={item.href || '#'}
+                                                    prefetch
+                                                    aria-current={active ? 'page' : undefined}
+                                                    className={
+                                                        (active ? 'bg-emerald-50 text-emerald-700 font-medium border-s-2 border-emerald-600 -ms-px ps-[7px] ' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 border border-transparent ') +
+                                                        'flex w-full items-center rounded-md ps-2 pe-2 py-2 text-[12.5px] leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 min-h-[34px]'
+                                                    }
+                                                >
+                                                    <span className="truncate">{item.title}</span>
+                                                </Link>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </div>
+                    );
+                })}
+            </nav>
         );
     }
 

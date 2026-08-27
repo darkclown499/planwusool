@@ -7,7 +7,7 @@ import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { ChevronsUpDown } from 'lucide-react';
 
-export function NavUser({ position }: { position: 'left' | 'right' }) {
+export function NavUser({ position, compact = false }: { position: 'left' | 'right'; compact?: boolean }) {
     const { auth } = usePage<SharedData>().props;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
@@ -18,18 +18,18 @@ export function NavUser({ position }: { position: 'left' | 'right' }) {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
-                            size="lg"
-                            className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group flex items-center gap-2 min-w-0 overflow-hidden"
+                            size={compact ? 'default' : 'lg'}
+                            className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group flex items-center gap-2 min-w-0 overflow-hidden truncate rounded-lg hover:bg-gray-50 data-[state=open]:bg-gray-50"
                         >
                             {position === 'right' ? (
                                 <>
-                                    <UserInfo user={auth.user!} className="text-start" position={position} />
-                                    <ChevronsUpDown className="size-4" />
+                                    <UserInfo user={auth.user!} className="text-start" position={position} showEmail={false} compact={compact} />
+                                    <ChevronsUpDown className="size-3.5 shrink-0 text-gray-400" />
                                 </>
                             ) : (
                                 <>
-                                    <ChevronsUpDown className="size-4" />
-                                    <UserInfo user={auth.user!} className="text-start" position={position} />
+                                    <ChevronsUpDown className="size-3.5 shrink-0 text-gray-400" />
+                                    <UserInfo user={auth.user!} className="text-start" position={position} showEmail={false} compact={compact} />
                                 </>
                             )}
                         </SidebarMenuButton>
