@@ -10,7 +10,7 @@ import { toast } from '@/components/custom-toast';
 interface MolliePaymentFormProps {
   planId: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   planPrice: number;
   mollieApiKey: string;
   currency: string;

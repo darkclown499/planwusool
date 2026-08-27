@@ -10,7 +10,7 @@ interface TapPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   tapSecretKey: string;
   currency?: string;
   onSuccess: () => void;

@@ -10,7 +10,7 @@ interface OzowPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   ozowSiteKey: string;
   currency?: string;
   onSuccess: () => void;

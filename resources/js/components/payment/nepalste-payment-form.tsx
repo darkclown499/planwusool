@@ -9,7 +9,7 @@ interface NepalstePaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   nepalstePublicKey: string;
   currency?: string;
   onSuccess: () => void;

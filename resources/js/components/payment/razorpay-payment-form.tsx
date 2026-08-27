@@ -11,7 +11,7 @@ interface RazorpayPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   razorpayKey: string;
   currency?: string;
   titleText?: string;

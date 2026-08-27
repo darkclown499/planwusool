@@ -25,7 +25,7 @@ class MolliePaymentController extends Controller
     {
         $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly',
+            'billing_cycle' => 'required|in:yearly',
             'coupon_code' => 'nullable|string',
             'customer_details' => 'required|array',
             'customer_details.firstName' => 'required|string',

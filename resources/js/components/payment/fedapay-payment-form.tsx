@@ -10,7 +10,7 @@ interface FedaPayPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   fedapayPublicKey: string;
   currency?: string;
   onSuccess: () => void;

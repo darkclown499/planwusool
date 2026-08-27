@@ -13,7 +13,7 @@ interface AuthorizeNetPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   authorizenetMerchantId: string;
   currency?: string;
   isSandbox?: boolean;

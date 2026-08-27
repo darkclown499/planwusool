@@ -10,7 +10,7 @@ interface EasebuzzPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   easebuzzMerchantKey: string;
   currency?: string;
   onSuccess: () => void;

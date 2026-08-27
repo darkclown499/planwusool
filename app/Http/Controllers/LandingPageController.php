@@ -67,12 +67,12 @@ class LandingPageController extends Controller
 
             // Use database prices (yearly only since duration is yearly)
             $yearlyPrice = $plan->yearly_price ?? $plan->price;
-            $monthlyPrice = $plan->price;
+            $monthlyPrice = $plan->price; // legacy alias (yearly USD)
 
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
-                'price' => $monthlyPrice, // Monthly price (for reference)
+                'price' => $monthlyPrice, // Legacy field (now yearly USD)
                 'yearly_price' => $yearlyPrice, // Yearly price (primary)
                 'duration' => 'yearly', // Yearly only
                 'description' => $plan->description,

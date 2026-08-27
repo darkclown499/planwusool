@@ -168,7 +168,7 @@ class NepalstePaymentController extends Controller
         try {
             $orderId = $request->input('order_id');
             $planId = $request->input('plan_id');
-            $billingCycle = $request->input('billing_cycle') ?? 'monthly';
+            $billingCycle = $request->input('billing_cycle') ?? 'yearly';
 
             if (!$orderId || !$planId) {
                 return redirect()->route('plans.index')->with('error', __('Payment verification failed'));
@@ -278,7 +278,7 @@ class NepalstePaymentController extends Controller
             }
 
             // Recover billing_cycle from cpm_custom if present, else infer
-            $billingCycle = 'monthly';
+            $billingCycle = 'yearly';
             $custom = $request->input('cpm_custom');
             if ($custom) {
                 $decoded = json_decode($custom, true);

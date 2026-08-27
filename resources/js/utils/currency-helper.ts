@@ -85,8 +85,24 @@ export function formatCurrency(amount: number | string): string {
 }
 
 /**
+ * Wusool subscription billing — ALWAYS USD yearly.
+ * Do NOT use store currency (ILS/₪) for subscription prices.
+ */
+export function formatSubscriptionPrice(amount: number | string): string {
+    const num = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
+    if (isNaN(num) || num === 0) return '$0';
+    return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+export function getSubscriptionCurrency(): string {
+    return 'USD';
+}
+export function getSubscriptionBillingCycle(): 'yearly' {
+    return 'yearly';
+}
+
+/**
  * Format currency using superadmin settings only
- * Use this for plan prices and other superadmin-controlled pricing
+ * Use this for store-related pricing (NOT subscription billing)
  */
 export function formatSuperadminCurrency(amount: number | string): string {
     try {

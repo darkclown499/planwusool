@@ -161,7 +161,7 @@ class YooKassaPaymentController extends Controller
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,
-                            'billing_cycle' => $metadata['billing_cycle'] ?? 'monthly',
+                            'billing_cycle' => $metadata['billing_cycle'] ?? 'yearly',
                             'payment_method' => 'yookassa',
                             'coupon_code' => $metadata['coupon_code'] ?? null,
                             'payment_id' => $paymentId,

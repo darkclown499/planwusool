@@ -55,7 +55,7 @@ interface PaymentProcessorProps {
     duration: string;
     paymentMethods?: any;
   };
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   paymentMethods: PaymentMethod[];
   onSuccess: () => void;
   onCancel: () => void;
@@ -75,22 +75,21 @@ export function PaymentProcessor({
   const [couponLoading, setCouponLoading] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
-  const originalPrice = billingCycle === 'yearly' && (plan as any).yearly_price
+  // Wusool subscription: yearly only, USD
+  const originalPrice = (plan as any).yearly_price !== undefined && (plan as any).yearly_price !== null
     ? Number((plan as any).yearly_price)
-    : (billingCycle === 'monthly' && (plan as any).monthly_price ? Number((plan as any).monthly_price) : Number(plan.price));
+    : Number(plan.price);
   const discountAmount = appliedCoupon ? (appliedCoupon.type === 'percentage' ? (originalPrice * Number(appliedCoupon.value) / 100) : Number(appliedCoupon.value)) : 0;
   const finalPrice = Math.max(0, originalPrice - discountAmount);
 
-  // Helper function to format currency consistently
+  // Wusool subscription: always USD yearly
   const formatPrice = (amount: number) => {
-    if (plan.formatted_price) {
-      // Extract currency symbol and format from formatted_price
-      const formattedOriginal = plan.formatted_price;
-      const symbol = formattedOriginal.replace(/[\d.,\s]/g, '');
-      const isSymbolBefore = formattedOriginal.indexOf(symbol) < formattedOriginal.search(/\d/);
-      return isSymbolBefore ? `${symbol}${amount.toFixed(2)}` : `${amount.toFixed(2)}${symbol}`;
+    if (amount === 0) return '$0';
+    // If plan.formatted_price is already USD, use it as symbol reference; otherwise force $
+    if (plan.formatted_price && plan.formatted_price.includes('$')) {
+      return '$' + amount.toFixed(2);
     }
-    return `₪${amount.toFixed(2)}`; // Fallback - default platform currency is ILS / ₪
+    return '$' + amount.toFixed(2);
   };
 
   const handleApplyCoupon = async () => {
@@ -560,7 +559,7 @@ export function PaymentProcessor({
                 {t('Coupon Applied')}: {appliedCoupon.code}
               </span>
               <span className="text-green-600">
-                -{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : `₪${appliedCoupon.value}`}
+                -{appliedCoupon.type === 'percentage' ? `${appliedCoupon.value}%` : `$${appliedCoupon.value}`}
               </span>
             </div>
           </div>

@@ -10,7 +10,7 @@ interface CinetPayPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   cinetpaySiteId: string;
   currency?: string;
   onSuccess: () => void;

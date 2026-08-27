@@ -77,13 +77,13 @@ class Plan extends Model
      * @param string $cycle 'monthly' or 'yearly'
      * @return float
      */
-    public function getPriceForCycle($cycle = 'monthly')
+    public function getPriceForCycle($cycle = 'yearly')
     {
-        if ($cycle === 'yearly' && $this->yearly_price) {
-            return $this->yearly_price;
+         // Wusool billing: yearly only, USD
+        if ($this->yearly_price !== null && $this->yearly_price !== '') {
+            return (float) $this->yearly_price;
         }
-        
-        return $this->price;
+        return (float) $this->price;
     }
     
     /**

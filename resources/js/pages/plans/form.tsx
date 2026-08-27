@@ -59,7 +59,7 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
     name: plan?.name || '',
     price: plan?.price || 0,
     yearly_price: plan?.yearly_price || undefined,
-    duration: plan?.duration || 'monthly',
+    duration: plan?.duration || 'yearly',
     description: plan?.description || '',
     max_stores: plan?.max_stores || 0,
     max_users_per_store: plan?.max_users_per_store || 0,
@@ -106,13 +106,14 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setProcessing(true);
+    const payload = { ...formData, duration: 'yearly' };
 
     if (isEdit) {
-      router.put(route('plans.update', plan.id), formData, {
+      router.put(route('plans.update', plan.id), payload, {
         onFinish: () => setProcessing(false)
       });
     } else {
-      router.post(route('plans.store'), formData, {
+      router.post(route('plans.store'), payload, {
         onFinish: () => setProcessing(false)
       });
     }
@@ -147,7 +148,7 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
               </div>
 
               <div className="grid gap-1 mb-4">
-                <Label htmlFor="price" required>{t("Monthly Price")}</Label>
+                <Label htmlFor="price" required>{t("Annual Price (USD)")} </Label>
                 <Input
                   id="price"
                   name="price"
@@ -157,11 +158,14 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   onChange={handleChange}
                   aria-invalid={!!errors.price}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("All Wusool subscription plans are billed yearly in USD.")}
+                </p>
                 <InputError message={errors.price} />
               </div>
 
               <div>
-                <Label htmlFor="yearly_price">{t("Yearly Price")} <span className="text-sm text-muted-foreground">({t("Optional")})</span></Label>
+                <Label htmlFor="yearly_price">{t("Yearly Price (USD)")} <span className="text-sm text-muted-foreground">({t("Optional, defaults to annual price")})</span></Label>
                 <Input
                   id="yearly_price"
                   name="yearly_price"
@@ -169,10 +173,10 @@ export default function PlanForm({ plan, hasDefaultPlan = false, otherDefaultPla
                   step="0.01"
                   value={formData.yearly_price || ''}
                   onChange={handleChange}
-                  placeholder={t("Leave empty for 20% discount")}
+                  placeholder={t("Leave empty to use annual price")}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  {t("If left empty, yearly price will be calculated as 80% of monthly price × 12")}
+                  {t("If left empty, yearly price defaults to annual price (USD).")}
                 </p>
               </div>
 

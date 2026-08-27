@@ -25,7 +25,7 @@ class PlanService
      */
     public function assignToUser(User $user, Plan $plan, string $billingCycle): bool
     {
-        $expiresAt = $billingCycle === 'yearly' ? now()->addYear() : now()->addMonth();
+        $expiresAt = now()->addYear(); // Wusool: yearly only
 
         $oldPlan = $user->plan;
 
@@ -34,7 +34,7 @@ class PlanService
 
             $updated = $user->forceFill([
                 'plan_id' => $plan->id,
-                'plan_duration' => $billingCycle,
+                'plan_duration' => 'yearly', // enforced yearly
                 'plan_expire_date' => $expiresAt,
                 'plan_is_active' => 1,
                 'is_trial' => 0,
@@ -46,7 +46,7 @@ class PlanService
 
                 // Create referral record if user was referred
                 if (class_exists('\App\Http\Controllers\ReferralController')) {
-                    \App\Http\Controllers\ReferralController::createReferralRecord($user, $billingCycle);
+                    \App\Http\Controllers\ReferralController::createReferralRecord($user, 'yearly');
                 }
 
                 // If upgrading (higher limits), reactivate resources first

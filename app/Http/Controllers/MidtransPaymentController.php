@@ -125,7 +125,7 @@ class MidtransPaymentController extends Controller
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,
-                            'billing_cycle' => 'monthly',
+                            'billing_cycle' => 'yearly', // Wusool: yearly only
                             'payment_method' => 'midtrans',
                             'payment_id' => $request->input('transaction_id'),
                         ]);

@@ -114,7 +114,7 @@ class AamarpayPaymentController extends Controller
             $response = $request->input('response');
             $planId = $request->input('plan_id');
             $coupon = $request->input('coupon');
-            $billingCycle = $request->input('billing_cycle', 'monthly');
+            $billingCycle = $request->input('billing_cycle','yearly');
             $orderId = $request->input('order_id');
 
             // SECURITY: activate only when the payment is confirmed by the

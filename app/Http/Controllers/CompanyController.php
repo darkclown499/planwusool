@@ -266,16 +266,16 @@ class CompanyController extends Controller
                 if ($latestOrder) {
                     $diffDays = \Carbon\Carbon::parse($latestOrder->ordered_at)
                         ->diffInDays(\Carbon\Carbon::parse($company->plan_expire_date));
-                    $detectedDuration = ($diffDays > 40) ? 'yearly' : 'monthly';
+                    $detectedDuration = ($diffDays > 40) ? 'yearly' : 'yearly';
                 } else {
-                    $detectedDuration = 'monthly';
+                    $detectedDuration = 'yearly';
                 }
             } elseif (!empty($company->trial_expire_date) && $company->trial_expire_date >= now()->format('Y-m-d')) {
                 $detectedDuration = 'trial';
             } elseif (empty($company->plan_expire_date)) {
                 $detectedDuration = 'lifetime';
             } else {
-                $detectedDuration = 'monthly';
+                $detectedDuration = 'yearly';
             }
         }
         
@@ -286,19 +286,16 @@ class CompanyController extends Controller
             if ($plan->enable_custsubdomain === 'on') $features[] = __('Subdomain');
             if ($plan->enable_chatgpt === 'on') $features[] = __('AI Integration');
             
-            // Calculate yearly price
-            $yearlyPrice = $plan->yearly_price;
-            if ($yearlyPrice === null) {
-                $yearlyPrice = $plan->price * 12 * 0.8;
-            }
+            // Wusool: yearly only, USD — price is annual
+            $yearlyPrice = $plan->yearly_price ?? $plan->price;
             
             return [
                 'id' => $plan->id,
                 'name' => $plan->name,
-                'monthly_price' => formatCurrencyAmount($plan->price),
-                'yearly_price' => formatCurrencyAmount($yearlyPrice),
+                'monthly_price' => formatSubscriptionPrice($plan->price), // legacy alias, yearly USD
+                'yearly_price' => formatSubscriptionPrice($yearlyPrice),
                 // IMPORTANT: For current plan, use company's actual duration, not plan's default duration
-                'duration' => ($plan->id === $company->plan_id) ? ($detectedDuration ?? 'monthly') : null,
+                'duration' => ($plan->id === $company->plan_id) ? ($detectedDuration ?? 'yearly') : null,
                 'description' => $plan->description,
                 'features' => $features,
                 'business' => $plan->business,

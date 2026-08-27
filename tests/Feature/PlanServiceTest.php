@@ -31,11 +31,11 @@ class PlanServiceTest extends TestCase
             'yearly_price' => 299.99,
         ]);
 
-        $pricing = $this->planService->getPricingService()->calculate($plan, null, 'monthly');
+        $pricing = $this->planService->getPricingService()->calculate($plan, null, 'yearly');
         
-        $this->assertEquals(29.99, $pricing['original_price']);
+        $this->assertEquals(299.99, $pricing['original_price']);
         $this->assertEquals(0, $pricing['discount_amount']);
-        $this->assertEquals(29.99, $pricing['final_price']);
+        $this->assertEquals(299.99, $pricing['final_price']);
         $this->assertNull($pricing['coupon_id']);
     }
 
@@ -43,7 +43,7 @@ class PlanServiceTest extends TestCase
     {
         $plan = Plan::factory()->create([
             'price' => 100,
-            'yearly_price' => 1000,
+            'yearly_price' => 100,
         ]);
 
         $coupon = Coupon::factory()->create([
@@ -55,7 +55,7 @@ class PlanServiceTest extends TestCase
             'expiry_date' => now()->addMonth(),
         ]);
 
-        $pricing = $this->planService->getPricingService()->calculate($plan, 'SAVE20', 'monthly');
+        $pricing = $this->planService->getPricingService()->calculate($plan, 'SAVE20', 'yearly');
         
         $this->assertEquals(100, $pricing['original_price']);
         $this->assertEquals(20, $pricing['discount_amount']);
@@ -67,6 +67,7 @@ class PlanServiceTest extends TestCase
     {
         $plan = Plan::factory()->create([
             'price' => 100,
+            'yearly_price' => 100,
         ]);
 
         $coupon = Coupon::factory()->create([
@@ -76,7 +77,7 @@ class PlanServiceTest extends TestCase
             'status' => 1,
         ]);
 
-        $pricing = $this->planService->getPricingService()->calculate($plan, 'FLAT10', 'monthly');
+        $pricing = $this->planService->getPricingService()->calculate($plan, 'FLAT10', 'yearly');
         
         $this->assertEquals(100, $pricing['original_price']);
         $this->assertEquals(10, $pricing['discount_amount']);
@@ -85,7 +86,7 @@ class PlanServiceTest extends TestCase
 
     public function test_coupon_expiry_validation()
     {
-        $plan = Plan::factory()->create(['price' => 100]);
+        $plan = Plan::factory()->create(['price' => 100, 'yearly_price' => 100]);
 
         // Expired coupon
         $coupon = Coupon::factory()->create([
@@ -95,7 +96,7 @@ class PlanServiceTest extends TestCase
             'expiry_date' => now()->subDay(),
         ]);
 
-        $pricing = $this->planService->getPricingService()->calculate($plan, 'EXPIRED', 'monthly');
+        $pricing = $this->planService->getPricingService()->calculate($plan, 'EXPIRED', 'yearly');
         
         $this->assertEquals(100, $pricing['final_price']);
         $this->assertNull($pricing['coupon_id']);
@@ -217,7 +218,7 @@ class PlanServiceTest extends TestCase
 
     public function test_coupon_usage_limit_enforcement()
     {
-        $plan = Plan::factory()->create(['price' => 100]);
+        $plan = Plan::factory()->create(['price' => 100, 'yearly_price' => 100]);
         $coupon = Coupon::factory()->create([
             'code' => 'LIMIT5',
             'type' => 'percentage',
@@ -230,7 +231,7 @@ class PlanServiceTest extends TestCase
         $user2 = User::factory()->create(['type' => 'company']);
 
         // User 1 uses coupon twice - second should fail
-        $pricing1 = app(\App\Services\Plan\Pricing\PlanPricingService::class)->calculate($plan, 'LIMIT5', 'monthly', $user1->id);
+        $pricing1 = app(\App\Services\Plan\Pricing\PlanPricingService::class)->calculate($plan, 'LIMIT5', 'yearly', $user1->id);
         $this->assertEquals($coupon->id, $pricing1['coupon_id']);
 
         // Simulate first usage
@@ -241,7 +242,7 @@ class PlanServiceTest extends TestCase
             'status' => 'approved',
             'original_price' => 100,
             'final_price' => 80,
-            'billing_cycle' => 'monthly',
+            'billing_cycle' => 'yearly',
         ]);
 
         $coupon->increment('used_count');
@@ -249,7 +250,7 @@ class PlanServiceTest extends TestCase
         $this->assertEquals(1, $coupon->used_count);
 
         // Second usage should fail due to user limit
-        $pricing2 = app(\App\Services\Plan\Pricing\PlanPricingService::class)->calculate($plan, 'LIMIT5', 'monthly', $user1->id);
+        $pricing2 = app(\App\Services\Plan\Pricing\PlanPricingService::class)->calculate($plan, 'LIMIT5', 'yearly', $user1->id);
         $this->assertNull($pricing2['coupon_id']);
     }
 }

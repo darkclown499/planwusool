@@ -9,7 +9,7 @@ interface AamarpayPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   aamarpayStoreId: string;
   currency?: string;
   onSuccess: () => void;

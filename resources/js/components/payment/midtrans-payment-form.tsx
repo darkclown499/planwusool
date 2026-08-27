@@ -16,7 +16,7 @@ interface MidtransPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   midtransSecretKey: string;
   currency?: string;
   onSuccess: () => void;

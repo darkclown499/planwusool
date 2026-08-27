@@ -11,7 +11,7 @@ import { router } from '@inertiajs/react';
 interface SkrillPaymentFormProps {
   planId: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   planPrice: number;
   skrillMerchantId: string;
   currency: string;

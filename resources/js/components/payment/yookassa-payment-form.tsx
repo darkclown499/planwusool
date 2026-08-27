@@ -9,7 +9,7 @@ interface YooKassaPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   yookassaShopId: string;
   currency?: string;
   onSuccess: () => void;

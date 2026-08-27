@@ -12,7 +12,7 @@ import { router } from '@inertiajs/react';
 interface CoinGatePaymentFormProps {
   planId: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   planPrice: number;
   currency: string;
   onSuccess: () => void;

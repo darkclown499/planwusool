@@ -148,7 +148,7 @@ class OzowPaymentController extends Controller
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,
-                            'billing_cycle' => 'monthly',
+                            'billing_cycle' => 'yearly', // Wusool: yearly only
                             'payment_method' => 'ozow',
                             'payment_id' => $transactionId,
                         ]);

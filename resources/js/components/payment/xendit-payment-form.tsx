@@ -9,7 +9,7 @@ interface XenditPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   xenditApiKey: string;
   currency?: string;
   onSuccess: () => void;

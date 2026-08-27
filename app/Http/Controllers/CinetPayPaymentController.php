@@ -185,7 +185,7 @@ class CinetPayPaymentController extends Controller
             }
 
             $customData = json_decode($request->input('cpm_custom'), true);
-            $billingCycle = $customData['billing_cycle'] ?? 'monthly';
+            $billingCycle = $customData['billing_cycle'] ?? 'yearly';
             $couponCode = $customData['coupon_code'] ?? null;
 
             $pricing = calculatePlanPricing($plan, $couponCode, $billingCycle, $user->id);

@@ -9,7 +9,7 @@ interface MercadoPagoPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   accessToken: string;
   currency?: string;
   onSuccess: () => void;

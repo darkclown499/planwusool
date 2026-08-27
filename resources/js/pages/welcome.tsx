@@ -487,7 +487,7 @@ export default function Welcome() {
                                     <h3 className="text-lg font-extrabold text-slate-900">{plan.name}</h3>
                                     <p className="mt-1 text-xs text-slate-500">{plan.desc}</p>
                                     <p className="mt-4">
-                                        <span className="text-4xl font-extrabold text-slate-900">{plan.price === '0' ? 'مجاناً' : `${plan.price}`}</span>
+                                        <span className="text-4xl font-extrabold text-slate-900">{plan.price === '0' ? 'مجاناً' : `$${plan.price}`}</span>
                                         <span className="text-sm font-medium text-slate-500"> {plan.period}</span>
                                     </p>
                                     <ul className="mt-6 flex-1 space-y-3">

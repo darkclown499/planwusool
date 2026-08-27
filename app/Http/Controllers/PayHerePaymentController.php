@@ -130,7 +130,7 @@ class PayHerePaymentController extends Controller
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,
-                            'billing_cycle' => 'monthly',
+                            'billing_cycle' => 'yearly', // Wusool: yearly only
                             'payment_method' => 'payhere',
                             'payment_id' => $request->input('payment_id'),
                         ]);

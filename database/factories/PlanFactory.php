@@ -19,8 +19,8 @@ class PlanFactory extends Factory
         return [
             'name' => fake()->unique()->words(2, true),
             'price' => 29.00,
-            'yearly_price' => 290.00,
-            'duration' => 'monthly',
+            'yearly_price' => 29.00, // Wusool: yearly only USD, price == yearly
+            'duration' => 'yearly', // Wusool: yearly only
             'domain_type' => 'subdomain',
             'support_hours' => 8,
             'support_type' => 'email',

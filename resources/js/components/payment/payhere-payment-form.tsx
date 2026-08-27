@@ -10,7 +10,7 @@ interface PayHerePaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   payhereMerchantId: string;
   currency?: string;
   onSuccess: () => void;

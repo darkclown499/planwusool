@@ -144,7 +144,7 @@ class EasebuzzPaymentController extends Controller
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,
-                            'billing_cycle' => $request->input('udf1', 'monthly'),
+                            'billing_cycle' => $request->input('udf1', 'yearly'),
                             'payment_method' => 'easebuzz',
                             'payment_id' => $request->input('easepayid'),
                         ]);
@@ -183,7 +183,7 @@ class EasebuzzPaymentController extends Controller
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,
-                            'billing_cycle' => $request->input('udf1', 'monthly'),
+                            'billing_cycle' => $request->input('udf1', 'yearly'),
                             'payment_method' => 'easebuzz',
                             'payment_id' => $request->input('easepayid'),
                         ]);

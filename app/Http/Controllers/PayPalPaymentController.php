@@ -18,7 +18,7 @@ class PayPalPaymentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly',
+            'billing_cycle' => 'required|in:yearly',
             'order_id' => 'required|string',
             'payment_id' => 'required|string',
             'coupon_code' => 'nullable|string',

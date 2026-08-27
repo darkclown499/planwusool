@@ -11,7 +11,7 @@ interface KhaltiPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   khaltiPublicKey: string;
   currency?: string;
   onSuccess: () => void;

@@ -134,7 +134,7 @@ class StripePaymentController extends PaymentGatewayController
                 return redirect()->route('plans.index')->with('error', __('Plan not found'));
             }
 
-            $billingCycle = $metadata['billing_cycle'] ?? 'monthly';
+            $billingCycle = $metadata['billing_cycle'] ?? 'yearly';
             $couponCode = $metadata['coupon_code'] ?? null;
 
             $pricing = calculatePlanPricing($plan, $couponCode, $billingCycle, auth()->id());

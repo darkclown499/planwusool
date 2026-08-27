@@ -9,7 +9,7 @@ interface CashfreePaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   cashfreeAppId: string;
   mode?: 'sandbox' | 'production';
   currency?: string;

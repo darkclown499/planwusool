@@ -38,7 +38,7 @@ import { CrudDeleteModal } from '@/components/CrudDeleteModal';
 import { toast } from '@/components/custom-toast';
 import { PlanSubscriptionModal } from '@/components/plan-subscription-modal';
 import { hasPermission, checkPermissionWithAuth } from '@/utils/permissions';
-import { formatSuperadminCurrency } from '@/utils/currency-helper';
+import { formatSubscriptionPrice } from '@/utils/currency-helper';
 
 interface Plan {
   id: number;
@@ -82,7 +82,7 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
-  const [billingCycle] = useState<'monthly' | 'yearly'>('yearly');
+  const [billingCycle] = useState<'yearly'>('yearly');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
@@ -836,10 +836,10 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
                           text-3xl font-extrabold 
                           ${plan.recommended ? 'text-primary' : ''}
                         `}>
-                          {plan.formatted_price || formatSuperadminCurrency(plan.price)}
+                          {plan.formatted_price || formatSubscriptionPrice(plan.price)}
                         </span>
                         <span className="text-muted-foreground text-sm">
-                          / {t(plan.duration.toLowerCase())}
+                          / {t('yearly')}
                         </span>
                       </>
                     )}

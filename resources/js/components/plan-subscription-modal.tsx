@@ -23,7 +23,7 @@ interface PlanSubscriptionModalProps {
     isSubscribed?: boolean;
     isExpired?: boolean;
   };
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   paymentMethods: PaymentMethod[];
 }
 

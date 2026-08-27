@@ -150,7 +150,7 @@ class CashfreeController extends Controller
                 'order_note' => 'Plan Subscription - ' . $plan->name,
                 'order_tags' => [
                     'plan_id' => (string)$plan->id,
-                    'billing_cycle' => (string)($validated['billing_cycle'] ?? 'monthly'),
+                    'billing_cycle' => (string)($validated['billing_cycle'] ?? 'yearly'),
                     'user_id' => (string)$user->id
                 ]
             ];
@@ -272,7 +272,7 @@ class CashfreeController extends Controller
                         processPaymentSuccess([
                             'user_id' => $orderTags['user_id'],
                             'plan_id' => $orderTags['plan_id'],
-                            'billing_cycle' => $orderTags['billing_cycle'] ?? 'monthly',
+                            'billing_cycle' => $orderTags['billing_cycle'] ?? 'yearly',
                             'payment_method' => 'cashfree',
                             'payment_id' => $paymentData['cf_payment_id'] ?? null,
                         ]);

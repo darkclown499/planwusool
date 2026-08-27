@@ -117,7 +117,7 @@ class PlanController extends Controller
             'name' => 'required|string|max:100|unique:plans',
             'price' => 'required|numeric|min:0',
             'yearly_price' => 'nullable|numeric|min:0',
-            'duration' => 'required|string',
+            'duration' => 'nullable|string|in:yearly',
             'domain_type' => 'nullable|string|in:subdomain,custom',
             'support_hours' => 'nullable|integer|min:0',
             'support_type' => 'nullable|string',
@@ -167,7 +167,7 @@ class PlanController extends Controller
         
         // If yearly_price is not provided, calculate it as 80% of monthly price * 12
         if (!isset($validated['yearly_price']) || $validated['yearly_price'] === null) {
-            $validated['yearly_price'] = $validated['price'] * 12 * 0.8;
+            $validated['yearly_price'] = $validated['price']; // yearly only, price is annual USD
         }
         
         // If this plan is set as default, remove default status from other plans
@@ -210,7 +210,7 @@ class PlanController extends Controller
             'name' => 'required|string|max:100|unique:plans,name,' . $plan->id,
             'price' => 'required|numeric|min:0',
             'yearly_price' => 'nullable|numeric|min:0',
-            'duration' => 'required|string',
+            'duration' => 'nullable|string|in:yearly',
             'domain_type' => 'nullable|string|in:subdomain,custom',
             'support_hours' => 'nullable|integer|min:0',
             'support_type' => 'nullable|string',
@@ -260,7 +260,7 @@ class PlanController extends Controller
         
         // If yearly_price is not provided, calculate it as 80% of monthly price * 12
         if (!isset($validated['yearly_price']) || $validated['yearly_price'] === null) {
-            $validated['yearly_price'] = $validated['price'] * 12 * 0.8;
+            $validated['yearly_price'] = $validated['price']; // yearly only, price is annual USD
         }
         
         // If this plan is set as default, remove default status from other plans
@@ -309,9 +309,9 @@ class PlanController extends Controller
                 
                 if ($latestOrder) {
                     $diffDays = \Carbon\Carbon::parse($latestOrder->ordered_at)->diffInDays(\Carbon\Carbon::parse($user->plan_expire_date));
-                    $detectedDuration = ($diffDays > 40) ? 'yearly' : 'monthly';
+                    $detectedDuration = 'yearly'; // Wusool: yearly only (legacy monthly removed)
                 } else {
-                    $detectedDuration = 'monthly';
+                    $detectedDuration = 'yearly'; // Wusool: yearly only
                 }
             } else if (!empty($user->trial_expire_date) && $user->trial_expire_date >= now()->format('Y-m-d')) {
                 $detectedDuration = 'trial';
@@ -370,7 +370,7 @@ class PlanController extends Controller
             'billingCycle' => $billingCycle,
             'currentPlan' => $user->plan ? [
                 ...$user->plan->toArray(),
-                'duration' => $detectedDuration ?? 'monthly',
+                'duration' => $detectedDuration ?? 'yearly',
                 'expires_at' => $user->plan_expire_date
             ] : null,
             'userTrialUsed' => $user->is_trial
@@ -381,7 +381,7 @@ class PlanController extends Controller
     {
         $request->validate([
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly'
+            'billing_cycle' => 'required|in:yearly'
         ]);
         
         $user = auth()->user();
@@ -423,7 +423,7 @@ class PlanController extends Controller
     {
         $request->validate([
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly',
+            'billing_cycle' => 'required|in:yearly',
             'coupon_code' => 'nullable|string',
         ]);
         
@@ -507,6 +507,6 @@ class PlanController extends Controller
      */
     private function formatPlanPrice($price)
     {
-        return formatCurrencyAmount($price);
+        return formatSubscriptionPrice($price); // USD yearly
     }
 }

@@ -1075,7 +1075,7 @@ if (! function_exists('validatePaymentMethodConfig')) {
 }
 
 if (! function_exists('calculatePlanPricing')) {
-    function calculatePlanPricing($plan, $couponCode = null, $billingCycle = 'yearly', $userId = null)
+    function calculatePlanPricing($plan, $couponCode = null, $billingCycle = 'yearly', $userId = null) // yearly only
     {
         $originalPrice = $plan->getPriceForCycle($billingCycle);
         $discountAmount = 0;
@@ -1153,7 +1153,7 @@ if (! function_exists('createPlanOrder')) {
             'user_id' => $data['user_id'],
             'plan_id' => $plan->id,
             'coupon_id' => $pricing['coupon_id'],
-            'billing_cycle' => $data['billing_cycle'],
+            'billing_cycle' => 'yearly', // enforced yearly
             'payment_method' => $data['payment_method'],
             'coupon_code' => $data['coupon_code'] ?? null,
             'original_price' => $pricing['original_price'],
@@ -1207,7 +1207,7 @@ if (! function_exists('validatePaymentRequest')) {
     {
         $baseRules = [
             'plan_id' => 'required|exists:plans,id',
-            'billing_cycle' => 'required|in:monthly,yearly',
+            'billing_cycle' => 'required|in:yearly',
             'coupon_code' => 'nullable|string',
         ];
         
@@ -2012,28 +2012,28 @@ if (!function_exists('storeUrl')) {
 if (! function_exists('assignPlanToUser')) {
     function assignPlanToUser($user, $plan, $billingCycle)
     {
-        $expiresAt = $billingCycle === 'yearly' ? now()->addYear() : now()->addMonth();
+        $expiresAt = now()->addYear(); // Wusool subscription: yearly only (USD billing)
         
         $oldPlan = $user->plan;
         
         try {
             \DB::beginTransaction();
             
-            $updated = $user->update([
+            $updated = $user->forceFill([
                 'plan_id' => $plan->id,
-                'plan_duration' => $billingCycle,
+                'plan_duration' => 'yearly', // enforced yearly (USD billing)
                 'plan_expire_date' => $expiresAt,
                 'plan_is_active' => 1,
                 'is_trial' => 0,
                 'trial_expire_date' => null,
-            ]);
+            ])->save();
             
             if ($updated) {
                 $user = $user->fresh();
                 
                 // Create referral record if user was referred
                 if (class_exists('\App\Http\Controllers\ReferralController')) {
-                    \App\Http\Controllers\ReferralController::createReferralRecord($user, $billingCycle);
+                    \App\Http\Controllers\ReferralController::createReferralRecord($user, 'yearly');
                 }
                 
                 // If upgrading (higher limits), reactivate resources first
@@ -2214,6 +2214,34 @@ if (! function_exists('formatCurrencyAmount')) {
         return formatCurrency($amount, $settings, $currencies);
     }
 }
+if (! function_exists('formatSubscriptionPrice')) {
+    /**
+     * Format Wusool subscription price — ALWAYS USD yearly.
+     * Do NOT use store currency (ILS) for subscription billing.
+     */
+    function formatSubscriptionPrice($amount): string
+    {
+        $num = is_string($amount) ? (float)$amount : (float)$amount;
+        if ($num == 0) return '$0';
+        return '$' . number_format($num, 0, '.', ',');
+    }
+}
+
+if (! function_exists('getSubscriptionCurrency')) {
+    function getSubscriptionCurrency(): string
+    {
+        return 'USD';
+    }
+}
+
+if (! function_exists('getSubscriptionBillingCycle')) {
+    function getSubscriptionBillingCycle(): string
+    {
+        return 'yearly';
+    }
+}
+
+
 
     if (! function_exists('get_file')) {
     /**

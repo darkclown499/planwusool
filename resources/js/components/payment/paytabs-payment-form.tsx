@@ -9,7 +9,7 @@ import axios from 'axios';
 interface PayTabsPaymentFormProps {
   planId: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   planPrice: number;
   paytabsClientKey: string;
   currency: string;

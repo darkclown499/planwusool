@@ -11,7 +11,7 @@ interface IyzipayPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   iyzipayPublicKey: string;
   currency?: string;
   onSuccess: () => void;

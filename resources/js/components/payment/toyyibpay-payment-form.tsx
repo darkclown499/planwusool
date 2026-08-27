@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 interface ToyyibPayPaymentFormProps {
   planId: number;
   couponCode: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   planPrice: number;
   toyyibpayCategoryCode: string;
   currency: string;

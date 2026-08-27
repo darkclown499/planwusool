@@ -155,7 +155,7 @@ class PaiementPaymentController extends Controller
 
             $custom = $request->input('cpm_custom');
             $couponCode = null;
-            $billingCycle = 'monthly';
+            $billingCycle = 'yearly';
             if ($custom) {
                 $decoded = json_decode($custom, true);
                 $couponCode = $decoded['coupon_code'] ?? null;

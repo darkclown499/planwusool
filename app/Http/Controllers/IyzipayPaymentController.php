@@ -195,7 +195,7 @@ class IyzipayPaymentController extends Controller
                         processPaymentSuccess([
                             'user_id' => $user->id,
                             'plan_id' => $plan->id,
-                            'billing_cycle' => 'monthly', // Default, should be stored in session or passed
+                            'billing_cycle' => 'yearly', // Wusool: yearly only
                             'payment_method' => 'iyzipay',
                             'payment_id' => $paymentResult->getPaymentId(),
                         ]);

@@ -70,14 +70,14 @@ class StripePaymentTest extends TestCase
     {
         // Create user and plan
         $user = User::factory()->create();
-        $plan = Plan::factory()->create(['price' => 10.00]);
+        $plan = Plan::factory()->create(['price' => 10.00, 'yearly_price' => 10.00, 'duration' => 'yearly']);
         
         $this->actingAs($user);
 
         // Test without payment method ID
         $response = $this->post(route('stripe.payment'), [
             'plan_id' => $plan->id,
-            'billing_cycle' => 'monthly',
+            'billing_cycle' => 'yearly',
             'coupon_code' => '',
             'cardholder_name' => 'Test User',
         ]);
@@ -89,7 +89,7 @@ class StripePaymentTest extends TestCase
     {
         // Create user and plan
         $user = User::factory()->create();
-        $plan = Plan::factory()->create(['price' => 10.00]);
+        $plan = Plan::factory()->create(['price' => 10.00, 'yearly_price' => 10.00, 'duration' => 'yearly']);
         
         $this->actingAs($user);
 
@@ -97,7 +97,7 @@ class StripePaymentTest extends TestCase
         $response = $this->post(route('stripe.payment'), [
             'payment_method_id' => 'pm_test_123',
             'plan_id' => $plan->id,
-            'billing_cycle' => 'monthly',
+            'billing_cycle' => 'yearly',
             'coupon_code' => '',
             'cardholder_name' => 'Test User',
         ]);

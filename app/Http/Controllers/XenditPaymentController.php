@@ -74,7 +74,7 @@ class XenditPaymentController extends Controller
         try {
             $planId = $request->input('plan_id');
             $userId = $request->input('user_id');
-            $billingCycle = $request->input('billing_cycle', 'monthly');
+            $billingCycle = $request->input('billing_cycle','yearly');
             $couponCode = $request->input('coupon_code');
             
             if ($planId && $userId) {

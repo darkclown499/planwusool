@@ -9,7 +9,7 @@ interface PaiementPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   paiementMerchantId: string;
   currency?: string;
   onSuccess: () => void;

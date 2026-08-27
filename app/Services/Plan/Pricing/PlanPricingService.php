@@ -13,7 +13,7 @@ class PlanPricingService
      */
     public function calculate(Plan $plan, ?string $couponCode = null, string $billingCycle = 'yearly', ?int $userId = null): array
     {
-        $originalPrice = $plan->getPriceForCycle($billingCycle);
+        $originalPrice = $plan->getPriceForCycle('yearly'); // Wusool: yearly only, USD
         $discountAmount = 0;
         $finalPrice = $originalPrice;
         $couponId = null;

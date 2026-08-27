@@ -10,7 +10,7 @@ interface BenefitPaymentFormProps {
   planId: number;
   planPrice: number;
   couponCode?: string;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'yearly';
   benefitPublicKey: string;
   currency?: string;
   onSuccess: () => void;

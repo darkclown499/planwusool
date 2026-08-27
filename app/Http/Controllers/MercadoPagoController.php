@@ -58,12 +58,12 @@ class MercadoPagoController extends Controller
             // Validate request with explicit rules
             $request->validate([
                 'plan_id' => 'required|exists:plans,id',
-                'billing_cycle' => 'nullable|in:monthly,yearly',
+                'billing_cycle' => 'nullable|in:yearly',
                 'coupon_code' => 'nullable|string',
             ]);
             
             // Support for both billing_cycle and coupon from form
-            $billingCycle = $request->billing_cycle ?? 'monthly';
+            $billingCycle = $request->billing_cycle ?? 'yearly';
             $couponCode = $request->coupon_code ?? $request->coupon ?? null;
 
             $plan = Plan::findOrFail($request->plan_id);
@@ -593,7 +593,7 @@ return response()->json(['status' => 'success']);
                 processPaymentSuccess([
                     'user_id' => auth()->id(),
                     'plan_id' => $plan->id,
-                    'billing_cycle' => $validated['billing_cycle'] ?? 'monthly',
+                    'billing_cycle' => $validated['billing_cycle'] ?? 'yearly',
                     'payment_method' => 'mercadopago',
                     'coupon_code' => $validated['coupon_code'] ?? null,
                     'payment_id' => $payment->id,
