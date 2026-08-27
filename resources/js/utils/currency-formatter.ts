@@ -64,10 +64,10 @@ export function formatStoreCurrency(
   // Join with decimal separator
   const finalNumber = parts.join(currency.decimal_separator);
 
-  // Return with currency symbol in correct position
+  // Return with currency symbol in correct position (NBSP for RTL)
   return currency.position === 'after' 
-    ? `${finalNumber} ${currency.symbol}`
-    : `${currency.symbol} ${finalNumber}`;
+    ? `${finalNumber}\u00A0${currency.symbol}`
+    : `${currency.symbol}\u00A0${finalNumber}`;
 }
 
 interface SecondaryCurrency {
@@ -154,12 +154,13 @@ export function formatCurrency(
   // Format decimal places
   const decimalPlaces = parseInt(decimalFormat) || 2;
 
-  // Add currency symbol with proper positioning and spacing
-  const space = (currencySymbolSpace === true || currencySymbolSpace === '1') ? ' ' : '';
+  // Add currency symbol with proper positioning and spacing (NBSP prevents RTL collision)
+  const rawSpace = (currencySymbolSpace === true || currencySymbolSpace === '1') ? '\u00A0' : '';
+  const effectiveSpace = currencySymbolPosition === 'after' && !rawSpace ? '\u00A0' : rawSpace;
   
   const primary = currencySymbolPosition === 'after' 
-    ? `${formatNumberValue(finalAmount, decimalPlaces, decimalSeparator, thousandsSeparator)}${space}${symbol}`
-    : `${symbol}${space}${formatNumberValue(finalAmount, decimalPlaces, decimalSeparator, thousandsSeparator)}`;
+    ? `${formatNumberValue(finalAmount, decimalPlaces, decimalSeparator, thousandsSeparator)}${effectiveSpace}${symbol}`
+    : `${symbol}${rawSpace}${formatNumberValue(finalAmount, decimalPlaces, decimalSeparator, thousandsSeparator)}`;
 
   // Dual currency: append the secondary currency value when configured
   const secondary = getSecondaryCurrencyInfo(storeSettings, currencies);

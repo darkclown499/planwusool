@@ -109,16 +109,17 @@ class CurrencyService
             $currency = \App\Models\Currency::where('code', $currencyCode)->first();
 
             $symbol = $currency ? $currency->symbol : '₪';
-            $position = $storeSettings['currencySymbolPosition'] ?? 'before';
+            $position = $storeSettings['currencySymbolPosition'] ?? 'after';
             $decimals = (int)($storeSettings['decimalFormat'] ?? 2);
             $decimalSeparator = $storeSettings['decimalSeparator'] ?? '.';
             $thousandsSeparator = $storeSettings['thousandsSeparator'] ?? ',';
-
+            
             $formattedNumber = number_format($numAmount, $decimals, $decimalSeparator, $thousandsSeparator);
-
+            
+            $nbsp = "\xC2\xA0";
             return $position === 'after'
-                ? $formattedNumber . ' ' . $symbol
-                : $symbol . ' ' . $formattedNumber;
+                ? $formattedNumber . $nbsp . $symbol
+                : $symbol . $nbsp . $formattedNumber;
 
         } catch (\Exception $e) {
             return '₪' . number_format($numAmount, 2);
@@ -165,11 +166,13 @@ class CurrencyService
 
         $finalNumber = implode($decimalSeparator, $parts);
 
-        $space = ($currencySymbolSpace === true || $currencySymbolSpace === '1') ? ' ' : '';
+        $nbsp = "\xC2\xA0";
+        $rawSpace = ($currencySymbolSpace === true || $currencySymbolSpace === '1') ? $nbsp : '';
+        $effectiveSpace = $currencySymbolPosition === 'after' && $rawSpace === '' ? $nbsp : $rawSpace;
 
         $primary = $currencySymbolPosition === 'after'
-            ? $finalNumber . $space . $symbol
-            : $symbol . $space . $finalNumber;
+            ? $finalNumber . $effectiveSpace . $symbol
+            : $symbol . $rawSpace . $finalNumber;
 
         $secondary = $this->getSecondaryCurrencyInfo($storeSettings, $currencies);
         if ($secondary !== null) {
@@ -181,8 +184,8 @@ class CurrencyService
             }
             $secondaryFinalNumber = implode($decimalSeparator, $secondaryParts);
             $secondaryStr = $currencySymbolPosition === 'after'
-                ? $secondaryFinalNumber . $space . $secondary['symbol']
-                : $secondary['symbol'] . $space . $secondaryFinalNumber;
+                ? $secondaryFinalNumber . $effectiveSpace . $secondary['symbol']
+                : $secondary['symbol'] . $rawSpace . $secondaryFinalNumber;
             return $primary . ' ≈ ' . $secondaryStr;
         }
 

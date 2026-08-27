@@ -79,21 +79,27 @@ class UserController extends BaseController
             // Superadmin can assign any role
             $roles = Role::get();
         } elseif ($authUser->type == 'company') {
-            // Company users can assign roles they created OR roles created by
-            // the user who created them (their own platform account), so the
-            // role dropdown is never empty for freshly created companies that
-            // have not built custom roles yet.
             $roles = Role::whereNotIn('name', ['superadmin', 'company'])
                 ->where(function ($query) use ($authUser) {
                     $query->where('created_by', $authUser->id)
                         ->orWhere('created_by', $authUser->created_by);
                 })
                 ->get();
+            // If company has no custom roles yet, provision a safe default merchant role so the select is never empty
+            if ($roles->isEmpty()) {
+                $roles = $this->ensureDefaultMerchantRoles($authUser);
+            }
         } else {
             // Sub-users can only assign roles created by their creator
             $roles = Role::whereNotIn('name', ['superadmin', 'company'])
                 ->where('created_by', $authUser->created_by)
                 ->get();
+            if ($roles->isEmpty() && $authUser->created_by) {
+                $creator = \App\Models\User::find($authUser->created_by);
+                if ($creator) {
+                    $roles = $this->ensureDefaultMerchantRoles($creator);
+                }
+            }
         }
 
         // Get plan limits for current store
@@ -181,6 +187,24 @@ class UserController extends BaseController
             }
             
             $role = $roleQuery->first();
+            if (!$role) {
+                $user->delete();
+                return redirect()->back()->with('error', __('Invalid role selection'));
+            }
+            if (in_array($role->name, ['superadmin', 'company'], true)) {
+                $user->delete();
+                abort(403, 'Cannot assign system role');
+            }
+            // Staff cannot grant permissions they do not have
+            if (!$authUser->isSuperAdmin() && $authUser->type !== 'company') {
+                $rolePerms = $role->permissions->pluck('name')->toArray();
+                $actorPerms = $authUser->getAllPermissions()->pluck('name')->toArray();
+                $extra = array_diff($rolePerms, $actorPerms);
+                if (!empty($extra)) {
+                    $user->delete();
+                    abort(403, 'Cannot grant permissions you do not have');
+                }
+            }
             
             $user->roles()->sync([$role->id]);
             $user->type = $role->name;
@@ -281,6 +305,15 @@ class UserController extends BaseController
                 if (in_array($role->name, ['superadmin', 'company'], true)) {
                     abort(403, 'Cannot assign system role');
                 }
+                // Staff cannot grant permissions they do not have
+                if (!Auth::user()->isSuperAdmin() && Auth::user()->type !== 'company') {
+                    $rolePerms = $role->permissions->pluck('name')->toArray();
+                    $actorPerms = Auth::user()->getAllPermissions()->pluck('name')->toArray();
+                    $extra = array_diff($rolePerms, $actorPerms);
+                    if (!empty($extra)) {
+                        abort(403, 'Cannot grant permissions you do not have');
+                    }
+                }
                 
                 $user->roles()->sync([$role->id]);
                 $user->type = $role->name;
@@ -326,6 +359,39 @@ class UserController extends BaseController
         $user->save();
 
         return redirect()->route('users.index')->with('success', __('Password reset successfully'));
+    }
+
+    /**
+     * Ensure at least one safe merchant-assignable role exists for a company.
+     * Creates a default "طاقم المتجر" role with limited permissions if none exists.
+     */
+    private function ensureDefaultMerchantRoles(User $company): \Illuminate\Support\Collection
+    {
+        $existing = Role::whereNotIn('name', ['superadmin', 'company'])
+            ->where('created_by', $company->id)
+            ->get();
+        if ($existing->isNotEmpty()) {
+            return $existing;
+        }
+        // Create a safe default role with view/manage orders & products only — never system perms
+        try {
+            $safePerms = \Spatie\Permission\Models\Permission::whereIn('name', [
+                'view-products','view-orders','view-customers','manage-orders','view-analytics',
+            ])->pluck('id')->toArray();
+            $role = Role::create([
+                'name' => 'store-staff-' . $company->id,
+                'label' => 'طاقم المتجر',
+                'description' => 'دور افتراضي للموظفين',
+                'guard_name' => 'web',
+                'created_by' => $company->id,
+            ]);
+            if (!empty($safePerms)) {
+                $role->syncPermissions($safePerms);
+            }
+            return collect([$role]);
+        } catch (\Throwable $e) {
+            return collect();
+        }
     }
 
     /**

@@ -485,18 +485,6 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             }
         });
         
-        static::creating(function ($user) {
-            if ($user->type === 'company' && !$user->referral_code) {
-                // Generate referral code after the user is saved to get the ID
-                static::created(function ($createdUser) {
-                    if (!$createdUser->referral_code) {
-                        $createdUser->referral_code = 'REF' . str_pad($createdUser->id, 6, '0', STR_PAD_LEFT);
-                        $createdUser->save();
-                    }
-                });
-            }
-        });
-        
         static::created(function ($user) {
             // Assign default plan to company users if no default plan exists
             if ($user->type === 'company' && !$user->plan_id) {

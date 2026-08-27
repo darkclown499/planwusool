@@ -136,9 +136,21 @@ class StoreController extends Controller
             'revenueGrowth' => round($revenueGrowth, 1),
         ];
 
+        // Plan entitlement for create-store gating (real plan limits)
+        $storeCheck = $user->canCreateStore();
+        $plan = $user->getCurrentPlan();
+        $storeLimitInfo = [
+            'can_create' => $storeCheck['allowed'],
+            'message' => $storeCheck['allowed'] ? null : $storeCheck['message'],
+            'current_stores' => $user->stores()->count(),
+            'max_stores' => $plan->max_stores ?? 0,
+            'plans_url' => route('plans.index'),
+        ];
+
         return Inertia::render('stores/index', [
             'stores' => $storeList->values(),
             'storeStats' => $storeStats,
+            'storeLimitInfo' => $storeLimitInfo,
         ]);
     }
 
@@ -242,9 +254,12 @@ class StoreController extends Controller
     {
         $user = Auth::user();
         
-        // Check if user can create more stores
+        // Check if user can create more stores (backend entitlement is authority)
         $storeCheck = $user->canCreateStore();
         if (!$storeCheck['allowed']) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => $storeCheck['message'], 'errors' => ['store_limit' => [$storeCheck['message']]]], 422);
+            }
             return redirect()->back()->with('error', $storeCheck['message']);
         }
         

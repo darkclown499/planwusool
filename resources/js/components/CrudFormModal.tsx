@@ -393,7 +393,14 @@ export function CrudFormModal({
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="z-[60000]">
-              {field.relation ? (
+              {options.length === 0 ? (
+                <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+                  <p>لا توجد أدوار متاحة</p>
+                  {field.name === 'roles' && (
+                    <a href={route('roles.index')} className="mt-2 inline-block text-primary underline">إنشاء دور</a>
+                  )}
+                </div>
+              ) : field.relation ? (
                 options.map((option: any) => (
                   <SelectItem
                     key={option[field.relation!.valueField]}

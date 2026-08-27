@@ -69,11 +69,12 @@ function templateLabel(slug?: string | null): string {
   return TEMPLATE_LABELS[slug] || 'سوق عام';
 }
 
-export default function StoreManagement({ stores = [], storeStats = {} }: StoreManagementProps) {
+export default function StoreManagement({ stores = [], storeStats = {}, storeLimitInfo = {} as any }: StoreManagementProps & { storeLimitInfo?: any }) {
   const { auth } = usePage().props as any;
   const [storeToDelete, setStoreToDelete] = useState<number | null>(null);
   const [designerOpen, setDesignerOpen] = useState(false);
   const [designerStoreId, setDesignerStoreId] = useState<number | null>(null);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   const has = (permission: string) => hasPermission(permission);
 
@@ -97,9 +98,15 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
         if (stores.length <= 1) return;
         setStoreToDelete(storeId!);
         break;
-      case 'create':
+      case 'create': {
+        const limit = (storeLimitInfo as any) || {};
+        if (limit.can_create === false) {
+          setShowUpgradeDialog(true);
+          return;
+        }
         router.visit(route('stores.create'));
         break;
+      }
       case 'export':
         window.open(route('stores.export'), '_blank');
         break;
@@ -204,19 +211,20 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
   function ReadinessChip({ store }: { store: any }) {
     const r = store.readiness || {};
     const missing = r.missing || [];
+    const handleClick = () => router.visit(route('stores.show', store.id));
     if (r.isReady) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+        <button type="button" onClick={handleClick} className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300">
           <CheckCircle2 className="h-3.5 w-3.5" />
           جاهز للبيع
-        </span>
+        </button>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+      <button type="button" onClick={handleClick} title={missing.length ? `المتبقي: ${missing.join('، ')}` : undefined} className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300">
         <CircleDashed className="h-3.5 w-3.5" />
         يحتاج إعداد {missing.length > 0 ? `(${missing.length})` : ''}
-      </span>
+      </button>
     );
   }
 
@@ -343,8 +351,8 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
                         <span className="text-[11px] text-muted-foreground">المنتجات</span>
                       </div>
                       <div className="flex max-w-0 flex-col items-center gap-0.5 border-s px-2 py-2">
-                        <span className="max-w-full truncate text-sm font-bold" dir="ltr">
-                          {formatCurrency(store.revenue || 0)}
+                        <span className="max-w-full truncate whitespace-nowrap text-sm font-bold" dir="ltr">
+                          <bdi>{formatCurrency(store.revenue || 0)}</bdi>
                         </span>
                         <span className="text-[11px] text-muted-foreground">الإيرادات</span>
                       </div>
@@ -449,6 +457,25 @@ export default function StoreManagement({ stores = [], storeStats = {} }: StoreM
         </DialogContent>
       </Dialog>
       <DesignerNavigationModal open={designerOpen} onOpenChange={setDesignerOpen} storeId={designerStoreId} />
+      {/* Upgrade dialog for free-plan store limit */}
+      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>ترقية الباقة مطلوبة</DialogTitle>
+            <DialogDescription className="text-right leading-relaxed">
+              لقد وصلت إلى الحد المسموح به لعدد المتاجر في باقتك الحالية. لإنشاء متجر إضافي، قم بترقية باقتك.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowUpgradeDialog(false)}>
+              إلغاء
+            </Button>
+            <Button onClick={() => { setShowUpgradeDialog(false); const url = (storeLimitInfo as any)?.plans_url || route('plans.index'); router.visit(url); }}>
+              الانتقال إلى الباقات
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageTemplate>
   );
 }

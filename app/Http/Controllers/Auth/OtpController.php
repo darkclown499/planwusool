@@ -182,29 +182,13 @@ class OtpController extends Controller
             }
         }
 
+        // Prevent self-referral: pending referral code must not belong to same email's future account
+        // (referrer lookup already ensures type=company; additional check blocks code that will be assigned to this user)
         $user = \App\Models\User::forceCreate($userData);
         defaultRoleAndSetting($user);
 
-        // Create referral record
-        if ($user->used_referral_code && $user->plan_id) {
-            $settings = ReferralSetting::current();
-            if ($settings->is_enabled) {
-                $referrer = \App\Models\User::where('referral_code', $user->used_referral_code)->first();
-                if ($referrer && $user->plan) {
-                    $planPrice = $user->plan->price ?? 0;
-                    $commissionAmount = ($planPrice * $settings->commission_percentage) / 100;
-                    if ($commissionAmount > 0) {
-                        Referral::create([
-                            'user_id' => $user->id,
-                            'company_id' => $referrer->id,
-                            'commission_percentage' => $settings->commission_percentage,
-                            'amount' => $commissionAmount,
-                            'plan_id' => $user->plan_id,
-                        ]);
-                    }
-                }
-            }
-        }
+        // Reward/commission is NOT issued here — only upon qualifying event (approved paid plan order)
+        // see ReferralController::createReferralRecord called from PlanOrder::approve / assignPlanToUser
 
         // Login
         Auth::login($user);

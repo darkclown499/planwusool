@@ -286,7 +286,16 @@ class ReferralController extends BaseController
         if (!$settings || !$settings->is_enabled || !$user->used_referral_code || !$user->plan) {
             return;
         }
+
+        // Self-referral protection
+        if ((string)$user->used_referral_code === (string)$user->referral_code) {
+            return;
+        }
         
+        // Idempotency: any existing referral for this referred user blocks duplicate credit
+        if (Referral::where('user_id', $user->id)->exists()) {
+            return;
+        }
         $existingReferral = Referral::where('user_id', $user->id)
             ->where('plan_id', $user->plan_id)
             ->first();
@@ -302,21 +311,25 @@ class ReferralController extends BaseController
         if (!$referrer) {
             return;
         }
+
+        // Self-referral: referrer cannot be the referred user
+        if ((int)$referrer->id === (int)$user->id) {
+            return;
+        }
         
-        // Get the most recent approved plan order
+        // Qualifying event: must have an approved paid plan order; do not reward before qualification
         $planOrder = \App\Models\PlanOrder::where('user_id', $user->id)
             ->where('plan_id', $user->plan_id)
             ->where('status', 'approved')
             ->orderBy('created_at', 'desc')
             ->first();
         
-        // Use actual paid amount from order, or fallback to plan price with proper billing cycle
-        if ($planOrder && $planOrder->final_price > 0) {
-            $actualPaidAmount = $planOrder->final_price;
-        } else {
-            // Use billing cycle from order or parameter
-            $effectiveBillingCycle = ($planOrder && $planOrder->billing_cycle) ? $planOrder->billing_cycle : ($billingCycle ?? 'monthly');
-            $actualPaidAmount = $user->plan->getPriceForCycle($effectiveBillingCycle);
+        if (!$planOrder) {
+            return;
+        }
+        $actualPaidAmount = $planOrder->final_price > 0 ? (float)$planOrder->final_price : (float)$user->plan->getPriceForCycle($planOrder->billing_cycle ?? $billingCycle ?? 'monthly');
+        if ($actualPaidAmount <= 0) {
+            return;
         }
         
         $commissionAmount = ($actualPaidAmount * $settings->commission_percentage) / 100;

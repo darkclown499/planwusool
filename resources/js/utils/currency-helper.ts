@@ -33,7 +33,7 @@ export function formatCurrency(amount: number | string): string {
             const thousandsSeparator = settings.thousandsSeparator || ',';
             const position = settings.currencySymbolPosition || 'before';
             const symbol = settings.currencySymbol || '₪';
-            const space = (settings.currencySymbolSpace === true || settings.currencySymbolSpace === '1') ? ' ' : '';
+            const space = (settings.currencySymbolSpace === true || settings.currencySymbolSpace === '1') ? '\u00A0' : '';
             
             const formattedNumber = numAmount.toFixed(decimals);
             const parts = formattedNumber.split('.');
@@ -44,8 +44,10 @@ export function formatCurrency(amount: number | string): string {
             
             const finalNumber = parts.join(decimalSeparator);
             
+            // Always ensure at least NBSP separation when position is after for RTL readability
+            const effectiveSpace = position === 'after' && !space ? '\u00A0' : space;
             return position === 'after' 
-                ? `${finalNumber}${space}${symbol}`
+                ? `${finalNumber}${effectiveSpace}${symbol}`
                 : `${symbol}${space}${finalNumber}`;
         } else {
             // Use store-specific currency settings for company users
@@ -57,7 +59,7 @@ export function formatCurrency(amount: number | string): string {
             const decimals = storeCurrency.decimals || 2;
             const decimalSeparator = storeCurrency.decimal_separator || '.';
             const thousandsSeparator = storeCurrency.thousands_separator || ',';
-            const position = storeCurrency.position || 'before';
+            const position = storeCurrency.position || 'after';
             const symbol = storeCurrency.symbol || '₪';
             
             const formattedNumber = numAmount.toFixed(decimals);
@@ -69,11 +71,12 @@ export function formatCurrency(amount: number | string): string {
             
             const finalNumber = parts.join(decimalSeparator);
             
-            const space = (storeCurrency.space === true || storeCurrency.space === '1' || storeCurrency.space === 1) ? ' ' : '';
+            const rawSpace = (storeCurrency.space === true || storeCurrency.space === '1' || storeCurrency.space === 1) ? '\u00A0' : '';
+            const effectiveSpace = position === 'after' && !rawSpace ? '\u00A0' : rawSpace;
             
             return position === 'after' 
-                ? `${finalNumber}${space}${symbol}`
-                : `${symbol}${space}${finalNumber}`;
+                ? `${finalNumber}${effectiveSpace}${symbol}`
+                : `${symbol}${rawSpace}${finalNumber}`;
         }
             
     } catch (error) {
@@ -99,9 +102,10 @@ export function formatSuperadminCurrency(amount: number | string): string {
         const decimals = parseInt(settings.decimalFormat || '2');
         const decimalSeparator = settings.decimalSeparator || '.';
         const thousandsSeparator = settings.thousandsSeparator || ',';
-        const position = settings.currencySymbolPosition || 'before';
+        const position = settings.currencySymbolPosition || 'after';
         const symbol = settings.currencySymbol || '₪';
-        const space = (settings.currencySymbolSpace === true || settings.currencySymbolSpace === '1') ? ' ' : '';
+        const rawSpace = (settings.currencySymbolSpace === true || settings.currencySymbolSpace === '1') ? '\u00A0' : '';
+        const effectiveSpace = position === 'after' && !rawSpace ? '\u00A0' : rawSpace;
         
         const formattedNumber = numAmount.toFixed(decimals);
         const parts = formattedNumber.split('.');
@@ -113,8 +117,8 @@ export function formatSuperadminCurrency(amount: number | string): string {
         const finalNumber = parts.join(decimalSeparator);
         
         return position === 'after' 
-            ? `${finalNumber}${space}${symbol}`
-            : `${symbol}${space}${finalNumber}`;
+            ? `${finalNumber}${effectiveSpace}${symbol}`
+            : `${symbol}${rawSpace}${finalNumber}`;
             
     } catch (error) {
         return `₪${Number(amount).toFixed(2)}`;

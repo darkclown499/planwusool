@@ -1395,7 +1395,7 @@ if (! function_exists('formatStoreCurrency')) {
             
             // Currency formatting settings
             $symbol = $currency ? $currency->symbol : '₪';
-            $position = $storeSettings['currencySymbolPosition'] ?? 'before';
+            $position = $storeSettings['currencySymbolPosition'] ?? 'after';
             $decimals = (int)($storeSettings['decimalFormat'] ?? 2);
             $decimalSeparator = $storeSettings['decimalSeparator'] ?? '.';
             $thousandsSeparator = $storeSettings['thousandsSeparator'] ?? ',';
@@ -1403,10 +1403,11 @@ if (! function_exists('formatStoreCurrency')) {
             // Format the number
             $formattedNumber = number_format($numAmount, $decimals, $decimalSeparator, $thousandsSeparator);
             
-            // Return with currency symbol in correct position
+            $nbsp = "\xC2\xA0";
+            // Return with currency symbol in correct position (NBSP prevents RTL collision)
             return $position === 'after' 
-                ? $formattedNumber . ' ' . $symbol
-                : $symbol . ' ' . $formattedNumber;
+                ? $formattedNumber . $nbsp . $symbol
+                : $symbol . $nbsp . $formattedNumber;
                 
         } catch (\Exception $e) {
             // Fallback to simple formatting
@@ -1468,12 +1469,14 @@ if (! function_exists('formatCurrency')) {
         // Join with decimal separator
         $finalNumber = implode($decimalSeparator, $parts);
         
-        // Add currency symbol with proper positioning and spacing
-        $space = ($currencySymbolSpace === true || $currencySymbolSpace === '1') ? ' ' : '';
+        // Add currency symbol with proper positioning and spacing (NBSP)
+        $nbsp = "\xC2\xA0";
+        $rawSpace = ($currencySymbolSpace === true || $currencySymbolSpace === '1') ? $nbsp : '';
+        $effectiveSpace = $currencySymbolPosition === 'after' && $rawSpace === '' ? $nbsp : $rawSpace;
         
         $primary = $currencySymbolPosition === 'after' 
-            ? $finalNumber . $space . $symbol
-            : $symbol . $space . $finalNumber;
+            ? $finalNumber . $effectiveSpace . $symbol
+            : $symbol . $rawSpace . $finalNumber;
         
         // Dual currency: append the secondary currency value when configured
         $secondary = getSecondaryCurrencyInfo($storeSettings, $currencies);
@@ -1486,8 +1489,8 @@ if (! function_exists('formatCurrency')) {
             }
             $secondaryFinalNumber = implode($decimalSeparator, $secondaryParts);
             $secondaryStr = $currencySymbolPosition === 'after' 
-                ? $secondaryFinalNumber . $space . $secondary['symbol']
-                : $secondary['symbol'] . $space . $secondaryFinalNumber;
+                ? $secondaryFinalNumber . $effectiveSpace . $secondary['symbol']
+                : $secondary['symbol'] . $rawSpace . $secondaryFinalNumber;
             return $primary . ' ≈ ' . $secondaryStr;
         }
         
