@@ -1,4 +1,4 @@
-import { type SharedData } from '@/types';
+﻿import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import {
@@ -46,13 +46,13 @@ const FEATURES = [
     },
     {
         icon: LayoutTemplate,
-        title: '29 قالباً عربياً جاهزاً',
-        desc: 'قوالب مصممة لكل نشاط: مطاعم، بقالة، أزياء، إلكترونيات وأكثر — بلمسة عربية أصيلة.',
+        title: '6 قوالب قطاعية مصممة لأنواع مختلفة من المتاجر',
+        desc: 'قوالب قطاعية جاهزة: bazaar-market، grocery-souq، bakery-house، electronics-hub، fashion-atelier، restaurant-menu — بلمسة عربية أصيلة.',
     },
     {
         icon: CreditCard,
-        title: 'أكثر من 20 بوابة دفع',
-        desc: 'مدى، STC Pay، Tap، Moyasar، Stripe، PayPal وغيرها — استقبل مدفوعاتك بكل سهولة.',
+        title: 'بوابات دفع متعددة (حسب التوفر)',
+        desc: 'خيارات دفع متنوعة عبر بوابات إقليمية وعالمية حسب توفرها في بلدك وتفعيلك لها في إعدادات المتجر.',
     },
     {
         icon: BarChart3,
@@ -88,43 +88,22 @@ const STEPS = [
 ];
 
 const STATS = [
-    { value: '+29', label: 'قالباً احترافياً' },
-    { value: '+20', label: 'بوابة دفع' },
-    { value: '99.9%', label: 'وقت تشغيل' },
+    { value: '6', label: 'قوالب قطاعية' },
+    { value: 'متعدد', label: 'بوابات دفع (حسب التوفر)' },
+    { value: 'RTL', label: 'واجهة عربية بالكامل' },
     { value: '5 دقائق', label: 'لإطلاق متجرك' },
 ];
 
 const TEMPLATE_CARDS = [
-    { name: 'المطاعم والتوصيل', emoji: '🍔', from: '#d31b27', to: '#e5a500' },
-    { name: 'البقالة والسوبرماركت', emoji: '🛒', from: '#ed1d3b', to: '#ff7a59' },
-    { name: 'الأزياء والموضة', emoji: '👗', from: '#11248f', to: '#c4ec26' },
-    { name: 'التجميل والعناية', emoji: '💄', from: '#5fcb91', to: '#a8e6cf' },
-    { name: 'الإلكترونيات', emoji: '📱', from: '#0069df', to: '#38bdf8' },
-    { name: 'الأطفال', emoji: '🧸', from: '#f98496', to: '#9085f9' },
-    { name: 'المخبوزات والحلويات', emoji: '🧁', from: '#F88C91', to: '#EA5D5C' },
-    { name: 'العطور والفخامة', emoji: '🌸', from: '#f1657d', to: '#1a1c22' },
+    { name: 'bazaar-market', emoji: '🏪', from: '#d31b27', to: '#e5a500' },
+    { name: 'grocery-souq', emoji: '🛒', from: '#ed1d3b', to: '#ff7a59' },
+    { name: 'fashion-atelier', emoji: '👗', from: '#11248f', to: '#c4ec26' },
+    { name: 'bakery-house', emoji: '🧁', from: '#F88C91', to: '#EA5D5C' },
+    { name: 'electronics-hub', emoji: '📱', from: '#0069df', to: '#38bdf8' },
+    { name: 'restaurant-menu', emoji: '🍔', from: '#f1657d', to: '#1a1c22' },
 ];
 
-const TESTIMONIALS = [
-    {
-        name: 'أم عبدالله',
-        role: 'متجر حلويات منزلية',
-        text: 'كنت أستقبل الطلبات يدوياً على الواتساب وضيعت طلبات كثيرة. الآن كل طلب يوصلني منظّماً باسم الزبون والعنوان — خدمت ضعف عدد الزباين.',
-        initials: 'أ ع',
-    },
-    {
-        name: 'خالد المطيري',
-        role: 'معرض إلكترونيات',
-        text: 'جرّبت منصات عالمية وما كانت تناسب السوق العربي. وصول فهم المطلوب: واتساب أولاً، دفع محلي، وتصميم عربي أنيق.',
-        initials: 'خ م',
-    },
-    {
-        name: 'نورة السالم',
-        role: 'براند عبايات',
-        text: 'تخصيص التصميم خلاّني أعدّل المتجر بنفسي بدون أي مبرمج. غيّرت القالب مرتين وبضغطة زر — والمتجر أصبح أحلى من قبل.',
-        initials: 'ن س',
-    },
-];
+const TESTIMONIALS: Array<{ name: string; role: string; text: string; initials: string }> = [];
 
 const FAQS = [
     {
@@ -137,7 +116,7 @@ const FAQS = [
     },
     {
         q: 'ما طرق الدفع المدعومة؟',
-        a: 'ندعم أكثر من 20 بوابة دفع عالمية ومحلية: مدى، STC Pay، Tap، Moyasar، PayTabs، Stripe، PayPal وغيرها. يمكنك أيضاً تفعيل الدفع عند الاستلام.',
+        a: 'نوفر خيارات دفع متعددة عبر بوابات إقليمية وعالمية حسب توفرها في بلدك وتفعيلك لها في إعدادات المتجر، بالإضافة إلى الدفع عند الاستلام.',
     },
     {
         q: 'هل يمكنني استخدام نطاقي الخاص؟',
@@ -153,42 +132,42 @@ const PLANS = [
     {
         name: 'المجانية',
         price: '0',
-        period: '/شهرياً',
+        period: '/سنة',
         desc: 'مثالية للبداية وتجربة المنصة',
-        features: ['6 قوالب قطاعية جاهزة', 'منتجات غير محدودة', 'طلبات واتساب', 'نطاق فرعي مجاني', 'دعم عبر البريد'],
+        features: ['6 قوالب قطاعية (bazaar-market، grocery-souq، bakery-house، electronics-hub، fashion-atelier، restaurant-menu)', 'حتى 18 منتج · متجر واحد · مخزن واحد · 1GB', 'نطاق فرعي مجاني', 'دعم عبر البريد (8 ساعات)'],
         cta: 'ابدأ مجاناً',
         highlighted: false,
     },
     {
         name: 'النمو',
-        price: '49',
-        period: '/شهرياً',
-        desc: 'للمتاجر الجادة التي تكبر كل يوم',
+        price: '299',
+        period: '/سنة',
+        desc: 'الباقة الأكثر مبيعاً — للتوسع وزيادة المبيعات',
         features: [
-            'قوالب قطاعية متخصصة',
-            'تخصيص كامل لتصميم المتجر',
-            'بوابات دفع متعددة',
-            'صفحات مخصصة',
-            'سلة مهجورة وإشعارات',
-            'دعم ذو أولوية',
+            '6 قوالب قطاعية + تخصيص محدود',
+            'حتى 500 منتج · مخزنان · 10GB · PWA',
+            'نطاق مخصص + نطاق فرعي',
+            'ذكاء اصطناعي + SMS + شحن (حسب التوفر)',
+            '14 يوم تجربة مجانية',
+            'دعم واتساب وبريد (12 ساعة)',
         ],
         cta: 'اختر باقة النمو',
         highlighted: true,
     },
     {
         name: 'الاحترافية',
-        price: '99',
-        period: '/شهرياً',
-        desc: 'كل القوة لأكبر المتاجر والسلاسل',
+        price: '399',
+        period: '/سنة',
+        desc: 'الحل الشامل للمؤسسات — تخصيص كامل',
         features: [
-            'أولوية في القوالب والميزات الجديدة',
-            'تكامل ERP والمخازن',
-            'نطاق خاص + SSL',
-            'برنامج ولاء ونقاط',
-            'إشعارات Push',
-            'مدير حساب مخصص',
+            '6 قوالب قطاعية + تحرير كامل للتصميم',
+            'حتى 10,000 منتج · متجران · 3 مخازن · 50GB',
+            'إزالة علامة المنصة + PWA + نطاق مخصص',
+            'ذكاء اصطناعي + SMS + شحن + تطبيق موبايل (حسب التوفر)',
+            'محاسبة وتكامل ERP (حسب الباقة)',
+            'دعم VIP (24 ساعة)',
         ],
-        cta: 'تواصل معنا',
+        cta: 'اختر الباقة الاحترافية',
         highlighted: false,
     },
 ];
@@ -393,15 +372,11 @@ export default function Welcome() {
                             </div>
                             <p className="mt-4 text-xs text-slate-500">✓ بدون بطاقة ائتمانية &nbsp;•&nbsp; ✓ إلغاء في أي وقت</p>
 
-                            {/* trust row */}
+                            {/* trust row — qualitative, no unverified numbers */}
                             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500 lg:justify-start">
-                                <span className="flex items-center gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                                    ))}
-                                    تقييم ٤.٩ من تجارنا
-                                </span>
-                                <span>+٢٬٠٠٠ متجر نشط</span>
+                                <span>منصة لبناء وإدارة متجرك الإلكتروني</span>
+                                <span>•</span>
+                                <span>واجهة عربية بالكامل</span>
                             </div>
                         </div>
 
@@ -469,7 +444,7 @@ export default function Welcome() {
                         <SectionHeading
                             eyebrow="القوالب"
                             title="قالب جاهز لكل نشاط تجاري"
-                            sub="أكثر من ٢٩ قالباً عربياً بألوانه وأقسامه المصممة بعناية — اختر قالبك وفعّله بضغطة واحدة."
+                            sub="6 قوالب قطاعية مصممة لأنواع مختلفة من المتاجر — اختر قالبك وفعّله بضغطة واحدة."
                         />
                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                             {TEMPLATE_CARDS.map((tpl) => (
@@ -483,37 +458,13 @@ export default function Welcome() {
                         </div>
                         <div className="mt-10 text-center">
                             <a href="#pricing" className="inline-block rounded-full border border-emerald-200 bg-emerald-50 px-7 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100">
-                                استعرض كل القوالب الـ ٢٩ ←
+                                استعرض القوالب الـ 6 ←
                             </a>
                         </div>
                     </div>
                 </section>
 
-                {/* =========================== TESTIMONIALS ======================== */}
-                <section className="bg-slate-50/70 py-20">
-                    <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                        <SectionHeading eyebrow="آراء التجار" title="قصص نجاح من متاجر حقيقية" />
-                        <div className="grid gap-6 md:grid-cols-3">
-                            {TESTIMONIALS.map((tm) => (
-                                <figure key={tm.name} className="flex flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-                                    <div className="mb-3 flex gap-0.5">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                                        ))}
-                                    </div>
-                                    <blockquote className="flex-1 text-sm leading-relaxed text-slate-700">"{tm.text}"</blockquote>
-                                    <figcaption className="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
-                                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-xs font-extrabold text-emerald-700">{tm.initials}</span>
-                                        <span>
-                                            <span className="block text-sm font-bold text-slate-900">{tm.name}</span>
-                                            <span className="block text-xs text-slate-500">{tm.role}</span>
-                                        </span>
-                                    </figcaption>
-                                </figure>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+                {/* Testimonials removed — no verified merchant feedback approved for public marketing */}
 
                 {/* ============================= PRICING =========================== */}
                 <section id="pricing" className="py-20 scroll-mt-16">
@@ -536,8 +487,8 @@ export default function Welcome() {
                                     <h3 className="text-lg font-extrabold text-slate-900">{plan.name}</h3>
                                     <p className="mt-1 text-xs text-slate-500">{plan.desc}</p>
                                     <p className="mt-4">
-                                        <span className="text-4xl font-extrabold text-slate-900">{plan.price}</span>
-                                        <span className="text-sm font-medium text-slate-500"> ر.س {plan.period}</span>
+                                        <span className="text-4xl font-extrabold text-slate-900">{plan.price === '0' ? 'مجاناً' : `${plan.price}`}</span>
+                                        <span className="text-sm font-medium text-slate-500"> {plan.period}</span>
                                     </p>
                                     <ul className="mt-6 flex-1 space-y-3">
                                         {plan.features.map((f) => (
@@ -589,7 +540,7 @@ export default function Welcome() {
                     <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
                         <h2 className="text-3xl font-extrabold leading-snug text-white sm:text-4xl">جاهز تطلق متجرك على واتساب؟</h2>
                         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-emerald-50/90">
-                            انضم لأكثر من ٢٬٠٠٠ تاجر يبيعون يومياً عبر وصول — أنشئ متجرك الآن مجاناً وابدأ باستقبال طلباتك الأولى اليوم.
+                            منصة لبناء وإدارة متجرك الإلكتروني — أنشئ متجرك الآن مجاناً وابدأ باستقبال طلباتك الأولى اليوم.
                         </p>
                         <Link href={ctaHref} className="mt-8 inline-block rounded-full bg-white px-10 py-3.5 text-base font-extrabold text-emerald-700 shadow-xl transition hover:-translate-y-0.5 hover:bg-emerald-50">
                             {auth.user ? 'الذهاب إلى لوحة التحكم' : 'أنشئ متجرك مجاناً'}
@@ -647,4 +598,5 @@ export default function Welcome() {
         </>
     );
 }
+
 

@@ -27,8 +27,8 @@ export default function AboutPage() {
     },
     {
       icon: <HeadphonesIcon className="w-6 h-6" />,
-      title: t('دعم فني متميز'),
-      desc: t('فريق متخصص على مدار الساعة لمساعدتك'),
+      title: t('دعم فني حسب الباقة'),
+      desc: t('قنوات وساعات الدعم تختلف حسب الباقة — من البريد إلى واتساب و VIP'),
     },
   ];
 
