@@ -20,12 +20,11 @@ class StoreController extends Controller
         
         // Superadmin sees all stores; company users see their own stores
         $stores = resolveStoreQuery($user)->get();
-        
+        $storeIds = $stores->pluck('id')->map(fn ($id) => (int) $id)->filter()->values()->all();
+
         // Batch-load store configurations in ONE query (instead of one
         // StoreConfiguration::getConfiguration() per store) to eliminate the
         // N+1 in this listing endpoint.
-        $storeIds = $stores->pluck('id')->map(fn ($id) => (int) $id)->all();
-
         $configMap = [];
         if ($storeIds) {
             $configMap = \App\Models\StoreConfiguration::whereIn('store_id', $storeIds)
@@ -36,61 +35,164 @@ class StoreController extends Controller
                 })
                 ->toArray();
         }
-        
-        // Add store configuration status like StoreGo
-        $stores = $stores->map(function ($store) use ($configMap) {
-            // Get store configuration for status
-            $config = $configMap[(int) $store->id] ?? [];
+
+        // Batch-load real per-store aggregates in a handful of grouped queries
+        // (no per-store N+1): orders, produced revenue, products.
+        $ordersGrouped = $storeIds
+            ? \App\Models\Order::whereIn('store_id', $storeIds)
+                ->selectRaw('store_id, COUNT(*) as orders_count, COALESCE(SUM(CASE WHEN payment_status = ? THEN total_amount ELSE 0 END), 0) as revenue, MAX(updated_at) as last_activity', ['paid'])
+                ->groupBy('store_id')
+                ->get()
+                ->keyBy('store_id')
+            : collect();
+
+        $productsGrouped = $storeIds
+            ? \App\Models\Product::whereIn('store_id', $storeIds)
+                ->selectRaw('store_id, COUNT(*) as products_count')
+                ->groupBy('store_id')
+                ->get()
+                ->keyBy('store_id')
+            : collect();
+
+        $shippingGrouped = $storeIds
+            ? \App\Models\Shipping::whereIn('store_id', $storeIds)
+                ->selectRaw('store_id, COUNT(*) as shipping_count')
+                ->groupBy('store_id')
+                ->get()
+                ->keyBy('store_id')
+            : collect();
+
+        // Payment readiness is store-scoped in payment_settings rows keyed by
+        // user_id + store_id, so it must be read per store. Merchant store
+        // counts are small (plan-limited), so this stays bounded.
+        $storeList = $stores->map(function ($store) use ($configMap, $ordersGrouped, $productsGrouped, $shippingGrouped, $user) {
+            $storeId = (int) $store->id;
+            $config = $configMap[$storeId] ?? [];
             $store->config_status = ($config['store_status'] ?? 'true') !== 'false';
             $store->maintenance_mode = ($config['maintenance_mode'] ?? 'false') === 'true';
-            
-            // Add status information
-            $store->status_reason = null;
-            if (!$store->config_status) {
-                $store->status_reason = 'Store disabled by owner';
-            }
-            
+            $store->status_reason = $store->config_status ? null : 'Store disabled by owner';
+
+            $orders = $ordersGrouped->get($storeId);
+            $prod = $productsGrouped->get($storeId);
+            $ship = $shippingGrouped->get($storeId);
+
+            $store->orders_count = (int) ($orders->orders_count ?? 0);
+            $store->revenue = (float) ($orders->revenue ?? 0);
+            $store->products_count = (int) ($prod->products_count ?? 0);
+            $store->shipping_count = (int) ($ship->shipping_count ?? 0);
+            $store->last_activity = ($orders->last_activity ?? null) ?: $store->updated_at;
+
+            // Normalized template + friendly display domain
+            $store->template_slug = $store->getTemplateSlug();
+            $store->display_domain = $store->getVerifiedDomain()
+                ? $store->getVerifiedDomain()->domain_name
+                : ($store->custom_domain ?: ($store->enable_custom_subdomain ? $store->custom_subdomain . '.' . getBaseDomain() : $store->slug . '.' . config('app.store_domain', getBaseDomain())));
+
+            $store->readiness = $this->buildReadiness($store, $config, $user);
+
             return $store;
         });
-        
-        // Calculate dynamic store statistics
-        $storeIds = $stores->pluck('id')->toArray();
+
+        // Overall summary statistics are computed across the same scoped set.
         $currentMonth = \Carbon\Carbon::now()->startOfMonth();
         $lastMonth = \Carbon\Carbon::now()->subMonth()->startOfMonth();
-        
-        $totalCustomers = \App\Models\Customer::whereIn('store_id', $storeIds)->count();
-        $lastMonthCustomers = \App\Models\Customer::whereIn('store_id', $storeIds)
-            ->whereBetween('created_at', [$lastMonth, $currentMonth])
-            ->count();
-        
-        $totalRevenue = \App\Models\Order::whereIn('store_id', $storeIds)
-            ->where('payment_status', 'paid')
-            ->sum('total_amount');
-        $lastMonthRevenue = \App\Models\Order::whereIn('store_id', $storeIds)
-            ->where('payment_status', 'paid')
-            ->whereBetween('created_at', [$lastMonth, $currentMonth])
-            ->sum('total_amount');
-        
-        // Calculate growth percentages
-        $customerGrowth = $lastMonthCustomers > 0 ? 
-            (($totalCustomers - $lastMonthCustomers) / $lastMonthCustomers) * 100 : 
-            ($totalCustomers > 0 ? 100 : 0);
-        
-        $revenueGrowth = $lastMonthRevenue > 0 ? 
-            (($totalRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100 : 
-            ($totalRevenue > 0 ? 100 : 0);
-        
+
+        $totalStores = $storeList->count();
+        $activeStores = $storeList->where('config_status', true)->count();
+
+        $totalOrders = $storeList->sum('orders_count');
+        $totalRevenue = $storeList->sum('revenue');
+
+        $totalCustomers = $storeIds
+            ? \App\Models\Customer::whereIn('store_id', $storeIds)->count()
+            : 0;
+        $lastMonthCustomers = $storeIds
+            ? \App\Models\Customer::whereIn('store_id', $storeIds)
+                ->whereBetween('created_at', [$lastMonth, $currentMonth])
+                ->count()
+            : 0;
+        $lastMonthRevenue = $storeIds
+            ? \App\Models\Order::whereIn('store_id', $storeIds)
+                ->where('payment_status', 'paid')
+                ->whereBetween('created_at', [$lastMonth, $currentMonth])
+                ->sum('total_amount')
+            : 0;
+
+        $customerGrowth = $lastMonthCustomers > 0
+            ? (($totalCustomers - $lastMonthCustomers) / $lastMonthCustomers) * 100
+            : ($totalCustomers > 0 ? 100 : 0);
+        $revenueGrowth = $lastMonthRevenue > 0
+            ? (($totalRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100
+            : ($totalRevenue > 0 ? 100 : 0);
+
         $storeStats = [
-            'totalCustomers' => $totalCustomers,
+            'totalStores' => $totalStores,
+            'activeStores' => $activeStores,
+            'totalOrders' => $totalOrders,
             'totalRevenue' => $totalRevenue,
+            'totalCustomers' => $totalCustomers,
+            'readyStores' => $storeList->where('readiness.isReady', true)->count(),
             'customerGrowth' => round($customerGrowth, 1),
-            'revenueGrowth' => round($revenueGrowth, 1)
+            'revenueGrowth' => round($revenueGrowth, 1),
         ];
-        
+
         return Inertia::render('stores/index', [
-            'stores' => $stores,
-            'storeStats' => $storeStats
+            'stores' => $storeList->values(),
+            'storeStats' => $storeStats,
         ]);
+    }
+
+    /**
+     * Build a lightweight, data-truthful store readiness snapshot.
+     *
+     * Every flag is derived from real persisted data (no fabricated toggles):
+     *   design   – a template is always assigned; "customized" when the owner
+     *              has actually saved brand/template overrides.
+     *   products – at least one product exists.
+     *   shipping – at least one shipping method exists (or shipping is enabled).
+     *   payments – at least one payment method is enabled (real gateway import).
+     *   domain   – the store is live on a subdomain (default = ready).
+     *   email    – a contact email is set.
+     */
+    private function buildReadiness($store, array $config, $user): array
+    {
+        $hasDesign = !empty($store->theme)
+            || !empty($config['design_tokens'])
+            || !empty($config['template_overrides'])
+            || !empty($config['logo'])
+            || !empty($config['favicon']);
+
+        $hasProducts = (int) ($store->products_count ?? 0) > 0
+            || \App\Models\Product::where('store_id', $store->id)->exists();
+
+        $hasShipping = (int) ($store->shipping_count ?? 0) > 0;
+        if (!$hasShipping) {
+            $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->exists()
+                || !empty($config['shipping_enabled'])
+                || !empty($config['shipping_methods']);
+        }
+
+        $hasPayments = count(getEnabledPaymentMethods($user->id, $store->id)) > 0;
+
+        $hasDomain = true; // every store is live on its default subdomain
+        $hasEmail = !empty($store->email);
+
+        $missing = [];
+        if (!$hasProducts) $missing[] = 'المنتجات';
+        if (!$hasShipping) $missing[] = 'الشحن والتوصيل';
+        if (!$hasPayments) $missing[] = 'طرق الدفع';
+        if (!$hasEmail) $missing[] = 'البريد الإلكتروني';
+
+        return [
+            'design' => $hasDesign,
+            'products' => $hasProducts,
+            'shipping' => $hasShipping,
+            'payments' => $hasPayments,
+            'domain' => $hasDomain,
+            'email' => $hasEmail,
+            'isReady' => $hasProducts && $hasShipping && $hasPayments,
+            'missing' => $missing,
+        ];
     }
 
     /**
@@ -281,10 +383,27 @@ class StoreController extends Controller
         
         // Format revenue for display
         $stats['formatted_revenue'] = formatStoreCurrency($stats['total_revenue'], Auth::id(), $store->id);
+
+        // Normalize template + expose real readiness (same data-truthful model
+        // used by the store list and the dashboard launch checklist).
+        $config = \App\Models\StoreConfiguration::getConfiguration($store->id);
+        $store->config_status = ($config['store_status'] ?? 'true') !== 'false';
+        $store->maintenance_mode = ($config['maintenance_mode'] ?? 'false') === 'true';
+        $store->template_slug = $store->getTemplateSlug();
+        $store->display_domain = $store->getVerifiedDomain()
+            ? $store->getVerifiedDomain()->domain_name
+            : ($store->custom_domain ?: ($store->enable_custom_subdomain ? $store->custom_subdomain . '.' . getBaseDomain() : $store->slug . '.' . config('app.store_domain', getBaseDomain())));
+
+        $productsCount = $stats['total_products'];
+        $shippingCount = \App\Models\Shipping::where('store_id', $store->id)->count();
+        $readiness = $this->buildReadiness($store, $config, $user);
+        $readiness['products_count'] = $productsCount;
+        $readiness['shipping_count'] = $shippingCount;
         
         return Inertia::render('stores/view', [
             'store' => $store,
             'stats' => $stats,
+            'readiness' => $readiness,
             // Computed server-side (with the current request) so the "Visit
             // Store" link carries the right port on local/dev domains instead
             // of assuming 80/443.
