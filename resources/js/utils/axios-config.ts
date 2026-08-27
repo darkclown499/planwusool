@@ -1,32 +1,23 @@
-import axios from 'axios';
-
-// Set CSRF token for all requests
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-
-// Intercept requests to add fresh CSRF token
+import axios from "axios";
+import { getCsrfToken, getXsrfToken } from "@/utils/csrf";
+axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+axios.defaults.withCredentials = true;
+// @ts-ignore
+if ("withXSRFToken" in axios.defaults) {
+  // @ts-ignore
+  axios.defaults.withXSRFToken = true;
+}
+axios.defaults.xsrfCookieName = "XSRF-TOKEN";
+axios.defaults.xsrfHeaderName = "X-XSRF-TOKEN";
 axios.interceptors.request.use((config) => {
-  let csrfToken = null;
-  
-  // Try to get CSRF token from meta tag first (most reliable)
-  const metaToken = document.head.querySelector('meta[name="csrf-token"]');
-  if (metaToken) {
-    csrfToken = (metaToken as HTMLMetaElement).content;
-  }
-  
-  // Override with Inertia token if available (fresher after login)
-  try {
-    if (typeof window !== 'undefined' && (window as any).page?.props?.csrf_token) {
-      csrfToken = (window as any).page.props.csrf_token;
-    }
-  } catch (e) {
-    // Ignore errors accessing window.page
-  }
-  
+  const csrfToken = getCsrfToken();
   if (csrfToken) {
-    config.headers['X-CSRF-TOKEN'] = csrfToken;
+    config.headers["X-CSRF-TOKEN"] = csrfToken;
   }
-  
+  const xsrf = getXsrfToken();
+  if (xsrf) {
+    config.headers["X-XSRF-TOKEN"] = xsrf;
+  }
   return config;
 });
-
 export default axios;

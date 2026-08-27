@@ -34,7 +34,7 @@ import { Separator } from '@/components/ui/separator';
 import MediaPicker from '@/components/MediaPicker';
 import { apiGet, apiPut } from '@/utils/api';
 import { getImageUrl } from '@/utils/image-helper';
-import { getCsrfToken } from '@/utils/csrf';
+import { csrfHeaders, getCsrfToken } from '@/utils/csrf';
 import { getTemplateModule, listTemplateModules, type TemplateModule } from '@/templates-v2';
 import { usePage } from '@inertiajs/react';
 
@@ -263,7 +263,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
         setHeroUploading(true);
         try {
             const fd = new FormData(); valid.forEach((f) => fd.append('files[]', f));
-            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } });
+            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } });
             const json: any = await res.json();
             if (res.ok && json?.data?.length) {
                 const urls: string[] = (json.data as any[]).map((d: any) => { const raw = String(d.url || ''); if (!raw) return ''; if (raw.startsWith('/storage')) return raw; const m = raw.match(/\/storage\/.*$/); return m ? m[0] : raw; }).filter(Boolean).map((u) => normalizeImageUrl(u)).filter(Boolean);
@@ -276,7 +276,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
         setLogoUploading(true);
         try {
             const fd = new FormData(); fd.append('files[]', file);
-            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } });
+            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } });
             const json: any = await res.json();
             if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); setTokens({ ...tokens, logo: normalized }); let tmp = setDotted(content, 'brand.logo', normalized); tmp = setDotted(tmp, 'logo', normalized); setContent(tmp); toast.success('تم رفع الشعار'); } else toast.error(json?.message || 'فشل رفع الشعار');
         } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setLogoUploading(false); }
@@ -286,7 +286,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
         setFaviconUploading(true);
         try {
             const fd = new FormData(); fd.append('files[]', file);
-            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } });
+            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } });
             const json: any = await res.json();
             if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); setTokens({ ...tokens, favicon: normalized }); let tmp = setDotted(content, 'brand.favicon', normalized); tmp = setDotted(tmp, 'favicon', normalized); setContent(tmp); toast.success('تم رفع الأيقونة'); } else toast.error(json?.message || 'فشل رفع الأيقونة');
         } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setFaviconUploading(false); }
@@ -400,7 +400,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                             const label = isUnpublished ? 'معاينة المتجر' : 'فتح المتجر';
                             if (isUnpublished) {
                                 try {
-                                    const res = await fetch(route('stores.preview-token', store.id), { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() || '' } });
+                                    const res = await fetch(route('stores.preview-token', store.id), { headers: { 'Accept': 'application/json', ...csrfHeaders() } });
                                     const data = await res.json();
                                     if (data.preview_url) { window.open(data.preview_url, '_blank'); return; }
                                 } catch {}
@@ -411,7 +411,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                             const isUnpublished = settings?.store_status === 'false' || settings?.store_status === false;
                             if (isUnpublished) {
                                 try {
-                                    const res = await fetch(route('stores.preview-token', store.id), { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() || '' } });
+                                    const res = await fetch(route('stores.preview-token', store.id), { headers: { 'Accept': 'application/json', ...csrfHeaders() } });
                                     const data = await res.json();
                                     if (data.preview_url) { window.open(data.preview_url, '_blank'); return; }
                                 } catch {}
@@ -633,7 +633,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                             <Input dir="ltr" value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url', norm); tmp = setDotted(tmp, 'hero_video_url', norm); setContent(tmp); }} placeholder="https://example.com/video.mp4" className="bg-white font-mono text-sm" />
                                             <DropzoneUploader label="أو اسحب ملف الفيديو هنا" hint="MP4 — حتى 15MB" accept="video/mp4,video/*" uploading={interfaceVideoUploading || heroUploading} onFiles={async (files) => {
                                                 const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
-                                                try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع الفيديو'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                                try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع الفيديو'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
                                             }} />
                                             {heroVideoUrl && <video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-40 w-full rounded-xl border object-cover" />}
                                         </div>

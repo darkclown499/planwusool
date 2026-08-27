@@ -1,30 +1,38 @@
 /**
- * Get the current CSRF token from various sources
+ * Centralized CSRF helpers
  */
-export function getCsrfToken(): string | null {
-  // Try to get from Inertia's page data first (most reliable after login)
-  if (typeof window !== 'undefined' && (window as any).page?.props?.csrf_token) {
-    return (window as any).page.props.csrf_token;
-  }
-  
-  // Fallback to meta tag
-  const token = document.head.querySelector('meta[name="csrf-token"]');
-  if (token) {
-    return (token as HTMLMetaElement).content;
-  }
-  
+export function getXsrfToken(): string | null {
+  try {
+    const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    if (m && m[1]) return decodeURIComponent(m[1]);
+  } catch {}
   return null;
 }
-
-/**
- * Update the global CSRF token in axios defaults
- */
-export function updateAxiosCsrfToken(): void {
-  const token = getCsrfToken();
-  if (token) {
-    // Update axios default headers if axios is available
-    if (typeof window !== 'undefined' && (window as any).axios) {
-      (window as any).axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+export function getCsrfToken(): string | null {
+  try {
+    if (typeof window !== "undefined" && (window as any).page?.props?.csrf_token) {
+      const t = (window as any).page.props.csrf_token;
+      if (typeof t === "string" && t.length > 0) return t;
     }
-  }
+  } catch {}
+  try {
+    const meta = document.head.querySelector("meta[name=\"csrf-token\"]");
+    if (meta) {
+      const c = (meta as HTMLMetaElement).content;
+      if (c) return c;
+    }
+  } catch {}
+  return null;
+}
+export function csrfHeaders(): Record<string,string> {
+  const h: Record<string,string> = {};
+  const c = getCsrfToken(); if (c) h["X-CSRF-TOKEN"] = c;
+  const x = getXsrfToken(); if (x) h["X-XSRF-TOKEN"] = x;
+  return h;
+}
+export function updateAxiosCsrfToken(): void {
+  const t = getCsrfToken();
+  if (t && typeof window !== "undefined" && (window as any).axios) (window as any).axios.defaults.headers.common["X-CSRF-TOKEN"] = t;
+  const x = getXsrfToken();
+  if (x && typeof window !== "undefined" && (window as any).axios) (window as any).axios.defaults.headers.common["X-XSRF-TOKEN"] = x;
 }
