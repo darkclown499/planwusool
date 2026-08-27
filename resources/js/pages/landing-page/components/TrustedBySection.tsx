@@ -31,7 +31,6 @@ const TRUSTED_LOGOS = [
   { name: 'Apple Pay', src: '/images/logos/apple.png' },
   { name: 'Google Pay', src: '/images/logos/google.png' },
   { name: 'WhatsApp', src: '/images/logos/whatsapp.png' },
-  { name: 'Telegram', src: '/images/logos/telegram.png' },
 ];
 
 const MARQUEE_CSS = `
