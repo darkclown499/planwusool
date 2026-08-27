@@ -182,7 +182,7 @@ class OtpController extends Controller
             }
         }
 
-        $user = \App\Models\User::create($userData);
+        $user = \App\Models\User::forceCreate($userData);
         defaultRoleAndSetting($user);
 
         // Create referral record

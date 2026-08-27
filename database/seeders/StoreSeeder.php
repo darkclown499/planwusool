@@ -194,7 +194,7 @@ class StoreSeeder extends Seeder
         foreach ($storeTemplates as $storeData) {
             $slug = Store::generateUniqueSlug($storeData['name']);
 
-            $store = Store::create([
+            $store = Store::forceCreate([
                 'name' => $storeData['name'],
                 'slug' => $slug,
                 'description' => $storeData['description'],
@@ -211,7 +211,7 @@ class StoreSeeder extends Seeder
 
         // Set current_store only if not already set - preserve existing client data
         if (!empty($createdStores) && empty($user->current_store)) {
-            $user->update(['current_store' => $createdStores[0]->id]);
+            $user->forceFill(['current_store' => $createdStores[0]->id])->save();
         }
     }
     

@@ -1,4 +1,4 @@
-<?php
+∩╗┐<?php
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PermissionController;
@@ -129,13 +129,13 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::post('/otp/verify', [\App\Http\Controllers\StorefrontOtpController::class, 'verify'])->middleware('throttle:10,1')->name('store.otp.verify');
     Route::post('/otp/resend', [\App\Http\Controllers\StorefrontOtpController::class, 'resend'])->middleware('throttle:6,1')->name('store.otp.resend');
 
-    // Password reset routes
-    Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->middleware('throttle:5,1')->name('store.forgot-password');
-    Route::get('/reset-password/{token}', [\App\Http\Controllers\Store\AuthController::class, 'showResetForm'])->name('store.reset-password');
+    // Password reset routes ╬ô├ç├╢ P0 hardened (store-scoped per-email limits inside controller + IP throttle)
+    Route::post('/forgot-password', [\App\Http\Controllers\Store\AuthController::class, 'forgotPassword'])->middleware('throttle:3,1')->name('store.forgot-password');
+    Route::get('/reset-password/{token}', [\App\Http\Controllers\Store\AuthController::class, 'showResetForm'])->middleware('throttle:10,1')->name('store.reset-password');
     Route::post('/reset-password', [\App\Http\Controllers\Store\AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('store.reset-password.update');
 
-    // Order routes
-    Route::post('/order/place', [\App\Http\Controllers\Store\OrderController::class, 'placeOrder'])->name('store.order.place');
+    // Order routes ╬ô├ç├╢ P0 hardened: throttle per store+IP, order never created before abuse controls
+    Route::post('/order/place', [\App\Http\Controllers\Store\OrderController::class, 'placeOrder'])->middleware('throttle:order-place')->name('store.order.place');
     Route::get('/order/{orderNumber}/pdf', [\App\Http\Controllers\ThemeController::class, 'downloadOrderPdf'])->name('store.order.pdf');
 
     // Customer Returns (storefront)
@@ -204,6 +204,7 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     Route::get('/ozow/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'ozowSuccess'])->name('store.ozow.success');
     Route::post('/ozow/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'ozowCallback'])->name('store.ozow.callback');
     Route::get('/authorizenet/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'authorizenetSuccess'])->name('store.authorizenet.success');
+    Route::post('/authorizenet/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'authorizenetCallback'])->name('store.authorizenet.callback');
     Route::get('/fedapay/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'fedapaySuccess'])->name('store.fedapay.success');
     Route::post('/fedapay/callback/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'fedapayCallback'])->name('store.fedapay.callback');
     Route::match(['GET', 'POST'], '/payhere/success/{orderNumber}', [\App\Http\Controllers\Store\GatewayReturnController::class, 'payhereSuccess'])->name('store.payhere.success');
@@ -456,13 +457,13 @@ Route::middleware('auth')->prefix('api/merchant-notifications')->name('api.merch
     Route::post('read-all', [MerchantNotificationController::class, 'markAllRead'])->name('mark-all-read');
 });
 
-// Coupon API routes
+// Coupon API routes ╬ô├ç├╢ P0: store-scoped throttle to block brute force (one store abuse must not block another)
 Route::prefix('api/coupon')->name('api.coupon.')->group(function () {
-    Route::post('/validate', [\App\Http\Controllers\Api\CouponController::class, 'validate'])->name('validate');
+    Route::post('/validate', [\App\Http\Controllers\Api\CouponController::class, 'validate'])->middleware('throttle:coupon-validate')->name('validate');
 });
 
 // Advanced Coupon validation API (storefront checkout)
-Route::post('api/advanced-coupon/validate', [\App\Http\Controllers\AdvancedCouponController::class, 'validateCoupon'])->name('api.advanced-coupon.validate');
+Route::post('api/advanced-coupon/validate', [\App\Http\Controllers\AdvancedCouponController::class, 'validateCoupon'])->middleware('throttle:coupon-validate')->name('api.advanced-coupon.validate');
 
 // Shipping API routes
 Route::get('api/shipping-methods', [\App\Http\Controllers\Api\ShippingController::class, 'getMethods'])->name('api.shipping.methods');
@@ -561,6 +562,10 @@ Route::post('cashfree/webhook', [CashfreeController::class, 'webhook'])->middlew
 
 // Accounting integration webhook (public route - secured via API key in request)
 Route::post('webhook/accounting/{store}', [\App\Http\Controllers\AccountingWebhookController::class, 'handle'])->name('accounting.webhook');
+
+// WhatsApp Cloud API webhook ╬ô├ç├╢ verification + delivery receipts (per-store isolated, idempotent)
+Route::get('webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'verify'])->name('whatsapp.webhook.verify');
+Route::post('webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'handle'])->name('whatsapp.webhook.handle');
 
 // Courier shipment webhook (per-provider, signature verified per integration)
 Route::post('webhook/courier/{provider}', [\App\Http\Controllers\CourierWebhookController::class, 'handle'])->name('courier.webhook');
@@ -666,7 +671,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('plans', [PlanController::class, 'index'])->middleware('permission:manage-plans')->name('plans.index');
     Route::post('plans/request', [PlanController::class, 'requestPlan'])->middleware('permission:request-plans')->name('plans.request');
     Route::post('plans/subscribe', [PlanController::class, 'subscribe'])->middleware('permission:subscribe-plans')->name('plans.subscribe');
-    Route::post('plans/coupons/validate', [CouponController::class, 'validate'])->name('coupons.validate');
+    Route::post('plans/coupons/validate', [CouponController::class, 'validate'])->middleware('throttle:coupon-plan')->name('coupons.validate');
     
     // Payment routes - accessible without plan check
     Route::post('payments/stripe', [StripePaymentController::class, 'processPayment'])->name('stripe.payment');
@@ -868,7 +873,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('coupon-system/{storeCoupon}', [\App\Http\Controllers\StoreCouponController::class, 'update'])->middleware('permission:edit-coupon-system')->name('coupon-system.update');
             Route::delete('store-coupons/{storeCoupon}', [\App\Http\Controllers\StoreCouponController::class, 'destroy'])->middleware('permission:delete-coupon-system')->name('store-coupons.destroy');
             Route::post('store-coupons/{storeCoupon}/toggle-status', [\App\Http\Controllers\StoreCouponController::class, 'toggleStatus'])->middleware('permission:toggle-status-coupon-system')->name('store-coupons.toggle-status');
-            Route::post('store-coupons/validate', [\App\Http\Controllers\StoreCouponController::class, 'validate'])->name('store-coupons.validate');
+            Route::post('store-coupons/validate', [\App\Http\Controllers\StoreCouponController::class, 'validate'])->middleware('throttle:coupon-plan')->name('store-coupons.validate');
         
         // Shipping Management routes with permissions
             Route::get('shipping', [\App\Http\Controllers\ShippingController::class, 'index'])->middleware('permission:manage-shipping')->name('shipping.index');
@@ -1023,9 +1028,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('examples/chatgpt-demo', [\App\Http\Controllers\PageController::class, 'chatGptDemo'])->name('examples.chatgpt-demo');
 
-    // Media Library API routes
+    // Media Library API routes ╬ô├ç├╢ P0 quota hardening + upload rate limit
     Route::get('api/media', [MediaController::class, 'index'])->middleware('permission:manage-media')->name('api.media.index');
-    Route::post('api/media/batch', [MediaController::class, 'batchStore'])->middleware('permission:upload-media')->name('api.media.batch');
+    Route::post('api/media/batch', [MediaController::class, 'batchStore'])->middleware(['permission:upload-media','throttle:30,1'])->name('api.media.batch');
     Route::get('api/media/{id}/download', [MediaController::class, 'download'])->middleware('permission:download-media')->name('api.media.download');
     Route::delete('api/media/{id}', [MediaController::class, 'destroy'])->middleware('permission:delete-media')->name('api.media.destroy');
 
@@ -1215,6 +1220,12 @@ require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 
 Route::match(['GET', 'POST'], 'payments/easebuzz/success', [EasebuzzPaymentController::class, 'success'])->name('easebuzz.success');
+// WhatsApp Cloud API webhook — verification + delivery receipts (per-store isolated, idempotent)
+Route::get('webhooks/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'verify'])->name('whatsapp.webhook.verify');
+Route::post('webhooks/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'handle'])->name('whatsapp.webhook.handle');
+Route::get('webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'verify']);
+Route::post('webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'handle']);
+
 Route::post('payments/easebuzz/callback', [EasebuzzPaymentController::class, 'callback'])->middleware('webhook.signature:easebuzz')->name('easebuzz.callback');
 
 // GDPR Routes — throttled to prevent bulk PII exfiltration/DoS

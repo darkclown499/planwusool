@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Setting;
 use App\Services\MailConfigService;
+use Illuminate\Support\Facades\RateLimiter;
 use PSpell\Config;
 
 class PasswordResetLinkController extends Controller
@@ -40,6 +41,14 @@ class PasswordResetLinkController extends Controller
         }
         
         $request->validate($rules);
+
+        // P0: per-email rate limit ΓÇö 3 per 15min prevents email bombing (route throttle is IP-only)
+        $emailKey = 'pw-reset-email:' . sha1(strtolower(trim($request->email)));
+        if (RateLimiter::tooManyAttempts($emailKey, 3)) {
+            // Preserve generic response to avoid enumeration even when throttled
+            return back()->with('status', __('A reset link will be sent if the account exists.'));
+        }
+        RateLimiter::hit($emailKey, 900);
         
         // Validate reCAPTCHA if enabled
         if ($recaptchaEnabled === 'true' || $recaptchaEnabled === true || $recaptchaEnabled === 1 || $recaptchaEnabled === '1') {

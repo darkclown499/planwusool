@@ -149,7 +149,7 @@ class UserController extends BaseController
             $created_by = auth()->id();
         }
         
-        $user = User::create([
+        $user = User::forceCreate([
             'name'       => $request->name,
             'email'      => $request->email,
             'phone'      => $request->phone,

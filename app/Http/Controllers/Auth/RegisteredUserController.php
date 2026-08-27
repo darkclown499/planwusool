@@ -124,7 +124,7 @@ class RegisteredUserController extends Controller
             }
         }
         
-        $user = User::create($userData);
+        $user = User::forceCreate($userData);
 
         // Assign role and settings to the user
         defaultRoleAndSetting($user);

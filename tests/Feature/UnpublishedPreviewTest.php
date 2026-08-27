@@ -37,7 +37,7 @@ class UnpublishedPreviewTest extends TestCase
 
     private function createUnpublishedStore(User $user, string $slug): Store
     {
-        $store = Store::create(['name' => 'S ' . $slug, 'slug' => $slug, 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $user->id]);
+        $store = Store::forceCreate(['name' => 'S ' . $slug, 'slug' => $slug, 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $user->id]);
         $user->current_store = $store->id;
         $user->save();
         StoreConfiguration::setConfiguration($store->id, 'store_status', 'false');
@@ -105,7 +105,7 @@ class UnpublishedPreviewTest extends TestCase
         $storeA = $this->createUnpublishedStore($ownerA, 'crossa');
         $merchantB = $this->merchant();
         // B has own store but tries to preview A's store via session
-        $storeB = Store::create(['name' => 'S crossb', 'slug' => 'crossb', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $merchantB->id]);
+        $storeB = Store::forceCreate(['name' => 'S crossb', 'slug' => 'crossb', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $merchantB->id]);
         $merchantB->current_store = $storeB->id;
         $merchantB->save();
 
@@ -121,7 +121,7 @@ class UnpublishedPreviewTest extends TestCase
     {
         $owner = $this->merchant();
         $storeA = $this->createUnpublishedStore($owner, 'tokencopya');
-        $storeB = Store::create(['name' => 'S tokenb', 'slug' => 'tokenb', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $owner->id]);
+        $storeB = Store::forceCreate(['name' => 'S tokenb', 'slug' => 'tokenb', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $owner->id]);
         StoreConfiguration::setConfiguration($storeB->id, 'store_status', 'false');
         $urlA = StorePreviewService::generatePreviewUrl($storeA);
         parse_str(parse_url($urlA, PHP_URL_QUERY), $qs);
@@ -150,7 +150,7 @@ class UnpublishedPreviewTest extends TestCase
     public function test_published_store_remains_public(): void
     {
         $owner = $this->merchant();
-        $store = Store::create(['name' => 'S pub1', 'slug' => 'pub1', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $owner->id]);
+        $store = Store::forceCreate(['name' => 'S pub1', 'slug' => 'pub1', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $owner->id]);
         StoreConfiguration::setConfiguration($store->id, 'store_status', 'true');
         $cat = Category::create(['name' => 'Cat', 'slug' => 'catpub', 'store_id' => $store->id, 'is_active' => true]);
         Product::create(['name' => 'Prod', 'price' => 10, 'stock' => 5, 'images' => '/a.jpg', 'cover_image' => '/a.jpg', 'category_id' => $cat->id, 'store_id' => $store->id, 'is_active' => true]);
@@ -236,7 +236,7 @@ class UnpublishedPreviewTest extends TestCase
     public function test_publish_readiness_still_requires_three(): void
     {
         $owner = $this->merchant();
-        $store = Store::create(['name' => 'S ready1', 'slug' => 'ready1', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $owner->id]);
+        $store = Store::forceCreate(['name' => 'S ready1', 'slug' => 'ready1', 'theme' => Store::DEFAULT_TEMPLATE, 'user_id' => $owner->id]);
         $owner->current_store = $store->id; $owner->save();
         $this->actingAs($owner);
         // No products/shipping/payments -> not ready

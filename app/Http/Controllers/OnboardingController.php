@@ -320,7 +320,7 @@ class OnboardingController extends Controller
             return $store;
         }
 
-        $store = Store::create([
+        $store = Store::forceCreate([
             'name' => $user->name,
             'slug' => Store::generateUniqueSlug($user->name),
             'theme' => \App\Models\Store::DEFAULT_TEMPLATE,

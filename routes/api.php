@@ -54,8 +54,9 @@ Route::prefix('v1')->group(function () {
     Route::get('payment-methods', [\App\Http\Controllers\Api\PaymentController::class, 'getMethods'])
         ->name('api.v1.payment.methods');
 
-    // Coupon validation
+    // Coupon validation ΓÇö P0 throttled
     Route::post('coupon/validate', [\App\Http\Controllers\Api\CouponController::class, 'validate'])
+        ->middleware('throttle:coupon-validate')
         ->name('api.v1.coupon.validate');
 
     // Locations
@@ -99,8 +100,9 @@ Route::prefix('v1')->group(function () {
         Route::post('{id}/default', [\App\Http\Controllers\Api\CustomerAddressController::class, 'setDefault'])->name('default');
     });
 
-    // Advanced coupon validation
+    // Advanced coupon validation ΓÇö P0 throttled
     Route::post('advanced-coupon/validate', [\App\Http\Controllers\AdvancedCouponController::class, 'validateCoupon'])
+        ->middleware('throttle:coupon-validate')
         ->name('api.v1.advanced-coupon.validate');
 
     // ERP / inventory sync endpoints (inbound, API-key protected)

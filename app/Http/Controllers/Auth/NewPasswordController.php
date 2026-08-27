@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -39,6 +40,15 @@ class NewPasswordController extends Controller
             'email' => 'required|email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        // P0: per-email verification attempt limit ΓÇö 5 per 15min
+        $verifyKey = 'pw-verify:' . sha1(strtolower(trim($request->email)));
+        if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
+            throw ValidationException::withMessages([
+                'email' => [__('Too many attempts. Please try again later.')],
+            ]);
+        }
+        RateLimiter::hit($verifyKey, 900);
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the

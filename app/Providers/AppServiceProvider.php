@@ -10,6 +10,9 @@ use App\Social\AppleProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -82,6 +85,40 @@ class AppServiceProvider extends ServiceProvider
                 $config['client_secret'],
                 $config['redirect']
             ))->configure($config['team_id'], $config['key_id'], $config['private_key']);
+        });
+
+        // P0 Abuse hardening ΓÇö store-scoped rate limiters (reuse Laravel limiter infra)
+        RateLimiter::for('order-place', function (Request $request) {
+            $storeId = $request->input('store_id') ?? $request->route('storeSlug') ?? 'global';
+            $ip = $request->ip() ?? 'unknown';
+            // Key includes store + IP so one attacker cannot DoS all stores via global bucket.
+            // 5 orders/min per store per IP ΓÇö moderate for NAT, blocks COD flooding.
+            return Limit::perMinute(5)->by('order-place:' . $storeId . ':' . $ip)->response(function () {
+                return response()->json(['success' => false, 'message' => 'Too many orders. Please try again later.', 'retry_after' => 60], 429);
+            });
+        });
+
+        RateLimiter::for('coupon-validate', function (Request $request) {
+            $storeId = $request->input('store_id') ?? $request->input('storeId') ?? 'global';
+            $ip = $request->ip() ?? 'unknown';
+            // 10 coupon validations/min per store per IP ΓÇö blocks brute force, one store abuse not blocking another.
+            return Limit::perMinute(10)->by('coupon:' . $storeId . ':' . $ip)->response(function () {
+                return response()->json(['valid' => false, 'message' => 'Too many coupon attempts. Please try again later.'], 429);
+            });
+        });
+
+        RateLimiter::for('coupon-plan', function (Request $request) {
+            $ip = $request->ip() ?? 'unknown';
+            $userId = $request->user()?->id ?? $ip;
+            return Limit::perMinute(10)->by('coupon-plan:' . $userId)->response(function () {
+                return response()->json(['valid' => false, 'message' => 'Too many coupon attempts. Please try again later.'], 429);
+            });
+        });
+
+        RateLimiter::for('password-reset', function (Request $request) {
+            return Limit::perMinute(3)->by('pw-reset:' . ($request->ip() ?? 'unknown'))->response(function () {
+                return response()->json(['message' => 'Too many requests. Please try again later.'], 429);
+            });
         });
     }
 }

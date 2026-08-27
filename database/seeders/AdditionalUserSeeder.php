@@ -68,7 +68,7 @@ class AdditionalUserSeeder extends Seeder
         $daysAgo = ($companyIndex * 100) + ($storeIndex * 15) + $userIndex + 1;
         $createdAt = Carbon::now()->subDays($daysAgo);
         
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => $userData['name'],
             'email' => $uniqueEmail,
             'email_verified_at' => $createdAt,

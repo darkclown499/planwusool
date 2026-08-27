@@ -91,7 +91,7 @@ class DemoStoreService
             return Store::where('slug', self::SLUG)->first();
         }
 
-        $store = Store::create([
+        $store = Store::forceCreate([
             // Brand names are not translated — «بوتيك ماسة» is the boutique identity.
             'name' => 'بوتيك ماسة',
             'slug' => self::SLUG,

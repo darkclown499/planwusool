@@ -23,7 +23,6 @@ protected $fillable = [
         'enable_custom_domain',
         'enable_custom_subdomain',
         'email',
-        'user_id',
         // SEO Settings
         'seo_title',
         'seo_description',
@@ -46,10 +45,13 @@ protected $fillable = [
      * owning controllers/services to prevent cross-tenant ownership changes
      * and stored-XSS via a mass-assigned content blob.
      *
+     * P0: ownership-sensitive fields must be guarded.
+     *
      * @var list<string>
      */
     protected $guarded = [
         'id',
+        'user_id',
         'store_content',
     ];
     

@@ -8,6 +8,8 @@ use App\Services\OrderService;
 use App\Services\CartCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -78,6 +80,9 @@ class OrderController extends Controller
                     // Allow — do not block checkout
                 }
             }
+
+            // P0 ORDER FLOODING: early per-store+IP throttling is handled by throttle:order-place middleware.
+            // Additional intelligent abuse controls (email/phone/session) run after validation below.
 
             $validationRules = [
                 'store_id' => 'required|exists:stores,id',
@@ -196,12 +201,40 @@ class OrderController extends Controller
                 ], 400);
             }
 
-            // Duplicate protection: idempotency_key server guard + debounce
+            // P0 ABUSE: intelligent rate limits before any DB write ΓÇö store + IP + email/phone/session scoped.
+            // Middleware already enforces per-store IP 5/min; here we add per-email and per-phone velocity so rotating IPs alone cannot flood.
+            $abuseBlocked = $this->enforceOrderAbuseLimits($request);
+            if ($abuseBlocked) return $abuseBlocked;
+
+            // Duplicate/replay protection: idempotency_key server guard + debounce (atomic via DB unique index)
             if ($request->filled('idempotency_key')) {
+                // Use cache atomic lock to prevent concurrent duplicate creation race before DB unique constraint.
+                $lockKey = 'order_idempotency:' . $request->store_id . ':' . $request->idempotency_key;
+                // If same key is already being processed, treat as duplicate (409)
+                if (!Cache::add($lockKey, 1, 120)) {
+                    $existing = \App\Models\Order::where('store_id', $request->store_id)
+                        ->where('idempotency_key', $request->idempotency_key)
+                        ->first();
+                    if ($existing) {
+                        return response()->json([
+                            'success' => true,
+                            'message' => '╪¬┘à ╪º╪│╪¬┘ä╪º┘à ╪╖┘ä╪¿┘â ╪¿╪º┘ä┘ü╪╣┘ä.',
+                            'order_number' => $existing->order_number,
+                            'order_id' => $existing->id,
+                            'duplicate' => true,
+                        ]);
+                    }
+                    return response()->json([
+                        'success' => false,
+                        'message' => '╪¬┘à ╪º╪│╪¬┘ä╪º┘à ╪╖┘ä╪¿┘â ╪¿╪º┘ä┘ü╪╣┘ä╪î ┘è╪▒╪¼┘ë ╪╣╪»┘à ╪¬┘â╪▒╪º╪▒ ╪º┘ä╪╢╪║╪╖.',
+                        'duplicate' => true,
+                    ], 409);
+                }
                 $existing = \App\Models\Order::where('store_id', $request->store_id)
                     ->where('idempotency_key', $request->idempotency_key)
                     ->first();
                 if ($existing) {
+                    Cache::forget($lockKey);
                     return response()->json([
                         'success' => true,
                         'message' => 'تم استلام طلبك بالفعل.',
@@ -321,8 +354,30 @@ class OrderController extends Controller
                 }
             }
 
-            // Create order
-            $order = $this->orderService->createOrder($orderData, $cartItems);
+            // Create order ΓÇö atomic, catches duplicate idempotency race via DB unique index
+            try {
+                $order = $this->orderService->createOrder($orderData, $cartItems);
+            } catch (\Illuminate\Database\QueryException $qe) {
+                // Unique violation on (store_id, idempotency_key) ΓåÆ duplicate submission
+                if ($request->filled('idempotency_key') && str_contains($qe->getMessage(), 'idempotency')) {
+                    $existing = \App\Models\Order::where('store_id', $request->store_id)
+                        ->where('idempotency_key', $request->idempotency_key)
+                        ->first();
+                    if ($existing) {
+                        if (isset($lockKey)) Cache::forget($lockKey);
+                        return response()->json([
+                            'success' => true,
+                            'message' => '╪¬┘à ╪º╪│╪¬┘ä╪º┘à ╪╖┘ä╪¿┘â ╪¿╪º┘ä┘ü╪╣┘ä.',
+                            'order_number' => $existing->order_number,
+                            'order_id' => $existing->id,
+                            'duplicate' => true,
+                        ]);
+                    }
+                }
+                throw $qe;
+            } finally {
+                if (isset($lockKey)) Cache::forget($lockKey);
+            }
 
             // Queue courier shipment if shipping method is linked to a courier integration (never inside DB transaction)
             if (!empty($order->shipping_method_id)) {
@@ -558,6 +613,46 @@ class OrderController extends Controller
                 'message' => 'تعذر إتمام الطلب: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * P0: intelligent per-entity rate limits for order flooding.
+     * Store + IP already throttled by middleware; here we add email/phone/session velocity.
+     * Returns JsonResponse 429 if exceeded, null otherwise. Never creates order before check.
+     */
+    private function enforceOrderAbuseLimits(Request $request): ?\Illuminate\Http\JsonResponse
+    {
+        $storeId = (int) ($request->store_id ?? 0);
+        if (!$storeId) return null;
+        $email = strtolower(trim((string) ($request->customer_email ?? '')));
+        $phone = preg_replace('/\D+/', '', (string) ($request->customer_phone ?? ''));
+        $sessionId = session()->getId();
+
+        // Per-email per-store: 5 orders / 10 minutes ΓÇö blocks rotating IP but same email abuse; NAT-friendly.
+        if ($email !== '') {
+            $key = 'order:email:' . $storeId . ':' . sha1($email);
+            if (RateLimiter::tooManyAttempts($key, 5)) {
+                return response()->json(['success' => false, 'message' => 'Too many orders for this email. Please try again later.'], 429, ['Retry-After' => RateLimiter::availableIn($key)]);
+            }
+            RateLimiter::hit($key, 600);
+        }
+        // Per-phone per-store: same limit
+        if ($phone !== '') {
+            $key = 'order:phone:' . $storeId . ':' . sha1($phone);
+            if (RateLimiter::tooManyAttempts($key, 5)) {
+                return response()->json(['success' => false, 'message' => 'Too many orders for this phone. Please try again later.'], 429, ['Retry-After' => RateLimiter::availableIn($key)]);
+            }
+            RateLimiter::hit($key, 600);
+        }
+        // Per-session per-store: 10 / 10 min ΓÇö blocks guest session spamming
+        if ($sessionId) {
+            $key = 'order:session:' . $storeId . ':' . sha1($sessionId);
+            if (RateLimiter::tooManyAttempts($key, 10)) {
+                return response()->json(['success' => false, 'message' => 'Too many orders. Please try again later.'], 429, ['Retry-After' => RateLimiter::availableIn($key)]);
+            }
+            RateLimiter::hit($key, 600);
+        }
+        return null;
     }
 
     /**

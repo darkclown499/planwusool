@@ -41,7 +41,7 @@ class MerchantOnboardingPublishTest extends TestCase
 
     private function createStore(User $user, string $slug = 'teststore'): Store
     {
-        $store = Store::create([
+        $store = Store::forceCreate([
             'name' => 'Test Store',
             'slug' => $slug,
             'theme' => Store::DEFAULT_TEMPLATE,

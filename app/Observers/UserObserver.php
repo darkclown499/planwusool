@@ -47,7 +47,7 @@ class UserObserver
             } elseif ($user->type === 'company') {
                 // Create default store if current_store is null and not during seeding
                 if (is_null($user->current_store) && $user->email !== 'company@example.com' && !app()->runningInConsole()) {
-                    $store = \App\Models\Store::create([
+                    $store = \App\Models\Store::forceCreate([
                         'name' => $user->name,
                         'slug' => \App\Models\Store::generateUniqueSlug($user->name),
                         'theme' => \App\Models\Store::DEFAULT_TEMPLATE,
@@ -55,7 +55,7 @@ class UserObserver
                         'user_id' => $user->id,
                     ]);
 
-                    $user->update(['current_store' => $store->id]);
+                    $user->forceFill(['current_store' => $store->id])->save();
                 }
 
                 copySettingsFromSuperAdmin($user->id, $user->current_store);

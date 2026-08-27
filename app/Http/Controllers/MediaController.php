@@ -180,6 +180,24 @@ class MediaController extends Controller
         $hasStoreColMedia = \Illuminate\Support\Facades\Schema::hasColumn('media', 'store_id');
 
         DB::transaction(function () use ($request, &$uploadedMedia, &$errors, $allowedMimes, $allowedTypes, $storeIdForUpload, $hasStoreColItem, $hasStoreColMedia) {
+            // P0: concurrent quota protection ΓÇö lock company row and re-verify within transaction (TOCTOU guard)
+            $authUser = auth()->user();
+            if ($authUser->type !== 'superadmin') {
+                $limit = $this->getUserStorageLimit($authUser);
+                if ($limit) {
+                    $company = $authUser->type === 'company' ? $authUser : \App\Models\User::find($authUser->created_by);
+                    if ($company) {
+                        \Illuminate\Support\Facades\DB::table('users')->where('id', $company->id)->lockForUpdate()->first();
+                    }
+                    $current = $this->getUserStorageUsage($authUser);
+                    $incoming = collect($request->file('files'))->sum(fn($f) => $f instanceof \Illuminate\Http\UploadedFile ? $f->getSize() : 0);
+                    if (($current + $incoming) > $limit) {
+                        throw new \Illuminate\Http\Exceptions\HttpResponseException(
+                            response()->json(['message' => __('Storage limit exceeded'), 'errors' => [__('Please delete files or upgrade plan')]], 422)
+                        );
+                    }
+                }
+            }
             foreach ($request->file('files') as $file) {
                 $tempFilePath = null;
                 $optimizedPath = null;
@@ -634,7 +652,7 @@ class MediaController extends Controller
         $limit = $this->getUserStorageLimit($user);
         if (!$limit) return null;
 
-        $uploadSize = collect($files)->sum('size');
+        $uploadSize = collect($files)->sum(fn($f) => $f instanceof \Illuminate\Http\UploadedFile ? $f->getSize() : ($f['size'] ?? 0));
         $currentUsage = $this->getUserStorageUsage($user);
 
         if (($currentUsage + $uploadSize) > $limit) {
@@ -650,42 +668,75 @@ class MediaController extends Controller
     private function getUserStorageLimit($user)
     {
         if ($user->type === 'company' && $user->plan) {
-            return $user->plan->storage_limit * 1024 * 1024 * 1024;
+            return (float) $user->plan->storage_limit * 1024 * 1024 * 1024;
         }
 
         if ($user->created_by) {
             $company = User::find($user->created_by);
             if ($company && $company->plan) {
-                return $company->plan->storage_limit * 1024 * 1024 * 1024;
+                return (float) $company->plan->storage_limit * 1024 * 1024 * 1024;
             }
         }
 
         return null;
     }
 
-    private function getUserStorageUsage($user)
+    /**
+     * P0: storage usage derived from real persisted media (store_id scoped, company-aggregated)
+     * NOT from a misnamed counter. Falls back to storage_used column for legacy rows.
+     */
+    private function getUserStorageUsage($user): int
     {
-        if ($user->type === 'company') {
-            return User::where('created_by', $user->id)
-                ->orWhere('id', $user->id)
-                ->sum('storage_limit');
-        }
+        try {
+            $company = null;
+            if ($user->type === 'company') $company = $user;
+            elseif ($user->created_by) $company = User::find($user->created_by);
+            if (!$company) return (int) ($user->storage_used ?? 0);
 
-        if ($user->created_by) {
-            $company = User::find($user->created_by);
-            if ($company) {
-                return User::where('created_by', $company->id)
-                    ->orWhere('id', $company->id)
-                    ->sum('storage_limit');
+            $storeIds = \App\Models\Store::where('user_id', $company->id)->pluck('id');
+            $mediaSum = 0;
+            if ($storeIds->isNotEmpty() && \Illuminate\Support\Facades\Schema::hasColumn('media', 'store_id')) {
+                $mediaSum = \Spatie\MediaLibrary\MediaCollections\Models\Media::whereIn('store_id', $storeIds)->sum('size');
+                // Include legacy media without store_id (null) that belongs to this company's users
+                $companyUserIds = User::where('created_by', $company->id)->orWhere('id', $company->id)->pluck('id');
+                $legacySum = \Spatie\MediaLibrary\MediaCollections\Models\Media::whereNull('store_id')->whereIn('user_id', $companyUserIds)->sum('size');
+                $mediaSum += $legacySum;
+            } else {
+                // Fallback: sum storage_used column
+                $mediaSum = User::where('created_by', $company->id)->orWhere('id', $company->id)->sum('storage_used');
+                // If still 0 but old counter has data, fallback to old misnamed column for transition period
+                if ($mediaSum == 0) {
+                    $mediaSum = User::where('created_by', $company->id)->orWhere('id', $company->id)->sum('storage_limit');
+                }
             }
+            return (int) $mediaSum;
+        } catch (\Throwable $e) {
+            return (int) ($user->storage_used ?? $user->storage_limit ?? 0);
         }
-
-        return $user->storage_limit;
     }
 
     private function updateStorageUsage($user, $size)
     {
-        $user->increment('storage_limit', $size);
+        // P0: atomic increment on dedicated storage_used column (additive, production-safe)
+        // Keep legacy storage_limit in sync for transition period but primary is storage_used.
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'storage_used')) {
+                // Use atomic DB increment with company-scope locking to prevent concurrent bypass
+                $company = $user->type === 'company' ? $user : User::find($user->created_by);
+                $target = $company ?? $user;
+                // Lock company row for quota serialization (prevents TOCTOU)
+                \Illuminate\Support\Facades\DB::transaction(function () use ($target, $size) {
+                    \Illuminate\Support\Facades\DB::table('users')->where('id', $target->id)->lockForUpdate()->first();
+                    \Illuminate\Support\Facades\DB::table('users')->where('id', $target->id)->increment('storage_used', $size);
+                });
+                // Keep legacy column in sync (do not let negative underflow)
+                try { $target->increment('storage_limit', $size); } catch (\Throwable $e) {}
+            } else {
+                $user->increment('storage_limit', $size);
+            }
+        } catch (\Throwable $e) {
+            try { $user->increment('storage_used', $size); } catch (\Throwable $e2) { $user->increment('storage_limit', $size); }
+        }
     }
 
     private function createPWAVersionIfNeeded($media)

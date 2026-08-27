@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -376,6 +377,14 @@ class AuthController extends Controller
             'email' => 'required|email'
         ]);
 
+        // P0: per-email+store rate limit ΓÇö prevents rapid email/SMS bombing, 3 per 15min
+        $emailKey = 'store-pw-forgot:' . $store->id . ':' . sha1(strtolower(trim($request->email)));
+        if (RateLimiter::tooManyAttempts($emailKey, 3)) {
+            // Generic throttled response ΓÇö do not reveal enumeration, return same success with delay hint
+            return back()->with('success', __('Password reset link sent to your email.'));
+        }
+        RateLimiter::hit($emailKey, 900);
+
         $customer = Customer::where('store_id', $store->id)
             ->where('email', $request->email)
             ->where('is_active', true)
@@ -434,6 +443,15 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        // P0: per-email+store verification attempt limit ΓÇö 5 per 15min prevents token brute force
+        $verifyKey = 'store-pw-verify:' . $store->id . ':' . sha1(strtolower(trim($request->email)));
+        if (RateLimiter::tooManyAttempts($verifyKey, 5)) {
+            throw ValidationException::withMessages([
+                'email' => [__('Too many attempts. Please try again later.')],
+            ]);
+        }
+        RateLimiter::hit($verifyKey, 900);
 
         // Verify token (store-scoped, with a 60-minute expiry)
         $passwordReset = \DB::table('store_password_reset_tokens')

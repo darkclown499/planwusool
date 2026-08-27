@@ -23,45 +23,32 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
      *
      * @var list<string>
      */
+    /**
+     * P0: Mass-assignment hardening ΓÇö only explicitly validated safe fields are fillable.
+     * Privilege/ownership/billing fields must never be set via $request->all() or $request->validated() mass assignment.
+     */
     protected $fillable = [
         'name',
         'email',
         'phone',
-        'email_verified_at',
         'password',
-        'type',
         'avatar',
         'lang',
-        'delete_status',
-        'plan_id',
-        'plan_duration',
-        'plan_expire_date',
-        'requested_plan',
-        'plan_is_active',
-        'is_enable_login',
-        'storage_limit',
-        'mode',
-        'created_by',
-        'referral_code',
-        'used_referral_code',
-        'google2fa_enable',
-        'google2fa_secret',
-        'active_module',
-        'terms_accepted_at',
-        'onboarded_at',
-        'last_login_at',
     ];
 
     /**
-     * The attributes that are not mass assignable.
+     * Security-sensitive and ownership-sensitive fields that must never be mass-assigned from public request data.
+     * Even if some appear in $fillable for internal forceCreate usage, guarded takes precedence.
      *
      * @var list<string>
      */
     protected $guarded = [
         'id',
+        'type',
         'plan_id',
         'plan_duration',
         'plan_expire_date',
+        'requested_plan',
         'plan_is_active',
         'is_trial',
         'trial_day',
@@ -77,6 +64,16 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'commission_amount',
         'last_login_ip',
         'last_login_ua',
+        'storage_limit',
+        'storage_used',
+        'is_enable_login',
+        'delete_status',
+        'mode',
+        'active_module',
+        'terms_accepted_at',
+        'onboarded_at',
+        'last_login_at',
+        'email_verified_at',
     ];
 
     /**
@@ -107,6 +104,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
             'is_enable_login' => 'integer',
             'google2fa_enable' => 'integer',
             'storage_limit' => 'float',
+            'storage_used' => 'integer',
             'terms_accepted_at' => 'datetime',
             'onboarded_at' => 'datetime',
             'last_login_at' => 'datetime',

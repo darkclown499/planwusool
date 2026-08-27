@@ -147,7 +147,7 @@ class SocialAuthController extends Controller
 
         $user = User::where('email', $email)->first();
         if (!$user) {
-            $user = User::create([
+            $user = User::forceCreate([
                 'name' => $name,
                 'email' => $email,
                 'email_verified_at' => $emailMissing ? null : now(),
