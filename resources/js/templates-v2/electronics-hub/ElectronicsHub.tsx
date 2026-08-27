@@ -175,6 +175,7 @@ export function HubHero({ banner }: { banner?: any }) {
     button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
   };
+  const electronicsPromise = (()=>{ try{ const c=(hero as any)?.storeContent ?? (useStorefrontCore() as any)?.content; const v=c?.electronics_promise ?? c?.electronics?.promise ?? c?.electronicsPromise; if(typeof v==='string'&&v.trim()) return v.trim(); }catch{} return 'أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.'; })();
   if (isVideo) {
     const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
@@ -186,7 +187,7 @@ export function HubHero({ banner }: { banner?: any }) {
           <div>
             <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
             <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
-            <p className="mt-3 max-w-md leading-relaxed text-slate-300">أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.</p>
+            <p className="mt-3 max-w-md leading-relaxed text-slate-300">{electronicsPromise}</p>
             <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
           </div>
         </div>
@@ -194,16 +195,17 @@ export function HubHero({ banner }: { banner?: any }) {
     );
   }
   if (isYoutube) {
+    const ytId = hero.youtubeIdMobile || hero.youtubeId;
     return (
       <section className="relative overflow-hidden bg-black" dir="rtl">
-        <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
         <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
         <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
           <div>
             <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
             <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
-            <p className="mt-3 max-w-md leading-relaxed text-slate-300">أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.</p>
+            <p className="mt-3 max-w-md leading-relaxed text-slate-300">{electronicsPromise}</p>
             <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
           </div>
         </div>
@@ -218,7 +220,7 @@ export function HubHero({ banner }: { banner?: any }) {
         <div>
           <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
           <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
-          <p className="mt-3 max-w-md leading-relaxed text-slate-400">أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.</p>
+          <p className="mt-3 max-w-md leading-relaxed text-slate-400">{electronicsPromise}</p>
           <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
         </div>
         <div className="relative hidden justify-self-end sm:block">
@@ -413,7 +415,7 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         {brands.length > 1 && (
           <section className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black text-slate-500">علامات نثق بها:</span>
+              <span className="text-xs font-black text-slate-500">{heading}</span>
               {brands.map((b) => (
                 <span key={b} className="rounded-full border border-slate-700 bg-slate-900 px-3.5 py-1 text-xs font-bold text-slate-300">{b}</span>
               ))}

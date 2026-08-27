@@ -32,13 +32,15 @@ function getCategoryFallbackIcon(name: string): React.ReactNode {
 
 export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[] }> = ({ categories }) => {
   if (!categories || categories.length === 0) return null;
+  let catHeading = 'تسوقي حسب الفئة';
+  try { const { useStorefrontCore } = require('../../shared/hooks'); const ctx = (useStorefrontCore as any)(); const raw = ctx?.content?.fashion_category_heading ?? ctx?.content?.fashion?.category_heading; if (typeof raw === 'string' && raw.trim()) catHeading = raw.trim(); } catch {}
 
   return (
     <section className="border-y border-stone-200/70 bg-white py-12 sm:py-16" dir="rtl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 text-center">
           <span className="mx-auto mb-3 block h-px w-10 bg-[#b08d57]" />
-          <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">تسوقي حسب الفئة</h2>
+          <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">{catHeading}</h2>
         </div>
         <div className="-mx-2 flex snap-x snap-mandatory gap-5 overflow-x-auto px-2 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
           {categories.slice(0, 10).map((c) => (

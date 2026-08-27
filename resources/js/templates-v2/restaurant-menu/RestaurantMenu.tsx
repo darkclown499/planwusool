@@ -120,16 +120,22 @@ export function RestaurantHero({ banner }: { banner?: any }) {
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   if (!hero.hasDynamicHero && !hasBanner) return null;
+  const effectiveImg = hero.hasDynamicHero && hero.imagesMobile.length>0 ? hero.imagesMobile[0] : (hero.hasDynamicHero && hero.images[0]) || banner?.image || '';
   const effective = {
-    image: (hero.hasDynamicHero && hero.images[0]) || banner?.image || '',
+    image: effectiveImg,
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
   };
+  const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
+  const heightStyle: any = hero.heightDesktop ? { height: hero.heightDesktop } : {};
+  const mobileStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .restaurant-hero-media video, .restaurant-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.restaurant-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
-      <section className="relative h-72 overflow-hidden bg-black sm:h-96" dir="rtl">
-        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-60" src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+      <section className="restaurant-hero-media relative h-72 overflow-hidden bg-black sm:h-96" style={heightStyle} dir="rtl">
+        {mobileStyle && <style>{mobileStyle}</style>}
+        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass}`} style={posStyle} src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
         <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
         <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
@@ -141,9 +147,15 @@ export function RestaurantHero({ banner }: { banner?: any }) {
     );
   }
   if (isYoutube) {
+    const ytId = hero.youtubeIdMobile || hero.youtubeId;
     return (
-      <section className="relative h-72 overflow-hidden bg-black sm:h-96" dir="rtl">
-        <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+      <section className="restaurant-hero-media relative h-72 overflow-hidden bg-black sm:h-96" style={heightStyle} dir="rtl">
+        {mobileStyle && <style>{mobileStyle}</style>}
+        {hero.fit === 'contain' ? (
+          <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        ) : (
+          <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+        )}
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
         <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
         <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
@@ -236,15 +248,16 @@ export function DishRow({ product }: { product: V2Product }) {
 /* ------------------------- Bestseller tiles ------------------------- */
 
 export function ChefPicks({ products }: { products: V2Product[] }) {
-  const { product: productCtx } = useStorefrontCore();
+  const { product: productCtx, content: _rc } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
   const picks = products.slice(0, 6);
   if (!picks.length) return null;
+  const chefHeading = (()=>{ const v= (_rc as any)?.restaurant_chef_heading ?? (_rc as any)?.restaurant?.chef_heading; if(typeof v==='string'&&v.trim()) return v.trim(); return 'اختيارات الشيف'; })();
 
   return (
     <section dir="rtl">
       <h2 className="mb-4 flex items-center gap-2 font-serif text-2xl font-black text-[#f5e7c8]">
-        <Flame className="h-6 w-6 text-[#f59e0b]" /> اختيارات الشيف
+        <Flame className="h-6 w-6 text-[#f59e0b]" /> {chefHeading}
       </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {picks.map((p) => (

@@ -145,13 +145,17 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     return () => clearInterval(t);
   }, [slides.length, isVideo, isYoutube]);
 
+  const bazaarMobileStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .bazaar-hero-media video, .bazaar-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.bazaar-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
+  const bazaarFitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const bazaarPosStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
   // Single-media video/youtube heroes — full-bleed with overlay text
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrl);
+    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-        <div className="relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72">
-          <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover" src={vidSrc} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />
+        {bazaarMobileStyle && <style>{bazaarMobileStyle}</style>}
+        <div className="bazaar-hero-media relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72" style={hero.heightDesktop ? { height: hero.heightDesktop } : {}}>
+          <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${bazaarFitClass}`} style={bazaarPosStyle} src={vidSrc} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-black/10 to-transparent" />
           {(hero.heading || hero.subtitle || hero.ctaLabel) && (
@@ -166,10 +170,16 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     );
   }
   if (isYoutube) {
+    const ytId = hero.youtubeIdMobile || hero.youtubeId;
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-        <div className="relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72">
-          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        {bazaarMobileStyle && <style>{bazaarMobileStyle}</style>}
+        <div className="bazaar-hero-media relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72" style={hero.heightDesktop ? { height: hero.heightDesktop } : {}}>
+          {hero.fit === 'contain' ? (
+            <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          ) : (
+            <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+          )}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           {(hero.heading || hero.subtitle || hero.ctaLabel) && (
             <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-2 p-7 sm:p-12">

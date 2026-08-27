@@ -157,11 +157,13 @@ export function BakeryHero({ banner }: { banner?: any }) {
     button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#bakery-best',
   };
+  const mobileHeroStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .bakery-hero-media video, .bakery-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.bakery-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
   if (isVideo) {
     const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
       <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
-        <div className="relative overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
+        {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
+        <div className="bakery-hero-media relative overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
           <video autoPlay loop muted playsInline className={`h-64 w-full sm:h-80 ${fitClass}`} style={posStyle} src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           <div className="absolute inset-0 bg-gradient-to-l from-[#3b2412]/70 via-black/20 to-transparent" />
@@ -175,10 +177,16 @@ export function BakeryHero({ banner }: { banner?: any }) {
     );
   }
   if (isYoutube) {
+    const ytId = hero.youtubeIdMobile || hero.youtubeId;
     return (
       <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
-        <div className="relative overflow-hidden rounded-3xl bg-black shadow-lg">
-          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${hero.youtubeId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${hero.youtubeId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
+        <div className="bakery-hero-media relative overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
+          {hero.fit === 'contain' ? (
+            <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          ) : (
+            <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+          )}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           <div className="absolute inset-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
             <p className="w-fit rounded-full bg-[#fbbf24] px-3.5 py-1 text-xs font-black text-[#78350f]">{effective.subtitle}</p>
@@ -314,12 +322,13 @@ export function BakeryLastBatch() {
   const cd = useCountdown(deadline);
   if (!cd) return null;
 
+  const batchHeading = (()=>{ const v = (_cc as any)?.bakery_last_batch?.heading ?? (_cc as any)?.bakery_last_batch_heading ?? 'آخر دفعة من الفرن اليوم بعد…'; const s=String(v??'').trim(); return s || 'آخر دفعة من الفرن اليوم بعد…'; })();
   return (
     <div className="mx-auto mt-6 max-w-6xl px-4 sm:px-6" dir="rtl">
       <div className="flex flex-col items-center justify-between gap-3 rounded-2xl bg-[#78350f] px-6 py-4 text-white shadow-lg sm:flex-row">
         <p className="flex items-center gap-2 font-serif text-lg font-bold">
           <Clock3 className="h-5 w-5 text-[#fbbf24]" />
-          آخر دفعة من الفرن اليوم بعد…
+          {batchHeading}
         </p>
         <div className="flex items-center gap-2 font-black" dir="ltr">
           {[
@@ -369,8 +378,8 @@ const BakeryStoryStrip: React.FC = () => {
   const { content: _bc } = useStorefrontCore() as any;
   const storyCfg = (_bc as any)?.bakery_story ?? {};
   if (storyCfg.enabled === false) return null;
-  const q = storyCfg.quote || '«نُخبز بشغف — كل يوم، بجودة تليق بك»';
-  const sub = storyCfg.subtitle || 'مكونات مختارة • وصفاتنا الخاصة';
+  const q = storyCfg.quote || (_bc as any)?.bakery_quote || '«نُخبز بشغف — كل يوم، بجودة تليق بك»';
+  const sub = storyCfg.subtitle || (_bc as any)?.bakery_subtitle || 'مكونات مختارة • وصفاتنا الخاصة';
   return (
     <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
       <div className="rounded-3xl bg-gradient-to-l from-[#f5e7d3] to-[#fdf6ec] p-8 text-center ring-1 ring-[#eaddcf]">
@@ -404,11 +413,14 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       <main className="pb-16">
         <BakeryHero banner={banners[0]} />
 
-        {/* Category cards */}
-        {categories.length > 0 && (
+        {/* Category cards — heading editable via Designer (bakery_category_heading) */}
+        {categories.length > 0 && (() => {
+          let bakeryCatHeading = 'من رفوف المخبز';
+          try { const c = (storeData as any)?.content ?? {}; const v = (c as any)?.bakery_category_heading ?? (c as any)?.bakery?.category_heading; if (typeof v === 'string' && v.trim()) bakeryCatHeading = v.trim(); } catch {}
+          return (
           <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
             <h2 className="mb-4 flex items-center gap-2 font-serif text-2xl font-black text-[#78350f]">
-              <CakeSlice className="h-6 w-6 text-[#b45309]" /> من رفوف المخبز
+              <CakeSlice className="h-6 w-6 text-[#b45309]" /> {bakeryCatHeading}
             </h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {categories.slice(0, 8).map((c: any) => (
@@ -424,7 +436,8 @@ const BakeryHome: React.FC<{ storeData: any }> = ({ storeData }) => {
               ))}
             </div>
           </section>
-        )}
+          );
+        })()}
 
         <BakeryLastBatch />
 

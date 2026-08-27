@@ -425,10 +425,14 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                 </div>
             </header>
 
-            {/* Split Layout: Preview + Controls — Controls on RIGHT (RTL), Preview LEFT ~72-75% */}
+            {/* Split Layout: Preview + Controls — Controls on RIGHT (RTL), Preview LEFT ~72-75%
+                Desktop 1440: [ Controls 390px RIGHT ] [ Preview flexible LEFT ]
+                Wrapper dir="ltr" makes visual order = DOM order; order utilities swap mobile vs desktop placement.
+                Controls RIGHT = left-to-right row second column; Preview LEFT = first column larger.
+            */}
             <div dir="ltr" className="mx-auto flex max-w-[1600px] flex-col lg:h-[calc(100vh-56px)] lg:flex-row lg:overflow-hidden">
-                {/* Preview Panel — left visually (DOM second with ltr row), order second on mobile */}
-                <main className="order-1 flex min-h-[420px] flex-1 flex-col overflow-hidden bg-slate-100 lg:order-2 lg:min-h-0" dir="rtl">
+                {/* Preview Panel — LEFT visually on desktop (first col), bottom on mobile */}
+                <main className="order-2 flex min-h-[420px] flex-1 flex-col overflow-hidden bg-slate-100 lg:order-1 lg:min-h-0" dir="rtl">
                     <div className="flex items-center justify-between border-b border-slate-100 bg-white px-3 py-2 sm:px-4">
                         <div className="flex flex-col gap-0.5">
                             <p className="flex items-center gap-1.5 text-xs font-black leading-none text-slate-800"><Monitor className="h-3.5 w-3.5 text-slate-400" /> وضع المعاينة</p>
@@ -456,8 +460,8 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                     </div>
                 </main>
 
-                {/* Controls Panel — RIGHT visually (DOM first with ltr row), top on RTL reading */}
-                <aside className="order-2 flex w-full shrink-0 flex-col overflow-hidden border-t border-slate-100 bg-white lg:order-1 lg:w-[360px] lg:border-e lg:border-t-0 xl:w-[390px]" dir="rtl">
+                {/* Controls Panel — RIGHT visually on desktop (second col, 360-390px), top on mobile */}
+                <aside className="order-1 flex w-full shrink-0 flex-col overflow-hidden border-b border-slate-100 bg-white lg:order-2 lg:w-[360px] lg:border-b-0 lg:border-s lg:border-s-slate-100 xl:w-[390px]" dir="rtl">
                     {/* Sticky workspace navigation */}
                     <div className="sticky top-0 z-10 shrink-0 border-b border-slate-100 bg-white">
                         <div className="grid grid-cols-3 gap-1 p-2 sm:gap-1.5 sm:p-2.5">
@@ -863,18 +867,65 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                             </div>
                         )}
 
-                        {/* ============ 5. المحتوى ============ */}
+                        {/* ============ 5. المحتوى — مُدرك بالقالب ============ */}
                         {activeWorkspace === 'content' && (
                             <div className="space-y-4">
-                                <p className="text-xs leading-relaxed text-slate-500">محتوى الصفحة — يظهر في الصفحة الرئيسية والمتجر.</p>
+                                <p className="text-xs leading-relaxed text-slate-500">محتوى الصفحة — كل حقل يوضح أين يظهر ومن أي قالب يُقرأ.</p>
                                 <Card>
                                     <div className="space-y-4">
-                                        <div><SectionLabel>رسالة الترحيب</SectionLabel><Input value={getDotted(content, 'welcome_message') as string || ''} onChange={(e) => setContent(setDotted(content, 'welcome_message', e.target.value))} placeholder="مرحباً بكم في متجرنا!" className="bg-white" /><p className="mt-1 text-[11px] text-slate-400">تظهر أعلى الصفحة الرئيسية</p></div>
+                                        <div><SectionLabel>رسالة الترحيب</SectionLabel><Input value={getDotted(content, 'welcome_message') as string || ''} onChange={(e) => setContent(setDotted(content, 'welcome_message', e.target.value))} placeholder="مرحباً بكم في متجرنا!" className="bg-white" /><p className="mt-1 text-[11px] text-slate-400">تظهر أعلى الصفحة الرئيسية — كل القوالب</p></div>
                                         <div><SectionLabel>وصف المتجر</SectionLabel><Textarea value={getDotted(content, 'store_description') as string || ''} onChange={(e) => setContent(setDotted(content, 'store_description', e.target.value))} placeholder="وصف مختصر لمتجرك..." rows={3} className="bg-white" /><p className="mt-1 text-[11px] text-slate-400">يُستخدم في السيو والمشاركة</p></div>
                                         <div><SectionLabel>نص الحقوق</SectionLabel><Input value={getDotted(content, 'copyright_text') as string || ''} onChange={(e) => setContent(setDotted(content, 'copyright_text', e.target.value))} placeholder="© 2026 متجري. جميع الحقوق محفوظة." className="bg-white" /><p className="mt-1 text-[11px] text-slate-400">يظهر في تذييل المتجر</p></div>
                                     </div>
                                 </Card>
-                                <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-xs leading-relaxed text-emerald-800">💡 يمكنك معاينة هذا المحتوى مباشرة في المعاينة الحية على اليسار.</p></div>
+                                {/* قالب-specific editorial headings — only shown for relevant template */}
+                                {theme === 'fashion-atelier' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">أزياء — محتوى القالب <span className="ms-1 rounded bg-[#9d7463]/10 px-1.5 py-0.5 text-[10px] font-bold text-[#9d7463]">أتيليه الموضة</span></p>
+                                        <div className="space-y-3">
+                                            <div><SectionLabel hint="الصفحة الرئيسية → قسم الفئات الدائري">عنوان قسم الفئات</SectionLabel><Input value={String(getDotted(content,'fashion_category_heading') ?? '')} onChange={e=> setContent(setDotted(content,'fashion_category_heading', e.target.value))} placeholder="تسوقي حسب الفئة" className="bg-white" /></div>
+                                        </div>
+                                    </Card>
+                                )}
+                                {theme === 'bakery-house' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">مخبز — محتوى القالب <span className="ms-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">بيت المخبز</span></p>
+                                        <div className="space-y-3">
+                                            <div><SectionLabel hint="الصفحة الرئيسية → شبكة الفئات">عنوان رفوف المخبز</SectionLabel><Input value={String(getDotted(content,'bakery_category_heading') ?? '')} onChange={e=> setContent(setDotted(content,'bakery_category_heading', e.target.value))} placeholder="من رفوف المخبز" className="bg-white" /></div>
+                                            <div><SectionLabel hint="الصفحة الرئيسية → شريط آخر دفعة">عنوان عداد آخر دفعة</SectionLabel><Input value={String(getDotted(content,'bakery_last_batch.heading') ?? '')} onChange={e=> setContent(setDotted(content,'bakery_last_batch.heading', e.target.value))} placeholder="آخر دفعة من الفرن اليوم بعد…" className="bg-white" /></div>
+                                        </div>
+                                    </Card>
+                                )}
+                                {theme === 'electronics-hub' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">تقنية — محتوى القالب <span className="ms-1 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">عالم التقنية</span></p>
+                                        <div className="space-y-3">
+                                            <div><SectionLabel hint="الصفحة الرئيسية → أسفل الهيرو مباشرة">النص الترويجي للهيرو</SectionLabel><Textarea value={String(getDotted(content,'electronics_promise') ?? '')} onChange={e=> setContent(setDotted(content,'electronics_promise', e.target.value))} placeholder="أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك." rows={2} className="bg-white" /></div>
+                                            <div><SectionLabel hint="الصفحة الرئيسية → شريط العلامات">عنوان قسم العلامات</SectionLabel><Input value={String(getDotted(content,'electronics_brands_heading') ?? '')} onChange={e=> setContent(setDotted(content,'electronics_brands_heading', e.target.value))} placeholder="علامات نثق بها:" className="bg-white" /></div>
+                                        </div>
+                                    </Card>
+                                )}
+                                {theme === 'restaurant-menu' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">مطعم — محتوى القالب <span className="ms-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">قائمة المطعم</span></p>
+                                        <div className="space-y-3">
+                                            <div><SectionLabel hint="الصفحة الرئيسية → شبكة اختيارات الشيف">عنوان قسم اختيارات الشيف</SectionLabel><Input value={String(getDotted(content,'restaurant_chef_heading') ?? '')} onChange={e=> setContent(setDotted(content,'restaurant_chef_heading', e.target.value))} placeholder="اختيارات الشيف" className="bg-white" /></div>
+                                        </div>
+                                    </Card>
+                                )}
+                                {theme === 'bazaar-market' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">بازار — محتوى القالب <span className="ms-1 rounded bg-teal-100 px-1.5 py-0.5 text-[10px] font-bold text-teal-700">البازار</span></p>
+                                        <p className="text-xs leading-relaxed text-slate-500">هذا القالب العام لا يحتاج عناوين خاصة — العناوين الافتراضية “وصل حديثاً / الأكثر رواجاً” هي عناوين نظام محايدة.</p>
+                                    </Card>
+                                )}
+                                {theme === 'grocery-souq' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">بقالة — محتوى القالب <span className="ms-1 rounded bg-yellow-100 px-1.5 py-0.5 text-[10px] font-bold text-yellow-700">سوق البقالة</span></p>
+                                        <p className="text-xs leading-relaxed text-slate-500">العناوين “وصل حديثاً / منتجات مختارة” هي عناوين نظام محايدة. المنتجات الحقيقية تحدد المحتوى — لا توجد علامات وهمية.</p>
+                                    </Card>
+                                )}
+                                <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-xs leading-relaxed text-emerald-800">💡 كل حقل هنا يُحفظ مع “حفظ التغييرات” ويظهر مباشرة في المعاينة الحية على اليسار. التبديل بين القوالب يحافظ على بيانات كل قالب.</p></div>
                             </div>
                         )}
 
