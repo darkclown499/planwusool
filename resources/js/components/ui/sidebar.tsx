@@ -138,7 +138,7 @@ function SidebarProvider({
             } as React.CSSProperties
           }
           className={cn(
-            "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
+            "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full max-w-full min-w-0 overflow-x-clip",
             className
           )}
           {...props}
@@ -209,7 +209,7 @@ function Sidebar({
 
   return (
     <div
-      className="group peer text-sidebar-foreground hidden lg:block"
+      className="group peer text-sidebar-foreground hidden xl:block"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -230,7 +230,7 @@ function Sidebar({
       />
       <div
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear lg:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear xl:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -311,7 +311,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "bg-white relative flex min-h-svh flex-1 flex-col",
+        "bg-white relative flex min-h-svh flex-1 flex-col min-w-0 w-full max-w-full overflow-x-hidden",
         "peer-data-[side=left]:pl-[var(--sidebar-width)] peer-data-[side=right]:pr-[var(--sidebar-width)]",
         "peer-data-[collapsible=icon]:peer-data-[side=left]:pl-[var(--sidebar-width-icon)] peer-data-[collapsible=icon]:peer-data-[side=right]:pr-[var(--sidebar-width-icon)]",
         "peer-data-[collapsible=offcanvas]:peer-data-[side=left]:pl-0 peer-data-[collapsible=offcanvas]:peer-data-[side=right]:pr-0",

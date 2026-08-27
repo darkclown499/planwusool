@@ -42,7 +42,7 @@ export function MerchantMobileSectionSwitcher({ sectionTitle, items }: Props) {
     const activeItem = items.find((i) => isActive(i.href, i.activePaths, url)) ?? items[0];
 
     return (
-        <div className="lg:hidden border-b border-gray-100 bg-white">
+        <div className="xl:hidden border-b border-gray-100 bg-white">
             <div className="flex items-center justify-between gap-3 px-4 py-3">
                 <span className="text-[13px] font-semibold tracking-tight text-gray-900">{sectionTitle}</span>
                 <button

@@ -40,9 +40,9 @@ export function MerchantContextNav({ title, items }: Props) {
     if (!items || items.length === 0) return null;
 
     return (
-        <nav aria-label={`${title} navigation`} className="flex flex-col gap-4 py-4">
+        <nav aria-label={`${title} navigation`} className="flex flex-col gap-3 py-4">
             <div className="ps-3.5 pe-3 pt-0.5">
-                <h2 className="text-[12px] font-semibold tracking-tight text-gray-900 leading-none">{title}</h2>
+                <h2 className="text-[12px] font-semibold tracking-tight text-gray-900 leading-none text-start">{title}</h2>
             </div>
             <ul className="flex flex-col gap-0.5 px-2.5">
                 {items.map((item) => {
@@ -55,10 +55,10 @@ export function MerchantContextNav({ title, items }: Props) {
                                 aria-current={active ? 'page' : undefined}
                                 data-active={active}
                                 className={cn(
-                                    'relative flex w-full items-center rounded-lg ps-3 pe-2.5 py-[9px] text-[13px] leading-5 font-normal transition-colors duration-150',
+                                    'relative flex w-full items-center rounded-lg ps-3 pe-2.5 py-2.5 text-[13px] leading-5 font-normal transition-colors duration-150 min-h-[40px]',
                                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-1',
                                     active
-                                        ? 'bg-emerald-50/70 text-emerald-700 font-medium border-s-2 border-emerald-600 -ms-px ps-[10px]'
+                                        ? 'bg-emerald-50/80 text-emerald-700 font-medium border-s-2 border-emerald-600 -ms-px ps-[10px]'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border border-transparent'
                                 )}
                             >
