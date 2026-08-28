@@ -36,7 +36,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
   try { const ctx = (useStorefrontCore as any)(); const raw = ctx?.content?.fashion_category_heading ?? ctx?.content?.fashion?.category_heading; if (typeof raw === 'string' && raw.trim()) catHeading = raw.trim(); } catch {}
 
   return (
-    <section className="border-y border-stone-200/70 bg-white py-12 sm:py-16" dir="rtl">
+    <section className="py-10 sm:py-12" dir="rtl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 text-center">
           <span className="mx-auto mb-3 block h-px w-10 bg-[#b08d57]" />

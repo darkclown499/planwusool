@@ -99,7 +99,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         )}
 
         {showBest && (
-          <div id="atelier-best" className="bg-white">
+          <div id="atelier-best">
             <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
               <div className="mb-6 flex items-end justify-between gap-4">
                 <div>
@@ -118,7 +118,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Dynamic category sections */}
         {homepageCategories.length > 0 && (
-          <div className="bg-white">
+          <div>
             <div className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
               {homepageCategories.map((catId: string) => {
                 const cat = categories.find((c: any) => String(c.id) === String(catId));
