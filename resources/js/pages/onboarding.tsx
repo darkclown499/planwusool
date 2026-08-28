@@ -1018,7 +1018,7 @@ export default function Onboarding({
                                                             onChange={(v) => setData('logo', v)}
                                                             placeholder={t('Select a logo image')}
                                                             dropzoneLabel={t('Upload logo')}
-                                                            hint={t('Supports PNG, JPG, SVG (max 5MB)')}
+                                                            hint={t('Supports PNG, JPG, GIF, WebP (max 2MB)')}
                                                             showPreview
                                                             dragDrop
                                                             inputId="onboarding-logo"

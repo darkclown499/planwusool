@@ -5415,7 +5415,7 @@
     "No matching currencies": "لا توجد عملات مطابقة",
     "Recommended size: 500 × 500 px": "المقاس الموصى به: 500 × 500 px",
     "Upload logo": "اضغط لرفع الشعار",
-    "Supports PNG, JPG, SVG (max 5MB)": "يدعم PNG، JPG، SVG (بحد أقصى 5MB)",
+    "Supports PNG, JPG, GIF, WebP (max 2MB)": "يدعم PNG، JPG، GIF، WebP (بحد أقصى 2MB)",
     "Store location (optional)": "موقع المتجر (اختياري)",
     "Select your country": "اختر دولتك",
     "Search for a country...": "ابحث عن الدولة...",
