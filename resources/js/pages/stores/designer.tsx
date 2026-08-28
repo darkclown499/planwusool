@@ -1044,6 +1044,70 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                         </div>
                                     </Card>
                                 )}
+                                {theme === 'fashion-atelier' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">أتيليه — روابط التواصل في القائمة (3 خانات) <span className="ms-1 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold text-stone-600">هامبرغر</span></p>
+                                        <p className="mb-3 text-[11px] leading-relaxed text-slate-500">تظهر داخل قائمة الهامبرغر للجوال فقط. كل خانة قابلة للتفعيل/التعطيل مع اختيار المنصة والرابط. الروابط غير المفعلة أو الفارغة لا تُعرض.</p>
+                                        <div className="space-y-4">
+                                            {[1,2,3].map((idx) => {
+                                                const enabled = !!getDotted(content, `fashion_mobile_nav.social_${idx}_enabled`);
+                                                const platform = String(getDotted(content, `fashion_mobile_nav.social_${idx}_platform`) ?? 'instagram');
+                                                const url = String(getDotted(content, `fashion_mobile_nav.social_${idx}_url`) ?? '');
+                                                return (
+                                                    <div key={idx} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                                        <div className="mb-2 flex items-center justify-between">
+                                                            <span className="text-xs font-black text-stone-700">رابط {idx}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[11px] font-bold text-stone-500">مفعل</span>
+                                                                <Switch checked={enabled} onCheckedChange={(v)=> setContent(setDotted(content, `fashion_mobile_nav.social_${idx}_enabled`, v))} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div>
+                                                                <SectionLabel>المنصة</SectionLabel>
+                                                                <select value={platform} onChange={(e)=> setContent(setDotted(content, `fashion_mobile_nav.social_${idx}_platform`, e.target.value))} className="w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs focus:border-[#9d7463] focus:outline-none">
+                                                                    <option value="facebook">Facebook</option>
+                                                                    <option value="instagram">Instagram</option>
+                                                                    <option value="tiktok">TikTok</option>
+                                                                    <option value="youtube">YouTube</option>
+                                                                    <option value="snapchat">Snapchat</option>
+                                                                    <option value="telegram">Telegram</option>
+                                                                    <option value="x">X / Twitter</option>
+                                                                    <option value="whatsapp">WhatsApp</option>
+                                                                    <option value="website">Website</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <SectionLabel>الرابط</SectionLabel>
+                                                                <Input dir="ltr" value={url} onChange={(e)=> setContent(setDotted(content, `fashion_mobile_nav.social_${idx}_url`, e.target.value.trim()))} placeholder="https://..." className="bg-white text-xs" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </Card>
+                                )}
+                                {theme === 'fashion-atelier' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">أتيليه — زر واتساب العائم (جوال) <span className="ms-1 rounded bg-green-50 px-1.5 py-0.5 text-[10px] font-bold text-green-700">WhatsApp</span></p>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5">
+                                                <span className="text-xs font-bold text-stone-700">تفعيل زر واتساب العائم</span>
+                                                <Switch checked={!!getDotted(content,'fashion_whatsapp.enabled')} onCheckedChange={(v)=> setContent(setDotted(content,'fashion_whatsapp.enabled', v))} />
+                                            </div>
+                                            <div>
+                                                <SectionLabel hint="يُستخدم إن وجد، وإلا رقم واتساب العام للمتجر">رقم واتساب (مع رمز البلد)</SectionLabel>
+                                                <Input dir="ltr" value={String(getDotted(content,'fashion_whatsapp.number') ?? '')} onChange={(e)=> setContent(setDotted(content,'fashion_whatsapp.number', e.target.value.replace(/[^0-9+]/g,'')))} placeholder="9665XXXXXXXX" className="bg-white text-sm" />
+                                            </div>
+                                            <div>
+                                                <SectionLabel>الرسالة الافتراضية</SectionLabel>
+                                                <Textarea value={String(getDotted(content,'fashion_whatsapp.message') ?? '')} onChange={(e)=> setContent(setDotted(content,'fashion_whatsapp.message', e.target.value))} placeholder="مرحباً، أريد الاستفسار عن أحد المنتجات" rows={2} className="bg-white" />
+                                                <p className="mt-1 text-[11px] text-stone-400">يتم ترميزها تلقائياً عبر wa.me</p>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                )}
                                 {theme === 'bakery-house' && (
                                     <Card>
                                         <p className="mb-2 text-xs font-black text-slate-800">مخبز — محتوى القالب <span className="ms-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">بيت المخبز</span></p>

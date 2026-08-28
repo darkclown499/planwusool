@@ -42,8 +42,9 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
           <span className="mx-auto mb-3 block h-px w-10 bg-[#b08d57]" />
           <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">{catHeading}</h2>
         </div>
-        <div className="-mx-2 flex snap-x snap-mandatory gap-5 overflow-x-auto px-2 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
-          {categories.slice(0, 10).map((c) => (
+        <div className="overflow-x-auto overflow-y-hidden pb-3 snap-x snap-mandatory scroll-px-4 sm:scroll-px-6 lg:scroll-px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex w-max min-w-full gap-4 sm:gap-5 justify-start sm:justify-center">
+          {categories.slice(0, 12).map((c) => (
             <a
               key={c.id}
               href={`/category/${c.slug || c.id}`}
@@ -61,6 +62,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
               <span className="w-full max-w-[80px] break-words text-center text-xs font-medium leading-tight text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-2">{c.name}</span>
             </a>
           ))}
+          </div>
         </div>
       </div>
     </section>

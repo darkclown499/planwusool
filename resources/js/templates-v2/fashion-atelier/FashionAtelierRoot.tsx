@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, PackageSearch } from 'lucide-react';
+import { ChevronLeft, MessageCircle, PackageSearch, Search } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { useStorefrontCore } from '../shared/hooks';
@@ -20,6 +20,46 @@ import { AtelierCategoryCircles, AtelierLookbook } from './components/AtelierSec
 /* hover angle-swap and April-style inline quick-add. Every pixel here is */
 /* owned by this template — nothing renders through a generic pipeline.   */
 /* ===================================================================== */
+
+const AtelierMobileSearch: React.FC = () => {
+  const { ui } = useStorefrontCore() as any;
+  return (
+    <div className="mx-auto max-w-7xl px-4 pt-3 md:hidden" dir="rtl">
+      <button
+        type="button"
+        onClick={() => ui.setShowSearch(true)}
+        className="flex w-full items-center gap-2.5 rounded-full border border-stone-200 bg-white px-4 py-3 text-start shadow-sm transition hover:bg-stone-50"
+      >
+        <Search className="h-4 w-4 text-stone-400" />
+        <span className="text-sm text-stone-500">ابحث عن منتج...</span>
+      </button>
+    </div>
+  );
+};
+
+const AtelierWhatsAppFloating: React.FC = () => {
+  const { config, content, store } = useStorefrontCore() as any;
+  const rawContent: any = content ?? {};
+  const waCfg: any = rawContent.fashion_whatsapp ?? rawContent.fashion_wa ?? {};
+  const enabled = waCfg.enabled ?? waCfg.show ?? rawContent.fashion_whatsapp_enabled ?? false;
+  if (!enabled) return null;
+  const rawNumber = String(waCfg.number ?? waCfg.phone ?? rawContent.fashion_whatsapp_number ?? config?.socialMedia?.whatsapp ?? config?.whatsapp_widget_phone ?? (store as any)?.phone ?? '').replace(/[^0-9]/g, '');
+  if (!rawNumber) return null;
+  const rawMessage = String(waCfg.message ?? rawContent.fashion_whatsapp_message ?? 'مرحباً، أريد الاستفسار عن أحد المنتجات');
+  const href = `https://wa.me/${rawNumber}?text=${encodeURIComponent(rawMessage)}`;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="تواصل واتساب"
+      className="fixed bottom-4 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_4px_16px_rgba(0,0,0,0.15),0_8px_24px_rgba(0,0,0,0.12)] ring-1 ring-black/5 transition hover:scale-105 md:hidden"
+      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' } as any}
+    >
+      <MessageCircle className="h-6 w-6" fill="white" />
+    </a>
+  );
+};
 
 const SORTS = [
   { value: 'newest', label: 'الأحدث' },
@@ -67,7 +107,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const hasDistinctLookbook = !!(lookbookA && lookbookB && lookbookA.image && lookbookB.image && lookbookA.image !== lookbookB.image);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased pb-16 md:pb-0">
+    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
       <AnnouncementBar />
       <AtelierHeader />
       <main>
@@ -81,7 +121,11 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           }))}
         />
 
-        <AtelierCategoryCircles categories={categories} />
+        <AtelierMobileSearch />
+
+        <div id="atelier-categories">
+          <AtelierCategoryCircles categories={categories} />
+        </div>
 
         {showLatest && (
           <div id="atelier-new">
@@ -144,6 +188,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         )}
 
       </main>
+      <AtelierWhatsAppFloating />
     </div>
   );
 };
@@ -172,7 +217,7 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased pb-16 md:pb-0">
+    <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
       <AnnouncementBar />
       <AtelierHeader homeHref="/" />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -248,6 +293,7 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
           </>
         )}
       </main>
+      <AtelierWhatsAppFloating />
     </div>
   );
 };
@@ -264,7 +310,7 @@ function sortFor(sort: string): (a: any, b: any) => number {
 /* --------------------------- Custom page --------------------------- */
 
 const AtelierPageMode: React.FC<{ storeData: any; page?: any | null }> = ({ page }) => (
-  <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased pb-16 md:pb-0">
+  <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
     <AnnouncementBar />
     <AtelierHeader homeHref="/" />
     <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
@@ -273,6 +319,7 @@ const AtelierPageMode: React.FC<{ storeData: any; page?: any | null }> = ({ page
       )}
       <article className="prose-custom2" dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
     </main>
+    <AtelierWhatsAppFloating />
   </div>
 );
 

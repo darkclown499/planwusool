@@ -47,6 +47,7 @@ export const MobileAppShell: React.FC = () => {
   const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
   // V2 templates own their intentional mobile header; global header would duplicate search/wishlist/logo
   const isV2 = !!getTemplateModule(store?.theme);
+  const isFashionAtelier = String(store?.theme || '').toLowerCase() === 'fashion-atelier';
   const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
   const { t } = useStorefrontLocale();
 
@@ -183,7 +184,8 @@ export const MobileAppShell: React.FC = () => {
       </header>
       )}
 
-      {/* Bottom tab bar — native app navigation */}
+      {/* Bottom tab bar — native app navigation — hidden for fashion-atelier (uses hamburger drawer instead) */}
+      {!isFashionAtelier && (
       <nav data-app-shell="tabs" className={`fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden ${anyOverlayOpen ? 'hidden' : ''}`}>
         <div className="flex items-stretch">
           <TabButton
@@ -243,6 +245,7 @@ export const MobileAppShell: React.FC = () => {
           )}
         </div>
       </nav>
+      )}
 
       {/* Categories bottom sheet */}
       {showCategoriesSheet && (
