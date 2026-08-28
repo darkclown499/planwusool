@@ -59,8 +59,12 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
     return (discounted.length >= 4 ? discounted : [...products].sort(byNewest).reverse()).slice(0, 10);
   }, [products]);
 
-  const lookbookA = banners[1] || banners[0];
-  const lookbookB = banners[2] || banners[banners.length - 1];
+  // Lookbook panels must be distinct editorial images, not duplicated hero fallback.
+  // If merchant has only one hero slide (banners.length===1), showing two identical panels would appear as duplicate hero side-by-side.
+  // Contract: desktop+mobile = ONE responsive hero. Lookbook only shows when distinct images exist.
+  const lookbookA = banners[1] ?? null;
+  const lookbookB = banners[2] ?? null;
+  const hasDistinctLookbook = !!(lookbookA && lookbookB && lookbookA.image && lookbookB.image && lookbookA.image !== lookbookB.image);
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased pb-16 md:pb-0">
@@ -85,11 +89,11 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </div>
         )}
 
-        {(lookbookA || lookbookB) && (
+        {hasDistinctLookbook && (
           <AtelierLookbook
             panels={[
-              lookbookA && { eyebrow: 'كولكشن', title: lookbookA.title || 'الموسم الجديد', cta_text: 'شاهدي التشكيلة', cta_link: '#atelier-new', image: lookbookA.image },
-              lookbookB && { eyebrow: 'مختارات', title: lookbookB.title || 'قطع لا تُقاوم', cta_text: 'تسوقي الآن', cta_link: '#atelier-best', image: lookupImage(lookbookB) },
+              { eyebrow: 'كولكشن', title: lookbookA!.title || 'الموسم الجديد', cta_text: 'شاهدي التشكيلة', cta_link: '#atelier-new', image: lookbookA!.image },
+              { eyebrow: 'مختارات', title: lookbookB!.title || 'قطع لا تُقاوم', cta_text: 'تسوقي الآن', cta_link: '#atelier-best', image: lookupImage(lookbookB!) },
             ]}
           />
         )}
