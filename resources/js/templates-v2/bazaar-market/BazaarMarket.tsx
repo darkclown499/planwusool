@@ -16,7 +16,7 @@ import { useHomepageSettings } from '../shared/CategorySections';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
+import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* البازار — Bazaar Market                                                */
@@ -160,15 +160,15 @@ export function BazaarHero({ banners }: { banners: any[] }) {
   const bazaarPos = hero.position && hero.position !== 'center' ? hero.position : 'center';
   const bazaarPosMobile = hero.positionMobile || bazaarPos;
   const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
-  const desktopAspect = '16/7';
-  const mobileAspect = '4/5';
-  // Single-media video/youtube heroes — full-bleed with overlay text, now responsive aspect + mobile asset switching via CSS
+  const h = HERO_HEIGHTS['bazaar-market'];
+  const bazaarDesktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
+  const bazaarMobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
+  // Single-media video/youtube heroes — contained marketplace card with clamped height
   if (isVideo) {
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bazaar-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bazaar-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bazaar-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-        <div className={`bazaar-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-xl ${hasCustomHeight ? 'h-56 sm:h-72' : 'hero-responsive'}`} style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } : {}) : { aspectRatio: desktopAspect } as any}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
+        <div className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black shadow-xl" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
           {/* Desktop video */}
           <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${bazaarFit} ${hasMobileVideo?'hidden md:block':'block'}`} style={{ objectPosition: bazaarPos }} src={getHeroImageUrl(hero.videoUrl)} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />
           {/* Mobile video */}
@@ -191,9 +191,8 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     const ytMobile = hero.youtubeIdMobile || ytDesktop;
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bazaar-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bazaar-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bazaar-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-        <div className={`bazaar-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-xl ${hasCustomHeight ? 'h-56 sm:h-72' : 'hero-responsive'}`} style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } : {}) : { aspectRatio: desktopAspect } as any}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
+        <div className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black shadow-xl" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
           {/* Desktop youtube */}
           <div className={`absolute inset-0 overflow-hidden bg-black ${hasMobileYoutube?'hidden md:block':'block'}`}>
             {hero.fit === 'contain' ? (
@@ -227,9 +226,8 @@ export function BazaarHero({ banners }: { banners: any[] }) {
 
   return (
     <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-      {!hasCustomHeight && <style>{`@media(max-width:767px){ .bazaar-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bazaar-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-      {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bazaar-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-      <div className={`bazaar-hero-media relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800 shadow-xl ${hasCustomHeight ? 'h-56 sm:h-72' : 'hero-responsive'}`} style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } : {}) : { aspectRatio: desktopAspect } as any}>
+      {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
+      <div className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800 shadow-xl" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
         {slides.map((b: any, idx: number) => {
           const m = (slidesMobile[idx] || b);
           const desktopSrc = b.image ? getOptimizedImageUrl(b.image||'', 'medium') : '';

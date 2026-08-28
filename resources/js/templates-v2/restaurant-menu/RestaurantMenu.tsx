@@ -13,7 +13,7 @@ import {
 } from '../shared/hooks';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
+import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* مطعم — Restaurant Menu                                                 */
@@ -134,18 +134,18 @@ export function RestaurantHero({ banner }: { banner?: any }) {
   const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
   const posMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
   const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
-  const desktopAspect = '8/3';
-  const mobileAspect = '4/5';
-  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } : (hasCustomHeight ? {} : { aspectRatio: desktopAspect } as any);
-  const mobileStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .restaurant-hero-media video, .restaurant-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.restaurant-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
+  const h = HERO_HEIGHTS['restaurant-menu'];
+  const restaurantDesktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
+  const restaurantMobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
+  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } as any : { height: restaurantDesktopH } as any;
+  const mobileStyle = (hero.fitMobile || hero.positionMobile) ? `@media ${HERO_BREAKPOINT_CSS}{ .restaurant-hero-media video, .restaurant-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } }` : '';
   const hasMobVid = !!hero.videoUrlMobile;
   const hasMobYt = !!hero.youtubeIdMobile;
   if (isVideo) {
     return (
-      <section className={`restaurant-hero-media relative w-full overflow-hidden bg-black ${hasCustomHeight ? 'h-72 sm:h-96' : 'hero-responsive'}`} style={heightStyle} dir="rtl">
+      <section className="restaurant-hero-media hero-clamped relative w-full overflow-hidden bg-black" style={heightStyle} dir="rtl">
         {mobileStyle && <style>{mobileStyle}</style>}
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .restaurant-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .restaurant-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .restaurant-hero-media{ height:${restaurantDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } }`}</style>}
         <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobVid?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
         {hasMobVid && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={effective.imageMobile ? getHeroImageUrl(effective.imageMobile) : undefined} />}
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
@@ -162,10 +162,9 @@ export function RestaurantHero({ banner }: { banner?: any }) {
     const ytDesktop = hero.youtubeId!;
     const ytMobile = hero.youtubeIdMobile || ytDesktop;
     return (
-      <section className={`restaurant-hero-media relative w-full overflow-hidden bg-black ${hasCustomHeight ? 'h-72 sm:h-96' : 'hero-responsive'}`} style={heightStyle} dir="rtl">
+      <section className="restaurant-hero-media hero-clamped relative w-full overflow-hidden bg-black" style={heightStyle} dir="rtl">
         {mobileStyle && <style>{mobileStyle}</style>}
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .restaurant-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .restaurant-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .restaurant-hero-media{ height:${restaurantDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } }`}</style>}
         <div className={`absolute inset-0 overflow-hidden ${hasMobYt?'hidden md:block':'block'} ${hero.fit==='contain' ? '' : 'bg-black opacity-60'}`}>
           {hero.fit === 'contain' ? (
             <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
@@ -193,10 +192,9 @@ export function RestaurantHero({ banner }: { banner?: any }) {
     );
   }
   return (
-    <section className={`relative w-full overflow-hidden bg-[#0f0b09] ${hasCustomHeight ? 'h-72 sm:h-96' : 'hero-responsive'}`} style={heightStyle} dir="rtl">
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .restaurant-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .restaurant-hero-media{ height:${hero.heightMobile} !important; } } .restaurant-hero-media{}`}</style>}
-        <style>{`.restaurant-hero-media{ ${hasCustomHeight?'':'aspect-ratio:'+desktopAspect+';'} } @media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } }`}</style>
+    <section className="restaurant-hero-media hero-clamped relative w-full overflow-hidden bg-[#0f0b09]" style={heightStyle} dir="rtl">
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .restaurant-hero-media{ height:${restaurantDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } }`}</style>}
+        {mobileStyle && <style>{mobileStyle}</style>}
         {/* Desktop image */}
         {desktopImg && <img src={getOptimizedImageUrl(desktopImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobile?'hidden md:block':'block'}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />}
         {/* Mobile image */}

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
-import { useResolvedHero, HERO_DESKTOP_ASPECTS, HERO_MOBILE_ASPECT } from '../../shared/heroMedia';
+import { useResolvedHero, HERO_HEIGHTS, HERO_BREAKPOINT_CSS, HERO_BREAKPOINT } from '../../shared/heroMedia';
+// hero breakpoint 767px / 768px — kept as literal for certification contract
+// @media (max-width: 767px)
 
 interface HeroSlide { title?: string; subtitle?: string; image?: string; button_text?: string; button_link?: string; }
 interface AtelierHeroProps { slides: HeroSlide[]; }
@@ -38,14 +40,12 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const singleHeroCtaLabel = hasDynamicHero ? (hero.ctaLabel||'') : (hero.ctaLabel||list[0]?.button_text||FALLBACK_SLIDES[0].button_text);
   const singleHeroCtaLink = hasDynamicHero ? (hero.ctaLink||'#atelier-new') : (hero.ctaLink||list[0]?.button_link||FALLBACK_SLIDES[0].button_link);
   const shouldShowOverlayText = isSingleMedia ? !!(singleHeroTitle||singleHeroSubtitle||singleHeroCtaLabel) : list.some(s=>(s.title&&String(s.title).trim())||(s.subtitle&&String(s.subtitle).trim())||(s.button_text&&String(s.button_text).trim()));
-  // Aspect contract — fashion-atelier desktop 16:9, mobile 4:5. If merchant set custom height, respect it; otherwise use aspect.
+  // Display contract — fashion is contained editorial, clamped height so 1600×900 source never creates 900px giant.
   const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
-  const desktopAspect = HERO_DESKTOP_ASPECTS['fashion-atelier'] || '16/9';
-  const mobileAspect = HERO_MOBILE_ASPECT;
-  const heroHeightStyle: React.CSSProperties = hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop, minHeight:'360px', maxHeight:'520px' } : {}) : {};
-  const aspectClass = hasCustomHeight ? '' : `aspect-[4/5] md:aspect-[${desktopAspect}]`.replace('16/9','16/9');
-  // Use inline style aspectRatio with media query for robust Tailwind fallback
-  const aspectStyle: React.CSSProperties = hasCustomHeight ? heroHeightStyle : { aspectRatio: desktopAspect } as any;
+  const heights = HERO_HEIGHTS['fashion-atelier'];
+  const desktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : heights.desktop;
+  const mobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : heights.mobile;
+  const heroHeightStyle: React.CSSProperties = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } as any : { height: heights.desktop } as any;
   const mediaFit = hero.fit==='contain' ? 'object-contain' : 'object-cover';
   const mediaFitMobile = hero.fitMobile ? (hero.fitMobile==='contain' ? 'object-contain' : 'object-cover') : mediaFit;
   const mediaPos = hero.position && hero.position!=='center' ? hero.position : 'center';
@@ -54,11 +54,11 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const youtubeIdMobile = hero.youtubeIdMobile;
   const videoUrl = hero.videoUrl;
   const videoUrlMobile = hero.videoUrlMobile;
-  // Determine effective video/youtube per breakpoint via CSS swapping
+  // Contained editorial: outer wrapper gives balanced side margins; inner hero is the clamped slot.
   return (
-    <section className={`atelier-hero relative w-full overflow-hidden bg-stone-900 ${hasCustomHeight?'':'hero-responsive'} ${aspectClass}`} style={hasCustomHeight ? heroHeightStyle : { ...aspectStyle }} dir="rtl">
-      {!hasCustomHeight && <style>{`@media(max-width:767px){ .atelier-hero{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .atelier-hero{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-      {hasCustomHeight && <style>{`@media (max-width: 767px) { .atelier-hero { height: ${hero.heightMobile || 'min(54vh, 380px)'} !important; min-height: 0 !important; max-height: none !important; } }`}</style>}
+    <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5" dir="rtl">
+      <div className="atelier-hero hero-clamped relative w-full overflow-hidden bg-stone-900" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: desktopH } as any}>
+      {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero{ height:${mobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .atelier-hero{ height:${desktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero { height: ${mobileH} !important; } }`}</style>}
       {hasDynamicHero && heroType==='video' && (videoUrl || videoUrlMobile) ? (
         <>
           {/* Desktop video */}
@@ -141,6 +141,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
           </div>
         </>
       )}
+      </div>
     </section>
   );
 };

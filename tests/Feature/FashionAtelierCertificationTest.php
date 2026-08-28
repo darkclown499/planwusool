@@ -107,22 +107,25 @@ class FashionAtelierCertificationTest extends TestCase
         // FALLBACK_SLIDES should not leak when hasDynamicHero false and slides empty
         $this->assertStringContainsString('return null', $src);
         $this->assertStringContainsString('hasDynamicHero', $src);
-        // Desktop must respect advertised 16:9 aspect, mobile 4:5 — not arbitrary fixed height causing crop
-        $this->assertStringContainsString('16/9', $src);
-        $this->assertStringContainsString('4/5', $src);
-        $this->assertStringContainsString('aspect', $src);
-        // must use object-cover (not contain with black letterbox) for premium feel — cover is correct when container aspect matches image
+        // Fashion uses honest wide slot (clamped height, ~32/11) not giant 16:9 full-bleed; cover still correct with minimal crop
         $this->assertStringContainsString('object-cover', $src);
+        $this->assertStringContainsString('HERO_HEIGHTS', $src);
+        $this->assertStringContainsString('clamp', $src);
     }
 
     public function test_hero_height_is_responsive(): void
     {
-        $src = file_get_contents(resource_path('js/templates-v2/fashion-atelier/components/AtelierHero.tsx'));
-        // Responsive contract: mobile breakpoint 768 and aspect switching
-        $this->assertStringContainsString('767px', $src);
-        $this->assertStringContainsString('768px', $src);
-        $this->assertStringContainsString('16/9', $src);
-        $this->assertStringContainsString('4/5', $src);
+        $heroSrc = file_get_contents(resource_path('js/templates-v2/fashion-atelier/components/AtelierHero.tsx'));
+        $mediaSrc = file_get_contents(resource_path('js/templates-v2/shared/heroMedia.ts'));
+        // Responsive contract: mobile breakpoint 768 and clamped height (not giant aspect)
+        $this->assertStringContainsString('767px', $heroSrc);
+        $this->assertStringContainsString('768px', $heroSrc);
+        $this->assertStringContainsString('clamp', $heroSrc);
+        // Honest desktop aspect is now 32/11 (1600x550) — not 16/9 giant
+        $this->assertStringContainsString('32/11', $mediaSrc);
+        // Mobile still 4/5 when vertical asset exists but capped via clamp
+        $this->assertStringContainsString('4/5', $mediaSrc);
+        $this->assertStringContainsString('HERO_HEIGHTS', $heroSrc);
     }
 
     public function test_cart_free_shipping_rtl_and_empty_hidden(): void

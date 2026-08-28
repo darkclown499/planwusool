@@ -14,7 +14,7 @@ import {
 } from '../shared/hooks';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import { AuthContext } from '@/contexts/AuthContext';
-import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
+import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
 import { useServerSearch, submitStorefrontSearch } from '@/hooks/useServerSearch';
 
 /* ===================================================================== */
@@ -293,11 +293,11 @@ export function SouqHero({ banners }: { banners: any[] }) {
   const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
   const posStyleMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
   const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
-  // Correct contract: grocery-souq desktop 8:3 (1600x600), mobile 4:5 (1080x1350)
-  const desktopAspect = '8/3';
-  const mobileAspect = '4/5';
-  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } : (hasCustomHeight ? {} : { aspectRatio: desktopAspect } as any);
-  const mobileHeroStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .souq-hero-media video, .souq-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.souq-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
+  const h = HERO_HEIGHTS['grocery-souq'];
+  const souqDesktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
+  const souqMobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
+  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } as any : { height: souqDesktopH } as any;
+  const mobileHeroStyle = (hero.fitMobile || hero.positionMobile) ? `@media ${HERO_BREAKPOINT_CSS}{ .souq-hero-media video, .souq-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } }` : '';
   const hasMobileVideo = !!hero.videoUrlMobile;
   const hasMobileYoutube = !!hero.youtubeIdMobile;
   const hasMobileImages = hero.imagesMobile.length>0;
@@ -305,9 +305,8 @@ export function SouqHero({ banners }: { banners: any[] }) {
     return (
       <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .souq-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .souq-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .souq-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-        <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 ${hasCustomHeight ? '' : 'hero-responsive'}`} style={heightStyle}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
+        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5" style={heightStyle}>
           {/* Desktop video — hidden on mobile when mobile asset exists */}
           <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitClass} ${hasMobileVideo?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} />
           {/* Mobile video */}
@@ -330,9 +329,8 @@ export function SouqHero({ banners }: { banners: any[] }) {
     return (
       <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .souq-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .souq-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .souq-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-        <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5 ${hasCustomHeight ? '' : 'hero-responsive'}`} style={heightStyle}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
+        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5" style={heightStyle}>
           <div className={`absolute inset-0 overflow-hidden bg-black ${hasMobileYoutube?'hidden md:block':'block'}`}>
             {hero.fit === 'contain' ? (
               <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
@@ -377,8 +375,8 @@ export function SouqHero({ banners }: { banners: any[] }) {
     if (!hero.heading && !hero.subtitle && !hero.ctaLabel) return null;
     return (
       <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
-        <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-gradient-to-l from-[#FFC20E]/20 to-[#FDF9F1] shadow-sm ring-1 ring-black/5 ${hasCustomHeight ? '' : 'hero-responsive'}`} style={hasCustomHeight ? heightStyle : { aspectRatio: desktopAspect } as any}>
-          {!hasCustomHeight && <style>{`@media(max-width:767px){ .souq-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .souq-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
+        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-gradient-to-l from-[#FFC20E]/20 to-[#FDF9F1] shadow-sm ring-1 ring-black/5" style={heightStyle}>
           <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
             {hero.subtitle && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{hero.subtitle}</p>}
             {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{hero.heading}</h1>}
@@ -412,9 +410,8 @@ export function SouqHero({ banners }: { banners: any[] }) {
   return (
     <section className="mx-auto max-w-[1600px] px-3 pt-2 lg:px-6" dir="rtl">
       {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-      {!hasCustomHeight && <style>{`@media(max-width:767px){ .souq-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .souq-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-      {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .souq-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-      <div className={`souq-hero-media relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5 ${hasCustomHeight ? '' : 'hero-responsive'}`} style={hasCustomHeight ? heightStyle : { aspectRatio: desktopAspect } as any}>
+      {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
+      <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5" style={heightStyle}>
         {normalized.map((b: any, idx: number) => {
           const mobileImg = effectiveMobileImages ? (effectiveMobileImages[idx] || b.image) : b.image;
           const hasMob = !!effectiveMobileImages;

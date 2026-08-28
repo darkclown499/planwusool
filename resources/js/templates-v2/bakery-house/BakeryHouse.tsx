@@ -18,7 +18,7 @@ import {
 } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
-import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
+import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* بيت المخبز — Bakery House                                              */
@@ -158,9 +158,10 @@ export function BakeryHero({ banner }: { banner?: any }) {
   const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
   const posMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
   const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
-  const desktopAspect = '12/5';
-  const mobileAspect = '4/5';
-  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } : (hasCustomHeight ? {} : { aspectRatio: desktopAspect } as any);
+  const h = HERO_HEIGHTS['bakery-house'];
+  const bakeryDesktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
+  const bakeryMobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
+  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } as any : { height: bakeryDesktopH } as any;
   const effective = {
     image: fallbackImg,
     title: hero.heading || banner?.title || '',
@@ -168,15 +169,14 @@ export function BakeryHero({ banner }: { banner?: any }) {
     button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#bakery-best',
   };
-  const mobileHeroStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .bakery-hero-media video, .bakery-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.bakery-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
+  const mobileHeroStyle = (hero.fitMobile || hero.positionMobile) ? `@media ${HERO_BREAKPOINT_CSS}{ .bakery-hero-media video, .bakery-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } }` : '';
   if (isVideo) {
     const hasMobVid = !!hero.videoUrlMobile;
     return (
       <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bakery-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bakery-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bakery-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-        <div className={`bakery-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-lg ${hasCustomHeight ? '' : 'hero-responsive'}`} style={heightStyle}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bakery-hero-media{ height:${bakeryMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bakery-hero-media{ height:${bakeryDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bakery-hero-media{ height:${bakeryMobileH} !important; } }`}</style>}
+        <div className="bakery-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
           <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitClass} ${hasMobVid?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={desktopImg ? getHeroImageUrl(desktopImg) : undefined} />
           {hasMobVid && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={mobileImg ? getHeroImageUrl(mobileImg) : undefined} />}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
@@ -197,9 +197,8 @@ export function BakeryHero({ banner }: { banner?: any }) {
     return (
       <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bakery-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bakery-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bakery-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-        <div className={`bakery-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-lg ${hasCustomHeight ? '' : 'hero-responsive'}`} style={heightStyle}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bakery-hero-media{ height:${bakeryMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bakery-hero-media{ height:${bakeryDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bakery-hero-media{ height:${bakeryMobileH} !important; } }`}</style>}
+        <div className="bakery-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
           <div className={`absolute inset-0 overflow-hidden bg-black ${hasMobYt?'hidden md:block':'block'}`}>
             {hero.fit === 'contain' ? (
               <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
@@ -228,10 +227,9 @@ export function BakeryHero({ banner }: { banner?: any }) {
   }
   return (
     <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
-      {!hasCustomHeight && <style>{`@media(max-width:767px){ .bakery-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bakery-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
-      {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bakery-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
-      {mobileHeroStyle && !hasCustomHeight ? <style>{mobileHeroStyle}</style> : null}
-      <div className={`bakery-hero-media relative w-full overflow-hidden rounded-3xl bg-[#3b2412] shadow-lg ${hasCustomHeight ? '' : 'hero-responsive'}`} style={hasCustomHeight ? heightStyle : { aspectRatio: desktopAspect } as any}>
+      {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bakery-hero-media{ height:${bakeryMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bakery-hero-media{ height:${bakeryDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bakery-hero-media{ height:${bakeryMobileH} !important; } }`}</style>}
+      {mobileHeroStyle ? <style>{mobileHeroStyle}</style> : null}
+      <div className="bakery-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-[#3b2412] shadow-lg" style={heightStyle}>
         {/* Desktop image */}
         {desktopImg && <img src={getOptimizedImageUrl(desktopImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitClass} opacity-80 ${hasMobile?'hidden md:block':'block'}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(desktopImg))}} width={1200} height={500} />}
         {/* Mobile image */}

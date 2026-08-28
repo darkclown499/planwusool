@@ -43,11 +43,11 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
     hero: {
       desktopImage: {
         label: 'الصورة الرئيسية — سطح المكتب',
-        description: 'تظهر في أعلى الصفحة الرئيسية — خلفية الهيرو على سطح المكتب.',
-        desktop: { width: 1600, height: 900, ratio: '16:9', fit: 'cover' },
+        description: 'تظهر في أعلى الصفحة الرئيسية — حاوية تحريرية محتواة (ليست ملء الشاشة) — ارتفاع متجاوب ~380-520px.',
+        desktop: { width: 1600, height: 550, ratio: '32:11', fit: 'cover' },
         formats: 'JPG / PNG / WebP',
         maxSize: 'أقل من 2MB',
-        help: 'المقاس المقترح: 1600 × 900 بكسل — نسبة 16:9 — الوضع: Cover',
+        help: 'المقاس المقترح: 1600 × 550 بكسل — نسبة 32:11 — الوضع: Cover — تركيب عريض، قص طفيف فقط',
       },
       mobileImage: {
         label: 'الصورة الرئيسية — الهاتف',
@@ -60,10 +60,10 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
       desktopVideo: {
         label: 'فيديو سطح المكتب',
         description: 'يظهر بدل الصورة عندما يكون نوع الهيرو فيديو على سطح المكتب.',
-        desktop: { width: 1600, height: 900, ratio: '16:9', fit: 'cover' },
+        desktop: { width: 1600, height: 550, ratio: '32:11', fit: 'cover' },
         formats: 'MP4 / WebM',
         maxSize: 'أقل من 8MB',
-        help: 'MP4 — يُفضل مُكتوم ويعمل تلقائياً — غلاف 1600×900 — الوضع: Cover',
+        help: 'MP4 — يُفضل مُكتوم ويعمل تلقائياً — غلاف 1600×550 — الوضع: Cover',
       },
       mobileVideo: {
         label: 'فيديو الهاتف',
@@ -76,10 +76,10 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
       desktopYoutube: {
         label: 'YouTube — سطح المكتب',
         description: 'رابط يوتيوب لسطح المكتب عندما يكون نوع الهيرو YouTube.',
-        desktop: { width: 1600, height: 900, ratio: '16:9', fit: 'cover' },
+        desktop: { width: 1600, height: 550, ratio: '32:11', fit: 'cover' },
         formats: 'YouTube URL',
         maxSize: '—',
-        help: 'مثال: https://www.youtube.com/watch?v=... — الوضع: Cover (يُقص ليملأ)',
+        help: 'مثال: https://www.youtube.com/watch?v=... — الوضع: Cover (يُقص ليملأ — حاوية 1600×550)',
       },
       mobileYoutube: {
         label: 'YouTube — الهاتف',
@@ -113,11 +113,11 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
     hero: {
       desktopImage: {
         label: 'الشريحة 1 — سطح المكتب',
-        description: 'الشريحة الأولى في سلايدر الهيرو — تظهر على سطح المكتب.',
-        desktop: { width: 1600, height: 700, ratio: '16:7', fit: 'cover' },
+        description: 'الشريحة الأولى في سلايدر الهيرو — بطاقة محتواة بزوايا مستديرة — ارتفاع متجاوب ~360-460px.',
+        desktop: { width: 1600, height: 600, ratio: '8:3', fit: 'cover' },
         formats: 'JPG / PNG / WebP',
         maxSize: 'أقل من 2MB',
-        help: 'المقاس المقترح: 1600 × 700 بكسل — نسبة 16:7 — الوضع: Cover — حتى 10 شرائح',
+        help: 'المقاس المقترح: 1600 × 600 بكسل — نسبة 8:3 — الوضع: Cover — حتى 10 شرائح',
       },
       mobileImage: {
         label: 'الشريحة 1 — الهاتف',
@@ -130,10 +130,10 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
       desktopVideo: {
         label: 'فيديو الهيرو — سطح المكتب',
         description: 'يظهر بدل السلايدر عندما يكون نوع الهيرو فيديو.',
-        desktop: { width: 1600, height: 700, ratio: '16:7', fit: 'cover' },
+        desktop: { width: 1600, height: 600, ratio: '8:3', fit: 'cover' },
         formats: 'MP4 / WebM',
         maxSize: 'أقل من 8MB',
-        help: 'MP4 — 1600×700 — يُعرض بملء العرض — الوضع: Cover',
+        help: 'MP4 — 1600×600 — يُعرض بملء العرض — الوضع: Cover',
       },
       mobileVideo: {
         label: 'فيديو الهيرو — الهاتف',
@@ -146,10 +146,10 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
       desktopYoutube: {
         label: 'YouTube — سطح المكتب',
         description: 'سلايدر يوتيوب لسطح المكتب.',
-        desktop: { width: 1600, height: 700, ratio: '16:7', fit: 'cover' },
+        desktop: { width: 1600, height: 600, ratio: '8:3', fit: 'cover' },
         formats: 'YouTube URL',
         maxSize: '—',
-        help: 'YouTube — الوضع: Cover',
+        help: 'YouTube — الوضع: Cover — حاوية 1600×600',
       },
       mobileYoutube: {
         label: 'YouTube — الهاتف',

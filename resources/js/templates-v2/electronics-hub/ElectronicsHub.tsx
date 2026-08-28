@@ -16,7 +16,7 @@ import {
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { useResolvedHero, getHeroImageUrl } from '../shared/heroMedia';
+import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
 
 /* ===================================================================== */
 /* عالم التقنية — Electronics Hub                                         */
@@ -189,10 +189,14 @@ export function HubHero({ banner }: { banner?: any }) {
   const electronicsPromise = (()=>{ try{ const c=(hero as any)?.storeContent ?? (useStorefrontCore() as any)?.content; const v=c?.electronics_promise ?? c?.electronics?.promise ?? c?.electronicsPromise; if(typeof v==='string'&&v.trim()) return v.trim(); }catch{} return 'أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.'; })();
   const hasMobileVideo = !!hero.videoUrlMobile;
   const hasMobileYoutube = !!hero.youtubeIdMobile;
-  // Correct desktop aspect 7:3 for electronics-hub, mobile 4:5 for video/image when full-bleed
+  const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
+  const h = HERO_HEIGHTS['electronics-hub'];
+  const hubDesktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
+  const hubMobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
   if (isVideo) {
     return (
-      <section className="relative overflow-hidden bg-black" dir="rtl">
+      <section className="hub-hero hero-clamped relative overflow-hidden bg-black" dir="rtl" style={hasCustomHeight && hubDesktopH ? { height: hubDesktopH } as any : { height: hubDesktopH } as any}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .hub-hero{ height:${hubDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } }`}</style>}
         {/* Desktop video */}
         <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobileVideo?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={effectiveDesktop.image ? getHeroImageUrl(effectiveDesktop.image) : undefined} />
         {/* Mobile video */}
@@ -214,7 +218,8 @@ export function HubHero({ banner }: { banner?: any }) {
     const ytDesktop = hero.youtubeId!;
     const ytMobile = hero.youtubeIdMobile || ytDesktop;
     return (
-      <section className="relative overflow-hidden bg-black" dir="rtl">
+      <section className="hub-hero hero-clamped relative overflow-hidden bg-black" dir="rtl" style={hasCustomHeight && hubDesktopH ? { height: hubDesktopH } as any : { height: hubDesktopH } as any}>
+        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .hub-hero{ height:${hubDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } }`}</style>}
         <div className={`absolute inset-0 w-full h-full opacity-60 ${hasMobileYoutube?'hidden md:block':'block'}`}>
           <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube desktop" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
         </div>

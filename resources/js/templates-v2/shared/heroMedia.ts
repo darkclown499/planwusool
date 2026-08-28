@@ -203,24 +203,62 @@ export const HERO_BREAKPOINT = 768;
 export const HERO_BREAKPOINT_CSS = '(max-width: 767px)';
 
 /**
- * Canonical desktop aspect ratios per template, derived from
- * MEDIA_SPECS hero.desktopImage — the exact dimensions Wusool
- * advertises to merchants (e.g. 1600×900 = 16/9).
- *
- * If a template has no entry, 16/9 is the universal fallback
- * (matches the original Designer recommendation).
+ * Hero width mode per template — intentional page layout.
+ *  - contained: inside page max-width with side margins
+ *  - full-bleed: edge-to-edge (only when template identity demands it)
+ *  - split: asymmetric editorial (e.g. electronics text+image)
  */
-export const HERO_DESKTOP_ASPECTS: Record<string, string> = {
-  'fashion-atelier': '16/9',
-  'bazaar-market': '16/7',
-  'grocery-souq': '8/3',
-  'bakery-house': '12/5',
-  'electronics-hub': '7/3',
-  'restaurant-menu': '8/3',
+export type HeroWidthMode = 'contained' | 'full-bleed' | 'split';
+export const HERO_WIDTH_MODE: Record<string, HeroWidthMode> = {
+  'fashion-atelier': 'contained',   // editorial — balanced margins, NOT edge-to-edge
+  'bazaar-market': 'contained',     // centered marketplace card
+  'grocery-souq': 'contained',      // dense supermarket, contained
+  'bakery-house': 'contained',      // artisan, centered
+  'electronics-hub': 'split',       // asymmetric text+image split, background full-bleed but content split
+  'restaurant-menu': 'full-bleed',  // menu board — full width feels intentional
 };
 
-/** Full-bleed banner on mobile always uses vertical 4:5 (1080×1350) when a mobile asset exists. */
+/**
+ * Honest desktop visible-slot aspect per template — derived from
+ * the REAL storefront Hero slot (not the old misleading source dream).
+ * Used to advise merchants what composition will be crop-free.
+ *
+ * Fashion was 16:9 (1600x900) which made a ~900px giant at 1600vw.
+ * Corrected to ~1600x520-550 wide slot so cover has negligible crop.
+ */
+export const HERO_DESKTOP_ASPECTS: Record<string, string> = {
+  'fashion-atelier': '32/11',  // 1600×550 ≈ 2.91 — wide editorial slot
+  'bazaar-market': '8/3',      // 1600×600 ≈ 2.67
+  'grocery-souq': '8/3',       // 1600×600
+  'bakery-house': '12/5',      // 1200×500
+  'electronics-hub': '7/3',    // 1400×600 (split card, image part)
+  'restaurant-menu': '8/3',    // 1600×600
+};
+
+/** Mobile slot — 4:5 vertical when mobile asset exists, otherwise same as desktop. */
 export const HERO_MOBILE_ASPECT = '4/5';
+
+/**
+ * Professional responsive height contract — NOT blindly aspectRatio:source.
+ * Each template gets a clamped height so common viewports stay ecommerce-scale:
+ *  1920/1600/1366/1280/1024 remain ~380-520, never 700-900.
+ *  Mobile capped so 375-430 (4:5) does not consume the whole first viewport.
+ */
+export const HERO_HEIGHTS: Record<string, { desktop: string; mobile: string }> = {
+  'fashion-atelier': { desktop: 'clamp(380px, 32vw, 520px)', mobile: 'clamp(380px, 112vw, 480px)' },
+  'bazaar-market':   { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' },
+  'grocery-souq':    { desktop: 'clamp(340px, 26vw, 440px)', mobile: 'clamp(360px, 108vw, 460px)' },
+  'bakery-house':    { desktop: 'clamp(340px, 30vw, 440px)', mobile: 'clamp(360px, 108vw, 440px)' },
+  'electronics-hub': { desktop: 'clamp(400px, 32vw, 500px)', mobile: 'clamp(380px, 112vw, 480px)' },
+  'restaurant-menu': { desktop: 'clamp(360px, 26vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' },
+};
+export const HERO_HEIGHT_FALLBACK = { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' };
+
+export function heroHeightFor(templateSlug?: string | null, isMobile?: boolean): string {
+  const s = String(templateSlug || '').trim().toLowerCase();
+  const h = (HERO_HEIGHTS as any)[s] ?? HERO_HEIGHT_FALLBACK;
+  return isMobile ? h.mobile : h.desktop;
+}
 
 /**
  * Return the advertised desktop aspect for a template slug, or 16/9 fallback.
@@ -235,35 +273,39 @@ export function heroDesktopAspect(templateSlug?: string | null): string {
  * even though they are constructed dynamically. This comment is intentionally
  * kept so Tailwind's content scanner sees the literal class names.
  *
- * aspect-[16/9] aspect-[16/7] aspect-[8/3] aspect-[12/5] aspect-[7/3] aspect-[4/5]
- * md:aspect-[16/9] md:aspect-[16/7] md:aspect-[8/3] md:aspect-[12/5] md:aspect-[7/3]
+ * aspect-[16/9] aspect-[32/11] aspect-[16/7] aspect-[8/3] aspect-[12/5] aspect-[7/3] aspect-[4/5]
+ * md:aspect-[16/9] md:aspect-[32/11] md:aspect-[16/7] md:aspect-[8/3] md:aspect-[12/5] md:aspect-[7/3]
  */
-export const _TAILWIND_ASPECT_SAFELIST = 'aspect-[16/9] aspect-[16/7] aspect-[8/3] aspect-[12/5] aspect-[7/3] aspect-[4/5] md:aspect-[16/9] md:aspect-[16/7] md:aspect-[8/3] md:aspect-[12/5] md:aspect-[7/3]';
+export const _TAILWIND_ASPECT_SAFELIST = 'aspect-[16/9] aspect-[32/11] aspect-[16/7] aspect-[8/3] aspect-[12/5] aspect-[7/3] aspect-[4/5] md:aspect-[16/9] md:aspect-[32/11] md:aspect-[16/7] md:aspect-[8/3] md:aspect-[12/5] md:aspect-[7/3]';
 
 /**
  * CSS helper: returns responsive aspect-ratio style for a hero container.
- * Uses CSS `aspect-ratio` with media query fallback so Designer preview
- * and real storefront share identical behavior without JS hydration mismatch.
- *
- * Usage:
- *   <div style={heroAspectStyle('grocery-souq')} className="w-full overflow-hidden">
- *
- * Desktop: advertised ratio (e.g. 8/3). Mobile (<768): 4/5 when mobile asset present,
- * otherwise keeps desktop ratio for fallback so single-asset stores don't jump.
+ * Legacy aspect helper — kept for backward compat but new code should use
+ * heroHeightStyle (clamped height) so giant 16:9 regressions do not return.
  */
 export function heroAspectStyle(templateSlug?: string | null, hasMobileAsset?: boolean): React.CSSProperties & Record<string, any> {
   const desktop = heroDesktopAspect(templateSlug);
-  // We keep CSS variable for media query override; see heroResponsiveAspectCss()
   return { aspectRatio: hasMobileAsset ? `var(--hero-ar, ${desktop})` : desktop } as any;
 }
 
-/**
- * Inject responsive CSS for a hero wrapper that owns --hero-ar variable.
- * Include once per hero root element via <style> tag.
- */
 export function heroResponsiveAspectCss(templateSlug?: string | null): string {
   const desktop = heroDesktopAspect(templateSlug);
   return `@media ${HERO_BREAKPOINT_CSS} { .hero-responsive { aspect-ratio: ${HERO_MOBILE_ASPECT} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .hero-responsive { aspect-ratio: ${desktop} !important; } }`;
+}
+
+/**
+ * Preferred height helper — clamped so 16:9 source never creates 900px giants.
+ * Designer preview and storefront share identical clamp values.
+ */
+export function heroHeightStyle(templateSlug?: string | null, hasCustomHeight?: boolean, customDesktop?: string | null, customMobile?: string | null): React.CSSProperties {
+  if (hasCustomHeight) {
+    return customDesktop ? { height: customDesktop } as any : {};
+  }
+  return { height: heroHeightFor(templateSlug, false) } as any;
+}
+export function heroHeightCss(templateSlug?: string | null, className = 'hero-clamped'): string {
+  const h = HERO_HEIGHTS[String(templateSlug||'').toLowerCase()] ?? HERO_HEIGHT_FALLBACK;
+  return `@media ${HERO_BREAKPOINT_CSS} { .${className} { height: ${h.mobile} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .${className} { height: ${h.desktop} !important; } }`;
 }
 
 /**
