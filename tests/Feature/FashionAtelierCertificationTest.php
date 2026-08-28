@@ -107,18 +107,22 @@ class FashionAtelierCertificationTest extends TestCase
         // FALLBACK_SLIDES should not leak when hasDynamicHero false and slides empty
         $this->assertStringContainsString('return null', $src);
         $this->assertStringContainsString('hasDynamicHero', $src);
-        // desktop height must be clamp-based (420-520) not giant viewport aspect
-        $this->assertStringContainsString('clamp', $src);
-        $this->assertStringNotContainsString('aspect-[16/9]', $src);
-        // must use object-cover (not contain with black letterbox) for premium feel
+        // Desktop must respect advertised 16:9 aspect, mobile 4:5 — not arbitrary fixed height causing crop
+        $this->assertStringContainsString('16/9', $src);
+        $this->assertStringContainsString('4/5', $src);
+        $this->assertStringContainsString('aspect', $src);
+        // must use object-cover (not contain with black letterbox) for premium feel — cover is correct when container aspect matches image
         $this->assertStringContainsString('object-cover', $src);
     }
 
     public function test_hero_height_is_responsive(): void
     {
         $src = file_get_contents(resource_path('js/templates-v2/fashion-atelier/components/AtelierHero.tsx'));
-        $this->assertStringContainsString('520px', $src);
-        $this->assertStringContainsString('360px', $src);
+        // Responsive contract: mobile breakpoint 768 and aspect switching
+        $this->assertStringContainsString('767px', $src);
+        $this->assertStringContainsString('768px', $src);
+        $this->assertStringContainsString('16/9', $src);
+        $this->assertStringContainsString('4/5', $src);
     }
 
     public function test_cart_free_shipping_rtl_and_empty_hidden(): void

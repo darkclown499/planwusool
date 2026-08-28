@@ -166,47 +166,71 @@ export function HubHero({ banner }: { banner?: any }) {
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   if (!hero.hasDynamicHero && !hasBanner) return null;
   const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const fitMobile = hero.fitMobile ? (hero.fitMobile==='contain'?'object-contain':'object-cover') : fitClass;
   const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
-  const vidOrImg = hero.imagesMobile.length>0 ? hero.imagesMobile[0] : (hero.images[0] || '');
-  const effective = {
-    image: (hero.hasDynamicHero && vidOrImg) || banner?.image || '',
+  const posMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
+  const hasMobileImg = hero.imagesMobile.length>0;
+  const desktopImg = hero.images[0] || banner?.image || '';
+  const mobileImg = hasMobileImg ? hero.imagesMobile[0] : desktopImg;
+  const effectiveDesktop = {
+    image: (hero.hasDynamicHero && desktopImg) || banner?.image || '',
+    title: hero.heading || banner?.title || '',
+    subtitle: hero.subtitle || banner?.subtitle || '',
+    button_text: hero.ctaLabel || banner?.button_text || '',
+    button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
+  };
+  const effectiveMobile = {
+    image: (hero.hasDynamicHero && mobileImg) || banner?.image || '',
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
     button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
   };
   const electronicsPromise = (()=>{ try{ const c=(hero as any)?.storeContent ?? (useStorefrontCore() as any)?.content; const v=c?.electronics_promise ?? c?.electronics?.promise ?? c?.electronicsPromise; if(typeof v==='string'&&v.trim()) return v.trim(); }catch{} return 'أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.'; })();
+  const hasMobileVideo = !!hero.videoUrlMobile;
+  const hasMobileYoutube = !!hero.youtubeIdMobile;
+  // Correct desktop aspect 7:3 for electronics-hub, mobile 4:5 for video/image when full-bleed
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
       <section className="relative overflow-hidden bg-black" dir="rtl">
-        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass}`} style={posStyle} src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        {/* Desktop video */}
+        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobileVideo?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={effectiveDesktop.image ? getHeroImageUrl(effectiveDesktop.image) : undefined} />
+        {/* Mobile video */}
+        {hasMobileVideo && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={effectiveMobile.image ? getHeroImageUrl(effectiveMobile.image) : undefined} />}
         <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
         <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
           <div>
-            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
-            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
+            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effectiveDesktop.subtitle}</p>
+            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effectiveDesktop.title}</h1>
             <p className="mt-3 max-w-md leading-relaxed text-slate-300">{electronicsPromise}</p>
-            <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
+            <a href={effectiveDesktop.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effectiveDesktop.button_text}</a>
           </div>
         </div>
       </section>
     );
   }
   if (isYoutube) {
-    const ytId = hero.youtubeIdMobile || hero.youtubeId;
+    const ytDesktop = hero.youtubeId!;
+    const ytMobile = hero.youtubeIdMobile || ytDesktop;
     return (
       <section className="relative overflow-hidden bg-black" dir="rtl">
-        <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        <div className={`absolute inset-0 w-full h-full opacity-60 ${hasMobileYoutube?'hidden md:block':'block'}`}>
+          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube desktop" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        </div>
+        {hasMobileYoutube && (
+          <div className="absolute inset-0 w-full h-full opacity-60 block md:hidden">
+            <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
         <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
           <div>
-            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
-            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
+            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effectiveDesktop.subtitle}</p>
+            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effectiveDesktop.title}</h1>
             <p className="mt-3 max-w-md leading-relaxed text-slate-300">{electronicsPromise}</p>
-            <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
+            <a href={effectiveDesktop.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effectiveDesktop.button_text}</a>
           </div>
         </div>
       </section>
@@ -218,15 +242,28 @@ export function HubHero({ banner }: { banner?: any }) {
       <div className="pointer-events-none absolute -bottom-32 right-10 h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
       <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
         <div>
-          <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effective.subtitle}</p>
-          <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effective.title}</h1>
+          <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effectiveDesktop.subtitle}</p>
+          <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effectiveDesktop.title}</h1>
           <p className="mt-3 max-w-md leading-relaxed text-slate-400">{electronicsPromise}</p>
-          <a href={effective.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effective.button_text}</a>
+          <a href={effectiveDesktop.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effectiveDesktop.button_text}</a>
         </div>
-        <div className="relative hidden justify-self-end sm:block">
-          <img src={getOptimizedImageUrl(effective.image, 'medium')} alt="" className="max-h-64 rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effective.image))}} width={800} height={400} />
-          {hero.hasDynamicHero && <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
+        {/* Desktop image */}
+        <div className={`relative hidden justify-self-end sm:block ${hasMobileImg?'hidden sm:block':'block'}`}>
+          {effectiveDesktop.image && <img src={getOptimizedImageUrl(effectiveDesktop.image, 'medium')} alt="" className={`max-h-64 rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40 w-full object-cover ${fitClass}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="(min-width:768px) 50vw, 100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effectiveDesktop.image))}} width={800} height={400} />}
+          {hero.hasDynamicHero && effectiveDesktop.image && <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
         </div>
+        {/* Mobile image — aspect 4:5 when vertical asset exists, fallback to desktop */}
+        {hasMobileImg ? (
+          <div className="relative block sm:hidden w-full overflow-hidden rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" style={{ aspectRatio: '4/5' }}>
+            <img src={getOptimizedImageUrl(effectiveMobile.image, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitMobile}`} style={posMobile} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effectiveMobile.image))}} width={1080} height={1350} />
+            {hero.hasDynamicHero && <div className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
+          </div>
+        ) : effectiveDesktop.image ? (
+          <div className="relative block sm:hidden w-full overflow-hidden rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" style={{ aspectRatio: '4/5' }}>
+            <img src={getOptimizedImageUrl(effectiveDesktop.image, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effectiveDesktop.image))}} width={1080} height={1350} />
+            {hero.hasDynamicHero && <div className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
+          </div>
+        ) : null}
       </div>
     </section>
   );

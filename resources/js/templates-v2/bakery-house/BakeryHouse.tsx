@@ -144,14 +144,25 @@ export function BakeryHero({ banner }: { banner?: any }) {
   const hero = useResolvedHero();
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
-  const heroImg = hero.hasDynamicHero && hero.imagesMobile.length > 0 ? hero.imagesMobile[0] : (hero.hasDynamicHero && hero.images.length > 0 ? hero.images[0] : null);
+  const hasMobile = hero.imagesMobile.length>0;
+  const heroDesktopImg = hero.hasDynamicHero && hero.images.length>0 ? hero.images[0] : null;
+  const heroMobileImg = hasMobile ? hero.imagesMobile[0] : heroDesktopImg;
+  const fallbackImg = heroDesktopImg || heroMobileImg || banner?.image || '';
+  // Correct per-breakpoint: desktop uses desktop asset, mobile uses mobile asset via CSS
+  const desktopImg = heroDesktopImg || banner?.image || '';
+  const mobileImg = heroMobileImg || banner?.image || '';
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   if (!hero.hasDynamicHero && !hasBanner) return null;
   const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const fitMobile = hero.fitMobile ? (hero.fitMobile==='contain'?'object-contain':'object-cover') : fitClass;
   const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
-  const heightStyle: any = hero.heightDesktop ? { height: hero.heightDesktop } : {};
+  const posMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
+  const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
+  const desktopAspect = '12/5';
+  const mobileAspect = '4/5';
+  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } : (hasCustomHeight ? {} : { aspectRatio: desktopAspect } as any);
   const effective = {
-    image: heroImg || banner?.image || '',
+    image: fallbackImg,
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
     button_text: hero.ctaLabel || banner?.button_text || '',
@@ -159,12 +170,15 @@ export function BakeryHero({ banner }: { banner?: any }) {
   };
   const mobileHeroStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .bakery-hero-media video, .bakery-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.bakery-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
+    const hasMobVid = !!hero.videoUrlMobile;
     return (
       <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        <div className="bakery-hero-media relative overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
-          <video autoPlay loop muted playsInline className={`h-64 w-full sm:h-80 ${fitClass}`} style={posStyle} src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bakery-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bakery-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bakery-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        <div className={`bakery-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-lg ${hasCustomHeight ? '' : 'hero-responsive'}`} style={heightStyle}>
+          <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitClass} ${hasMobVid?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={desktopImg ? getHeroImageUrl(desktopImg) : undefined} />
+          {hasMobVid && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={mobileImg ? getHeroImageUrl(mobileImg) : undefined} />}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           <div className="absolute inset-0 bg-gradient-to-l from-[#3b2412]/70 via-black/20 to-transparent" />
           <div className="absolute inset-y-0 right-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
@@ -177,15 +191,30 @@ export function BakeryHero({ banner }: { banner?: any }) {
     );
   }
   if (isYoutube) {
-    const ytId = hero.youtubeIdMobile || hero.youtubeId;
+    const ytDesktop = hero.youtubeId!;
+    const ytMobile = hero.youtubeIdMobile || ytDesktop;
+    const hasMobYt = !!hero.youtubeIdMobile;
     return (
       <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
         {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        <div className="bakery-hero-media relative overflow-hidden rounded-3xl bg-black shadow-lg" style={heightStyle}>
-          {hero.fit === 'contain' ? (
-            <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
-          ) : (
-            <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bakery-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bakery-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bakery-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        <div className={`bakery-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-lg ${hasCustomHeight ? '' : 'hero-responsive'}`} style={heightStyle}>
+          <div className={`absolute inset-0 overflow-hidden bg-black ${hasMobYt?'hidden md:block':'block'}`}>
+            {hero.fit === 'contain' ? (
+              <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+            ) : (
+              <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+            )}
+          </div>
+          {hasMobYt && (
+            <div className="absolute inset-0 overflow-hidden bg-black block md:hidden">
+              {(hero.fitMobile||hero.fit)==='contain' ? (
+                <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+              ) : (
+                <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+              )}
+            </div>
           )}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           <div className="absolute inset-0 flex flex-col justify-center gap-3 p-7 sm:p-12">
@@ -199,8 +228,15 @@ export function BakeryHero({ banner }: { banner?: any }) {
   }
   return (
     <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6" dir="rtl">
-      <div className="relative overflow-hidden rounded-3xl bg-[#3b2412] shadow-lg">
-        <img src={getOptimizedImageUrl(effective.image, 'medium')} alt="" className="h-64 w-full object-cover opacity-80 sm:h-80" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effective.image))}} width={1200} height={400} />
+      {!hasCustomHeight && <style>{`@media(max-width:767px){ .bakery-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bakery-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+      {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bakery-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+      {mobileHeroStyle && !hasCustomHeight ? <style>{mobileHeroStyle}</style> : null}
+      <div className={`bakery-hero-media relative w-full overflow-hidden rounded-3xl bg-[#3b2412] shadow-lg ${hasCustomHeight ? '' : 'hero-responsive'}`} style={hasCustomHeight ? heightStyle : { aspectRatio: desktopAspect } as any}>
+        {/* Desktop image */}
+        {desktopImg && <img src={getOptimizedImageUrl(desktopImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitClass} opacity-80 ${hasMobile?'hidden md:block':'block'}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(desktopImg))}} width={1200} height={500} />}
+        {/* Mobile image */}
+        {hasMobile && mobileImg && <img src={getOptimizedImageUrl(mobileImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitMobile} opacity-80 block md:hidden`} style={posMobile} loading="eager" decoding="async" fetchPriority="high" sizes="(max-width:767px) 100vw, 500px" onError={(e)=>{(e.currentTarget.src=getImageUrl(mobileImg))}} width={1080} height={1350} />}
+        {!hasMobile && !desktopImg && fallbackImg && <img src={getOptimizedImageUrl(fallbackImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitClass} opacity-80`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(fallbackImg))}} width={1200} height={500} />}
         <div className="absolute inset-0 bg-gradient-to-l from-[#3b2412]/85 via-transparent to-transparent" />
         {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
         <div className="absolute inset-y-0 right-0 flex flex-col justify-center gap-3 p-7 sm:p-12">

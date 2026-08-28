@@ -120,22 +120,34 @@ export function RestaurantHero({ banner }: { banner?: any }) {
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   if (!hero.hasDynamicHero && !hasBanner) return null;
-  const effectiveImg = hero.hasDynamicHero && hero.imagesMobile.length>0 ? hero.imagesMobile[0] : (hero.hasDynamicHero && hero.images[0]) || banner?.image || '';
+  const hasMobile = hero.imagesMobile.length>0;
+  const desktopImg = hero.hasDynamicHero && hero.images[0] ? hero.images[0] : banner?.image || '';
+  const mobileImg = hasMobile ? hero.imagesMobile[0] : desktopImg;
   const effective = {
-    image: effectiveImg,
+    image: desktopImg,
+    imageMobile: mobileImg,
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
   };
   const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const fitMobile = hero.fitMobile ? (hero.fitMobile==='contain'?'object-contain':'object-cover') : fitClass;
   const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
-  const heightStyle: any = hero.heightDesktop ? { height: hero.heightDesktop } : {};
+  const posMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
+  const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
+  const desktopAspect = '8/3';
+  const mobileAspect = '4/5';
+  const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } : (hasCustomHeight ? {} : { aspectRatio: desktopAspect } as any);
   const mobileStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .restaurant-hero-media video, .restaurant-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.restaurant-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
+  const hasMobVid = !!hero.videoUrlMobile;
+  const hasMobYt = !!hero.youtubeIdMobile;
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
-      <section className="restaurant-hero-media relative h-72 overflow-hidden bg-black sm:h-96" style={heightStyle} dir="rtl">
+      <section className={`restaurant-hero-media relative w-full overflow-hidden bg-black ${hasCustomHeight ? 'h-72 sm:h-96' : 'hero-responsive'}`} style={heightStyle} dir="rtl">
         {mobileStyle && <style>{mobileStyle}</style>}
-        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass}`} style={posStyle} src={vidSrc} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        {!hasCustomHeight && <style>{`@media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .restaurant-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .restaurant-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobVid?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+        {hasMobVid && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={effective.imageMobile ? getHeroImageUrl(effective.imageMobile) : undefined} />}
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
         <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
         <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
@@ -147,14 +159,28 @@ export function RestaurantHero({ banner }: { banner?: any }) {
     );
   }
   if (isYoutube) {
-    const ytId = hero.youtubeIdMobile || hero.youtubeId;
+    const ytDesktop = hero.youtubeId!;
+    const ytMobile = hero.youtubeIdMobile || ytDesktop;
     return (
-      <section className="restaurant-hero-media relative h-72 overflow-hidden bg-black sm:h-96" style={heightStyle} dir="rtl">
+      <section className={`restaurant-hero-media relative w-full overflow-hidden bg-black ${hasCustomHeight ? 'h-72 sm:h-96' : 'hero-responsive'}`} style={heightStyle} dir="rtl">
         {mobileStyle && <style>{mobileStyle}</style>}
-        {hero.fit === 'contain' ? (
-          <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
-        ) : (
-          <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+        {!hasCustomHeight && <style>{`@media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .restaurant-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .restaurant-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        <div className={`absolute inset-0 overflow-hidden ${hasMobYt?'hidden md:block':'block'} ${hero.fit==='contain' ? '' : 'bg-black opacity-60'}`}>
+          {hero.fit === 'contain' ? (
+            <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+          ) : (
+            <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+          )}
+        </div>
+        {hasMobYt && (
+          <div className="absolute inset-0 overflow-hidden block md:hidden bg-black opacity-60">
+            {(hero.fitMobile||hero.fit)==='contain' ? (
+              <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+            ) : (
+              <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+            )}
+          </div>
         )}
         <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
         <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
@@ -167,8 +193,14 @@ export function RestaurantHero({ banner }: { banner?: any }) {
     );
   }
   return (
-    <section className="relative h-72 overflow-hidden bg-[#0f0b09] sm:h-96" dir="rtl">
-        <img src={getOptimizedImageUrl(effective.image, 'medium')} alt="" className="h-full w-full object-cover opacity-60" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />
+    <section className={`relative w-full overflow-hidden bg-[#0f0b09] ${hasCustomHeight ? 'h-72 sm:h-96' : 'hero-responsive'}`} style={heightStyle} dir="rtl">
+        {!hasCustomHeight && <style>{`@media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .restaurant-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .restaurant-hero-media{ height:${hero.heightMobile} !important; } } .restaurant-hero-media{}`}</style>}
+        <style>{`.restaurant-hero-media{ ${hasCustomHeight?'':'aspect-ratio:'+desktopAspect+';'} } @media(max-width:767px){ .restaurant-hero-media{ aspect-ratio:${mobileAspect} !important; } }`}</style>
+        {/* Desktop image */}
+        {desktopImg && <img src={getOptimizedImageUrl(desktopImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobile?'hidden md:block':'block'}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />}
+        {/* Mobile image */}
+        {hasMobile && mobileImg && <img src={getOptimizedImageUrl(mobileImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} loading="eager" decoding="async" fetchPriority="high" sizes="(max-width:767px) 100vw, 500px" width={1080} height={1350} />}
       <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
       {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
       <div className="absolute inset-0 flex items-center">

@@ -127,15 +127,25 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
 
 export function BazaarHero({ banners }: { banners: any[] }) {
   const hero = useResolvedHero();
+  const hasMobileImages = hero.imagesMobile.length>0;
+  const hasMobileVideo = !!hero.videoUrlMobile;
+  const hasMobileYoutube = !!hero.youtubeIdMobile;
   // Prefer dynamic hero images when merchant saved them via Designer, fallback to legacy content.banners
-  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && hero.images.length > 0
-    ? hero.images.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
-    : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && hero.images.length === 0
+  const desktopImages = hero.images;
+  const mobileImages = hasMobileImages ? hero.imagesMobile : desktopImages;
+  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && desktopImages.length > 0
+    ? desktopImages.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
+    : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && desktopImages.length === 0
       ? [{ title: hero.heading, subtitle: hero.subtitle, image: '', button_text: hero.ctaLabel, button_link: hero.ctaLink }]
       : null;
+  const dynamicSlidesMobile = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && mobileImages.length > 0
+    ? mobileImages.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
+    : dynamicSlides;
   const rawSlides = dynamicSlides ?? (banners.length > 0 ? banners : []);
+  const rawSlidesMobile = dynamicSlidesMobile ?? rawSlides;
   if (rawSlides.length === 0 && !hero.hasDynamicHero) return null;
   const slides = rawSlides.length > 0 ? rawSlides : dynamicSlides ?? [];
+  const slidesMobile = rawSlidesMobile.length>0 ? rawSlidesMobile : slides;
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const [i, setI] = useState(0);
@@ -145,17 +155,24 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     return () => clearInterval(t);
   }, [slides.length, isVideo, isYoutube]);
 
-  const bazaarMobileStyle = (hero.fitMobile || hero.positionMobile || hero.heightMobile) ? `@media(max-width:767px){ .bazaar-hero-media video, .bazaar-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } ${hero.heightMobile ? `.bazaar-hero-media{ height:${hero.heightMobile} !important; }` : ''} }` : '';
-  const bazaarFitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
-  const bazaarPosStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
-  // Single-media video/youtube heroes — full-bleed with overlay text
+  const bazaarFit = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const bazaarFitMobile = hero.fitMobile ? (hero.fitMobile==='contain' ? 'object-contain':'object-cover') : bazaarFit;
+  const bazaarPos = hero.position && hero.position !== 'center' ? hero.position : 'center';
+  const bazaarPosMobile = hero.positionMobile || bazaarPos;
+  const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
+  const desktopAspect = '16/7';
+  const mobileAspect = '4/5';
+  // Single-media video/youtube heroes — full-bleed with overlay text, now responsive aspect + mobile asset switching via CSS
   if (isVideo) {
-    const vidSrc = getHeroImageUrl(hero.videoUrlMobile || hero.videoUrl);
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-        {bazaarMobileStyle && <style>{bazaarMobileStyle}</style>}
-        <div className="bazaar-hero-media relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72" style={hero.heightDesktop ? { height: hero.heightDesktop } : {}}>
-          <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${bazaarFitClass}`} style={bazaarPosStyle} src={vidSrc} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />
+        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bazaar-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bazaar-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bazaar-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        <div className={`bazaar-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-xl ${hasCustomHeight ? 'h-56 sm:h-72' : 'hero-responsive'}`} style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } : {}) : { aspectRatio: desktopAspect } as any}>
+          {/* Desktop video */}
+          <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${bazaarFit} ${hasMobileVideo?'hidden md:block':'block'}`} style={{ objectPosition: bazaarPos }} src={getHeroImageUrl(hero.videoUrl)} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />
+          {/* Mobile video */}
+          {hasMobileVideo && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${bazaarFitMobile} block md:hidden`} style={{ objectPosition: bazaarPosMobile }} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={slidesMobile[0]?.image ? getHeroImageUrl(slidesMobile[0].image) : undefined} />}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-black/10 to-transparent" />
           {(hero.heading || hero.subtitle || hero.ctaLabel) && (
@@ -170,15 +187,30 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     );
   }
   if (isYoutube) {
-    const ytId = hero.youtubeIdMobile || hero.youtubeId;
+    const ytDesktop = hero.youtubeId!;
+    const ytMobile = hero.youtubeIdMobile || ytDesktop;
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-        {bazaarMobileStyle && <style>{bazaarMobileStyle}</style>}
-        <div className="bazaar-hero-media relative h-56 overflow-hidden rounded-3xl bg-black shadow-xl sm:h-72" style={hero.heightDesktop ? { height: hero.heightDesktop } : {}}>
-          {hero.fit === 'contain' ? (
-            <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
-          ) : (
-            <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytId}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+        {!hasCustomHeight && <style>{`@media(max-width:767px){ .bazaar-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bazaar-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+        {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bazaar-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+        <div className={`bazaar-hero-media relative w-full overflow-hidden rounded-3xl bg-black shadow-xl ${hasCustomHeight ? 'h-56 sm:h-72' : 'hero-responsive'}`} style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } : {}) : { aspectRatio: desktopAspect } as any}>
+          {/* Desktop youtube */}
+          <div className={`absolute inset-0 overflow-hidden bg-black ${hasMobileYoutube?'hidden md:block':'block'}`}>
+            {hero.fit === 'contain' ? (
+              <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+            ) : (
+              <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+            )}
+          </div>
+          {/* Mobile youtube */}
+          {hasMobileYoutube && (
+            <div className="absolute inset-0 overflow-hidden bg-black block md:hidden">
+              {(hero.fitMobile||hero.fit)==='contain' ? (
+                <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+              ) : (
+                <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+              )}
+            </div>
           )}
           <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
           {(hero.heading || hero.subtitle || hero.ctaLabel) && (
@@ -195,11 +227,20 @@ export function BazaarHero({ banners }: { banners: any[] }) {
 
   return (
     <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
-      <div className="relative h-56 overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800 shadow-xl sm:h-72">
-        {slides.map((b: any, idx: number) => (
+      {!hasCustomHeight && <style>{`@media(max-width:767px){ .bazaar-hero-media{ aspect-ratio:${mobileAspect} !important; } } @media(min-width:768px){ .bazaar-hero-media{ aspect-ratio:${desktopAspect} !important; } }`}</style>}
+      {hasCustomHeight && hero.heightMobile && <style>{`@media(max-width:767px){ .bazaar-hero-media{ height:${hero.heightMobile} !important; } }`}</style>}
+      <div className={`bazaar-hero-media relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800 shadow-xl ${hasCustomHeight ? 'h-56 sm:h-72' : 'hero-responsive'}`} style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } : {}) : { aspectRatio: desktopAspect } as any}>
+        {slides.map((b: any, idx: number) => {
+          const m = (slidesMobile[idx] || b);
+          const desktopSrc = b.image ? getOptimizedImageUrl(b.image||'', 'medium') : '';
+          const mobileSrc = m.image ? getOptimizedImageUrl(m.image||'', 'medium') : desktopSrc;
+          return (
           <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === i ? 1 : 0 }} aria-hidden={idx !== i}>
-            {b.image ? (
-              <img src={getOptimizedImageUrl(b.image||'', 'medium')} alt="" className="h-full w-full object-cover opacity-75" loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
+            {desktopSrc ? (
+              <>
+                <img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${bazaarFit} opacity-75 ${hasMobileImages?'hidden md:block':'block'}`} style={{ objectPosition: bazaarPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
+                {hasMobileImages && mobileSrc && <img src={mobileSrc} alt="" className={`absolute inset-0 h-full w-full ${bazaarFitMobile} opacity-75 block md:hidden`} style={{ objectPosition: bazaarPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(m.image||''))}} width={1200} height={1350} />}
+              </>
             ) : null}
             <div className="absolute inset-0 bg-gradient-to-l from-emerald-950/80 via-emerald-900/30 to-transparent" />
             {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
@@ -213,7 +254,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
               )}
             </div>
           </div>
-        ))}
+        )})}
         {slides.length > 1 && (
           <div className="absolute bottom-4 right-1/2 flex translate-x-1/2 gap-1.5">
             {slides.map((_, idx: number) => (

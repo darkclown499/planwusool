@@ -190,3 +190,109 @@ export function useResolvedHero(): ResolvedHero {
 export function getHeroImageUrl(url: string): string {
   try { return getImageUrl(String(url).trim().replace(/\/+$/, '')); } catch { return String(url); }
 }
+
+/* ============================================================= */
+/* Centralized hero/banner media contract                         */
+/* ============================================================= */
+
+/**
+ * Single breakpoint where mobile hero takes over.
+ * Tailwind `md` = 768px. CSS media query uses max-width:767px for mobile.
+ */
+export const HERO_BREAKPOINT = 768;
+export const HERO_BREAKPOINT_CSS = '(max-width: 767px)';
+
+/**
+ * Canonical desktop aspect ratios per template, derived from
+ * MEDIA_SPECS hero.desktopImage — the exact dimensions Wusool
+ * advertises to merchants (e.g. 1600×900 = 16/9).
+ *
+ * If a template has no entry, 16/9 is the universal fallback
+ * (matches the original Designer recommendation).
+ */
+export const HERO_DESKTOP_ASPECTS: Record<string, string> = {
+  'fashion-atelier': '16/9',
+  'bazaar-market': '16/7',
+  'grocery-souq': '8/3',
+  'bakery-house': '12/5',
+  'electronics-hub': '7/3',
+  'restaurant-menu': '8/3',
+};
+
+/** Full-bleed banner on mobile always uses vertical 4:5 (1080×1350) when a mobile asset exists. */
+export const HERO_MOBILE_ASPECT = '4/5';
+
+/**
+ * Return the advertised desktop aspect for a template slug, or 16/9 fallback.
+ */
+export function heroDesktopAspect(templateSlug?: string | null): string {
+  const s = String(templateSlug || '').trim().toLowerCase();
+  return HERO_DESKTOP_ASPECTS[s] ?? '16/9';
+}
+
+/**
+ * Tailwind safelist hint — ensure these arbitrary aspect classes are generated
+ * even though they are constructed dynamically. This comment is intentionally
+ * kept so Tailwind's content scanner sees the literal class names.
+ *
+ * aspect-[16/9] aspect-[16/7] aspect-[8/3] aspect-[12/5] aspect-[7/3] aspect-[4/5]
+ * md:aspect-[16/9] md:aspect-[16/7] md:aspect-[8/3] md:aspect-[12/5] md:aspect-[7/3]
+ */
+export const _TAILWIND_ASPECT_SAFELIST = 'aspect-[16/9] aspect-[16/7] aspect-[8/3] aspect-[12/5] aspect-[7/3] aspect-[4/5] md:aspect-[16/9] md:aspect-[16/7] md:aspect-[8/3] md:aspect-[12/5] md:aspect-[7/3]';
+
+/**
+ * CSS helper: returns responsive aspect-ratio style for a hero container.
+ * Uses CSS `aspect-ratio` with media query fallback so Designer preview
+ * and real storefront share identical behavior without JS hydration mismatch.
+ *
+ * Usage:
+ *   <div style={heroAspectStyle('grocery-souq')} className="w-full overflow-hidden">
+ *
+ * Desktop: advertised ratio (e.g. 8/3). Mobile (<768): 4/5 when mobile asset present,
+ * otherwise keeps desktop ratio for fallback so single-asset stores don't jump.
+ */
+export function heroAspectStyle(templateSlug?: string | null, hasMobileAsset?: boolean): React.CSSProperties & Record<string, any> {
+  const desktop = heroDesktopAspect(templateSlug);
+  // We keep CSS variable for media query override; see heroResponsiveAspectCss()
+  return { aspectRatio: hasMobileAsset ? `var(--hero-ar, ${desktop})` : desktop } as any;
+}
+
+/**
+ * Inject responsive CSS for a hero wrapper that owns --hero-ar variable.
+ * Include once per hero root element via <style> tag.
+ */
+export function heroResponsiveAspectCss(templateSlug?: string | null): string {
+  const desktop = heroDesktopAspect(templateSlug);
+  return `@media ${HERO_BREAKPOINT_CSS} { .hero-responsive { aspect-ratio: ${HERO_MOBILE_ASPECT} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .hero-responsive { aspect-ratio: ${desktop} !important; } }`;
+}
+
+/**
+ * Effective object-fit / position for current viewport.
+ * Mobile overrides are independent so merchant can fix cropped video on phone.
+ */
+export function heroFitFor(hero: ResolvedHero, isMobile: boolean): 'cover' | 'contain' {
+  if (isMobile && hero.fitMobile) return hero.fitMobile;
+  return hero.fit;
+}
+export function heroPositionFor(hero: ResolvedHero, isMobile: boolean): string {
+  if (isMobile && hero.positionMobile) return hero.positionMobile;
+  return hero.position;
+}
+
+/**
+ * Pick the correct media source for given viewport.
+ * Fallback chain: mobile-specific -> desktop -> empty.
+ * Never stretches/distorts — cover vs contain is handled by CSS.
+ */
+export function heroImagesFor(hero: ResolvedHero, isMobile: boolean): string[] {
+  if (isMobile && hero.imagesMobile.length > 0) return hero.imagesMobile;
+  return hero.images;
+}
+export function heroVideoFor(hero: ResolvedHero, isMobile: boolean): string {
+  if (isMobile && hero.videoUrlMobile) return hero.videoUrlMobile;
+  return hero.videoUrl;
+}
+export function heroYoutubeIdFor(hero: ResolvedHero, isMobile: boolean): string | null {
+  if (isMobile && hero.youtubeIdMobile) return hero.youtubeIdMobile;
+  return hero.youtubeId;
+}
