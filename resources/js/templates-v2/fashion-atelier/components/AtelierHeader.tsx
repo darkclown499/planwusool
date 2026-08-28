@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Facebook, Globe, Heart, Instagram, MapPin, Menu, MessageCircle, Music, Package, Search, Send, ShoppingBag, User, X, Youtube, Twitter } from 'lucide-react';
 import { useStorefrontCore } from '../../shared/hooks';
 import { getImageUrl } from '@/utils/image-helper';
@@ -44,6 +45,11 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const [policyOpen, setPolicyOpen] = useState<null | 'about' | 'shipping' | 'privacy'>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -125,6 +131,102 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
     return { idx, enabled, platform, url, safe };
   });
 
+  const drawerPortal =
+    mounted && drawerOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div className="fixed inset-0 z-[80] md:hidden" dir="rtl" role="dialog" aria-modal="true">
+            {/* Backdrop — simple translucent, covers entire viewport including header */}
+            <div
+              className="absolute inset-0 bg-black/45"
+              onClick={() => setDrawerOpen(false)}
+              aria-hidden
+            />
+            {/* Panel — fixed top0 right0 bottom0, 100dvh, warm background, above backdrop */}
+            <div className="absolute inset-y-0 right-0 flex h-[100dvh] w-[84%] max-w-[340px] flex-col overflow-hidden rounded-l-2xl bg-[#faf7f2] shadow-[-8px_0_30px_rgba(0,0,0,0.18)]">
+              {/* Drawer header — inside panel, single close X */}
+              <div className="flex shrink-0 items-center justify-between border-b border-stone-200 bg-white px-4 py-4 pt-[calc(1rem+env(safe-area-inset-top))]">
+                <a href={homeHref} className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
+                  {(config?.logo || store?.logo) ? (
+                    <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-8 w-auto object-contain" />
+                  ) : (
+                    <span className="font-serif text-lg font-bold text-stone-900">{config?.storeName || store?.name}</span>
+                  )}
+                </a>
+                <button type="button" onClick={() => setDrawerOpen(false)} aria-label="إغلاق" className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-5 pb-[env(safe-area-inset-bottom)]">
+                <nav className="space-y-1.5">
+                  <button
+                    type="button"
+                    onClick={openAccount}
+                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-white">
+                      <User className="h-5 w-5" />
+                    </span>
+                    <span className="flex-1 text-sm font-bold text-stone-800">حسابي</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      const el = document.getElementById('atelier-categories');
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      else window.scrollTo({ top: 500, behavior: 'smooth' });
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9d7463] text-white">
+                      <LayoutGridIcon />
+                    </span>
+                    <span className="flex-1 text-sm font-bold text-stone-800">الأقسام</span>
+                  </button>
+                </nav>
+
+                <div className="my-5 h-px bg-stone-200" />
+
+                <p className="mb-3 text-xs font-bold tracking-widest text-stone-500">تواصل معنا</p>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {socialSlots.map((slot) => {
+                    if (!slot.safe) return null;
+                    const Icon = getSocialIcon(slot.platform);
+                    return (
+                      <a
+                        key={slot.idx}
+                        href={slot.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={slot.platform}
+                        onClick={() => setDrawerOpen(false)}
+                        className="flex flex-col items-center gap-1.5 rounded-xl bg-white px-2 py-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
+                      >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white">
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <span className="text-[11px] font-bold capitalize text-stone-600">{slot.platform}</span>
+                      </a>
+                    );
+                  })}
+                  {socialSlots.filter((s) => s.safe).length === 0 && (
+                    <p className="col-span-3 rounded-xl bg-white px-3 py-4 text-center text-xs text-stone-400 ring-1 ring-stone-200">لم يتم إعداد روابط التواصل بعد</p>
+                  )}
+                </div>
+
+                <div className="mt-6 rounded-xl bg-white p-3 ring-1 ring-stone-200">
+                  <p className="text-xs font-bold text-stone-700">تحتاج مساعدة؟</p>
+                  <p className="mt-1 text-xs leading-relaxed text-stone-500">تواصل معنا عبر الروابط أعلاه أو عبر واتساب.</p>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
+
   return (
     <>
       <header
@@ -141,6 +243,8 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
             type="button"
             onClick={() => setDrawerOpen(true)}
             aria-label="القائمة"
+            aria-expanded={drawerOpen}
+            aria-controls="atelier-mobile-drawer"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white shadow-sm transition hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/30"
           >
             <Menu className="h-5 w-5" strokeWidth={2} />
@@ -283,98 +387,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
         )}
       </header>
 
-      {/* MOBILE DRAWER — proper overlay outside header to avoid backdrop-blur containing block */}
-      {drawerOpen && (
-        <div className="fixed inset-0 z-[60] md:hidden" dir="rtl" aria-modal="true" role="dialog">
-          {/* Backdrop — covers entire viewport including header */}
-          <div
-            className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm transition-opacity"
-            onClick={() => setDrawerOpen(false)}
-            aria-hidden
-          />
-          {/* Panel — fixed top0 bottom0 right0, 100dvh, warm background, rounded left */}
-          <div className="fixed inset-y-0 right-0 z-[70] flex h-[100dvh] w-[84%] max-w-[340px] flex-col overflow-hidden rounded-l-2xl bg-[#faf7f2] shadow-[-8px_0_30px_rgba(0,0,0,0.12)]">
-            {/* Drawer header — inside panel, respects safe-area */}
-            <div className="flex shrink-0 items-center justify-between border-b border-stone-200 bg-white px-4 py-4 pt-[calc(1rem+env(safe-area-inset-top))]">
-              <a href={homeHref} className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
-                {(config?.logo || store?.logo) ? (
-                  <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-8 w-auto object-contain" />
-                ) : (
-                  <span className="font-serif text-lg font-bold text-stone-900">{config?.storeName || store?.name}</span>
-                )}
-              </a>
-              <button type="button" onClick={() => setDrawerOpen(false)} aria-label="إغلاق" className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-4 py-5 pb-[env(safe-area-inset-bottom)]">
-              <nav className="space-y-1.5">
-                <button
-                  type="button"
-                  onClick={openAccount}
-                  className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-white">
-                    <User className="h-5 w-5" />
-                  </span>
-                  <span className="flex-1 text-sm font-bold text-stone-800">حسابي</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    const el = document.getElementById('atelier-categories');
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    else window.scrollTo({ top: 500, behavior: 'smooth' });
-                  }}
-                  className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9d7463] text-white">
-                    <LayoutGridIcon />
-                  </span>
-                  <span className="flex-1 text-sm font-bold text-stone-800">الأقسام</span>
-                </button>
-              </nav>
-
-              <div className="my-5 h-px bg-stone-200" />
-
-              <p className="mb-3 text-xs font-bold tracking-widest text-stone-500">تواصل معنا</p>
-              <div className="grid grid-cols-3 gap-2.5">
-                {socialSlots.map((slot) => {
-                  if (!slot.safe) return null;
-                  const Icon = getSocialIcon(slot.platform);
-                  return (
-                    <a
-                      key={slot.idx}
-                      href={slot.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={slot.platform}
-                      onClick={() => setDrawerOpen(false)}
-                      className="flex flex-col items-center gap-1.5 rounded-xl bg-white px-2 py-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
-                    >
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="text-[11px] font-bold capitalize text-stone-600">{slot.platform}</span>
-                    </a>
-                  );
-                })}
-                {socialSlots.filter((s) => s.safe).length === 0 && (
-                  <p className="col-span-3 rounded-xl bg-white px-3 py-4 text-center text-xs text-stone-400 ring-1 ring-stone-200">لم يتم إعداد روابط التواصل بعد</p>
-                )}
-              </div>
-
-              <div className="mt-6 rounded-xl bg-white p-3 ring-1 ring-stone-200">
-                <p className="text-xs font-bold text-stone-700">تحتاج مساعدة؟</p>
-                <p className="mt-1 text-xs leading-relaxed text-stone-500">تواصل معنا عبر الروابط أعلاه أو عبر واتساب.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {drawerPortal}
 
       {/* Policy modals */}
       {POLICY_LINKS.map((link) => {
