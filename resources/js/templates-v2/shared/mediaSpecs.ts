@@ -51,11 +51,11 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
       },
       mobileImage: {
         label: 'الصورة الرئيسية — الهاتف',
-        description: 'تظهر على الهواتف بدل صورة سطح المكتب. إن تركتها فارغة سيتم استخدام صورة سطح المكتب.',
-        desktop: { width: 1080, height: 1350, ratio: '4:5', fit: 'cover' },
+        description: 'تظهر على الهواتف كبانر مدمج قصير (ليست بورتريه). إن تركتها فارغة سيتم استخدام صورة سطح المكتب مع قص.',
+        desktop: { width: 1080, height: 720, ratio: '3:2', fit: 'cover' },
         formats: 'JPG / PNG / WebP',
         maxSize: 'أقل من 2MB',
-        help: 'المقاس المقترح: 1080 × 1350 بكسل — نسبة 4:5 — الوضع: Cover',
+        help: 'المقاس المقترح: 1080 × 720 بكسل — نسبة 3:2 — الوضع: Cover — تركيب أفقي قصير يطابق الفتحة ~220-290px',
       },
       desktopVideo: {
         label: 'فيديو سطح المكتب',
@@ -67,11 +67,11 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
       },
       mobileVideo: {
         label: 'فيديو الهاتف',
-        description: 'يظهر على الهاتف بدل فيديو سطح المكتب. فارغ = يستخدم فيديو سطح المكتب.',
-        desktop: { width: 1080, height: 1350, ratio: '4:5', fit: 'cover' },
+        description: 'يظهر على الهاتف كبانر قصير. فارغ = يستخدم فيديو سطح المكتب.',
+        desktop: { width: 1080, height: 720, ratio: '3:2', fit: 'cover' },
         formats: 'MP4 / WebM',
         maxSize: 'أقل من 8MB',
-        help: 'MP4 عمودي — 1080×1350 — نسبة 4:5 — الوضع: Cover',
+        help: 'MP4 أفقي قصير — 1080×720 — نسبة 3:2 — الوضع: Cover',
       },
       desktopYoutube: {
         label: 'YouTube — سطح المكتب',
@@ -83,11 +83,11 @@ export const MEDIA_SPECS: Record<string, TemplateMediaSpecs> = {
       },
       mobileYoutube: {
         label: 'YouTube — الهاتف',
-        description: 'رابط يوتيوب للهاتف. فارغ = يستخدم رابط سطح المكتب.',
-        desktop: { width: 1080, height: 1350, ratio: '4:5', fit: 'cover' },
+        description: 'رابط يوتيوب للهاتف (بانر قصير). فارغ = يستخدم رابط سطح المكتب.',
+        desktop: { width: 1080, height: 720, ratio: '3:2', fit: 'cover' },
         formats: 'YouTube URL',
         maxSize: '—',
-        help: 'YouTube عمودي أو نفس رابط سطح المكتب — الوضع: Cover',
+        help: 'YouTube أفقي قصير — 1080×720 — نسبة 3:2 — الوضع: Cover',
       },
     },
     lookbook: {

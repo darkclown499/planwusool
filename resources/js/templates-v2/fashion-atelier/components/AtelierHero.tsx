@@ -55,9 +55,10 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const videoUrl = hero.videoUrl;
   const videoUrlMobile = hero.videoUrlMobile;
   // Contained editorial: outer wrapper gives balanced side margins; inner hero is the clamped slot.
+  // Premium elevated card: subtle layered shadow + rounded corners, visible on both desktop and mobile.
   return (
     <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5" dir="rtl">
-      <div className="atelier-hero hero-clamped relative w-full overflow-hidden bg-stone-900" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: desktopH } as any}>
+      <div className="atelier-hero hero-clamped relative w-full overflow-hidden rounded-2xl bg-stone-900 shadow-[0_3px_10px_rgba(0,0,0,0.06),0_14px_32px_rgba(0,0,0,0.07)] ring-1 ring-stone-200/40" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: desktopH } as any}>
       {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero{ height:${mobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .atelier-hero{ height:${desktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero { height: ${mobileH} !important; } }`}</style>}
       {hasDynamicHero && heroType==='video' && (videoUrl || videoUrlMobile) ? (
         <>

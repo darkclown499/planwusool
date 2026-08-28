@@ -245,7 +245,7 @@ export const HERO_MOBILE_ASPECT = '4/5';
  *  Mobile capped so 375-430 (4:5) does not consume the whole first viewport.
  */
 export const HERO_HEIGHTS: Record<string, { desktop: string; mobile: string }> = {
-  'fashion-atelier': { desktop: 'clamp(380px, 32vw, 520px)', mobile: 'clamp(380px, 112vw, 480px)' },
+  'fashion-atelier': { desktop: 'clamp(380px, 32vw, 520px)', mobile: 'clamp(220px, 65vw, 290px)' },
   'bazaar-market':   { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'grocery-souq':    { desktop: 'clamp(340px, 26vw, 440px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'bakery-house':    { desktop: 'clamp(340px, 30vw, 440px)', mobile: 'clamp(360px, 108vw, 440px)' },
