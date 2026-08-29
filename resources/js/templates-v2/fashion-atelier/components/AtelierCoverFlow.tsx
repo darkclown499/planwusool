@@ -81,15 +81,15 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [index, media, reducedMotion]);
 
-  // Auto-advance — desktop only, respects reducedMotion, single-item, pause on drag/hidden tab (no hover pause)
+  // Auto-advance — desktop only, single-item, pause on drag/hidden tab; reducedMotion no longer disables autoplay (only reduces motion)
   useEffect(() => {
-    if (reducedMotion || media.length <= 1 || isMobile) return;
+    if (media.length <= 1 || isMobile) return;
     const id = setInterval(() => {
       if (pausedRef.current || document.hidden || isDraggingRef.current) return;
       setIndex((prev) => (prev + 1) % media.length);
     }, 5000);
     return () => clearInterval(id);
-  }, [media.length, reducedMotion, isMobile]);
+  }, [media.length, isMobile]);
 
   const go = useCallback((dir: number) => {
     setIndex((i) => (i + dir + media.length) % media.length);
@@ -301,11 +301,11 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             const tx = isMobile
               ? `calc(-50% + ${offsetPct}% + ${dragPx}px)`
               : `calc(-50% + ${offsetPct}cqw + ${dragPx}px)`;
-            const transition = reducedMotion
-              ? 'none'
-              : isDragging
-                ? 'none'
-                : 'transform 320ms cubic-bezier(0.22,0.9,0.3,1), width 320ms cubic-bezier(0.22,0.9,0.3,1), opacity 320ms cubic-bezier(0.22,0.9,0.3,1), filter 320ms cubic-bezier(0.22,0.9,0.3,1), box-shadow 320ms cubic-bezier(0.22,0.9,0.3,1)';
+            const normalTransition =
+              'transform 320ms cubic-bezier(0.22,0.9,0.3,1), width 320ms cubic-bezier(0.22,0.9,0.3,1), opacity 320ms cubic-bezier(0.22,0.9,0.3,1), filter 320ms cubic-bezier(0.22,0.9,0.3,1), box-shadow 320ms cubic-bezier(0.22,0.9,0.3,1)';
+            const reducedTransition =
+              'transform 140ms ease-out, width 140ms ease-out, opacity 140ms ease-out, filter 140ms ease-out, box-shadow 140ms ease-out';
+            const transition = isDragging ? 'none' : reducedMotion ? reducedTransition : normalTransition;
 
             const baseKey = `${m.type}:${m.src}`;
             const n = occ.get(baseKey) ?? 0;
