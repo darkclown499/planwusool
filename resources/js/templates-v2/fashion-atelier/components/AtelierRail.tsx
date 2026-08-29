@@ -74,12 +74,14 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
           </div>
         </div>
 
-        {/* Mobile swipe cue — RTL rail advances visually to the left; fades once the user scrolls */}
-        {!scrolled && products.length > 4 && (
-          <p className="mb-2 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500 sm:hidden" aria-hidden>
-            اسحب للمزيد
-            <ChevronLeft className="h-3 w-3" />
-          </p>
+        {/* Mobile swipe cue — reserved slot keeps rail height stable; fades once the user scrolls */}
+        {products.length > 4 && (
+          <div className="min-h-[24px] overflow-hidden sm:hidden" aria-hidden>
+            <p className={`mb-2 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500 transition-opacity duration-300 ${scrolled ? 'opacity-0' : 'opacity-100'}`}>
+              اسحب للمزيد
+              <ChevronLeft className="h-3 w-3" />
+            </p>
+          </div>
         )}
 
         <div className="relative">
@@ -93,11 +95,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
               </div>
             ))}
           </div>
-          {/* Subtle left-edge fade hinting more content — mobile only */}
-          {!scrolled && products.length > 4 && (
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-9 bg-gradient-to-l from-[#faf7f2] via-[#faf7f2]/50 to-transparent sm:hidden" aria-hidden />
-          )}
-        </div>
+          </div>
       </div>
     </section>
   );

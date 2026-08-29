@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react';
 import { Check, Gift, Heart, Minus, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
@@ -16,6 +16,12 @@ interface AtelierProductDetailProps {
 
 const COLOR_HINTS = ['لون', 'اللون', 'color'];
 
+/**
+ * Mobile quick-view: a focused FLOATING card above the blurred storefront
+ * (90–92vw, max 420px) with an image-first hero, pointer swipe-down dismiss,
+ * horizontal image carousel, internal scroll and an accordion for
+ * description/details/reviews. Desktop keeps the original two-column layout.
+ */
 export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ product, onClose }) => {
   const { cart, wishlist, config, behavior } = useStorefrontCore();
   const formatPrice = usePriceFormatter();
@@ -35,13 +41,33 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const ctaRef = useRef<HTMLDivElement>(null);
   const [showSticky, setShowSticky] = useState(false);
 
+  // Mobile accordions — description / details / reviews (collapsed by default)
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const toggleSection = (key: string) => setOpenSection((prev) => (prev === key ? null : key));
+
+  // Mobile image carousel — pointer-driven horizontal swipe (LTR math, RTL-safe)
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [slideW, setSlideW] = useState(0);
+  const [imgDx, setImgDx] = useState(0);
+  const [imgSnapping, setImgSnapping] = useState(true);
+  useLayoutEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const measure = () => setSlideW(el.clientWidth);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, []);
 
-  // Description overflow detection
+  // Description overflow detection — desktop expandable description only
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) return;
     const el = descRef.current;
     if (!el) return;
     const check = () => {
@@ -60,10 +86,9 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const sheetRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const dragStartY = useRef(0);
-  const dragStartTime = useRef(0);
-  // Sticky bar observer — must track against actual sheet scroll viewport, not browser viewport
+  // Sticky bar observer — must track against actual sheet scroll viewport, not browser viewport (mobile only)
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 640) return;
     const el = ctaRef.current;
     const root = scrollContainerRef.current;
     if (!el || !root) return;
@@ -95,29 +120,74 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [handleClose]);
-  const onHandlePointerDown = (e: React.PointerEvent) => {
-    const sc = scrollContainerRef.current;
-    if (sc && sc.scrollTop > 6) return;
-    dragStartY.current = e.clientY;
-    dragStartTime.current = Date.now();
-    setIsDragging(true);
+
+  // Media gesture arbitration: horizontal drag = image carousel,
+  // downward drag = dismiss, upward drag = internal scroll (manual).
+  const gesture = useRef<{ mode: 'none' | 'pending' | 'image' | 'card' | 'scroll'; startX: number; startY: number; startT: number; startScroll: number }>({ mode: 'none', startX: 0, startY: 0, startT: 0, startScroll: 0 });
+  const onMediaPointerDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    if (typeof window !== 'undefined' && window.innerWidth >= 640) return;
+    gesture.current = { mode: 'pending', startX: e.clientX, startY: e.clientY, startT: Date.now(), startScroll: scrollContainerRef.current?.scrollTop ?? 0 };
+    setImgSnapping(false);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
-  const onHandlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    const delta = e.clientY - dragStartY.current;
-    if (delta < 0) setDragY(0);
-    else setDragY(delta);
+  const onMediaPointerMove = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    const g = gesture.current;
+    if (g.mode === 'none') return;
+    const dx = e.clientX - g.startX;
+    const dy = e.clientY - g.startY;
+    if (g.mode === 'pending') {
+      if (Math.abs(dx) < 7 && Math.abs(dy) < 7) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        g.mode = dy < 0 ? 'scroll' : 'card';
+        if (g.mode === 'card') setIsDragging(true);
+      } else {
+        g.mode = 'image';
+      }
+    }
+    if (g.mode === 'image') {
+      setImgDx(dx);
+    } else if (g.mode === 'card') {
+      setDragY(Math.max(0, dy));
+    } else if (g.mode === 'scroll') {
+      const sc = scrollContainerRef.current;
+      if (sc) sc.scrollTop = Math.max(0, g.startScroll - dy);
+    }
   };
-  const onHandlePointerUp = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    const delta = e.clientY - dragStartY.current;
-    const elapsed = Date.now() - dragStartTime.current;
-    const velocity = elapsed > 0 ? delta / elapsed : 0;
-    const h = sheetRef.current?.offsetHeight || 620;
+  const onMediaPointerUp = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    const g = gesture.current;
+    if (g.mode === 'none') return;
+    if (g.mode === 'pending') {
+      setImgSnapping(true);
+    } else if (g.mode === 'image') {
+      const W = slideW || carouselRef.current?.clientWidth || 320;
+      const dx = e.clientX - g.startX;
+      const elapsed = Date.now() - g.startT;
+      const velocity = elapsed > 0 ? dx / elapsed : 0;
+      setImgSnapping(true);
+      setImgDx(0);
+      if (dx < -W * 0.18 || velocity < -0.5) setActive((a) => Math.min(images.length - 1, a + 1));
+      else if (dx > W * 0.18 || velocity > 0.5) setActive((a) => Math.max(0, a - 1));
+    } else if (g.mode === 'card') {
+      setIsDragging(false);
+      const dy = e.clientY - g.startY;
+      const elapsed = Date.now() - g.startT;
+      const velocity = elapsed > 0 ? dy / elapsed : 0;
+      const h = sheetRef.current?.offsetHeight || 620;
+      setDragY(0);
+      if (dy > h * 0.27 || velocity > 0.62) requestClose();
+    }
+    gesture.current.mode = 'none';
+  };
+  const onMediaPointerCancel = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    if (gesture.current.mode === 'card') setIsDragging(false);
     setDragY(0);
-    if (delta > h * 0.27 || velocity > 0.62) requestClose();
+    setImgDx(0);
+    setImgSnapping(true);
+    gesture.current.mode = 'none';
   };
 
   if (!product) return null;
@@ -175,46 +245,73 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     return false;
   })();
 
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 640;
   const backdropOpacity = exiting ? 0 : Math.max(0, Math.min(1, 1 - dragY / 520));
-  const backdropBlur = exiting ? 0 : Math.max(0, 8 * (1 - dragY / 520));
-  const mainImageSrc = getOptimizedImageUrl(images[active] || '', 'medium');
+  const blurBase = isDesktop ? 8 : 12;
+  const backdropBlur = exiting ? 0 : Math.max(0, blurBase * (1 - dragY / 520));
+  const trackX = (imgSnapping ? 0 : imgDx) - active * slideW;
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4" dir="rtl" role="dialog" aria-modal="true">
+    <div dir="rtl" role="dialog" aria-modal="true" aria-label={product.name} className="fixed inset-0 z-[70] flex items-center justify-center sm:items-center sm:p-4">
+      {/* Backdrop — storefront stays visible, dimmed + blurred; tap closes */}
       <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] atelier-focus-backdrop" onClick={handleClose} style={{ backdropFilter: `blur(${backdropBlur}px)`, WebkitBackdropFilter: `blur(${backdropBlur}px)`, opacity: backdropOpacity, transition: `opacity ${ANIM_MS}ms ease-out` } as any} />
-      <style>{`@keyframes atelierFadeIn{from{opacity:0}to{opacity:1}}@keyframes atelierImageIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}@keyframes atelierSheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.atelier-focus-backdrop{animation:atelierFadeIn 300ms ease-out}.atelier-product-image{animation:atelierImageIn 300ms cubic-bezier(.2,.8,.2,1)}.atelier-product-media{animation:atelierImageIn 300ms cubic-bezier(.2,.8,.2,1) 40ms both}.atelier-info-sheet{animation:atelierSheetIn 320ms cubic-bezier(.22,.9,.3,1) 40ms both}@media(min-width:640px){.atelier-focus-backdrop{animation:atelierFadeIn 220ms ease-out}.atelier-product-image{animation:atelierImageIn 260ms cubic-bezier(.2,.8,.2,1)}.atelier-info-sheet{animation:atelierSheetIn 260ms cubic-bezier(.2,.8,.2,1) 60ms both}}@media(prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-product-media,.atelier-info-sheet{animation-duration:90ms!important;animation-delay:0ms!important}}@media(min-width:640px) and (prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-info-sheet{animation:none!important}}`}</style>
-      <div ref={sheetRef} className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[28px] bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl" style={{ transform: exiting ? 'translateY(110%)' : dragY ? `translateY(${dragY}px)` : undefined, transition: isDragging ? 'none' : `transform ${ANIM_MS}ms cubic-bezier(0.22,0.9,0.3,1)` } as any}>
-        {/* Close — top-left, ≥44px touch target, 16px from the edges */}
+
+      <style>{`@keyframes atelierFadeIn{from{opacity:0}to{opacity:1}}@keyframes atelierCardIn{from{opacity:0;transform:translateY(18px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes atelierSheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}@keyframes atelierImageIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}.atelier-focus-backdrop{animation:atelierFadeIn 300ms ease-out}.atelier-product-card{animation:atelierCardIn 300ms cubic-bezier(.22,.9,.3,1)}.atelier-product-image{animation:atelierImageIn 300ms cubic-bezier(.2,.8,.2,1)}.atelier-info-sheet{animation:atelierSheetIn 320ms cubic-bezier(.22,.9,.3,1) 40ms both}@media(max-width:639px){.atelier-info-sheet{animation:none!important}}@media(min-width:640px){.atelier-focus-backdrop{animation:atelierFadeIn 220ms ease-out}.atelier-product-image{animation:atelierImageIn 260ms cubic-bezier(.2,.8,.2,1)}.atelier-info-sheet{animation:atelierSheetIn 260ms cubic-bezier(.2,.8,.2,1) 60ms both}}@media(prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-card,.atelier-product-image,.atelier-info-sheet{animation-duration:90ms!important;animation-delay:0ms!important}}@media(min-width:640px) and (prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-info-sheet{animation:none!important}}`}</style>
+
+      {/* Mobile close — overlay-level top-left, floats above the card, stays accessible while the card scrolls */}
+      <button type="button" onClick={handleClose} aria-label="إغلاق"
+        className="absolute left-4 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-stone-700 shadow-[0_6px_18px_rgba(40,30,20,0.18)] ring-1 ring-black/5 transition hover:text-stone-900 active:scale-95 sm:hidden">
+        <X className="h-5 w-5" />
+      </button>
+
+      {/* Floating card — mobile 92vw / 420px, breathing room around it; desktop unchanged */}
+      <div ref={sheetRef} className="atelier-product-card relative flex max-h-[90dvh] w-[92vw] max-w-[420px] flex-col overflow-hidden rounded-[28px] bg-[#faf7f2] shadow-[0_24px_60px_-16px_rgba(40,30,20,0.32),0_10px_24px_-10px_rgba(40,30,20,0.16)] sm:max-h-[88vh] sm:w-full sm:max-w-4xl sm:rounded-2xl sm:shadow-2xl"
+        style={{ transform: exiting ? 'translateY(110%)' : dragY ? `translateY(${dragY}px)` : undefined, transition: isDragging ? 'none' : `transform ${ANIM_MS}ms cubic-bezier(0.22,0.9,0.3,1)` } as any}>
+
+        {/* Desktop close — unchanged in-sheet position */}
         <button type="button" onClick={handleClose} aria-label="إغلاق"
-          className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900 active:scale-95 sm:h-9 sm:w-9 sm:bg-white/90 sm:active:scale-100">
+          className="absolute left-4 top-4 z-10 hidden h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900 active:scale-95 sm:flex sm:h-9 sm:w-9 sm:bg-white/90 sm:active:scale-100">
           <X className="h-5 w-5" />
         </button>
 
-        {/* Mobile media header — drag handle + framed product image; pulling down dismisses the sheet */}
-        <div
-          onPointerDown={onHandlePointerDown}
-          onPointerMove={onHandlePointerMove}
-          onPointerUp={onHandlePointerUp}
-          onPointerCancel={onHandlePointerUp}
-          className="atelier-product-media shrink-0 touch-none select-none px-6 pb-1 pt-3 sm:hidden"
-        >
-          <div className="flex justify-center pb-3">
-            <span className="h-1 w-10 rounded-full bg-stone-300/80" aria-hidden />
+        {/* Mobile media hero — product image is the visual focus; horizontal swipe + dots */}
+        {images.length > 0 && (
+          <div className="shrink-0 sm:hidden">
+            <div
+              className="relative overflow-hidden aspect-[4/5] [background:radial-gradient(120%_90%_at_50%_18%,#fffdf9_0%,#f6efe7_58%,#efe4d6_100%)]"
+            >
+              <div
+                ref={carouselRef}
+                dir="ltr"
+                onPointerDown={onMediaPointerDown}
+                onPointerMove={onMediaPointerMove}
+                onPointerUp={onMediaPointerUp}
+                onPointerCancel={onMediaPointerCancel}
+                aria-label="صور المنتج"
+                className="h-full w-full touch-none select-none overflow-hidden"
+              >
+                <div className="flex h-full w-max will-change-transform" style={{ transform: `translateX(${trackX}px)`, transition: imgSnapping ? 'transform 240ms cubic-bezier(0.22,0.9,0.3,1)' : 'none' } as any}>
+                  {images.map((img, i) => (
+                    <img key={i} src={getOptimizedImageUrl(img || '', 'medium')} alt={`${product.name} - ${i + 1}`} decoding="async" loading={i === 0 ? 'eager' : 'lazy'}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(img || ''); }}
+                      className="h-full w-full shrink-0 object-contain p-4" style={{ width: slideW || undefined } as any} />
+                  ))}
+                </div>
+              </div>
+              {discount > 0 && <span className="pointer-events-none absolute top-3 right-3 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>}
+              {outOfStock && <span className="pointer-events-none absolute top-3 left-3 rounded-full border border-stone-300 bg-white/90 px-3 py-1 text-xs font-bold text-stone-600">نفذت</span>}
+            </div>
+            {images.length > 1 && (
+              <div className="flex items-center justify-center gap-1.5 py-3">
+                {images.map((_, i) => (
+                  <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-400/70'}`} />
+                ))}
+              </div>
+            )}
           </div>
-          <div className="relative mx-auto aspect-[4/5] w-full max-w-[76%] overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 shadow-[0_2px_12px_rgba(40,30,20,0.06)]">
-            <img
-              src={mainImageSrc}
-              alt={product.name}
-              decoding="async"
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(images[active]); }}
-              className="atelier-product-image h-full w-full object-contain p-2"
-            />
-            {discount > 0 && <span className="absolute top-2 right-2 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>}
-            {outOfStock && <span className="absolute top-2 left-2 rounded-full border border-stone-300 bg-white/90 px-3 py-1 text-xs font-bold text-stone-600">نفذت</span>}
-          </div>
-          {images.length > 1 && (
-            <div className="flex justify-center gap-2 pb-1 pt-3">{images.map((_, i) => <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-300'}`} />)}</div>
-          )}
-        </div>
+        )}
+
+        {/* Desktop close position note — the desktop X lives inside the sheet above (unchanged) */}
 
         <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:mt-0 sm:py-0">
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
@@ -324,29 +421,58 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 </div>
               )}
 
-              {/* Purchase controls — coherent composition, before description */}
-              <div ref={ctaRef} className="mt-4 flex items-center gap-2.5">
-                <div className="flex h-[42px] w-[88px] shrink-0 items-center justify-between rounded-[12px] border border-stone-300 bg-white px-1 shadow-sm">
-                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-3.5 w-3.5" /></button>
-                  <span className="w-7 text-center text-[14px] font-bold text-stone-800" aria-live="polite">{qty}</span>
-                  <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-3.5 w-3.5" /></button>
+              {/* Purchase controls — desktop inline row unchanged; mobile stacked ≥44px targets */}
+              <div className="mt-4">
+                {/* Mobile purchase block */}
+                <div ref={ctaRef} className="flex flex-col gap-2.5 sm:hidden">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-[50px] w-[120px] shrink-0 items-center justify-between rounded-[14px] border border-stone-300 bg-white px-0.5 shadow-sm">
+                      <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-11 w-11 items-center justify-center rounded-xl text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-4 w-4" /></button>
+                      <span className="w-7 text-center text-[14px] font-bold text-stone-800" aria-live="polite">{qty}</span>
+                      <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-11 w-11 items-center justify-center rounded-xl text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-4 w-4" /></button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => wishlist.toggle(product.id)}
+                      aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border text-stone-500 shadow-sm transition ${wished ? 'border-[#9d7463] bg-[#9d7463] !text-white shadow' : 'border-stone-300 bg-white hover:border-[#9d7463] hover:text-[#9d7463]'}`}
+                    >
+                      <Heart className="h-[18px] w-[18px]" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.8} />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAdd}
+                    disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
+                    className="flex h-[50px] w-full items-center justify-center rounded-[14px] bg-stone-900 px-4 text-[14px] font-bold text-white shadow-sm transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
+                  >
+                    {outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضف إلى السلة'}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAdd}
-                  disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
-                  className="flex h-[46px] flex-1 items-center justify-center rounded-[12px] bg-stone-900 px-4 text-[14px] font-bold text-white shadow-sm transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
-                >
-                  {outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضف إلى السلة'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => wishlist.toggle(product.id)}
-                  aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
-                  className={`flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[12px] border text-stone-500 shadow-sm transition ${wished ? 'border-[#9d7463] bg-[#9d7463] !text-white shadow' : 'border-stone-300 bg-white hover:border-[#9d7463] hover:text-[#9d7463]'}`}
-                >
-                  <Heart className="h-[18px] w-[18px]" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.8} />
-                </button>
+                {/* Desktop purchase block — unchanged */}
+                <div className="hidden sm:flex sm:items-center sm:gap-2.5">
+                  <div className="flex h-[42px] w-[88px] shrink-0 items-center justify-between rounded-[12px] border border-stone-300 bg-white px-1 shadow-sm">
+                    <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-3.5 w-3.5" /></button>
+                    <span className="w-7 text-center text-[14px] font-bold text-stone-800" aria-live="polite">{qty}</span>
+                    <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-3.5 w-3.5" /></button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAdd}
+                    disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
+                    className="flex h-[46px] flex-1 items-center justify-center rounded-[12px] bg-stone-900 px-4 text-[14px] font-bold text-white shadow-sm transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
+                  >
+                    {outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضف إلى السلة'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => wishlist.toggle(product.id)}
+                    aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
+                    className={`flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[12px] border text-stone-500 shadow-sm transition ${wished ? 'border-[#9d7463] bg-[#9d7463] !text-white shadow' : 'border-stone-300 bg-white hover:border-[#9d7463] hover:text-[#9d7463]'}`}
+                  >
+                    <Heart className="h-[18px] w-[18px]" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.8} />
+                  </button>
+                </div>
               </div>
 
               {adding && (
@@ -355,54 +481,90 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 </p>
               )}
 
-              {/* Description — editorial polish */}
-              {product.description && (
-                <div className="mt-5 border-t border-stone-200 pt-5">
-                  <div className="flex items-center justify-end gap-2.5">
-                    <h3 className="text-right text-[13px] font-semibold tracking-wide text-stone-900 sm:text-[14px]">وصف المنتج</h3>
-                    <span className="h-px w-[26px] bg-[#b08d57] shrink-0" aria-hidden />
+              {/* Mobile — service notes then collapsible sections */}
+              <div className="mt-5 sm:hidden">
+                {hasCOD && (
+                  <div className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-center text-xs font-medium text-stone-600 ring-1 ring-stone-200">
+                    <span className="h-2 w-2 rounded-full bg-[#9d7463]" /> الدفع عند الاستلام متاح
                   </div>
-                  <div
-                    ref={descRef}
-                    id="atelier-desc"
-                    dir="auto"
-                    className={`mt-3 break-words text-[14px] leading-[1.9] text-stone-600 [overflow-wrap:anywhere] ${!descExpanded ? 'line-clamp-4' : ''}`}
-                    dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
-                  />
-                  {descOverflows && (
-                    <button
-                      type="button"
-                      onClick={() => setDescExpanded((v) => !v)}
-                      aria-expanded={descExpanded}
-                      aria-controls="atelier-desc"
-                      className="mt-2.5 inline-flex items-center gap-1 text-[13px] font-medium text-[#9d7463] hover:text-[#85604f]"
-                    >
-                      {descExpanded ? (
-                        <>عرض أقل <ChevronUp className="h-3.5 w-3.5" /></>
-                      ) : (
-                        <>عرض المزيد <ChevronDown className="h-3.5 w-3.5" /></>
-                      )}
-                    </button>
-                  )}
+                )}
+                {waPhone && (
+                  <a href={askUrl} target="_blank" rel="noreferrer" className="mt-3 block text-center text-[13px] font-medium text-[#128C4B] hover:underline">
+                    لديك استفسار؟ تواصل عبر واتساب
+                  </a>
+                )}
+              </div>
+              <div className="mt-5 border-t border-stone-200 pt-2 sm:hidden">
+                {product.description && (
+                  <MobileAccordion title="وصف المنتج" open={openSection === 'description'} onToggle={() => toggleSection('description')}>
+                    <div dir="auto" className="break-words text-[13.5px] leading-[1.9] text-stone-600 [overflow-wrap:anywhere]" dangerouslySetInnerHTML={createSafeHtml(product.description || '')} />
+                  </MobileAccordion>
+                )}
+                {(product.customFields || []).length > 0 && (
+                  <MobileAccordion title="التفاصيل" open={openSection === 'details'} onToggle={() => toggleSection('details')}>
+                    <dl className="divide-y divide-stone-100">
+                      {(product.customFields || []).map((f: any, i: number) => (
+                        <div key={i} className="flex items-start justify-between gap-4 py-2">
+                          <dt className="shrink-0 text-[12px] font-medium text-stone-500">{String(f.name ?? '')}</dt>
+                          <dd dir="auto" className="text-right text-[12.5px] font-medium text-stone-800">{String(f.value ?? '')}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </MobileAccordion>
+                )}
+                <MobileAccordion title="التقييمات" open={openSection === 'reviews'} onToggle={() => toggleSection('reviews')}>
+                  <ProductReviews productId={product.id} />
+                </MobileAccordion>
+              </div>
+
+              {/* Desktop — description + service notes + reviews unchanged */}
+              <div className="hidden sm:block">
+                {product.description && (
+                  <div className="mt-5 border-t border-stone-200 pt-5">
+                    <div className="flex items-center justify-end gap-2.5">
+                      <h3 className="text-right text-[13px] font-semibold tracking-wide text-stone-900 sm:text-[14px]">وصف المنتج</h3>
+                      <span className="h-px w-[26px] bg-[#b08d57] shrink-0" aria-hidden />
+                    </div>
+                    <div
+                      ref={descRef}
+                      id="atelier-desc"
+                      dir="auto"
+                      className={`mt-3 break-words text-[14px] leading-[1.9] text-stone-600 [overflow-wrap:anywhere] ${!descExpanded ? 'line-clamp-4' : ''}`}
+                      dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
+                    />
+                    {descOverflows && (
+                      <button
+                        type="button"
+                        onClick={() => setDescExpanded((v) => !v)}
+                        aria-expanded={descExpanded}
+                        aria-controls="atelier-desc"
+                        className="mt-2.5 inline-flex items-center gap-1 text-[13px] font-medium text-[#9d7463] hover:text-[#85604f]"
+                      >
+                        {descExpanded ? (
+                          <>عرض أقل <ChevronUp className="h-3.5 w-3.5" /></>
+                        ) : (
+                          <>عرض المزيد <ChevronDown className="h-3.5 w-3.5" /></>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {hasCOD && (
+                  <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-center text-xs font-medium text-stone-600 ring-1 ring-stone-200">
+                    <span className="h-2 w-2 rounded-full bg-[#9d7463]" /> الدفع عند الاستلام متاح
+                  </div>
+                )}
+
+                {waPhone && (
+                  <a href={askUrl} target="_blank" rel="noreferrer" className="mt-4 block text-center text-[13px] font-medium text-[#128C4B] hover:underline">
+                    لديك استفسار؟ تواصل عبر واتساب
+                  </a>
+                )}
+
+                <div className="mt-7 border-t border-stone-200 pt-5">
+                  <ProductReviews productId={product.id} />
                 </div>
-              )}
-
-              {/* Truthful benefits — only show COD if actually enabled, otherwise hide hardcoded claims */}
-              {hasCOD && (
-                <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-center text-xs font-medium text-stone-600 ring-1 ring-stone-200">
-                  <span className="h-2 w-2 rounded-full bg-[#9d7463]" /> الدفع عند الاستلام متاح
-                </div>
-              )}
-
-              {waPhone && (
-                <a href={askUrl} target="_blank" rel="noreferrer" className="mt-4 block text-center text-[13px] font-medium text-[#128C4B] hover:underline">
-                  لديك استفسار؟ تواصل عبر واتساب
-                </a>
-              )}
-
-              {/* Reviews */}
-              <div className="mt-7 border-t border-stone-200 pt-5">
-                <ProductReviews productId={product.id} />
               </div>
             </div>
           </div>
@@ -429,6 +591,26 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     </div>
   );
 };
+
+const MobileAccordion: React.FC<{ title: string; open: boolean; onToggle: () => void; children: React.ReactNode }> = ({ title, open, onToggle, children }) => (
+  <div className="border-b border-stone-200/70 last:border-b-0">
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={`atelier-acc-${title}`}
+      className="flex min-h-[48px] w-full items-center justify-between gap-2 py-3 text-right transition hover:text-[#9d7463]"
+    >
+      <span className="text-[13px] font-semibold text-stone-900">{title}</span>
+      <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+    </button>
+    {open && (
+      <div id={`atelier-acc-${title}`} className="pb-4">
+        {children}
+      </div>
+    )}
+  </div>
+);
 
 function colorDot(val: string): string {
   const map: Record<string, string> = {

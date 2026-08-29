@@ -61,11 +61,13 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
         <div className={`mb-3 sm:mb-7 text-center px-4 sm:px-0 transition-all duration-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'} motion-reduce:transition-none`}>
           <span className="mx-auto mb-2.5 block h-px w-10 bg-[#b08d57]" />
           <h2 className="font-serif text-[19px] font-semibold tracking-wide text-stone-900 sm:font-sans sm:text-[22px] sm:font-medium sm:tracking-[0.02em] sm:text-stone-800 sm:[font-family:var(--font-arabic)]">{catHeading}</h2>
-          {!hasScrolled && categories.length > 3 && (
-            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500 sm:font-sans sm:font-normal sm:[font-family:var(--font-arabic)]">
-              اسحب للمزيد
-              <ChevronLeft className="h-3 w-3" />
-            </p>
+          {categories.length > 3 && (
+            <div className="min-h-[22px] sm:min-h-0" aria-hidden>
+              <p className={`mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500 transition-opacity duration-300 sm:font-sans sm:font-normal sm:[font-family:var(--font-arabic)] ${hasScrolled ? 'opacity-0' : 'opacity-100'}`}>
+                اسحب للمزيد
+                <ChevronLeft className="h-3 w-3" />
+              </p>
+            </div>
           )}
         </div>
         <div className="relative">
@@ -95,10 +97,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
             ))}
             </div>
           </div>
-          {!hasScrolled && categories.length > 3 && (
-            <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-8 bg-gradient-to-l from-[#faf7f2] via-[#faf7f2]/50 to-transparent sm:hidden max-[430px]:block" aria-hidden />
-          )}
-        </div>
+          </div>
       </div>
     </section>
   );
