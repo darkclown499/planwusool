@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Gift, Heart, Minus, Plus, RefreshCcw, ShieldCheck, Truck, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { Check, Gift, Heart, Minus, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
@@ -16,14 +16,8 @@ interface AtelierProductDetailProps {
 
 const COLOR_HINTS = ['لون', 'اللون', 'color'];
 
-/**
- * The Atelier product detail overlay — an editorial spread: portrait gallery
- * on one side, the story (name serif large, price with saving badge,
- * breathing-room variant selectors, quantity) on the other, closed by a
- * quiet trust row and a WhatsApp "اسألي عن القطعة" line.
- */
 export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ product, onClose }) => {
-  const { cart, ui, wishlist, config } = useStorefrontCore();
+  const { cart, wishlist, config, behavior } = useStorefrontCore();
   const formatPrice = usePriceFormatter();
 
   const images: string[] = useMemo(() => {
@@ -35,12 +29,40 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [descOverflows, setDescOverflows] = useState(false);
+  const descRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const [showSticky, setShowSticky] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  // Description overflow detection
+  useEffect(() => {
+    const el = descRef.current;
+    if (!el) return;
+    const check = () => {
+      if (!descExpanded) {
+        setDescOverflows(el.scrollHeight > el.clientHeight + 4);
+      }
     };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    window.addEventListener('resize', check);
+    return () => { ro.disconnect(); window.removeEventListener('resize', check); };
+  }, [product?.description, descExpanded]);
+
+  // Sticky bar observer
+  useEffect(() => {
+    const el = ctaRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   if (!product) return null;
@@ -52,7 +74,6 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
   const missingGroups = (product.variants || []).filter((g: any) => !selection[g.name]);
 
-  // Variant-aware price: if all groups selected, resolve variant combination price
   const selectedCombo = (() => {
     if (!variable || missingGroups.length > 0) return null;
     const combos: any[] = product.variantCombinations || product.variant_combinations || [];
@@ -74,206 +95,245 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   })();
 
   const handleAdd = async () => {
-    if (outOfStock || adding) return;
+    if (outOfStock || isSelectedOOS || adding) return;
+    if (variable && missingGroups.length > 0) return;
     setAdding(true);
     try {
-      await cart.addToCart({
-        ...product,
-        quantity: qty,
-        selectedVariants: variable ? selection : undefined,
-      });
+      await cart.addToCart({ ...product, quantity: qty, selectedVariants: variable ? selection : undefined });
       onClose();
-      ui.setShowCart(true);
-    } finally {
-      setAdding(false);
-    }
+    } finally { setAdding(false); }
   };
 
   const waPhone = String((config as any)?.socialMedia?.whatsapp || '').replace(/[^0-9]/g, '');
-  const askUrl = createWhatsAppUrl(
-    waPhone,
-    `مرحباً، لدي استفسار عن القطعة: ${product.name}${variable ? ` (${Object.values(selection).join(' / ')})` : ''}`
-  );
+  const askUrl = createWhatsAppUrl(waPhone, `مرحباً، لدي استفسار عن المنتج: ${product.name}${variable ? ` (${Object.values(selection).join(' / ')})` : ''}`);
+
+  // Audit truthful service claims: hide unsupported hardcoded benefits
+  // COD only if store behavior enables COD (checked via behavior config if available)
+  const hasCOD = (() => {
+    // Try to detect COD from behavior or store config; if unavailable, hide rather than lie
+    const b: any = behavior || {};
+    // common keys: cod_enabled, enable_cod, payment_cod
+    if (typeof b.cod_enabled === 'boolean') return b.cod_enabled;
+    if (typeof b.enable_cod === 'boolean') return b.enable_cod;
+    if (typeof b.paymentMethods === 'object' && b.paymentMethods?.cod) return true;
+    // no reliable data -> hide
+    return false;
+  })();
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6" dir="rtl" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4" dir="rtl" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-t-2xl bg-[#faf7f2] shadow-2xl sm:rounded-xl pb-[env(safe-area-inset-bottom)]">
+      <div className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[22px] bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl">
+        {/* Close */}
         <button type="button" onClick={onClose} aria-label="إغلاق"
-          className="absolute left-4 top-4 z-10 rounded-full bg-white/90 p-2 text-stone-600 shadow transition hover:text-stone-900">
+          className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900">
           <X className="h-5 w-5" />
         </button>
 
-        <div className="grid gap-8 p-5 sm:p-8 md:grid-cols-2 md:gap-10">
-          {/* Gallery */}
-          <div>
-            <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-stone-100 ring-1 ring-stone-200/80">
-              <img src={getImageUrl(images[active])} alt={product.name} className="h-full w-full object-cover" />
-              {discount > 0 && (
-                <span className="absolute top-4 right-4 rounded-sm bg-[#9d7463] px-2.5 py-1.5 text-xs font-bold text-white shadow">-{discount}%</span>
-              )}
-              {outOfStock && (
-                <span className="absolute top-4 left-4 border border-stone-400 bg-white/85 px-3 py-1 text-xs font-bold tracking-widest text-stone-500">نفذت</span>
+        <div className="flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
+          <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
+            {/* Gallery — max 60vh on mobile, object-contain */}
+            <div className="px-4 pt-4 sm:px-0 sm:pt-0">
+              <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/60 max-h-[58vh] sm:max-h-none aspect-[4/5] sm:aspect-[3/4]">
+                <img src={getImageUrl(images[active])} alt={product.name} className="h-full w-full object-contain p-2 sm:object-cover sm:p-0" />
+                {discount > 0 && (
+                  <span className="absolute top-3 right-3 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>
+                )}
+                {outOfStock && (
+                  <span className="absolute top-3 left-3 rounded-full border border-stone-300 bg-white/90 px-3 py-1 text-xs font-bold text-stone-600">نفذت</span>
+                )}
+              </div>
+              {images.length > 1 && (
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {images.map((img, i) => (
+                    <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`}
+                      className={`h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-white ring-1 transition ${i === active ? 'ring-2 ring-[#9d7463]' : 'ring-stone-200 opacity-70 hover:opacity-100'}`}>
+                      <img src={getImageUrl(img)} alt="" className="h-full w-full object-contain p-1 sm:object-cover sm:p-0" />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-            {images.length > 1 && (
-              <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {images.map((img, i) => (
-                  <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`}
-                    className={`h-20 w-16 shrink-0 overflow-hidden rounded-md ring-1 transition ${i === active ? 'ring-2 ring-[#9d7463]' : 'ring-stone-200 opacity-70 hover:opacity-100'}`}>
-                    <img src={getImageUrl(img)} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
+
+            {/* Story — RTL right-aligned, purchase before description */}
+            <div className="flex flex-col px-4 pb-6 pt-4 sm:px-0 sm:py-0">
+              <h1 className="text-right font-serif text-[22px] font-bold leading-snug text-stone-900 sm:text-2xl" dir="auto">{product.name}</h1>
+
+              <div className="mt-3 flex flex-wrap items-baseline justify-start gap-2 text-right">
+                <span className="text-[22px] font-bold leading-none text-stone-900">{formatPrice(displayPrice)}</span>
+                {discount > 0 && !!product.originalPrice && !selectedCombo && (
+                  <>
+                    <span className="text-sm text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
+                    <span className="inline-flex w-fit rounded-full bg-[#f3ece4] px-2 py-1 text-[11px] font-bold leading-none text-[#9d7463]">-{discount}%</span>
+                  </>
+                )}
+                {isSelectedOOS && <span className="rounded-full border border-red-200 bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">غير متوفر</span>}
               </div>
-            )}
-          </div>
 
-          {/* Story */}
-          <div className="flex flex-col">
-            <h1 className="font-serif text-2xl font-bold leading-snug text-stone-900 sm:text-3xl">{product.name}</h1>
-
-            <div className="mt-4 flex items-baseline gap-3">
-              <span className="text-2xl font-bold text-stone-900">{formatPrice(displayPrice)}</span>
-              {discount > 0 && !!product.originalPrice && !selectedCombo && (
-                <>
-                  <span className="text-base text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
-                  <span className="rounded-sm bg-[#f3ece4] px-2 py-0.5 text-xs font-bold text-[#9d7463]">
-                    وفري {formatPrice(Number(product.originalPrice) - Number(product.price))}
+              {/* Stock subtle */}
+              {outOfStock ? (
+                <p className="mt-2 text-right text-sm font-semibold text-red-600">نفذت الكمية</p>
+              ) : !!remaining && (
+                <p className="mt-2 text-right text-xs font-medium text-amber-700">باقي {remaining} فقط</p>
+              )}
+              {(() => {
+                const loyalty = getLoyaltySettingsFromPage();
+                if (!loyalty || !loyalty.is_enabled) return null;
+                const pts = calcEarnedPoints(Number(displayPrice) || 0, loyalty);
+                return pts > 0 ? (
+                  <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
+                    <Gift className="h-3.5 w-3.5" /> كسب {pts} نقطة
                   </span>
-                </>
+                ) : null;
+              })()}
+
+              {/* Variants */}
+              {(product.variants || []).length > 0 && (
+                <div className="mt-5 space-y-4">
+                  {(product.variants || []).map((group: any) => {
+                    const isColor = COLOR_HINTS.some((h) => group.name.includes(h));
+                    const combos: any[] = product.variantCombinations || product.variant_combinations || [];
+                    return (
+                      <div key={group.name}>
+                        <p className="mb-2 text-right text-xs font-bold tracking-wide text-stone-500">
+                          {group.name}: <span className="font-semibold text-stone-800">{selection[group.name] || `اختر ${group.name}`}</span>
+                        </p>
+                        <div className="flex flex-wrap justify-start gap-2">
+                          {(group.values || group.options || []).map((val: string) => {
+                            const isActive = selection[group.name] === val;
+                            const isUnavailable = (() => {
+                              if (!combos.length || product.allowBackorder) return false;
+                              const testSel = { ...selection, [group.name]: val };
+                              const hasCompleteCombo = combos.some((c: any) => {
+                                const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
+                                return Object.values(testSel).every((sv) => vals.includes(String(sv).trim()));
+                              });
+                              if (!hasCompleteCombo && Object.keys(testSel).length < (product.variants || []).length) return false;
+                              const match = combos.find((c: any) => {
+                                const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
+                                return vals.includes(String(val).trim()) && Object.entries(testSel).every(([k, vv]) => vals.includes(String(vv).trim()));
+                              });
+                              if (!match) return false;
+                              const st = match.stock !== undefined ? Number(match.stock) : NaN;
+                              return Number.isFinite(st) && st <= 0;
+                            })();
+                            return (
+                              <button key={val} type="button" title={val} disabled={isUnavailable}
+                                onClick={() => !isUnavailable && setSelection((s) => ({ ...s, [group.name]: val }))}
+                                className={`flex h-9 min-w-9 items-center justify-center rounded-full border px-3 text-[13px] font-medium transition-all ${
+                                  isUnavailable ? 'cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400 line-through' : isActive ? 'border-[#9d7463] bg-[#9d7463] text-white shadow' : 'border-stone-300 bg-white text-stone-700 hover:border-[#9d7463]'
+                                }`}>
+                                {isColor ? (
+                                  <span className={`block h-5 w-5 rounded-full border ${isActive ? 'ring-2 ring-white' : 'border-black/10'}`} style={{ background: colorDot(val) }} />
+                                ) : val}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-              {isSelectedOOS && <span className="rounded-sm border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-bold text-red-600">غير متوفر</span>}
-            </div>
 
-            {!!remaining && !outOfStock && (
-              <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#fdf6ec] px-3 py-1.5 text-xs font-semibold text-[#a16207] ring-1 ring-[#e7d8c9]">
-                ⏳ آخر {remaining} قطع في المخزون
-              </p>
-            )}
-            {(() => {
-              const loyalty = getLoyaltySettingsFromPage();
-              if (!loyalty || !loyalty.is_enabled) return null;
-              const pts = calcEarnedPoints(Number(displayPrice) || 0, loyalty);
-              return pts > 0 ? (
-                <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
-                  <Gift className="h-3.5 w-3.5" /> كسب {pts} نقطة
-                </span>
-              ) : null;
-            })()}
-
-            {product.description && (
-              <div
-                className="mt-5 break-words text-sm leading-relaxed text-stone-600 [overflow-wrap:anywhere] line-clamp-6 whitespace-pre-line"
-                dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
-              />
-            )}
-
-            {/* Variants */}
-            {(product.variants || []).map((group: any) => {
-              const isColor = COLOR_HINTS.some((h) => group.name.includes(h));
-              const combos: any[] = product.variantCombinations || product.variant_combinations || [];
-              return (
-                <div key={group.name} className="mt-5">
-                  <p className="mb-2 text-xs font-bold tracking-wide text-stone-500">
-                    {group.name}: <span className="font-semibold text-stone-800">{selection[group.name] || `اختاري ${group.name}`}</span>
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {(group.values || group.options || []).map((val: string) => {
-                      const isActive = selection[group.name] === val;
-                      // Disable unavailable combinations (stock 0 without backorder)
-                      const isUnavailable = (() => {
-                        if (!combos.length || product.allowBackorder) return false;
-                        const testSel = { ...selection, [group.name]: val };
-                        const hasCompleteCombo = combos.some((c: any) => {
-                          const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
-                          return Object.values(testSel).every((sv) => vals.includes(String(sv).trim()));
-                        });
-                        if (!hasCompleteCombo && Object.keys(testSel).length < (product.variants || []).length) return false;
-                        const match = combos.find((c: any) => {
-                          const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
-                          return String(val).trim() === vals.find((vv) => vals.includes(String(val).trim())) && Object.entries(testSel).every(([k,vv]) => {
-                            // only check values that are selected; partial match requires at least one combo containing val with finite stock
-                            return vals.includes(String(vv).trim());
-                          });
-                        });
-                        if (!match) return false;
-                        const st = match.stock !== undefined ? Number(match.stock) : NaN;
-                        return Number.isFinite(st) && st <= 0;
-                      })();
-                      return (
-                        <button key={val} type="button" title={val} disabled={isUnavailable}
-                          onClick={() => !isUnavailable && setSelection((s) => ({ ...s, [group.name]: val }))}
-                          className={`flex h-9 min-w-9 items-center justify-center rounded-full border px-3 text-[13px] font-medium transition-all ${
-                            isUnavailable ? 'cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400 line-through' : isActive ? 'border-[#9d7463] bg-[#9d7463] text-white shadow' : 'border-stone-300 bg-white text-stone-700 hover:border-[#9d7463]'
-                          }`}>
-                          {isColor ? (
-                            <span className={`block h-5 w-5 rounded-full border ${isActive ? 'ring-2 ring-white' : 'border-black/10'}`} style={{ background: colorDot(val) }} />
-                          ) : val}
-                        </button>
-                      );
-                    })}
-                  </div>
+              {/* Purchase controls — before description */}
+              <div ref={ctaRef} className="mt-6 flex items-center gap-2">
+                <div className="flex items-center rounded-full border border-stone-300 bg-white">
+                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-10 w-10 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-4 w-4" /></button>
+                  <span className="w-8 text-center text-sm font-bold" aria-live="polite">{qty}</span>
+                  <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-10 w-10 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-4 w-4" /></button>
                 </div>
-              );
-            })}
-
-            {/* Quantity + Add */}
-            <div className="mt-7 flex items-center gap-3">
-              <div className="flex items-center rounded-full border border-stone-300 bg-white">
-                <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="p-2.5 text-stone-500 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-4 w-4" /></button>
-                <span className="w-10 text-center font-bold">{qty}</span>
-                <button type="button" onClick={() => setQty((q) => q + 1)} className="p-2.5 text-stone-500 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-4 w-4" /></button>
+                <button
+                  type="button"
+                  onClick={handleAdd}
+                  disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
+                  className="flex h-11 flex-1 items-center justify-center rounded-full bg-stone-900 px-4 text-sm font-bold text-white shadow transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
+                >
+                  {outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضف إلى السلة'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => wishlist.toggle(product.id)}
+                  aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${wished ? 'border-[#9d7463] bg-[#9d7463] text-white' : 'border-stone-300 bg-white text-stone-500 hover:border-[#9d7463] hover:text-[#9d7463]'}`}
+                >
+                  <Heart className="h-5 w-5" fill={wished ? 'currentColor' : 'none'} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleAdd}
-                disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
-                className="flex-1 rounded-full bg-stone-900 py-3.5 text-sm font-bold tracking-wide text-white shadow-lg transition hover:bg-[#9d7463] disabled:cursor-not-allowed disabled:bg-stone-300"
-              >
-                {outOfStock || isSelectedOOS ? 'غير متوفرة حالياً' : variable && missingGroups.length > 0 ? `اختاري ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضيفي للسلّة'}
-              </button>
-              <button
-                type="button"
-                onClick={() => wishlist.toggle(product.id)}
-                aria-label="المفضلة"
-                className={`rounded-full border p-3 transition ${wished ? 'border-[#9d7463] bg-[#9d7463] text-white' : 'border-stone-300 bg-white text-stone-500 hover:border-[#9d7463] hover:text-[#9d7463]'}`}
-              >
-                <Heart className="h-5 w-5" fill={wished ? 'currentColor' : 'none'} />
-              </button>
-            </div>
 
-            {adding && (
-              <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                <Check className="h-3.5 w-3.5" /> أُضيفت للسلّة
-              </p>
-            )}
+              {adding && (
+                <p className="mt-2 flex items-center gap-1.5 text-right text-xs font-semibold text-emerald-600">
+                  <Check className="h-3.5 w-3.5" /> أُضيف إلى السلة
+                </p>
+              )}
 
-            {/* Trust */}
-            <div className="mt-7 grid grid-cols-3 gap-2 border-t border-stone-200 pt-5 text-center">
-              {[
-                { icon: Truck, label: 'توصيل سريع' },
-                { icon: ShieldCheck, label: 'دفع عند الاستلام' },
-                { icon: RefreshCcw, label: 'استبدال سهل' },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex flex-col items-center gap-1.5">
-                  <Icon className="h-4.5 w-4.5 text-[#b08d57]" strokeWidth={1.6} />
-                  <span className="text-[11px] text-stone-500">{label}</span>
+              {/* Description — after purchase */}
+              {product.description && (
+                <div className="mt-7 border-t border-stone-200 pt-5">
+                  <h3 className="text-right text-sm font-bold text-stone-900">وصف المنتج</h3>
+                  <div className="mt-1 h-px w-8 bg-[#b08d57] ms-auto" />
+                  <div
+                    ref={descRef}
+                    dir="auto"
+                    className={`mt-3 break-words text-[14px] leading-[1.85] text-stone-600 [overflow-wrap:anywhere] ${!descExpanded ? 'line-clamp-4' : ''}`}
+                    dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
+                  />
+                  {descOverflows && (
+                    <button
+                      type="button"
+                      onClick={() => setDescExpanded((v) => !v)}
+                      aria-expanded={descExpanded}
+                      aria-controls="atelier-desc"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#9d7463] hover:underline"
+                    >
+                      {descExpanded ? (
+                        <>عرض أقل <ChevronUp className="h-3.5 w-3.5" /></>
+                      ) : (
+                        <>عرض المزيد <ChevronDown className="h-3.5 w-3.5" /></>
+                      )}
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
+              )}
 
-            {waPhone && (
-              <a href={askUrl} target="_blank" rel="noreferrer"
-                className="mt-5 text-center text-[13px] font-semibold text-[#128C4B] underline-offset-4 hover:underline">
-                لستِ متأكدة من المقاس؟ اسألينا عبر واتساب
-              </a>
-            )}
-            {/* Reviews — REUSE existing ProductReviews (approved only, is_verified_purchase, admin_reply, loyalty bonus idempotent) */}
-            <div className="mt-8 border-t border-stone-200 pt-6">
-              <ProductReviews productId={product.id} />
+              {/* Truthful benefits — only show COD if actually enabled, otherwise hide hardcoded claims */}
+              {hasCOD && (
+                <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-center text-xs font-medium text-stone-600 ring-1 ring-stone-200">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> الدفع عند الاستلام متاح
+                </div>
+              )}
+
+              {waPhone && (
+                <a href={askUrl} target="_blank" rel="noreferrer" className="mt-4 block text-center text-[13px] font-medium text-[#128C4B] hover:underline">
+                  لديك استفسار؟ تواصل عبر واتساب
+                </a>
+              )}
+
+              {/* Reviews */}
+              <div className="mt-7 border-t border-stone-200 pt-5">
+                <ProductReviews productId={product.id} />
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Sticky purchase bar — mobile only, safe-area */}
+        {showSticky && (
+          <div className="flex shrink-0 items-center gap-3 border-t border-stone-200 bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgba(0,0,0,0.06)] sm:hidden">
+            <div className="min-w-0 flex-1 text-right">
+              <p className="truncate text-xs text-stone-500" dir="auto">{product.name}</p>
+              <p className="text-sm font-bold text-stone-900">{formatPrice(displayPrice)}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
+              className="shrink-0 rounded-full bg-stone-900 px-6 py-3 text-sm font-bold text-white shadow hover:bg-[#9d7463] disabled:bg-stone-300"
+            >
+              أضف إلى السلة
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
