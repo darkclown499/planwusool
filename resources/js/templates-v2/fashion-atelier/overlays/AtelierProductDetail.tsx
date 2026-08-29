@@ -56,11 +56,13 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     return () => { ro.disconnect(); window.removeEventListener('resize', check); };
   }, [product?.description, descExpanded]);
 
-  // Sticky bar observer
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // Sticky bar observer — must track against actual sheet scroll viewport, not browser viewport
   useEffect(() => {
     const el = ctaRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { threshold: 0.1 });
+    const root = scrollContainerRef.current;
+    if (!el || !root) return;
+    const obs = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { root, threshold: 0.05 });
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
@@ -130,11 +132,11 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
           <X className="h-5 w-5" />
         </button>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
-            {/* Gallery — max 60vh on mobile, object-contain */}
+            {/* Gallery — mobile capped 48-52vh, proportion tuned for perfume without white gaps */}
             <div className="px-4 pt-4 sm:px-0 sm:pt-0">
-              <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/60 max-h-[58vh] sm:max-h-none aspect-[4/5] sm:aspect-[3/4]">
+              <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/60 max-h-[clamp(320px,52vh,520px)] sm:max-h-none aspect-[4/5] sm:aspect-[3/4] max-sm:min-h-[320px]">
                 <img src={getImageUrl(images[active])} alt={product.name} className="h-full w-full object-contain p-2 sm:object-cover sm:p-0" />
                 {discount > 0 && (
                   <span className="absolute top-3 right-3 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>
@@ -237,17 +239,17 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
               )}
 
               {/* Purchase controls — before description */}
-              <div ref={ctaRef} className="mt-6 flex items-center gap-2">
-                <div className="flex items-center rounded-full border border-stone-300 bg-white">
-                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-10 w-10 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-4 w-4" /></button>
-                  <span className="w-8 text-center text-sm font-bold" aria-live="polite">{qty}</span>
-                  <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-10 w-10 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-4 w-4" /></button>
+              <div ref={ctaRef} className="mt-5 flex items-center gap-2">
+                <div className="flex items-center rounded-xl border border-stone-300 bg-white">
+                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-9 w-9 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-3.5 w-3.5" /></button>
+                  <span className="w-7 text-center text-sm font-bold" aria-live="polite">{qty}</span>
+                  <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-9 w-9 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-3.5 w-3.5" /></button>
                 </div>
                 <button
                   type="button"
                   onClick={handleAdd}
                   disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
-                  className="flex h-11 flex-1 items-center justify-center rounded-full bg-stone-900 px-4 text-sm font-bold text-white shadow transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
+                  className="flex h-[46px] flex-[1.35] items-center justify-center rounded-xl bg-stone-900 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
                   {outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضف إلى السلة'}
                 </button>
@@ -255,7 +257,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                   type="button"
                   onClick={() => wishlist.toggle(product.id)}
                   aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${wished ? 'border-[#9d7463] bg-[#9d7463] text-white' : 'border-stone-300 bg-white text-stone-500 hover:border-[#9d7463] hover:text-[#9d7463]'}`}
+                  className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-xl border transition ${wished ? 'border-[#9d7463] bg-[#9d7463] text-white' : 'border-stone-300 bg-white text-stone-500 hover:border-[#9d7463] hover:text-[#9d7463]'}`}
                 >
                   <Heart className="h-5 w-5" fill={wished ? 'currentColor' : 'none'} />
                 </button>
@@ -269,11 +271,14 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
 
               {/* Description — after purchase */}
               {product.description && (
-                <div className="mt-7 border-t border-stone-200 pt-5">
-                  <h3 className="text-right text-sm font-bold text-stone-900">وصف المنتج</h3>
-                  <div className="mt-1 h-px w-8 bg-[#b08d57] ms-auto" />
+                <div className="mt-6 border-t border-stone-200 pt-5">
+                  <div className="flex items-center justify-end gap-2">
+                    <h3 className="text-right text-[13px] font-bold tracking-wide text-stone-900">وصف المنتج</h3>
+                    <span className="h-px w-6 bg-[#b08d57] shrink-0" aria-hidden />
+                  </div>
                   <div
                     ref={descRef}
+                    id="atelier-desc"
                     dir="auto"
                     className={`mt-3 break-words text-[14px] leading-[1.85] text-stone-600 [overflow-wrap:anywhere] ${!descExpanded ? 'line-clamp-4' : ''}`}
                     dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
@@ -284,12 +289,12 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                       onClick={() => setDescExpanded((v) => !v)}
                       aria-expanded={descExpanded}
                       aria-controls="atelier-desc"
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#9d7463] hover:underline"
+                      className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-stone-600 hover:text-[#9d7463]"
                     >
                       {descExpanded ? (
-                        <>عرض أقل <ChevronUp className="h-3.5 w-3.5" /></>
+                        <>عرض أقل <ChevronUp className="h-4 w-4" /></>
                       ) : (
-                        <>عرض المزيد <ChevronDown className="h-3.5 w-3.5" /></>
+                        <>عرض المزيد <ChevronDown className="h-4 w-4" /></>
                       )}
                     </button>
                   )}
@@ -317,9 +322,9 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
           </div>
         </div>
 
-        {/* Sticky purchase bar — mobile only, safe-area */}
+        {/* Sticky purchase bar — mobile only, safe-area, respects sheet scroll */}
         {showSticky && (
-          <div className="flex shrink-0 items-center gap-3 border-t border-stone-200 bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgba(0,0,0,0.06)] sm:hidden">
+          <div className="flex shrink-0 items-center gap-3 border-t border-stone-200 bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-6px_16px_rgba(0,0,0,0.06)] sm:hidden">
             <div className="min-w-0 flex-1 text-right">
               <p className="truncate text-xs text-stone-500" dir="auto">{product.name}</p>
               <p className="text-sm font-bold text-stone-900">{formatPrice(displayPrice)}</p>
@@ -328,7 +333,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
               type="button"
               onClick={handleAdd}
               disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
-              className="shrink-0 rounded-full bg-stone-900 px-6 py-3 text-sm font-bold text-white shadow hover:bg-[#9d7463] disabled:bg-stone-300"
+              className="shrink-0 rounded-xl bg-stone-900 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#9d7463] disabled:bg-stone-300"
             >
               أضف إلى السلة
             </button>
