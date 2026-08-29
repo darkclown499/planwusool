@@ -89,7 +89,7 @@ export default function CreateShipping() {
     name: '',
     type: 'flat_rate',
     description: '',
-    cost: 9.99,
+    cost: '',
     currency: 'ILS',
     min_order_amount: 0,
     delivery_time: '',
@@ -219,6 +219,12 @@ export default function CreateShipping() {
       if (!formData.name.trim()) {
         nextErrors.name = t('Required');
       }
+      if (shippingType !== 'free_shipping') {
+        const cost = Number(formData.cost);
+        if (formData.cost === '' || formData.cost === null || Number.isNaN(cost) || cost < 0) {
+          nextErrors.cost = 'أدخل تكلفة التوصيل';
+        }
+      }
     }
     setStepErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -236,7 +242,13 @@ export default function CreateShipping() {
   };
 
   const handleSubmit = () => {
-    router.post(route('shipping.store'), formData);
+    const payload: any = { ...formData };
+    if (shippingType === 'free_shipping') {
+      payload.cost = null;
+    } else {
+      payload.cost = Number(formData.cost);
+    }
+    router.post(route('shipping.store'), payload);
   };
 
   const pageActions = [
@@ -353,6 +365,21 @@ export default function CreateShipping() {
                         <SelectItem value="USD">{t('US Dollar (USD)')}</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="grid gap-1">
+                    <Label htmlFor="cost" required>التكلفة</Label>
+                    <Input
+                      id="cost"
+                      name="cost"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.cost}
+                      onChange={handleInputChange}
+                      placeholder="0.00"
+                      aria-invalid={!!(errors.cost || stepErrors.cost)}
+                    />
+                    <InputError message={errors.cost || stepErrors.cost} />
                   </div>
                 </div>
               )}
