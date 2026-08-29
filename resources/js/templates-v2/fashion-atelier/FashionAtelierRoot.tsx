@@ -96,7 +96,7 @@ function LayoutGridIcon() {
     </svg>
   );
 }
-const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const AtelierMobileMenuView: React.FC<{ onClose: () => void; closeButtonRef?: React.Ref<HTMLButtonElement> }> = ({ onClose, closeButtonRef }) => {
   const { config, store, content, product, auth } = useStorefrontCore() as any;
   const categories: any[] = product?.categories || [];
   const isLoggedIn: boolean = !!auth?.isLoggedIn;
@@ -164,11 +164,11 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const storeLogo = config?.logo || store?.logo;
 
   return (
-    <div className="min-h-screen w-full bg-[#faf7f2] md:hidden" dir="rtl">
+    <div className="flex h-full w-full flex-col bg-[#faf7f2]" dir="rtl">
       {/* Header: [X] [centered logo] [spacer] */}
-      <div className="flex items-center justify-between gap-3 border-b border-stone-200/70 bg-white px-4 py-3.5">
-        <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600 ring-1 ring-stone-200/60 transition hover:bg-stone-200 active:scale-95">
-          <X className="h-4 w-4" strokeWidth={2.2} />
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-stone-200/70 bg-white px-4 py-3.5">
+        <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="إغلاق القائمة" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600 ring-1 ring-stone-200/60 transition hover:bg-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/30 active:scale-95">
+          <X className="h-5 w-5" strokeWidth={2.2} />
         </button>
         <a href="/" className="flex min-w-0 flex-1 items-center justify-center gap-2" onClick={() => onClose()}>
           {storeLogo ? (
@@ -177,10 +177,10 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
             <span className="font-serif text-[17px] font-bold tracking-wide text-stone-900">{storeName}</span>
           )}
         </a>
-        <span className="h-8 w-8 shrink-0" aria-hidden />
+        <span className="h-11 w-11 shrink-0" aria-hidden />
       </div>
 
-      <div className="px-4 pt-4 pb-8">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         {/* Store identity */}
         <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-3.5 shadow-[0_1px_10px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#faf7f2] ring-1 ring-stone-200">
@@ -339,6 +339,57 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
   );
 };
 
+const AtelierMobileDrawer: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Body scroll lock + initial focus while drawer is open (restores on close)
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const prevFocus = document.activeElement as HTMLElement | null;
+    try { closeRef.current?.focus(); } catch {}
+    return () => {
+      document.body.style.overflow = prev;
+      try { prevFocus?.focus?.(); } catch {}
+    };
+  }, [open]);
+
+  // Escape closes the drawer
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  return (
+    <div className="fixed inset-0 z-[70] md:hidden" dir="rtl" role="presentation">
+      {/* Reduced motion: keep menu functional, just shorten the slide */}
+      <style>{`@media(prefers-reduced-motion:reduce){.atelier-drawer-panel,.atelier-drawer-backdrop{transition-duration:1ms!important}}`}</style>
+
+      {/* Backdrop — click closes; keep storefront recognizable */}
+      <div
+        aria-hidden="true"
+        className="atelier-drawer-backdrop absolute inset-0 bg-black transition-[opacity] duration-[340ms] ease-[cubic-bezier(0.22,0.9,0.3,1)]"
+        style={{ opacity: open ? 0.24 : 0 }}
+        onClick={onClose}
+      />
+
+      {/* Drawer panel — slides from the right, ~78vw not full screen */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="قائمة المتجر"
+        className="atelier-drawer-panel absolute inset-y-0 right-0 w-[clamp(280px,78vw,340px)] bg-[#faf7f2] shadow-[-12px_0_30px_rgba(0,0,0,0.08)] transition-[transform] duration-[340ms] ease-[cubic-bezier(0.22,0.9,0.3,1)]"
+        style={{ transform: open ? 'translateX(0)' : 'translateX(100%)' }}
+      >
+        <AtelierMobileMenuView onClose={onClose} closeButtonRef={closeRef} />
+      </div>
+    </div>
+  );
+};
+
 const SORTS = [
   { value: 'newest', label: 'الأحدث' },
   { value: 'price_asc', label: 'السعر: من الأقل للأعلى' },
@@ -384,20 +435,24 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const lookbookB = banners[2] ?? null;
   const hasDistinctLookbook = !!(lookbookA && lookbookB && lookbookA.image && lookbookB.image && lookbookA.image !== lookbookB.image);
 
+  // Mobile drawer — slides from the right over the visible storefront (desktop untouched)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [displayMenu, setDisplayMenu] = useState(false);
+  const [menuMounted, setMenuMounted] = useState(false);
   const [menuExiting, setMenuExiting] = useState(false);
   useEffect(() => {
-    if (mobileMenuOpen) { setDisplayMenu(true); setMenuExiting(false); }
-    else if (displayMenu) {
-      setMenuExiting(true);
-      const t = setTimeout(() => { setDisplayMenu(false); setMenuExiting(false); }, 260);
-      return () => clearTimeout(t);
-    }
-  }, [mobileMenuOpen, displayMenu]);
+    if (!menuMounted || mobileMenuOpen) return;
+    const t = setTimeout(() => { setMenuMounted(false); setMenuExiting(false); }, 380);
+    return () => clearTimeout(t);
+  }, [mobileMenuOpen, menuMounted]);
+  const openMobileMenu = () => {
+    setMenuExiting(false);
+    setMobileMenuOpen(true);
+    setMenuMounted(true);
+  };
   const handleMenuClose = () => {
+    if (!menuMounted) return;
     setMenuExiting(true);
-    setTimeout(() => setMobileMenuOpen(false), 220);
+    setMobileMenuOpen(false);
   };
   const bestRef = useRef<HTMLDivElement>(null);
   const [bestRevealed, setBestRevealed] = useState(false);
@@ -497,31 +552,13 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
     </main>
   );
 
-  if (displayMenu) {
-    return (
-      <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
-        <AnnouncementBar />
-        {/* Mobile menu view — animated slide from right + fade, existing architecture preserved */}
-        <div className={`md:hidden ${menuExiting ? 'animate-[atelierMenuOut_220ms_cubic-bezier(0.22,0.9,0.3,1)_forwards]' : 'animate-[atelierMenuIn_280ms_cubic-bezier(0.22,0.9,0.3,1)]'} motion-reduce:animate-none`}>
-          <style>{`@keyframes atelierMenuIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}@keyframes atelierMenuOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}@media(prefers-reduced-motion:reduce){.atelier-menu-animate{animation:none!important}}`}</style>
-          <AtelierMobileMenuView onClose={handleMenuClose} />
-        </div>
-        {/* Desktop always shows normal storefront even while mobile menu open */}
-        <div className="hidden md:block">
-          <AtelierHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
-          {normalMain}
-          <AtelierWhatsAppFloating />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
       <AnnouncementBar />
-      <AtelierHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      <AtelierHeader onOpenMobileMenu={openMobileMenu} />
       {normalMain}
       <AtelierWhatsAppFloating />
+      {menuMounted && <AtelierMobileDrawer open={!menuExiting} onClose={handleMenuClose} />}
     </div>
   );
 };

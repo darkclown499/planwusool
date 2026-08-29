@@ -328,7 +328,7 @@ class ThemeController extends Controller
                 'storeName' => $store['name'] ?? 'gadgets',
                 'logo' => $brandingLogo,
                 'favicon' => $brandingFavicon,
-                'phoneNumber' => $storeSettings['phone'] ?? '+1-555-123-4567',
+                'phoneNumber' => $storeSettings['phone'] ?? '',
                 'currency' => $storeSettings['currency_symbol'] ?? '$',
                 'address' => $configuration['address'] ?? '',
                 'city' => $configuration['city'] ?? '',

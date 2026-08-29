@@ -3,7 +3,7 @@ import { Heart, MapPin, Menu, Package, Search, ShoppingBag, User } from 'lucide-
 import { useStorefrontCore } from '../../shared/hooks';
 import { getImageUrl } from '@/utils/image-helper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { POLICY_LINKS, getPolicyContent } from './PolicyContent';
+import { POLICY_LINKS, getPolicyContent, renderPolicyBody } from './PolicyContent';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 
 interface AtelierHeaderProps {
@@ -228,7 +228,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/', on
                 <DialogDescription className="sr-only">{content.title}</DialogDescription>
               </DialogHeader>
               <div className="whitespace-pre-wrap text-sm leading-relaxed text-stone-600">
-                {content.body}
+                {renderPolicyBody(content.body)}
               </div>
             </DialogContent>
           </Dialog>

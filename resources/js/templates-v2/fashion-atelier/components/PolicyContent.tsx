@@ -18,6 +18,10 @@ const PAGE_SLUG_MAP: Record<PolicyPageKey['key'], string[]> = {
   privacy: ['privacy', 'privacy-policy', 'سياسة-الخصوصية'],
 };
 
+// Inline marker wrapping the resolved store phone so the modal renderer can turn
+// it into a tel: hyperlink without parsing merchant-authored content/HTML.
+const PHONE_TOKEN = '\u2063';
+
 const RAW_TEMPLATES: Record<PolicyPageKey['key'], { title: string; body: string }> = {
   about: {
     title: 'من نحن',
@@ -54,10 +58,46 @@ const RAW_TEMPLATES: Record<PolicyPageKey['key'], { title: string; body: string 
 };
 
 export function interpolatePolicy(text: string, vars: { STORE_NAME: string; STORE_PHONE: string; STORE_CITY: string }): string {
-  return text
+  const phone = String(vars.STORE_PHONE || '').trim();
+  let out = text
     .replaceAll('{STORE_NAME}', vars.STORE_NAME || 'متجرنا')
-    .replaceAll('{STORE_PHONE}', vars.STORE_PHONE || '—')
     .replaceAll('{STORE_CITY}', vars.STORE_CITY || '—');
+  if (phone) {
+    // Wrap the real store phone so renderPolicyBody can emit a clickable tel: link.
+    out = out.replaceAll('{STORE_PHONE}', `${PHONE_TOKEN}${phone}${PHONE_TOKEN}`);
+  } else {
+    // No store phone configured — drop the contact line entirely (never show a placeholder).
+    out = out
+      .split('\n')
+      .filter((line) => !line.includes('{STORE_PHONE}'))
+      .join('\n')
+      .trim();
+  }
+  return out;
+}
+
+/**
+ * Render a policy body, converting the sentinel-delimited store phone into a
+ * clickable tel: link. Merchant-authored content never contains the sentinel,
+ * so it renders verbatim (same behavior as before).
+ */
+export function renderPolicyBody(body: string): React.ReactNode {
+  const parts = body.split(PHONE_TOKEN);
+  if (parts.length < 3) return body;
+  const nodes: React.ReactNode[] = [];
+  parts.forEach((part, i) => {
+    if (part === '') return;
+    if (i % 2 === 1) {
+      nodes.push(
+        <a key={i} href={`tel:${part.replace(/[^+\d]/g, '')}`} className="text-[#9d7463] underline decoration-dotted underline-offset-2">
+          {part}
+        </a>
+      );
+    } else {
+      nodes.push(part);
+    }
+  });
+  return nodes.length ? nodes : body;
 }
 
 /**
