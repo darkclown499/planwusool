@@ -5,6 +5,7 @@ import { getImageUrl } from '@/utils/image-helper';
 interface CoverMedia {
   type: 'image' | 'video' | 'youtube';
   src: string;
+  srcMobile?: string;
   poster?: string;
   title?: string;
   subtitle?: string;
@@ -173,6 +174,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   // Single — clean hero, no fake carousel
   if (media.length === 1) {
     const m = media[0];
+    const singleSrc = isMobile && (m as any).srcMobile ? (m as any).srcMobile as string : m.src;
     return (
       <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
         <div className="atelier-cover-outer relative w-full overflow-visible rounded-t-xl rounded-b-2xl sm:rounded-2xl shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40">
@@ -180,11 +182,11 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             <style>{`@media (max-width: 767px){ .atelier-hero-single{ height:${heights.mobile} !important; } } html[data-preview-mode="mobile"] .atelier-hero-single{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-hero-single{ height:${heights.desktop} !important; }`}</style>
             <div className="atelier-hero-single absolute inset-0">
               {m.type === 'video' ? (
-                <video autoPlay={false} loop muted playsInline poster={m.poster} src={m.src} className="absolute inset-0 h-full w-full object-cover" />
+                <video autoPlay={false} loop muted playsInline poster={m.poster} src={singleSrc} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: 'center' }} />
               ) : m.type === 'youtube' ? (
-                <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${m.src}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+                <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${singleSrc}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
               ) : (
-                <img src={getImageUrl(m.src)} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                <img src={getImageUrl(singleSrc)} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: 'center' }} />
               )}
               <div className="absolute inset-0 bg-black" style={{ opacity: overlayOpacity }} />
               {(m.title || m.subtitle || m.ctaLabel) && (
@@ -230,8 +232,8 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
           onPointerLeave={onPointerCancel}
           onMouseEnter={() => { pausedRef.current = true; }}
           onMouseLeave={() => { if (!isDragging) pausedRef.current = false; }}
-          className="absolute inset-0 overflow-hidden rounded-2xl bg-stone-900 select-none touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-[#d8b48a]/60"
-          style={{ touchAction: 'pan-y' } as any}
+          className="absolute inset-0 overflow-hidden rounded-2xl bg-[#faf7f2] select-none touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-[#d8b48a]/60"
+          style={{ touchAction: 'pan-y', containerType: 'size' } as any}
         >
           {/* subtle perspective context */}
           <div className="absolute inset-0" style={{ perspective: '1400px', perspectiveOrigin: '50% 50%' } as any} />
@@ -246,46 +248,48 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             const isSecond = abs === 2;
             const isHidden = abs > 2;
 
-            // Geometry — calm editorial, not 3D demo
-            // card widths: mobile 82%, desktop 62% (active dominant but side peeks)
-            // offsets: neighbor ~34% (mobile) / 38% (desktop), second ~60%/64%
+            // Geometry — premium Cover Flow: inactive cards genuinely smaller via width + aspect + scale.
+            // Desktop true 3:2, mobile true 3:4 — width constrained by BOTH stage width and stage height to preserve aspect without distortion.
             let basePct = 0;
             let scale = 1;
             let opacity = 1;
             let z = 30;
             let shadow = '0 18px 40px rgba(60,45,35,0.18), 0 6px 14px rgba(60,45,35,0.12)';
             let blur: string | undefined;
+            let cardWidth = isMobile ? 'min(60cqw, calc(90cqh * 0.75))' : 'min(62cqw, calc(90cqh * 1.5))';
 
             if (isActive) {
               basePct = 0;
               scale = 1;
               opacity = 1;
               z = 30;
+              cardWidth = isMobile ? 'min(60cqw, calc(90cqh * 0.75))' : 'min(62cqw, calc(90cqh * 1.5))';
             } else if (isNeighbor) {
-              basePct = isMobile ? 34 : 38;
+              basePct = isMobile ? 36 : 38;
               scale = 0.86;
               opacity = 0.92;
               z = 20;
+              cardWidth = isMobile ? 'min(50cqw, calc(77cqh * 0.75))' : 'min(52cqw, calc(77cqh * 1.5))';
               shadow = '0 10px 26px rgba(60,45,35,0.14), 0 3px 10px rgba(60,45,35,0.08)';
             } else if (isSecond) {
-              basePct = isMobile ? 60 : 64;
-              scale = 0.76;
-              opacity = 0.52;
+              basePct = isMobile ? 62 : 64;
+              scale = 0.74;
+              opacity = 0.50;
               z = 10;
+              cardWidth = isMobile ? 'min(42cqw, calc(66cqh * 0.75))' : 'min(44cqw, calc(66cqh * 1.5))';
               shadow = '0 6px 16px rgba(60,45,35,0.10)';
               blur = '0.3px';
             } else {
               opacity = 0;
               z = 0;
+              cardWidth = isMobile ? 'min(42cqw, calc(66cqh * 0.75))' : 'min(44cqw, calc(66cqh * 1.5))';
             }
 
-            // translate logic: centered at 50%, then offset + drag
-            // drag affects active fully, neighbors at 32% coupling for parallax
+            // drag follows pointer directly; settle after release is 300ms (Fashion easing)
             const dragInfluence = isActive ? 1 : isNeighbor ? 0.34 : 0.14;
             const dragPx = isHidden ? 0 : dragOffset * dragInfluence;
-            // Convert basePct to px-like offset via % of container; combine with dragPx
-            // Use translateX calc: (-50% + basePct*sign) plus dragPx
-            const tx = `calc(-50% + ${off * basePct * sign}% + ${dragPx}px)`;
+            const offsetPct = off * basePct * sign;
+            const tx = `calc(-50% + ${offsetPct}% + ${dragPx}px)`;
             const transition = reducedMotion
               ? 'none'
               : isDragging
@@ -296,6 +300,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             const n = occ.get(baseKey) ?? 0;
             occ.set(baseKey, n + 1);
             const stableKey = `${baseKey}#${n}`;
+            const displaySrc = isMobile && (m as any).srcMobile ? (m as any).srcMobile as string : m.src;
             return (
               <div
                 key={stableKey}
@@ -306,37 +311,58 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
                 onKeyDown={(e) => { if (e.key === 'Enter' && !isActive) setIndex(i); }}
                 role={isActive ? 'group' : 'button'}
                 tabIndex={isActive ? 0 : -1}
-                className={`absolute top-0 bottom-0 overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-white/10 ${isHidden ? 'pointer-events-none' : 'cursor-pointer'} ${isActive ? '' : 'hover:brightness-[1.02]'}`}
-                style={{
-                  left: '50%',
-                  width: isMobile ? '78%' : '62%',
-                  maxWidth: isMobile ? '520px' : '760px',
-                  transform: `translateX(${tx}) scale(${scale})`,
-                  transformOrigin: 'center center',
-                  zIndex: z,
-                  opacity: isHidden ? 0 : opacity,
-                  boxShadow: isHidden ? 'none' : shadow,
-                  filter: blur ? `blur(${blur})` : undefined,
-                  transition,
-                  willChange: 'transform, opacity',
-                } as any}
+                className={`absolute overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/40 ${isHidden ? 'pointer-events-none' : 'cursor-pointer'} ${isActive ? '' : 'hover:brightness-[1.02]'}`}
+                style={
+                  isMobile
+                    ? ({
+                        left: '50%',
+                        top: '50%',
+                        width: cardWidth,
+                        maxWidth: '360px',
+                        aspectRatio: '3 / 4',
+                        transform: `translateX(${tx}) translateY(-50%) scale(${scale})`,
+                        transformOrigin: 'center center',
+                        zIndex: z,
+                        opacity: isHidden ? 0 : opacity,
+                        boxShadow: isHidden ? 'none' : shadow,
+                        filter: blur ? `blur(${blur})` : undefined,
+                        transition,
+                        willChange: 'transform, opacity',
+                      } as any)
+                    : ({
+                        left: '50%',
+                        top: '50%',
+                        width: cardWidth,
+                        maxWidth: '760px',
+                        aspectRatio: '3 / 2',
+                        transform: `translateX(${tx}) translateY(-50%) scale(${scale})`,
+                        transformOrigin: 'center center',
+                        zIndex: z,
+                        opacity: isHidden ? 0 : opacity,
+                        boxShadow: isHidden ? 'none' : shadow,
+                        filter: blur ? `blur(${blur})` : undefined,
+                        transition,
+                        willChange: 'transform, opacity',
+                      } as any)
+                }
               >
                 {m.type === 'video' ? (
                   <video
                     ref={(el) => { if (el) videoRefs.current.set(i, el); else videoRefs.current.delete(i); }}
-                    src={m.src}
+                    src={displaySrc}
                     poster={m.poster}
                     loop
                     muted
                     playsInline
                     preload={isActive ? 'auto' : 'metadata'}
                     className="absolute inset-0 h-full w-full object-cover"
+                    style={{ objectPosition: 'center' }}
                     draggable={false}
                   />
                 ) : m.type === 'youtube' ? (
                   <iframe
                     className="absolute inset-0 h-full w-full"
-                    src={`https://www.youtube.com/embed/${m.src}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0${isActive ? '&autoplay=1' : ''}`}
+                    src={`https://www.youtube.com/embed/${displaySrc}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0${isActive ? '&autoplay=1' : ''}`}
                     title="YouTube"
                     frameBorder="0"
                     allow="autoplay; fullscreen"
@@ -344,9 +370,10 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
                   />
                 ) : (
                   <img
-                    src={getImageUrl(m.src)}
+                    src={getImageUrl(displaySrc)}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
+                    style={{ objectPosition: 'center' }}
                     loading={i === 0 ? 'eager' : 'lazy'}
                     decoding="async"
                     draggable={false}

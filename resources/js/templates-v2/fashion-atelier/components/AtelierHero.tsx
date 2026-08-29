@@ -57,13 +57,24 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const videoUrl = hero.videoUrl;
   const videoUrlMobile = hero.videoUrlMobile;
   // Cover Flow: when multiple media (images + single video/youtube) exist, use editorial cover flow.
-  // Current persistence is hero_banner.images[] + single hero_banner.video_url / youtube_url.
+  // Persistence already supports responsive overrides (images_mobile / video_url_mobile / youtube_url_mobile) — reuse them.
   const coverMedia = (() => {
-    const list: Array<{ type: 'image' | 'video' | 'youtube'; src: string; poster?: string }> = [];
+    const list: Array<{ type: 'image' | 'video' | 'youtube'; src: string; srcMobile?: string; poster?: string }> = [];
     const imgs = hero.images;
-    imgs.forEach((src) => list.push({ type: 'image', src }));
-    if (hero.videoUrl) list.push({ type: 'video', src: hero.videoUrl, poster: list[0]?.src });
-    else if (hero.youtubeId) list.push({ type: 'youtube', src: hero.youtubeId });
+    const imgsMobile = hero.imagesMobile;
+    imgs.forEach((src, idx) => {
+      const mobileSrc = imgsMobile[idx] || imgsMobile[0] || undefined;
+      list.push({ type: 'image', src, srcMobile: mobileSrc });
+    });
+    if (hero.videoUrl) {
+      list.push({ type: 'video', src: hero.videoUrl, srcMobile: hero.videoUrlMobile || undefined, poster: list[0]?.src });
+    } else if (hero.youtubeId) {
+      list.push({ type: 'youtube', src: hero.youtubeId, srcMobile: hero.youtubeIdMobile || undefined });
+    } else if (hero.videoUrlMobile && !hero.videoUrl) {
+      list.push({ type: 'video', src: hero.videoUrlMobile, poster: list[0]?.src });
+    } else if (hero.youtubeIdMobile && !hero.youtubeId) {
+      list.push({ type: 'youtube', src: hero.youtubeIdMobile });
+    }
     return list;
   })();
   const useCoverFlow = coverMedia.length > 1;
@@ -71,6 +82,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
     const cfMedia = coverMedia.map((m) => ({
       type: m.type,
       src: m.src,
+      srcMobile: (m as any).srcMobile,
       poster: m.poster,
       title: hero.heading || singleHeroTitle,
       subtitle: hero.subtitle || singleHeroSubtitle,
