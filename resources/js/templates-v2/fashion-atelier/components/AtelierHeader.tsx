@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Facebook, Globe, Heart, Instagram, MapPin, Menu, MessageCircle, Music, Package, Search, Send, ShoppingBag, User, X, Youtube, Twitter } from 'lucide-react';
+import * as SheetPrimitive from '@radix-ui/react-dialog';
+import { Sheet } from '@/components/ui/sheet';
 import { useStorefrontCore } from '../../shared/hooks';
 import { getImageUrl } from '@/utils/image-helper';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -45,33 +46,12 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   const [policyOpen, setPolicyOpen] = useState<null | 'about' | 'shipping' | 'privacy'>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => {
-    if (drawerOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDrawerOpen(false); };
-      window.addEventListener('keydown', onKey);
-      return () => {
-        document.body.style.overflow = prev;
-        window.removeEventListener('keydown', onKey);
-      };
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [drawerOpen]);
 
   const categories = (product?.categories || []).slice(0, 8);
   const cartCount = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
@@ -130,102 +110,6 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
     const safe = enabled && url && isSafeUrl(url);
     return { idx, enabled, platform, url, safe };
   });
-
-  const drawerPortal =
-    mounted && drawerOpen && typeof document !== 'undefined'
-      ? createPortal(
-          <div className="fixed inset-0 z-[80] md:hidden" dir="rtl" role="dialog" aria-modal="true">
-            {/* Backdrop — simple translucent, covers entire viewport including header */}
-            <div
-              className="absolute inset-0 bg-black/45"
-              onClick={() => setDrawerOpen(false)}
-              aria-hidden
-            />
-            {/* Panel — fixed to viewport, opaque full-height, bypass Tailwind ambiguity */}
-            <div data-drawer-version="portal-fullheight-v4" data-drawer-panel="fashion-atelier-mobile" className="flex w-[84%] max-w-[340px] flex-col overflow-hidden rounded-l-2xl bg-[#faf7f2] shadow-[-8px_0_30px_rgba(0,0,0,0.18)]" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '84%', maxWidth: '340px', minHeight: '100vh', height: '100dvh', backgroundColor: '#faf7f2', zIndex: 90 }}>
-              {/* Drawer header — inside panel, single close X */}
-              <div className="flex shrink-0 items-center justify-between border-b border-stone-200 bg-white px-4 py-4 pt-[calc(1rem+env(safe-area-inset-top))]">
-                <a href={homeHref} className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
-                  {(config?.logo || store?.logo) ? (
-                    <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-8 w-auto object-contain" />
-                  ) : (
-                    <span className="font-serif text-lg font-bold text-stone-900">{config?.storeName || store?.name}</span>
-                  )}
-                </a>
-                <button type="button" onClick={() => setDrawerOpen(false)} aria-label="إغلاق" className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200">
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="flex flex-1 min-h-0 overflow-y-auto px-4 py-5 pb-[env(safe-area-inset-bottom)]" style={{ backgroundColor: 'transparent' }}>
-                <nav className="space-y-1.5">
-                  <button
-                    type="button"
-                    onClick={openAccount}
-                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-white">
-                      <User className="h-5 w-5" />
-                    </span>
-                    <span className="flex-1 text-sm font-bold text-stone-800">حسابي</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDrawerOpen(false);
-                      const el = document.getElementById('atelier-categories');
-                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      else window.scrollTo({ top: 500, behavior: 'smooth' });
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9d7463] text-white">
-                      <LayoutGridIcon />
-                    </span>
-                    <span className="flex-1 text-sm font-bold text-stone-800">الأقسام</span>
-                  </button>
-                </nav>
-
-                <div className="my-5 h-px bg-stone-200" />
-
-                <p className="mb-3 text-xs font-bold tracking-widest text-stone-500">تواصل معنا</p>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {socialSlots.map((slot) => {
-                    if (!slot.safe) return null;
-                    const Icon = getSocialIcon(slot.platform);
-                    return (
-                      <a
-                        key={slot.idx}
-                        href={slot.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={slot.platform}
-                        onClick={() => setDrawerOpen(false)}
-                        className="flex flex-col items-center gap-1.5 rounded-xl bg-white px-2 py-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
-                      >
-                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white">
-                          <Icon className="h-5 w-5" />
-                        </span>
-                        <span className="text-[11px] font-bold capitalize text-stone-600">{slot.platform}</span>
-                      </a>
-                    );
-                  })}
-                  {socialSlots.filter((s) => s.safe).length === 0 && (
-                    <p className="col-span-3 rounded-xl bg-white px-3 py-4 text-center text-xs text-stone-400 ring-1 ring-stone-200">لم يتم إعداد روابط التواصل بعد</p>
-                  )}
-                </div>
-
-                <div className="mt-6 rounded-xl bg-white p-3 ring-1 ring-stone-200">
-                  <p className="text-xs font-bold text-stone-700">تحتاج مساعدة؟</p>
-                  <p className="mt-1 text-xs leading-relaxed text-stone-500">تواصل معنا عبر الروابط أعلاه أو عبر واتساب.</p>
-                </div>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )
-      : null;
 
   return (
     <>
@@ -387,7 +271,99 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
         )}
       </header>
 
-      {drawerPortal}
+      {/* MOBILE DRAWER — reused working Sheet primitive (Radix Dialog) */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetPrimitive.Portal>
+          <SheetPrimitive.Overlay className="fixed inset-0 z-50 bg-black/45 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 md:hidden" />
+          <SheetPrimitive.Content
+            id="atelier-mobile-drawer"
+            aria-describedby={undefined}
+            className="fixed inset-y-0 right-0 z-50 flex h-full w-[84%] max-w-[340px] flex-col gap-0 bg-[#faf7f2] p-0 shadow-[-8px_0_30px_rgba(0,0,0,0.18)] data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right rounded-l-2xl border-0 md:hidden"
+          >
+            <SheetPrimitive.Title className="sr-only">القائمة</SheetPrimitive.Title>
+            {/* Drawer header — inside panel */}
+            <div className="flex shrink-0 items-center justify-between border-b border-stone-200 bg-white px-4 py-4 pt-[calc(1rem+env(safe-area-inset-top))]">
+              <a href={homeHref} className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
+                {(config?.logo || store?.logo) ? (
+                  <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-8 w-auto object-contain" />
+                ) : (
+                  <span className="font-serif text-lg font-bold text-stone-900">{config?.storeName || store?.name}</span>
+                )}
+              </a>
+              <SheetPrimitive.Close asChild>
+                <button type="button" aria-label="إغلاق" className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200">
+                  <X className="h-5 w-5" />
+                </button>
+              </SheetPrimitive.Close>
+            </div>
+
+            <div className="flex flex-1 min-h-0 flex-col overflow-y-auto px-4 py-5 pb-[env(safe-area-inset-bottom)]">
+              <nav className="space-y-1.5">
+                <button
+                  type="button"
+                  onClick={openAccount}
+                  className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-white">
+                    <User className="h-5 w-5" />
+                  </span>
+                  <span className="flex-1 text-sm font-bold text-stone-800">حسابي</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    const el = document.getElementById('atelier-categories');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else window.scrollTo({ top: 500, behavior: 'smooth' });
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9d7463] text-white">
+                    <LayoutGridIcon />
+                  </span>
+                  <span className="flex-1 text-sm font-bold text-stone-800">الأقسام</span>
+                </button>
+              </nav>
+
+              <div className="my-5 h-px bg-stone-200" />
+
+              <p className="mb-3 text-xs font-bold tracking-widest text-stone-500">تواصل معنا</p>
+              <div className="grid grid-cols-3 gap-2.5">
+                {socialSlots.map((slot) => {
+                  if (!slot.safe) return null;
+                  const Icon = getSocialIcon(slot.platform);
+                  return (
+                    <a
+                      key={slot.idx}
+                      href={slot.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={slot.platform}
+                      onClick={() => setDrawerOpen(false)}
+                      className="flex flex-col items-center gap-1.5 rounded-xl bg-white px-2 py-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="text-[11px] font-bold capitalize text-stone-600">{slot.platform}</span>
+                    </a>
+                  );
+                })}
+                {socialSlots.filter((s) => s.safe).length === 0 && (
+                  <p className="col-span-3 rounded-xl bg-white px-3 py-4 text-center text-xs text-stone-400 ring-1 ring-stone-200">لم يتم إعداد روابط التواصل بعد</p>
+                )}
+              </div>
+
+              <div className="mt-6 rounded-xl bg-white p-3 ring-1 ring-stone-200">
+                <p className="text-xs font-bold text-stone-700">تحتاج مساعدة؟</p>
+                <p className="mt-1 text-xs leading-relaxed text-stone-500">تواصل معنا عبر الروابط أعلاه أو عبر واتساب.</p>
+              </div>
+            </div>
+          </SheetPrimitive.Content>
+        </SheetPrimitive.Portal>
+      </Sheet>
 
       {/* Policy modals */}
       {POLICY_LINKS.map((link) => {
