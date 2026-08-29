@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { useResolvedHero, HERO_HEIGHTS, HERO_BREAKPOINT_CSS, HERO_BREAKPOINT } from '../../shared/heroMedia';
+import { AtelierCoverFlow } from './AtelierCoverFlow';
 // hero breakpoint 767px / 768px — kept as literal for certification contract
 // @media (max-width: 767px)
 
@@ -54,6 +55,33 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const youtubeIdMobile = hero.youtubeIdMobile;
   const videoUrl = hero.videoUrl;
   const videoUrlMobile = hero.videoUrlMobile;
+  // Cover Flow: when multiple media (images + video/youtube) exist, use editorial cover flow.
+  const coverMedia = (() => {
+    const list: Array<{ type: 'image' | 'video' | 'youtube'; src: string; poster?: string }> = [];
+    // Prefer explicit slides array if Designer provides it (future-proof)
+    const rawSlides: any = (hero as any)?.slides || (useResolvedHero as any)?.slides || null;
+    // Current hero images are already the slider source
+    const imgs = hero.images;
+    imgs.forEach((src) => list.push({ type: 'image', src }));
+    if (hero.videoUrl) list.push({ type: 'video', src: hero.videoUrl, poster: list[0]?.src });
+    else if (hero.youtubeId) list.push({ type: 'youtube', src: hero.youtubeId });
+    // Also check flat legacy slides prop
+    return list;
+  })();
+  const useCoverFlow = coverMedia.length > 1;
+  if (useCoverFlow) {
+    const cfMedia = coverMedia.map((m) => ({
+      type: m.type,
+      src: m.src,
+      poster: m.poster,
+      title: hero.heading || singleHeroTitle,
+      subtitle: hero.subtitle || singleHeroSubtitle,
+      ctaLabel: hero.ctaLabel || singleHeroCtaLabel,
+      ctaLink: hero.ctaLink || singleHeroCtaLink,
+    }));
+    return <AtelierCoverFlow media={cfMedia} heights={{ desktop: desktopH, mobile: mobileH }} overlayOpacity={overlayStyleOpacity} />;
+  }
+
   // Contained editorial: outer wrapper gives balanced side margins; inner hero is the clamped slot.
   // Premium elevated card: subtle layered shadow + rounded corners, visible on both desktop and mobile.
   // Mobile: tighter top radius (xl) + generous bottom radius (2xl) for stacked-card warmth, gap 8-12px from search.
