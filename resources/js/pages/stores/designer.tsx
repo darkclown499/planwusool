@@ -643,353 +643,222 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                         {/* ============ 3. الواجهة ============ */}
                         {activeWorkspace === 'interface' && (
                             <div className="space-y-3">
+                                {/* A. نوع الوسائط — segmented, warm accent */}
                                 <Card>
-                                    <SectionLabel>نوع الواجهة</SectionLabel>
+                                    <SectionLabel>نوع الوسائط</SectionLabel>
                                     <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
-                                        {[{ id: 'image', label: 'صور' }, { id: 'video', label: 'فيديو' }, { id: 'youtube', label: 'YouTube' }].map((opt) => (
-                                            <button key={opt.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.type', opt.id); tmp = setDotted(tmp, 'hero_type', opt.id); setContent(tmp); }} className={`flex-1 rounded-lg px-3 py-2 text-xs font-black transition ${heroType === opt.id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}>{opt.label}</button>
+                                        {[{ id: 'image', label: 'صورة' }, { id: 'video', label: 'فيديو' }, { id: 'youtube', label: 'YouTube' }].map((opt) => (
+                                            <button key={opt.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.type', opt.id); tmp = setDotted(tmp, 'hero_type', opt.id); setContent(tmp); }} className={`flex-1 rounded-lg px-3 py-2 text-xs font-black transition ${heroType === opt.id ? 'bg-white text-[#9d7463] shadow' : 'text-slate-500 hover:text-slate-700'}`}>{opt.label}</button>
                                         ))}
                                     </div>
+                                    <p className="mt-2 text-[11px] text-slate-400">يتحكم في نوع محتوى البانر — التغيير يظهر فوراً في المعاينة</p>
                                 </Card>
 
+                                {/* B. وسائط البانر — clean thumbnails, reorder/replace/delete/add */}
                                 {heroType === 'image' && (() => {
-                                    const isSlider = ['grocery-souq','bazaar-market','fashion-atelier'].includes(theme);
                                     const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopImage || MEDIA_SPECS['bazaar-market'].hero.desktopImage;
-                                    const mobileSpec = MEDIA_SPECS[theme]?.hero?.mobileImage || MEDIA_SPECS['grocery-souq'].hero.mobileImage;
                                     const mobImages = sanitizeHeroImages((getDotted(content,'hero_banner.images_mobile') ?? getDotted(content,'hero_images_mobile') ?? []) as any);
                                     const handleReplaceDesktop = async (idx: number, files: FileList) => {
                                         const f = Array.from(files)[0]; if (!f) return;
                                         const fd = new FormData(); fd.append('files[]', f);
                                         try { const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json:any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url||''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const norm = normalizeImageUrl(url); const next = [...heroImages]; next[idx]=norm; let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp); toast.success('تم استبدال الصورة'); } } catch { toast.error('فشل الاستبدال'); }
                                     };
-                                    const handleReplaceMobile = async (idx: number, files: FileList) => {
-                                        const f = Array.from(files)[0]; if (!f) return;
-                                        const fd = new FormData(); fd.append('files[]', f);
-                                        try { const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json:any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url||''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const norm = normalizeImageUrl(url); const next = [...mobImages]; next[idx]=norm; let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp); toast.success('تم استبدال صورة الهاتف'); } } catch { toast.error('فشل الاستبدال'); }
-                                    };
-                                    const handleAddMobile = async (files: FileList) => {
-                                        const valid = Array.from(files).filter(f=>f.type.startsWith('image/')); if(!valid.length) return;
-                                        const fd = new FormData(); valid.forEach(f=>fd.append('files[]',f));
-                                        try { const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json',...csrfHeaders()}}); const json:any=await res.json(); if(res.ok && json?.data?.length){ const urls:string[]=(json.data as any[]).map((d:any)=>{const raw=String(d.url||''); return raw.startsWith('/storage')?raw:(raw.match(/\/storage\/.*$/)?.[0]??raw)}).filter(Boolean).map(u=>normalizeImageUrl(u)); const next=[...mobImages,...urls].slice(0,10); let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp); toast.success('تم رفع صور الهاتف'); }} catch {toast.error('فشل الرفع')}
+                                    const moveDesktop = (from: number, dir: number) => {
+                                        const to = from + dir; if (to < 0 || to >= heroImages.length) return;
+                                        const next = [...heroImages]; const [m] = next.splice(from,1); next.splice(to,0,m); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);
                                     };
                                     return (
                                     <Card>
-                                        <div onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)} className="space-y-4">
-                                        <div>
-                                            <SectionLabel>{desktopSpec.label} {previewMode==='mobile' && <span className="ms-1 text-[10px] text-amber-600">(معاينة الهاتف نشطة)</span>}</SectionLabel>
-                                            <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{desktopSpec.description}</p>
-                                            <p className="mb-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-slate-600 ring-1 ring-slate-100">{desktopSpec.help} — {desktopSpec.formats} — {desktopSpec.maxSize} — الوضع: {desktopSpec.desktop.fit}</p>
-                                            <p className="mb-2 text-[11px] text-emerald-700">المعاينة: أعلى الصفحة الرئيسية {previewMode==='mobile' && mobImages.length>0 ? '— يُعرض الآن نسخة الهاتف' : ''}</p>
-                                            {isSlider ? (
-                                                <div className="space-y-2">
-                                                    {heroImages.length===0 && <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">لا توجد شرائح — اسحب الصور هنا (حتى 10 شرائح)</p>}
-                                                    {heroImages.map((img:string, idx:number)=>(
-                                                        <div key={idx} className="flex gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
-                                                            <img src={normalizeImageUrl(img)} alt={`شريحة ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" />
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="text-xs font-black text-slate-800">الشريحة {idx+1} <span className="ms-1 text-[10px] font-normal text-slate-400">— ترتيب {idx+1}</span></p>
-                                                                <p className="text-[11px] text-slate-500 truncate" dir="ltr">{img}</p>
-                                                                <div className="mt-1.5 flex gap-1.5">
-                                                                    <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(idx, e.target.files)} />استبدال</label>
-                                                                    <button type="button" onClick={()=>{const next=heroImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);}} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
-                                                                </div>
-                                                            </div>
-                                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
-                                                        </div>
-                                                    ))}
-                                                    {heroImages.length < 10 && <DropzoneUploader label={heroImages.length===0 ? 'اسحب شرائح الهيرو هنا' : `إضافة شرائح (${heroImages.length}/10)`} hint={`حتى 10 شرائح — ${desktopSpec.help}`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />}
-                                                </div>
-                                            ) : (
-                                                <div>
-                                                    {heroImages[0] ? (
-                                                        <div className="group relative overflow-hidden rounded-xl border bg-slate-50 p-2">
-                                                            <img src={normalizeImageUrl(heroImages[0])} alt="الصورة الرئيسية" className="aspect-[16/7] w-full rounded-lg object-cover" />
-                                                            <div className="absolute inset-2 flex items-start justify-between">
-                                                                <span className="rounded-full bg-black/60 px-2 py-1 text-[11px] font-bold text-white backdrop-blur">سطح المكتب — Cover</span>
-                                                                <div className="flex gap-1">
-                                                                    <label className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/90 text-slate-700 shadow hover:bg-white"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(0, e.target.files)} /><Pencil className="h-3.5 w-3.5" /></label>
-                                                                    <button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.images',[]); tmp=setDotted(tmp,'hero_images',[]); setContent(tmp);}} className="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ) : <DropzoneUploader label="اسحب الصورة الرئيسية هنا — سطح المكتب" hint={`${desktopSpec.help} — ${desktopSpec.formats}`} multiple={false} uploading={heroUploading} onFiles={uploadHeroFiles} />}
-                                                    <input ref={heroFileRef} type="file" accept="image/*" multiple={isSlider} className="hidden" onChange={e=>e.target.files && uploadHeroFiles(e.target.files)} />
-                                                </div>
-                                            )}
+                                        <div onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)} className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <SectionLabel>وسائط البانر</SectionLabel>
+                                            <span className="rounded-full bg-slate-50 px-2 py-1 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200">المقاس الموصى به: 1200 × 800 — 3:2</span>
                                         </div>
-                                        <div className="border-t border-slate-100 pt-4">
-                                            <SectionLabel>{mobileSpec.label}</SectionLabel>
-                                            <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{mobileSpec.description}</p>
-                                            <p className="mb-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-800 ring-1 ring-amber-100">{mobileSpec.help} — {mobileSpec.formats} — {mobileSpec.maxSize} — الوضع: {mobileSpec.desktop.fit} {mobImages.length===0 && "— سيتم استخدام صورة سطح المكتب على الهاتف"}</p>
-                                            {mobImages.length>0 ? (
-                                                <div className="space-y-2">
-                                                    {mobImages.map((img:string, idx:number)=>(
-                                                        <div key={idx} className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50/30 p-2.5">
-                                                            <img src={normalizeImageUrl(img)} alt={`هاتف ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-amber-100" />
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="text-xs font-black text-slate-800">شريحة هاتف {idx+1}</p>
-                                                                <p className="text-[11px] text-slate-500 truncate" dir="ltr">{img}</p>
-                                                                <div className="mt-1.5 flex gap-1.5">
-                                                                    <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceMobile(idx, e.target.files)} />استبدال</label>
-                                                                    <button type="button" onClick={()=>{const next=mobImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp);}} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
-                                                                </div>
-                                                            </div>
-                                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-600 text-xs font-black text-white">{idx+1}</span>
-                                                        </div>
-                                                    ))}
-                                                    {mobImages.length < 10 && <DropzoneUploader label={`إضافة صور هاتف (${mobImages.length}/10)`} hint={`${mobileSpec.help} — ${mobileSpec.formats}`} multiple uploading={heroUploading} onFiles={handleAddMobile} />}
+                                        <p className="text-[11px] leading-relaxed text-slate-500">اسحب صوراً جديدة أو استبدل/احذف — الترتيب يظهر فوراً</p>
+                                        {heroImages.length===0 && <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">لا توجد شرائح — اسحب الصور هنا (حتى 10)</p>}
+                                        {heroImages.map((img:string, idx:number)=>(
+                                            <div key={idx} className="flex gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
+                                                <img src={normalizeImageUrl(img)} alt={`شريحة ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" />
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-xs font-black text-slate-800">الشريحة {idx+1}</p>
+                                                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                                        <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(idx, e.target.files)} />استبدال</label>
+                                                        <button type="button" onClick={()=>moveDesktop(idx,-1)} disabled={idx===0} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
+                                                        <button type="button" onClick={()=>moveDesktop(idx,1)} disabled={idx===heroImages.length-1} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
+                                                        <button type="button" onClick={()=>{const next=heroImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);}} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
+                                                    </div>
                                                 </div>
-                                            ) : (
-                                                <DropzoneUploader label="اسحب الصورة العمودية للهاتف هنا (اختياري)" hint={`${mobileSpec.help} — ${mobileSpec.formats} — ${mobileSpec.maxSize}`} multiple={isSlider} uploading={heroUploading} onFiles={handleAddMobile} />
-                                            )}
-                                        </div>
+                                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
+                                            </div>
+                                        ))}
+                                        {heroImages.length < 10 && <DropzoneUploader label={heroImages.length===0 ? 'اسحب شرائح الهيرو هنا' : `إضافة شرائح (${heroImages.length}/10)`} hint={`حتى 10 شرائح — 1200×800 — 3:2`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />}
                                         </div>
                                     </Card>
                                     );
                                 })()}
                                 {heroType === 'video' && (() => {
                                     const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopVideo || MEDIA_SPECS['bazaar-market'].hero.desktopVideo;
-                                    const mobileSpec = MEDIA_SPECS[theme]?.hero?.mobileVideo || MEDIA_SPECS['grocery-souq'].hero.mobileVideo;
                                     return (
                                     <div className="space-y-3" onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)}>
                                     <Card>
-                                        <SectionLabel>{desktopSpec.label}</SectionLabel>
-                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{desktopSpec.description}</p>
-                                        <p className="mb-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-slate-600 ring-1 ring-slate-100">{desktopSpec.help} — {desktopSpec.formats} — {desktopSpec.maxSize}</p>
-                                        <p className="mb-2 text-[11px] text-emerald-700">المعاينة: أعلى الصفحة الرئيسية — سطح المكتب</p>
+                                        <SectionLabel>وسائط البانر — فيديو</SectionLabel>
+                                        <p className="mb-2 text-[11px] text-slate-500">المقاس الموصى به: 1200 × 800 — 3:2 — MP4 مُكتوم</p>
                                         <Input dir="ltr" value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url', norm); tmp = setDotted(tmp, 'hero_video_url', norm); setContent(tmp); }} placeholder="https://example.com/video.mp4" className="bg-white font-mono text-sm" />
                                         <div className="mt-2">
-                                        <DropzoneUploader label={heroVideoUrl ? 'استبدال فيديو سطح المكتب' : 'اسحب فيديو سطح المكتب هنا'} hint={`${desktopSpec.help} — ${desktopSpec.formats}`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
+                                        <DropzoneUploader label={heroVideoUrl ? 'استبدال الفيديو' : 'اسحب الفيديو هنا'} hint={`1200×800 — 3:2 — MP4`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
                                             const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
-                                            try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع فيديو سطح المكتب'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                            try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع الفيديو'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
                                         }} />
                                         </div>
-                                        {heroVideoUrl ? <div className="group relative mt-2"><video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-40 w-full rounded-xl border object-cover" /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.video_url',''); tmp=setDotted(tmp,'hero_video_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-xs text-slate-500">لا يوجد فيديو لسطح المكتب — فارغ</p>}
-                                    </Card>
-                                    <Card>
-                                        <SectionLabel>{mobileSpec.label}</SectionLabel>
-                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{mobileSpec.description}</p>
-                                        <p className="mb-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-800 ring-1 ring-amber-100">{mobileSpec.help} — {mobileSpec.formats} — {mobileSpec.maxSize} {heroVideoUrlMobile ? '' : '— سيتم استخدام فيديو سطح المكتب على الهاتف'}</p>
-                                        <Input dir="ltr" value={heroVideoUrlMobile ? normalizeImageUrl(heroVideoUrlMobile) : heroVideoUrlMobile} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url_mobile', norm); tmp = setDotted(tmp, 'hero_video_url_mobile', norm); setContent(tmp); }} placeholder="https://example.com/video-mobile.mp4 (اختياري)" className="bg-white font-mono text-sm" />
-                                        <div className="mt-2">
-                                        <DropzoneUploader label={heroVideoUrlMobile ? 'استبدال فيديو الهاتف' : 'اسحب فيديو الهاتف هنا (اختياري)'} hint={`${mobileSpec.help} — ${mobileSpec.formats}`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
-                                            const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
-                                            try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url_mobile', normalized); tmp = setDotted(tmp, 'hero_video_url_mobile', normalized); setContent(tmp); toast.success('تم رفع فيديو الهاتف'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
-                                        }} />
-                                        </div>
-                                        {heroVideoUrlMobile ? <div className="group relative mt-2"><video src={normalizeImageUrl(heroVideoUrlMobile)} controls className="max-h-40 w-full rounded-xl border object-cover" /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.video_url_mobile',''); tmp=setDotted(tmp,'hero_video_url_mobile',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-amber-200 bg-amber-50 px-3 py-2 text-center text-xs text-amber-700">لا يوجد فيديو للهاتف — سيتم استخدام فيديو سطح المكتب على الهاتف</p>}
+                                        {heroVideoUrl ? <div className="group relative mt-2"><video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-40 w-full rounded-xl border object-cover" /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.video_url',''); tmp=setDotted(tmp,'hero_video_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-xs text-slate-500">لا يوجد فيديو — فارغ</p>}
                                     </Card>
                                     </div>
                                     );
                                 })()}
                                 {heroType === 'youtube' && (() => {
                                     const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopYoutube || MEDIA_SPECS['bazaar-market'].hero.desktopYoutube;
-                                    const mobileSpec = MEDIA_SPECS[theme]?.hero?.mobileYoutube || MEDIA_SPECS['grocery-souq'].hero.mobileYoutube;
                                     return (
                                     <div className="space-y-3" onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)}>
                                     <Card>
-                                        <SectionLabel>{desktopSpec.label}</SectionLabel>
-                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{desktopSpec.description}</p>
-                                        <p className="mb-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-slate-600 ring-1 ring-slate-100">{desktopSpec.help} — {desktopSpec.formats}</p>
-                                        <p className="mb-2 text-[11px] text-emerald-700">المعاينة: أعلى الصفحة الرئيسية — سطح المكتب</p>
+                                        <SectionLabel>وسائط البانر — YouTube</SectionLabel>
+                                        <p className="mb-2 text-[11px] text-slate-500">المقاس الموصى به: 1200 × 800 — 3:2</p>
                                         <Input dir="ltr" value={heroYoutubeUrl ? stripTrailingSlash(heroYoutubeUrl) : heroYoutubeUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.youtube_url', clean); tmp = setDotted(tmp, 'hero_youtube_url', clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm" />
-                                        {youtubeId ? <div className="group relative mt-2 overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`} title="YouTube preview" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.youtube_url',''); tmp=setDotted(tmp,'hero_youtube_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">لا يوجد رابط يوتيوب لسطح المكتب</p>}
-                                    </Card>
-                                    <Card>
-                                        <SectionLabel>{mobileSpec.label}</SectionLabel>
-                                        <p className="mb-1 text-[11px] leading-relaxed text-slate-500">{mobileSpec.description}</p>
-                                        <p className="mb-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-amber-800 ring-1 ring-amber-100">{mobileSpec.help} — {mobileSpec.formats} {youtubeIdMobile ? '' : '— سيتم استخدام رابط سطح المكتب على الهاتف'}</p>
-                                        <Input dir="ltr" value={heroYoutubeUrlMobile ? stripTrailingSlash(heroYoutubeUrlMobile) : heroYoutubeUrlMobile} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.youtube_url_mobile', clean); tmp = setDotted(tmp, 'hero_youtube_url_mobile', clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=... (اختياري)" className="bg-white font-mono text-sm" />
-                                        {youtubeIdMobile ? <div className="group relative mt-2 overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeIdMobile}?autoplay=0&mute=1&controls=1`} title="YouTube preview mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.youtube_url_mobile',''); tmp=setDotted(tmp,'hero_youtube_url_mobile',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-amber-200 bg-amber-50 px-3 py-2 text-center text-xs text-amber-700">لا يوجد رابط للهاتف — سيتم استخدام رابط سطح المكتب على الهاتف</p>}
+                                        {youtubeId ? <div className="group relative mt-2 overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`} title="YouTube preview" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.youtube_url',''); tmp=setDotted(tmp,'hero_youtube_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">لا يوجد رابط يوتيوب</p>}
                                     </Card>
                                     </div>
                                     );
                                 })()}
 
+                                {/* C. النص والمحتوى */}
                                 <Card>
                                     <div className="space-y-2.5">
-                                        <SectionLabel>العنوان الرئيسي</SectionLabel>
-                                        <Input value={heroHeading ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.heading', e.target.value); tmp = setDotted(tmp, 'hero_heading', e.target.value); setContent(tmp); }} placeholder="أناقة تُروى كقصة" className="h-9 bg-white" />
-                                        <SectionLabel>الوصف الفرعي</SectionLabel>
-                                        <Input value={heroSubtitle ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.subtitle', e.target.value); tmp = setDotted(tmp, 'hero_subtitle', e.target.value); setContent(tmp); }} placeholder="تشكيلة الموسم الجديدة" className="bg-white" />
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div><SectionLabel>نص الزر</SectionLabel><Input value={heroCtaLabel ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.cta_label', e.target.value); tmp = setDotted(tmp, 'hero_cta_label', e.target.value); setContent(tmp); }} placeholder="اكتشفي التشكيلة" className="bg-white" /></div>
-                                            <div><SectionLabel>رابط الزر</SectionLabel><Input dir="ltr" value={heroCtaLink ?? ''} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.cta_link', clean); tmp = setDotted(tmp, 'hero_cta_link', clean); setContent(tmp); }} placeholder="#section" className="bg-white font-mono text-sm" /></div>
+                                        <SectionLabel>النص والمحتوى</SectionLabel>
+                                        <div>
+                                            <SectionLabel>العنوان</SectionLabel>
+                                            <Input value={heroHeading ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.heading', e.target.value); tmp = setDotted(tmp, 'hero_heading', e.target.value); setContent(tmp); }} placeholder="أناقة تُروى كقصة" className="h-9 bg-white" />
                                         </div>
                                         <div>
-                                            <SectionLabel>شفافية الطبقة ({heroOverlay}%)</SectionLabel>
-                                            <div className="flex items-center gap-3">
-                                                <input type="range" min={0} max={100} value={heroOverlay} onChange={(e) => { const val = Number(e.target.value); let tmp = setDotted(content, 'hero_banner.overlay_opacity', val); tmp = setDotted(tmp, 'overlay_opacity', val); setContent(tmp); }} className="flex-1 accent-emerald-600" />
-                                                <span className="min-w-12 rounded-full bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">{heroOverlay}%</span>
-                                            </div>
+                                            <SectionLabel>الوصف</SectionLabel>
+                                            <Input value={heroSubtitle ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.subtitle', e.target.value); tmp = setDotted(tmp, 'hero_subtitle', e.target.value); setContent(tmp); }} placeholder="تشكيلة الموسم الجديدة" className="bg-white" />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div><SectionLabel>نص الزر</SectionLabel><Input value={heroCtaLabel ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.cta_label', e.target.value); tmp = setDotted(tmp, 'hero_cta_label', e.target.value); setContent(tmp); }} placeholder="اكتشفي التشكيلة" className="bg-white" /></div>
+                                            <div><SectionLabel>رابط الزر</SectionLabel><Input dir="ltr" value={heroCtaLink ?? ''} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.cta_link', clean); tmp = setDotted(tmp, 'hero_cta_link', clean); setContent(tmp); }} placeholder="#atelier-new" className="bg-white font-mono text-sm" /></div>
                                         </div>
                                     </div>
                                 </Card>
 
-                                <Card>
-                                    <div className="space-y-3">
-                                        <SectionLabel hint="يتحكم بكيفية ملء الفيديو/الصورة للحاوية">وضع العرض (Fit)</SectionLabel>
-                                        {(() => {
-                                            const currentFit = String(getDotted(content, 'hero_banner.fit') ?? getDotted(content, 'hero_fit') ?? 'cover').toLowerCase();
-                                            return (
-                                                <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
-                                                    {[{ id: 'cover', label: 'تغطية (بدون مساحات سوداء)' }, { id: 'contain', label: 'احتواء (كامل الوسائط)' }].map((opt) => (
-                                                        <button key={opt.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.fit', opt.id); tmp = setDotted(tmp, 'hero_fit', opt.id); setContent(tmp); }} className={`flex-1 rounded-lg px-2 py-2 text-xs font-black transition ${currentFit === opt.id ? 'bg-white text-emerald-700 shadow' : 'text-slate-500 hover:text-slate-700'}`}>{opt.label}</button>
-                                                    ))}
-                                                </div>
-                                            );
-                                        })()}
-                                        <SectionLabel>موضع التركيز (Focal point)</SectionLabel>
-                                        {(() => {
-                                            const curPos = String(getDotted(content, 'hero_banner.position') ?? getDotted(content, 'hero_position') ?? 'center');
-                                            const opts = [{ id: 'center', label: 'وسط' }, { id: 'top', label: 'أعلى' }, { id: 'bottom', label: 'أسفل' }, { id: 'left', label: 'يسار' }, { id: 'right', label: 'يمين' }];
-                                            return (
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {opts.map((o) => (
-                                                        <button key={o.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.position', o.id); tmp = setDotted(tmp, 'hero_position', o.id); setContent(tmp); }} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${curPos === o.id ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'}`}>{o.label}</button>
-                                                    ))}
-                                                </div>
-                                            );
-                                        })()}
-                                        <p className="text-[11px] leading-relaxed text-slate-500">الوضع الافتراضي: تغطية مع تركيز وسط — يضمن عدم ظهور مساحات سوداء للفيديو العمودي مع إمكانية تحكم التاجر بالموقع.</p>
-                                    </div>
-                                </Card>
-                                <Card>
-                                    <div className="space-y-3">
-                                        <SectionLabel hint="يتحكم بارتفاع الـHero لكل جهاز">ارتفاع الواجهة</SectionLabel>
-                                        {(() => {
-                                            const desktopH = String(getDotted(content, 'hero_banner.height_desktop') ?? getDotted(content, 'hero_height_desktop') ?? '');
-                                            const mobileH = String(getDotted(content, 'hero_banner.height_mobile') ?? getDotted(content, 'hero_height_mobile') ?? '');
-                                            return (
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <SectionLabel>سطح المكتب (مثل 520px أو clamp)</SectionLabel>
-                                                        <Input dir="ltr" value={desktopH} onChange={e=>{ let tmp=setDotted(content,'hero_banner.height_desktop',e.target.value); tmp=setDotted(tmp,'hero_height_desktop',e.target.value); setContent(tmp); }} placeholder="clamp(360px, 42vw, 520px)" className="font-mono text-sm bg-white"/>
-                                                    </div>
-                                                    <div>
-                                                        <SectionLabel>الهاتف (مثل 420px)</SectionLabel>
-                                                        <Input dir="ltr" value={mobileH} onChange={e=>{ let tmp=setDotted(content,'hero_banner.height_mobile',e.target.value); tmp=setDotted(tmp,'hero_height_mobile',e.target.value); setContent(tmp); }} placeholder="420px" className="font-mono text-sm bg-white"/>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })()}
-                                        <p className="text-[11px] text-slate-500">اتركه فارغًا لاستخدام الافتراضي. كل ارتفاع لا يغير الآخر — منفصل تمامًا.</p>
-                                    </div>
-                                </Card>
-
-                                <Card>
-                                    <div className="space-y-3">
-                                        <SectionLabel hint="اختياري — نسخة عمودية للهاتف لتجنب قص الفيديو/الصورة">وسائط خاصة بالهاتف (اختياري)</SectionLabel>
-                                        <p className="text-[11px] leading-relaxed text-slate-500">إن تركتها فارغة سيُستخدم نفس وسائط سطح المكتب. للهاتف يفضل صورة عمودية أو فيديو قصير.</p>
-                                        {heroType === 'image' && (() => {
-                                            const mobImages = sanitizeHeroImages((getDotted(content,'hero_banner.images_mobile') ?? []) as any);
-                                            return (
-                                                <div className="space-y-2">
-                                                    {mobImages.length>0 && <div className="flex gap-2 flex-wrap">{mobImages.map((img:string,idx:number)=><div key={idx} className="relative h-16 w-16 overflow-hidden rounded-lg border"><img src={normalizeImageUrl(img)} className="h-full w-full object-cover"/><button type="button" onClick={()=>{const next=mobImages.filter((_:string,i:number)=>i!==idx); setContent(setDotted(content,'hero_banner.images_mobile',next));}} className="absolute inset-0 bg-black/40 text-white text-xs">×</button></div>)}</div>}
-                                                    <DropzoneUploader label="رفع صورة عمودية للهاتف" hint="اختياري — 1080×1920" multiple uploading={heroUploading} onFiles={async(files)=>{ const valid=Array.from(files).filter(f=>f.type.startsWith('image/')); if(!valid.length) return; setHeroUploading(true); try{ const fd=new FormData(); valid.forEach(f=>fd.append('files[]',f)); const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content')||''}}); const json:any=await res.json(); if(res.ok&&json?.data?.length){ const urls:string[]=(json.data as any[]).map((d:any)=>normalizeImageUrl(String(d.url||''))).filter(Boolean); const next=[...mobImages,...urls].slice(0,5); setContent(setDotted(content,'hero_banner.images_mobile',next)); toast.success('تم الرفع'); } }catch{} finally{setHeroUploading(false);}} }/>
-                                                </div>
-                                            );
-                                        })()}
-                                        {heroType === 'video' && (
-                                            <div className="space-y-2">
-                                                <Input dir="ltr" value={String(getDotted(content,'hero_banner.video_url_mobile') ?? '')} onChange={e=> setContent(setDotted(content,'hero_banner.video_url_mobile',e.target.value.trim()))} placeholder="رابط فيديو عمودي للهاتف (اختياري)" className="bg-white font-mono text-sm"/>
-                                            </div>
-                                        )}
-                                        {heroType === 'youtube' && (
-                                            <div className="space-y-2">
-                                                <Input dir="ltr" value={String(getDotted(content,'hero_banner.youtube_url_mobile') ?? '')} onChange={e=> setContent(setDotted(content,'hero_banner.youtube_url_mobile',e.target.value.trim()))} placeholder="رابط يوتيوب للهاتف (اختياري)" className="bg-white font-mono text-sm"/>
-                                            </div>
-                                        )}
-                                    </div>
-                                </Card>
-
-                                {theme === 'bakery-house' && (
-                                    <>
-                                        <Card>
-                                            <div className="space-y-3">
-                                                <p className="text-xs font-black text-slate-800">قصة المخبز — شريط القصة</p>
-                                                <p className="text-[11px] text-slate-500">يظهر أسفل المنتجات في قالب المخبز. يمكنك إخفاؤه أو تعديل نصه.</p>
-                                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
-                                                    <span className="text-xs font-bold text-slate-700">إظهار هذا القسم</span>
-                                                    <Switch checked={(() => { const v=getDotted(content,'bakery_story.enabled'); return v===undefined ? true : !!v; })()} onCheckedChange={(v)=> setContent(setDotted(content,'bakery_story.enabled',v))} />
-                                                </div>
-                                                <div>
-                                                    <SectionLabel>النص الرئيسي (الاقتباس)</SectionLabel>
-                                                    <Input value={String(getDotted(content,'bakery_story.quote') ?? '')} onChange={e=> setContent(setDotted(content,'bakery_story.quote',e.target.value))} placeholder="«نُخبز بشغف — كل يوم، بجودة تليق بك»" className="bg-white" />
-                                                </div>
-                                                <div>
-                                                    <SectionLabel>النص المساعد</SectionLabel>
-                                                    <Input value={String(getDotted(content,'bakery_story.subtitle') ?? '')} onChange={e=> setContent(setDotted(content,'bakery_story.subtitle',e.target.value))} placeholder="مكونات مختارة • وصفاتنا الخاصة" className="bg-white" />
-                                                </div>
-                                            </div>
-                                        </Card>
-                                        <Card>
-                                            <div className="space-y-3">
-                                                <p className="text-xs font-black text-slate-800">آخر دفعة — عداد اليوم</p>
-                                                <p className="text-[11px] text-slate-500">عدّ تنازلي حتى وقت آخر خَبزة في اليوم.</p>
-                                                <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
-                                                    <span className="text-xs font-bold text-slate-700">إظهار عداد آخر دفعة</span>
-                                                    <Switch checked={(() => { const v=getDotted(content,'bakery_last_batch.enabled'); return v===undefined ? true : !!v; })()} onCheckedChange={(v)=> setContent(setDotted(content,'bakery_last_batch.enabled',v))} />
-                                                </div>
-                                                <div>
-                                                    <SectionLabel>وقت آخر دفعة (ساعة 0-23)</SectionLabel>
-                                                    <select value={String(getDotted(content,'bakery_last_batch.hour') ?? '21')} onChange={e=> setContent(setDotted(content,'bakery_last_batch.hour', Number(e.target.value)))} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">
-                                                        {Array.from({length:24},(_,i)=> <option key={i} value={String(i)}>{String(i).padStart(2,'0')}:00</option>)}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    </>
-                                )}
-
-                                {/* Collapsed template-specific options */}
+                                {/* D. المظهر — collapsible */}
                                 <Collapsible className="rounded-xl border border-slate-200 bg-white">
                                     <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-start">
-                                        <span className="flex items-center gap-2 text-xs font-black text-slate-700"><Settings2 className="h-3.5 w-3.5 text-slate-500" /> خيارات خاصة بهذا القالب</span>
+                                        <span className="flex items-center gap-2 text-xs font-black text-slate-700"><Settings2 className="h-3.5 w-3.5 text-slate-500" /> المظهر</span>
                                         <ChevronDown className="h-4 w-4 text-slate-400" />
                                     </CollapsibleTrigger>
                                     <CollapsibleContent className="px-3 pb-3">
                                         <div className="space-y-3 border-t border-slate-100 pt-3">
-                                            {theme === 'fashion-atelier' ? (
-                                                <>
-                                                    <SectionLabel>نص شريط الإعلانات</SectionLabel>
-                                                    <Input value={announcementText ?? ''} onChange={(e) => setContent(setDotted(content, 'announcement.text', e.target.value))} placeholder="توصيل سريع لجميع المناطق" className="bg-white" />
-                                                    <div className="grid grid-cols-2 gap-3">
-                                                        <ColorPickerField label="خلفية الشريط" value={announcementBg} onChange={(v) => setContent(setDotted(content, 'announcement.bg_color', v))} />
-                                                        <ColorPickerField label="لون النص" value={announcementColor} onChange={(v) => setContent(setDotted(content, 'announcement.text_color', v))} />
+                                            <div>
+                                                <SectionLabel>وضع العرض</SectionLabel>
+                                                {(() => {
+                                                    const currentFit = String(getDotted(content, 'hero_banner.fit') ?? getDotted(content, 'hero_fit') ?? 'cover').toLowerCase();
+                                                    return (
+                                                        <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1">
+                                                            {[{ id: 'cover', label: 'تغطية' }, { id: 'contain', label: 'احتواء' }].map((opt) => (
+                                                                <button key={opt.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.fit', opt.id); tmp = setDotted(tmp, 'hero_fit', opt.id); setContent(tmp); }} className={`flex-1 rounded-lg px-2 py-2 text-xs font-black transition ${currentFit === opt.id ? 'bg-white text-[#9d7463] shadow' : 'text-slate-500 hover:text-slate-700'}`}>{opt.label}</button>
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                            <div>
+                                                <SectionLabel>موضع التركيز</SectionLabel>
+                                                {(() => {
+                                                    const curPos = String(getDotted(content, 'hero_banner.position') ?? getDotted(content, 'hero_position') ?? 'center');
+                                                    const opts = [{ id: 'center', label: 'وسط' }, { id: 'top', label: 'أعلى' }, { id: 'bottom', label: 'أسفل' }, { id: 'left', label: 'يسار' }, { id: 'right', label: 'يمين' }];
+                                                    return (
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {opts.map((o) => (
+                                                                <button key={o.id} type="button" onClick={() => { let tmp = setDotted(content, 'hero_banner.position', o.id); tmp = setDotted(tmp, 'hero_position', o.id); setContent(tmp); }} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${curPos === o.id ? 'border-[#9d7463] bg-[#9d7463] text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-[#9d7463]/40'}`}>{o.label}</button>
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                            <div>
+                                                <SectionLabel>شفافية الطبقة ({heroOverlay}%)</SectionLabel>
+                                                <div className="flex items-center gap-3">
+                                                    <input type="range" min={0} max={100} value={heroOverlay} onChange={(e) => { const val = Number(e.target.value); let tmp = setDotted(content, 'hero_banner.overlay_opacity', val); tmp = setDotted(tmp, 'overlay_opacity', val); setContent(tmp); }} className="flex-1 accent-[#9d7463]" />
+                                                    <span className="min-w-12 rounded-full bg-slate-100 px-2 py-1 text-center font-mono text-xs font-bold text-slate-600">{heroOverlay}%</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <SectionLabel hint="يتحكم بارتفاع البانر">الارتفاع</SectionLabel>
+                                                {(() => {
+                                                    const desktopH = String(getDotted(content, 'hero_banner.height_desktop') ?? getDotted(content, 'hero_height_desktop') ?? '');
+                                                    const mobileH = String(getDotted(content, 'hero_banner.height_mobile') ?? getDotted(content, 'hero_height_mobile') ?? '');
+                                                    return (
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <SectionLabel>سطح المكتب</SectionLabel>
+                                                                <Input dir="ltr" value={desktopH} onChange={e=>{ let tmp=setDotted(content,'hero_banner.height_desktop',e.target.value); tmp=setDotted(tmp,'hero_height_desktop',e.target.value); setContent(tmp); }} placeholder="— افتراضي —" className="font-mono text-sm bg-white"/>
+                                                            </div>
+                                                            <div>
+                                                                <SectionLabel>الهاتف</SectionLabel>
+                                                                <Input dir="ltr" value={mobileH} onChange={e=>{ let tmp=setDotted(content,'hero_banner.height_mobile',e.target.value); tmp=setDotted(tmp,'hero_height_mobile',e.target.value); setContent(tmp); }} placeholder="— افتراضي —" className="font-mono text-sm bg-white"/>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                        </div>
+                                    </CollapsibleContent>
+                                </Collapsible>
+
+                                {/* E. إعدادات متقدمة — mobile overrides */}
+                                <Collapsible className="rounded-xl border border-slate-200 bg-white">
+                                    <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-3 text-start">
+                                        <span className="flex items-center gap-2 text-xs font-black text-slate-700"><Code2 className="h-3.5 w-3.5 text-slate-500" /> إعدادات متقدمة</span>
+                                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="px-3 pb-3">
+                                        <div className="space-y-3 border-t border-slate-100 pt-3">
+                                            <p className="text-[11px] leading-relaxed text-slate-500">وسائط خاصة بالهاتف — اتركها فارغة ليُستخدم نفس وسائط سطح المكتب</p>
+                                            {heroType === 'image' && (() => {
+                                                const mobImages = sanitizeHeroImages((getDotted(content,'hero_banner.images_mobile') ?? getDotted(content,'hero_images_mobile') ?? []) as any);
+                                                const handleAddMobile = async (files: FileList) => {
+                                                    const valid = Array.from(files).filter(f=>f.type.startsWith('image/')); if(!valid.length) return;
+                                                    const fd = new FormData(); valid.forEach(f=>fd.append('files[]',f));
+                                                    try { const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json',...csrfHeaders()}}); const json:any=await res.json(); if(res.ok && json?.data?.length){ const urls:string[]=(json.data as any[]).map((d:any)=>{const raw=String(d.url||''); return raw.startsWith('/storage')?raw:(raw.match(/\/storage\/.*$/)?.[0]??raw)}).filter(Boolean).map(u=>normalizeImageUrl(u)); const next=[...mobImages,...urls].slice(0,10); let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp); toast.success('تم رفع صور الهاتف'); }} catch {toast.error('فشل الرفع')}
+                                                };
+                                                return (
+                                                    <div className="space-y-2">
+                                                        {mobImages.length>0 && <div className="flex gap-2 flex-wrap">{mobImages.map((img:string,idx:number)=><div key={idx} className="relative h-16 w-16 overflow-hidden rounded-lg border"><img src={normalizeImageUrl(img)} className="h-full w-full object-cover"/><button type="button" onClick={()=>{const next=mobImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images_mobile',next); tmp=setDotted(tmp,'hero_images_mobile',next); setContent(tmp);}} className="absolute inset-0 bg-black/40 text-white text-xs">×</button></div>)}</div>}
+                                                        <DropzoneUploader label="رفع صورة للهاتف (اختياري)" hint="1200×800 — 3:2" multiple uploading={heroUploading} onFiles={handleAddMobile} />
                                                     </div>
-                                                    <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
-                                                        <span className="text-xs font-bold text-slate-700">إظهار الشريط</span>
-                                                        <Switch checked={showAnnouncement} onCheckedChange={(v) => setContent(setDotted(content, 'announcement.enabled', v))} />
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">شريط الإعلانات متاح فقط لقالب Fashion Atelier حالياً.</p>
-                                            )}
-                                            {!!activeModule?.contentSchema?.length && (
-                                                <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
-                                                    <p className="mb-2 text-xs font-black text-slate-700">محتوى قالب «{activeModule.meta.name}»</p>
-                                                    <div className="grid gap-3">
-                                                        {(activeModule.contentSchema as SlotField[]).map((field) => {
-                                                            const value = getDotted(content, field.key) ?? field.default ?? '';
-                                                            return (
-                                                                <div key={field.key}>
-                                                                    <SectionLabel>{field.label}</SectionLabel>
-                                                                    {field.type === 'image' ? <MediaPicker value={value} onChange={(url: string) => setContent(setDotted(content, field.key, url))} /> : <Input value={String(value)} onChange={(e) => setContent(setDotted(content, field.key, e.target.value))} placeholder={field.default} className="bg-white" />}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
+                                                );
+                                            })()}
+                                            {heroType === 'video' && (
+                                                <div className="space-y-2">
+                                                    <SectionLabel>فيديو الهاتف (اختياري)</SectionLabel>
+                                                    <Input dir="ltr" value={String(getDotted(content,'hero_banner.video_url_mobile') ?? getDotted(content,'hero_video_url_mobile') ?? '')} onChange={e=> { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp=setDotted(content,'hero_banner.video_url_mobile',norm); tmp=setDotted(tmp,'hero_video_url_mobile',norm); setContent(tmp); }} placeholder="https://example.com/video-mobile.mp4" className="bg-white font-mono text-sm"/>
+                                                    <DropzoneUploader label="اسحب فيديو الهاتف (اختياري)" hint="1200×800 — 3:2" accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
+                                                        const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
+                                                        try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url_mobile', normalized); tmp = setDotted(tmp, 'hero_video_url_mobile', normalized); setContent(tmp); toast.success('تم رفع فيديو الهاتف'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                                    }} />
                                                 </div>
                                             )}
-                                            {!activeModule?.contentSchema?.length && theme !== 'fashion-atelier' && <p className="text-xs text-slate-400">لا توجد خيارات خاصة لهذا القالب.</p>}
+                                            {heroType === 'youtube' && (
+                                                <div className="space-y-2">
+                                                    <SectionLabel>YouTube للهاتف (اختياري)</SectionLabel>
+                                                    <Input dir="ltr" value={String(getDotted(content,'hero_banner.youtube_url_mobile') ?? getDotted(content,'hero_youtube_url_mobile') ?? '')} onChange={e=> { const clean = stripTrailingSlash(e.target.value.trim()); let tmp=setDotted(content,'hero_banner.youtube_url_mobile',clean); tmp=setDotted(tmp,'hero_youtube_url_mobile',clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm"/>
+                                                </div>
+                                            )}
                                         </div>
                                     </CollapsibleContent>
                                 </Collapsible>
                             </div>
                         )}
 
-                        {/* ============ 4. الأقسام ============ */}
+                                                {/* ============ 4. الأقسام ============ */}
                         {activeWorkspace === 'sections' && (
                             <div className="space-y-3">
                                 <p className="text-xs leading-relaxed text-slate-500">تحكم في أقسام الصفحة الرئيسية.</p>

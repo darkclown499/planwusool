@@ -231,7 +231,7 @@ export const HERO_WIDTH_MODE: Record<string, HeroWidthMode> = {
  * Corrected to ~1600x520-550 wide slot so cover has negligible crop.
  */
 export const HERO_DESKTOP_ASPECTS: Record<string, string> = {
-  'fashion-atelier': '32/11',  // 1600×550 ≈ 2.91 — wide editorial slot
+  'fashion-atelier': '3/2',  // 1200×800 — premium 3:2 editorial banner
   'bazaar-market': '8/3',      // 1600×600 ≈ 2.67
   'grocery-souq': '8/3',       // 1600×600
   'bakery-house': '12/5',      // 1200×500
