@@ -55,7 +55,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
   useEffect(() => { const t = requestAnimationFrame(() => setVisible(true)); return () => cancelAnimationFrame(t); }, []);
 
   return (
-    <section className="pt-3 pb-4 sm:py-6" dir="rtl">
+    <section className="pt-9 pb-4 sm:py-6" dir="rtl">
       <style>{`@media(prefers-reduced-motion:reduce){.atelier-cat{transition:none!important}}`}</style>
       <div className="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
         <div className={`mb-3 sm:mb-7 text-center px-4 sm:px-0 transition-all duration-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'} motion-reduce:transition-none`}>
