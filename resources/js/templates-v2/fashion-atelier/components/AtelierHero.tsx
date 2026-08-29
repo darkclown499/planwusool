@@ -55,17 +55,14 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const youtubeIdMobile = hero.youtubeIdMobile;
   const videoUrl = hero.videoUrl;
   const videoUrlMobile = hero.videoUrlMobile;
-  // Cover Flow: when multiple media (images + video/youtube) exist, use editorial cover flow.
+  // Cover Flow: when multiple media (images + single video/youtube) exist, use editorial cover flow.
+  // Current persistence is hero_banner.images[] + single hero_banner.video_url / youtube_url.
   const coverMedia = (() => {
     const list: Array<{ type: 'image' | 'video' | 'youtube'; src: string; poster?: string }> = [];
-    // Prefer explicit slides array if Designer provides it (future-proof)
-    const rawSlides: any = (hero as any)?.slides || (useResolvedHero as any)?.slides || null;
-    // Current hero images are already the slider source
     const imgs = hero.images;
     imgs.forEach((src) => list.push({ type: 'image', src }));
     if (hero.videoUrl) list.push({ type: 'video', src: hero.videoUrl, poster: list[0]?.src });
     else if (hero.youtubeId) list.push({ type: 'youtube', src: hero.youtubeId });
-    // Also check flat legacy slides prop
     return list;
   })();
   const useCoverFlow = coverMedia.length > 1;

@@ -162,10 +162,8 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
         </a>
         <div className="mt-1.5 flex min-h-[20px] items-baseline gap-1.5" dir="rtl">
           <span className="shrink-0 text-[14px] font-bold text-stone-900">{formatPrice(product.price)}</span>
-          {discount > 0 && !!product.originalPrice ? (
+          {discount > 0 && !!product.originalPrice && (
             <span className="min-w-0 truncate text-xs text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
-          ) : (
-            <span className="min-w-0 text-xs text-transparent select-none" aria-hidden>—</span>
           )}
         </div>
         {/* Status reserved — one line, preserves height even when absent */}
