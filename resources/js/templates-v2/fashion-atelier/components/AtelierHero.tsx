@@ -35,7 +35,8 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const isSingleMedia = hasDynamicHero && (heroType==='video'||heroType==='youtube');
   if(list.length===0 && !isSingleMedia) return null;
   const go=(dir:number)=>setIndex(i=>(i+dir+list.length)%list.length);
-  const overlayStyleOpacity = hasDynamicHero ? hero.overlayOpacity : 0.35;
+  // Fashion Atelier: true brightness default. Only darken when merchant explicitly saved overlay_opacity.
+  const overlayStyleOpacity = hero.overlayExplicit ? hero.overlayOpacity : 0;
   const singleHeroTitle = hasDynamicHero ? (hero.heading||'') : (hero.heading||list[0]?.title||FALLBACK_SLIDES[0].title);
   const singleHeroSubtitle = hasDynamicHero ? (hero.subtitle||'') : (hero.subtitle||list[0]?.subtitle||FALLBACK_SLIDES[0].subtitle);
   const singleHeroCtaLabel = hasDynamicHero ? (hero.ctaLabel||'') : (hero.ctaLabel||list[0]?.button_text||FALLBACK_SLIDES[0].button_text);
@@ -80,13 +81,14 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   }
 
   // Contained editorial: outer wrapper gives balanced side margins; inner hero is the clamped slot.
-  // Outer floating card: layered soft shadow lives on the clamped inner card (overflow-hidden does NOT clip box-shadow),
-  // rounded corners visible on both desktop and mobile. Internal gradient darkening removed — true image color,
-  // only user-controlled overlayOpacity remains.
+  // OUTER-ONLY elevation: soft layered floating shadow lives on OUTER shell (overflow-visible, rounded).
+  // INNER viewport is overflow-hidden clip for media/rounded corners. Slides have NO shadow.
+  // Internal gradient darkening removed — true image color, only merchant-explicit overlayOpacity remains (default 0).
   // Mobile: tighter top radius (xl) + generous bottom radius (2xl) for stacked-card warmth, gap 8-12px from search.
   return (
     <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
-      <div className="atelier-hero hero-clamped relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900 shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: desktopH } as any}>
+      <div className="atelier-hero-outer-shell relative w-full overflow-visible rounded-t-xl rounded-b-2xl sm:rounded-2xl shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40">
+      <div className="atelier-hero hero-clamped relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: desktopH } as any}>
       {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero{ height:${mobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .atelier-hero{ height:${desktopH} !important; } } html[data-preview-mode="mobile"] .atelier-hero{ height:${mobileH} !important; } html[data-preview-mode="desktop"] .atelier-hero{ height:${desktopH} !important; }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero { height: ${mobileH} !important; } } html[data-preview-mode="mobile"] .atelier-hero{ height:${mobileH} !important; } html[data-preview-mode="desktop"] .atelier-hero{ height:${desktopH} !important; }`}</style>}
       {hasDynamicHero && heroType==='video' && (videoUrl || videoUrlMobile) ? (
         <>
@@ -168,6 +170,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
           </div>
         </>
       )}
+      </div>
       </div>
     </section>
   );

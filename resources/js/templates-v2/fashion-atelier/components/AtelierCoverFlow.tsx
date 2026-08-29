@@ -74,13 +74,14 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   const onScroll = () => {
     const el = scrollerRef.current;
     if (!el) return;
-    // Find closest to center
-    const center = el.scrollLeft + el.clientWidth / 2;
+    // RTL-safe center detection via viewport coordinates (avoids Chromium vs Firefox scrollLeft normalization differences)
+    const rect = el.getBoundingClientRect();
+    const center = rect.left + rect.width / 2;
     let best = 0;
     let bestDist = Infinity;
     Array.from(el.children).forEach((child, i) => {
-      const c = child as HTMLElement;
-      const cc = c.offsetLeft + c.offsetWidth / 2;
+      const r = (child as HTMLElement).getBoundingClientRect();
+      const cc = r.left + r.width / 2;
       const d = Math.abs(cc - center);
       if (d < bestDist) { bestDist = d; best = i; }
     });
@@ -92,7 +93,8 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     const m = media[0];
     return (
       <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
-        <div className="relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900 shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40" style={{ height: heights.desktop } as any}>
+        <div className="atelier-cover-outer relative w-full overflow-visible rounded-t-xl rounded-b-2xl sm:rounded-2xl shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40">
+          <div className="relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900" style={{ height: heights.desktop } as any}>
           <style>{`@media (max-width: 767px){ .atelier-hero-single{ height:${heights.mobile} !important; } } html[data-preview-mode="mobile"] .atelier-hero-single{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-hero-single{ height:${heights.desktop} !important; }`}</style>
           <div className="atelier-hero-single absolute inset-0">
             {m.type === 'video' ? (
@@ -116,6 +118,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               </div>
             )}
           </div>
+          </div>
         </div>
       </section>
     );
@@ -123,8 +126,8 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
 
   return (
     <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
-      <div className="relative w-full" style={{ height: heights.desktop } as any}>
-        <style>{`@media (max-width: 767px){ .atelier-cover-viewport{ height:${heights.mobile} !important; } } @media (min-width: 768px){ .atelier-cover-viewport{ height:${heights.desktop} !important; } } html[data-preview-mode="mobile"] .atelier-cover-viewport{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-cover-viewport{ height:${heights.desktop} !important; } html[data-preview-mode="mobile"] .atelier-cover-viewport{ direction: rtl; }`}</style>
+      <div className="atelier-cover-outer relative w-full overflow-hidden rounded-2xl shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40" style={{ height: heights.desktop } as any}>
+        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height:${heights.mobile} !important; } } @media (min-width: 768px){ .atelier-cover-outer{ height:${heights.desktop} !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height:${heights.desktop} !important; }`}</style>
         <div
           ref={scrollerRef}
           onScroll={onScroll}
@@ -140,7 +143,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               <div
                 key={i}
                 onClick={() => setIndex(i)}
-                className={`relative shrink-0 snap-center overflow-hidden rounded-2xl bg-stone-900 shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40 transition-all duration-400 ${isActive ? 'w-[84%] sm:w-[68%] opacity-100 scale-100' : 'w-[68%] sm:w-[56%] opacity-70 scale-[0.96]'}`}
+                className={`relative shrink-0 snap-center overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-stone-200/30 transition-all duration-400 ${isActive ? 'w-[84%] sm:w-[68%] opacity-100 scale-100 shadow-[0_2px_10px_rgba(60,45,35,0.08)]' : 'w-[68%] sm:w-[56%] opacity-70 scale-[0.96]'}`}
                 style={{ height: '100%' }}
                 role="button"
                 tabIndex={0}

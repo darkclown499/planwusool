@@ -384,7 +384,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
     const heroVideoUrlMobile = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url_mobile') ?? getDotted(content, 'hero_banner.videoUrlMobile') ?? getDotted(content, 'hero_video_url_mobile') ?? ''));
     const heroYoutubeUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url') ?? ''));
     const heroYoutubeUrlMobile = stripTrailingSlash(String(getDotted(content, 'hero_banner.youtube_url_mobile') ?? getDotted(content, 'hero_banner.youtubeUrlMobile') ?? getDotted(content, 'hero_youtube_url_mobile') ?? ''));
-    const heroOverlay = Number(getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity') ?? 35);
+    const heroOverlay = Number(getDotted(content, 'hero_banner.overlay_opacity') ?? getDotted(content, 'overlay_opacity') ?? 0);
     const youtubeIdMobile = heroYoutubeUrlMobile ? getYoutubeId(heroYoutubeUrlMobile) : null;
     const heroHeading = (getDotted(content, 'hero_banner.heading') ?? '') as string;
     const heroSubtitle = (getDotted(content, 'hero_banner.subtitle') ?? '') as string;

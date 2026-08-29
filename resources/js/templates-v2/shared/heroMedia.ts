@@ -43,6 +43,7 @@ export interface ResolvedHero {
   ctaLabel: string;
   ctaLink: string;
   overlayOpacity: number;
+  overlayExplicit: boolean;
   hasDynamicHero: boolean;
   /** Reusable fit control: cover (crop, no bars) vs contain (letterbox). Defaults to cover. */
   fit: 'cover' | 'contain';
@@ -108,7 +109,9 @@ export function useResolvedHero(): ResolvedHero {
   }
 
   const heroType: string | null = storeHero?.type ? String(storeHero.type).toLowerCase() : null;
-  const overlayOpacityRaw = storeHero?.overlay_opacity ?? storeHero?.overlayOpacity ?? storeHero?.overlay ?? rawContent?.overlay_opacity ?? 35;
+  const overlayRawForExplicit = storeHero?.overlay_opacity ?? storeHero?.overlayOpacity ?? storeHero?.overlay ?? rawContent?.overlay_opacity ?? null;
+  const overlayExplicit = overlayRawForExplicit !== null && String(overlayRawForExplicit).trim() !== '';
+  const overlayOpacityRaw = overlayRawForExplicit !== null && String(overlayRawForExplicit).trim() !== '' ? overlayRawForExplicit : 35;
   const normalizedOverlay = Number(overlayOpacityRaw) > 1 ? Number(overlayOpacityRaw) / 100 : Number(overlayOpacityRaw);
 
   const heroHeading = storeHero?.heading ?? storeHero?.title ?? rawContent?.hero_heading ?? '';
@@ -172,7 +175,8 @@ export function useResolvedHero(): ResolvedHero {
     subtitle: String(heroSubtitle || ''),
     ctaLabel: String(heroCtaLabel || ''),
     ctaLink: String(heroCtaLink || ''),
-    overlayOpacity: hasDynamicHero ? normalizedOverlay : 0.35,
+    overlayOpacity: hasDynamicHero ? normalizedOverlay : (overlayExplicit ? normalizedOverlay : 0),
+    overlayExplicit,
     hasDynamicHero,
     fit,
     position,
