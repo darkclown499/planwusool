@@ -33,12 +33,15 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   const [isMobile, setIsMobile] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const startX = useRef(0);
   const startY = useRef(0);
   const axisLocked = useRef<'x' | 'y' | null>(null);
   const pausedRef = useRef(false);
+
+  useEffect(() => { isDraggingRef.current = isDragging; }, [isDragging]);
 
   // Clamp index when media length changes (Designer preview)
   useEffect(() => {
@@ -78,15 +81,15 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [index, media, reducedMotion]);
 
-  // Auto-advance — desktop only, respects reducedMotion, single-item, pause on interaction/hidden tab
+  // Auto-advance — desktop only, respects reducedMotion, single-item, pause on drag/hidden tab (no hover pause)
   useEffect(() => {
     if (reducedMotion || media.length <= 1 || isMobile) return;
     const id = setInterval(() => {
-      if (pausedRef.current || document.hidden || isDragging) return;
-      setIndex((i) => (i + 1) % media.length);
+      if (pausedRef.current || document.hidden || isDraggingRef.current) return;
+      setIndex((prev) => (prev + 1) % media.length);
     }, 5000);
     return () => clearInterval(id);
-  }, [media.length, reducedMotion, isDragging, isMobile]);
+  }, [media.length, reducedMotion, isMobile]);
 
   const go = useCallback((dir: number) => {
     setIndex((i) => (i + dir + media.length) % media.length);
@@ -256,6 +259,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             let shadow = '0 18px 40px rgba(60,45,35,0.18), 0 6px 14px rgba(60,45,35,0.12)';
             let blur: string | undefined;
             // Active widths: width is stable source — min(cqw, maxPx) preserves 3:2 / 4:3 without cqh
+            // Stable base width for reliable transform animation — width does not change between states, visual size via scale
             let cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(60cqw, 760px)';
 
             if (isActive) {
@@ -267,25 +271,27 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(60cqw, 760px)';
             } else if (isNeighbor) {
               basePct = isMobile ? 20 : 17;
-              scale = 1;
+              scale = isMobile ? 1 : 0.72;
               opacity = isMobile ? 0.88 : 0.90;
               z = 20;
-              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.71)' : 'calc(min(60cqw, 760px) * 0.72)';
+              // Mobile keeps width-based hierarchy (frozen), desktop uses stable base + scale for reliable motion
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.71)' : 'min(60cqw, 760px)';
               shadow = '0 10px 26px rgba(60,45,35,0.14), 0 3px 10px rgba(60,45,35,0.08)';
               blur = isMobile ? '2px' : '3px';
             } else if (isSecond) {
               basePct = isMobile ? 45 : 48;
-              scale = 1;
+              scale = isMobile ? 1 : 0.56;
               opacity = 0.52;
               z = 10;
-              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(60cqw, 760px) * 0.56)';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'min(60cqw, 760px)';
               shadow = '0 6px 16px rgba(60,45,35,0.10)';
               blur = isMobile ? '3px' : '4px';
             } else {
               opacity = 0;
               z = 0;
               blur = isMobile ? '4px' : '5px';
-              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(60cqw, 760px) * 0.56)';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'min(60cqw, 760px)';
+              scale = isMobile ? 1 : 0.56;
             }
 
             // drag follows pointer directly; settle after release is 300ms (Fashion easing)
