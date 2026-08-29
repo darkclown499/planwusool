@@ -113,15 +113,15 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [index, media]);
 
-  // Auto-advance — desktop only, single-item, pause on drag/hidden tab; reducedMotion no longer disables autoplay (only reduces motion)
+  // Auto-advance (mobile + desktop), single-item, pause on drag/hidden tab; reducedMotion no longer disables autoplay (only reduces motion)
   useEffect(() => {
-    if (media.length <= 1 || isMobile) return;
+    if (media.length <= 1) return;
     const id = setInterval(() => {
       if (pausedRef.current || document.hidden || isDraggingRef.current) return;
       setIndex((prev) => (prev + 1) % media.length);
     }, 5000);
     return () => clearInterval(id);
-  }, [media.length, isMobile]);
+  }, [media.length]);
 
   const go = useCallback((dir: number) => {
     setIndex((i) => (i + dir + media.length) % media.length);
@@ -254,7 +254,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   return (
     <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-3" dir="rtl" style={{ overflowX: 'clip' } as any}>
       <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(60cqw, 760px) / 1.5 + 20px)`, background: 'transparent' } as any}>
-        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(89cqw, 420px) / 1.333333 + 28px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(89cqw, 420px) / 1.333333 + 28px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(60cqw, 760px) / 1.5 + 20px) !important; }`}</style>
+        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(93.5cqw, 440px) / 1.333333 + 28px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(93.5cqw, 440px) / 1.333333 + 28px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(60cqw, 760px) / 1.5 + 20px) !important; }`}</style>
 
         <div
           ref={stageRef}
@@ -296,7 +296,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             let blur: string | undefined;
             // Active widths: width is stable source — min(cqw, maxPx) preserves 3:2 / 4:3 without cqh
             // Stable base width for reliable transform animation — width does not change between states, visual size via scale
-            let cardWidth = isMobile ? 'min(89cqw, 420px)' : 'min(60cqw, 760px)';
+            let cardWidth = isMobile ? 'min(93.5cqw, 440px)' : 'min(60cqw, 760px)';
 
             if (isActive) {
               basePct = 0;
@@ -304,13 +304,13 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               opacity = 1;
               z = 30;
               blur = undefined;
-              cardWidth = isMobile ? 'min(89cqw, 420px)' : 'min(60cqw, 760px)';
+              cardWidth = isMobile ? 'min(93.5cqw, 440px)' : 'min(60cqw, 760px)';
             } else if (isNeighbor) {
-              basePct = isMobile ? 23 : 17;
+              basePct = isMobile ? 20.5 : 17;
               scale = 0.72;
               opacity = 0.9;
               z = 20;
-              cardWidth = isMobile ? 'min(89cqw, 420px)' : 'min(60cqw, 760px)';
+              cardWidth = isMobile ? 'min(93.5cqw, 440px)' : 'min(60cqw, 760px)';
               shadow = isMobile ? '0 8px 22px rgba(60,45,35,0.16), 0 2px 8px rgba(60,45,35,0.08)' : '0 10px 26px rgba(60,45,35,0.14), 0 3px 10px rgba(60,45,35,0.08)';
               blur = isMobile ? '2px' : '3px';
             } else if (isSecond) {
@@ -318,14 +318,14 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               scale = isMobile ? 0.5 : 0.56;
               opacity = 0.52;
               z = 10;
-              cardWidth = isMobile ? 'min(89cqw, 420px)' : 'min(60cqw, 760px)';
+              cardWidth = isMobile ? 'min(93.5cqw, 440px)' : 'min(60cqw, 760px)';
               shadow = isMobile ? '0 5px 14px rgba(60,45,35,0.10)' : '0 6px 16px rgba(60,45,35,0.10)';
               blur = isMobile ? '3px' : '4px';
             } else {
               opacity = 0;
               z = 0;
               blur = isMobile ? '4px' : '5px';
-              cardWidth = isMobile ? 'min(89cqw, 420px)' : 'min(60cqw, 760px)';
+              cardWidth = isMobile ? 'min(93.5cqw, 440px)' : 'min(60cqw, 760px)';
               scale = isMobile ? 0.5 : 0.56;
             }
 
@@ -364,7 +364,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
                         left: '50%',
                         top: '50%',
                         width: cardWidth,
-                        maxWidth: '420px',
+                        maxWidth: '440px',
                         aspectRatio: '4 / 3',
                         transform: `translateX(${tx}) translateY(-50%) scale(${scale})`,
                         transformOrigin: 'center center',
