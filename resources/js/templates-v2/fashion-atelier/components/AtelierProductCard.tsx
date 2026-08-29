@@ -153,23 +153,27 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
         )}
       </div>
 
-      {/* Meta — inside same premium card */}
-      <div className="flex w-full min-w-0 flex-col px-3 pt-3 pb-3" dir="auto">
+      {/* Meta — inside same premium card, reserved zones for equal height */}
+      <div className="flex w-full min-w-0 flex-1 flex-col px-3 pt-3 pb-3" dir="auto">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }}
           className="line-clamp-2 min-h-[2.6em] w-full text-[13px] font-medium leading-snug text-stone-800 transition-colors hover:text-[#9d7463] sm:text-[14px]"
           dir="auto">
           {product.name}
         </a>
-        <div className="mt-1.5 flex items-baseline gap-1.5" dir="rtl">
+        <div className="mt-1.5 flex min-h-[20px] items-baseline gap-1.5" dir="rtl">
           <span className="shrink-0 text-[14px] font-bold text-stone-900">{formatPrice(product.price)}</span>
-          {discount > 0 && !!product.originalPrice && (
+          {discount > 0 && !!product.originalPrice ? (
             <span className="min-w-0 truncate text-xs text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
+          ) : (
+            <span className="min-w-0 text-xs text-transparent select-none" aria-hidden>—</span>
           )}
         </div>
-        {/* Low stock — subtle muted text below price */}
-        {!!remaining && !outOfStock && (
-          <span className="mt-1 text-[11px] font-medium text-amber-700">باقي {remaining} فقط</span>
-        )}
+        {/* Status reserved — one line, preserves height even when absent */}
+        <div className="min-h-[16px] mt-1">
+          {!!remaining && !outOfStock ? (
+            <span className="text-[11px] font-medium text-amber-700">باقي {remaining} فقط</span>
+          ) : null}
+        </div>
         {(() => {
           const loyalty = getLoyaltySettingsFromPage();
           if (!loyalty || !loyalty.is_enabled) return null;

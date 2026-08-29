@@ -77,18 +77,20 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
               <a
                 key={c.id}
                 href={`/category/${c.slug || c.id}`}
-                className="group flex w-[82px] shrink-0 snap-start flex-col items-center gap-2.5 sm:w-[104px]"
+                className="group flex w-[88px] shrink-0 snap-start flex-col items-center gap-2.5 sm:w-[104px]"
               >
-                <span className="relative block h-[82px] w-[82px] shrink-0 overflow-hidden rounded-full bg-stone-50 ring-1 ring-stone-200 transition-all duration-300 group-hover:ring-[#9d7463] group-hover:ring-offset-2 group-hover:ring-offset-white sm:h-[104px] sm:w-[104px]">
-                  {c.image ? (
-                    <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
-                  ) : (
-                    <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f3ece4] to-[#e7d8c9] text-[#9d7463]" aria-hidden>
-                      {getCategoryFallbackIcon(c.name)}
-                    </span>
-                  )}
+                <span className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-[20px] bg-[#fffdf9] p-2 shadow-[0_2px_8px_rgba(40,30,20,0.04),0_8px_18px_rgba(40,30,20,0.05)] ring-1 ring-stone-200/30 transition-all duration-150 group-hover:shadow-[0_4px_12px_rgba(40,30,20,0.06),0_12px_24px_rgba(40,30,20,0.07)] active:scale-[0.98] motion-reduce:transition-none sm:h-[104px] sm:w-[104px] sm:rounded-[22px]">
+                  <span className="relative block h-[62px] w-[62px] shrink-0 overflow-hidden rounded-full bg-stone-50 ring-1 ring-stone-200/50 sm:h-[72px] sm:w-[72px]">
+                    {c.image ? (
+                      <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f3ece4] to-[#e7d8c9] text-[#9d7463]" aria-hidden>
+                        {getCategoryFallbackIcon(c.name)}
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-1.5 w-full max-w-[76px] break-words text-center text-[10px] font-medium leading-tight text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-1 sm:max-w-[80px] sm:text-xs">{c.name}</span>
                 </span>
-                <span className="w-full max-w-[76px] break-words text-center text-[11px] font-medium leading-tight text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-2 sm:max-w-[80px] sm:text-xs">{c.name}</span>
               </a>
             ))}
             </div>

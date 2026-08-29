@@ -133,9 +133,9 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
           <X className="h-5 w-5" />
         </button>
 
-        {/* Mobile product focus zone — floating over blurred storefront, no white stage */}
-        <div className="flex h-[clamp(300px,46dvh,500px)] shrink-0 items-center justify-center px-6 pt-12 pb-3 sm:hidden">
-          <div className="atelier-product-image relative flex h-full w-full max-w-[86%] items-center justify-center">
+        {/* Mobile product focus zone — raised 16px, floating over blurred storefront */}
+        <div className="flex h-[clamp(300px,44dvh,500px)] shrink-0 items-center justify-center px-6 pt-10 pb-6 sm:hidden">
+          <div className="atelier-product-image relative flex h-full w-full max-w-[86%] -translate-y-3 items-center justify-center">
             <img src={getImageUrl(images[active])} alt={product.name} className="max-h-[88%] max-w-full object-contain drop-shadow-[0_10px_28px_rgba(0,0,0,0.12)]" />
             {discount > 0 && <span className="absolute top-2 right-2 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>}
             {outOfStock && <span className="absolute top-2 left-2 rounded-full border border-stone-300 bg-white/90 px-3 py-1 text-xs font-bold text-stone-600">نفذت</span>}
@@ -143,12 +143,12 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
         </div>
         {images.length > 1 && <div className="flex justify-center gap-2 pb-2 sm:hidden">{images.map((_, i) => <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-300'}`} />)}</div>}
 
-        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[26px] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] -mt-3 pt-1 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
+        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[26px] shadow-[0_-2px_8px_rgba(40,30,20,0.04),0_-12px_28px_rgba(40,30,20,0.06)] -mt-5 pt-1 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
-            {/* Gallery — desktop only (mobile uses focus zone above) */}
+            {/* Gallery — desktop floating transparent (no white rectangle) */}
             <div className="hidden sm:block px-4 pt-4 sm:px-0 sm:pt-0">
-              <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/60 aspect-[3/4]">
-                <img src={getImageUrl(images[active])} alt={product.name} className="h-full w-full object-contain p-2 sm:object-cover sm:p-0" />
+              <div className="relative overflow-hidden rounded-2xl bg-transparent aspect-[3/4]">
+                <img src={getImageUrl(images[active])} alt={product.name} className="h-full w-full object-contain p-2" />
                 {discount > 0 && (
                   <span className="absolute top-3 right-3 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>
                 )}
@@ -161,7 +161,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                   {images.map((img, i) => (
                     <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`}
                       className={`h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-white ring-1 transition ${i === active ? 'ring-2 ring-[#9d7463]' : 'ring-stone-200 opacity-70 hover:opacity-100'}`}>
-                      <img src={getImageUrl(img)} alt="" className="h-full w-full object-contain p-1 sm:object-cover sm:p-0" />
+                      <img src={getImageUrl(img)} alt="" className="h-full w-full object-contain p-1" />
                     </button>
                   ))}
                 </div>
