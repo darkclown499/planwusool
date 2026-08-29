@@ -66,21 +66,21 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
             </p>
           )}
         </div>
-        {/* Rail with strong peek + edge fade */}
+          {/* Rail with strong peek + edge fade */}
         <div className="relative">
           <div
             ref={scrollRef}
             className="overflow-x-auto overflow-y-hidden pb-3 snap-x snap-mandatory scroll-px-4 sm:scroll-px-6 lg:scroll-px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <div className="flex w-max gap-3.5 sm:gap-5 px-4 sm:px-0 justify-start sm:justify-center after:content-[''] after:block after:w-6 after:shrink-0 sm:after:hidden">
+            <div className="flex w-max gap-3 sm:gap-5 px-4 sm:px-0 justify-start sm:justify-center after:content-[''] after:block after:w-8 after:shrink-0 sm:after:hidden">
             {categories.slice(0, 12).map((c) => (
               <a
                 key={c.id}
                 href={`/category/${c.slug || c.id}`}
-                className="group flex w-[88px] shrink-0 snap-start flex-col items-center gap-2.5 sm:w-[104px]"
+                className="group flex w-[100px] shrink-0 snap-start flex-col items-center sm:w-[110px]"
               >
-                <span className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-[20px] bg-[#fffdf9] p-2 shadow-[0_2px_8px_rgba(40,30,20,0.04),0_8px_18px_rgba(40,30,20,0.05)] ring-1 ring-stone-200/30 transition-all duration-150 group-hover:shadow-[0_4px_12px_rgba(40,30,20,0.06),0_12px_24px_rgba(40,30,20,0.07)] active:scale-[0.98] motion-reduce:transition-none sm:h-[104px] sm:w-[104px] sm:rounded-[22px]">
-                  <span className="relative block h-[62px] w-[62px] shrink-0 overflow-hidden rounded-full bg-stone-50 ring-1 ring-stone-200/50 sm:h-[72px] sm:w-[72px]">
+                <span className="flex h-[128px] w-[100px] flex-col items-center justify-start rounded-[20px] bg-[#fffdf9] px-2 py-2.5 shadow-[0_2px_8px_rgba(40,30,20,0.04),0_8px_18px_rgba(40,30,20,0.05)] ring-1 ring-stone-200/30 transition-all duration-150 group-hover:shadow-[0_4px_12px_rgba(40,30,20,0.06),0_12px_24px_rgba(40,30,20,0.07)] active:scale-[0.98] motion-reduce:transition-none sm:h-[138px] sm:w-[110px] sm:rounded-[22px] sm:px-2.5 sm:py-3">
+                  <span className="relative block h-[70px] w-[70px] shrink-0 overflow-hidden rounded-full bg-stone-50 ring-1 ring-stone-200/50 sm:h-[74px] sm:w-[74px]">
                     {c.image ? (
                       <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
                     ) : (
@@ -89,7 +89,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
                       </span>
                     )}
                   </span>
-                  <span className="mt-1.5 w-full max-w-[76px] break-words text-center text-[10px] font-medium leading-tight text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-1 sm:max-w-[80px] sm:text-xs">{c.name}</span>
+                  <span className="mt-2 flex min-h-[34px] w-full max-w-[88px] items-center justify-center break-words text-center text-[11px] font-medium leading-[1.4] text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-2 sm:max-w-[96px] sm:text-[12px] sm:leading-[1.4]">{c.name}</span>
                 </span>
               </a>
             ))}

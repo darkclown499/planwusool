@@ -126,7 +126,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4" dir="rtl" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] backdrop-blur-[8px] atelier-focus-backdrop" onClick={onClose} style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' } as any} />
       <style>{`@keyframes atelierFadeIn{from{opacity:0}to{opacity:1}}@keyframes atelierImageIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}@keyframes atelierSheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.atelier-focus-backdrop{animation:atelierFadeIn 220ms ease-out}.atelier-product-image{animation:atelierImageIn 260ms cubic-bezier(.2,.8,.2,1)} .atelier-info-sheet{animation:atelierSheetIn 260ms cubic-bezier(.2,.8,.2,1) 60ms both}@media(prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-info-sheet{animation:none!important}}`}</style>
-      <div className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[26px] bg-transparent sm:bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl">
+      <div className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[30px] bg-transparent sm:bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl">
         {/* Close */}
         <button type="button" onClick={onClose} aria-label="إغلاق"
           className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900">
@@ -143,7 +143,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
         </div>
         {images.length > 1 && <div className="flex justify-center gap-2 pb-2 sm:hidden">{images.map((_, i) => <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-300'}`} />)}</div>}
 
-        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[26px] shadow-[0_-2px_8px_rgba(40,30,20,0.04),0_-12px_28px_rgba(40,30,20,0.06)] -mt-5 pt-1 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
+        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[30px] shadow-[0_-2px_8px_rgba(40,30,20,0.04),0_-12px_28px_rgba(40,30,20,0.06)] -mt-[22px] pt-3 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
             {/* Gallery — desktop floating transparent (no white rectangle) */}
             <div className="hidden sm:block px-4 pt-4 sm:px-0 sm:pt-0">
@@ -168,12 +168,12 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
               )}
             </div>
 
-            {/* Story — RTL right-aligned, purchase before description */}
-            <div className="flex flex-col px-4 pb-6 pt-4 sm:px-0 sm:py-0">
-              <h1 className="text-right font-serif text-[22px] font-bold leading-snug text-stone-900 sm:text-2xl" dir="auto">{product.name}</h1>
+            {/* Story — RTL right-aligned, tighter product-summary composition */}
+            <div className="flex flex-col px-[18px] pb-6 pt-5 sm:px-0 sm:py-0">
+              <h1 className="text-right font-serif text-[21px] font-semibold leading-snug text-stone-900 sm:text-[22px]" dir="auto">{product.name}</h1>
 
-              <div className="mt-3 flex flex-wrap items-baseline justify-start gap-2 text-right">
-                <span className="text-[22px] font-bold leading-none text-stone-900">{formatPrice(displayPrice)}</span>
+              <div className="mt-2.5 flex flex-wrap items-baseline justify-start gap-2 text-right">
+                <span className="text-[19px] font-bold leading-none text-stone-900 sm:text-[20px]">{formatPrice(displayPrice)}</span>
                 {discount > 0 && !!product.originalPrice && !selectedCombo && (
                   <>
                     <span className="text-sm text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
@@ -183,22 +183,24 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 {isSelectedOOS && <span className="rounded-full border border-red-200 bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">غير متوفر</span>}
               </div>
 
-              {/* Stock subtle */}
-              {outOfStock ? (
-                <p className="mt-2 text-right text-sm font-semibold text-red-600">نفذت الكمية</p>
-              ) : !!remaining && (
-                <p className="mt-2 text-right text-xs font-medium text-amber-700">باقي {remaining} فقط</p>
-              )}
-              {(() => {
-                const loyalty = getLoyaltySettingsFromPage();
-                if (!loyalty || !loyalty.is_enabled) return null;
-                const pts = calcEarnedPoints(Number(displayPrice) || 0, loyalty);
-                return pts > 0 ? (
-                  <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
-                    <Gift className="h-3.5 w-3.5" /> كسب {pts} نقطة
-                  </span>
-                ) : null;
-              })()}
+              {/* Stock + loyalty — tightly coupled to price, warm accent 12px */}
+              <div className="mt-1.5 flex flex-wrap items-center justify-start gap-2">
+                {outOfStock ? (
+                  <span className="text-[12px] font-semibold text-red-600">نفذت الكمية</span>
+                ) : !!remaining ? (
+                  <span className="text-[12px] font-medium text-amber-700">باقي {remaining} فقط</span>
+                ) : null}
+                {(() => {
+                  const loyalty = getLoyaltySettingsFromPage();
+                  if (!loyalty || !loyalty.is_enabled) return null;
+                  const pts = calcEarnedPoints(Number(displayPrice) || 0, loyalty);
+                  return pts > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-amber-600">
+                      <Gift className="h-3 w-3" /> كسب {pts} نقطة
+                    </span>
+                  ) : null;
+                })()}
+              </div>
 
               {/* Variants */}
               {(product.variants || []).length > 0 && (
@@ -249,18 +251,18 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 </div>
               )}
 
-              {/* Purchase controls — before description */}
-              <div ref={ctaRef} className="mt-5 flex items-center gap-2">
-                <div className="flex items-center rounded-xl border border-stone-300 bg-white">
-                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-9 w-9 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-3.5 w-3.5" /></button>
-                  <span className="w-7 text-center text-sm font-bold" aria-live="polite">{qty}</span>
-                  <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-9 w-9 items-center justify-center text-stone-500 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-3.5 w-3.5" /></button>
+              {/* Purchase controls — coherent composition, before description */}
+              <div ref={ctaRef} className="mt-4 flex items-center gap-2.5">
+                <div className="flex h-[42px] w-[88px] shrink-0 items-center justify-between rounded-[12px] border border-stone-300 bg-white px-1 shadow-sm">
+                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-3.5 w-3.5" /></button>
+                  <span className="w-7 text-center text-[14px] font-bold text-stone-800" aria-live="polite">{qty}</span>
+                  <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-3.5 w-3.5" /></button>
                 </div>
                 <button
                   type="button"
                   onClick={handleAdd}
                   disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
-                  className="flex h-[46px] flex-[1.35] items-center justify-center rounded-xl bg-stone-900 px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
+                  className="flex h-[46px] flex-1 items-center justify-center rounded-[12px] bg-stone-900 px-4 text-[14px] font-bold text-white shadow-sm transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
                 >
                   {outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضف إلى السلة'}
                 </button>
@@ -268,9 +270,9 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                   type="button"
                   onClick={() => wishlist.toggle(product.id)}
                   aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
-                  className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-xl border transition ${wished ? 'border-[#9d7463] bg-[#9d7463] text-white' : 'border-stone-300 bg-white text-stone-500 hover:border-[#9d7463] hover:text-[#9d7463]'}`}
+                  className={`flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[12px] border text-stone-500 shadow-sm transition ${wished ? 'border-[#9d7463] bg-[#9d7463] !text-white shadow' : 'border-stone-300 bg-white hover:border-[#9d7463] hover:text-[#9d7463]'}`}
                 >
-                  <Heart className="h-5 w-5" fill={wished ? 'currentColor' : 'none'} />
+                  <Heart className="h-[18px] w-[18px]" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.8} />
                 </button>
               </div>
 
@@ -280,18 +282,18 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 </p>
               )}
 
-              {/* Description — after purchase */}
+              {/* Description — editorial polish */}
               {product.description && (
-                <div className="mt-6 border-t border-stone-200 pt-5">
-                  <div className="flex items-center justify-end gap-2">
-                    <h3 className="text-right text-[13px] font-bold tracking-wide text-stone-900">وصف المنتج</h3>
-                    <span className="h-px w-6 bg-[#b08d57] shrink-0" aria-hidden />
+                <div className="mt-5 border-t border-stone-200 pt-5">
+                  <div className="flex items-center justify-end gap-2.5">
+                    <h3 className="text-right text-[13px] font-semibold tracking-wide text-stone-900 sm:text-[14px]">وصف المنتج</h3>
+                    <span className="h-px w-[26px] bg-[#b08d57] shrink-0" aria-hidden />
                   </div>
                   <div
                     ref={descRef}
                     id="atelier-desc"
                     dir="auto"
-                    className={`mt-3 break-words text-[14px] leading-[1.85] text-stone-600 [overflow-wrap:anywhere] ${!descExpanded ? 'line-clamp-4' : ''}`}
+                    className={`mt-3 break-words text-[14px] leading-[1.9] text-stone-600 [overflow-wrap:anywhere] ${!descExpanded ? 'line-clamp-4' : ''}`}
                     dangerouslySetInnerHTML={createSafeHtml(product.description || '')}
                   />
                   {descOverflows && (
@@ -300,12 +302,12 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                       onClick={() => setDescExpanded((v) => !v)}
                       aria-expanded={descExpanded}
                       aria-controls="atelier-desc"
-                      className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-stone-600 hover:text-[#9d7463]"
+                      className="mt-2.5 inline-flex items-center gap-1 text-[13px] font-medium text-[#9d7463] hover:text-[#85604f]"
                     >
                       {descExpanded ? (
-                        <>عرض أقل <ChevronUp className="h-4 w-4" /></>
+                        <>عرض أقل <ChevronUp className="h-3.5 w-3.5" /></>
                       ) : (
-                        <>عرض المزيد <ChevronDown className="h-4 w-4" /></>
+                        <>عرض المزيد <ChevronDown className="h-3.5 w-3.5" /></>
                       )}
                     </button>
                   )}

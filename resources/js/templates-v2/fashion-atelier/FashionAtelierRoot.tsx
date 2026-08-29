@@ -387,7 +387,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const normalMain = (
-    <main>
+    <main className="pb-[72px] sm:pb-0">
       <AtelierMobileSearch />
 
       <AtelierHero
@@ -422,14 +422,14 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
       {showBest && (
         <div id="atelier-best">
-          <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-            <div className="mb-4 flex items-end justify-between gap-4">
+          <section className="mx-auto max-w-7xl px-4 pt-3 pb-8 sm:px-6 sm:pt-6 sm:pb-10 lg:px-8">
+            <div className="mb-3 flex items-end justify-between gap-4 sm:mb-4">
               <div>
                 <span className="mb-2 block h-px w-10 bg-[#b08d57]" />
                 <h2 className="font-serif text-xl font-semibold text-stone-900 sm:text-2xl">الأكثر مبيعاً</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 items-start gap-x-3 gap-y-6 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
+            <div className="grid grid-cols-2 items-start gap-x-3 gap-y-5 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
               {bestsellers.map((p) => (
                 <AtelierProductCard key={p.id} product={p} />
               ))}
@@ -441,7 +441,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       {/* Dynamic category sections */}
       {homepageCategories.length > 0 && (
         <div>
-          <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
             {homepageCategories.map((catId: string) => {
               const cat = categories.find((c: any) => String(c.id) === String(catId));
               if (!cat) return null;

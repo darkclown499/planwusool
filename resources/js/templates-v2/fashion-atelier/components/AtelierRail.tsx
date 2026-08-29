@@ -29,9 +29,9 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="py-8 sm:py-12" dir="rtl">
+    <section className="pt-6 pb-2 sm:pt-8 sm:pb-4" dir="rtl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-4 flex items-end justify-between gap-4">
+        <div className="mb-3 flex items-end justify-between gap-4 sm:mb-4">
           <div>
             <span className="mb-2 block h-px w-10 bg-[#b08d57]" />
             <h2 className="font-serif text-xl font-semibold text-stone-900 sm:text-2xl">{title}</h2>
@@ -58,7 +58,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
 
         <div
           ref={scroller}
-          className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4"
+          className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4 sm:pb-3"
         >
           {products.map((p) => (
             <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-[23%] lg:w-[19%] min-[1400px]:w-[16%]">
