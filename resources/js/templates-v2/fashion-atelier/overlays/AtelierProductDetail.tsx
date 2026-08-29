@@ -57,6 +57,11 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   }, [product?.description, descExpanded]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartY = useRef(0);
+  const dragStartTime = useRef(0);
   // Sticky bar observer — must track against actual sheet scroll viewport, not browser viewport
   useEffect(() => {
     const el = ctaRef.current;
@@ -66,6 +71,37 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+  // ESC close on desktop
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+  const onHandlePointerDown = (e: React.PointerEvent) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const sc = scrollContainerRef.current;
+    if (sc && sc.scrollTop > 6) return;
+    dragStartY.current = e.clientY;
+    dragStartTime.current = Date.now();
+    setIsDragging(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onHandlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const delta = e.clientY - dragStartY.current;
+    if (delta < 0) setDragY(0);
+    else setDragY(delta);
+  };
+  const onHandlePointerUp = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const delta = e.clientY - dragStartY.current;
+    const elapsed = Date.now() - dragStartTime.current;
+    const velocity = elapsed > 0 ? delta / elapsed : 0;
+    const h = sheetRef.current?.offsetHeight || 620;
+    if (delta > h * 0.27 || velocity > 0.62) onClose();
+    else setDragY(0);
+  };
 
   if (!product) return null;
 
@@ -122,11 +158,13 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     return false;
   })();
 
+  const backdropOpacity = Math.max(0, 0.22 * (1 - dragY / 420));
+  const backdropBlur = Math.max(0, 8 * (1 - dragY / 420));
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4" dir="rtl" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] backdrop-blur-[8px] atelier-focus-backdrop" onClick={onClose} style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' } as any} />
+      <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] atelier-focus-backdrop" onClick={onClose} style={{ backdropFilter: `blur(${backdropBlur}px)`, WebkitBackdropFilter: `blur(${backdropBlur}px)`, opacity: dragY ? 1 - dragY / 520 : 1 } as any} />
       <style>{`@keyframes atelierFadeIn{from{opacity:0}to{opacity:1}}@keyframes atelierImageIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}@keyframes atelierSheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.atelier-focus-backdrop{animation:atelierFadeIn 220ms ease-out}.atelier-product-image{animation:atelierImageIn 260ms cubic-bezier(.2,.8,.2,1)} .atelier-info-sheet{animation:atelierSheetIn 260ms cubic-bezier(.2,.8,.2,1) 60ms both}@media(prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-info-sheet{animation:none!important}}`}</style>
-      <div className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[30px] bg-transparent sm:bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl">
+      <div ref={sheetRef} className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[30px] bg-transparent sm:bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl" style={{ transform: dragY ? `translateY(${dragY}px)` : undefined, transition: isDragging ? 'none' : 'transform 260ms cubic-bezier(0.22,0.9,0.3,1)' } as any}>
         {/* Close */}
         <button type="button" onClick={onClose} aria-label="إغلاق"
           className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900">
@@ -143,7 +181,11 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
         </div>
         {images.length > 1 && <div className="flex justify-center gap-2 pb-2 sm:hidden">{images.map((_, i) => <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-300'}`} />)}</div>}
 
-        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[30px] shadow-[0_-2px_8px_rgba(40,30,20,0.04),0_-12px_28px_rgba(40,30,20,0.06)] -mt-[22px] pt-3 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
+        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[30px] shadow-[0_-2px_8px_rgba(40,30,20,0.04),0_-12px_28px_rgba(40,30,20,0.06)] -mt-[22px] pt-1 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
+          {/* Drag handle — communicates sheet can be dragged, subtle tactile cue */}
+          <div onPointerDown={onHandlePointerDown} onPointerMove={onHandlePointerMove} onPointerUp={onHandlePointerUp} className="flex justify-center pt-2 pb-2 touch-none select-none sm:hidden">
+            <span className="h-1 w-9 rounded-full bg-stone-300" aria-hidden />
+          </div>
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
             {/* Gallery — desktop floating transparent (no white rectangle) */}
             <div className="hidden sm:block px-4 pt-4 sm:px-0 sm:pt-0">

@@ -385,6 +385,20 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const hasDistinctLookbook = !!(lookbookA && lookbookB && lookbookA.image && lookbookB.image && lookbookA.image !== lookbookB.image);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [menuExiting, setMenuExiting] = useState(false);
+  useEffect(() => {
+    if (mobileMenuOpen) { setDisplayMenu(true); setMenuExiting(false); }
+    else if (displayMenu) {
+      setMenuExiting(true);
+      const t = setTimeout(() => { setDisplayMenu(false); setMenuExiting(false); }, 260);
+      return () => clearTimeout(t);
+    }
+  }, [mobileMenuOpen, displayMenu]);
+  const handleMenuClose = () => {
+    setMenuExiting(true);
+    setTimeout(() => setMobileMenuOpen(false), 220);
+  };
 
   const normalMain = (
     <main className="pb-[72px] sm:pb-0">
@@ -429,9 +443,9 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                 <h2 className="font-serif text-xl font-semibold text-stone-900 sm:text-2xl">الأكثر مبيعاً</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 items-start gap-x-3 gap-y-5 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
+            <div className="grid grid-cols-2 items-stretch gap-x-3 gap-y-5 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
               {bestsellers.map((p) => (
-                <AtelierProductCard key={p.id} product={p} />
+                <AtelierProductCard key={p.id} product={p} className="h-full" />
               ))}
             </div>
           </section>
@@ -453,9 +467,9 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                     <h2 className="min-w-0 truncate font-serif text-xl font-semibold text-stone-900 sm:text-2xl">{cat.name}</h2>
                     <a href={`/category/${cat.slug || cat.id}`} className="shrink-0 text-sm font-bold text-[#9d7463] hover:text-[#85604f]">عرض الكل ←</a>
                   </div>
-                  <div className="grid grid-cols-2 items-start gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
+                  <div className="grid grid-cols-2 items-stretch gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
                     {catProducts.map((p: any) => (
-                      <AtelierProductCard key={p.id} product={p} />
+                      <AtelierProductCard key={p.id} product={p} className="h-full" />
                     ))}
                   </div>
                 </section>
@@ -467,13 +481,14 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
     </main>
   );
 
-  if (mobileMenuOpen) {
+  if (displayMenu) {
     return (
       <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
         <AnnouncementBar />
-        {/* Mobile menu view — normal DOM, no overlay */}
-        <div className="md:hidden">
-          <AtelierMobileMenuView onClose={() => setMobileMenuOpen(false)} />
+        {/* Mobile menu view — animated slide from right + fade, existing architecture preserved */}
+        <div className={`md:hidden ${menuExiting ? 'animate-[atelierMenuOut_220ms_cubic-bezier(0.22,0.9,0.3,1)_forwards]' : 'animate-[atelierMenuIn_280ms_cubic-bezier(0.22,0.9,0.3,1)]'} motion-reduce:animate-none`}>
+          <style>{`@keyframes atelierMenuIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}@keyframes atelierMenuOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}@media(prefers-reduced-motion:reduce){.atelier-menu-animate{animation:none!important}}`}</style>
+          <AtelierMobileMenuView onClose={handleMenuClose} />
         </div>
         {/* Desktop always shows normal storefront even while mobile menu open */}
         <div className="hidden md:block">

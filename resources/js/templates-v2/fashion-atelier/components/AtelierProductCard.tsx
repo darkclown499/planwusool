@@ -96,10 +96,18 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
           type="button"
           onClick={(e) => { e.stopPropagation(); wishlist.toggle(product.id); }}
           aria-label={wished ? 'إزالة من المفضلة' : 'أضف إلى المفضلة'}
-          className={`absolute top-2.5 left-2.5 flex h-8 w-8 items-center justify-center rounded-full border bg-white/90 text-stone-500 shadow-sm backdrop-blur transition-all hover:text-[#9d7463] ${wished ? '!bg-[#9d7463] !text-white !border-[#9d7463]' : 'border-stone-200/60'}`}
+          className={`atelier-wishlist absolute top-2.5 left-2.5 flex h-8 w-8 items-center justify-center rounded-full border bg-white/90 text-stone-500 shadow-sm backdrop-blur transition-all hover:text-[#9d7463] active:scale-95 ${wished ? '!bg-[#9d7463] !text-white !border-[#9d7463]' : 'border-stone-200/60'}`}
         >
-          <Heart className="h-4 w-4" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.7} />
+          <Heart className="h-4 w-4 transition-transform duration-200 group-[.atelier-wishlist-active]:scale-110" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.7} />
         </button>
+
+        {/* Low-stock micro badge — out of document flow, bottom-right media corner, does not affect card height */}
+        {!!remaining && !outOfStock && (
+          <span className="pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-white/92 px-2 py-1 text-[10px] font-bold leading-none text-amber-800 shadow-sm ring-1 ring-amber-200/50 backdrop-blur animate-[atelierBadgeIn_200ms_cubic-bezier(0.22,0.9,0.3,1)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+            آخر قطعة
+          </span>
+        )}
 
         {/* Quick add — 36-38px, bridging image → info */}
         {!outOfStock && (
@@ -108,7 +116,7 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
             onClick={handleAdd}
             disabled={adding}
             aria-label={variable && missingGroups.length > 0 ? 'اختيار الخيارات' : 'إضافة إلى السلة'}
-            className="absolute bottom-3 left-3 flex h-[36px] w-[36px] items-center justify-center rounded-full bg-stone-900 text-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] ring-1 ring-white/20 transition hover:bg-[#9d7463] active:scale-95 disabled:opacity-50"
+            className="absolute bottom-3 left-3 flex h-[36px] w-[36px] items-center justify-center rounded-full bg-stone-900 text-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] ring-1 ring-white/20 transition duration-200 hover:bg-[#9d7463] active:scale-90 disabled:opacity-50"
           >
             {adding ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" strokeWidth={2} />}
           </button>
@@ -153,10 +161,10 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
         )}
       </div>
 
-      {/* Meta — inside same premium card, reserved zones for equal height */}
+      {/* Meta — inside same premium card, equal-height via flex-1 + stable zones, no low-stock flow row */}
       <div className="flex w-full min-w-0 flex-1 flex-col px-3 pt-3 pb-3" dir="auto">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }}
-          className="line-clamp-2 min-h-[2.6em] w-full text-[13px] font-medium leading-snug text-stone-800 transition-colors hover:text-[#9d7463] sm:text-[14px]"
+          className="line-clamp-2 min-h-[2.6em] w-full text-[13px] font-medium leading-snug text-stone-800 transition-colors hover:text-[#9d7463] focus-visible:outline-none focus-visible:text-[#9d7463] sm:text-[14px]"
           dir="auto">
           {product.name}
         </a>
@@ -165,12 +173,6 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
           {discount > 0 && !!product.originalPrice && (
             <span className="min-w-0 truncate text-xs text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
           )}
-        </div>
-        {/* Status reserved — one line, preserves height even when absent */}
-        <div className="min-h-[16px] mt-1">
-          {!!remaining && !outOfStock ? (
-            <span className="text-[11px] font-medium text-amber-700">باقي {remaining} فقط</span>
-          ) : null}
         </div>
         {(() => {
           const loyalty = getLoyaltySettingsFromPage();
