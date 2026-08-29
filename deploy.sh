@@ -134,13 +134,19 @@ BACKUP_INDEX="public/index.php.deploy-bak"
 BUILD_DIR="build"
 STAGE_DIR="build.next"
 PREV_PREFIX="build.prev"
+ORIG_PREFIX="build.orig"
 LIVE_BUILD="public/${BUILD_DIR}"
 STAGE_BUILD="public/${STAGE_DIR}"
 PREV_BUILD=""
+ORIG_BUILD=""
 cleanup_prev_builds() {
-    # Retain last 3 prev builds; older ones are removed. Old hashed assets already
-    # copy-forwarded into live build, so deleting the prev dir does NOT break old URLs.
+    # Retain last 3 prev builds for rollback; older ones are removed.
     ls -dt public/${PREV_PREFIX}.* 2>/dev/null | tail -n +4 | xargs -r rm -rf 2>/dev/null || true
+}
+cleanup_orig_builds() {
+    # Retain last 3 ORIGINAL builds (pristine, not polluted with inherited compat assets).
+    # Used to rebuild the compatibility union bounded to last 3 deploys.
+    ls -dt public/${ORIG_PREFIX}.* 2>/dev/null | tail -n +4 | xargs -r rm -rf 2>/dev/null || true
 }
 park_app() {
     cp -f public/index.php "$BACKUP_INDEX"
@@ -210,6 +216,23 @@ if ! verify_staging; then
     exit 1
 fi
 
+# Preserve ORIGINAL build (pristine, before compatibility pollution) for bounded retention.
+# This is the correct source for copy-forward; live PREV builds become polluted
+# after we copy compat assets into them, so they would propagate forever if used
+# as sources. ORIG builds are never polluted and have correct original mtimes.
+if [ -d "$STAGE_BUILD" ]; then
+    ORIG_BUILD="public/${ORIG_PREFIX}.$(date +%s)"
+    echo "==> preserving original build snapshot: $STAGE_BUILD -> $ORIG_BUILD"
+    cp -a "$STAGE_BUILD" "$ORIG_BUILD" 2>/dev/null || {
+        echo "WARN: failed to create orig snapshot $ORIG_BUILD (continuing)" >&2
+        ORIG_BUILD=""
+    }
+    if [ -n "$ORIG_BUILD" ] && [ -d "$ORIG_BUILD" ]; then
+        chown -R "${WEB_USER}:${WEB_USER}" "$ORIG_BUILD" 2>/dev/null || true
+        cleanup_orig_builds
+    fi
+fi
+
 # park only for the atomic swap window (milliseconds)
 park_app
 
@@ -236,38 +259,36 @@ fi
 
 echo "==> atomic swap OK: $STAGE_BUILD -> $LIVE_BUILD (previous: ${PREV_BUILD:-none})"
 
-# --- P0 FIX: old hashed asset survival (copy-forward) ---
+# --- P0 FIX: bounded old hashed asset survival (copy-forward from ORIG only) ---
 # Previous bug: old HTML held hashed filenames like app-AbC123.js that were deleted
 # from public/build after swap, causing 404 for open tabs until reload.
 # Vite hashes are content-addressed: same filename == same content, so missing files
-# from the previous build can be safely copied into the new build without overwriting.
-# This keeps old chunk URLs reachable at the same /build/assets/* path for a retention window.
-if [ -n "$PREV_BUILD" ] && [ -d "$PREV_BUILD/assets" ] && [ -d "$LIVE_BUILD/assets" ]; then
-    echo "==> preserving old hashed assets for open tabs (copy-forward, no-clobber)"
-    # Copy only files not present in the new build (cp -n), count for log.
+# from earlier builds can be safely copied into the new build without overwriting.
+# BOUNDED: we rebuild the compatibility union ONLY from retained ORIGINAL builds
+# (public/build.orig.*), not from polluted live PREV builds. This prevents unbounded
+# propagation A->B->C->D where A would live forever via recursive inheritance.
+# Retention: last 3 ORIG builds (~3 deploys) + never overwrite current manifest assets.
+if [ -d "$LIVE_BUILD/assets" ]; then
+    echo "==> preserving old hashed assets for open tabs (bounded copy-forward from ORIG)"
     COPIED=0
-    for f in "$PREV_BUILD/assets"/*; do
-        [ -f "$f" ] || continue
-        base="$(basename "$f")"
-        if [ ! -e "$LIVE_BUILD/assets/$base" ]; then
-            cp -n "$f" "$LIVE_BUILD/assets/$base" 2>/dev/null && COPIED=$((COPIED+1)) || true
-        fi
-    done
-    echo "==> copy-forward done: $COPIED old hashed files preserved in $LIVE_BUILD/assets"
-    # Also copy any old build.prev assets that may still be needed (union of last 3 prev builds).
-    # This is cheap (only missing files) and ensures retention window of ~3 deploys.
-    for prev in public/${PREV_PREFIX}.*; do
-        [ -d "$prev/assets" ] || continue
-        # Skip the just-moved PREV_BUILD already handled (avoid double count)
-        [ "$prev" = "$PREV_BUILD" ] && continue
-        for f in "$prev/assets"/*; do
+    # Prune candidate ORIG builds to last 3 (already cleaned) and copy missing files
+    for orig in $(ls -dt public/${ORIG_PREFIX}.* 2>/dev/null | head -n 3); do
+        [ -d "$orig/assets" ] || continue
+        # Skip the ORIG we just created for CURRENT build (would be duplicate)
+        [ "$orig" = "$ORIG_BUILD" ] && continue
+        for f in "$orig/assets"/*; do
             [ -f "$f" ] || continue
             base="$(basename "$f")"
+            # Never overwrite current hashed assets (same name == same content, but current wins)
             if [ ! -e "$LIVE_BUILD/assets/$base" ]; then
-                cp -n "$f" "$LIVE_BUILD/assets/$base" 2>/dev/null || true
+                # Do not rely on mtime of copied files; ORIG retains original build time.
+                cp -n "$f" "$LIVE_BUILD/assets/$base" 2>/dev/null && COPIED=$((COPIED+1)) || true
             fi
         done
     done
+    echo "==> bounded copy-forward done: $COPIED compat files from retained ORIG builds"
+    # Safety: ensure we never deleted a file that the current manifest actually needs
+    # (above loop only adds missing files, never deletes current).
 fi
 
 restore_app

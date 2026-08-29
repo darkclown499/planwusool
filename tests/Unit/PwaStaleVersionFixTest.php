@@ -56,14 +56,22 @@ test('PWA per-store SW preserves tenant isolation', function () {
     expect($src)->not->toContain('wusool-pwa-v1');
 });
 
-test('deploy.sh contains copy-forward old hashed asset survival strategy', function () {
+test('deploy.sh contains bounded copy-forward from ORIG only', function () {
     $base = dirname(__DIR__, 2);
     $deploy = file_get_contents($base . '/deploy.sh');
     expect($deploy)->toContain('copy-forward');
     expect($deploy)->toContain('cp -n');
-    expect($deploy)->toContain('PREV_BUILD/assets');
+    expect($deploy)->toContain('ORIG_PREFIX');
+    expect($deploy)->toContain('cleanup_orig_builds');
     expect($deploy)->toContain('LIVE_BUILD/assets');
+    // Must be bounded: rebuilds from retained ORIG builds, not recursive PREV inheritance
+    expect($deploy)->toContain('bounded');
+    expect($deploy)->toContain('public/${ORIG_PREFIX}.*');
+    expect($deploy)->toContain('head -n 3');
+    // Must not overwrite current assets
     expect($deploy)->not->toContain('cp -f "$PREV_BUILD');
+    expect($deploy)->toContain('if [ ! -e "$LIVE_BUILD/assets/$base" ]');
+    // Rollback preserve still exists
     expect($deploy)->toContain('cleanup_prev_builds');
 });
 
@@ -89,14 +97,12 @@ test('PWAServiceWorker update flow guards checkout', function () {
 });
 
 test('old hashed asset copy-forward does not overwrite same-name files', function () {
-    // Simulate the cp -n semantics: same filename = same content must not overwrite
     $tmp = sys_get_temp_dir() . '/wusool_pwa_test_' . uniqid();
     mkdir($tmp . '/prev/assets', 0777, true);
     mkdir($tmp . '/live/assets', 0777, true);
     file_put_contents($tmp . '/prev/assets/app-abc123.js', 'old content');
     file_put_contents($tmp . '/prev/assets/old-only-xyz.js', 'old only');
     file_put_contents($tmp . '/live/assets/app-abc123.js', 'new content');
-    // Simulate deploy.sh copy-forward logic
     foreach (glob($tmp . '/prev/assets/*') as $f) {
         $base = basename($f);
         $dest = $tmp . '/live/assets/' . $base;
@@ -104,17 +110,138 @@ test('old hashed asset copy-forward does not overwrite same-name files', functio
             copy($f, $dest);
         }
     }
-    // existing file must not be overwritten
     expect(file_get_contents($tmp . '/live/assets/app-abc123.js'))->toBe('new content');
-    // missing file must be copied
     expect(file_exists($tmp . '/live/assets/old-only-xyz.js'))->toBeTrue();
     expect(file_get_contents($tmp . '/live/assets/old-only-xyz.js'))->toBe('old only');
-    // cleanup
     array_map('unlink', glob($tmp . '/live/assets/*'));
     array_map('unlink', glob($tmp . '/prev/assets/*'));
     rmdir($tmp . '/live/assets');
     rmdir($tmp . '/prev/assets');
     rmdir($tmp . '/live');
     rmdir($tmp . '/prev');
+    rmdir($tmp);
+});
+
+test('bounded compatibility propagation A->B->C->D->E expires old assets', function () {
+    // Simulate bounded copy-forward from ORIG only (last 3 ORIGs).
+    // Each build has a unique file: a.js, b.js, c.js, d.js, e.js
+    $tmp = sys_get_temp_dir() . '/wusool_bounded_' . uniqid();
+    mkdir($tmp, 0777, true);
+
+    $origPrefix = $tmp . '/build.orig';
+    $live = $tmp . '/build';
+    // helper to create orig build
+    $createOrig = function(string $name, string $file) use ($tmp) {
+        $dir = $tmp . "/build.orig.$name/assets";
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+        file_put_contents($dir . "/$file", "content $file");
+        file_put_contents($dir . "/shared.js", "shared $name");
+        return $dir;
+    };
+
+    // A
+    $createOrig('A', 'a-aaaa.js');
+    // Simulate deploy B: live = B + last 3 origs before B (which is A)
+    $liveAssets = $tmp . '/build/assets';
+    mkdir($liveAssets, 0777, true);
+    file_put_contents($liveAssets . '/b-bbbb.js', 'content b');
+    file_put_contents($liveAssets . '/shared.js', 'shared B');
+    // copy from retained origs (A) — bounded
+    foreach (glob($tmp . '/build.orig.A/assets/*') as $f) {
+        $base = basename($f);
+        if (! file_exists($liveAssets . "/$base")) copy($f, $liveAssets . "/$base");
+    }
+    expect(file_exists($liveAssets . '/a-aaaa.js'))->toBeTrue(); // A retained
+    expect(file_get_contents($liveAssets . '/shared.js'))->toBe('shared B'); // not overwritten
+    // cleanup live for next iter
+    array_map('unlink', glob($liveAssets . '/*'));
+    // Now simulate full sequence with orig retention 3
+    $origFiles = ['A' => 'a-aaaa.js', 'B' => 'b-bbbb.js', 'C' => 'c-cccc.js', 'D' => 'd-dddd.js', 'E' => 'e-eeee.js'];
+    $allOrigDirs = [];
+    foreach (array_keys($origFiles) as $n) {
+        $allOrigDirs[$n] = $createOrig($n, $origFiles[$n]);
+    }
+    // Helper to simulate deploy with bounded orig retention
+    $simulateDeploy = function(string $currentName) use ($tmp, $origFiles) {
+        $liveAssets = $tmp . '/build/assets';
+        // clean live and create current build assets
+        if (is_dir($liveAssets)) array_map('unlink', glob($liveAssets . '/*'));
+        else mkdir($liveAssets, 0777, true);
+        file_put_contents($liveAssets . '/' . $origFiles[$currentName], "content " . $origFiles[$currentName]);
+        // Determine retained origs: last 3 before current, ordered by creation (we use alphabetical)
+        $retained = [];
+        $order = ['A','B','C','D','E'];
+        $idx = array_search($currentName, $order);
+        $prior = array_slice($order, 0, $idx);
+        $retained = array_slice($prior, -3); // last 3 prior builds
+        foreach ($retained as $r) {
+            $origDir = $tmp . "/build.orig.$r/assets";
+            foreach (glob($origDir . '/*') as $f) {
+                $base = basename($f);
+                if (! file_exists($liveAssets . "/$base")) copy($f, $liveAssets . "/$base");
+            }
+        }
+        return [$liveAssets, $retained];
+    };
+
+    // C deploy: should contain C,B,A (3 prior within retention) + shared
+    [$liveC, $retC] = $simulateDeploy('C');
+    expect(file_exists($liveC . '/c-cccc.js'))->toBeTrue();
+    expect(file_exists($liveC . '/b-bbbb.js'))->toBeTrue();
+    expect(file_exists($liveC . '/a-aaaa.js'))->toBeTrue();
+    expect(count(glob($liveC . '/*')))->toBe(4);
+
+    // D deploy: retained = B,C (since A pruned? Actually last 3 prior = A,B,C -> but we keep last 3 origs total, A still retained at D time if we keep 3? Let's simulate orig cleanup: keep last 3 origs total)
+    // At D time, origs present are B,C,D after cleanup (A deleted). So live D should be D + C + B (not A)
+    // Simulate orig cleanup: delete A when D created and we keep 3
+    // For test, we manually ensure retained logic matches deploy.sh: ls -dt | head -n 3 before current
+    // At D, prior retained should be B,C (if A was cleaned)
+    // We'll emulate cleanup: after creating D, keep only last 3 orig dirs: B,C,D
+    // So we simulate by deleting A orig before D live build
+    // Instead our helper already does last 3 prior correctly but includes A — we need to delete old orig first
+    // Let's delete A orig to simulate cleanup
+    array_map('unlink', glob($tmp . '/build.orig.A/assets/*'));
+    rmdir($tmp . '/build.orig.A/assets');
+    rmdir($tmp . '/build.orig.A');
+    [$liveD, $retD] = $simulateDeploy('D');
+    expect(file_exists($liveD . '/d-dddd.js'))->toBeTrue();
+    expect(file_exists($liveD . '/c-cccc.js'))->toBeTrue();
+    expect(file_exists($liveD . '/b-bbbb.js'))->toBeTrue();
+    expect(file_exists($liveD . '/a-aaaa.js'))->toBeFalse(); // A expired
+    expect(count(glob($liveD . '/*')))->toBe(4);
+
+    // E deploy: delete B orig, keep C,D,E
+    array_map('unlink', glob($tmp . '/build.orig.B/assets/*'));
+    rmdir($tmp . '/build.orig.B/assets');
+    rmdir($tmp . '/build.orig.B');
+    [$liveE, $retE] = $simulateDeploy('E');
+    expect(file_exists($liveE . '/e-eeee.js'))->toBeTrue();
+    expect(file_exists($liveE . '/d-dddd.js'))->toBeTrue();
+    expect(file_exists($liveE . '/c-cccc.js'))->toBeTrue();
+    expect(file_exists($liveE . '/b-bbbb.js'))->toBeFalse(); // B expired
+    expect(file_exists($liveE . '/a-aaaa.js'))->toBeFalse();
+    expect(count(glob($liveE . '/*')))->toBe(4); // bounded, not 6
+
+    // Never overwrite current: create scenario where old orig has same filename as current but different content (should not happen with hash, but test no-clobber)
+    file_put_contents($tmp . '/build.orig.C/assets/e-eeee.js', 'old fake e');
+    if (is_dir($liveE)) array_map('unlink', glob($liveE . '/*'));
+    file_put_contents($liveE . '/e-eeee.js', 'real E');
+    foreach (glob($tmp . '/build.orig.C/assets/e-eeee.js') as $f) {
+        $base = basename($f);
+        if (! file_exists($liveE . "/$base")) copy($f, $liveE . "/$base");
+    }
+    expect(file_get_contents($liveE . '/e-eeee.js'))->toBe('real E');
+
+    // cleanup
+    foreach (['C','D','E'] as $n) {
+        if (is_dir($tmp . "/build.orig.$n/assets")) {
+            array_map('unlink', glob($tmp . "/build.orig.$n/assets/*"));
+            rmdir($tmp . "/build.orig.$n/assets");
+            rmdir($tmp . "/build.orig.$n");
+        }
+    }
+    array_map('unlink', glob($liveE . '/*'));
+    rmdir($liveE);
+    rmdir($tmp . '/build');
     rmdir($tmp);
 });
