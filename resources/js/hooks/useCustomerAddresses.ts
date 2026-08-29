@@ -13,7 +13,7 @@ export interface CustomerAddressDTO {
   formatted?: string;
 }
 
-export function useCustomerAddresses() {
+export function useCustomerAddresses(enabled = true) {
   const { store } = useStore() as any;
   const storeId = store?.id;
   const [addresses, setAddresses] = useState<CustomerAddressDTO[]>([]);
@@ -23,7 +23,7 @@ export function useCustomerAddresses() {
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
   const refresh = useCallback(async () => {
-    if (!storeId) return;
+    if (!storeId || !enabled) { setAddresses([]); return; }
     setLoading(true); setError(null);
     try {
       const res = await fetch(`/api/customer-addresses?store_id=${storeId}`, { headers: { Accept:'application/json', 'X-CSRF-TOKEN': csrf() } });
@@ -32,7 +32,7 @@ export function useCustomerAddresses() {
       const json = await res.json();
       setAddresses(Array.isArray(json.addresses) ? json.addresses : []);
     } catch (e:any) { setError('تعذر تحميل العناوين'); } finally { setLoading(false); }
-  }, [storeId]);
+  }, [storeId, enabled]);
 
   useEffect(() => { refresh(); }, [refresh]);
 

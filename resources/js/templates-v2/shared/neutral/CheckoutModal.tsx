@@ -24,7 +24,7 @@ interface TemplateCheckoutProps {
  */
 const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComplete }) => {
     const { cart, auth } = useStorefrontCore();
-    const { addresses } = useCustomerAddresses();
+    const { addresses } = useCustomerAddresses(!!auth?.isLoggedIn);
     const page = usePage().props as any;
     const storeSettings = page?.storeSettings || {};
     const currencies = page?.currencies || [];
