@@ -66,9 +66,9 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
   };
 
   return (
-    <div className={`group flex w-full min-w-0 flex-col ${className}`} dir="rtl">
-      {/* Image — 4:5, object-contain to preserve perfume/bottle, warm surface */}
-      <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden rounded-2xl bg-[#f8f5f0] ring-1 ring-stone-200/40">
+    <div className={`group flex w-full min-w-0 flex-col rounded-[20px] bg-[#fffdf9] shadow-[0_2px_8px_rgba(40,30,20,0.04),0_10px_24px_rgba(40,30,20,0.07)] ring-1 ring-stone-200/40 transition-all duration-150 hover:shadow-[0_4px_12px_rgba(40,30,20,0.05),0_14px_32px_rgba(40,30,20,0.08)] active:scale-[0.985] motion-reduce:transition-none motion-reduce:active:scale-100 ${className}`} dir="rtl">
+      {/* Image — 4:5, object-contain preserves perfume, transparent warm inside card */}
+      <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden rounded-t-[20px] bg-transparent">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }} aria-label={product.name} className="block h-full w-full">
           <img src={mainImage} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||product.images?.[0]||''))}} width={400} height={500}
             className="h-full w-full object-contain object-center p-2 transition-all duration-700 group-hover:scale-[1.02]" />
@@ -101,14 +101,14 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
           <Heart className="h-4 w-4" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.7} />
         </button>
 
-        {/* Quick add — small circular 36-40px, lower corner */}
+        {/* Quick add — 36-38px, bridging image → info */}
         {!outOfStock && (
           <button
             type="button"
             onClick={handleAdd}
             disabled={adding}
             aria-label={variable && missingGroups.length > 0 ? 'اختيار الخيارات' : 'إضافة إلى السلة'}
-            className="absolute bottom-2.5 left-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-white shadow-md transition hover:bg-[#9d7463] active:scale-95 disabled:opacity-50"
+            className="absolute bottom-3 left-3 flex h-[36px] w-[36px] items-center justify-center rounded-full bg-stone-900 text-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] ring-1 ring-white/20 transition hover:bg-[#9d7463] active:scale-95 disabled:opacity-50"
           >
             {adding ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" strokeWidth={2} />}
           </button>
@@ -153,20 +153,20 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
         )}
       </div>
 
-      {/* Meta — editorial, directly on warm background, no heavy card */}
-      <div className="flex w-full min-w-0 flex-col px-1 pt-2.5 pb-1" dir="auto">
+      {/* Meta — inside same premium card */}
+      <div className="flex w-full min-w-0 flex-col px-3 pt-3 pb-3" dir="auto">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }}
           className="line-clamp-2 min-h-[2.6em] w-full text-[13px] font-medium leading-snug text-stone-800 transition-colors hover:text-[#9d7463] sm:text-[14px]"
           dir="auto">
           {product.name}
         </a>
-        <div className="mt-1 flex items-baseline gap-1.5" dir="rtl">
+        <div className="mt-1.5 flex items-baseline gap-1.5" dir="rtl">
           <span className="shrink-0 text-[14px] font-bold text-stone-900">{formatPrice(product.price)}</span>
           {discount > 0 && !!product.originalPrice && (
             <span className="min-w-0 truncate text-xs text-stone-400 line-through">{formatPrice(product.originalPrice)}</span>
           )}
         </div>
-        {/* Low stock — subtle muted text below price, not a big badge */}
+        {/* Low stock — subtle muted text below price */}
         {!!remaining && !outOfStock && (
           <span className="mt-1 text-[11px] font-medium text-amber-700">باقي {remaining} فقط</span>
         )}
