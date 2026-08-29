@@ -213,10 +213,11 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   const isRTL = true;
   const sign = isRTL ? -1 : 1;
 
+  // Stage hugs composition: height derived from WIDTH only (stable), not cqh — avoids circular sizing. Cards are absolute, so parent cannot use height:auto.
   return (
     <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
-      <div className="atelier-cover-outer relative w-full overflow-visible rounded-2xl shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40" style={{ height: heights.desktop } as any}>
-        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height:${heights.mobile} !important; } } @media (min-width: 768px){ .atelier-cover-outer{ height:${heights.desktop} !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height:${heights.desktop} !important; }`}</style>
+      <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(76cqw, 940px) / 1.5 + 32px)`, background: 'transparent' } as any}>
+        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(82cqw, 420px) / 1.333333 + 24px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(82cqw, 420px) / 1.333333 + 24px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(76cqw, 940px) / 1.5 + 32px) !important; }`}</style>
 
         <div
           ref={stageRef}
@@ -232,11 +233,11 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
           onPointerLeave={onPointerCancel}
           onMouseEnter={() => { pausedRef.current = true; }}
           onMouseLeave={() => { if (!isDragging) pausedRef.current = false; }}
-          className="absolute inset-0 overflow-hidden rounded-2xl bg-[#faf7f2] select-none touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-[#d8b48a]/60"
-          style={{ touchAction: 'pan-y', containerType: 'size' } as any}
+          className="absolute inset-0 overflow-visible select-none touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-[#d8b48a]/60"
+          style={{ touchAction: 'pan-y', background: 'transparent' } as any}
         >
           {/* subtle perspective context */}
-          <div className="absolute inset-0" style={{ perspective: '1400px', perspectiveOrigin: '50% 50%' } as any} />
+          <div className="absolute inset-0 overflow-visible" style={{ perspective: '1400px', perspectiveOrigin: '50% 50%', background: 'transparent' } as any} />
 
           {(() => {
             const occ = new Map<string, number>();
@@ -248,41 +249,42 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             const isSecond = abs === 2;
             const isHidden = abs > 2;
 
-            // Geometry — premium Cover Flow: inactive cards genuinely smaller via width + aspect + scale.
-            // Desktop true 3:2, mobile true 3:4 — width constrained by BOTH stage width and stage height to preserve aspect without distortion.
+            // Geometry — premium Cover Flow: neighbors derived FROM active width (WIDTH as stable truth, no cqh circular).
+            // Desktop true 3:2 (1200×800), mobile banner 4:3 (1200×900) — stage height derived from width, not cqh.
             let basePct = 0;
             let scale = 1;
             let opacity = 1;
             let z = 30;
             let shadow = '0 18px 40px rgba(60,45,35,0.18), 0 6px 14px rgba(60,45,35,0.12)';
             let blur: string | undefined;
-            let cardWidth = isMobile ? 'min(60cqw, calc(90cqh * 0.75))' : 'min(62cqw, calc(90cqh * 1.5))';
+            // Active widths: width is stable source — min(cqw, maxPx) preserves 3:2 / 4:3 without cqh
+            let cardWidth = isMobile ? 'min(82cqw, 420px)' : 'min(76cqw, 940px)';
 
             if (isActive) {
               basePct = 0;
               scale = 1;
               opacity = 1;
               z = 30;
-              cardWidth = isMobile ? 'min(60cqw, calc(90cqh * 0.75))' : 'min(62cqw, calc(90cqh * 1.5))';
+              cardWidth = isMobile ? 'min(82cqw, 420px)' : 'min(76cqw, 940px)';
             } else if (isNeighbor) {
-              basePct = isMobile ? 36 : 38;
-              scale = 0.86;
+              basePct = isMobile ? 20 : 23;
+              scale = 0.98;
               opacity = 0.92;
               z = 20;
-              cardWidth = isMobile ? 'min(50cqw, calc(77cqh * 0.75))' : 'min(52cqw, calc(77cqh * 1.5))';
+              cardWidth = isMobile ? 'calc(min(82cqw, 420px) * 0.72)' : 'calc(min(76cqw, 940px) * 0.74)';
               shadow = '0 10px 26px rgba(60,45,35,0.14), 0 3px 10px rgba(60,45,35,0.08)';
             } else if (isSecond) {
-              basePct = isMobile ? 62 : 64;
-              scale = 0.74;
-              opacity = 0.50;
+              basePct = isMobile ? 45 : 48;
+              scale = 0.98;
+              opacity = 0.52;
               z = 10;
-              cardWidth = isMobile ? 'min(42cqw, calc(66cqh * 0.75))' : 'min(44cqw, calc(66cqh * 1.5))';
+              cardWidth = isMobile ? 'calc(min(82cqw, 420px) * 0.54)' : 'calc(min(76cqw, 940px) * 0.58)';
               shadow = '0 6px 16px rgba(60,45,35,0.10)';
               blur = '0.3px';
             } else {
               opacity = 0;
               z = 0;
-              cardWidth = isMobile ? 'min(42cqw, calc(66cqh * 0.75))' : 'min(44cqw, calc(66cqh * 1.5))';
+              cardWidth = isMobile ? 'calc(min(82cqw, 420px) * 0.54)' : 'calc(min(76cqw, 940px) * 0.58)';
             }
 
             // drag follows pointer directly; settle after release is 300ms (Fashion easing)
@@ -318,8 +320,8 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
                         left: '50%',
                         top: '50%',
                         width: cardWidth,
-                        maxWidth: '360px',
-                        aspectRatio: '3 / 4',
+                        maxWidth: '420px',
+                        aspectRatio: '4 / 3',
                         transform: `translateX(${tx}) translateY(-50%) scale(${scale})`,
                         transformOrigin: 'center center',
                         zIndex: z,
