@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { ChevronLeft, ChevronDown, MessageCircle, PackageSearch, Search, User, X, Home, Package, Heart, MapPin, LogOut, LogIn, UserPlus, Store } from 'lucide-react';
 import { Facebook, Globe, Instagram, Music, Send, Youtube, Twitter } from 'lucide-react';
@@ -399,6 +399,22 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
     setMenuExiting(true);
     setTimeout(() => setMobileMenuOpen(false), 220);
   };
+  const bestRef = useRef<HTMLDivElement>(null);
+  const [bestRevealed, setBestRevealed] = useState(false);
+  const catsRef = useRef<HTMLDivElement>(null);
+  const [catsRevealed, setCatsRevealed] = useState(false);
+  useEffect(() => {
+    const els: Array<[React.RefObject<any>, React.Dispatch<React.SetStateAction<boolean>>]> = [[bestRef, setBestRevealed], [catsRef, setCatsRevealed]];
+    const obs: IntersectionObserver[] = [];
+    els.forEach(([ref, set]) => {
+      const el = (ref as any).current as HTMLElement | null;
+      if (!el) return;
+      const o = new IntersectionObserver(([e]) => { if (e.isIntersecting) { set(true); o.disconnect(); } }, { threshold: 0.12 });
+      o.observe(el);
+      obs.push(o);
+    });
+    return () => obs.forEach((o) => o.disconnect());
+  }, [showBest, homepageCategories.length]);
 
   const normalMain = (
     <main className="pb-[72px] sm:pb-0">
@@ -435,7 +451,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       )}
 
       {showBest && (
-        <div id="atelier-best">
+        <div id="atelier-best" ref={bestRef} className={`transition-all duration-500 motion-reduce:transition-none ${bestRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
           <section className="mx-auto max-w-7xl px-4 pt-3 pb-8 sm:px-6 sm:pt-6 sm:pb-10 lg:px-8">
             <div className="mb-3 flex items-end justify-between gap-4 sm:mb-4">
               <div>
@@ -454,7 +470,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
       {/* Dynamic category sections */}
       {homepageCategories.length > 0 && (
-        <div>
+        <div ref={catsRef} className={`transition-all duration-500 motion-reduce:transition-none ${catsRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
           <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8 lg:px-8">
             {homepageCategories.map((catId: string) => {
               const cat = categories.find((c: any) => String(c.id) === String(catId));

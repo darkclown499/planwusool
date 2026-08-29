@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { V2Product } from '../../shared/hooks';
 import { AtelierProductCard } from './AtelierProductCard';
@@ -18,6 +18,15 @@ interface AtelierRailProps {
  */
 export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, products, viewAllHref }) => {
   const scroller = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLElement>(null);
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setRevealed(true); obs.disconnect(); } }, { threshold: 0.12 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const nudge = (dir: number) => {
     const el = scroller.current;
@@ -29,7 +38,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="pt-6 pb-2 sm:pt-8 sm:pb-4" dir="rtl">
+    <section ref={railRef as any} className={`pt-6 pb-2 sm:pt-8 sm:pb-4 transition-all duration-500 motion-reduce:transition-none ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} dir="rtl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-3 flex items-end justify-between gap-4 sm:mb-4">
           <div>
