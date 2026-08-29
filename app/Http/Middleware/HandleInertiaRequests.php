@@ -38,11 +38,29 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Determines the current asset version.
+     * Uses hash of Vite manifest so Inertia forces full reload when frontend changes.
+     * Falls back to parent if manifest missing. Never exposes secrets.
      *
      * @see https://inertiajs.com/asset-versioning
      */
     public function version(Request $request): ?string
     {
+        try {
+            $manifestPath = public_path('build/manifest.json');
+            if (is_file($manifestPath) && is_readable($manifestPath)) {
+                $hash = @md5_file($manifestPath);
+                if (is_string($hash) && $hash !== '') {
+                    return $hash;
+                }
+            }
+            // Allow explicit env override (e.g. APP_BUILD_VERSION set by deploy to git SHA)
+            $envVer = trim((string) env('APP_BUILD_VERSION', ''));
+            if ($envVer !== '') {
+                return $envVer;
+            }
+        } catch (\Throwable $e) {
+            // fall back to framework default
+        }
         return parent::version($request);
     }
 

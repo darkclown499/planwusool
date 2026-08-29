@@ -5,21 +5,17 @@
 // - يستمع لحدث "notificationclick" لتوجيه المستخدم للرابط المرفق وإغلاق الإشعار
 // ============================================================================
 
+// Root service worker is push-only (Web Push). It must NOT own storefront page cache
+// or force page reloads. Per-store PWA (`/service-worker` on subdomain) owns page caching.
+// Keeping skipWaiting is fine for push subscription updates, but do NOT navigate clients.
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      return Promise.all(
-        clientList.map((client) => {
-          return client.navigate(client.url);
-        })
-      );
-    })
-  );
-  self.clients.claim();
+  // Do not force navigation reload — that interrupts checkout/order flow.
+  // Just claim so push notifications work without reload.
+  event.waitUntil(self.clients.claim());
 });
 
 // ────────────────────────────────────────────────────────────────────────────

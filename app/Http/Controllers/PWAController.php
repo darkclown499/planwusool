@@ -112,45 +112,53 @@ class PWAController extends Controller
         $safeStoreName = json_encode($store->name ?? '', JSON_HEX_TAG | JSON_HEX_AMP);
 
         $storeUrl = rtrim($store->getStoreUrl(), '/');
-        $cacheName = 'store-' . $store->slug . '-v1';
+        $buildVersion = $this->resolveBuildVersion();
+        $cacheName = 'store-' . $store->slug . '-' . $buildVersion;
         
         $serviceWorker = "
 const CACHE_NAME = '{$cacheName}';
-const urlsToCache = [
-    '{$storeUrl}/',
-    '{$storeUrl}/products',
-    '{$storeUrl}/cart',
-    '{$storeUrl}/wishlist'
-];
+const OFFLINE_FALLBACK = '{$storeUrl}/';
+
+// Build version: {$buildVersion} (manifest hash, changes on deploy)
 
 self.addEventListener('install', function(event) {
+    // Do NOT precache dynamic HTML snapshots (/, /products, /cart, /wishlist).
+    // Previous static precache caused stale HTML to persist indefinitely.
+    // Install is now lightweight; new SW activates immediately via skipWaiting.
     self.skipWaiting();
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(function(cache) {
-                return cache.addAll(urlsToCache);
-            })
-    );
 });
 
 self.addEventListener('fetch', function(event) {
-    // Handle navigation requests
+    // Only handle GET navigation requests; never cache POST/PUT/DELETE (checkout, order, payment).
+    if (event.request.method !== 'GET') return;
+    // Handle navigation requests: network-first, offline fallback only.
+    // No precached HTML — ensures returning users always get fresh server HTML online.
     if (event.request.mode === 'navigate') {
         event.respondWith(
-            fetch(event.request).catch(() => {
-                return caches.match('{$storeUrl}/');
+            fetch(event.request).catch(function() {
+                // Offline: fallback to cached offline page if ever cached, else fail gracefully.
+                return caches.match(OFFLINE_FALLBACK);
             })
         );
         return;
     }
-    
+    // For non-navigation requests (hashed assets, images): cache-first is safe
+    // because Vite hashes filenames; same hash = same content.
+    // Still bypass for sensitive API paths to avoid caching user-specific JSON.
+    var url = new URL(event.request.url);
+    if (url.pathname.indexOf('/api/') !== -1 || url.pathname.indexOf('/checkout') !== -1 || url.pathname.indexOf('/order') !== -1) {
+        return;
+    }
     event.respondWith(
         caches.match(event.request)
             .then(function(response) {
                 if (response) {
                     return response;
                 }
-                return fetch(event.request);
+                return fetch(event.request).then(function(networkResponse) {
+                    // Optionally runtime-cache hashed assets for offline; not required for correctness.
+                    return networkResponse;
+                }).catch(function() { return response; });
             }
         )
     );
@@ -236,6 +244,37 @@ self.addEventListener('notificationclick', function(event) {
             ->header('Content-Type', 'text/javascript')
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
             ->header('Service-Worker-Allowed', '/');
+    }
+
+    /**
+     * Resolve a deterministic build version for cache-busting without exposing secrets.
+     * Uses hash of Vite manifest (changes whenever frontend is rebuilt, stable between requests).
+     * Falls back to APP_BUILD_VERSION env or filemtime to remain deterministic even if manifest missing.
+     */
+    private function resolveBuildVersion(): string
+    {
+        try {
+            $manifestPath = public_path('build/manifest.json');
+            if (is_file($manifestPath) && is_readable($manifestPath)) {
+                $hash = @md5_file($manifestPath);
+                if (is_string($hash) && strlen($hash) >= 8) {
+                    return substr($hash, 0, 8);
+                }
+            }
+        } catch (\Throwable $e) {
+            // fall through to env fallback
+        }
+        // Env override (set by CI/deploy to git SHA short) — must be hex/alnum only.
+        $envVer = trim((string) env('APP_BUILD_VERSION', ''));
+        if ($envVer !== '' && preg_match('/^[a-zA-Z0-9._-]{1,32}$/', $envVer)) {
+            return substr($envVer, 0, 8);
+        }
+        // Last resort: app version config (no secret) + file exists guard.
+        $appVer = trim((string) config('app.build_version', ''));
+        if ($appVer !== '' && preg_match('/^[a-zA-Z0-9._-]{1,32}$/', $appVer)) {
+            return substr($appVer, 0, 8);
+        }
+        return 'v1';
     }
 
     /**

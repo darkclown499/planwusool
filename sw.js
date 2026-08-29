@@ -1,28 +1,10 @@
-const CACHE_NAME = 'wusool-pwa-v1';
-const assets = [];
-
-self.addEventListener("install", installEvent => {
-
-    installEvent.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            cache.addAll(assets)
-        })
-    )
+// Legacy stub — replaced by push-only SW in public/sw.js and per-store SW from PWAController.
+// Kept as no-op to avoid cache-first stale HTML if ever served. Push handling lives in public/sw.js.
+// Do NOT cache HTML here.
+self.addEventListener('install', function(event) {
+  self.skipWaiting();
 });
-
 self.addEventListener('activate', function(event) {
   event.waitUntil(self.clients.claim());
 });
-
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
-  );
-});
+// No fetch handler — network-only ensures fresh HTML. Offline fallback is per-store SW responsibility.

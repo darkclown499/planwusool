@@ -119,7 +119,7 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 4) Frontend build — ATOMIC STAGING (fixes rm -rf public/build incident)
+# 4) Frontend build ï¿½ ATOMIC STAGING (fixes rm -rf public/build incident)
 #    Previous incident: `rm -rf public/build; npm run build` + SSH
 #    disconnect/build failure left production with NO assets (white screen).
 #    New guarantee: live public/build is NEVER deleted before the new
@@ -138,6 +138,8 @@ LIVE_BUILD="public/${BUILD_DIR}"
 STAGE_BUILD="public/${STAGE_DIR}"
 PREV_BUILD=""
 cleanup_prev_builds() {
+    # Retain last 3 prev builds; older ones are removed. Old hashed assets already
+    # copy-forwarded into live build, so deleting the prev dir does NOT break old URLs.
     ls -dt public/${PREV_PREFIX}.* 2>/dev/null | tail -n +4 | xargs -r rm -rf 2>/dev/null || true
 }
 park_app() {
@@ -187,7 +189,7 @@ fi
 # ensure clean staging dir
 rm -rf "$STAGE_BUILD"
 
-# build to STAGING — live assets remain untouched during the whole compile
+# build to STAGING ï¿½ live assets remain untouched during the whole compile
 echo "==> building to staging: $STAGE_BUILD (live $LIVE_BUILD untouched)"
 if ! VITE_BUILD_DIR="$STAGE_DIR" npm run build; then
     echo "FATAL: Vite build failed - live assets untouched at $LIVE_BUILD" >&2
@@ -233,6 +235,40 @@ if ! mv "$STAGE_BUILD" "$LIVE_BUILD"; then
 fi
 
 echo "==> atomic swap OK: $STAGE_BUILD -> $LIVE_BUILD (previous: ${PREV_BUILD:-none})"
+
+# --- P0 FIX: old hashed asset survival (copy-forward) ---
+# Previous bug: old HTML held hashed filenames like app-AbC123.js that were deleted
+# from public/build after swap, causing 404 for open tabs until reload.
+# Vite hashes are content-addressed: same filename == same content, so missing files
+# from the previous build can be safely copied into the new build without overwriting.
+# This keeps old chunk URLs reachable at the same /build/assets/* path for a retention window.
+if [ -n "$PREV_BUILD" ] && [ -d "$PREV_BUILD/assets" ] && [ -d "$LIVE_BUILD/assets" ]; then
+    echo "==> preserving old hashed assets for open tabs (copy-forward, no-clobber)"
+    # Copy only files not present in the new build (cp -n), count for log.
+    COPIED=0
+    for f in "$PREV_BUILD/assets"/*; do
+        [ -f "$f" ] || continue
+        base="$(basename "$f")"
+        if [ ! -e "$LIVE_BUILD/assets/$base" ]; then
+            cp -n "$f" "$LIVE_BUILD/assets/$base" 2>/dev/null && COPIED=$((COPIED+1)) || true
+        fi
+    done
+    echo "==> copy-forward done: $COPIED old hashed files preserved in $LIVE_BUILD/assets"
+    # Also copy any old build.prev assets that may still be needed (union of last 3 prev builds).
+    # This is cheap (only missing files) and ensures retention window of ~3 deploys.
+    for prev in public/${PREV_PREFIX}.*; do
+        [ -d "$prev/assets" ] || continue
+        # Skip the just-moved PREV_BUILD already handled (avoid double count)
+        [ "$prev" = "$PREV_BUILD" ] && continue
+        for f in "$prev/assets"/*; do
+            [ -f "$f" ] || continue
+            base="$(basename "$f")"
+            if [ ! -e "$LIVE_BUILD/assets/$base" ]; then
+                cp -n "$f" "$LIVE_BUILD/assets/$base" 2>/dev/null || true
+            fi
+        done
+    done
+fi
 
 restore_app
 trap - EXIT
