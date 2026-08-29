@@ -100,13 +100,27 @@ export default function DesignTokensInjector({ tokens }: Props) {
                 .text-teal-700, .text-teal-600, .hover\\:text-teal-700:hover { color: var(--store-primary) !important; }
                 .border-teal-600, .border-teal-500, .ring-teal-200 { border-color: var(--store-primary) !important; --tw-ring-color: var(--store-primary) !important; }
                 .shadow-teal-600\\/25, .shadow-teal-600\\/20 { --tw-shadow-color: var(--store-primary) !important; }
-                /* Hardcoded template primaries — map to --store-primary (covers all 6 templates) */
-                .bg-\\[\\#9d7463\\], .bg-\\[\\#9D7463\\], .from-\\[\\#9d7463\\], .to-\\[\\#9d7463\\], .text-\\[\\#9d7463\\], .border-\\[\\#9d7463\\], .text-\\[\\#9d7463\\] { background-color: var(--store-primary) !important; color: var(--store-primary) !important; border-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
-                .bg-\\[\\#FFC20E\\], .bg-\\[\\#ffc20e\\], .from-\\[\\#FFC20E\\], .to-\\[\\#FFC20E\\], .text-\\[\\#FFC20E\\], .border-\\[\\#FFC20E\\], .bg-\\[\\#FFC20E\\] { background-color: var(--store-primary) !important; color: var(--store-primary) !important; border-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
-                .bg-\\[\\#b45309\\], .bg-\\[\\#B45309\\], .from-\\[\\#b45309\\], .to-\\[\\#b45309\\], .text-\\[\\#b45309\\], .border-\\[\\#b45309\\], .bg-\\[\\#92400e\\], .from-\\[\\#92400e\\], .to-\\[\\#92400e\\], .text-\\[\\#92400e\\] { background-color: var(--store-primary) !important; color: var(--store-primary) !important; border-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
-                .bg-\\[\\#2563eb\\], .bg-\\[\\#2563EB\\], .from-\\[\\#2563eb\\], .to-\\[\\#2563eb\\], .text-\\[\\#2563eb\\], .border-\\[\\#2563eb\\], .bg-blue-600, .from-blue-600, .text-blue-600 { background-color: var(--store-primary) !important; color: var(--store-primary) !important; border-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
-                .bg-\\[\\#f59e0b\\], .bg-\\[\\#F59E0B\\], .from-\\[\\#f59e0b\\], .to-\\[\\#f59e0b\\], .text-\\[\\#f59e0b\\], .border-\\[\\#f59e0b\\], .bg-amber-500, .bg-\\[\\#f59e0b\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
-                .bg-\\[\\#0b1220\\], .bg-\\[\\#0B1220\\], .from-\\[\\#0b1220\\], .to-\\[\\#0b1220\\], .text-\\[\\#0b1220\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
+                /* Hardcoded template primaries — map to --store-primary (covers all 6 templates).
+                   Rules are split per-property so each tailwind utility keeps its own behavior:
+                   .bg-* sets background only, .text-* sets color only, .border-* sets border only.
+                   (Fixes e.g. "bg-[#9d7463] text-white" badges becoming unreadable orange-on-orange.) */
+                .bg-\\[\\#9d7463\\], .bg-\\[\\#9D7463\\], .from-\\[\\#9d7463\\], .to-\\[\\#9d7463\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .text-\\[\\#9d7463\\], .hover\\:text-\\[\\#9d7463\\]:hover { color: var(--store-primary) !important; }
+                .border-\\[\\#9d7463\\] { border-color: var(--store-primary) !important; }
+                .bg-\\[\\#FFC20E\\], .bg-\\[\\#ffc20e\\], .from-\\[\\#FFC20E\\], .to-\\[\\#FFC20E\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .text-\\[\\#FFC20E\\] { color: var(--store-primary) !important; }
+                .border-\\[\\#FFC20E\\] { border-color: var(--store-primary) !important; }
+                .bg-\\[\\#b45309\\], .bg-\\[\\#B45309\\], .from-\\[\\#b45309\\], .to-\\[\\#b45309\\], .bg-\\[\\#92400e\\], .from-\\[\\#92400e\\], .to-\\[\\#92400e\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .text-\\[\\#b45309\\], .text-\\[\\#92400e\\] { color: var(--store-primary) !important; }
+                .border-\\[\\#b45309\\], .border-\\[\\#92400e\\] { border-color: var(--store-primary) !important; }
+                .bg-\\[\\#2563eb\\], .bg-\\[\\#2563EB\\], .from-\\[\\#2563eb\\], .to-\\[\\#2563eb\\], .bg-blue-600, .from-blue-600 { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .text-\\[\\#2563eb\\], .text-blue-600 { color: var(--store-primary) !important; }
+                .border-\\[\\#2563eb\\] { border-color: var(--store-primary) !important; }
+                .bg-\\[\\#f59e0b\\], .bg-\\[\\#F59E0B\\], .from-\\[\\#f59e0b\\], .to-\\[\\#f59e0b\\], .bg-amber-500 { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .text-\\[\\#f59e0b\\] { color: var(--store-primary) !important; }
+                .border-\\[\\#f59e0b\\] { border-color: var(--store-primary) !important; }
+                .bg-\\[\\#0b1220\\], .bg-\\[\\#0B1220\\], .from-\\[\\#0b1220\\], .to-\\[\\#0b1220\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .text-\\[\\#0b1220\\] { color: var(--store-primary) !important; }
                 .bg-slate-900, .bg-slate-800, .from-slate-900, .to-slate-900 { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
             `);
         }

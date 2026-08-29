@@ -51,6 +51,7 @@ class MediaItem extends Model implements HasMedia
             ->width(300)
             ->height(300)
             ->sharpen(10)
+            ->format('webp')
             ->performOnCollections('images')
             ->nonQueued();
 
@@ -59,6 +60,7 @@ class MediaItem extends Model implements HasMedia
             ->width(400)
             ->height(400)
             ->sharpen(8)
+            ->format('webp')
             ->performOnCollections('images')
             ->nonQueued();
 
@@ -67,6 +69,7 @@ class MediaItem extends Model implements HasMedia
             ->width(800)
             ->height(800)
             ->sharpen(5)
+            ->format('webp')
             ->performOnCollections('images')
             ->nonQueued();
     }
