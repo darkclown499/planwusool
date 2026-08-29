@@ -32,6 +32,16 @@ export function extractYouTubeId(url: string): string | null {
   }
 }
 
+export interface HeroMediaItem {
+  id: string;
+  type: 'image' | 'video' | 'youtube';
+  src: string;
+  srcMobile?: string | null;
+  poster?: string | null;
+  position?: string | null;
+  positionMobile?: string | null;
+}
+
 export interface ResolvedHero {
   type: string | null;
   images: string[];
@@ -45,6 +55,8 @@ export interface ResolvedHero {
   overlayOpacity: number;
   overlayExplicit: boolean;
   hasDynamicHero: boolean;
+  /** Canonical ordered media collection — images/videos/youtube as real separate items. */
+  media: HeroMediaItem[];
   /** Reusable fit control: cover (crop, no bars) vs contain (letterbox). Defaults to cover. */
   fit: 'cover' | 'contain';
   /** Object-position / focal point: center | top | bottom | custom percentage string. */
@@ -152,18 +164,125 @@ export function useResolvedHero(): ResolvedHero {
     return [];
   })();
 
-  const textOnlyHero = !!(heroHeading || heroSubtitle || heroCtaLabel);
-  const hasDynamicHero = (
-    (heroType === 'video' && !!storeHero?.video_url) ||
-    (heroType === 'youtube' && !!storeHero?.youtube_url) ||
-    ((heroType === 'image' || heroType === 'slider' || heroType === 'image_slider') && heroImages.length > 0) ||
-    (heroType && textOnlyHero) ||
-    (!heroType && textOnlyHero)
-  );
+  // Canonical ordered media collection — supports multiple images/videos/youtube as real separate items
+  const heroMedia: HeroMediaItem[] = (() => {
+    const rawMedia = storeHero?.media ?? storeHero?.hero_media ?? storeHero?.items ?? null;
+    if (Array.isArray(rawMedia) && rawMedia.length > 0) {
+      const norm: HeroMediaItem[] = [];
+      rawMedia.forEach((item: any, idx: number) => {
+        if (!item || typeof item !== 'object') {
+          if (typeof item === 'string' && item.trim()) {
+            norm.push({ id: `image-${idx}-${String(item).slice(-8)}`, type: 'image', src: String(item).trim(), srcMobile: null, poster: null, position: null, positionMobile: null });
+          }
+          return;
+        }
+        const rawType = String(item.type || item.media_type || item.kind || '').toLowerCase();
+        const type: 'image' | 'video' | 'youtube' = rawType === 'video' ? 'video' : rawType === 'youtube' ? 'youtube' : 'image';
+        const rawSrc = item.src ?? item.url ?? item.image ?? item.video_url ?? item.youtube_url ?? item.youtubeId ?? '';
+        const src = String(rawSrc || '').trim();
+        if (!src) return;
+        const srcForId = type === 'youtube' ? (extractYouTubeId(src) || src) : src;
+        const id = String(item.id || `${type}-${idx}-${srcForId.slice(-8)}`);
+        const srcMobile = item.srcMobile ?? item.src_mobile ?? item.mobile_src ?? null;
+        const pos = item.position ?? item.object_position ?? item.focal ?? null;
+        const posMob = item.positionMobile ?? item.position_mobile ?? item.mobile_position ?? null;
+        const poster = item.poster ?? null;
+        // Normalize youtube src to id
+        const finalSrc = type === 'youtube' ? (extractYouTubeId(src) || src) : src;
+        norm.push({
+          id,
+          type,
+          src: finalSrc,
+          srcMobile: srcMobile ? String(srcMobile).trim() : null,
+          poster: poster ? String(poster).trim() : null,
+          position: pos ? String(pos).trim() : null,
+          positionMobile: posMob ? String(posMob).trim() : null,
+        });
+      });
+      if (norm.length > 0) return norm;
+    }
+    // Legacy separate arrays for multiple videos/youtube (if saved as hero_banner.videos / youtube_urls)
+    const rawVideosArr = storeHero?.videos ?? storeHero?.video_urls ?? storeHero?.videoUrls ?? null;
+    const rawYoutubeArr = storeHero?.youtube_urls ?? storeHero?.youtubes ?? storeHero?.youtubeIds ?? null;
+    const legacyList: HeroMediaItem[] = [];
+    // Images first (preserve order as in heroImages)
+    heroImages.forEach((src, idx) => {
+      const mobileSrc = imagesMobile[idx] || null;
+      legacyList.push({ id: `image-${idx}-${src.slice(-8)}`, type: 'image', src, srcMobile: mobileSrc, poster: null, position: null, positionMobile: null });
+    });
+    // Videos array
+    if (Array.isArray(rawVideosArr) && rawVideosArr.length > 0) {
+      rawVideosArr.forEach((v: any, idx: number) => {
+        if (!v) return;
+        if (typeof v === 'string' && v.trim()) {
+          legacyList.push({ id: `video-${idx}-${v.slice(-8)}`, type: 'video', src: v.trim(), srcMobile: null, poster: heroImages[0] || null, position: position, positionMobile });
+        } else if (typeof v === 'object') {
+          const src = String(v.src || v.url || v.video_url || '').trim();
+          if (!src) return;
+          legacyList.push({
+            id: String(v.id || `video-${idx}-${src.slice(-8)}`),
+            type: 'video',
+            src,
+            srcMobile: v.srcMobile ? String(v.srcMobile).trim() : (v.src_mobile ? String(v.src_mobile).trim() : null),
+            poster: v.poster ? String(v.poster).trim() : (heroImages[0] || null),
+            position: v.position ? String(v.position).trim() : position,
+            positionMobile: v.positionMobile ? String(v.positionMobile).trim() : (v.position_mobile ? String(v.position_mobile).trim() : positionMobile),
+          });
+        }
+      });
+    } else {
+      // Single video fallback
+      const singleVideo = storeHero?.video_url ? String(storeHero.video_url).trim() : '';
+      if (singleVideo && (heroType === 'video' || singleVideo)) {
+        // Only add if type is video or if we have no images and video exists (to avoid fallback image confusion)
+        if (heroType === 'video' || heroImages.length === 0) {
+          legacyList.push({ id: `video-0-${singleVideo.slice(-8)}`, type: 'video', src: singleVideo, srcMobile: videoUrlMobile, poster: heroImages[0] || null, position, positionMobile });
+        }
+      }
+    }
+    // Youtube array
+    if (Array.isArray(rawYoutubeArr) && rawYoutubeArr.length > 0) {
+      rawYoutubeArr.forEach((u: any, idx: number) => {
+        const raw = typeof u === 'string' ? u : String(u.src || u.url || u.youtube_url || '').trim();
+        if (!raw) return;
+        const yid = extractYouTubeId(raw) || raw;
+        const obj = typeof u === 'object' ? u : {};
+        legacyList.push({ id: String(obj.id || `youtube-${idx}-${yid.slice(-8)}`), type: 'youtube', src: yid, srcMobile: obj.srcMobile ? String(obj.srcMobile).trim() : null, poster: null, position: null, positionMobile: null });
+      });
+    } else {
+      const singleYtRaw = storeHero?.youtube_url ? String(storeHero.youtube_url).trim() : '';
+      const singleYtId = singleYtRaw ? extractYouTubeId(singleYtRaw) : null;
+      if (singleYtId && (heroType === 'youtube' || singleYtRaw)) {
+        if (heroType === 'youtube' || (heroImages.length === 0 && legacyList.length === 0)) {
+          legacyList.push({ id: `youtube-0-${singleYtId.slice(-8)}`, type: 'youtube', src: singleYtId, srcMobile: youtubeIdMobile, poster: null, position: null, positionMobile: null });
+        }
+      }
+    }
+    // If legacyList has items (images/videos/youtube), return it; otherwise empty
+    // For image type stores, heroImages already added; for video/youtube single, list has one video/youtube
+    // Avoid duplicating single video when images also exist and type is image — only add video if heroType is video or legacyList empty
+    // The above logic already handles that, but ensure we don't return empty when we have images
+    return legacyList;
+  })();
 
-  const youtubeId = heroType === 'youtube' && storeHero?.youtube_url ? extractYouTubeId(String(storeHero.youtube_url)) : null;
-  const videoUrl = heroType === 'video' ? String(storeHero?.video_url || '').trim() : '';
-  const youtubeUrl = heroType === 'youtube' ? String(storeHero?.youtube_url || '').trim() : '';
+  const textOnlyHero = !!(heroHeading || heroSubtitle || heroCtaLabel);
+  const hasDynamicHero = heroMedia.length > 0 || (heroType && textOnlyHero) || (!heroType && textOnlyHero);
+
+  const youtubeId = (() => {
+    const firstYt = heroMedia.find((m) => m.type === 'youtube');
+    if (firstYt) return firstYt.src;
+    return heroType === 'youtube' && storeHero?.youtube_url ? extractYouTubeId(String(storeHero.youtube_url)) : null;
+  })();
+  const videoUrl = (() => {
+    const firstVid = heroMedia.find((m) => m.type === 'video');
+    if (firstVid) return firstVid.src;
+    return heroType === 'video' ? String(storeHero?.video_url || '').trim() : '';
+  })();
+  const youtubeUrl = (() => {
+    const firstYt = heroMedia.find((m) => m.type === 'youtube');
+    if (firstYt) return `https://www.youtube.com/watch?v=${firstYt.src}`;
+    return heroType === 'youtube' ? String(storeHero?.youtube_url || '').trim() : '';
+  })();
 
   return {
     type: heroType,
@@ -178,6 +297,7 @@ export function useResolvedHero(): ResolvedHero {
     overlayOpacity: hasDynamicHero ? normalizedOverlay : (overlayExplicit ? normalizedOverlay : 0),
     overlayExplicit,
     hasDynamicHero,
+    media: heroMedia,
     fit,
     position,
     fitMobile,

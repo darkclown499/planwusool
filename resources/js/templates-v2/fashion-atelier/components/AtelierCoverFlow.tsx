@@ -3,10 +3,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 
 interface CoverMedia {
+  id?: string;
   type: 'image' | 'video' | 'youtube';
   src: string;
   srcMobile?: string;
   poster?: string;
+  position?: string | null;
+  positionMobile?: string | null;
   title?: string;
   subtitle?: string;
   ctaLabel?: string;
@@ -35,7 +38,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   const [isDragging, setIsDragging] = useState(false);
   const isDraggingRef = useRef(false);
   const stageRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
   const startX = useRef(0);
   const startY = useRef(0);
   const axisLocked = useRef<'x' | 'y' | null>(null);
@@ -57,14 +60,15 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     return () => mq.removeEventListener('change', onMq);
   }, []);
 
-  // Video autoplay: only active plays, paused others, respects reducedMotion + visibility
+  // Video autoplay: only active plays, paused others, respects reducedMotion + visibility — keyed by stable media id
   useEffect(() => {
     if (reducedMotion) {
       videoRefs.current.forEach((v) => v.pause());
       return;
     }
-    videoRefs.current.forEach((vid, i) => {
-      if (i === index && media[i]?.type === 'video') {
+    const activeId = (media[index] as any)?.id as string | undefined;
+    videoRefs.current.forEach((vid, id) => {
+      if (id === activeId && media[index]?.type === 'video') {
         vid.play().catch(() => {});
       } else {
         vid.pause();
@@ -75,7 +79,10 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   useEffect(() => {
     const onVis = () => {
       if (document.hidden) videoRefs.current.forEach((v) => v.pause());
-      else if (!reducedMotion && media[index]?.type === 'video') videoRefs.current.get(index)?.play().catch(() => {});
+      else if (!reducedMotion && media[index]?.type === 'video') {
+        const aid = (media[index] as any)?.id as string | undefined;
+        if (aid) videoRefs.current.get(aid)?.play().catch(() => {});
+      }
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
@@ -178,6 +185,8 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   if (media.length === 1) {
     const m = media[0];
     const singleSrc = isMobile && (m as any).srcMobile ? (m as any).srcMobile as string : m.src;
+    const singlePos = isMobile ? ((m as any).positionMobile || (m as any).position || 'center') : ((m as any).position || 'center');
+    const singlePosNorm = singlePos && String(singlePos).trim() ? String(singlePos).trim() : 'center';
     return (
       <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8" dir="rtl">
         <div className="atelier-cover-outer relative w-full overflow-visible rounded-t-xl rounded-b-2xl sm:rounded-2xl shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40">
@@ -185,11 +194,11 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             <style>{`@media (max-width: 767px){ .atelier-hero-single{ height:${heights.mobile} !important; } } html[data-preview-mode="mobile"] .atelier-hero-single{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-hero-single{ height:${heights.desktop} !important; }`}</style>
             <div className="atelier-hero-single absolute inset-0">
               {m.type === 'video' ? (
-                <video autoPlay={false} loop muted playsInline poster={m.poster} src={singleSrc} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: 'center' }} />
+                <video autoPlay={false} loop muted playsInline poster={m.poster} src={singleSrc} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: singlePosNorm }} />
               ) : m.type === 'youtube' ? (
                 <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${singleSrc}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
               ) : (
-                <img src={getImageUrl(singleSrc)} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: 'center' }} />
+                <img src={getImageUrl(singleSrc)} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: singlePosNorm }} />
               )}
               <div className="absolute inset-0 bg-black" style={{ opacity: overlayOpacity }} />
               {(m.title || m.subtitle || m.ctaLabel) && (
@@ -310,8 +319,10 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             const baseKey = `${m.type}:${m.src}`;
             const n = occ.get(baseKey) ?? 0;
             occ.set(baseKey, n + 1);
-            const stableKey = `${baseKey}#${n}`;
+            const stableKey = (m as any).id ? String((m as any).id) : `${baseKey}#${n}`;
             const displaySrc = isMobile && (m as any).srcMobile ? (m as any).srcMobile as string : m.src;
+            const perItemPos = isMobile ? ((m as any).positionMobile || (m as any).position || 'center') : ((m as any).position || 'center');
+            const perItemPosNorm = perItemPos && String(perItemPos).trim() ? String(perItemPos).trim() : 'center';
             return (
               <div
                 key={stableKey}
@@ -359,7 +370,12 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               >
                 {m.type === 'video' ? (
                   <video
-                    ref={(el) => { if (el) videoRefs.current.set(i, el); else videoRefs.current.delete(i); }}
+                    ref={(el) => {
+                      const vid = (m as any).id as string | undefined;
+                      if (!vid) return;
+                      if (el) videoRefs.current.set(vid, el);
+                      else videoRefs.current.delete(vid);
+                    }}
                     src={displaySrc}
                     poster={m.poster}
                     loop
@@ -367,24 +383,32 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
                     playsInline
                     preload={isActive ? 'auto' : 'metadata'}
                     className="absolute inset-0 h-full w-full object-cover"
-                    style={{ objectPosition: 'center' }}
+                    style={{ objectPosition: perItemPosNorm }}
                     draggable={false}
                   />
                 ) : m.type === 'youtube' ? (
-                  <iframe
-                    className="absolute inset-0 h-full w-full"
-                    src={`https://www.youtube.com/embed/${displaySrc}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0${isActive ? '&autoplay=1' : ''}`}
-                    title="YouTube"
-                    frameBorder="0"
-                    allow="autoplay; fullscreen"
-                    allowFullScreen
-                  />
+                  isActive ? (
+                    <iframe
+                      className="absolute inset-0 h-full w-full"
+                      src={`https://www.youtube.com/embed/${displaySrc}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0&autoplay=1`}
+                      title="YouTube"
+                      frameBorder="0"
+                      allow="autoplay; fullscreen"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-black">
+                      <img src={`https://img.youtube.com/vi/${displaySrc}/hqdefault.jpg`} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: perItemPosNorm }} onError={(e) => ((e.currentTarget.style.display = 'none'))} />
+                      <div className="absolute inset-0 bg-black/20" />
+                      <span className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-stone-900 shadow">▶</span>
+                    </div>
+                  )
                 ) : (
                   <img
                     src={getImageUrl(displaySrc)}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
-                    style={{ objectPosition: 'center' }}
+                    style={{ objectPosition: perItemPosNorm }}
                     loading={i === 0 ? 'eager' : 'lazy'}
                     decoding="async"
                     draggable={false}

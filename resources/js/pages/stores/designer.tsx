@@ -67,6 +67,64 @@ function sanitizeHeroImages(images: any): string[] {
     if (!Array.isArray(images)) return [];
     return images.map((u: any) => String(u || '').trim()).filter(Boolean).map((u) => normalizeImageUrl(u)).filter((u) => u && u.length > 5 && u !== '/' && u !== '//' && !u.endsWith('//')).slice(0, 10);
 }
+function parsePos(v: string): [number, number] {
+    const parts = String(v || '').split(/\s+/).map((s) => parseFloat(s));
+    const x = parts[0];
+    const y = parts[1];
+    if (!Number.isNaN(x as number) && !Number.isNaN(y as number)) return [x as number, y as number];
+    return [50, 50];
+}
+function clampPos(x: number, y: number): string {
+    const cx = Math.round(Math.max(0, Math.min(100, x)));
+    const cy = Math.round(Math.max(0, Math.min(100, y)));
+    return `${cx}% ${cy}%`;
+}
+function VideoCropEditor({ src, ratio, label, hint, value, onChange, onReset }: { src: string; ratio: string; label: string; hint: string; value: string; onChange: (pos: string) => void; onReset: () => void; }) {
+    const dragRef = useRef<{ startX: number; startY: number; rect: DOMRect; ox: number; oy: number } | null>(null);
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        const t = e.currentTarget as HTMLElement;
+        try { t.setPointerCapture(e.pointerId); } catch { /* noop */ }
+        const rect = t.getBoundingClientRect();
+        const [ox, oy] = parsePos(value);
+        dragRef.current = { startX: e.clientX, startY: e.clientY, rect, ox, oy };
+    };
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        const d = dragRef.current;
+        if (!d) return;
+        const t = e.currentTarget as HTMLElement;
+        if (!t.hasPointerCapture(e.pointerId)) return;
+        const dx = ((e.clientX - d.startX) / d.rect.width) * 100;
+        const dy = ((e.clientY - d.startY) / d.rect.height) * 100;
+        onChange(clampPos(d.ox - dx * 0.5, d.oy - dy * 0.5));
+    };
+    const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+        const t = e.currentTarget as HTMLElement;
+        try { if (t.hasPointerCapture(e.pointerId)) t.releasePointerCapture(e.pointerId); } catch { /* noop */ }
+        dragRef.current = null;
+    };
+    return (
+        <div className="mt-2">
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-bold text-slate-600">{label}</p>
+                <button type="button" onClick={onReset} className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-500 hover:text-slate-700">إعادة ضبط</button>
+            </div>
+            <p className="text-[10px] text-slate-400">{hint}</p>
+            <div
+                className="relative mt-1 w-full cursor-grab touch-none overflow-hidden rounded-lg border bg-black active:cursor-grabbing"
+                style={{ aspectRatio: ratio }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+            >
+                <video src={normalizeImageUrl(src)} className="h-full w-full object-cover" style={{ objectPosition: value }} muted playsInline />
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-white/30" />
+                <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/50 px-1.5 py-0.5 font-mono text-[9px] text-white" dir="ltr">{value}</span>
+            </div>
+        </div>
+    );
+}
 function ColorPickerField({ label, helper, value, onChange }: { label: string; helper?: string; value: string; onChange: (v: string) => void }) {
     const safe = /^#[0-9a-fA-F]{6}$/.test(String(value || '').trim()) ? String(value).trim() : '#0d9488';
     return (
@@ -305,7 +363,20 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
             const json: any = await res.json();
             if (res.ok && json?.data?.length) {
                 const urls: string[] = (json.data as any[]).map((d: any) => { const raw = String(d.url || ''); if (!raw) return ''; if (raw.startsWith('/storage')) return raw; const m = raw.match(/\/storage\/.*$/); return m ? m[0] : raw; }).filter(Boolean).map((u) => normalizeImageUrl(u)).filter(Boolean);
-                if (urls.length) { const rawHero = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any; const existing = sanitizeHeroImages(rawHero); const next = [...existing, ...urls].slice(0, 10); let tmp = setDotted(content, 'hero_banner.images', next); tmp = setDotted(tmp, 'hero_images', next); setContent(tmp); toast.success('تم رفع الصورة'); }
+                if (urls.length) {
+                    const rawMedia = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+                    const newId = () => (typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`);
+                    const newItems = urls.map((url) => ({ id: newId(), type: 'image', src: url, position: '50% 50%', positionMobile: '50% 50%' }));
+                    const newMedia = [...(Array.isArray(rawMedia) ? rawMedia : []), ...newItems].slice(0, 10);
+                    let tmp = setDotted(content, 'hero_banner.media', newMedia);
+                    // Sync legacy for backward compat
+                    const legacyImages = newMedia.filter((m:any)=>m.type==='image').map((m:any)=>m.src).slice(0,10);
+                    tmp = setDotted(tmp, 'hero_banner.images', legacyImages);
+                    tmp = setDotted(tmp, 'hero_images', legacyImages);
+                    // Also keep hero_banner.type as image if not set
+                    if (!getDotted(tmp, 'hero_banner.type')) { tmp = setDotted(tmp, 'hero_banner.type', 'image'); tmp = setDotted(tmp, 'hero_type', 'image'); }
+                    setContent(tmp); toast.success('تم رفع الصورة');
+                }
             } else toast.error(json?.message || 'فشل الرفع');
         } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setHeroUploading(false); }
     };
@@ -377,9 +448,58 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
     const homepageCategories = (getDotted(content, 'settings.homepage_categories') ?? getDotted(content, 'homepage.homepage_categories') ?? getDotted(content, 'homepage_categories') ?? []) as Array<string | number>;
     const homepageProductsPerCategoryRaw = getDotted(content, 'settings.homepage_products_per_category') ?? getDotted(content, 'homepage.homepage_products_per_category') ?? 8;
     const homepageProductsPerCategory = [4, 8, 12].includes(Number(homepageProductsPerCategoryRaw)) ? Number(homepageProductsPerCategoryRaw) : 8;
+    const getYoutubeId = (url: string) => {
+        try { const u = new URL(url); if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0]; if (u.searchParams.get('v')) return u.searchParams.get('v')!.split('&')[0]; const parts = u.pathname.split('/').filter(Boolean); const idx = parts.indexOf('embed'); if (idx !== -1 && parts[idx + 1]) return parts[idx + 1].split('?')[0]; return parts[parts.length - 1]?.split('?')[0] ?? null; } catch { const m = url.match(/[a-zA-Z0-9_-]{11}/); return m ? m[0] : null; }
+    };
     const heroType = (getDotted(content, 'hero_banner.type') ?? getDotted(content, 'hero_type') ?? 'image') as string;
     const rawHeroImages = (getDotted(content, 'hero_banner.images') ?? getDotted(content, 'hero_images') ?? []) as any;
     const heroImages = sanitizeHeroImages(rawHeroImages);
+    // Canonical hero_banner.media — single source of truth for images/videos/youtube (mixed order)
+    const getHeroMedia = (): any[] => {
+        const raw = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+        if (Array.isArray(raw) && raw.length) return raw;
+        // Hydrate legacy images/images_mobile into canonical with deterministic ids and correct pairing
+        const legacyMob = sanitizeHeroImages((getDotted(content, 'hero_banner.images_mobile') ?? getDotted(content, 'hero_images_mobile') ?? []) as any);
+        const legacy: any[] = [];
+        rawHeroImages.forEach((src: string, idx: number) => {
+            legacy.push({ id: `legacy-image-${idx}-${src.slice(-8)}`, type: 'image', src, srcMobile: (legacyMob[idx] && legacyMob[idx] !== src) ? legacyMob[idx] : null, position: '50% 50%', positionMobile: '50% 50%' });
+        });
+        const legacyVideo = String(getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url') ?? '').trim();
+        if (legacyVideo) legacy.push({ id: `legacy-video-${legacyVideo.slice(-8)}`, type: 'video', src: legacyVideo, position: String(getDotted(content, 'hero_banner.position') ?? '50% 50%'), positionMobile: String(getDotted(content, 'hero_banner.position_mobile') ?? '50% 50%') });
+        const legacyYt = String(getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url') ?? '').trim();
+        const ytId = legacyYt ? getYoutubeId(legacyYt) : null;
+        if (ytId) legacy.push({ id: `legacy-youtube-${ytId.slice(-8)}`, type: 'youtube', src: ytId });
+        return legacy;
+    };
+    const heroMediaAll = getHeroMedia();
+    const newId = () => (typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`);
+    const totalMediaCount = heroMediaAll.length;
+    const moveHeroMediaById = (movingId: string, targetCanonicalIdx: number) => {
+        const raw = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+        if (!Array.isArray(raw) || !raw.length) return;
+        const fromIdx = raw.findIndex((m:any)=>String(m.id)===String(movingId));
+        if (fromIdx<0) return;
+        const clampedTo = Math.max(0, Math.min(targetCanonicalIdx, raw.length-1));
+        if (fromIdx===clampedTo) return;
+        const next=[...raw]; const [m]=next.splice(fromIdx,1); next.splice(clampedTo,0,m);
+        let tmp=setDotted(content,'hero_banner.media', next);
+        const imgs=next.filter((mm:any)=>String(mm.type).toLowerCase()==='image').map((mm:any)=>mm.src);
+        // Preserve positional alignment: every image slot gets a mobile entry;
+        // missing srcMobile uses the desktop src as a sanitizer-safe placeholder
+        // (runtime already falls back to desktop src when srcMobile is falsy).
+        const mobImgs=next.filter((mm:any)=>String(mm.type).toLowerCase()==='image').map((mm:any)=>{ const mob=String(mm.srcMobile || '').trim(); return mob ? mob : mm.src; });
+        tmp=setDotted(tmp,'hero_banner.images', imgs);
+        tmp=setDotted(tmp,'hero_images', imgs);
+        tmp=setDotted(tmp,'hero_banner.images_mobile', mobImgs);
+        tmp=setDotted(tmp,'hero_images_mobile', mobImgs);
+        const firstVideo=next.find((mm:any)=>String(mm.type).toLowerCase()==='video')?.src||'';
+        tmp=setDotted(tmp,'hero_banner.video_url', firstVideo);
+        tmp=setDotted(tmp,'hero_video_url', firstVideo);
+        const firstYt=next.find((mm:any)=>String(mm.type).toLowerCase()==='youtube')?.src||'';
+        tmp=setDotted(tmp,'hero_banner.youtube_url', firstYt ? 'https://www.youtube.com/watch?v='+firstYt : '');
+        tmp=setDotted(tmp,'hero_youtube_url', tmp['hero_banner.youtube_url'] as any);
+        setContent(tmp);
+    };
     const heroVideoUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url') ?? ''));
     const heroVideoUrlMobile = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url_mobile') ?? getDotted(content, 'hero_banner.videoUrlMobile') ?? getDotted(content, 'hero_video_url_mobile') ?? ''));
     const heroYoutubeUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url') ?? ''));
@@ -390,9 +510,6 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
     const heroSubtitle = (getDotted(content, 'hero_banner.subtitle') ?? '') as string;
     const heroCtaLabel = (getDotted(content, 'hero_banner.cta_label') ?? '') as string;
     const heroCtaLink = (getDotted(content, 'hero_banner.cta_link') ?? '') as string;
-    const getYoutubeId = (url: string) => {
-        try { const u = new URL(url); if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0]; if (u.searchParams.get('v')) return u.searchParams.get('v')!.split('&')[0]; const parts = u.pathname.split('/').filter(Boolean); const idx = parts.indexOf('embed'); if (idx !== -1 && parts[idx + 1]) return parts[idx + 1].split('?')[0]; return parts[parts.length - 1]?.split('?')[0] ?? null; } catch { const m = url.match(/[a-zA-Z0-9_-]{11}/); return m ? m[0] : null; }
-    };
     const youtubeId = heroYoutubeUrl ? getYoutubeId(heroYoutubeUrl) : null;
 
     const applyTemplate = async (slug: string) => {
@@ -658,14 +775,73 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                 {heroType === 'image' && (() => {
                                     const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopImage || MEDIA_SPECS['bazaar-market'].hero.desktopImage;
                                     const mobImages = sanitizeHeroImages((getDotted(content,'hero_banner.images_mobile') ?? getDotted(content,'hero_images_mobile') ?? []) as any);
+                                    const rawMediaImg = (getDotted(content,'hero_banner.media') ?? []) as any[];
+                                    const hasMedia = Array.isArray(rawMediaImg) && rawMediaImg.length>0;
+                                    // Canonical: use hero_banner.media if exists, else legacy heroImages
+                                    const displayImages: any[] = hasMedia ? rawMediaImg.filter((m:any)=>String(m.type).toLowerCase()==='image') : heroImages.map((src,idx)=>({ id:`legacy-image-${idx}`, type:'image', src }));
+                                    const totalMediaCount = Array.isArray(rawMediaImg) ? rawMediaImg.length : heroImages.length;
                                     const handleReplaceDesktop = async (idx: number, files: FileList) => {
                                         const f = Array.from(files)[0]; if (!f) return;
                                         const fd = new FormData(); fd.append('files[]', f);
-                                        try { const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json:any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url||''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const norm = normalizeImageUrl(url); const next = [...heroImages]; next[idx]=norm; let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp); toast.success('تم استبدال الصورة'); } } catch { toast.error('فشل الاستبدال'); }
+                                        try {
+                                            const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json:any = await res.json();
+                                            if (res.ok && json?.data?.[0]?.url) {
+                                                const raw = String(json.data[0].url||''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const norm = normalizeImageUrl(url);
+                                                if (hasMedia) {
+                                                    const targetId = displayImages[idx]?.id;
+                                                    const newMedia = rawMediaImg.map((m:any)=> String(m.id)===String(targetId) ? {...m, src: norm} : m);
+                                                    let tmp=setDotted(content,'hero_banner.media', newMedia);
+                                                    // Sync legacy for compat
+                                                    const legImgs=newMedia.filter((m:any)=>m.type==='image').map((m:any)=>m.src);
+                                                    tmp=setDotted(tmp,'hero_banner.images', legImgs);
+                                                    tmp=setDotted(tmp,'hero_images', legImgs);
+                                                    setContent(tmp);
+                                                } else {
+                                                    const next = [...heroImages]; next[idx]=norm; let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);
+                                                }
+                                                toast.success('تم استبدال الصورة');
+                                            }
+                                        } catch { toast.error('فشل الاستبدال'); }
+                                    };
+                                    const moveMediaById = (movingId: string, targetId: string | null, before: boolean = true) => {
+                                        const raw = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+                                        if (!Array.isArray(raw) || !raw.length) return;
+                                        const fromIdx = raw.findIndex((m:any)=>String(m.id)===String(movingId));
+                                        if (fromIdx<0) return;
+                                        let toIdx: number;
+                                        if (targetId === null) toIdx = raw.length - 1;
+                                        else {
+                                            toIdx = raw.findIndex((m:any)=>String(m.id)===String(targetId));
+                                            if (toIdx<0) return;
+                                            if (fromIdx < toIdx) toIdx--;
+                                            if (!before) toIdx++;
+                                        }
+                                        const next=[...raw]; const [m]=next.splice(fromIdx,1); next.splice(toIdx,0,m);
+                                        let tmp=setDotted(content,'hero_banner.media', next);
+                                        const legImgs=next.filter((m:any)=>m.type==='image').map((m:any)=>m.src);
+                                        tmp=setDotted(tmp,'hero_banner.images', legImgs);
+                                        tmp=setDotted(tmp,'hero_images', legImgs);
+                                        const firstVideo=next.find((m:any)=>m.type==='video')?.src||'';
+                                        tmp=setDotted(tmp,'hero_banner.video_url', firstVideo);
+                                        tmp=setDotted(tmp,'hero_video_url', firstVideo);
+                                        const firstYt=next.find((m:any)=>m.type==='youtube')?.src||'';
+                                        tmp=setDotted(tmp,'hero_banner.youtube_url', firstYt ? 'https://www.youtube.com/watch?v='+firstYt : '');
+                                        tmp=setDotted(tmp,'hero_youtube_url', tmp['hero_banner.youtube_url'] as any);
+                                        setContent(tmp);
                                     };
                                     const moveDesktop = (from: number, dir: number) => {
-                                        const to = from + dir; if (to < 0 || to >= heroImages.length) return;
-                                        const next = [...heroImages]; const [m] = next.splice(from,1); next.splice(to,0,m); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);
+                                        if (hasMedia) {
+                                            const fromItem = (displayImages as any)[from];
+                                            const toItem = (displayImages as any)[from+dir];
+                                            if (!fromItem || !toItem) return;
+                                            const raw = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+                                            const toIdx = raw.findIndex((m:any)=>String(m.id)===String(toItem.id));
+                                            if (toIdx<0) return;
+                                            moveHeroMediaById(String(fromItem.id), toIdx);
+                                        } else {
+                                            const to = from + dir; if (to < 0 || to >= heroImages.length) return;
+                                            const next = [...heroImages]; const [m] = next.splice(from,1); next.splice(to,0,m); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);
+                                        }
                                     };
                                     return (
                                     <Card>
@@ -674,56 +850,188 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                             <SectionLabel>وسائط البانر</SectionLabel>
                                             <span className="rounded-full bg-slate-50 px-2 py-1 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200">المقاس الموصى به: 1200 × 800 — 3:2</span>
                                         </div>
-                                        <p className="text-[11px] leading-relaxed text-slate-500">اسحب صوراً جديدة أو استبدل/احذف — الترتيب يظهر فوراً</p>
-                                        {heroImages.length===0 && <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">لا توجد شرائح — اسحب الصور هنا (حتى 10)</p>}
-                                        {heroImages.map((img:string, idx:number)=>(
-                                            <div key={idx} className="flex gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
-                                                <img src={normalizeImageUrl(img)} alt={`شريحة ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" />
+                                        <p className="text-[11px] leading-relaxed text-slate-500">اسحب صوراً جديدة أو استبدل/احذف — الترتيب يظهر فوراً (الحد الإجمالي 10 عناصر)</p>
+                                        {displayImages.length===0 && <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">لا توجد شرائح — اسحب الصور هنا (حتى 10 إجمالي)</p>}
+                                        {displayImages.map((item:any, idx:number)=>(
+                                            <div key={item.id||idx} className="flex gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
+                                                <img src={normalizeImageUrl(item.src)} alt={`شريحة ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" />
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-xs font-black text-slate-800">الشريحة {idx+1}</p>
                                                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                                                         <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(idx, e.target.files)} />استبدال</label>
                                                         <button type="button" onClick={()=>moveDesktop(idx,-1)} disabled={idx===0} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
-                                                        <button type="button" onClick={()=>moveDesktop(idx,1)} disabled={idx===heroImages.length-1} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
-                                                        <button type="button" onClick={()=>{const next=heroImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);}} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
+                                                        <button type="button" onClick={()=>moveDesktop(idx,1)} disabled={idx===displayImages.length-1} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
+                                                        <button type="button" onClick={()=>{
+                                                            if (hasMedia) {
+                                                                const targetId=displayImages[idx]?.id;
+                                                                const newMedia=(rawMediaImg as any[]).filter((m:any)=>String(m.id)!==String(targetId));
+                                                                let tmp=setDotted(content,'hero_banner.media', newMedia);
+                                                                const legImgs=newMedia.filter((m:any)=>m.type==='image').map((m:any)=>m.src);
+                                                                tmp=setDotted(tmp,'hero_banner.images', legImgs);
+                                                                tmp=setDotted(tmp,'hero_images', legImgs);
+                                                                setContent(tmp);
+                                                            } else {
+                                                                const next=heroImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);
+                                                            }
+                                                        }} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
                                                     </div>
                                                 </div>
                                                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
                                             </div>
                                         ))}
-                                        {heroImages.length < 10 && <DropzoneUploader label={heroImages.length===0 ? 'اسحب شرائح الهيرو هنا' : `إضافة شرائح (${heroImages.length}/10)`} hint={`حتى 10 شرائح — 1200×800 — 3:2`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />}
+                                        {totalMediaCount < 10 && <DropzoneUploader label={displayImages.length===0 ? 'اسحب شرائح الهيرو هنا' : `إضافة شرائح (${displayImages.length}/10)`} hint={`حتى 10 شرائح — 1200×800 — 3:2`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />}
                                         </div>
                                     </Card>
                                     );
                                 })()}
                                 {heroType === 'video' && (() => {
-                                    const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopVideo || MEDIA_SPECS['bazaar-market'].hero.desktopVideo;
+                                    const rawMedia = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+                                    const videos = Array.isArray(rawMedia) ? rawMedia.filter((m:any) => String(m.type).toLowerCase()==='video') : [];
+                                    // Fallback to legacy single video if media empty
+                                    const legacyVideo = !videos.length ? (getDotted(content, 'hero_banner.video_url') as string || '') : '';
+                                    const allVideos = videos.length ? videos : (legacyVideo ? [{ id: 'legacy-video', type: 'video', src: legacyVideo, position: '50% 50%' }] : []);
+                                    const moveVideo = (from:number, dir:number) => {
+                                      const fromItem = allVideos[from];
+                                      const toItem = allVideos[from+dir];
+                                      if (!fromItem || !toItem) return;
+                                      const raw2 = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+                                      const toIdx2 = raw2.findIndex((m:any)=>String(m.id)===String(toItem.id));
+                                      if (toIdx2<0) return;
+                                      moveHeroMediaById(String(fromItem.id), toIdx2);
+                                    };
                                     return (
                                     <div className="space-y-3" onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)}>
                                     <Card>
-                                        <SectionLabel>وسائط البانر — فيديو</SectionLabel>
-                                        <p className="mb-2 text-[11px] text-slate-500">المقاس الموصى به: 1200 × 800 — 3:2 — MP4 مُكتوم</p>
-                                        <Input dir="ltr" value={heroVideoUrl ? normalizeImageUrl(heroVideoUrl) : heroVideoUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp = setDotted(content, 'hero_banner.video_url', norm); tmp = setDotted(tmp, 'hero_video_url', norm); setContent(tmp); }} placeholder="https://example.com/video.mp4" className="bg-white font-mono text-sm" />
-                                        <div className="mt-2">
-                                        <DropzoneUploader label={heroVideoUrl ? 'استبدال الفيديو' : 'اسحب الفيديو هنا'} hint={`1200×800 — 3:2 — MP4`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
-                                            const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
-                                            try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url', normalized); tmp = setDotted(tmp, 'hero_video_url', normalized); setContent(tmp); toast.success('تم رفع الفيديو'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                        <SectionLabel>وسائط البانر — فيديو (متعدد)</SectionLabel>
+                                        <p className="mb-2 text-[11px] text-slate-500">المقاس الموصى به: 1200 × 800 — 3:2 — MP4 — يمكنك إضافة عدة فيديوهات</p>
+                                        <DropzoneUploader label={allVideos.length ? `إضافة فيديو (${allVideos.length}/10)` : 'اسحب الفيديو هنا'} hint={`1200×800 — 3:2 — MP4`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
+                                            const valid=Array.from(files).filter(f=>f.type.startsWith('video/')); if(!valid.length) return; setInterfaceVideoUploading(true);
+                                            try{
+                                              const uploads: any[]=[];
+                                              for(const f of valid.slice(0,10-allVideos.length)){
+                                                const fd=new FormData(); fd.append('files[]',f);
+                                                const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json',...csrfHeaders()}});
+                                                const json:any=await res.json();
+                                                if(res.ok && json?.data?.[0]?.url){
+                                                  const raw=String(json.data[0].url||''); const url=raw?(raw.startsWith('/storage')?raw:(raw.match(/\/storage\/.*$/)?.[0]??raw)):'';
+                                                  const norm=normalizeImageUrl(url);
+                                                  uploads.push({ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`, type:'video', src: norm, position:'50% 50%', positionMobile:'50% 50%' });
+                                                }
+                                              }
+                                              if(uploads.length){
+                                                const newMedia=[...(Array.isArray(rawMedia)?rawMedia:[]), ...uploads];
+                                                let tmp=setDotted(content,'hero_banner.media', newMedia);
+                                                const firstSrc=newMedia.find((m:any)=>m.type==='video')?.src||'';
+                                                tmp=setDotted(tmp,'hero_banner.video_url', firstSrc);
+                                                tmp=setDotted(tmp,'hero_video_url', firstSrc);
+                                                setContent(tmp); toast.success(`تم رفع ${uploads.length} فيديو`);
+                                              }
+                                            }catch{ toast.error('حدث خطأ أثناء الرفع'); } finally{ setInterfaceVideoUploading(false); }
                                         }} />
-                                        </div>
-                                        {heroVideoUrl ? <div className="group relative mt-2"><video src={normalizeImageUrl(heroVideoUrl)} controls className="max-h-40 w-full rounded-xl border object-cover" /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.video_url',''); tmp=setDotted(tmp,'hero_video_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-xs text-slate-500">لا يوجد فيديو — فارغ</p>}
+                                        {allVideos.length===0 ? <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-xs text-slate-500">لا يوجد فيديو — فارغ</p> : allVideos.map((v:any, idx:number)=>{
+                                          const setVideoField=(field:'position'|'positionMobile', pos:string)=>{
+                                            const next=[...(Array.isArray(rawMedia)?rawMedia:[])];
+                                            const ti=next.findIndex((m:any)=>String(m.id)===String(v.id));
+                                            if(ti<0) return;
+                                            (next[ti] as any)[field]=pos;
+                                            setContent(setDotted(content,'hero_banner.media', next));
+                                          };
+                                          return (
+                                          <div key={v.id||idx} className="group relative mt-3 rounded-xl border bg-white p-2.5">
+                                            <div className="flex gap-3">
+                                              <video src={normalizeImageUrl(v.src)} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" style={{ objectPosition: (v.position||'50% 50%') }} muted />
+                                              <div className="min-w-0 flex-1">
+                                                <p className="text-xs font-bold truncate">فيديو {idx+1}</p>
+                                                <p className="text-[11px] text-slate-500 truncate">{v.src}</p>
+                                                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                                  <button type="button" onClick={()=>moveVideo(idx,-1)} disabled={idx===0} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
+                                                  <button type="button" onClick={()=>moveVideo(idx,1)} disabled={idx===allVideos.length-1} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
+                                                  <button type="button" onClick={()=>{
+                                                    const newMedia=(Array.isArray(rawMedia)?rawMedia:[]).filter((m:any)=>String(m.id)!==String(v.id));
+                                                    let tmp=setDotted(content,'hero_banner.media', newMedia);
+                                                    const firstSrc=newMedia.find((m:any)=>m.type==='video')?.src||'';
+                                                    tmp=setDotted(tmp,'hero_banner.video_url', firstSrc);
+                                                    tmp=setDotted(tmp,'hero_video_url', firstSrc);
+                                                    setContent(tmp);
+                                                  }} className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700">حذف</button>
+                                                </div>
+                                              </div>
+                                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
+                                            </div>
+                                            <VideoCropEditor
+                                              src={v.src}
+                                              ratio="3 / 2"
+                                              label="ضبط عرض الكمبيوتر"
+                                              hint="المقاس 3:2 — اسحب داخل الإطار (فأرة / لمس / قلم)"
+                                              value={v.position || '50% 50%'}
+                                              onChange={(pos)=>setVideoField('position', pos)}
+                                              onReset={()=>setVideoField('position', '50% 50%')}
+                                            />
+                                            <VideoCropEditor
+                                              src={v.src}
+                                              ratio="4 / 3"
+                                              label="ضبط عرض الهاتف"
+                                              hint="المقاس 4:3 — مستقل عن موضع الكمبيوتر"
+                                              value={v.positionMobile || v.position || '50% 50%'}
+                                              onChange={(pos)=>setVideoField('positionMobile', pos)}
+                                              onReset={()=>setVideoField('positionMobile', '50% 50%')}
+                                            />
+                                          </div>
+                                        ); })}
                                     </Card>
                                     </div>
                                     );
                                 })()}
                                 {heroType === 'youtube' && (() => {
-                                    const desktopSpec = MEDIA_SPECS[theme]?.hero?.desktopYoutube || MEDIA_SPECS['bazaar-market'].hero.desktopYoutube;
+                                    const rawMedia2=(getDotted(content,'hero_banner.media')??[]) as any[];
+                                    const yts=Array.isArray(rawMedia2)?rawMedia2.filter((m:any)=>String(m.type).toLowerCase()==='youtube'): [];
+                                    const legacyYt=!yts.length ? (getDotted(content,'hero_banner.youtube_url') as string||'') : '';
+                                    const allYt=yts.length?yts:(legacyYt?[{id:'legacy-yt',type:'youtube',src:legacyYt}]:[]);
+                                    const moveYt=(from:number,dir:number)=>{
+                                      const fromItem=(allYt as any)[from];
+                                      const toItem=(allYt as any)[from+dir];
+                                      if(!fromItem||!toItem) return;
+                                      const raw=(getDotted(content,'hero_banner.media')??[]) as any[];
+                                      const toIdx=raw.findIndex((m:any)=>String(m.id)===String(toItem.id));
+                                      if(toIdx<0) return;
+                                      moveHeroMediaById(String(fromItem.id), toIdx);
+                                    };
+                                    const addYt=(url:string)=>{
+                                      const clean=stripTrailingSlash(url.trim()); if(!clean) return;
+                                      const yid=getYoutubeId(clean) || clean;
+                                      if(!yid) { toast.error('رابط يوتيوب غير صالح'); return; }
+                                      const newItem={ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`, type:'youtube', src: yid };
+                                      const newMedia=[...(Array.isArray(rawMedia2)?rawMedia2:[]), newItem];
+                                      let tmp=setDotted(content,'hero_banner.media', newMedia);
+                                      const firstYt=newMedia.find((m:any)=>m.type==='youtube')?.src||'';
+                                      tmp=setDotted(tmp,'hero_banner.youtube_url', firstYt);
+                                      tmp=setDotted(tmp,'hero_youtube_url', firstYt);
+                                      setContent(tmp);
+                                    };
                                     return (
                                     <div className="space-y-3" onFocus={()=>setFocusedSlot('hero')} onBlur={()=>setFocusedSlot(null)}>
                                     <Card>
-                                        <SectionLabel>وسائط البانر — YouTube</SectionLabel>
-                                        <p className="mb-2 text-[11px] text-slate-500">المقاس الموصى به: 1200 × 800 — 3:2</p>
-                                        <Input dir="ltr" value={heroYoutubeUrl ? stripTrailingSlash(heroYoutubeUrl) : heroYoutubeUrl} onChange={(e) => { const clean = stripTrailingSlash(e.target.value.trim()); let tmp = setDotted(content, 'hero_banner.youtube_url', clean); tmp = setDotted(tmp, 'hero_youtube_url', clean); setContent(tmp); }} placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm" />
-                                        {youtubeId ? <div className="group relative mt-2 overflow-hidden rounded-xl border"><iframe className="aspect-video w-full" src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&mute=1&controls=1`} title="YouTube preview" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /><button type="button" onClick={()=>{let tmp=setDotted(content,'hero_banner.youtube_url',''); tmp=setDotted(tmp,'hero_youtube_url',''); setContent(tmp);}} className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"><X className="h-3.5 w-3.5" /></button></div> : <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">لا يوجد رابط يوتيوب</p>}
+                                        <SectionLabel>وسائط البانر — YouTube (متعدد)</SectionLabel>
+                                        <p className="mb-2 text-[11px] text-slate-500">المقاس الموصى به: 1200 × 800 — 3:2 — يمكنك إضافة عدة روابط</p>
+                                        <div className="flex gap-2">
+                                          <Input dir="ltr" id="yt-input" placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm flex-1" onKeyDown={(e:any)=>{ if(e.key==='Enter'){ const inp=document.getElementById('yt-input') as HTMLInputElement; if(inp&&inp.value.trim()){ addYt(inp.value); inp.value=''; }}}} />
+                                          <button type="button" onClick={()=>{ const inp=document.getElementById('yt-input') as HTMLInputElement; if(inp&&inp.value.trim()){ addYt(inp.value); inp.value=''; }}} className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white">إضافة</button>
+                                        </div>
+                                        {allYt.length===0 ? <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">لا يوجد رابط يوتيوب</p> : allYt.map((u:any, idx:number)=>(
+                                          <div key={u.id||idx} className="mt-3 flex gap-3 rounded-xl border bg-white p-2.5">
+                                            <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg border"><iframe className="h-full w-full" src={`https://www.youtube.com/embed/${getYoutubeId(u.src)||u.src}?mute=1&controls=0`} title={`yt-${idx}`} /></div>
+                                            <div className="min-w-0 flex-1">
+                                              <p className="text-xs font-bold truncate">YouTube {idx+1}</p>
+                                              <p className="text-[11px] text-slate-500 truncate">{u.src}</p>
+                                              <div className="mt-1.5 flex gap-1.5">
+                                                <button type="button" onClick={()=>moveYt(idx,-1)} disabled={idx===0} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
+                                                <button type="button" onClick={()=>moveYt(idx,1)} disabled={idx===allYt.length-1} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
+                                                <button type="button" onClick={()=>{ const newMedia=(Array.isArray(rawMedia2)?rawMedia2:[]).filter((m:any)=>String(m.id)!==String(u.id)); let tmp=setDotted(content,'hero_banner.media', newMedia); const firstYt=newMedia.find((m:any)=>m.type==='youtube')?.src||''; tmp=setDotted(tmp,'hero_banner.youtube_url', firstYt); tmp=setDotted(tmp,'hero_youtube_url', firstYt); setContent(tmp);}} className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700">حذف</button>
+                                              </div>
+                                            </div>
+                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
+                                          </div>
+                                        ))}
                                     </Card>
                                     </div>
                                     );

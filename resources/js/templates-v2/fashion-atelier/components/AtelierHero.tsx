@@ -56,34 +56,49 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   const youtubeIdMobile = hero.youtubeIdMobile;
   const videoUrl = hero.videoUrl;
   const videoUrlMobile = hero.videoUrlMobile;
-  // Cover Flow: when multiple media (images + single video/youtube) exist, use editorial cover flow.
-  // Persistence already supports responsive overrides (images_mobile / video_url_mobile / youtube_url_mobile) — reuse them.
+  // Cover Flow: use canonical ordered media collection (supports multiple images/videos/youtube as real separate items)
   const coverMedia = (() => {
-    const list: Array<{ type: 'image' | 'video' | 'youtube'; src: string; srcMobile?: string; poster?: string }> = [];
+    // Prefer new unified media if present (supports multiple videos/youtube + per-item crop)
+    if (hero.media && hero.media.length > 0) {
+      return hero.media.map((m) => ({
+        id: m.id,
+        type: m.type,
+        src: m.src,
+        srcMobile: m.srcMobile || undefined,
+        poster: m.poster || undefined,
+        position: m.position || undefined,
+        positionMobile: m.positionMobile || undefined,
+      }));
+    }
+    // Legacy fallback: images + single video/youtube
+    const list: Array<{ id?: string; type: 'image' | 'video' | 'youtube'; src: string; srcMobile?: string; poster?: string; position?: string; positionMobile?: string }> = [];
     const imgs = hero.images;
     const imgsMobile = hero.imagesMobile;
     imgs.forEach((src, idx) => {
       const mobileSrc = imgsMobile[idx] || imgsMobile[0] || undefined;
-      list.push({ type: 'image', src, srcMobile: mobileSrc });
+      list.push({ id: `image-${idx}`, type: 'image', src, srcMobile: mobileSrc, position: hero.position, positionMobile: hero.positionMobile || undefined });
     });
     if (hero.videoUrl) {
-      list.push({ type: 'video', src: hero.videoUrl, srcMobile: hero.videoUrlMobile || undefined, poster: list[0]?.src });
+      list.push({ id: 'video-0', type: 'video', src: hero.videoUrl, srcMobile: hero.videoUrlMobile || undefined, poster: list[0]?.src, position: hero.position, positionMobile: hero.positionMobile || undefined });
     } else if (hero.youtubeId) {
-      list.push({ type: 'youtube', src: hero.youtubeId, srcMobile: hero.youtubeIdMobile || undefined });
+      list.push({ id: 'youtube-0', type: 'youtube', src: hero.youtubeId, srcMobile: hero.youtubeIdMobile || undefined, position: hero.position, positionMobile: hero.positionMobile || undefined });
     } else if (hero.videoUrlMobile && !hero.videoUrl) {
-      list.push({ type: 'video', src: hero.videoUrlMobile, poster: list[0]?.src });
+      list.push({ id: 'video-m-0', type: 'video', src: hero.videoUrlMobile, poster: list[0]?.src, position: hero.positionMobile || hero.position });
     } else if (hero.youtubeIdMobile && !hero.youtubeId) {
-      list.push({ type: 'youtube', src: hero.youtubeIdMobile });
+      list.push({ id: 'youtube-m-0', type: 'youtube', src: hero.youtubeIdMobile });
     }
-    return list;
+    return list.map((m, idx) => ({ id: m.id || `${m.type}-${idx}`, ...m }));
   })();
   const useCoverFlow = coverMedia.length > 1;
   if (useCoverFlow) {
     const cfMedia = coverMedia.map((m) => ({
+      id: (m as any).id || `${m.type}-${m.src}`,
       type: m.type,
       src: m.src,
       srcMobile: (m as any).srcMobile,
-      poster: m.poster,
+      poster: (m as any).poster,
+      position: (m as any).position,
+      positionMobile: (m as any).positionMobile,
       title: hero.heading || singleHeroTitle,
       subtitle: hero.subtitle || singleHeroSubtitle,
       ctaLabel: hero.ctaLabel || singleHeroCtaLabel,

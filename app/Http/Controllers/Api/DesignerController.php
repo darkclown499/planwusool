@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\MediaItem;
 use App\Models\Store;
 use App\Support\ThemeAssetSanitizer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Visual Designer API — the drag & drop store builder.
@@ -125,6 +127,71 @@ class DesignerController extends Controller
                     continue;
                 }
                 data_set($merged, $key, $sanitized);
+            }
+            // Normalize hero_banner.media as canonical ordered collection (max 10, stable ids, per-item crop)
+            if (isset($merged['hero_banner']['media']) && is_array($merged['hero_banner']['media'])) {
+                $media = array_slice($merged['hero_banner']['media'], 0, 10);
+                $normalized = [];
+                foreach ($media as $idx => $item) {
+                    if (!is_array($item)) continue;
+                    $type = strtolower(trim((string)($item['type'] ?? '')));
+                    if (!in_array($type, ['image','video','youtube'], true)) continue;
+                    $src = trim((string)($item['src'] ?? $item['url'] ?? ''));
+                    if ($src === '') continue;
+                    if ($type === 'youtube') {
+                        $src = $this->extractYoutubeId($src) ?? $src;
+                        if (!preg_match('/^[a-zA-Z0-9_-]{11}$/', $src)) continue;
+                    } else {
+                        if (!str_starts_with($src, '/storage') && !str_starts_with($src, 'http')) continue;
+                        $isLocal = str_starts_with($src, '/storage') || preg_match('#/storage/#i', $src) === 1;
+                        if ($isLocal) {
+                            // FAIL-CLOSED local ownership: a local /storage reference must resolve to a
+                            // MediaItem row owned by this store, OR already exist verbatim inside this
+                            // store's SERVER-SIDE saved hero content (legacy exception). Unknown or
+                            // foreign local paths are rejected — never silently allowed.
+                            $storedContent = $store->store_content ?? [];
+                            $ownership = $this->resolveLocalMediaOwnership($src, $store->id, $storedContent);
+                            if (!$ownership->allows) continue;
+                            $src = $ownership->path;
+                        }
+                        $srcMobCheck = $item['srcMobile'] ?? $item['src_mobile'] ?? null;
+                        if ($srcMobCheck !== null && $srcMobCheck !== '' && is_string($srcMobCheck)) {
+                            $mobIsLocal = str_starts_with(trim($srcMobCheck), '/storage') || preg_match('#/storage/#i', $srcMobCheck) === 1;
+                            if ($mobIsLocal) {
+                                $mobOwnership = $this->resolveLocalMediaOwnership($srcMobCheck, $store->id, $storedContent ?? []);
+                                if (!$mobOwnership->allows) continue;
+                            }
+                        }
+                    }
+                    $id = trim((string)($item['id'] ?? ''));
+                    if ($id === '' || strlen($id) > 100) $id = 'media-' . $idx . '-' . substr(md5($src), 0, 8);
+                    $pos = isset($item['position']) ? trim((string)$item['position']) : '50% 50%';
+                    if (!preg_match('/^\d{1,3}% \d{1,3}%$/', $pos)) $pos = '50% 50%';
+                    else { [$x,$y]=explode(' ', $pos); $x=max(0,min(100,(int)rtrim($x,'%'))); $y=max(0,min(100,(int)rtrim($y,'%'))); $pos=$x.'% '.$y.'%'; }
+                    $posMob = isset($item['positionMobile']) ? trim((string)$item['positionMobile']) : (isset($item['position_mobile']) ? trim((string)$item['position_mobile']) : null);
+                    if ($posMob !== null && $posMob !== '' && !preg_match('/^\d{1,3}% \d{1,3}%$/', $posMob)) $posMob='50% 50%';
+                    elseif ($posMob !== null && $posMob !== '') { [$xm,$ym]=explode(' ', $posMob); $xm=max(0,min(100,(int)rtrim($xm,'%'))); $ym=max(0,min(100,(int)rtrim($ym,'%'))); $posMob=$xm.'% '.$ym.'%'; }
+                    $normalized[] = [
+                        'id' => $id,
+                        'type' => $type,
+                        'src' => $src,
+                        'srcMobile' => isset($item['srcMobile']) ? trim((string)$item['srcMobile']) : (isset($item['src_mobile']) ? trim((string)$item['src_mobile']) : null),
+                        'poster' => isset($item['poster']) ? trim((string)$item['poster']) : null,
+                        'position' => $pos,
+                        'positionMobile' => $posMob,
+                    ];
+                }
+                $merged['hero_banner']['media'] = $normalized;
+                // Derive legacy mirrors from canonical for backward compat
+                $images = array_values(array_map(fn($m)=>$m['src'], array_filter($normalized, fn($m)=>$m['type']==='image')));
+                $merged['hero_banner']['images'] = $images;
+                $merged['hero_images'] = $images;
+                $firstVideo=null; foreach($normalized as $m) if($m['type']==='video'){ $firstVideo=$m['src']; break; }
+                $merged['hero_banner']['video_url']=$firstVideo??'';
+                $merged['hero_video_url']=$firstVideo??'';
+                $firstYt=null; foreach($normalized as $m) if($m['type']==='youtube'){ $firstYt=$m['src']; break; }
+                $merged['hero_banner']['youtube_url']=$firstYt ? 'https://www.youtube.com/watch?v='.$firstYt : '';
+                $merged['hero_youtube_url']=$merged['hero_banner']['youtube_url'];
             }
             $store->store_content = $merged;
             // Sync store description / welcome / copyright to StoreConfiguration so ThemeController::getStoreConfig sees them via both paths (preview + live share same source)
@@ -289,6 +356,179 @@ class DesignerController extends Controller
         }
 
         return null;
+    }
+
+    private function extractYoutubeId(string $url): ?string
+    {
+        $url = trim($url);
+        if ($url === '') return null;
+        try {
+            $parsed = parse_url($url);
+            $host = $parsed['host'] ?? '';
+            $path = $parsed['path'] ?? '';
+            $query = $parsed['query'] ?? '';
+            if (str_contains($host, 'youtu.be')) {
+                $id = trim(ltrim($path, '/'), '/');
+                $id = explode('?', $id)[0];
+                $id = explode('&', $id)[0];
+                return $id !== '' ? $id : null;
+            }
+            if ($query !== '') {
+                parse_str($query, $qs);
+                if (!empty($qs['v'])) return explode('&', $qs['v'])[0];
+            }
+            $parts = array_values(array_filter(explode('/', $path)));
+            $idx = array_search('embed', $parts);
+            if ($idx !== false && isset($parts[$idx+1])) return explode('?', $parts[$idx+1])[0];
+            if (count($parts) > 0) {
+                $last = end($parts);
+                $last = explode('?', $last)[0];
+                $last = explode('&', $last)[0];
+                if (preg_match('/^[a-zA-Z0-9_-]{11}$/', $last)) return $last;
+            }
+        } catch (\Throwable $e) {}
+        if (preg_match('/[a-zA-Z0-9_-]{11}/', $url, $m)) return $m[0];
+        return null;
+    }
+
+    /**
+     * Normalize a client-submitted local media reference to the canonical form
+     * used in this project's stored hero content: /storage/media/{mediaId}/{file}.
+     *
+     * Handles: trailing slashes, cache-busting query/fragment, url-encoded
+     * segments and absolute URLs (https://host/storage/...).
+     * Returns the normalized path or null when the value is NOT a local
+     * storage path of this project (caller must treat null as unowned).
+     */
+    protected function normalizeLocalMediaPath(string $input): ?string
+    {
+        $path = trim($input);
+        $path = preg_replace('/[?#].*$/s', '', $path);
+        $path = rtrim($path, '/');
+        if ($path === '') return null;
+
+        // Absolute URLs: local only when they point at this project's /storage route
+        if (preg_match('#^https?://#i', $path)) {
+            $pos = stripos($path, '/storage/');
+            if ($pos === false) return null;
+            $path = substr($path, $pos);
+        }
+
+        if (!str_starts_with($path, '/storage/')) return null;
+
+        // url-decode each segment so matching against stored rows is exact
+        $segments = array_map('rawurldecode', explode('/', ltrim($path, '/')));
+        return '/' . implode('/', $segments);
+    }
+
+    /**
+     * True when the given normalized local path already appears verbatim in the
+     * server-side saved hero content of this store (src / srcMobile / srcMobile-safe
+     * images / images_mobile / video_url / youtube wrappers). Proof comes ONLY from
+     * server state, never from the request body.
+     */
+    protected function pathReferencedInStoredContent(string $path, array $storedContent): bool
+    {
+        $hb = $storedContent['hero_banner'] ?? null;
+        $needle = $path;
+
+        if (is_array($hb)) {
+            foreach ([
+                'src', 'srcMobile', 'images', 'images_mobile',
+                'video_url', 'video_url_mobile', 'youtube_url',
+            ] as $key) {
+                $v = $hb[$key] ?? null;
+                if (is_array($v)) {
+                    if (in_array($needle, $v, true)) return true;
+                } elseif (is_string($v) && trim($v) === $needle) {
+                    return true;
+                }
+            }
+            // Legacy tree keys may sit at top level (hero_images / hero_video_url / hero_youtube_url…)
+        }
+        foreach ([
+            'hero_images', 'hero_images_mobile',
+            'hero_video_url', 'hero_video_url_mobile', 'hero_youtube_url',
+        ] as $key) {
+            $v = $storedContent[$key] ?? null;
+            if (is_array($v)) {
+                if (in_array($needle, $v, true)) return true;
+            } elseif (is_string($v) && trim($v) === $needle) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * FAIL-CLOSED local media ownership gate for canonical hero_banner.media items.
+     *
+     * The submitted reference must resolve to a MediaItem media row owned by the
+     * current store (exact media-id match via the real MediaItem/id + media/fk
+     * representation) — OR — for historical stores, the exact path must already
+     * exist inside the store's server-side saved hero content (safe legacy
+     * exception). Unknown and foreign local paths are rejected.
+     *
+     * @return object{allows:bool, path:string, reason:string}
+     */
+    protected function resolveLocalMediaOwnership(string $rawPath, int $storeId, array $storedContent): object
+    {
+        $path = $this->normalizeLocalMediaPath($rawPath);
+        if ($path === null) {
+            return (object) ['allows' => false, 'path' => $rawPath, 'reason' => 'not_a_local_storage_path'];
+        }
+
+        // Canonical local media references ONLY the original uploaded file:
+        //   /storage/media/{media_item_id}/{original_file_name}
+        // Conversion (/conversions/) and responsive-image (/responsive-images/) subpaths are NOT
+        // part of the api.media.batch upload contract (it returns the original URL), so they are
+        // rejected for canonical hero src/srcMobile.
+        $segments = explode('/', trim($path, '/'));
+        if (count($segments) !== 4 || $segments[0] !== 'storage' || $segments[1] !== 'media') {
+            return (object) ['allows' => false, 'path' => $path, 'reason' => 'unsupported_subpath'];
+        }
+        $mediaItemId = $segments[2];
+        $fileName = $segments[3];
+        if (!preg_match('/^\d+$/', $mediaItemId) || $fileName === '') {
+            return (object) ['allows' => false, 'path' => $path, 'reason' => 'malformed_local_path'];
+        }
+
+        // Exact-file ownership: the real Spatie media row must match model_type,
+        // model_id, the EXACT normalized filename and (when the column exists) the
+        // current store's disk + store_id. This proves the exact referenced file —
+        // /storage/media/{owned_id}/fake.jpg cannot pass just because the id is owned.
+        $row = \Spatie\MediaLibrary\MediaCollections\Models\Media::query()
+            ->where('model_type', MediaItem::class)
+            ->where('model_id', (int) $mediaItemId)
+            ->where('file_name', $fileName)
+            ->first();
+
+        if ($row !== null) {
+            $owned = false;
+            if (Schema::hasColumn('media', 'store_id')) {
+                // Only local-serving disks produce /storage URLs (s3/wasabi serve CDN absolute URLs).
+                $disk = $row->disk ?? 'public';
+                if (in_array($disk, ['public', 'local'], true) && (int) $row->store_id === $storeId) {
+                    $owned = true;
+                }
+            }
+            if (!$owned && Schema::hasColumn('media_items', 'store_id')) {
+                // Legacy rows may scope store_id on media_items while the media row left it null;
+                // the exact file (model_type + model_id + file_name) is still required above.
+                $owned = MediaItem::query()->whereKey((int) $mediaItemId)->where('store_id', $storeId)->exists();
+            }
+            if ($owned) {
+                return (object) ['allows' => true, 'path' => $path, 'reason' => 'media_item_owned'];
+            }
+        }
+
+        // Safe legacy exception: exact path already saved server-side for this store.
+        if ($this->pathReferencedInStoredContent($path, $storedContent)) {
+            return (object) ['allows' => true, 'path' => $path, 'reason' => 'stored_legacy_exception'];
+        }
+
+        return (object) ['allows' => false, 'path' => $path, 'reason' => 'unowned_or_unknown'];
     }
 
     protected function authorizeStoreAccess(Request $request, Store $store): bool
