@@ -141,8 +141,8 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
               onClick={() => setDrawerOpen(false)}
               aria-hidden
             />
-            {/* Panel — fixed top0 right0 bottom0, 100dvh, warm background, above backdrop */}
-            <div className="absolute inset-y-0 right-0 flex h-[100dvh] w-[84%] max-w-[340px] flex-col overflow-hidden rounded-l-2xl bg-[#faf7f2] shadow-[-8px_0_30px_rgba(0,0,0,0.18)]">
+            {/* Panel — fixed to viewport, opaque full-height, bypass Tailwind ambiguity */}
+            <div data-drawer-version="portal-fullheight-v4" data-drawer-panel="fashion-atelier-mobile" className="flex w-[84%] max-w-[340px] flex-col overflow-hidden rounded-l-2xl bg-[#faf7f2] shadow-[-8px_0_30px_rgba(0,0,0,0.18)]" style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '84%', maxWidth: '340px', minHeight: '100vh', height: '100dvh', backgroundColor: '#faf7f2', zIndex: 90 }}>
               {/* Drawer header — inside panel, single close X */}
               <div className="flex shrink-0 items-center justify-between border-b border-stone-200 bg-white px-4 py-4 pt-[calc(1rem+env(safe-area-inset-top))]">
                 <a href={homeHref} className="flex items-center gap-2" onClick={() => setDrawerOpen(false)}>
@@ -157,7 +157,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/' }) 
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 py-5 pb-[env(safe-area-inset-bottom)]">
+              <div className="flex flex-1 min-h-0 overflow-y-auto px-4 py-5 pb-[env(safe-area-inset-bottom)]" style={{ backgroundColor: 'transparent' }}>
                 <nav className="space-y-1.5">
                   <button
                     type="button"
