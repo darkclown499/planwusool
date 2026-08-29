@@ -26,7 +26,7 @@ import { AtelierCategoryCircles, AtelierLookbook } from './components/AtelierSec
 const AtelierMobileSearch: React.FC = () => {
   const { ui } = useStorefrontCore() as any;
   return (
-    <div className="mx-auto max-w-7xl px-4 pt-3 md:hidden" dir="rtl">
+    <div className="mx-auto max-w-7xl px-4 pt-2 pb-1 md:hidden" dir="rtl">
       <button
         type="button"
         onClick={() => ui.setShowSearch(true)}
@@ -55,10 +55,10 @@ const AtelierWhatsAppFloating: React.FC = () => {
       target="_blank"
       rel="noreferrer"
       aria-label="تواصل واتساب"
-      className="fixed bottom-4 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_4px_16px_rgba(0,0,0,0.15),0_8px_24px_rgba(0,0,0,0.12)] ring-1 ring-black/5 transition hover:scale-105 md:hidden"
+      className="fixed bottom-4 left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12),0_6px_18px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition hover:scale-[1.04] active:scale-[0.97] md:hidden"
       style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' } as any}
     >
-      <MessageCircle className="h-6 w-6" fill="white" />
+      <MessageCircle className="h-[22px] w-[22px]" fill="white" />
     </a>
   );
 };
@@ -101,51 +101,53 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void; onProfile: () => vo
     const safe = enabled && url && isSafeUrl(url);
     return { idx, platform, url, safe };
   });
+  const hasSocial = socialSlots.some((s) => s.safe);
   return (
     <div className="min-h-screen w-full bg-[#faf7f2] md:hidden" dir="rtl">
-      <div className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-4">
-        <a href="/" className="flex items-center gap-2" onClick={() => onClose()}>
+      <div className="flex items-center justify-between gap-3 border-b border-stone-200/70 bg-white px-4 py-3.5">
+        <a href="/" className="flex min-w-0 flex-1 items-center gap-2" onClick={() => onClose()}>
           {(config?.logo || store?.logo) ? (
-            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-8 w-auto object-contain" />
+            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto object-contain" />
           ) : (
-            <span className="font-serif text-lg font-bold text-stone-900">{config?.storeName || store?.name}</span>
+            <span className="font-serif text-[17px] font-bold tracking-wide text-stone-900">{config?.storeName || store?.name}</span>
           )}
         </a>
-        <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200">
-          <X className="h-5 w-5" />
+        <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600 ring-1 ring-stone-200/60 transition hover:bg-stone-200 active:scale-95">
+          <X className="h-4 w-4" strokeWidth={2.2} />
         </button>
       </div>
-      <div className="px-4 py-6">
-        <h1 className="font-serif text-2xl font-bold text-stone-900">القائمة</h1>
-        <nav className="mt-6 space-y-3">
-          <button type="button" onClick={onProfile} className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-white"><User className="h-5 w-5" /></span>
-            <span className="flex-1 text-sm font-bold text-stone-800">حسابي</span>
-            <ChevronLeft className="h-4 w-4 text-stone-400" />
+      <div className="px-4 pt-5 pb-6">
+        <h1 className="font-serif text-[22px] font-bold leading-none text-stone-900">القائمة</h1>
+        <p className="mt-1.5 text-[12px] leading-relaxed text-stone-500">اكتشفي أقسام المتجر وتابعي جديدنا</p>
+        <nav className="mt-5 space-y-2.5">
+          <button type="button" onClick={onProfile} className="flex h-[64px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 backdrop-blur-sm transition hover:bg-white active:scale-[0.98]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><User className="h-[18px] w-[18px]" /></span>
+            <span className="flex-1 text-[13px] font-bold text-stone-800">حسابي</span>
+            <ChevronLeft className="h-4 w-4 text-stone-300" />
           </button>
-          <button type="button" onClick={onCategories} className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9d7463] text-white"><LayoutGridIcon /></span>
-            <span className="flex-1 text-sm font-bold text-stone-800">الأقسام</span>
-            <ChevronLeft className="h-4 w-4 text-stone-400" />
+          <button type="button" onClick={onCategories} className="flex h-[64px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 backdrop-blur-sm transition hover:bg-white active:scale-[0.98]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9d7463] text-white"><LayoutGridIcon /></span>
+            <span className="flex-1 text-[13px] font-bold text-stone-800">الأقسام</span>
+            <ChevronLeft className="h-4 w-4 text-stone-300" />
           </button>
         </nav>
-        <div className="my-6 h-px bg-stone-200" />
-        <p className="mb-3 text-xs font-bold tracking-widest text-stone-500">تابعنا</p>
-        <div className="grid grid-cols-3 gap-2.5">
-          {socialSlots.map((slot) => {
-            if (!slot.safe) return null;
-            const Icon = getSocialIcon(slot.platform);
-            return (
-              <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} className="flex flex-col items-center gap-1.5 rounded-xl bg-white px-2 py-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><Icon className="h-5 w-5" /></span>
-                <span className="text-[11px] font-bold capitalize text-stone-600">{slot.platform}</span>
-              </a>
-            );
-          })}
-          {socialSlots.filter((s) => s.safe).length === 0 && (
-            <p className="col-span-3 rounded-xl bg-white px-3 py-4 text-center text-xs text-stone-400 ring-1 ring-stone-200">لم يتم إعداد روابط التواصل بعد</p>
-          )}
-        </div>
+        {hasSocial && (
+          <>
+            <div className="my-5 h-px bg-stone-200/70" />
+            <p className="mb-3 text-[11px] font-bold tracking-[0.14em] text-stone-500">تابعنا</p>
+            <div className="flex items-start justify-start gap-5">
+              {socialSlots.filter((s) => s.safe).map((slot) => {
+                const Icon = getSocialIcon(slot.platform);
+                return (
+                  <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} className="flex flex-col items-center gap-1.5">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-stone-800 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50 active:scale-95"><Icon className="h-5 w-5" /></span>
+                    <span className="max-w-[64px] truncate text-[11px] font-medium capitalize text-stone-600">{slot.platform}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -221,6 +223,8 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
   const normalMain = (
     <main>
+      <AtelierMobileSearch />
+
       <AtelierHero
         slides={(banners.length > 0 ? banners : []).map((b) => ({
           title: b.title,
@@ -230,8 +234,6 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           button_link: b.button_link,
         }))}
       />
-
-      <AtelierMobileSearch />
 
       <div id="atelier-categories">
         <AtelierCategoryCircles categories={categories} />

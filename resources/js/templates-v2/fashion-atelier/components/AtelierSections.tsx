@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shirt, Sparkles, ShoppingBag, Gem, Baby, Footprints } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { useStorefrontCore } from '../../shared/hooks';
 
 /* ===================================================================== */
 /* Mid-page editorial blocks shared by the Atelier homepage.              */
@@ -36,21 +37,22 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
   try { const ctx = (useStorefrontCore as any)(); const raw = ctx?.content?.fashion_category_heading ?? ctx?.content?.fashion?.category_heading; if (typeof raw === 'string' && raw.trim()) catHeading = raw.trim(); } catch {}
 
   return (
-    <section className="py-10 sm:py-12" dir="rtl">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 text-center">
+    <section className="pt-6 pb-8 sm:py-12" dir="rtl">
+      <div className="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
+        <div className="mb-5 sm:mb-8 text-center px-4 sm:px-0">
           <span className="mx-auto mb-3 block h-px w-10 bg-[#b08d57]" />
           <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">{catHeading}</h2>
         </div>
+        {/* Mobile peek: container pe-4 leaves ~24-28px of next circle visible (3.6-4.1 items) */}
         <div className="overflow-x-auto overflow-y-hidden pb-3 snap-x snap-mandatory scroll-px-4 sm:scroll-px-6 lg:scroll-px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex w-max min-w-full gap-4 sm:gap-5 justify-start sm:justify-center">
+          <div className="flex w-max gap-3.5 sm:gap-5 px-4 sm:px-0 justify-start sm:justify-center after:content-[''] after:block after:w-1 after:shrink-0 sm:after:hidden">
           {categories.slice(0, 12).map((c) => (
             <a
               key={c.id}
               href={`/category/${c.slug || c.id}`}
-              className="group flex w-[88px] shrink-0 snap-start flex-col items-center gap-3 sm:w-[104px]"
+              className="group flex w-[82px] shrink-0 snap-start flex-col items-center gap-2.5 sm:w-[104px]"
             >
-              <span className="relative block h-[88px] w-[88px] shrink-0 overflow-hidden rounded-full bg-stone-50 ring-1 ring-stone-200 transition-all duration-300 group-hover:ring-[#9d7463] group-hover:ring-offset-2 group-hover:ring-offset-white sm:h-[104px] sm:w-[104px]">
+              <span className="relative block h-[82px] w-[82px] shrink-0 overflow-hidden rounded-full bg-stone-50 ring-1 ring-stone-200 transition-all duration-300 group-hover:ring-[#9d7463] group-hover:ring-offset-2 group-hover:ring-offset-white sm:h-[104px] sm:w-[104px]">
                 {c.image ? (
                   <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" />
                 ) : (
@@ -59,7 +61,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
                   </span>
                 )}
               </span>
-              <span className="w-full max-w-[80px] break-words text-center text-xs font-medium leading-tight text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-2">{c.name}</span>
+              <span className="w-full max-w-[76px] break-words text-center text-[11px] font-medium leading-tight text-stone-700 transition-colors group-hover:text-[#9d7463] line-clamp-2 sm:max-w-[80px] sm:text-xs">{c.name}</span>
             </a>
           ))}
           </div>
