@@ -215,9 +215,9 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
 
   // Stage hugs composition: height derived from WIDTH only (stable), not cqh — avoids circular sizing. Cards are absolute, so parent cannot use height:auto.
   return (
-    <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-11" dir="rtl">
-      <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(72cqw, 890px) / 1.5 + 28px)`, background: 'transparent' } as any}>
-        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(72cqw, 890px) / 1.5 + 28px) !important; }`}</style>
+    <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-4" dir="rtl">
+      <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(60cqw, 760px) / 1.5 + 24px)`, background: 'transparent' } as any}>
+        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(60cqw, 760px) / 1.5 + 24px) !important; }`}</style>
 
         <div
           ref={stageRef}
@@ -258,7 +258,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             let shadow = '0 18px 40px rgba(60,45,35,0.18), 0 6px 14px rgba(60,45,35,0.12)';
             let blur: string | undefined;
             // Active widths: width is stable source — min(cqw, maxPx) preserves 3:2 / 4:3 without cqh
-            let cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(72cqw, 890px)';
+            let cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(60cqw, 760px)';
 
             if (isActive) {
               basePct = 0;
@@ -266,13 +266,13 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               opacity = 1;
               z = 30;
               blur = undefined;
-              cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(72cqw, 890px)';
+              cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(60cqw, 760px)';
             } else if (isNeighbor) {
-              basePct = isMobile ? 20 : 20;
+              basePct = isMobile ? 20 : 17;
               scale = 1;
               opacity = isMobile ? 0.88 : 0.90;
               z = 20;
-              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.71)' : 'calc(min(72cqw, 890px) * 0.72)';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.71)' : 'calc(min(60cqw, 760px) * 0.72)';
               shadow = '0 10px 26px rgba(60,45,35,0.14), 0 3px 10px rgba(60,45,35,0.08)';
               blur = isMobile ? '2px' : '3px';
             } else if (isSecond) {
@@ -280,14 +280,14 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               scale = 1;
               opacity = 0.52;
               z = 10;
-              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(72cqw, 890px) * 0.56)';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(60cqw, 760px) * 0.56)';
               shadow = '0 6px 16px rgba(60,45,35,0.10)';
               blur = isMobile ? '3px' : '4px';
             } else {
               opacity = 0;
               z = 0;
               blur = isMobile ? '4px' : '5px';
-              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(72cqw, 890px) * 0.56)';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(60cqw, 760px) * 0.56)';
             }
 
             // drag follows pointer directly; settle after release is 300ms (Fashion easing)
