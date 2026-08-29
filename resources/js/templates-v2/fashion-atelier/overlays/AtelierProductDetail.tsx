@@ -277,7 +277,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
               </div>
 
               {adding && (
-                <p className="mt-2 flex items-center gap-1.5 text-right text-xs font-semibold text-emerald-600">
+                <p className="mt-2 flex items-center gap-1.5 text-right text-xs font-semibold text-[#9d7463]">
                   <Check className="h-3.5 w-3.5" /> أُضيف إلى السلة
                 </p>
               )}
@@ -317,7 +317,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
               {/* Truthful benefits — only show COD if actually enabled, otherwise hide hardcoded claims */}
               {hasCOD && (
                 <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-center text-xs font-medium text-stone-600 ring-1 ring-stone-200">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" /> الدفع عند الاستلام متاح
+                  <span className="h-2 w-2 rounded-full bg-[#9d7463]" /> الدفع عند الاستلام متاح
                 </div>
               )}
 
