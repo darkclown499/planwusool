@@ -176,7 +176,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     const m = media[0];
     const singleSrc = isMobile && (m as any).srcMobile ? (m as any).srcMobile as string : m.src;
     return (
-      <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
+      <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8" dir="rtl">
         <div className="atelier-cover-outer relative w-full overflow-visible rounded-t-xl rounded-b-2xl sm:rounded-2xl shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40">
           <div className="relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900" style={{ height: heights.desktop } as any}>
             <style>{`@media (max-width: 767px){ .atelier-hero-single{ height:${heights.mobile} !important; } } html[data-preview-mode="mobile"] .atelier-hero-single{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-hero-single{ height:${heights.desktop} !important; }`}</style>
@@ -215,9 +215,9 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
 
   // Stage hugs composition: height derived from WIDTH only (stable), not cqh — avoids circular sizing. Cards are absolute, so parent cannot use height:auto.
   return (
-    <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
-      <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(76cqw, 940px) / 1.5 + 32px)`, background: 'transparent' } as any}>
-        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(82cqw, 420px) / 1.333333 + 24px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(82cqw, 420px) / 1.333333 + 24px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(76cqw, 940px) / 1.5 + 32px) !important; }`}</style>
+    <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-11" dir="rtl">
+      <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(72cqw, 890px) / 1.5 + 28px)`, background: 'transparent' } as any}>
+        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(72cqw, 890px) / 1.5 + 28px) !important; }`}</style>
 
         <div
           ref={stageRef}
@@ -258,33 +258,36 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             let shadow = '0 18px 40px rgba(60,45,35,0.18), 0 6px 14px rgba(60,45,35,0.12)';
             let blur: string | undefined;
             // Active widths: width is stable source — min(cqw, maxPx) preserves 3:2 / 4:3 without cqh
-            let cardWidth = isMobile ? 'min(82cqw, 420px)' : 'min(76cqw, 940px)';
+            let cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(72cqw, 890px)';
 
             if (isActive) {
               basePct = 0;
               scale = 1;
               opacity = 1;
               z = 30;
-              cardWidth = isMobile ? 'min(82cqw, 420px)' : 'min(76cqw, 940px)';
+              blur = undefined;
+              cardWidth = isMobile ? 'min(84cqw, 420px)' : 'min(72cqw, 890px)';
             } else if (isNeighbor) {
-              basePct = isMobile ? 20 : 23;
-              scale = 0.98;
-              opacity = 0.92;
+              basePct = isMobile ? 20 : 20;
+              scale = 1;
+              opacity = isMobile ? 0.88 : 0.90;
               z = 20;
-              cardWidth = isMobile ? 'calc(min(82cqw, 420px) * 0.72)' : 'calc(min(76cqw, 940px) * 0.74)';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.71)' : 'calc(min(72cqw, 890px) * 0.72)';
               shadow = '0 10px 26px rgba(60,45,35,0.14), 0 3px 10px rgba(60,45,35,0.08)';
+              blur = isMobile ? '2px' : '3px';
             } else if (isSecond) {
               basePct = isMobile ? 45 : 48;
-              scale = 0.98;
+              scale = 1;
               opacity = 0.52;
               z = 10;
-              cardWidth = isMobile ? 'calc(min(82cqw, 420px) * 0.54)' : 'calc(min(76cqw, 940px) * 0.58)';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(72cqw, 890px) * 0.56)';
               shadow = '0 6px 16px rgba(60,45,35,0.10)';
-              blur = '0.3px';
+              blur = isMobile ? '3px' : '4px';
             } else {
               opacity = 0;
               z = 0;
-              cardWidth = isMobile ? 'calc(min(82cqw, 420px) * 0.54)' : 'calc(min(76cqw, 940px) * 0.58)';
+              blur = isMobile ? '4px' : '5px';
+              cardWidth = isMobile ? 'calc(min(84cqw, 420px) * 0.54)' : 'calc(min(72cqw, 890px) * 0.56)';
             }
 
             // drag follows pointer directly; settle after release is 300ms (Fashion easing)
