@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, MessageCircle, PackageSearch, Search, User, X } from 'lucide-react';
+import { ChevronLeft, ChevronDown, MessageCircle, PackageSearch, Search, User, X, Home, Package, Heart, MapPin, LogOut, LogIn, UserPlus, Store } from 'lucide-react';
 import { Facebook, Globe, Instagram, Music, Send, Youtube, Twitter } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
@@ -39,8 +39,7 @@ const AtelierMobileSearch: React.FC = () => {
   );
 };
 
-const AtelierWhatsAppFloating: React.FC = () => {
-  const { config, content, store } = useStorefrontCore() as any;
+function resolveWhatsAppHref(config: any, content: any, store: any): string | null {
   const rawContent: any = content ?? {};
   const waCfg: any = rawContent.fashion_whatsapp ?? rawContent.fashion_wa ?? {};
   const enabled = waCfg.enabled ?? waCfg.show ?? rawContent.fashion_whatsapp_enabled ?? false;
@@ -48,7 +47,13 @@ const AtelierWhatsAppFloating: React.FC = () => {
   const rawNumber = String(waCfg.number ?? waCfg.phone ?? rawContent.fashion_whatsapp_number ?? config?.socialMedia?.whatsapp ?? config?.whatsapp_widget_phone ?? (store as any)?.phone ?? '').replace(/[^0-9]/g, '');
   if (!rawNumber) return null;
   const rawMessage = String(waCfg.message ?? rawContent.fashion_whatsapp_message ?? 'مرحباً، أريد الاستفسار عن أحد المنتجات');
-  const href = `https://wa.me/${rawNumber}?text=${encodeURIComponent(rawMessage)}`;
+  return `https://wa.me/${rawNumber}?text=${encodeURIComponent(rawMessage)}`;
+}
+
+const AtelierWhatsAppFloating: React.FC = () => {
+  const { config, content, store } = useStorefrontCore() as any;
+  const href = resolveWhatsAppHref(config, content, store);
+  if (!href) return null;
   return (
     <a
       href={href}
@@ -91,8 +96,12 @@ function LayoutGridIcon() {
     </svg>
   );
 }
-const AtelierMobileMenuView: React.FC<{ onClose: () => void; onProfile: () => void; onCategories: () => void }> = ({ onClose, onProfile, onCategories }) => {
-  const { config, store, content } = useStorefrontCore() as any;
+const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { config, store, content, product, auth } = useStorefrontCore() as any;
+  const categories: any[] = product?.categories || [];
+  const isLoggedIn: boolean = !!auth?.isLoggedIn;
+  const [activeSection, setActiveSection] = useState<'categories' | 'account' | null>(null);
+
   const socialSlots = [1, 2, 3].map((idx) => {
     const base = (content as any)?.fashion_mobile_nav ?? {};
     const enabled = !!base[`social_${idx}_enabled`];
@@ -102,35 +111,206 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void; onProfile: () => vo
     return { idx, platform, url, safe };
   });
   const hasSocial = socialSlots.some((s) => s.safe);
+  const whatsappHref = resolveWhatsAppHref(config, content, store);
+
+  const customerName = [auth?.customer?.first_name, auth?.customer?.last_name].filter(Boolean).join(' ').trim() || auth?.customer?.email || '';
+  const customerEmail = auth?.customer?.email || auth?.userProfile?.email || '';
+  const customerPhone = auth?.customer?.phone || auth?.userProfile?.phone || '';
+
+  const toggleSection = (key: 'categories' | 'account') => setActiveSection((prev) => (prev === key ? null : key));
+
+  const handleHome = () => {
+    onClose();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // also ensure hash nav if needed
+    try { window.history.pushState(null, '', '/'); } catch {}
+  };
+  const handleAllProducts = () => {
+    onClose();
+    requestAnimationFrame(() => {
+      const el = document.getElementById('atelier-new') || document.getElementById('atelier-categories');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.scrollTo({ top: 600, behavior: 'smooth' });
+    });
+  };
+  const handleCategoryClick = (cat: any) => {
+    onClose();
+    const href = `/category/${cat.slug || cat.id}`;
+    try { window.location.href = href; } catch { window.location.assign(href); }
+  };
+  const handleGuestLogin = () => {
+    onClose();
+    auth?.setShowLoginModal?.(true);
+  };
+  const handleProfileAction = (action: 'profile' | 'orders' | 'addresses' | 'wishlist') => {
+    onClose();
+    if (action === 'profile') auth?.setShowProfileModal?.(true);
+    if (action === 'orders') { auth?.setShowOrdersModal?.(true); try { auth?.order?.loadUserOrders?.(); } catch {} }
+    if (action === 'addresses') auth?.setShowAddressesModal?.(true);
+    if (action === 'wishlist') auth?.setShowWishlistModal?.(true);
+  };
+  const handleLogout = () => {
+    onClose();
+    auth?.logout?.();
+  };
+
+  const storeName = config?.storeName || store?.name || 'المتجر';
+  const storeDesc: string = (() => {
+    const raw = (store as any)?.description || config?.description || (content as any)?.store_description || '';
+    const t = String(raw).trim();
+    if (t && t.length > 6 && t.length < 120) return t;
+    return 'كل ما تحتاجه في مكان واحد';
+  })();
+  const storeLogo = config?.logo || store?.logo;
+
   return (
     <div className="min-h-screen w-full bg-[#faf7f2] md:hidden" dir="rtl">
+      {/* Header: [X] [centered logo] [spacer] */}
       <div className="flex items-center justify-between gap-3 border-b border-stone-200/70 bg-white px-4 py-3.5">
-        <a href="/" className="flex min-w-0 flex-1 items-center gap-2" onClick={() => onClose()}>
-          {(config?.logo || store?.logo) ? (
-            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto object-contain" />
-          ) : (
-            <span className="font-serif text-[17px] font-bold tracking-wide text-stone-900">{config?.storeName || store?.name}</span>
-          )}
-        </a>
         <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600 ring-1 ring-stone-200/60 transition hover:bg-stone-200 active:scale-95">
           <X className="h-4 w-4" strokeWidth={2.2} />
         </button>
+        <a href="/" className="flex min-w-0 flex-1 items-center justify-center gap-2" onClick={() => onClose()}>
+          {storeLogo ? (
+            <img src={getImageUrl(storeLogo)} alt={storeName} className="h-7 w-auto object-contain" />
+          ) : (
+            <span className="font-serif text-[17px] font-bold tracking-wide text-stone-900">{storeName}</span>
+          )}
+        </a>
+        <span className="h-8 w-8 shrink-0" aria-hidden />
       </div>
-      <div className="px-4 pt-5 pb-6">
-        <h1 className="font-serif text-[22px] font-bold leading-none text-stone-900">القائمة</h1>
-        <p className="mt-1.5 text-[12px] leading-relaxed text-stone-500">اكتشفي أقسام المتجر وتابعي جديدنا</p>
-        <nav className="mt-5 space-y-2.5">
-          <button type="button" onClick={onProfile} className="flex h-[64px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 backdrop-blur-sm transition hover:bg-white active:scale-[0.98]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><User className="h-[18px] w-[18px]" /></span>
-            <span className="flex-1 text-[13px] font-bold text-stone-800">حسابي</span>
+
+      <div className="px-4 pt-4 pb-8">
+        {/* Store identity */}
+        <div className="flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-3.5 shadow-[0_1px_10px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#faf7f2] ring-1 ring-stone-200">
+            {storeLogo ? <img src={getImageUrl(storeLogo)} alt="" className="h-full w-full object-contain p-1.5" /> : <Store className="h-5 w-5 text-stone-500" />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] font-bold leading-none text-stone-900">{storeName}</span>
+            <span className="mt-1 block truncate text-[11px] leading-none text-stone-500">{storeDesc}</span>
+          </span>
+        </div>
+
+        <h1 className="mt-5 font-serif text-[11px] font-bold tracking-[0.14em] text-stone-400">القائمة</h1>
+
+        <nav className="mt-3 space-y-2.5">
+          {/* الرئيسية */}
+          <button type="button" onClick={handleHome} className="flex h-[60px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 transition hover:bg-white active:scale-[0.98]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><Home className="h-[18px] w-[18px]" /></span>
+            <span className="flex-1 text-[13px] font-bold text-stone-800">الرئيسية</span>
             <ChevronLeft className="h-4 w-4 text-stone-300" />
           </button>
-          <button type="button" onClick={onCategories} className="flex h-[64px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 backdrop-blur-sm transition hover:bg-white active:scale-[0.98]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9d7463] text-white"><LayoutGridIcon /></span>
-            <span className="flex-1 text-[13px] font-bold text-stone-800">الأقسام</span>
+          {/* جميع المنتجات */}
+          <button type="button" onClick={handleAllProducts} className="flex h-[60px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 transition hover:bg-white active:scale-[0.98]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9d7463] text-white"><Package className="h-[18px] w-[18px]" /></span>
+            <span className="flex-1 text-[13px] font-bold text-stone-800">جميع المنتجات</span>
             <ChevronLeft className="h-4 w-4 text-stone-300" />
           </button>
+
+          {/* الأقسام accordion */}
+          <div className="rounded-2xl bg-white/80 shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60">
+            <button
+              type="button"
+              onClick={() => toggleSection('categories')}
+              aria-expanded={activeSection === 'categories'}
+              aria-controls="atelier-menu-categories"
+              className="flex h-[60px] w-full items-center gap-3 px-4 text-start transition active:scale-[0.99]"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-700 ring-1 ring-stone-200"><LayoutGridIcon /></span>
+              <span className="flex-1 text-[13px] font-bold text-stone-800">الأقسام</span>
+              <span className="flex items-center gap-1 text-[11px] font-medium text-stone-400">{categories.length > 0 ? `${categories.length}` : ''}</span>
+              <ChevronDown className={`h-4 w-4 text-stone-400 transition-transform duration-200 ${activeSection === 'categories' ? 'rotate-180' : ''}`} />
+            </button>
+            {activeSection === 'categories' && (
+              <div id="atelier-menu-categories" className="border-t border-stone-100 px-2 pb-2">
+                {categories.length === 0 ? (
+                  <p className="px-3 py-3 text-center text-xs text-stone-400">لا توجد أقسام متاحة حالياً</p>
+                ) : (
+                  <div className="pt-1">
+                    {categories.slice(0, 30).map((cat: any) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => handleCategoryClick(cat)}
+                        className="flex h-[48px] w-full items-center gap-3 rounded-xl px-3 text-start transition hover:bg-stone-50 active:scale-[0.99]"
+                      >
+                        {cat.image ? (
+                          <img src={getImageUrl(cat.image)} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover ring-1 ring-stone-200" />
+                        ) : (
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-500 ring-1 ring-stone-200"><LayoutGridIcon /></span>
+                        )}
+                        <span className="flex-1 truncate text-[13px] font-medium text-stone-700">{cat.name}</span>
+                        <ChevronLeft className="h-3.5 w-3.5 text-stone-300" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* حسابي accordion */}
+          <div className="rounded-2xl bg-white/80 shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60">
+            <button
+              type="button"
+              onClick={() => toggleSection('account')}
+              aria-expanded={activeSection === 'account'}
+              aria-controls="atelier-menu-account"
+              className="flex h-[60px] w-full items-center gap-3 px-4 text-start transition active:scale-[0.99]"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><User className="h-[18px] w-[18px]" /></span>
+              <span className="flex-1 text-[13px] font-bold text-stone-800">حسابي</span>
+              <ChevronDown className={`h-4 w-4 text-stone-400 transition-transform duration-200 ${activeSection === 'account' ? 'rotate-180' : ''}`} />
+            </button>
+            {activeSection === 'account' && (
+              <div id="atelier-menu-account" className="border-t border-stone-100 px-2 pb-2">
+                {isLoggedIn ? (
+                  <>
+                    {(customerName || customerEmail) && (
+                      <div className="mx-1 mt-2 flex items-center gap-3 rounded-xl bg-[#faf7f2] px-3 py-2.5 ring-1 ring-stone-200/50">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-900 text-[12px] font-bold text-white">{(customerName || customerEmail || '؟').trim().charAt(0).toUpperCase()}</span>
+                        <span className="min-w-0 flex-1">
+                          {customerName && <span className="block truncate text-[12px] font-bold text-stone-800">{customerName}</span>}
+                          {(customerEmail || customerPhone) && <span className="block truncate text-[11px] text-stone-500">{customerEmail || customerPhone}</span>}
+                        </span>
+                      </div>
+                    )}
+                    <div className="mt-1 space-y-0.5">
+                      <button type="button" onClick={() => handleProfileAction('profile')} className="flex h-[46px] w-full items-center gap-3 rounded-xl px-3 text-start text-[13px] font-medium text-stone-700 hover:bg-stone-50"><User className="h-4 w-4 text-stone-400" /> بيانات الحساب <ChevronLeft className="ms-auto h-3.5 w-3.5 text-stone-300" /></button>
+                      <button type="button" onClick={() => handleProfileAction('orders')} className="flex h-[46px] w-full items-center gap-3 rounded-xl px-3 text-start text-[13px] font-medium text-stone-700 hover:bg-stone-50"><Package className="h-4 w-4 text-stone-400" /> طلباتي <ChevronLeft className="ms-auto h-3.5 w-3.5 text-stone-300" /></button>
+                      <button type="button" onClick={() => handleProfileAction('addresses')} className="flex h-[46px] w-full items-center gap-3 rounded-xl px-3 text-start text-[13px] font-medium text-stone-700 hover:bg-stone-50"><MapPin className="h-4 w-4 text-stone-400" /> العناوين <ChevronLeft className="ms-auto h-3.5 w-3.5 text-stone-300" /></button>
+                      <button type="button" onClick={() => handleProfileAction('wishlist')} className="flex h-[46px] w-full items-center gap-3 rounded-xl px-3 text-start text-[13px] font-medium text-stone-700 hover:bg-stone-50"><Heart className="h-4 w-4 text-stone-400" /> المفضلة <ChevronLeft className="ms-auto h-3.5 w-3.5 text-stone-300" /></button>
+                      <div className="mx-3 my-1 h-px bg-stone-100" />
+                      <button type="button" onClick={handleLogout} className="flex h-[46px] w-full items-center gap-3 rounded-xl px-3 text-start text-[13px] font-medium text-red-600 hover:bg-red-50"><LogOut className="h-4 w-4" /> تسجيل الخروج</button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="px-1 pt-2 pb-1">
+                    <p className="px-2 text-[11px] leading-relaxed text-stone-500">سجّل الدخول لمتابعة حسابك وطلباتك</p>
+                    <div className="mt-2 space-y-1.5">
+                      <button type="button" onClick={handleGuestLogin} className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-stone-900 px-4 text-[13px] font-bold text-white transition hover:bg-stone-800 active:scale-[0.98]"><LogIn className="h-4 w-4" /> تسجيل الدخول</button>
+                      <button type="button" onClick={handleGuestLogin} className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-[13px] font-bold text-stone-700 ring-1 ring-stone-200 transition hover:bg-stone-50 active:scale-[0.98]"><UserPlus className="h-4 w-4" /> إنشاء حساب</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </nav>
+
+        {/* WhatsApp */}
+        {whatsappHref && (
+          <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => onClose()} className="mt-3 flex h-[56px] w-full items-center gap-3 rounded-2xl bg-white px-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50 active:scale-[0.98]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white"><MessageCircle className="h-5 w-5" fill="white" /></span>
+            <span className="flex-1 text-start">
+              <span className="block text-[13px] font-bold leading-none text-stone-800">تواصل معنا عبر واتساب</span>
+              <span className="mt-1 block text-[11px] leading-none text-stone-500">رد سريع خلال ساعات العمل</span>
+            </span>
+            <ChevronLeft className="h-4 w-4 text-stone-300" />
+          </a>
+        )}
+
         {hasSocial && (
           <>
             <div className="my-5 h-px bg-stone-200/70" />
@@ -199,27 +379,6 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const hasDistinctLookbook = !!(lookbookA && lookbookB && lookbookA.image && lookbookB.image && lookbookA.image !== lookbookB.image);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pendingScroll, setPendingScroll] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!mobileMenuOpen && pendingScroll) {
-      requestAnimationFrame(() => {
-        const el = document.getElementById(pendingScroll);
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setPendingScroll(null);
-      });
-    }
-  }, [mobileMenuOpen, pendingScroll]);
-
-  const handleProfile = () => {
-    setMobileMenuOpen(false);
-    if (auth?.isLoggedIn) auth.setShowProfileModal(true);
-    else auth?.setShowLoginModal?.(true);
-  };
-  const handleCategories = () => {
-    setMobileMenuOpen(false);
-    setPendingScroll('atelier-categories');
-  };
 
   const normalMain = (
     <main>
@@ -241,15 +400,15 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
       {showLatest && (
         <div id="atelier-new">
-          <AtelierRail title="وصل حديثاً" subtitle="أحدث القطع التي انضمت للأتيليه" products={newest} viewAllHref="/products" />
+          <AtelierRail title="أحدث المنتجات" subtitle="تشكيلة مختارة وصلت حديثاً" products={newest} viewAllHref="/products" />
         </div>
       )}
 
       {hasDistinctLookbook && (
         <AtelierLookbook
           panels={[
-            { eyebrow: 'كولكشن', title: lookbookA!.title || 'الموسم الجديد', cta_text: 'شاهدي التشكيلة', cta_link: '#atelier-new', image: lookbookA!.image },
-            { eyebrow: 'مختارات', title: lookbookB!.title || 'قطع لا تُقاوم', cta_text: 'تسوقي الآن', cta_link: '#atelier-best', image: lookupImage(lookbookB!) },
+            { eyebrow: 'كولكشن', title: lookbookA!.title || 'الموسم الجديد', cta_text: 'استكشف التشكيلة', cta_link: '#atelier-new', image: lookbookA!.image },
+            { eyebrow: 'مختارات', title: lookbookB!.title || 'قطع مميزة', cta_text: 'تسوّق الآن', cta_link: '#atelier-best', image: lookupImage(lookbookB!) },
           ]}
         />
       )}
@@ -307,7 +466,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         <AnnouncementBar />
         {/* Mobile menu view — normal DOM, no overlay */}
         <div className="md:hidden">
-          <AtelierMobileMenuView onClose={() => setMobileMenuOpen(false)} onProfile={handleProfile} onCategories={handleCategories} />
+          <AtelierMobileMenuView onClose={() => setMobileMenuOpen(false)} />
         </div>
         {/* Desktop always shows normal storefront even while mobile menu open */}
         <div className="hidden md:block">
@@ -346,7 +505,7 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
   if (!cat) return null;
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(`شاهدي قسم "${cat.name}" في المتجر: ${shareUrl}`)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(`شاهد قسم "${cat.name}" في المتجر: ${shareUrl}`)}`;
 
   const navigate = (next: Record<string, any>) => {
     router.get(window.location.pathname, next, { preserveScroll: true, preserveState: true });
@@ -371,7 +530,7 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
           <p className="mt-2 text-xs tracking-wide text-stone-400">
             {categoryData.total} قطعة متوفرة ·{' '}
             <a href={whatsappShare} target="_blank" rel="noreferrer" className="underline underline-offset-4 hover:text-[#9d7463]">
-              شاركي القسم عبر واتساب
+              شارك القسم عبر واتساب
             </a>
           </p>
         </header>
@@ -394,9 +553,9 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
         {products.length === 0 ? (
           <div className="flex flex-col items-center gap-4 py-24 text-center">
             <PackageSearch className="h-12 w-12 text-stone-300" />
-            <p className="text-lg font-semibold text-stone-600">لا توجد قطع في هذا القسم بعد</p>
+            <p className="text-lg font-semibold text-stone-600">لا توجد منتجات في هذا القسم بعد</p>
             <a href="/" className="rounded-full bg-[#9d7463] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#85604f]">
-              تصفحي بقية الأتيليه
+              تصفح بقية المتجر
             </a>
           </div>
         ) : (

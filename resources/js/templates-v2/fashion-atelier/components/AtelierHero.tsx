@@ -7,7 +7,7 @@ import { useResolvedHero, HERO_HEIGHTS, HERO_BREAKPOINT_CSS, HERO_BREAKPOINT } f
 
 interface HeroSlide { title?: string; subtitle?: string; image?: string; button_text?: string; button_link?: string; }
 interface AtelierHeroProps { slides: HeroSlide[]; }
-const FALLBACK_SLIDES: HeroSlide[] = [{ title: 'أناقة تُروى كقصة', subtitle: 'تشكيلة الموسم الجديدة — قطع مختارة بعناية لكل لحظة', button_text: 'اكتشفي التشكيلة', button_link: '#atelier-new' }];
+const FALLBACK_SLIDES: HeroSlide[] = [{ title: 'أناقة تُروى كقصة', subtitle: 'تشكيلة الموسم الجديدة — قطع مختارة بعناية لكل لحظة', button_text: 'استكشف التشكيلة', button_link: '#atelier-new' }];
 function extractYouTubeId(url: string): string | null { try { const u = new URL(url); if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0].split('&')[0]; if (u.searchParams.get('v')) return u.searchParams.get('v')!.split('&')[0]; const parts = u.pathname.split('/').filter(Boolean); const embedIdx = parts.indexOf('embed'); if (embedIdx !== -1 && parts[embedIdx+1]) return parts[embedIdx+1].split('?')[0]; if (parts.length>0) return parts[parts.length-1].split('?')[0].split('&')[0]; return null; } catch { const m=url.match(/[a-zA-Z0-9_-]{11}/); return m?m[0]:null; } }
 
 export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
