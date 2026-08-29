@@ -124,19 +124,30 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4" dir="rtl" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[22px] bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl">
+      <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] backdrop-blur-[8px] atelier-focus-backdrop" onClick={onClose} style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' } as any} />
+      <style>{`@keyframes atelierFadeIn{from{opacity:0}to{opacity:1}}@keyframes atelierImageIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}@keyframes atelierSheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.atelier-focus-backdrop{animation:atelierFadeIn 220ms ease-out}.atelier-product-image{animation:atelierImageIn 260ms cubic-bezier(.2,.8,.2,1)} .atelier-info-sheet{animation:atelierSheetIn 260ms cubic-bezier(.2,.8,.2,1) 60ms both}@media(prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-info-sheet{animation:none!important}}`}</style>
+      <div className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[26px] bg-transparent sm:bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl">
         {/* Close */}
         <button type="button" onClick={onClose} aria-label="إغلاق"
           className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900">
           <X className="h-5 w-5" />
         </button>
 
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]">
+        {/* Mobile product focus zone — floating over blurred storefront, no white stage */}
+        <div className="flex h-[clamp(300px,46dvh,500px)] shrink-0 items-center justify-center px-6 pt-12 pb-3 sm:hidden">
+          <div className="atelier-product-image relative flex h-full w-full max-w-[86%] items-center justify-center">
+            <img src={getImageUrl(images[active])} alt={product.name} className="max-h-[88%] max-w-full object-contain drop-shadow-[0_10px_28px_rgba(0,0,0,0.12)]" />
+            {discount > 0 && <span className="absolute top-2 right-2 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>}
+            {outOfStock && <span className="absolute top-2 left-2 rounded-full border border-stone-300 bg-white/90 px-3 py-1 text-xs font-bold text-stone-600">نفذت</span>}
+          </div>
+        </div>
+        {images.length > 1 && <div className="flex justify-center gap-2 pb-2 sm:hidden">{images.map((_, i) => <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-300'}`} />)}</div>}
+
+        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[26px] shadow-[0_-4px_24px_rgba(0,0,0,0.08)] -mt-3 pt-1 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
-            {/* Gallery — mobile capped 48-52vh, proportion tuned for perfume without white gaps */}
-            <div className="px-4 pt-4 sm:px-0 sm:pt-0">
-              <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/60 max-h-[clamp(320px,52vh,520px)] sm:max-h-none aspect-[4/5] sm:aspect-[3/4] max-sm:min-h-[320px]">
+            {/* Gallery — desktop only (mobile uses focus zone above) */}
+            <div className="hidden sm:block px-4 pt-4 sm:px-0 sm:pt-0">
+              <div className="relative overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/60 aspect-[3/4]">
                 <img src={getImageUrl(images[active])} alt={product.name} className="h-full w-full object-contain p-2 sm:object-cover sm:p-0" />
                 {discount > 0 && (
                   <span className="absolute top-3 right-3 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>
