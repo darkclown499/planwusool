@@ -80,12 +80,14 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   }
 
   // Contained editorial: outer wrapper gives balanced side margins; inner hero is the clamped slot.
-  // Premium elevated card: subtle layered shadow + rounded corners, visible on both desktop and mobile.
+  // Outer floating card: layered soft shadow lives on the clamped inner card (overflow-hidden does NOT clip box-shadow),
+  // rounded corners visible on both desktop and mobile. Internal gradient darkening removed — true image color,
+  // only user-controlled overlayOpacity remains.
   // Mobile: tighter top radius (xl) + generous bottom radius (2xl) for stacked-card warmth, gap 8-12px from search.
   return (
     <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
-      <div className="atelier-hero hero-clamped relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900 shadow-[0_3px_10px_rgba(0,0,0,0.06),0_14px_32px_rgba(0,0,0,0.07)] ring-1 ring-stone-200/40" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: desktopH } as any}>
-      {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero{ height:${mobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .atelier-hero{ height:${desktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero { height: ${mobileH} !important; } }`}</style>}
+      <div className="atelier-hero hero-clamped relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900 shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: desktopH } as any}>
+      {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero{ height:${mobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .atelier-hero{ height:${desktopH} !important; } } html[data-preview-mode="mobile"] .atelier-hero{ height:${mobileH} !important; } html[data-preview-mode="desktop"] .atelier-hero{ height:${desktopH} !important; }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .atelier-hero { height: ${mobileH} !important; } } html[data-preview-mode="mobile"] .atelier-hero{ height:${mobileH} !important; } html[data-preview-mode="desktop"] .atelier-hero{ height:${desktopH} !important; }`}</style>}
       {hasDynamicHero && heroType==='video' && (videoUrl || videoUrlMobile) ? (
         <>
           {/* Desktop video */}
@@ -124,12 +126,10 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
             const mobileImg = mobileSlide.image ? getImageUrl(mobileSlide.image) : desktopImg;
             return (
             <div key={i} className="absolute inset-0 bg-stone-900 transition-opacity duration-[1200ms] ease-out" style={{ opacity: i===index?1:0 }} aria-hidden={i!==index}>
-              {/* Desktop image */}
+              {/* Desktop image — true color, no internal gradient darkening; readability via overlayOpacity only */}
               {desktopImg && <img src={desktopImg} alt="" className={`absolute inset-0 h-full w-full ${mediaFit} ${hasMobileImages?'hidden md:block':'block'}`} sizes="100vw" loading={i===0?'eager':'lazy'} decoding="async" style={{ objectPosition: mediaPos, transform: i===index?'scale(1.02)':'scale(1.01)', transition:'transform 7s ease-out' }} />}
               {/* Mobile image */}
               {mobileImg && hasMobileImages && <img src={mobileImg} alt="" className={`absolute inset-0 h-full w-full ${mediaFitMobile} block md:hidden`} sizes="100vw" loading={i===0?'eager':'lazy'} decoding="async" style={{ objectPosition: mediaPosMobile, transform: i===index?'scale(1.02)':'scale(1.01)', transition:'transform 7s ease-out' }} />}
-              <div className="absolute inset-0 bg-gradient-to-l from-black/40 via-black/15 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
               {hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: overlayStyleOpacity }} />}
             </div>
           )})}

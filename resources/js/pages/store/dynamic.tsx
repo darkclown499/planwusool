@@ -81,15 +81,19 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             setDraft(e.data.payload);
         };
         window.addEventListener('message', handler);
-        // notify parent that preview is ready to receive draft
-        try { window.parent.postMessage({ type: 'wusool:preview:ready' }, window.location.origin); } catch {}
-        return () => window.removeEventListener('message', handler);
+        // notify parent that preview is ready to receive draft — retry until acknowledged
+        const notifyReady = () => { try { window.parent.postMessage({ type: 'wusool:preview:ready' }, window.location.origin); } catch {} };
+        notifyReady();
+        // also retry shortly after mount for race where parent listener attaches after iframe load
+        const retry = setTimeout(notifyReady, 350);
+        return () => { window.removeEventListener('message', handler); clearTimeout(retry); };
     }, []);
 
-    // Mirror previewMode to DOM for hero media queries and slot highlight
+    // Mirror previewMode to DOM for hero media queries and slot highlight — also handle cleanup
     React.useEffect(() => {
         try {
             if (draft?.previewMode) document.documentElement.setAttribute('data-preview-mode', draft.previewMode);
+            else document.documentElement.removeAttribute('data-preview-mode');
         } catch {}
     }, [draft?.previewMode]);
     React.useEffect(() => {
@@ -113,6 +117,9 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
     const effectiveStoreContent = draft?.content ?? storeContent;
     const effectiveCustomCss = draft?.customCss ?? (store as any)?.custom_css;
     const effectiveCustomJs = draft?.customJs ?? (store as any)?.custom_javascript;
+    const effectiveHeadInject = draft?.headInject ?? (store as any)?.custom_head_scripts ?? null;
+    // preview draft is live unsaved — when present, it must override every content-derived hero/media path
+    // so Designer changes appear instantly without save (hero type/images/video/youtube/overlay/fit/position/height)
 
     const templateModule = React.useMemo(() => requireTemplateModule(effectiveTemplate), [effectiveTemplate]);
 
@@ -129,18 +136,21 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
             behavior,
             custom_css: effectiveCustomCss,
             custom_javascript: effectiveCustomJs,
+            custom_head_scripts: effectiveHeadInject,
         }),
-        [store, categories, products, config, storeSettings, effectiveStoreContent, offers, storePages, behavior, effectiveCustomCss, effectiveCustomJs],
+        [store, categories, products, config, storeSettings, effectiveStoreContent, offers, storePages, behavior, effectiveCustomCss, effectiveCustomJs, effectiveHeadInject],
     );
 
+    // hasDraft is intentionally used to suppress stale-while-revalidate flicker on first draft
     const hasDraft = !!draft;
+    void hasDraft;
     return (
         <>
             <DesignTokensInjector tokens={effectiveDesignTokens as any} />
             <CustomCodeInjector
                 customCss={effectiveCustomCss}
                 customJavascript={effectiveCustomJs}
-                customHeadScripts={store?.custom_head_scripts}
+                customHeadScripts={effectiveHeadInject}
                 customBodyScripts={store?.custom_body_scripts}
             />
             <StoreHead

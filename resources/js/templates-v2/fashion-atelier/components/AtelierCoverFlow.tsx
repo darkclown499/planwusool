@@ -92,8 +92,8 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     const m = media[0];
     return (
       <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
-        <div className="relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900 shadow-[0_3px_10px_rgba(0,0,0,0.06),0_14px_32px_rgba(0,0,0,0.07)] ring-1 ring-stone-200/40" style={{ height: heights.desktop } as any}>
-          <style>{`@media (max-width: 767px){ .atelier-hero-single{ height:${heights.mobile} !important; } }`}</style>
+        <div className="relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-stone-900 shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40" style={{ height: heights.desktop } as any}>
+          <style>{`@media (max-width: 767px){ .atelier-hero-single{ height:${heights.mobile} !important; } } html[data-preview-mode="mobile"] .atelier-hero-single{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-hero-single{ height:${heights.desktop} !important; }`}</style>
           <div className="atelier-hero-single absolute inset-0">
             {m.type === 'video' ? (
               <video autoPlay={false} loop muted playsInline poster={m.poster} src={m.src} className="absolute inset-0 h-full w-full object-cover" />
@@ -124,7 +124,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
   return (
     <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
       <div className="relative w-full" style={{ height: heights.desktop } as any}>
-        <style>{`@media (max-width: 767px){ .atelier-cover-viewport{ height:${heights.mobile} !important; } } @media (min-width: 768px){ .atelier-cover-viewport{ height:${heights.desktop} !important; } }`}</style>
+        <style>{`@media (max-width: 767px){ .atelier-cover-viewport{ height:${heights.mobile} !important; } } @media (min-width: 768px){ .atelier-cover-viewport{ height:${heights.desktop} !important; } } html[data-preview-mode="mobile"] .atelier-cover-viewport{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-cover-viewport{ height:${heights.desktop} !important; } html[data-preview-mode="mobile"] .atelier-cover-viewport{ direction: rtl; }`}</style>
         <div
           ref={scrollerRef}
           onScroll={onScroll}
@@ -133,7 +133,6 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
           onTouchStart={() => { pausedRef.current = true; }}
           onTouchEnd={() => setTimeout(() => { pausedRef.current = false; }, 2000)}
           className="atelier-cover-viewport flex h-full snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden scroll-smooth px-4 sm:gap-4 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          dir="ltr"
         >
           {media.map((m, i) => {
             const isActive = i === index;
@@ -141,7 +140,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               <div
                 key={i}
                 onClick={() => setIndex(i)}
-                className={`relative shrink-0 snap-center overflow-hidden rounded-2xl bg-stone-900 shadow-[0_3px_10px_rgba(0,0,0,0.06),0_14px_32px_rgba(0,0,0,0.07)] ring-1 ring-stone-200/40 transition-all duration-400 ${isActive ? 'w-[84%] sm:w-[68%] opacity-100 scale-100' : 'w-[68%] sm:w-[56%] opacity-70 scale-[0.96]'}`}
+                className={`relative shrink-0 snap-center overflow-hidden rounded-2xl bg-stone-900 shadow-[0_4px_14px_rgba(60,45,35,0.06),0_18px_36px_rgba(60,45,35,0.09)] ring-1 ring-stone-200/40 transition-all duration-400 ${isActive ? 'w-[84%] sm:w-[68%] opacity-100 scale-100' : 'w-[68%] sm:w-[56%] opacity-70 scale-[0.96]'}`}
                 style={{ height: '100%' }}
                 role="button"
                 tabIndex={0}
