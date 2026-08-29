@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, MessageCircle, PackageSearch, Search } from 'lucide-react';
+import { ChevronLeft, MessageCircle, PackageSearch, Search, User, X } from 'lucide-react';
+import { Facebook, Globe, Instagram, Music, Send, Youtube, Twitter } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { useStorefrontCore } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
+import { getImageUrl } from '@/utils/image-helper';
 import { AnnouncementBar } from './components/AnnouncementBar';
 import { AtelierHeader } from './components/AtelierHeader';
 import { AtelierHero } from './components/AtelierHero';
@@ -61,6 +63,94 @@ const AtelierWhatsAppFloating: React.FC = () => {
   );
 };
 
+const SOCIAL_PLATFORMS = [
+  { value: 'facebook', label: 'Facebook', icon: Facebook },
+  { value: 'instagram', label: 'Instagram', icon: Instagram },
+  { value: 'tiktok', label: 'TikTok', icon: Music },
+  { value: 'youtube', label: 'YouTube', icon: Youtube },
+  { value: 'snapchat', label: 'Snapchat', icon: MessageCircle },
+  { value: 'telegram', label: 'Telegram', icon: Send },
+  { value: 'x', label: 'X / Twitter', icon: Twitter },
+  { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+  { value: 'website', label: 'Website', icon: Globe },
+] as const;
+function getSocialIcon(platform: string) {
+  const f = SOCIAL_PLATFORMS.find((p) => p.value === String(platform).toLowerCase());
+  return f ? f.icon : Globe;
+}
+function isSafeUrl(url: string): boolean {
+  try { const u = new URL(String(url).trim()); return ['https:', 'http:'].includes(u.protocol) && u.hostname.includes('.'); } catch { return false; }
+}
+function LayoutGridIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
+}
+const AtelierMobileMenuView: React.FC<{ onClose: () => void; onProfile: () => void; onCategories: () => void }> = ({ onClose, onProfile, onCategories }) => {
+  const { config, store, content } = useStorefrontCore() as any;
+  const socialSlots = [1, 2, 3].map((idx) => {
+    const base = (content as any)?.fashion_mobile_nav ?? {};
+    const enabled = !!base[`social_${idx}_enabled`];
+    const platform = String(base[`social_${idx}_platform`] ?? 'instagram').toLowerCase();
+    const url = String(base[`social_${idx}_url`] ?? '').trim();
+    const safe = enabled && url && isSafeUrl(url);
+    return { idx, platform, url, safe };
+  });
+  return (
+    <div className="min-h-screen w-full bg-[#faf7f2] md:hidden" dir="rtl">
+      <div className="flex items-center justify-between border-b border-stone-200 bg-white px-4 py-4">
+        <a href="/" className="flex items-center gap-2" onClick={() => onClose()}>
+          {(config?.logo || store?.logo) ? (
+            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-8 w-auto object-contain" />
+          ) : (
+            <span className="font-serif text-lg font-bold text-stone-900">{config?.storeName || store?.name}</span>
+          )}
+        </a>
+        <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200">
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+      <div className="px-4 py-6">
+        <h1 className="font-serif text-2xl font-bold text-stone-900">القائمة</h1>
+        <nav className="mt-6 space-y-3">
+          <button type="button" onClick={onProfile} className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-white"><User className="h-5 w-5" /></span>
+            <span className="flex-1 text-sm font-bold text-stone-800">حسابي</span>
+            <ChevronLeft className="h-4 w-4 text-stone-400" />
+          </button>
+          <button type="button" onClick={onCategories} className="flex w-full items-center gap-3 rounded-xl bg-white px-4 py-3.5 text-start shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#9d7463] text-white"><LayoutGridIcon /></span>
+            <span className="flex-1 text-sm font-bold text-stone-800">الأقسام</span>
+            <ChevronLeft className="h-4 w-4 text-stone-400" />
+          </button>
+        </nav>
+        <div className="my-6 h-px bg-stone-200" />
+        <p className="mb-3 text-xs font-bold tracking-widest text-stone-500">تابعنا</p>
+        <div className="grid grid-cols-3 gap-2.5">
+          {socialSlots.map((slot) => {
+            if (!slot.safe) return null;
+            const Icon = getSocialIcon(slot.platform);
+            return (
+              <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} className="flex flex-col items-center gap-1.5 rounded-xl bg-white px-2 py-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><Icon className="h-5 w-5" /></span>
+                <span className="text-[11px] font-bold capitalize text-stone-600">{slot.platform}</span>
+              </a>
+            );
+          })}
+          {socialSlots.filter((s) => s.safe).length === 0 && (
+            <p className="col-span-3 rounded-xl bg-white px-3 py-4 text-center text-xs text-stone-400 ring-1 ring-stone-200">لم يتم إعداد روابط التواصل بعد</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SORTS = [
   { value: 'newest', label: 'الأحدث' },
   { value: 'price_asc', label: 'السعر: من الأقل للأعلى' },
@@ -86,7 +176,7 @@ export const FashionAtelierRoot: React.FC<TemplateRootProps> = ({ storeData, mod
 /* ------------------------------ Home ------------------------------ */
 
 const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
-  const { product } = useStorefrontCore();
+  const { product, auth } = useStorefrontCore() as any;
   const products: any[] = product?.products || storeData?.products || [];
   const categories: any[] = product?.categories || storeData?.categories || [];
   const banners: any[] = storeData?.content?.banners || [];
@@ -106,88 +196,132 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const lookbookB = banners[2] ?? null;
   const hasDistinctLookbook = !!(lookbookA && lookbookB && lookbookA.image && lookbookB.image && lookbookA.image !== lookbookB.image);
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingScroll, setPendingScroll] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!mobileMenuOpen && pendingScroll) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(pendingScroll);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setPendingScroll(null);
+      });
+    }
+  }, [mobileMenuOpen, pendingScroll]);
+
+  const handleProfile = () => {
+    setMobileMenuOpen(false);
+    if (auth?.isLoggedIn) auth.setShowProfileModal(true);
+    else auth?.setShowLoginModal?.(true);
+  };
+  const handleCategories = () => {
+    setMobileMenuOpen(false);
+    setPendingScroll('atelier-categories');
+  };
+
+  const normalMain = (
+    <main>
+      <AtelierHero
+        slides={(banners.length > 0 ? banners : []).map((b) => ({
+          title: b.title,
+          subtitle: b.subtitle,
+          image: b.image,
+          button_text: b.button_text,
+          button_link: b.button_link,
+        }))}
+      />
+
+      <AtelierMobileSearch />
+
+      <div id="atelier-categories">
+        <AtelierCategoryCircles categories={categories} />
+      </div>
+
+      {showLatest && (
+        <div id="atelier-new">
+          <AtelierRail title="وصل حديثاً" subtitle="أحدث القطع التي انضمت للأتيليه" products={newest} viewAllHref="/products" />
+        </div>
+      )}
+
+      {hasDistinctLookbook && (
+        <AtelierLookbook
+          panels={[
+            { eyebrow: 'كولكشن', title: lookbookA!.title || 'الموسم الجديد', cta_text: 'شاهدي التشكيلة', cta_link: '#atelier-new', image: lookbookA!.image },
+            { eyebrow: 'مختارات', title: lookbookB!.title || 'قطع لا تُقاوم', cta_text: 'تسوقي الآن', cta_link: '#atelier-best', image: lookupImage(lookbookB!) },
+          ]}
+        />
+      )}
+
+      {showBest && (
+        <div id="atelier-best">
+          <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+            <div className="mb-6 flex items-end justify-between gap-4">
+              <div>
+                <span className="mb-2 block h-px w-10 bg-[#b08d57]" />
+                <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">الأكثر مبيعاً</h2>
+              </div>
+            </div>
+            <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
+              {bestsellers.map((p) => (
+                <AtelierProductCard key={p.id} product={p} className="h-full" />
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* Dynamic category sections */}
+      {homepageCategories.length > 0 && (
+        <div>
+          <div className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
+            {homepageCategories.map((catId: string) => {
+              const cat = categories.find((c: any) => String(c.id) === String(catId));
+              if (!cat) return null;
+              const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
+              if (!catProducts.length) return null;
+              return (
+                <section key={cat.id}>
+                  <div className="mb-6 flex items-center justify-between">
+                    <h2 className="font-serif text-2xl font-bold text-stone-900">{cat.name}</h2>
+                    <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-[#9d7463] hover:text-[#85604f]">عرض الكل ←</a>
+                  </div>
+                  <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+                    {catProducts.map((p: any) => (
+                      <AtelierProductCard key={p.id} product={p} className="h-full" />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </main>
+  );
+
+  if (mobileMenuOpen) {
+    return (
+      <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
+        <AnnouncementBar />
+        {/* Mobile menu view — normal DOM, no overlay */}
+        <div className="md:hidden">
+          <AtelierMobileMenuView onClose={() => setMobileMenuOpen(false)} onProfile={handleProfile} onCategories={handleCategories} />
+        </div>
+        {/* Desktop always shows normal storefront even while mobile menu open */}
+        <div className="hidden md:block">
+          <AtelierHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+          {normalMain}
+          <AtelierWhatsAppFloating />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
       <AnnouncementBar />
-      <AtelierHeader />
-      <main>
-        <AtelierHero
-          slides={(banners.length > 0 ? banners : []).map((b) => ({
-            title: b.title,
-            subtitle: b.subtitle,
-            image: b.image,
-            button_text: b.button_text,
-            button_link: b.button_link,
-          }))}
-        />
-
-        <AtelierMobileSearch />
-
-        <div id="atelier-categories">
-          <AtelierCategoryCircles categories={categories} />
-        </div>
-
-        {showLatest && (
-          <div id="atelier-new">
-            <AtelierRail title="وصل حديثاً" subtitle="أحدث القطع التي انضمت للأتيليه" products={newest} viewAllHref="/products" />
-          </div>
-        )}
-
-        {hasDistinctLookbook && (
-          <AtelierLookbook
-            panels={[
-              { eyebrow: 'كولكشن', title: lookbookA!.title || 'الموسم الجديد', cta_text: 'شاهدي التشكيلة', cta_link: '#atelier-new', image: lookbookA!.image },
-              { eyebrow: 'مختارات', title: lookbookB!.title || 'قطع لا تُقاوم', cta_text: 'تسوقي الآن', cta_link: '#atelier-best', image: lookupImage(lookbookB!) },
-            ]}
-          />
-        )}
-
-        {showBest && (
-          <div id="atelier-best">
-            <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-              <div className="mb-6 flex items-end justify-between gap-4">
-                <div>
-                  <span className="mb-2 block h-px w-10 bg-[#b08d57]" />
-                  <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">الأكثر مبيعاً</h2>
-                </div>
-              </div>
-              <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 md:gap-x-5 lg:grid-cols-5">
-                {bestsellers.map((p) => (
-                  <AtelierProductCard key={p.id} product={p} className="h-full" />
-                ))}
-              </div>
-            </section>
-          </div>
-        )}
-
-        {/* Dynamic category sections */}
-        {homepageCategories.length > 0 && (
-          <div>
-            <div className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
-              {homepageCategories.map((catId: string) => {
-                const cat = categories.find((c: any) => String(c.id) === String(catId));
-                if (!cat) return null;
-                const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
-                if (!catProducts.length) return null;
-                return (
-                  <section key={cat.id}>
-                    <div className="mb-6 flex items-center justify-between">
-                      <h2 className="font-serif text-2xl font-bold text-stone-900">{cat.name}</h2>
-                      <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-[#9d7463] hover:text-[#85604f]">عرض الكل ←</a>
-                    </div>
-                    <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
-                      {catProducts.map((p: any) => (
-                        <AtelierProductCard key={p.id} product={p} className="h-full" />
-                      ))}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-      </main>
+      <AtelierHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      {normalMain}
       <AtelierWhatsAppFloating />
     </div>
   );
