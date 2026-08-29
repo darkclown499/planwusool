@@ -12,7 +12,7 @@ import { AtelierHeader } from './components/AtelierHeader';
 import { AtelierHero } from './components/AtelierHero';
 import { AtelierRail } from './components/AtelierRail';
 import { AtelierProductCard } from './components/AtelierProductCard';
-import { AtelierCategoryCircles, AtelierLookbook } from './components/AtelierSections';
+import { AtelierCategoryCircles } from './components/AtelierSections';
 
 /* ===================================================================== */
 /* Fashion Atelier — أتيليه الموضة                                        */
@@ -368,10 +368,12 @@ const AtelierMobileDrawer: React.FC<{ open: boolean; onClose: () => void }> = ({
       {/* Reduced motion: keep menu functional, just shorten the slide */}
       <style>{`@media(prefers-reduced-motion:reduce){.atelier-drawer-panel,.atelier-drawer-backdrop{transition-duration:1ms!important}}`}</style>
 
-      {/* Backdrop — click closes; keep storefront recognizable */}
+      {/* Backdrop — click closes; keep storefront recognizable. Opening eases
+          in slightly longer (420ms) than closing (340ms) for a calmer reveal;
+          the close transition and easing curve stay untouched. */}
       <div
         aria-hidden="true"
-        className="atelier-drawer-backdrop absolute inset-0 bg-black transition-[opacity] duration-[340ms] ease-[cubic-bezier(0.22,0.9,0.3,1)]"
+        className={`atelier-drawer-backdrop absolute inset-0 bg-black transition-[opacity] ease-[cubic-bezier(0.22,0.9,0.3,1)] ${open ? 'duration-[420ms]' : 'duration-[340ms]'}`}
         style={{ opacity: open ? 0.24 : 0 }}
         onClick={onClose}
       />
@@ -381,7 +383,7 @@ const AtelierMobileDrawer: React.FC<{ open: boolean; onClose: () => void }> = ({
         role="dialog"
         aria-modal="true"
         aria-label="قائمة المتجر"
-        className="atelier-drawer-panel absolute inset-y-0 right-0 w-[clamp(280px,78vw,340px)] bg-[#faf7f2] shadow-[-12px_0_30px_rgba(0,0,0,0.08)] transition-[transform] duration-[340ms] ease-[cubic-bezier(0.22,0.9,0.3,1)]"
+        className={`atelier-drawer-panel absolute inset-y-0 right-0 w-[clamp(280px,78vw,340px)] bg-[#faf7f2] shadow-[-12px_0_30px_rgba(0,0,0,0.08)] transition-[transform] ease-[cubic-bezier(0.22,0.9,0.3,1)] ${open ? 'duration-[420ms]' : 'duration-[340ms]'}`}
         style={{ transform: open ? 'translateX(0)' : 'translateX(100%)' }}
       >
         <AtelierMobileMenuView onClose={onClose} closeButtonRef={closeRef} />
@@ -427,13 +429,6 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
     const discounted = products.filter((p) => p.originalPrice && Number(p.originalPrice) > Number(p.price));
     return (discounted.length >= 4 ? discounted : [...products].sort(byNewest).reverse()).slice(0, 10);
   }, [products]);
-
-  // Lookbook panels must be distinct editorial images, not duplicated hero fallback.
-  // If merchant has only one hero slide (banners.length===1), showing two identical panels would appear as duplicate hero side-by-side.
-  // Contract: desktop+mobile = ONE responsive hero. Lookbook only shows when distinct images exist.
-  const lookbookA = banners[1] ?? null;
-  const lookbookB = banners[2] ?? null;
-  const hasDistinctLookbook = !!(lookbookA && lookbookB && lookbookA.image && lookbookB.image && lookbookA.image !== lookbookB.image);
 
   // Mobile drawer — slides from the right over the visible storefront (desktop untouched)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -496,18 +491,9 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       )}
       {/* spacing anchor: ensure product discovery starts quickly after categories */}
 
-      {hasDistinctLookbook && (
-        <AtelierLookbook
-          panels={[
-            { eyebrow: 'كولكشن', title: lookbookA!.title || 'الموسم الجديد', cta_text: 'استكشف التشكيلة', cta_link: '#atelier-new', image: lookbookA!.image },
-            { eyebrow: 'مختارات', title: lookbookB!.title || 'قطع مميزة', cta_text: 'تسوّق الآن', cta_link: '#atelier-best', image: lookupImage(lookbookB!) },
-          ]}
-        />
-      )}
-
       {showBest && (
         <div id="atelier-best" ref={bestRef} className={`transition-all duration-500 motion-reduce:transition-none ${bestRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
-          <section className="mx-auto max-w-7xl px-4 pt-3 pb-8 sm:px-6 sm:pt-6 sm:pb-10 lg:px-8">
+          <section className="mx-auto max-w-7xl px-4 pt-6 pb-8 sm:px-6 sm:pt-6 sm:pb-10 lg:px-8">
             <div className="mb-3 flex items-end justify-between gap-4 sm:mb-4">
               <div>
                 <span className="mb-2 block h-px w-10 bg-[#b08d57]" />
@@ -562,10 +548,6 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
     </div>
   );
 };
-
-function lookupImage(banner: any): string | undefined {
-  return banner?.image;
-}
 
 /* ---------------------------- Category ---------------------------- */
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Check, Gift, Heart, Minus, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { getImageUrl } from '@/utils/image-helper';
+import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
@@ -71,14 +71,31 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-  // ESC close on desktop
+  // Exit animation — smooth downward slide (280–360ms) then unmount; reduced
+  // motion shortens the duration instead of disabling the close transition.
+  const reducedMotion = useMemo(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    []
+  );
+  const ANIM_MS = reducedMotion ? 90 : 320;
+  const [exiting, setExiting] = useState(false);
+  const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestClose = () => {
+    if (exiting) return;
+    setExiting(true);
+    exitTimer.current = setTimeout(onClose, ANIM_MS);
+  };
+  useEffect(() => () => { if (exitTimer.current) clearTimeout(exitTimer.current); }, []);
+  const handleClose = () => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 640) onClose();
+    else requestClose();
+  };
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, [handleClose]);
   const onHandlePointerDown = (e: React.PointerEvent) => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const sc = scrollContainerRef.current;
     if (sc && sc.scrollTop > 6) return;
     dragStartY.current = e.clientY;
@@ -99,8 +116,8 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     const elapsed = Date.now() - dragStartTime.current;
     const velocity = elapsed > 0 ? delta / elapsed : 0;
     const h = sheetRef.current?.offsetHeight || 620;
-    if (delta > h * 0.27 || velocity > 0.62) onClose();
-    else setDragY(0);
+    setDragY(0);
+    if (delta > h * 0.27 || velocity > 0.62) requestClose();
   };
 
   if (!product) return null;
@@ -138,7 +155,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     setAdding(true);
     try {
       await cart.addToCart({ ...product, quantity: qty, selectedVariants: variable ? selection : undefined });
-      onClose();
+      handleClose();
     } finally { setAdding(false); }
   };
 
@@ -158,34 +175,48 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     return false;
   })();
 
-  const backdropOpacity = Math.max(0, 0.22 * (1 - dragY / 420));
-  const backdropBlur = Math.max(0, 8 * (1 - dragY / 420));
+  const backdropOpacity = exiting ? 0 : Math.max(0, Math.min(1, 1 - dragY / 520));
+  const backdropBlur = exiting ? 0 : Math.max(0, 8 * (1 - dragY / 520));
+  const mainImageSrc = getOptimizedImageUrl(images[active] || '', 'medium');
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4" dir="rtl" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] atelier-focus-backdrop" onClick={onClose} style={{ backdropFilter: `blur(${backdropBlur}px)`, WebkitBackdropFilter: `blur(${backdropBlur}px)`, opacity: dragY ? 1 - dragY / 520 : 1 } as any} />
-      <style>{`@keyframes atelierFadeIn{from{opacity:0}to{opacity:1}}@keyframes atelierImageIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}@keyframes atelierSheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.atelier-focus-backdrop{animation:atelierFadeIn 220ms ease-out}.atelier-product-image{animation:atelierImageIn 260ms cubic-bezier(.2,.8,.2,1)} .atelier-info-sheet{animation:atelierSheetIn 260ms cubic-bezier(.2,.8,.2,1) 60ms both}@media(prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-info-sheet{animation:none!important}}`}</style>
-      <div ref={sheetRef} className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[30px] bg-transparent sm:bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl" style={{ transform: dragY ? `translateY(${dragY}px)` : undefined, transition: isDragging ? 'none' : 'transform 260ms cubic-bezier(0.22,0.9,0.3,1)' } as any}>
-        {/* Close */}
-        <button type="button" onClick={onClose} aria-label="إغلاق"
-          className="absolute left-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900">
+      <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] atelier-focus-backdrop" onClick={handleClose} style={{ backdropFilter: `blur(${backdropBlur}px)`, WebkitBackdropFilter: `blur(${backdropBlur}px)`, opacity: backdropOpacity, transition: `opacity ${ANIM_MS}ms ease-out` } as any} />
+      <style>{`@keyframes atelierFadeIn{from{opacity:0}to{opacity:1}}@keyframes atelierImageIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}@keyframes atelierSheetIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}.atelier-focus-backdrop{animation:atelierFadeIn 300ms ease-out}.atelier-product-image{animation:atelierImageIn 300ms cubic-bezier(.2,.8,.2,1)}.atelier-product-media{animation:atelierImageIn 300ms cubic-bezier(.2,.8,.2,1) 40ms both}.atelier-info-sheet{animation:atelierSheetIn 320ms cubic-bezier(.22,.9,.3,1) 40ms both}@media(min-width:640px){.atelier-focus-backdrop{animation:atelierFadeIn 220ms ease-out}.atelier-product-image{animation:atelierImageIn 260ms cubic-bezier(.2,.8,.2,1)}.atelier-info-sheet{animation:atelierSheetIn 260ms cubic-bezier(.2,.8,.2,1) 60ms both}}@media(prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-product-media,.atelier-info-sheet{animation-duration:90ms!important;animation-delay:0ms!important}}@media(min-width:640px) and (prefers-reduced-motion:reduce){.atelier-focus-backdrop,.atelier-product-image,.atelier-info-sheet{animation:none!important}}`}</style>
+      <div ref={sheetRef} className="relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-[28px] bg-[#faf7f2] shadow-2xl sm:max-h-[88vh] sm:rounded-2xl" style={{ transform: exiting ? 'translateY(110%)' : dragY ? `translateY(${dragY}px)` : undefined, transition: isDragging ? 'none' : `transform ${ANIM_MS}ms cubic-bezier(0.22,0.9,0.3,1)` } as any}>
+        {/* Close — top-left, ≥44px touch target, 16px from the edges */}
+        <button type="button" onClick={handleClose} aria-label="إغلاق"
+          className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-stone-600 shadow ring-1 ring-stone-200 transition hover:text-stone-900 active:scale-95 sm:h-9 sm:w-9 sm:bg-white/90 sm:active:scale-100">
           <X className="h-5 w-5" />
         </button>
 
-        {/* Mobile product focus zone — raised 16px, floating over blurred storefront */}
-        <div className="flex h-[clamp(300px,44dvh,500px)] shrink-0 items-center justify-center px-6 pt-10 pb-6 sm:hidden">
-          <div className="atelier-product-image relative flex h-full w-full max-w-[86%] -translate-y-3 items-center justify-center">
-            <img src={getImageUrl(images[active])} alt={product.name} className="max-h-[88%] max-w-full object-contain drop-shadow-[0_10px_28px_rgba(0,0,0,0.12)]" />
+        {/* Mobile media header — drag handle + framed product image; pulling down dismisses the sheet */}
+        <div
+          onPointerDown={onHandlePointerDown}
+          onPointerMove={onHandlePointerMove}
+          onPointerUp={onHandlePointerUp}
+          onPointerCancel={onHandlePointerUp}
+          className="atelier-product-media shrink-0 touch-none select-none px-6 pb-1 pt-3 sm:hidden"
+        >
+          <div className="flex justify-center pb-3">
+            <span className="h-1 w-10 rounded-full bg-stone-300/80" aria-hidden />
+          </div>
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-[76%] overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 shadow-[0_2px_12px_rgba(40,30,20,0.06)]">
+            <img
+              src={mainImageSrc}
+              alt={product.name}
+              decoding="async"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(images[active]); }}
+              className="atelier-product-image h-full w-full object-contain p-2"
+            />
             {discount > 0 && <span className="absolute top-2 right-2 inline-flex w-fit rounded-full bg-[#9d7463] px-2.5 py-1 text-[11px] font-bold leading-none text-white shadow">-{discount}%</span>}
             {outOfStock && <span className="absolute top-2 left-2 rounded-full border border-stone-300 bg-white/90 px-3 py-1 text-xs font-bold text-stone-600">نفذت</span>}
           </div>
+          {images.length > 1 && (
+            <div className="flex justify-center gap-2 pb-1 pt-3">{images.map((_, i) => <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-300'}`} />)}</div>
+          )}
         </div>
-        {images.length > 1 && <div className="flex justify-center gap-2 pb-2 sm:hidden">{images.map((_, i) => <button key={i} type="button" onClick={() => setActive(i)} aria-label={`صورة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === active ? 'w-5 bg-stone-800' : 'w-1.5 bg-stone-300'}`} />)}</div>}
 
-        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain bg-[#faf7f2] rounded-t-[30px] shadow-[0_-2px_8px_rgba(40,30,20,0.04),0_-12px_28px_rgba(40,30,20,0.06)] -mt-[22px] pt-1 pb-[env(safe-area-inset-bottom)] sm:mt-0 sm:rounded-none sm:shadow-none">
-          {/* Drag handle — communicates sheet can be dragged, subtle tactile cue */}
-          <div onPointerDown={onHandlePointerDown} onPointerMove={onHandlePointerMove} onPointerUp={onHandlePointerUp} className="flex justify-center pt-2 pb-2 touch-none select-none sm:hidden">
-            <span className="h-1 w-9 rounded-full bg-stone-300" aria-hidden />
-          </div>
+        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:mt-0 sm:py-0">
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
             {/* Gallery — desktop floating transparent (no white rectangle) */}
             <div className="hidden sm:block px-4 pt-4 sm:px-0 sm:pt-0">
@@ -211,7 +242,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
             </div>
 
             {/* Story — RTL right-aligned, tighter product-summary composition */}
-            <div className="flex flex-col px-[18px] pb-6 pt-5 sm:px-0 sm:py-0">
+            <div className="flex flex-col px-5 pb-6 pt-4 sm:px-0 sm:py-0">
               <h1 className="text-right font-serif text-[21px] font-semibold leading-snug text-stone-900 sm:text-[22px]" dir="auto">{product.name}</h1>
 
               <div className="mt-2.5 flex flex-wrap items-baseline justify-start gap-2 text-right">

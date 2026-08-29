@@ -20,12 +20,21 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
   const scroller = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLElement>(null);
   const [revealed, setRevealed] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const el = railRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setRevealed(true); obs.disconnect(); } }, { threshold: 0.12 });
     obs.observe(el);
     return () => obs.disconnect();
+  }, []);
+  // Hide the mobile "اسحب للمزيد" cue as soon as the user actually scrolls the rail.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const onScroll = () => setScrolled(true);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
   const nudge = (dir: number) => {
@@ -65,15 +74,29 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
           </div>
         </div>
 
-        <div
-          ref={scroller}
-          className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4 sm:pb-3"
-        >
-          {products.map((p) => (
-            <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-[23%] lg:w-[19%] min-[1400px]:w-[16%]">
-              <AtelierProductCard product={p} />
-            </div>
-          ))}
+        {/* Mobile swipe cue — RTL rail advances visually to the left; fades once the user scrolls */}
+        {!scrolled && products.length > 4 && (
+          <p className="mb-2 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500 sm:hidden" aria-hidden>
+            اسحب للمزيد
+            <ChevronLeft className="h-3 w-3" />
+          </p>
+        )}
+
+        <div className="relative">
+          <div
+            ref={scroller}
+            className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4 sm:pb-3"
+          >
+            {products.map((p) => (
+              <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-[23%] lg:w-[19%] min-[1400px]:w-[16%]">
+                <AtelierProductCard product={p} />
+              </div>
+            ))}
+          </div>
+          {/* Subtle left-edge fade hinting more content — mobile only */}
+          {!scrolled && products.length > 4 && (
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-9 bg-gradient-to-l from-[#faf7f2] via-[#faf7f2]/50 to-transparent sm:hidden" aria-hidden />
+          )}
         </div>
       </div>
     </section>

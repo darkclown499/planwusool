@@ -73,7 +73,7 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
           <img src={mainImage} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||product.images?.[0]||''))}} width={400} height={500}
             className="h-full w-full object-contain object-center p-2 transition-all duration-700 group-hover:scale-[1.02]" />
           {hoverImage && (
-            <img src={hoverImage} alt="" loading="lazy" decoding="async" aria-hidden sizes="(max-width:640px) 50vw, 25vw"
+            <img src={hoverImage} alt="" loading="lazy" decoding="async" fetchPriority="low" aria-hidden sizes="(max-width:640px) 50vw, 25vw"
               className="absolute inset-0 h-full w-full object-contain object-center p-2 opacity-0 transition-opacity duration-700 group-hover:opacity-100" width={400} height={500} />
           )}
         </a>
