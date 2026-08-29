@@ -78,15 +78,15 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     return () => document.removeEventListener('visibilitychange', onVis);
   }, [index, media, reducedMotion]);
 
-  // Auto-advance
+  // Auto-advance — desktop only, respects reducedMotion, single-item, pause on interaction/hidden tab
   useEffect(() => {
-    if (reducedMotion || media.length <= 1) return;
+    if (reducedMotion || media.length <= 1 || isMobile) return;
     const id = setInterval(() => {
       if (pausedRef.current || document.hidden || isDragging) return;
       setIndex((i) => (i + 1) % media.length);
     }, 5000);
     return () => clearInterval(id);
-  }, [media.length, reducedMotion, isDragging]);
+  }, [media.length, reducedMotion, isDragging, isMobile]);
 
   const go = useCallback((dir: number) => {
     setIndex((i) => (i + dir + media.length) % media.length);
@@ -415,10 +415,10 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
           })()}
 
           {/* Arrows — desktop only, RTL semantics: right=prev, left=next, positioned 20-36px outside visible composition */}
-          <button type="button" onClick={() => go(-1)} aria-label="السابق" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40" style={{ left: 'calc(50% + 38.6cqw + 20px)' } as any}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); go(-1); }} onPointerDown={(e) => e.stopPropagation()} aria-label="السابق" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40 pointer-events-auto" style={{ left: 'calc(50% + 38.6cqw + 20px)' } as any}>
             <ChevronRight className="h-5 w-5" />
           </button>
-          <button type="button" onClick={() => go(1)} aria-label="التالي" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40" style={{ left: 'calc(50% - 38.6cqw - 20px)' } as any}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); go(1); }} onPointerDown={(e) => e.stopPropagation()} aria-label="التالي" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40 pointer-events-auto" style={{ left: 'calc(50% - 38.6cqw - 20px)' } as any}>
             <ChevronLeft className="h-5 w-5" />
           </button>
 

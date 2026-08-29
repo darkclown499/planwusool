@@ -60,9 +60,9 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
       <div className="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
         <div className={`mb-3 sm:mb-7 text-center px-4 sm:px-0 transition-all duration-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'} motion-reduce:transition-none`}>
           <span className="mx-auto mb-2.5 block h-px w-10 bg-[#b08d57]" />
-          <h2 className="font-serif text-[19px] font-semibold tracking-wide text-stone-900 sm:text-2xl sm:font-bold">{catHeading}</h2>
+          <h2 className="font-serif text-[19px] font-semibold tracking-wide text-stone-900 sm:font-sans sm:text-[22px] sm:font-medium sm:tracking-[0.02em] sm:text-stone-800 sm:[font-family:var(--font-arabic)]">{catHeading}</h2>
           {!hasScrolled && categories.length > 3 && (
-            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500">
+            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500 sm:font-sans sm:font-normal sm:[font-family:var(--font-arabic)]">
               اسحب للمزيد
               <ChevronLeft className="h-3 w-3" />
             </p>
@@ -73,7 +73,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
             ref={scrollRef}
             className="overflow-x-auto overflow-y-hidden pb-2 snap-x snap-mandatory scroll-px-4 sm:scroll-px-6 lg:scroll-px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <div className="flex w-max gap-3 sm:gap-5 px-4 sm:px-0 justify-start sm:justify-center after:content-[''] after:block after:w-8 after:shrink-0 sm:after:hidden">
+            <div className="flex w-max sm:w-fit sm:mx-auto gap-3 sm:gap-5 px-4 sm:px-0 justify-start sm:justify-center after:content-[''] after:block after:w-8 after:shrink-0 sm:after:hidden">
             {categories.slice(0, 12).map((c, idx) => (
               <a
                 key={c.id}
