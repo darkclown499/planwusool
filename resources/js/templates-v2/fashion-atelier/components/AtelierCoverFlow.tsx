@@ -215,9 +215,9 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
 
   // Stage hugs composition: height derived from WIDTH only (stable), not cqh — avoids circular sizing. Cards are absolute, so parent cannot use height:auto.
   return (
-    <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-4" dir="rtl">
-      <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(60cqw, 760px) / 1.5 + 24px)`, background: 'transparent' } as any}>
-        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(60cqw, 760px) / 1.5 + 24px) !important; }`}</style>
+    <section className="atelier-hero-outer mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-3" dir="rtl">
+      <div className="atelier-cover-outer relative w-full overflow-visible" style={{ containerType: 'inline-size', height: `calc(min(60cqw, 760px) / 1.5 + 20px)`, background: 'transparent' } as any}>
+        <style>{`@media (max-width: 767px){ .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } } html[data-preview-mode="mobile"] .atelier-cover-outer{ height: calc(min(84cqw, 420px) / 1.333333 + 24px) !important; } html[data-preview-mode="desktop"] .atelier-cover-outer{ height: calc(min(60cqw, 760px) / 1.5 + 20px) !important; }`}</style>
 
         <div
           ref={stageRef}
@@ -294,7 +294,9 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             const dragInfluence = isActive ? 1 : isNeighbor ? 0.34 : 0.14;
             const dragPx = isHidden ? 0 : dragOffset * dragInfluence;
             const offsetPct = off * basePct * sign;
-            const tx = `calc(-50% + ${offsetPct}% + ${dragPx}px)`;
+            const tx = isMobile
+              ? `calc(-50% + ${offsetPct}% + ${dragPx}px)`
+              : `calc(-50% + ${offsetPct}cqw + ${dragPx}px)`;
             const transition = reducedMotion
               ? 'none'
               : isDragging
@@ -412,11 +414,11 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
           });
           })()}
 
-          {/* Arrows — desktop only, RTL semantics: right=prev, left=next */}
-          <button type="button" onClick={() => go(-1)} aria-label="السابق" className="absolute top-1/2 right-2 hidden -translate-y-1/2 rounded-full bg-white/85 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex sm:right-4 z-40">
+          {/* Arrows — desktop only, RTL semantics: right=prev, left=next, positioned 20-36px outside visible composition */}
+          <button type="button" onClick={() => go(-1)} aria-label="السابق" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40" style={{ left: 'calc(50% + 38.6cqw + 20px)' } as any}>
             <ChevronRight className="h-5 w-5" />
           </button>
-          <button type="button" onClick={() => go(1)} aria-label="التالي" className="absolute top-1/2 left-2 hidden -translate-y-1/2 rounded-full bg-white/85 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex sm:left-4 z-40">
+          <button type="button" onClick={() => go(1)} aria-label="التالي" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40" style={{ left: 'calc(50% - 38.6cqw - 20px)' } as any}>
             <ChevronLeft className="h-5 w-5" />
           </button>
 
