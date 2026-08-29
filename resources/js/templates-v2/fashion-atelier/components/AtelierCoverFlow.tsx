@@ -231,8 +231,6 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
           onPointerLeave={onPointerCancel}
-          onMouseEnter={() => { pausedRef.current = true; }}
-          onMouseLeave={() => { if (!isDragging) pausedRef.current = false; }}
           className="absolute inset-0 overflow-visible select-none touch-pan-y outline-none focus-visible:ring-2 focus-visible:ring-[#d8b48a]/60"
           style={{ touchAction: 'pan-y', background: 'transparent' } as any}
         >
@@ -301,7 +299,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               ? 'none'
               : isDragging
                 ? 'none'
-                : 'transform 300ms cubic-bezier(0.22,0.9,0.3,1), opacity 300ms cubic-bezier(0.22,0.9,0.3,1), filter 300ms cubic-bezier(0.22,0.9,0.3,1)';
+                : 'transform 320ms cubic-bezier(0.22,0.9,0.3,1), width 320ms cubic-bezier(0.22,0.9,0.3,1), opacity 320ms cubic-bezier(0.22,0.9,0.3,1), filter 320ms cubic-bezier(0.22,0.9,0.3,1), box-shadow 320ms cubic-bezier(0.22,0.9,0.3,1)';
 
             const baseKey = `${m.type}:${m.src}`;
             const n = occ.get(baseKey) ?? 0;
@@ -414,28 +412,34 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
           });
           })()}
 
-          {/* Arrows — desktop only, RTL semantics: right=prev, left=next, positioned 20-36px outside visible composition */}
-          <button type="button" onClick={(e) => { e.stopPropagation(); go(-1); }} onPointerDown={(e) => e.stopPropagation()} aria-label="السابق" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40 pointer-events-auto" style={{ left: 'calc(50% + 38.6cqw + 20px)' } as any}>
-            <ChevronRight className="h-5 w-5" />
-          </button>
-          <button type="button" onClick={(e) => { e.stopPropagation(); go(1); }} onPointerDown={(e) => e.stopPropagation()} aria-label="التالي" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40 pointer-events-auto" style={{ left: 'calc(50% - 38.6cqw - 20px)' } as any}>
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+          {/* Arrows — desktop only, RTL semantics: right=prev, left=next, positioned 20-36px outside visible composition; hidden for single media */}
+          {media.length > 1 && (
+            <button type="button" onClick={(e) => { e.stopPropagation(); go(-1); }} onPointerDown={(e) => e.stopPropagation()} aria-label="السابق" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40 pointer-events-auto" style={{ left: 'calc(50% + 38.6cqw + 20px)' } as any}>
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
+          {media.length > 1 && (
+            <button type="button" onClick={(e) => { e.stopPropagation(); go(1); }} onPointerDown={(e) => e.stopPropagation()} aria-label="التالي" className="absolute top-1/2 hidden -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-stone-700 shadow backdrop-blur hover:bg-white sm:flex z-40 pointer-events-auto" style={{ left: 'calc(50% - 38.6cqw - 20px)' } as any}>
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
 
-          {/* Dots */}
-          <div className="absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5">
-            {media.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setIndex(i)}
-                aria-label={`الانتقال إلى ${i + 1}`}
-                aria-current={i === index ? 'true' : undefined}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === index ? 'w-5 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/80'}`}
-                style={reducedMotion ? { transition: 'none' } as any : undefined}
-              />
-            ))}
-          </div>
+          {/* Dots — hidden for single media to avoid meaningless single-dot */}
+          {media.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5">
+              {media.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  aria-label={`الانتقال إلى ${i + 1}`}
+                  aria-current={i === index ? 'true' : undefined}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === index ? 'w-5 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/80'}`}
+                  style={reducedMotion ? { transition: 'none' } as any : undefined}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
