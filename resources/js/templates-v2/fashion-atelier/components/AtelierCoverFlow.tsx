@@ -46,6 +46,23 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
 
   useEffect(() => { isDraggingRef.current = isDragging; }, [isDragging]);
 
+  const registerVideo = useCallback((el: HTMLVideoElement | null, id: string | undefined) => {
+    if (!id) return;
+    if (el) videoRefs.current.set(String(id), el);
+    else videoRefs.current.delete(String(id));
+  }, []);
+
+  // Element-level retry: when a video becomes playable, start it IF it is the current
+  // active slide. Covers play() attempts made before data arrived — a pending play()
+  // promise can be AbortError-rejected by the pause sweep with nothing re-attempting it.
+  // reducedMotion must NOT gate playback (it only affects visual transition easing).
+  const tryPlayIfActive = useCallback((id: string | undefined) => {
+    if (document.hidden || !id) return;
+    const cur = media[index];
+    if (!cur || cur.type !== 'video' || String((cur as any)?.id) !== String(id)) return;
+    videoRefs.current.get(String(id))?.play().catch(() => {});
+  }, [media, index]);
+
   // Clamp index when media length changes (Designer preview)
   useEffect(() => {
     setIndex((i) => (media.length === 0 ? 0 : Math.min(i, media.length - 1)));
@@ -60,33 +77,41 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     return () => mq.removeEventListener('change', onMq);
   }, []);
 
-  // Video autoplay: only active plays, paused others, respects reducedMotion + visibility — keyed by stable media id
+  // Video autoplay: only active plays, paused others, respects visibility — keyed by stable media id.
+  // reducedMotion must NOT disable media playback (it only affects visual transition easing).
   useEffect(() => {
-    if (reducedMotion) {
+    if (document.hidden) {
       videoRefs.current.forEach((v) => v.pause());
       return;
     }
-    const activeId = (media[index] as any)?.id as string | undefined;
+    const item = media[index];
+    const activeId = item?.type === 'video' ? String((item as any)?.id ?? '') : '';
     videoRefs.current.forEach((vid, id) => {
-      if (id === activeId && media[index]?.type === 'video') {
-        vid.play().catch(() => {});
+      if (activeId && id === activeId) {
+        // Only play when data is already playable; otherwise the element's canplay
+        // handler starts it once data arrives. play() at readyState 0 leaves a pending
+        // promise that the pause sweep can AbortError with no later re-attempt.
+        if (vid.readyState >= 2) vid.play().catch(() => {});
       } else {
         vid.pause();
       }
     });
-  }, [index, media, reducedMotion]);
+  }, [index, media]);
 
   useEffect(() => {
     const onVis = () => {
-      if (document.hidden) videoRefs.current.forEach((v) => v.pause());
-      else if (!reducedMotion && media[index]?.type === 'video') {
-        const aid = (media[index] as any)?.id as string | undefined;
-        if (aid) videoRefs.current.get(aid)?.play().catch(() => {});
+      if (document.hidden) {
+        videoRefs.current.forEach((v) => v.pause());
+      } else if (media[index]?.type === 'video') {
+        // reducedMotion must not block restoring active playback on visibility return.
+        const aid = String((media[index] as any)?.id ?? '');
+        const vid = aid ? videoRefs.current.get(aid) : undefined;
+        if (vid && vid.readyState >= 2) vid.play().catch(() => {});
       }
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [index, media, reducedMotion]);
+  }, [index, media]);
 
   // Auto-advance — desktop only, single-item, pause on drag/hidden tab; reducedMotion no longer disables autoplay (only reduces motion)
   useEffect(() => {
@@ -194,7 +219,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             <style>{`@media (max-width: 767px){ .atelier-hero-single{ height:${heights.mobile} !important; } } html[data-preview-mode="mobile"] .atelier-hero-single{ height:${heights.mobile} !important; } html[data-preview-mode="desktop"] .atelier-hero-single{ height:${heights.desktop} !important; }`}</style>
             <div className="atelier-hero-single absolute inset-0">
               {m.type === 'video' ? (
-                <video autoPlay={false} loop muted playsInline poster={m.poster} src={singleSrc} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: singlePosNorm }} />
+                <video autoPlay={false} loop muted playsInline poster={m.poster} src={singleSrc} ref={(el) => registerVideo(el, m.id)} onCanPlay={() => tryPlayIfActive(m.id)} className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: singlePosNorm }} />
               ) : m.type === 'youtube' ? (
                 <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${singleSrc}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
               ) : (
@@ -370,12 +395,8 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
               >
                 {m.type === 'video' ? (
                   <video
-                    ref={(el) => {
-                      const vid = (m as any).id as string | undefined;
-                      if (!vid) return;
-                      if (el) videoRefs.current.set(vid, el);
-                      else videoRefs.current.delete(vid);
-                    }}
+                    ref={(el) => registerVideo(el, m.id)}
+                    onCanPlay={() => tryPlayIfActive(m.id)}
                     src={displaySrc}
                     poster={m.poster}
                     loop
