@@ -38,26 +38,31 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [hasScrolled, setHasScrolled] = useState(false);
+  const initialScrollRef = useRef<number | null>(null);
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    // RTL-safe: compare absolute movement from initial position (RTL scrollLeft can be negative/positive per browser)
     const onScroll = () => {
-      if (el.scrollLeft < -8 || el.scrollLeft > 8) setHasScrolled(true);
+      if (initialScrollRef.current === null) initialScrollRef.current = el.scrollLeft;
+      if (Math.abs(el.scrollLeft - initialScrollRef.current) > 8) setHasScrolled(true);
     };
+    // capture initial after layout
+    initialScrollRef.current = el.scrollLeft;
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
-    <section className="pt-6 pb-8 sm:py-12" dir="rtl">
+    <section className="pt-6 pb-5 sm:py-12" dir="rtl">
       <div className="mx-auto max-w-7xl px-0 sm:px-6 lg:px-8">
-        <div className="mb-5 sm:mb-8 text-center px-4 sm:px-0">
-          <span className="mx-auto mb-3 block h-px w-10 bg-[#b08d57]" />
-          <h2 className="font-serif text-2xl font-bold text-stone-900 sm:text-3xl">{catHeading}</h2>
-          {!hasScrolled && categories.length > 4 && (
-            <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-400">
-              <ChevronLeft className="h-3 w-3" />
+        <div className="mb-4 sm:mb-8 text-center px-4 sm:px-0">
+          <span className="mx-auto mb-2.5 block h-px w-10 bg-[#b08d57]" />
+          <h2 className="font-serif text-[19px] font-semibold tracking-wide text-stone-900 sm:text-2xl sm:font-bold">{catHeading}</h2>
+          {!hasScrolled && categories.length > 3 && (
+            <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-stone-500">
               اسحب للمزيد
+              <ChevronLeft className="h-3 w-3" />
             </p>
           )}
         </div>
@@ -67,7 +72,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
             ref={scrollRef}
             className="overflow-x-auto overflow-y-hidden pb-3 snap-x snap-mandatory scroll-px-4 sm:scroll-px-6 lg:scroll-px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            <div className="flex w-max gap-4 sm:gap-5 px-4 sm:px-0 justify-start sm:justify-center after:content-[''] after:block after:w-6 after:shrink-0 sm:after:hidden">
+            <div className="flex w-max gap-3.5 sm:gap-5 px-4 sm:px-0 justify-start sm:justify-center after:content-[''] after:block after:w-6 after:shrink-0 sm:after:hidden">
             {categories.slice(0, 12).map((c) => (
               <a
                 key={c.id}
@@ -88,9 +93,9 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
             ))}
             </div>
           </div>
-          {/* Edge fade — continuation cue, left edge in RTL */}
-          {!hasScrolled && categories.length > 4 && (
-            <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-10 bg-gradient-to-l from-[#faf7f2] via-[#faf7f2]/60 to-transparent sm:hidden max-[430px]:block" aria-hidden />
+          {/* Edge fade — subtle continuation cue, left edge in RTL (narrow, soft) */}
+          {!hasScrolled && categories.length > 3 && (
+            <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-8 bg-gradient-to-l from-[#faf7f2] via-[#faf7f2]/50 to-transparent sm:hidden max-[430px]:block" aria-hidden />
           )}
         </div>
       </div>

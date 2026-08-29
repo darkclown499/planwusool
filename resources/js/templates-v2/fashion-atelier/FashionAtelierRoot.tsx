@@ -192,22 +192,22 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
           </span>
         </div>
 
-        <h1 className="mt-5 font-serif text-[11px] font-bold tracking-[0.14em] text-stone-400">القائمة</h1>
+        <h1 className="mt-4 font-serif text-[11px] font-bold tracking-[0.14em] text-stone-400">القائمة</h1>
 
-        <nav className="mt-3 space-y-2.5">
-          {/* الرئيسية */}
-          <button type="button" onClick={handleHome} className="flex h-[60px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 transition hover:bg-white active:scale-[0.98]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><Home className="h-[18px] w-[18px]" /></span>
-            <span className="flex-1 text-[13px] font-bold text-stone-800">الرئيسية</span>
-            <ChevronLeft className="h-4 w-4 text-stone-300" />
-          </button>
-          {/* جميع المنتجات */}
-          <button type="button" onClick={handleAllProducts} className="flex h-[60px] w-full items-center gap-3 rounded-2xl bg-white/80 px-4 text-start shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 transition hover:bg-white active:scale-[0.98]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9d7463] text-white"><Package className="h-[18px] w-[18px]" /></span>
-            <span className="flex-1 text-[13px] font-bold text-stone-800">جميع المنتجات</span>
-            <ChevronLeft className="h-4 w-4 text-stone-300" />
-          </button>
+        <nav className="mt-3">
+          {/* Quick actions: two compact side-by-side */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <button type="button" onClick={handleHome} className="flex h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/80 px-3 text-center shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 transition hover:bg-white active:scale-[0.98]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-900 text-white"><Home className="h-4 w-4" /></span>
+              <span className="text-[12px] font-bold leading-none text-stone-800">الرئيسية</span>
+            </button>
+            <button type="button" onClick={handleAllProducts} className="flex h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-white/80 px-3 text-center shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60 transition hover:bg-white active:scale-[0.98]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#9d7463] text-white"><Package className="h-4 w-4" /></span>
+              <span className="text-[12px] font-bold leading-none text-stone-800">جميع المنتجات</span>
+            </button>
+          </div>
 
+          <div className="mt-2.5 space-y-2.5">
           {/* الأقسام accordion */}
           <div className="rounded-2xl bg-white/80 shadow-[0_1px_8px_rgba(0,0,0,0.04)] ring-1 ring-stone-200/60">
             <button
@@ -218,9 +218,11 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
               className="flex h-[60px] w-full items-center gap-3 px-4 text-start transition active:scale-[0.99]"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 text-stone-700 ring-1 ring-stone-200"><LayoutGridIcon /></span>
-              <span className="flex-1 text-[13px] font-bold text-stone-800">الأقسام</span>
-              <span className="flex items-center gap-1 text-[11px] font-medium text-stone-400">{categories.length > 0 ? `${categories.length}` : ''}</span>
-              <ChevronDown className={`h-4 w-4 text-stone-400 transition-transform duration-200 ${activeSection === 'categories' ? 'rotate-180' : ''}`} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-bold leading-none text-stone-800">الأقسام</span>
+                <span className="mt-0.5 block text-[11px] font-medium leading-none text-stone-400">{categories.length > 0 ? `${categories.length} أقسام` : 'استكشف الأقسام'}</span>
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform duration-200 ${activeSection === 'categories' ? 'rotate-180' : ''}`} />
             </button>
             {activeSection === 'categories' && (
               <div id="atelier-menu-categories" className="border-t border-stone-100 px-2 pb-2">
@@ -260,8 +262,11 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
               className="flex h-[60px] w-full items-center gap-3 px-4 text-start transition active:scale-[0.99]"
             >
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white"><User className="h-[18px] w-[18px]" /></span>
-              <span className="flex-1 text-[13px] font-bold text-stone-800">حسابي</span>
-              <ChevronDown className={`h-4 w-4 text-stone-400 transition-transform duration-200 ${activeSection === 'account' ? 'rotate-180' : ''}`} />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-bold leading-none text-stone-800">حسابي</span>
+                <span className="mt-0.5 block truncate text-[11px] font-medium leading-none text-stone-400">{isLoggedIn ? (customerName ? customerName : 'إدارة الحساب') : 'تسجيل الدخول أو إنشاء حساب'}</span>
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform duration-200 ${activeSection === 'account' ? 'rotate-180' : ''}`} />
             </button>
             {activeSection === 'account' && (
               <div id="atelier-menu-account" className="border-t border-stone-100 px-2 pb-2">
@@ -297,15 +302,16 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
               </div>
             )}
           </div>
+          </div>
         </nav>
 
-        {/* WhatsApp */}
+        {/* WhatsApp — connected to contact area */}
         {whatsappHref && (
-          <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => onClose()} className="mt-3 flex h-[56px] w-full items-center gap-3 rounded-2xl bg-white px-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50 active:scale-[0.98]">
+          <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => onClose()} className="mt-3 flex h-[52px] w-full items-center gap-3 rounded-2xl bg-white px-4 shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50 active:scale-[0.98]">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white"><MessageCircle className="h-5 w-5" fill="white" /></span>
             <span className="flex-1 text-start">
               <span className="block text-[13px] font-bold leading-none text-stone-800">تواصل معنا عبر واتساب</span>
-              <span className="mt-1 block text-[11px] leading-none text-stone-500">رد سريع خلال ساعات العمل</span>
+              <span className="mt-1 block text-[11px] leading-none text-stone-500">للاستفسار والتواصل</span>
             </span>
             <ChevronLeft className="h-4 w-4 text-stone-300" />
           </a>
@@ -313,8 +319,8 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
         {hasSocial && (
           <>
-            <div className="my-5 h-px bg-stone-200/70" />
-            <p className="mb-3 text-[11px] font-bold tracking-[0.14em] text-stone-500">تابعنا</p>
+            <div className="mt-4 h-px bg-stone-200/60" />
+            <p className="mt-3 mb-3 text-[11px] font-bold tracking-[0.14em] text-stone-500">تابعنا</p>
             <div className="flex items-start justify-start gap-5">
               {socialSlots.filter((s) => s.safe).map((slot) => {
                 const Icon = getSocialIcon(slot.platform);
