@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useStorefrontCore } from '../../shared/hooks';
 
 interface AnnouncementBarProps {
@@ -19,23 +19,39 @@ const DEFAULT_MESSAGES = [
   'تشكيلات جديدة كل أسبوع',
 ];
 
-const SPEED_PX_PER_SEC = 55;
+// Calm baseline speed — identical on phone and desktop.
+const SPEED_PX_PER_SEC = 26;
+// Even calmer for users with reduced-motion, but still looping (never frozen).
+const SPEED_PX_PER_SEC_REDUCED = 18;
 
 /**
- * Atelier announcement marquee — a calm auto-scrolling ribbon (RTL).
+ * Atelier announcement marquee — a calm, continuously-looping ribbon (RTL).
  *
- * JS-driven (requestAnimationFrame) with a two-copy track. The track is two
- * identical segments laid right-to-left; each frame we move the whole track
- * left by a fixed pixel-speed. Once the leading segment has fully exited the
- * viewport we slide the track back by exactly one segment width — because the
- * segments are identical this produces ZERO visible jump: no teleport, no
- * "text disappears and starts over" glitch, and a constant calm speed that is
- * identical on phone and desktop.
+ * Pure CSS transform animation (runs on the compositor, unaffected by JS
+ * throttling or page scroll): the track holds TWO identical segments and the
+ * keyframes translate 0 → -50% (exactly one segment). Because the segments
+ * are byte-identical, the moment one part scrolls out a matching part enters
+ * from the other side — a seamless ring with no disappearance. Duration is
+ * measured once from the real segment width so speed stays constant on every
+ * device; prefers-reduced-motion only slows it down instead of freezing it.
  *
  * Reads Designer config from content.announcement: items[] (one phrase per
- * line), a single text fallback, colors and an enable toggle. Pauses on hover
- * and respects prefers-reduced-motion (static strip).
+ * line), a single text fallback, colors and an enable toggle.
  */
+const MARQUEE_CSS = `
+@keyframes atelierMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.atelier-marquee-track { animation-name: atelierMarquee; animation-timing-function: linear; animation-iteration-count: infinite; }
+.atelier-marquee-track:hover { animation-play-state: paused; }
+`;
+let marqueeCssInjected = false;
+function ensureMarqueeCss() {
+  if (marqueeCssInjected || typeof document === 'undefined') return;
+  marqueeCssInjected = true;
+  const tag = document.createElement('style');
+  tag.textContent = MARQUEE_CSS;
+  document.head.appendChild(tag);
+}
+
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text, bgColor, textColor, visible }) => {
   // Bind to live store content when props are not explicitly passed (storefront rendering).
   const core = useStorefrontCore();
@@ -47,63 +63,38 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
   const effectiveTextColor = typeof textColor === 'string' ? textColor : (storeAnnouncement.text_color ?? storeAnnouncement.announcement_text_color ?? undefined);
   const effectiveVisible = typeof visible === 'boolean' ? visible : (typeof storeAnnouncement.enabled === 'boolean' ? storeAnnouncement.enabled : (typeof storeAnnouncement.show_announcement === 'boolean' ? storeAnnouncement.show_announcement : true));
 
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const outerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const segmentRef = useRef<HTMLDivElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
 
+  // Calibrate the animation duration to the real segment width once mounted,
+  // and re-calibrate if the width changes (fonts load, resize, rotation).
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduceMotion(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
-    mq.addEventListener ? mq.addEventListener('change', onChange) : (mq as any).addEventListener && (mq as any).addEventListener('change', onChange);
-    return () => { mq.removeEventListener ? mq.removeEventListener('change', onChange) : (mq as any).removeEventListener && (mq as any).removeEventListener('change', onChange); };
-  }, []);
-
-  useEffect(() => {
-    const outer = outerRef.current;
-    const track = trackRef.current;
     const seg = segmentRef.current;
-    if (!outer || !track || !seg) return;
-    if (reduceMotion) return; // static strip — no animation needed
-
-    let raf = 0;
-    let last = performance.now();
-    let x = 0;
-    let hovering = false;
-    let segW = seg.offsetWidth;
-
-    const onEnter = () => { hovering = true; };
-    const onLeave = () => { hovering = false; };
-    outer.addEventListener('pointerenter', onEnter);
-    outer.addEventListener('pointerleave', onLeave);
-
-    const tick = (now: number) => {
-      raf = requestAnimationFrame(tick);
-      const dt = Math.min(256, now - last);
-      last = now;
-      if (hovering) return;
-      segW = seg.offsetWidth || segW;
-      if (!segW) return;
-      x -= (SPEED_PX_PER_SEC * dt) / 1000;
-      // Wrap by exactly one segment width — segments are identical, so the
-      // visible pixels continue without any jump or empty gap.
-      if (x <= -segW) x += segW;
-      track.style.transform = `translate3d(${x}px,0,0)`;
+    const track = trackRef.current;
+    if (!seg || !track) return;
+    ensureMarqueeCss();
+    const apply = () => {
+      const w = seg.offsetWidth;
+      if (!w) return;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const speed = reduce ? SPEED_PX_PER_SEC_REDUCED : SPEED_PX_PER_SEC;
+      track.style.animationDuration = `${Math.max(14, w / speed)}s`;
     };
-    last = performance.now();
-    raf = requestAnimationFrame(tick);
-
-    const onVisibility = () => { if (!document.hidden) last = performance.now(); };
-    document.addEventListener('visibilitychange', onVisibility);
-
+    apply();
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(apply);
+      ro.observe(seg);
+    }
+    window.addEventListener('resize', apply);
+    const fonts = (document as any)?.fonts;
+    if (fonts?.ready) fonts.ready.then(apply).catch(() => {});
     return () => {
-      cancelAnimationFrame(raf);
-      outer.removeEventListener('pointerenter', onEnter);
-      outer.removeEventListener('pointerleave', onLeave);
-      document.removeEventListener('visibilitychange', onVisibility);
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', apply);
     };
-  }, [reduceMotion]);
+  }, []);
 
   if (effectiveVisible === false) return null;
 
@@ -126,7 +117,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
   const barColor = effectiveTextColor && effectiveTextColor.trim() ? effectiveTextColor.trim() : '#f5ede2';
   const isGradient = barBg.includes('gradient');
 
-  // Repeat phrases so a single segment is comfortably wider than any viewport.
+  // Repeat so each segment is comfortably wider than any viewport.
   const repeat = Math.max(2, Math.ceil(20 / items.length));
   const cells: React.ReactNode[] = [];
   for (let r = 0; r < repeat; r++) {
@@ -148,8 +139,9 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
       style={isGradient ? { background: barBg, color: barColor } : { backgroundColor: barBg, color: barColor }}
     >
       <div role="region" aria-label="إعلانات المتجر">
-        <div ref={trackRef} className="atelier-marquee-track flex w-max items-center whitespace-nowrap py-2 will-change-transform" style={{ transform: 'translate3d(0,0,0)' }}>
-          {/* Two identical segments — identical content guarantees a jump-free wrap */}
+        <div ref={trackRef} className="atelier-marquee-track flex w-max items-center whitespace-nowrap py-2 will-change-transform">
+          {/* Two identical segments — the -50% wrap lands on the identical copy,
+              so a part always enters from the opposite side as another exits. */}
           <div ref={segmentRef} className="flex items-center" aria-hidden>
             {cells}
           </div>
