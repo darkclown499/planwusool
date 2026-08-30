@@ -122,13 +122,21 @@ class MediaController extends Controller
         }
         $allowedMimes = array_unique($allowedMimes);
 
+        // Hard safety ceiling for a single upload. Keep this comfortably above the
+        // per-tenant max_file_size value so that raising the admin setting actually
+        // takes effect for larger assets such as banner/mobile videos. Videos are
+        // served directly and are NOT run through the WebP downscaler, so a very
+        // low cap silently blocks normal-length clips.
+        $hardMaxKb = 200 * 1024; // 200 MB
+        $effectiveMaxKb = min($config['max_file_size_kb'], $hardMaxKb);
+
         $validator = \Validator::make($request->all(), [
             'files' => 'required|array|min:1',
             'files.*' => [
                 'required',
                 'file',
                 'mimes:' . implode(',', $allowedTypes),
-                'max:' . min($config['max_file_size_kb'], 10240)
+                'max:' . $effectiveMaxKb
             ],
         ], [
             'files.required' => __('Please select files to upload.'),
@@ -139,7 +147,10 @@ class MediaController extends Controller
             'files.*.mimes' => __('Only these file types are allowed: :types', [
                 'types' => strtoupper(implode(', ', $allowedTypes))
             ]),
-            'files.*.max' => __('File size cannot exceed :max KB.', ['max' => min($config['max_file_size_kb'], 10240)]),
+            'files.*.max' => __('File size cannot exceed :max MB (:maxKb KB).', [
+                'max' => number_format($effectiveMaxKb / 1024, 1),
+                'maxKb' => number_format($effectiveMaxKb),
+            ]),
         ]);
 
         if ($validator->fails()) {

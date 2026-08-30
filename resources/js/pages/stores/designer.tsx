@@ -943,16 +943,22 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                         <p className="mb-2 text-[11px] text-slate-500">المقاس الموصى به: 1200 × 800 — 3:2 — MP4 — يمكنك إضافة عدة فيديوهات</p>
                                         <DropzoneUploader label={allVideos.length ? `إضافة فيديو (${allVideos.length}/10)` : 'اسحب الفيديو هنا'} hint={`1200×800 — 3:2 — MP4`} accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
                                             const valid=Array.from(files).filter(f=>f.type.startsWith('video/')); if(!valid.length) return; setInterfaceVideoUploading(true);
+                                            const errMsg=(json:any):string=>{ if(Array.isArray(json?.errors)&&json.errors.length) return String(json.errors[0]); return json?.message||'فشل رفع الفيديو'; };
                                             try{
-                                              const uploads: any[]=[];
+                                              const uploads: any[]=[]; const failures: string[]=[];
                                               for(const f of valid.slice(0,10-allVideos.length)){
                                                 const fd=new FormData(); fd.append('files[]',f);
-                                                const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json',...csrfHeaders()}});
-                                                const json:any=await res.json();
-                                                if(res.ok && json?.data?.[0]?.url){
+                                                let json: any = null; let ok = false;
+                                                try {
+                                                  const res=await fetch(route('api.media.batch'),{method:'POST',body:fd,headers:{Accept:'application/json',...csrfHeaders()}});
+                                                  ok=res.ok; json=await res.json();
+                                                } catch (e) { failures.push(`فشل اتصال أثناء رفع الفيديو`); }
+                                                if(ok && json?.data?.[0]?.url){
                                                   const raw=String(json.data[0].url||''); const url=raw?(raw.startsWith('/storage')?raw:(raw.match(/\/storage\/.*$/)?.[0]??raw)):'';
                                                   const norm=normalizeImageUrl(url);
                                                   uploads.push({ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`, type:'video', src: norm, position:'50% 50%', positionMobile:'50% 50%' });
+                                                } else {
+                                                  failures.push(errMsg(json));
                                                 }
                                               }
                                               if(uploads.length){
@@ -963,6 +969,8 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                 tmp=setDotted(tmp,'hero_video_url', firstSrc);
                                                 setContent(tmp); toast.success(`تم رفع ${uploads.length} فيديو`);
                                               }
+                                              const uniqueFailures=[...new Set(failures)];
+                                              if(uniqueFailures.length) toast.error(uniqueFailures[0]);
                                             }catch{ toast.error('حدث خطأ أثناء الرفع'); } finally{ setInterfaceVideoUploading(false); }
                                         }} />
                                         {allVideos.length===0 ? <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-xs text-slate-500">لا يوجد فيديو — فارغ</p> : allVideos.map((v:any, idx:number)=>{
@@ -1187,7 +1195,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                     <Input dir="ltr" value={String(getDotted(content,'hero_banner.video_url_mobile') ?? getDotted(content,'hero_video_url_mobile') ?? '')} onChange={e=> { const clean = stripTrailingSlash(e.target.value.trim()); const norm = clean ? (clean.startsWith('http') ? clean : normalizeImageUrl(clean)) : ''; let tmp=setDotted(content,'hero_banner.video_url_mobile',norm); tmp=setDotted(tmp,'hero_video_url_mobile',norm); setContent(tmp); }} placeholder="https://example.com/video-mobile.mp4" className="bg-white font-mono text-sm"/>
                                                     <DropzoneUploader label="اسحب فيديو الهاتف (اختياري)" hint="1200×900 — 4:3 — MP4" accept="video/mp4,video/*" uploading={interfaceVideoUploading} onFiles={async (files) => {
                                                         const f = Array.from(files)[0]; if (!f) return; setInterfaceVideoUploading(true);
-                                                        try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url_mobile', normalized); tmp = setDotted(tmp, 'hero_video_url_mobile', normalized); setContent(tmp); toast.success('تم رفع فيديو الهاتف'); } else toast.error(json?.message || 'فشل الرفع'); } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
+                                                        try { const fd = new FormData(); fd.append('files[]', f); const res = await fetch(route('api.media.batch'), { method: 'POST', body: fd, headers: { Accept: 'application/json', ...csrfHeaders() } }); const json: any = await res.json(); if (res.ok && json?.data?.[0]?.url) { const raw = String(json.data[0].url || ''); const url = raw ? (raw.startsWith('/storage') ? raw : (raw.match(/\/storage\/.*$/)?.[0] ?? raw)) : ''; const normalized = normalizeImageUrl(url); let tmp = setDotted(content, 'hero_banner.video_url_mobile', normalized); tmp = setDotted(tmp, 'hero_video_url_mobile', normalized); setContent(tmp); toast.success('تم رفع فيديو الهاتف'); } else { const em = (Array.isArray(json?.errors) && json.errors.length) ? String(json.errors[0]) : (json?.message || 'فشل رفع فيديو الهاتف'); toast.error(em); } } catch { toast.error('حدث خطأ أثناء الرفع'); } finally { setInterfaceVideoUploading(false); }
                                                     }} />
                                                 </div>
                                             )}
