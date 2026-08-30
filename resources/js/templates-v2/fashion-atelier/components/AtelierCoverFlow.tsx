@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
-import { AtelierBrandStamp } from './AtelierBrandStamp';
+
 
 interface CoverMedia {
   id?: string;
@@ -240,7 +240,6 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
                 </div>
               )}
             </div>
-            <AtelierBrandStamp />
           </div>
         </div>
       </section>
@@ -493,7 +492,6 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             </div>
           )}
         </div>
-        <AtelierBrandStamp />
       </div>
     </section>
   );
