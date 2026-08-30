@@ -85,20 +85,27 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
       x -= (speed * dt) / 1000;
       track.style.transform = `translate3d(${x}px,0,0)`;
 
-      // Continuous recycle: once the leftmost cell is fully offscreen (RTL,
-      // DOM-last child) move it back to the right end. Width-preserving →
-      // the visible stream never empties and never jumps.
+      // Continuous recycle: once the leftmost cell is fully offscreen (RTL →
+      // DOM-last child) move it back to the right end AND compensate the
+      // transform by the cell's exact claimed width, measured from the real
+      // geometry — so on-screen pixels never move, the right edge is always
+      // fed and the strip never empties nor jumps.
       const trackW = track.offsetWidth || 0;
       if (metrics.length && trackW > 0) {
-        const base = window.innerWidth - trackW; // screen left of track at x=0
+        const outerR = outer.getBoundingClientRect().right;
+        const base = outerR - trackW; // screen left of track at x=0
         let guard = 0;
-        while (guard++ < 80 && metrics.length) {
+        while (guard++ < 80 && metrics.length >= 2) {
           const m = metrics[metrics.length - 1];
           if (base + x + m.o + m.w > 0) break; // still visible
-          const lastChild = track.lastElementChild;
-          if (lastChild && lastChild !== track.firstElementChild) {
-            track.insertBefore(lastChild, track.firstChild);
-          }
+          const l = track.lastElementChild as HTMLElement | null;
+          if (!l) break;
+          const nxt = track.children[track.children.length - 2] as HTMLElement | undefined;
+          const beforeR = nxt ? nxt.getBoundingClientRect().right : outerR + x;
+          track.insertBefore(l, track.firstChild);
+          const afterR = nxt ? nxt.getBoundingClientRect().right : beforeR;
+          x += afterR - beforeR; // invisible re-anchor
+          x = Math.max(-trackW * 2, Math.min(trackW * 2, x));
           coff();
         }
       }
