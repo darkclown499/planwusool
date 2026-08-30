@@ -69,19 +69,20 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/', on
       dir="rtl"
     >
       {/* MOBILE HEADER — RIGHT hamburger, CENTER logo, LEFT orders+cart (md:hidden) */}
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 md:hidden">
+      {/* grid-cols-[1fr_auto_1fr] keeps the logo dead-center regardless of side widths */}
+      <div className="mx-auto grid h-14 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 md:hidden">
         {/* RIGHT: Hamburger */}
         <button
           type="button"
           onClick={() => onOpenMobileMenu?.()}
           aria-label="القائمة"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-white shadow-sm transition hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/30"
+          className="flex h-10 w-10 items-center justify-center justify-self-start rounded-full bg-stone-900 text-white shadow-sm transition hover:bg-stone-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/30"
         >
           <Menu className="h-5 w-5" strokeWidth={2} />
         </button>
 
-        {/* CENTER: Logo */}
-        <a href={homeHref} className="flex shrink-0 flex-col items-center" aria-label={config?.storeName || store?.name}>
+        {/* CENTER: Logo — pinned to viewport center */}
+        <a href={homeHref} className="flex shrink-0 flex-col items-center justify-self-center" aria-label={config?.storeName || store?.name}>
           {(config?.logo || store?.logo) ? (
             <img src={getImageUrl(config.logo || store.logo)} alt={config?.storeName || store?.name} className="h-8 w-auto object-contain" />
           ) : (
@@ -97,7 +98,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/', on
         </a>
 
         {/* LEFT: Orders + Cart */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-self-end gap-1.5">
           {canShowAuth && (
             <button
               type="button"
