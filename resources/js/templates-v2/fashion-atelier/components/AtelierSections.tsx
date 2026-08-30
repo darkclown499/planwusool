@@ -85,7 +85,7 @@ export const AtelierCategoryCircles: React.FC<{ categories: CategoryCircleItem[]
               >
                 <span className="relative block h-[72px] w-[72px] shrink-0 overflow-hidden rounded-full bg-[#fffdf9] ring-1 ring-stone-200/40 shadow-[0_1px_6px_rgba(40,30,20,0.06)] transition-all duration-200 group-hover:shadow-[0_4px_14px_rgba(40,30,20,0.08)] group-hover:ring-stone-200/60 group-focus-visible:ring-2 group-focus-visible:ring-[#9d7463]/40 sm:h-[76px] sm:w-[76px] aspect-square [border-radius:9999px]">
                   {c.image ? (
-                    <img src={getImageUrl(c.image)} alt={c.name} loading="lazy" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]" />
+                    <img src={getImageUrl(c.image)} alt="" loading="lazy" className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]" />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#f3ece4] to-[#e7d8c9] text-[#9d7463]" aria-hidden>
                       {getCategoryFallbackIcon(c.name)}

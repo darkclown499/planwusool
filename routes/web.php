@@ -230,6 +230,9 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // Custom store pages (Professional plan feature): /page/{slug}
     Route::get('/page/{slug}', [ThemeController::class, 'page'])->name('store.page');
 
+    // All-products listing page (/products) — paginated, sortable, same chrome as category
+    Route::get('/products', [ThemeController::class, 'products'])->name('store.products');
+
     // Schema-driven theme engine: runtime `theme.config.json` for a niche theme
     Route::get('/theme-configs/{theme}.json', [ThemeController::class, 'themeConfig'])->name('store.theme-config');
 

@@ -591,6 +591,114 @@ class ThemeController extends Controller
         ));
     }
 
+    /**
+     * All-products listing page — GET /products on the store subdomain.
+     * Independent paginated query (no 300-product hard cap like home),
+     * same storefront chrome as the category listing. Renders the store/category
+     * Inertia page with a synthetic "all" category so every template's category
+     * mode shows a neutral title and its normal grid/sort/pagination.
+     */
+    public function products($storeSlug, ?Request $request = null)
+    {
+        $store = $this->getStore($storeSlug, $request);
+        $storeData = $this->getStoreConfig($store);
+        $storeModel = Store::find($store['id']);
+
+        $theme = $store['theme'] ?? \App\Models\Store::DEFAULT_TEMPLATE;
+        $locale = $storeData['config']['locale'] ?? 'ar';
+
+        // Categories for header/nav chrome (same cached payload as home/category).
+        $categories = \Illuminate\Support\Facades\Cache::remember(
+            "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
+            300,
+            function () use ($store) {
+                return Category::where('store_id', $store['id'])
+                    ->where('is_active', true)
+                    ->whereNull('parent_id')
+                    ->withCount(['products' => function ($query) {
+                        $query->where('is_active', true);
+                    }])
+                    ->orderBy('sort_order')
+                    ->orderBy('name')
+                    ->orderBy('id')
+                    ->get()
+                    ->map(function ($cat) {
+                        return [
+                            'id' => (string) $cat->id,
+                            'name' => $cat->name,
+                            'slug' => $cat->slug,
+                            'image' => $cat->image ?: null,
+                            'description' => $cat->description,
+                            'product_count' => $cat->products_count,
+                        ];
+                    })
+                    ->values();
+            }
+        );
+
+        // Sort whitelist.
+        $sort = $request->get('sort');
+        if (!in_array($sort, ['newest', 'price_asc', 'price_desc', 'name'], true)) {
+            $sort = 'newest';
+        }
+
+        $query = Product::where('store_id', $store['id'])
+            ->where('is_active', true);
+
+        switch ($sort) {
+            case 'price_asc':
+                $query->orderByRaw('COALESCE(NULLIF(sale_price, 0), price) ASC');
+                break;
+            case 'price_desc':
+                $query->orderByRaw('COALESCE(NULLIF(sale_price, 0), price) DESC');
+                break;
+            case 'name':
+                $query->orderBy('name');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+        }
+
+        $perPage = 12;
+        $paginator = $query->paginate($perPage)->withQueryString();
+
+        $products = collect($paginator->items())
+            ->map(function ($product) {
+                $catalog = $this->formatFullProduct($product);
+                unset($catalog['description'], $catalog['customFields'], $catalog['taxName'], $catalog['taxPercentage']);
+                return $catalog;
+            })
+            ->values();
+
+        $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
+
+        $allLabel = $locale === 'en' ? 'All Products' : 'جميع المنتجات';
+
+        return Inertia::render('store/category', array_merge(
+            $this->storefrontViewProps($store, $storeData, $storeModel, $theme, $categories, $products, $request),
+            [
+                'action' => $this->resolveAction(),
+                'wishlistCount' => $this->getWishlistCount($store['id']),
+                'categoryPage' => [
+                    'category' => [
+                        'id' => 'all',
+                        'name' => $allLabel,
+                        'slug' => 'products',
+                        'image' => null,
+                        'description' => null,
+                        'product_count' => (int) $paginator->total(),
+                    ],
+                    'total' => $paginator->total(),
+                    'perPage' => $paginator->perPage(),
+                    'currentPage' => $paginator->currentPage(),
+                    'lastPage' => $paginator->lastPage(),
+                    'sort' => $sort,
+                ],
+            ],
+            $this->getCommonData()
+        ));
+    }
+
     /** Currencies payload shared by storefront views (cached 24h). */
     private function getCurrencies($storeModel): array
     {
