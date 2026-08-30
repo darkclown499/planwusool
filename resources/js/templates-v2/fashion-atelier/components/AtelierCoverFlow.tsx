@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
+import { AtelierBrandStamp } from './AtelierBrandStamp';
 
 interface CoverMedia {
   id?: string;
@@ -171,9 +172,9 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
     const w = el?.clientWidth || 360;
     const threshold = Math.max(56, w * 0.16);
     if (Math.abs(dx) > threshold) {
-      // RTL-aware swipe: dragging left (dx negative) => next (index+1); dragging right => prev
-      // Fashion Atelier is RTL (dir=rtl) but gesture physics remain: left swipe = next
-      if (dx < 0) go(1);
+      // RTL gesture physics: the NEXT card sits to the LEFT of center, the PREV to the RIGHT.
+      // Dragging right pulls the left (next) card into center => next; dragging left => prev.
+      if (dx > 0) go(1);
       else go(-1);
     }
     setTimeout(() => { pausedRef.current = false; }, 1800);
@@ -239,6 +240,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
                 </div>
               )}
             </div>
+            <AtelierBrandStamp />
           </div>
         </div>
       </section>
@@ -491,6 +493,7 @@ export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heigh
             </div>
           )}
         </div>
+        <AtelierBrandStamp />
       </div>
     </section>
   );

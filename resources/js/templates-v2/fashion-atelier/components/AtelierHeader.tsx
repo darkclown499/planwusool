@@ -112,7 +112,7 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/', on
             type="button"
             onClick={() => ui.setShowCart(true)}
             aria-label="سلة التسوق"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#9d7463] text-white shadow-sm transition hover:bg-[#8a7a6b]"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[#F9A8D4] text-[#9d174d] shadow-sm transition hover:bg-[#ef9fc9]"
           >
             <ShoppingBag className="h-5 w-5" strokeWidth={1.8} />
             {cartCount > 0 && (
@@ -191,10 +191,10 @@ export const AtelierHeader: React.FC<AtelierHeaderProps> = ({ homeHref = '/', on
               <User className="h-5 w-5" strokeWidth={1.7} />
             </button>
             )}
-            <button type="button" onClick={() => ui.setShowCart(true)} aria-label="سلة التسوق" className="relative rounded-full p-2 text-stone-700 transition hover:bg-stone-100 hover:text-[#9d7463] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9d7463]/40">
+            <button type="button" onClick={() => ui.setShowCart(true)} aria-label="سلة التسوق" className="relative rounded-full bg-[#F9A8D4] p-2 text-[#9d174d] transition hover:bg-[#ef9fc9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F9A8D4]/50">
               <ShoppingBag className="h-5 w-5" strokeWidth={1.7} />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9d7463] px-1 text-[9px] font-bold text-white">
+                <span className="absolute -top-0.5 -left-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-stone-900 px-1 text-[9px] font-bold text-white">
                   {cartCount > 99 ? '+99' : cartCount}
                 </span>
               )}
