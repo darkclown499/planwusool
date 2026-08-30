@@ -104,7 +104,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
           const beforeR = nxt ? nxt.getBoundingClientRect().right : outerR + x;
           track.insertBefore(l, track.firstChild);
           const afterR = nxt ? nxt.getBoundingClientRect().right : beforeR;
-          x += afterR - beforeR; // invisible re-anchor
+          x -= afterR - beforeR; // invisible re-anchor (shift track right by claimed width)
           x = Math.max(-trackW * 2, Math.min(trackW * 2, x));
           coff();
         }
