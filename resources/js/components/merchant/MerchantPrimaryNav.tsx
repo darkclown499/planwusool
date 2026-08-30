@@ -105,16 +105,24 @@ function PrimaryItem({ area, isActive, label, variant = 'vertical' }: { area: (t
             aria-label={label}
             aria-current={isActive ? 'page' : undefined}
             data-active={isActive}
+            title={label}
             className={cn(
-                'group relative flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-center transition-colors duration-150',
+                'group relative flex w-full items-center gap-2.5 rounded-lg ps-2.5 pe-2 py-2.5 text-start transition-colors duration-150',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600',
+                'min-h-[42px]',
                 isActive
                     ? 'bg-emerald-50 text-emerald-700'
                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
             )}
         >
+            {isActive && (
+                <span
+                    aria-hidden="true"
+                    className="absolute inset-y-1.5 start-0 w-[2.5px] rounded-full bg-emerald-600"
+                />
+            )}
             <Icon className={cn('h-[16px] w-[16px] shrink-0', isActive ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-500')} strokeWidth={1.7} />
-            <span className={cn('max-w-[72px] truncate text-[10.5px] font-medium leading-tight', isActive ? 'text-emerald-700' : 'text-gray-600 group-hover:text-gray-700')}>
+            <span className={cn('flex-1 truncate text-[13px] font-medium leading-none', isActive ? 'text-emerald-700' : 'text-gray-700')}>
                 {label}
             </span>
         </Link>

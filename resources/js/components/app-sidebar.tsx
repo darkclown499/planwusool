@@ -124,10 +124,10 @@ export function AppSidebar() {
 
     const hasContext = !!contextNav && contextNav.items.length > 0;
 
-    // Premium SaaS: primary 80px (5rem) + context 176px (11rem) = 256px (16rem)
-    // Lighter hierarchy, less horizontal weight, more content space at 1440+.
+    // Premium SaaS: primary 150px + context 176px = 326px (20.375rem)
+    // Readable horizontal labels, no truncation, light hierarchy.
     // No context (dashboard, analytics) collapses to primary only.
-    const sidebarWidth = isMerchant ? (hasContext ? '16rem' : '5rem') : undefined;
+    const sidebarWidth = isMerchant ? (hasContext ? '20.375rem' : '9.375rem') : undefined;
 
     // Sync CSS variable to provider wrapper so SidebarInset offset equals actual width
     // (Sidebar component's fixed element alone doesn't affect peer offset)
@@ -226,8 +226,8 @@ export function AppSidebar() {
                 <SidebarContent className="p-0 min-h-0">
                     {/* Desktop: premium two-column — xl+ only (1280+). <1280 uses Sheet drawer */}
                     <div className="hidden xl:flex h-full w-full min-h-0">
-                        {/* Level 1 — primary, quiet */}
-                        <div className="w-[80px] shrink-0 border-e border-gray-100 bg-[#fcfcfc] flex flex-col overflow-y-auto overflow-x-hidden min-h-0" style={sidebarStyle as any}>
+                        {/* Level 1 — primary */}
+                        <div className="w-[150px] shrink-0 border-e border-gray-100 bg-[#fcfcfc] flex flex-col overflow-y-auto overflow-x-hidden min-h-0" style={sidebarStyle as any}>
                             <MerchantPrimaryNav activePrimary={activePrimary} />
                         </div>
                         {/* Level 2 — contextual, light sub-nav */}
