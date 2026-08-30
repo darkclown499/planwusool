@@ -6,6 +6,7 @@ import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import { ProductReviews } from '@/components/storefront/ProductReviews';
+import { flyToCart } from '../flyToCart';
 
 interface AtelierProductDetailProps {
   product: any;
@@ -38,8 +39,6 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const [descExpanded, setDescExpanded] = useState(false);
   const [descOverflows, setDescOverflows] = useState(false);
   const descRef = useRef<HTMLDivElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const [showSticky, setShowSticky] = useState(false);
 
   // Mobile accordions — description / details / reviews (collapsed by default)
   const [openSection, setOpenSection] = useState<string | null>(null);
@@ -86,16 +85,6 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const sheetRef = useRef<HTMLDivElement>(null);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  // Sticky bar observer — must track against actual sheet scroll viewport, not browser viewport (mobile only)
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth >= 640) return;
-    const el = ctaRef.current;
-    const root = scrollContainerRef.current;
-    if (!el || !root) return;
-    const obs = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { root, threshold: 0.05 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
   // Exit animation — smooth downward slide (280–360ms) then unmount; reduced
   // motion shortens the duration instead of disabling the close transition.
   const reducedMotion = useMemo(
@@ -225,6 +214,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
     setAdding(true);
     try {
       await cart.addToCart({ ...product, quantity: qty, selectedVariants: variable ? selection : undefined });
+      flyToCart(getImageUrl(images[active] || images[0] || ''), carouselRef.current?.querySelector('img') ?? null);
       handleClose();
     } finally { setAdding(false); }
   };
@@ -252,7 +242,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
   const trackX = (imgSnapping ? 0 : imgDx) - active * slideW;
 
   return (
-    <div dir="rtl" role="dialog" aria-modal="true" aria-label={product.name} className="fixed inset-0 z-[70] flex items-center justify-center sm:items-center sm:p-4">
+    <div dir="rtl" role="dialog" aria-modal="true" aria-label={product.name} className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4">
       {/* Backdrop — storefront stays visible, dimmed + blurred; tap closes */}
       <div className="absolute inset-0 bg-[rgba(30,25,22,0.22)] atelier-focus-backdrop" onClick={handleClose} style={{ backdropFilter: `blur(${backdropBlur}px)`, WebkitBackdropFilter: `blur(${backdropBlur}px)`, opacity: backdropOpacity, transition: `opacity ${ANIM_MS}ms ease-out` } as any} />
 
@@ -264,8 +254,8 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
         <X className="h-5 w-5" />
       </button>
 
-      {/* Floating card — mobile 92vw / 420px, breathing room around it; desktop unchanged */}
-      <div ref={sheetRef} className="atelier-product-card relative flex max-h-[90dvh] w-[92vw] max-w-[420px] flex-col overflow-hidden rounded-[28px] bg-[#faf7f2] shadow-[0_24px_60px_-16px_rgba(40,30,20,0.32),0_10px_24px_-10px_rgba(40,30,20,0.16)] sm:max-h-[88vh] sm:w-full sm:max-w-4xl sm:rounded-2xl sm:shadow-2xl"
+      {/* Full-screen sheet on mobile (feels like a real product page), floating card on desktop */}
+      <div ref={sheetRef} className="atelier-product-card relative flex h-full min-h-0 w-full max-w-none flex-col overflow-hidden rounded-none bg-[#faf7f2] sm:h-auto sm:max-h-[88vh] sm:w-full sm:max-w-4xl sm:rounded-2xl sm:shadow-2xl"
         style={{ transform: exiting ? 'translateY(110%)' : dragY ? `translateY(${dragY}px)` : undefined, transition: isDragging ? 'none' : `transform ${ANIM_MS}ms cubic-bezier(0.22,0.9,0.3,1)` } as any}>
 
         {/* Desktop close — unchanged in-sheet position */}
@@ -274,12 +264,10 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
           <X className="h-5 w-5" />
         </button>
 
-        {/* Mobile media hero — product image is the visual focus; horizontal swipe + dots */}
+        {/* Mobile media hero — compact banner keeps name/price/CTA in the first viewport */}
         {images.length > 0 && (
           <div className="shrink-0 sm:hidden">
-            <div
-              className="relative overflow-hidden aspect-[4/5] [background:radial-gradient(120%_90%_at_50%_18%,#fffdf9_0%,#f6efe7_58%,#efe4d6_100%)]"
-            >
+            <div className="relative h-[38dvh] min-h-[240px] max-h-[340px] overflow-hidden [background:radial-gradient(120%_90%_at_50%_18%,#fffdf9_0%,#f6efe7_58%,#efe4d6_100%)]">
               <div
                 ref={carouselRef}
                 dir="ltr"
@@ -313,7 +301,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
 
         {/* Desktop close position note — the desktop X lives inside the sheet above (unchanged) */}
 
-        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:mt-0 sm:py-0">
+        <div ref={scrollContainerRef} className="atelier-info-sheet flex-1 overflow-y-auto overscroll-contain pt-1 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:mt-0 sm:py-0">
           <div className="grid gap-0 sm:gap-8 sm:p-6 md:grid-cols-2 md:gap-8">
             {/* Gallery — desktop floating transparent (no white rectangle) */}
             <div className="hidden sm:block px-4 pt-4 sm:px-0 sm:pt-0">
@@ -421,34 +409,8 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                 </div>
               )}
 
-              {/* Purchase controls — desktop inline row unchanged; mobile stacked ≥44px targets */}
+              {/* Purchase controls — mobile lives in the fixed bottom bar; desktop keeps the inline row */}
               <div className="mt-4">
-                {/* Mobile purchase block */}
-                <div ref={ctaRef} className="flex flex-col gap-2.5 sm:hidden">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex h-[50px] w-[120px] shrink-0 items-center justify-between rounded-[14px] border border-stone-300 bg-white px-0.5 shadow-sm">
-                      <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="flex h-11 w-11 items-center justify-center rounded-xl text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="تقليل الكمية"><Minus className="h-4 w-4" /></button>
-                      <span className="w-7 text-center text-[14px] font-bold text-stone-800" aria-live="polite">{qty}</span>
-                      <button type="button" onClick={() => setQty((q) => q + 1)} className="flex h-11 w-11 items-center justify-center rounded-xl text-stone-500 transition hover:bg-stone-100 hover:text-[#9d7463]" aria-label="زيادة الكمية"><Plus className="h-4 w-4" /></button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => wishlist.toggle(product.id)}
-                      aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
-                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border text-stone-500 shadow-sm transition ${wished ? 'border-[#9d7463] bg-[#9d7463] !text-white shadow' : 'border-stone-300 bg-white hover:border-[#9d7463] hover:text-[#9d7463]'}`}
-                    >
-                      <Heart className="h-[18px] w-[18px]" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.8} />
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAdd}
-                    disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
-                    className="flex h-[50px] w-full items-center justify-center rounded-[14px] bg-stone-900 px-4 text-[14px] font-bold text-white shadow-sm transition hover:bg-[#9d7463] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-300"
-                  >
-                    {outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : 'أضف إلى السلة'}
-                  </button>
-                </div>
                 {/* Desktop purchase block — unchanged */}
                 <div className="hidden sm:flex sm:items-center sm:gap-2.5">
                   <div className="flex h-[42px] w-[88px] shrink-0 items-center justify-between rounded-[12px] border border-stone-300 bg-white px-1 shadow-sm">
@@ -570,20 +532,29 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
           </div>
         </div>
 
-        {/* Sticky purchase bar — mobile only, safe-area, respects sheet scroll */}
-        {showSticky && (
-          <div className="flex shrink-0 items-center gap-3 border-t border-stone-200 bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-6px_16px_rgba(0,0,0,0.06)] sm:hidden">
-            <div className="min-w-0 flex-1 text-right">
-              <p className="truncate text-xs text-stone-500" dir="auto">{product.name}</p>
-              <p className="text-sm font-bold text-stone-900">{formatPrice(displayPrice)}</p>
+        {/* Fixed purchase bar — mobile only, always visible, safe-area aware */}
+        {!isDesktop && (
+          <div className="flex shrink-0 items-center gap-2.5 border-t border-stone-200 bg-white px-4 py-2.5 pb-[calc(0.6rem+env(safe-area-inset-bottom))] shadow-[0_-6px_16px_rgba(0,0,0,0.06)] sm:hidden">
+            <div className="flex h-[48px] items-center justify-between gap-1 rounded-[14px] border border-stone-300 bg-white px-1 shadow-sm">
+              <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="تقليل الكمية" className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-500 transition active:scale-95 hover:bg-stone-100 hover:text-[#9d7463]"><Minus className="h-4 w-4" /></button>
+              <span className="w-7 text-center text-[14px] font-bold text-stone-800" aria-live="polite">{qty}</span>
+              <button type="button" onClick={() => setQty((q) => q + 1)} aria-label="زيادة الكمية" className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-500 transition active:scale-95 hover:bg-stone-100 hover:text-[#9d7463]"><Plus className="h-4 w-4" /></button>
             </div>
+            <button
+              type="button"
+              onClick={() => wishlist.toggle(product.id)}
+              aria-label={wished ? 'في المفضلة' : 'أضف إلى المفضلة'}
+              className={`flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[14px] border text-stone-500 bg-white shadow-sm transition ${wished ? 'border-[#9d7463] bg-[#9d7463] !text-white' : 'border-stone-300 hover:border-[#9d7463] hover:text-[#9d7463]'}`}
+            >
+              <Heart className="h-[18px] w-[18px]" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.8} />
+            </button>
             <button
               type="button"
               onClick={handleAdd}
               disabled={outOfStock || isSelectedOOS || adding || (variable && missingGroups.length > 0)}
-              className="shrink-0 rounded-xl bg-stone-900 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#9d7463] disabled:bg-stone-300"
+              className="flex h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-[14px] bg-stone-900 px-4 text-[14px] font-bold text-white shadow-sm transition active:scale-[0.99] hover:bg-[#9d7463] disabled:cursor-not-allowed disabled:bg-stone-300"
             >
-              أضف إلى السلة
+              <span className="truncate">{outOfStock || isSelectedOOS ? 'غير متوفر' : variable && missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : `أضف إلى السلة`}</span>
             </button>
           </div>
         )}

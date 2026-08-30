@@ -4,6 +4,7 @@ import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore, type V2Product } from '../../shared/hooks';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import { usePage } from '@inertiajs/react';
+import { flyToCart } from '../flyToCart';
 
 interface AtelierProductCardProps {
   product: V2Product;
@@ -24,6 +25,7 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
   const [quickOpen, setQuickOpen] = useState(false);
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const outOfStock = product.availability === 'out_of_stock';
   const discount = discountPercent(product);
@@ -58,6 +60,7 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
     setAdding(true);
     try {
       await cart.addToCart({ ...product, selectedVariants: variable ? selection : undefined });
+      flyToCart(mainImage, (e?.currentTarget as HTMLElement)?.closest?.('.group')?.querySelector?.('img') ?? null);
       setQuickOpen(false);
       setSelection({});
     } finally {
@@ -70,8 +73,9 @@ export const AtelierProductCard: React.FC<AtelierProductCardProps> = ({ product,
       {/* Image — 4:5, object-contain preserves perfume, transparent warm inside card */}
       <div className="relative aspect-[4/5] w-full shrink-0 overflow-hidden rounded-t-[20px] bg-transparent">
         <a href="#" onClick={(e) => { e.preventDefault(); openDetail(); }} aria-label={product.name} className="block h-full w-full">
-          <img src={mainImage} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||product.images?.[0]||''))}} width={400} height={500}
-            className="h-full w-full object-contain object-center p-2 transition-all duration-700 group-hover:scale-[1.02]" />
+          {!imgLoaded && <div className="absolute inset-0 animate-pulse bg-[#f2eadf]" aria-hidden />}
+          <img src={mainImage} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||product.images?.[0]||''))}} onLoad={() => setImgLoaded(true)} width={400} height={500}
+            className={`h-full w-full object-contain object-center p-2 transition-all duration-500 group-hover:scale-[1.02] ${imgLoaded ? 'opacity-100' : 'opacity-0'}`} />
           {hoverImage && (
             <img src={hoverImage} alt="" loading="lazy" decoding="async" fetchPriority="low" aria-hidden sizes="(max-width:640px) 50vw, 25vw"
               className="absolute inset-0 h-full w-full object-contain object-center p-2 opacity-0 transition-opacity duration-700 group-hover:opacity-100" width={400} height={500} />

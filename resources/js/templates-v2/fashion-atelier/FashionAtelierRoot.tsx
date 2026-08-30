@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, ChevronDown, MessageCircle, PackageSearch, Search, User, X, Home, Package, Heart, MapPin, LogOut, LogIn, UserPlus, Store } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, MessageCircle, PackageSearch, Search, User, X, Home, Package, Heart, MapPin, LogOut, LogIn, UserPlus, Store } from 'lucide-react';
 import { Facebook, Globe, Instagram, Music, Send, Youtube, Twitter } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
@@ -36,6 +36,28 @@ const AtelierMobileSearch: React.FC = () => {
         <span className="text-sm text-stone-500">ابحث عن منتج...</span>
       </button>
     </div>
+  );
+};
+
+/** Back-to-top — mobile only, bottom-right, fades in after meaningful scroll. */
+const AtelierBackToTop: React.FC = () => {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 520);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  if (!visible) return null;
+  return (
+    <button
+      type="button"
+      aria-label="العودة للأعلى"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      className="fixed bottom-5 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-stone-900 text-white shadow-[0_6px_20px_rgba(40,30,20,0.28)] ring-1 ring-white/10 transition hover:bg-[#9d7463] active:scale-95 md:hidden"
+      style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom))' } as any}
+    >
+      <ChevronUp className="h-5 w-5" />
+    </button>
   );
 };
 
@@ -544,6 +566,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       <AtelierHeader onOpenMobileMenu={openMobileMenu} />
       {normalMain}
       <AtelierWhatsAppFloating />
+      <AtelierBackToTop />
       {menuMounted && <AtelierMobileDrawer open={!menuExiting} onClose={handleMenuClose} />}
     </div>
   );
@@ -646,6 +669,7 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
         )}
       </main>
       <AtelierWhatsAppFloating />
+      <AtelierBackToTop />
     </div>
   );
 };
@@ -672,6 +696,7 @@ const AtelierPageMode: React.FC<{ storeData: any; page?: any | null }> = ({ page
       <article className="prose-custom2" dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
     </main>
     <AtelierWhatsAppFloating />
+    <AtelierBackToTop />
   </div>
 );
 
