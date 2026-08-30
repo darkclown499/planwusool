@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useStorefrontCore } from '../../shared/hooks';
 
 interface AnnouncementBarProps {
@@ -19,28 +19,23 @@ const DEFAULT_MESSAGES = [
   'تشكيلات جديدة كل أسبوع',
 ];
 
-/**
- * Atelier announcement marquee — a slim auto-scrolling ribbon (RTL).
- * Reads Designer config from content.announcement: items[] (one phrase per
- * line), a single text fallback, colors and an enable toggle. The track is
- * duplicated (content ≥ width) and animates translateX 0 → -50% for a
- * seamless loop; pauses on hover and honors reduced-motion.
- */
-const MARQUEE_CSS = `
-@keyframes atelierMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.atelier-marquee-track { animation: atelierMarquee 24s linear infinite; }
-.atelier-marquee-track:hover { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .atelier-marquee-track { animation-duration: 80s; } }
-`;
-let marqueeCssInjected = false;
-function ensureMarqueeCss() {
-  if (marqueeCssInjected || typeof document === 'undefined') return;
-  marqueeCssInjected = true;
-  const tag = document.createElement('style');
-  tag.textContent = MARQUEE_CSS;
-  document.head.appendChild(tag);
-}
+const SPEED_PX_PER_SEC = 55;
 
+/**
+ * Atelier announcement marquee — a calm auto-scrolling ribbon (RTL).
+ *
+ * JS-driven (requestAnimationFrame) with a two-copy track. The track is two
+ * identical segments laid right-to-left; each frame we move the whole track
+ * left by a fixed pixel-speed. Once the leading segment has fully exited the
+ * viewport we slide the track back by exactly one segment width — because the
+ * segments are identical this produces ZERO visible jump: no teleport, no
+ * "text disappears and starts over" glitch, and a constant calm speed that is
+ * identical on phone and desktop.
+ *
+ * Reads Designer config from content.announcement: items[] (one phrase per
+ * line), a single text fallback, colors and an enable toggle. Pauses on hover
+ * and respects prefers-reduced-motion (static strip).
+ */
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text, bgColor, textColor, visible }) => {
   // Bind to live store content when props are not explicitly passed (storefront rendering).
   const core = useStorefrontCore();
@@ -51,6 +46,64 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
   const effectiveBg = typeof bgColor === 'string' ? bgColor : (storeAnnouncement.bg_color ?? storeAnnouncement.announcement_bg_color ?? undefined);
   const effectiveTextColor = typeof textColor === 'string' ? textColor : (storeAnnouncement.text_color ?? storeAnnouncement.announcement_text_color ?? undefined);
   const effectiveVisible = typeof visible === 'boolean' ? visible : (typeof storeAnnouncement.enabled === 'boolean' ? storeAnnouncement.enabled : (typeof storeAnnouncement.show_announcement === 'boolean' ? storeAnnouncement.show_announcement : true));
+
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const outerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const segmentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener ? mq.addEventListener('change', onChange) : (mq as any).addEventListener && (mq as any).addEventListener('change', onChange);
+    return () => { mq.removeEventListener ? mq.removeEventListener('change', onChange) : (mq as any).removeEventListener && (mq as any).removeEventListener('change', onChange); };
+  }, []);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    const track = trackRef.current;
+    const seg = segmentRef.current;
+    if (!outer || !track || !seg) return;
+    if (reduceMotion) return; // static strip — no animation needed
+
+    let raf = 0;
+    let last = performance.now();
+    let x = 0;
+    let hovering = false;
+    let segW = seg.offsetWidth;
+
+    const onEnter = () => { hovering = true; };
+    const onLeave = () => { hovering = false; };
+    outer.addEventListener('pointerenter', onEnter);
+    outer.addEventListener('pointerleave', onLeave);
+
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      const dt = Math.min(256, now - last);
+      last = now;
+      if (hovering) return;
+      segW = seg.offsetWidth || segW;
+      if (!segW) return;
+      x -= (SPEED_PX_PER_SEC * dt) / 1000;
+      // Wrap by exactly one segment width — segments are identical, so the
+      // visible pixels continue without any jump or empty gap.
+      if (x <= -segW) x += segW;
+      track.style.transform = `translate3d(${x}px,0,0)`;
+    };
+    last = performance.now();
+    raf = requestAnimationFrame(tick);
+
+    const onVisibility = () => { if (!document.hidden) last = performance.now(); };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      outer.removeEventListener('pointerenter', onEnter);
+      outer.removeEventListener('pointerleave', onLeave);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [reduceMotion]);
 
   if (effectiveVisible === false) return null;
 
@@ -69,19 +122,16 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
   }
   if (!items.length) return null;
 
-  if (typeof document !== 'undefined') ensureMarqueeCss();
-
   const barBg = effectiveBg && effectiveBg.trim() ? effectiveBg.trim() : 'linear-gradient(90deg,#2b2320,#4a3a33 50%,#2b2320)';
   const barColor = effectiveTextColor && effectiveTextColor.trim() ? effectiveTextColor.trim() : '#f5ede2';
   const isGradient = barBg.includes('gradient');
 
-  // Repeat phrases so each half of the track is comfortably wider than any
-  // viewport (guarantees a seamless loop when animating by -50%).
+  // Repeat phrases so a single segment is comfortably wider than any viewport.
   const repeat = Math.max(2, Math.ceil(20 / items.length));
-  const half: React.ReactNode[] = [];
+  const cells: React.ReactNode[] = [];
   for (let r = 0; r < repeat; r++) {
     for (let i = 0; i < items.length; i++) {
-      half.push(
+      cells.push(
         <span key={`${r}-${i}`} className="mx-5 inline-flex shrink-0 items-center gap-5 text-[12px] font-medium tracking-wide sm:text-[13px]" style={{ color: barColor }}>
           <span>{items[i]}</span>
           <span aria-hidden className="text-[8px] leading-none opacity-70">✦</span>
@@ -89,14 +139,22 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
       );
     }
   }
-  const track: React.ReactNode[] = [...half, ...half];
 
   return (
-    <div dir="rtl" className="relative z-40 w-full overflow-hidden" style={isGradient ? { background: barBg, color: barColor } : { backgroundColor: barBg, color: barColor }}>
+    <div
+      dir="rtl"
+      ref={outerRef}
+      className="atelier-marquee relative z-40 w-full overflow-hidden"
+      style={isGradient ? { background: barBg, color: barColor } : { backgroundColor: barBg, color: barColor }}
+    >
       <div role="region" aria-label="إعلانات المتجر">
-        <div className="aten-announce">
-          <div className="atelier-marquee-track flex w-max items-center whitespace-nowrap py-2 will-change-transform">
-            {track}
+        <div ref={trackRef} className="atelier-marquee-track flex w-max items-center whitespace-nowrap py-2 will-change-transform" style={{ transform: 'translate3d(0,0,0)' }}>
+          {/* Two identical segments — identical content guarantees a jump-free wrap */}
+          <div ref={segmentRef} className="flex items-center" aria-hidden>
+            {cells}
+          </div>
+          <div className="flex items-center" aria-hidden>
+            {cells}
           </div>
         </div>
       </div>
