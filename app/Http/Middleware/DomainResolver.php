@@ -200,9 +200,8 @@ class DomainResolver
         }
 
         if ($segments[0] === 'products') {
-            // Products listing (single-page storefront: render the homepage)
-            $request->merge(['action' => 'products']);
-            return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+            // Dedicated all-products listing page (server-side pagination + SEO).
+            return app(\App\Http\Controllers\ThemeController::class)->products($store->slug, $request);
         } elseif ($segments[0] === 'product' && isset($segments[1])) {
             // JSON request from the storefront detail modal: serve the full
             // product on demand so heavy fields stay out of the page payload.
