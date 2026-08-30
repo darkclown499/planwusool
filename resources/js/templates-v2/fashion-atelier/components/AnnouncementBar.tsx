@@ -1,10 +1,9 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
-import { useRotatingAnnouncement, useStorefrontCore } from '../../shared/hooks';
+import { useStorefrontCore } from '../../shared/hooks';
 
 interface AnnouncementBarProps {
   messages?: string[];
-  /** Dynamic single text override (from Designer — announcement_text). */
+  /** Dynamic single text override (from Designer — announcement.text). */
   text?: string;
   /** Background color (announcement_bg_color). */
   bgColor?: string;
@@ -15,24 +14,34 @@ interface AnnouncementBarProps {
 }
 
 const DEFAULT_MESSAGES = [
-  'توصيل سريع لجميع المناطق — والدفع عند الاستلام متاح',
+  'عروض الصيف — تخفيضات حتى 40%',
   'شحن مجاني للطلبات فوق 250 ₪',
-  'تشكيلات جديدة كل أسبوع — كوني الأولى بمن تراها',
+  'تشكيلات جديدة كل أسبوع',
 ];
 
 /**
- * Atelier announcement ribbon — a slim editorial strip above the header.
- * Fixed overlap: icons and text are now inline flex with gap-2, no absolute
- * stacking. Rotates between messages when multiple are supplied; when a single
- * dynamic `text` is passed it renders inline without collision.
+ * Atelier announcement marquee — a slim auto-scrolling ribbon (RTL).
+ * Reads Designer config from content.announcement: items[] (one phrase per
+ * line), a single text fallback, colors and an enable toggle. The track is
+ * duplicated (content ≥ width) and animates translateX 0 → -50% for a
+ * seamless loop; pauses on hover and honors reduced-motion.
  */
-export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
-  messages,
-  text,
-  bgColor,
-  textColor,
-  visible,
-}) => {
+const MARQUEE_CSS = `
+@keyframes atelierMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.atelier-marquee-track { animation: atelierMarquee 24s linear infinite; }
+.atelier-marquee-track:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .atelier-marquee-track { animation-duration: 80s; } }
+`;
+let marqueeCssInjected = false;
+function ensureMarqueeCss() {
+  if (marqueeCssInjected || typeof document === 'undefined') return;
+  marqueeCssInjected = true;
+  const tag = document.createElement('style');
+  tag.textContent = MARQUEE_CSS;
+  document.head.appendChild(tag);
+}
+
+export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text, bgColor, textColor, visible }) => {
   // Bind to live store content when props are not explicitly passed (storefront rendering).
   const core = useStorefrontCore();
   const storeAnnouncement: any = (core as any)?.content?.announcement ?? {};
@@ -45,31 +54,53 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
 
   if (effectiveVisible === false) return null;
 
-  const hasSingleText = typeof effectiveText === 'string' && (effectiveText as string).trim().length > 0;
-  // When merchant has not set announcement text and no explicit messages prop is
-  // passed (live storefront: <AnnouncementBar />), hide instead of leaking demo copy.
-  if (!hasSingleText && (!messages || messages.length === 0)) return null;
-  const items = hasSingleText
-    ? [(effectiveText as string).trim()]
-    : (messages && messages.length > 0 ? messages.filter(Boolean) : DEFAULT_MESSAGES);
-  const index = useRotatingAnnouncement(items.length);
-  const current = items[index] ?? items[0] ?? '';
+  // Phrase priority: explicit prop text → designer items[] → single text → messages prop → default preset.
+  let items: string[];
+  if (typeof text === 'string' && text.trim().length > 0) {
+    items = [text.trim()];
+  } else if (Array.isArray(storeAnnouncement.items) && storeAnnouncement.items.length) {
+    items = storeAnnouncement.items.map((s: any) => String(s).trim()).filter(Boolean);
+  } else if (typeof effectiveText === 'string' && (effectiveText as string).trim().length > 0) {
+    items = [(effectiveText as string).trim()];
+  } else if (messages && messages.length) {
+    items = messages.filter(Boolean);
+  } else {
+    items = DEFAULT_MESSAGES;
+  }
+  if (!items.length) return null;
 
-  const barBg = effectiveBg && (effectiveBg as string).trim() ? (effectiveBg as string).trim() : 'linear-gradient(90deg,#2b2320,#4a3a33 50%,#2b2320)';
-  const barColor = effectiveTextColor && (effectiveTextColor as string).trim() ? (effectiveTextColor as string).trim() : '#f5ede2';
+  if (typeof document !== 'undefined') ensureMarqueeCss();
+
+  const barBg = effectiveBg && effectiveBg.trim() ? effectiveBg.trim() : 'linear-gradient(90deg,#2b2320,#4a3a33 50%,#2b2320)';
+  const barColor = effectiveTextColor && effectiveTextColor.trim() ? effectiveTextColor.trim() : '#f5ede2';
   const isGradient = barBg.includes('gradient');
 
+  // Repeat phrases so each half of the track is comfortably wider than any
+  // viewport (guarantees a seamless loop when animating by -50%).
+  const repeat = Math.max(2, Math.ceil(20 / items.length));
+  const half: React.ReactNode[] = [];
+  for (let r = 0; r < repeat; r++) {
+    for (let i = 0; i < items.length; i++) {
+      half.push(
+        <span key={`${r}-${i}`} className="mx-5 inline-flex shrink-0 items-center gap-5 text-[12px] font-medium tracking-wide sm:text-[13px]" style={{ color: barColor }}>
+          <span>{items[i]}</span>
+          <span aria-hidden className="text-[8px] leading-none opacity-70">✦</span>
+        </span>
+      );
+    }
+  }
+  const track: React.ReactNode[] = [...half, ...half];
+
   return (
-    <div
-      dir="rtl"
-      className="relative z-40 flex items-center justify-center gap-2 overflow-hidden px-4 py-2 text-center"
-      style={isGradient ? { background: barBg, color: barColor } : { backgroundColor: barBg, color: barColor }}
-    >
-      <Sparkles className="h-3.5 w-3.5 shrink-0" style={{ color: barColor, opacity: 0.9 }} aria-hidden />
-      <span className="min-w-0 whitespace-nowrap text-center text-[12px] font-medium tracking-wide" style={{ color: barColor }}>
-        {current}
-      </span>
-      <Sparkles className="h-3.5 w-3.5 shrink-0 scale-x-[-1]" style={{ color: barColor, opacity: 0.9 }} aria-hidden />
+    <div dir="rtl" className="relative z-40 w-full overflow-hidden" style={isGradient ? { background: barBg, color: barColor } : { backgroundColor: barBg, color: barColor }}>
+      <div role="region" aria-label="إعلانات المتجر">
+        <div className="aten-announce">
+          <div className="atelier-marquee-track flex w-max items-center whitespace-nowrap py-2 will-change-transform">
+            {track}
+          </div>
+        </div>
+      </div>
+      <span className="sr-only">{items.join(' · ')}</span>
     </div>
   );
 };

@@ -439,6 +439,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
     const announcementColor = (getDotted(content, 'announcement.text_color') ?? '#f5ede2') as string;
     const showAnnouncementRaw = getDotted(content, 'announcement.enabled');
     const showAnnouncement = showAnnouncementRaw === undefined ? true : !!showAnnouncementRaw;
+    const announcementItems = (getDotted(content, 'announcement.items') ?? []) as string[];
     const showCategoriesBarRaw = getDotted(content, 'settings.show_categories_bar') ?? getDotted(content, 'homepage.show_categories_bar') ?? false;
     const showCategoriesBar = !!showCategoriesBarRaw;
     const showLatestRaw = getDotted(content, 'settings.show_latest_products') ?? getDotted(content, 'homepage.show_latest_products');
@@ -760,6 +761,42 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                         {/* ============ 3. الواجهة ============ */}
                         {activeWorkspace === 'interface' && (
                             <div className="space-y-3">
+                                {/* 0. شريط الإعلانات المتحرك — marquee */}
+                                <Card>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <SectionLabel>شريط الإعلانات المتحرك</SectionLabel>
+                                        <Switch checked={showAnnouncement} onCheckedChange={(v) => setContent(setDotted(content, 'announcement.enabled', !!v))} />
+                                    </div>
+                                    <p className="mb-2 text-[11px] leading-relaxed text-slate-500">يظهر كشريط متحرك أعلى البحث في المتجر — كل سطر عبارة، وتتدحرج العبارات بشكل متواصل.</p>
+                                    <div>
+                                        <SectionLabel>عبارات الشريط — سطر لكل عبارة</SectionLabel>
+                                        <Textarea
+                                            rows={4}
+                                            dir="rtl"
+                                            value={(Array.isArray(announcementItems) ? announcementItems : []).join('\n')}
+                                            onChange={(e) => { const list = e.target.value.split('\n').map((s: string) => s.trim()).filter(Boolean); setContent(setDotted(content, 'announcement.items', list)); }}
+                                            placeholder={'عروض الصيف تخفيضات حتى 40%\nشحن مجاني للطلبات فوق 250 شيكل\nتشكيلات جديدة كل أسبوع'}
+                                            className="mt-1 bg-white font-mono"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 pt-1">
+                                        <div>
+                                            <SectionLabel>لون الخلفية</SectionLabel>
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <input type="color" value={announcementBg} onChange={(e) => setContent(setDotted(content, 'announcement.bg_color', e.target.value))} className="h-9 w-10 shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-white p-1" />
+                                                <Input className="h-9 bg-white font-mono text-xs" value={announcementBg} onChange={(e) => setContent(setDotted(content, 'announcement.bg_color', e.target.value))} />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <SectionLabel>لون النص</SectionLabel>
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <input type="color" value={announcementColor} onChange={(e) => setContent(setDotted(content, 'announcement.text_color', e.target.value))} className="h-9 w-10 shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-white p-1" />
+                                                <Input className="h-9 bg-white font-mono text-xs" value={announcementColor} onChange={(e) => setContent(setDotted(content, 'announcement.text_color', e.target.value))} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+
                                 {/* A. نوع الوسائط — segmented, warm accent */}
                                 <Card>
                                     <SectionLabel>نوع الوسائط</SectionLabel>

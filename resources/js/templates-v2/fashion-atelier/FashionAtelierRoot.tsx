@@ -490,6 +490,8 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
   const normalMain = (
     <main className="pb-[72px] sm:pb-0">
+      {/* Announcement marquee — mobile: directly above the search pill */}
+      <div className="md:hidden"><AnnouncementBar /></div>
       <AtelierMobileSearch />
 
       <AtelierHero
@@ -562,7 +564,8 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
-      <AnnouncementBar />
+      {/* Announcement marquee — desktop: top of page, above the sticky header */}
+      <div className="hidden md:block"><AnnouncementBar /></div>
       <AtelierHeader onOpenMobileMenu={openMobileMenu} />
       {normalMain}
       <AtelierWhatsAppFloating />
