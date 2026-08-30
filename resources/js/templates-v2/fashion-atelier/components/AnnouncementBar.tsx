@@ -25,79 +25,104 @@ const SPEED_PX_PER_SEC = 26;
 const SPEED_PX_PER_SEC_REDUCED = 18;
 
 /**
- * Atelier announcement marquee — a calm, continuously-looping ribbon (RTL).
+ * Atelier announcement marquee — a calm, continuous loop with NO reset jump.
  *
- * Pure CSS transform animation (runs on the compositor, unaffected by JS
- * throttling or page scroll): the track holds TWO identical segments and the
- * keyframes translate 0 → -50% (exactly one segment). Because the segments
- * are byte-identical, the moment one part scrolls out a matching part enters
- * from the other side — a seamless ring with no disappearance. Duration is
- * measured once from the real segment width so speed stays constant on every
- * device; prefers-reduced-motion only slows it down instead of freezing it.
- *
- * Reads Designer config from content.announcement: items[] (one phrase per
- * line), a single text fallback, colors and an enable toggle.
+ * Instead of a two-copy "-50%" CSS wrap (whose seam can look like the text
+ * "finished, emptied and restarted"), this renders one long train of phrase
+ * cells and moves it with a plain continuous translate3d. The moment the
+ * leftmost cell is fully scrolled out of view it is moved to the right end —
+ * an invisible, width-preserving recycle. The strip therefore never becomes
+ * empty and the same phrases always come back around. Runs via rAF, never
+ * pauses (no hover/touch pause), and prefers-reduced-motion only slows it
+ * down (18px/s) instead of freezing it.
  */
-const MARQUEE_CSS = `
-@keyframes atelierMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.atelier-marquee-track { animation-name: atelierMarquee; animation-timing-function: linear; animation-iteration-count: infinite; }
-`;
-let marqueeCssInjected = false;
-function ensureMarqueeCss() {
-  if (marqueeCssInjected || typeof document === 'undefined') return;
-  marqueeCssInjected = true;
-  const tag = document.createElement('style');
-  tag.textContent = MARQUEE_CSS;
-  document.head.appendChild(tag);
-}
+
+interface CellMetric { o: number; w: number }
 
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text, bgColor, textColor, visible }) => {
-  // Bind to live store content when props are not explicitly passed (storefront rendering).
   const core = useStorefrontCore();
   const storeAnnouncement: any = (core as any)?.content?.announcement ?? {};
 
-  // Resolve dynamic props: explicit prop > store content > defaults.
   const effectiveText = typeof text === 'string' ? text : (storeAnnouncement.text ?? storeAnnouncement.announcement_text ?? undefined);
   const effectiveBg = typeof bgColor === 'string' ? bgColor : (storeAnnouncement.bg_color ?? storeAnnouncement.announcement_bg_color ?? undefined);
   const effectiveTextColor = typeof textColor === 'string' ? textColor : (storeAnnouncement.text_color ?? storeAnnouncement.announcement_text_color ?? undefined);
   const effectiveVisible = typeof visible === 'boolean' ? visible : (typeof storeAnnouncement.enabled === 'boolean' ? storeAnnouncement.enabled : (typeof storeAnnouncement.show_announcement === 'boolean' ? storeAnnouncement.show_announcement : true));
 
   const trackRef = useRef<HTMLDivElement>(null);
-  const segmentRef = useRef<HTMLDivElement>(null);
   const outerRef = useRef<HTMLDivElement>(null);
 
-  // Calibrate the animation duration to the real segment width once mounted,
-  // and re-calibrate if the width changes (fonts load, resize, rotation).
   useEffect(() => {
-    const seg = segmentRef.current;
     const track = trackRef.current;
-    if (!seg || !track) return;
-    ensureMarqueeCss();
-    const apply = () => {
-      const w = seg.offsetWidth;
-      if (!w) return;
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const speed = reduce ? SPEED_PX_PER_SEC_REDUCED : SPEED_PX_PER_SEC;
-      track.style.animationDuration = `${Math.max(14, w / speed)}s`;
+    const outer = outerRef.current;
+    if (!track || !outer) return;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let metrics: CellMetric[] = [];
+    let x = 0;
+    let last: number | null = null;
+    let raf = 0;
+
+    const coff = () => {
+      metrics = Array.from(track.children).map((c) => {
+        const el = c as HTMLElement;
+        return { o: el.offsetLeft, w: el.offsetWidth };
+      });
     };
-    apply();
+
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      if (last === null) {
+        last = now;
+        coff();
+        return;
+      }
+      let dt = now - last;
+      last = now;
+      if (dt < 0) dt = 0;
+      if (dt > 250) dt = 250; // clamp background-tab jank, keep continuity
+
+      const speed = reduce.matches ? SPEED_PX_PER_SEC_REDUCED : SPEED_PX_PER_SEC;
+      x -= (speed * dt) / 1000;
+      track.style.transform = `translate3d(${x}px,0,0)`;
+
+      // Continuous recycle: once the leftmost cell is fully offscreen (RTL,
+      // DOM-last child) move it back to the right end. Width-preserving →
+      // the visible stream never empties and never jumps.
+      const trackW = track.offsetWidth || 0;
+      if (metrics.length && trackW > 0) {
+        const base = window.innerWidth - trackW; // screen left of track at x=0
+        let guard = 0;
+        while (guard++ < 80 && metrics.length) {
+          const m = metrics[metrics.length - 1];
+          if (base + x + m.o + m.w > 0) break; // still visible
+          const lastChild = track.lastElementChild;
+          if (lastChild && lastChild !== track.firstElementChild) {
+            track.insertBefore(lastChild, track.firstChild);
+          }
+          coff();
+        }
+      }
+    };
+
+    raf = requestAnimationFrame(tick);
+
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(apply);
-      ro.observe(seg);
+      ro = new ResizeObserver(() => coff());
+      ro.observe(track);
+      ro.observe(outer);
     }
-    window.addEventListener('resize', apply);
-    const fonts = (document as any)?.fonts;
-    if (fonts?.ready) fonts.ready.then(apply).catch(() => {});
+    window.addEventListener('resize', () => coff());
+    (document as any)?.fonts?.ready?.then(() => coff()).catch(() => {});
+
     return () => {
+      cancelAnimationFrame(raf);
       if (ro) ro.disconnect();
-      window.removeEventListener('resize', apply);
     };
   }, []);
 
   if (effectiveVisible === false) return null;
 
-  // Phrase priority: explicit prop text → designer items[] → single text → messages prop → default preset.
   let items: string[];
   if (typeof text === 'string' && text.trim().length > 0) {
     items = [text.trim()];
@@ -116,18 +141,23 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
   const barColor = effectiveTextColor && effectiveTextColor.trim() ? effectiveTextColor.trim() : '#f5ede2';
   const isGradient = barBg.includes('gradient');
 
-  // Repeat so each segment is comfortably wider than any viewport.
-  const repeat = Math.max(2, Math.ceil(20 / items.length));
+  // Total phrasings: make the train comfortably wider than any viewport
+  // (≈5600px) so the strip always has content in view.
+  const repeat = Math.max(4, Math.ceil(5600 / (items.length * 210)));
+  const totalCells = repeat * items.length;
   const cells: React.ReactNode[] = [];
-  for (let r = 0; r < repeat; r++) {
-    for (let i = 0; i < items.length; i++) {
-      cells.push(
-        <span key={`${r}-${i}`} className="mx-5 inline-flex shrink-0 items-center gap-5 text-[12px] font-medium tracking-wide sm:text-[13px]" style={{ color: barColor }}>
-          <span>{items[i]}</span>
-          <span aria-hidden className="text-[8px] leading-none opacity-70">✦</span>
-        </span>
-      );
-    }
+  for (let c = 0; c < totalCells; c++) {
+    const phrase = items[c % items.length];
+    cells.push(
+      <span
+        key={c}
+        className="atelier-marquee-cell mx-5 inline-flex shrink-0 items-center gap-5 whitespace-nowrap text-[12px] font-medium tracking-wide sm:text-[13px]"
+        style={{ color: barColor }}
+      >
+        <span>{phrase}</span>
+        <span aria-hidden className="text-[8px] leading-none opacity-70">✦</span>
+      </span>
+    );
   }
 
   return (
@@ -138,15 +168,12 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
       style={isGradient ? { background: barBg, color: barColor } : { backgroundColor: barBg, color: barColor }}
     >
       <div role="region" aria-label="إعلانات المتجر">
-        <div ref={trackRef} className="atelier-marquee-track flex w-max items-center whitespace-nowrap py-2 will-change-transform">
-          {/* Two identical segments — the -50% wrap lands on the identical copy,
-              so a part always enters from the opposite side as another exits. */}
-          <div ref={segmentRef} className="flex items-center" aria-hidden>
-            {cells}
-          </div>
-          <div className="flex items-center" aria-hidden>
-            {cells}
-          </div>
+        <div
+          ref={trackRef}
+          className="atelier-marquee-track flex w-max items-center whitespace-nowrap py-2 will-change-transform"
+          style={{ transform: 'translate3d(0,0,0)' }}
+        >
+          {cells}
         </div>
       </div>
       <span className="sr-only">{items.join(' · ')}</span>
