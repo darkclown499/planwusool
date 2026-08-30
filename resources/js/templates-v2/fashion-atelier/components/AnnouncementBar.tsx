@@ -41,7 +41,6 @@ const SPEED_PX_PER_SEC_REDUCED = 18;
 const MARQUEE_CSS = `
 @keyframes atelierMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .atelier-marquee-track { animation-name: atelierMarquee; animation-timing-function: linear; animation-iteration-count: infinite; }
-.atelier-marquee-track:hover { animation-play-state: paused; }
 `;
 let marqueeCssInjected = false;
 function ensureMarqueeCss() {
