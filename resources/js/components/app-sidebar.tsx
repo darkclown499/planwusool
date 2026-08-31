@@ -19,7 +19,7 @@ import { getImageUrl } from '@/utils/image-helper';
 import DesignerNavigationModal from '@/components/DesignerNavigationModal';
 import { MerchantPrimaryNav } from '@/components/merchant/MerchantPrimaryNav';
 import { MerchantContextNav } from '@/components/merchant/MerchantContextNav';
-import { getMerchantContextNav, MERCHANT_PRIMARY_AREAS, resolvePrimaryId } from '@/config/merchant-navigation';
+import { getMerchantContextNav, MERCHANT_PRIMARY_AREAS, resolvePrimaryId, isStoreSettingsUrl } from '@/config/merchant-navigation';
 
 export function AppSidebar() {
     const { t } = useTranslation();
@@ -124,10 +124,19 @@ export function AppSidebar() {
 
     const hasContext = !!contextNav && contextNav.items.length > 0;
 
+    // Store Settings cluster (General, Payments, Shipping, Taxes, Email,
+    // Domains, Integrations) — the heaviest "sidebar inside sidebar". For these
+    // pages the desktop Level-2 column is dropped so the merchant sidebar
+    // collapses to a single primary column; the settings sub-nav is recomposed
+    // as horizontal in-page tabs (StoreSettingsNav). Mobile/tablet is
+    // unaffected (drawer + section switcher still show the sub-items).
+    const isStoreSettings = isStoreSettingsUrl(pageUrl);
+    const desktopContextActive = hasContext && !isStoreSettings;
+
     // Premium SaaS: primary 150px + context 176px = 326px (20.375rem)
     // Readable horizontal labels, no truncation, light hierarchy.
-    // No context (dashboard, analytics) collapses to primary only.
-    const sidebarWidth = isMerchant ? (hasContext ? '20.375rem' : '9.375rem') : undefined;
+    // No context (dashboard, analytics, store-settings) collapses to primary only.
+    const sidebarWidth = isMerchant ? (desktopContextActive ? '20.375rem' : '9.375rem') : undefined;
 
     // Sync CSS variable to provider wrapper so SidebarInset offset equals actual width
     // (Sidebar component's fixed element alone doesn't affect peer offset)
@@ -231,7 +240,7 @@ export function AppSidebar() {
                             <MerchantPrimaryNav activePrimary={activePrimary} />
                         </div>
                         {/* Level 2 — contextual, light sub-nav */}
-                        {hasContext && contextNav ? (
+                        {desktopContextActive && contextNav ? (
                             <div className="w-[176px] shrink-0 bg-white border-e border-gray-100 overflow-y-auto overflow-x-hidden min-h-0">
                                 <MerchantContextNav title={contextNav.title} items={contextNav.items} storeId={currentStoreId} />
                             </div>
@@ -256,11 +265,11 @@ export function AppSidebar() {
                 </SidebarContent>
 
                 <SidebarFooter className="hidden xl:flex xl:flex-col shrink-0 border-t border-gray-100 bg-white p-0 gap-0">
-                    {compactPlanRow && hasContext && <div className="mx-1 mt-1 border-b border-gray-100 pb-1">{compactPlanRow}</div>}
-                    {!hasContext && compactPlanRow && <div className="mx-1 mt-1 border-b border-gray-100 pb-1 hidden">{compactPlanRow}</div>}
+                    {compactPlanRow && desktopContextActive && <div className="mx-1 mt-1 border-b border-gray-100 pb-1">{compactPlanRow}</div>}
+                    {!desktopContextActive && compactPlanRow && <div className="mx-1 mt-1 border-b border-gray-100 pb-1 hidden">{compactPlanRow}</div>}
                     {/* User row — single compact row, no clipped text */}
                     <div className="px-1.5 pt-2 pb-2 min-w-0">
-                        {hasContext ? (
+                        {desktopContextActive ? (
                             <NavUser position={position} compact />
                         ) : (
                             <div className="flex justify-center">

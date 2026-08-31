@@ -6,6 +6,8 @@ import { ReactNode } from 'react';
 import { FloatingChatGpt } from '@/components/FloatingChatGpt';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { StoreSettingsNav } from '@/components/merchant/StoreSettingsNav';
+import { isStoreSettingsUrl } from '@/config/merchant-navigation';
 
 export interface PageAction {
   label: string;
@@ -105,7 +107,10 @@ export function PageTemplate({
         
         {/* Content */}
         <div className={noPadding ? "" : "rounded-xl border p-6"}>
-          {children}
+          {isStoreSettingsUrl(url) && <StoreSettingsNav />}
+          <div className={isStoreSettingsUrl(url) ? "mt-5" : undefined}>
+            {children}
+          </div>
         </div>
       </div>
       <FloatingChatGpt />

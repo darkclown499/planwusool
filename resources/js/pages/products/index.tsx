@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Plus, Download, Package, Eye, Edit, Trash2, AlertTriangle, Search, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle } from 'lucide-react';
+import { Plus, Download, Package, Eye, Edit, Trash2, AlertTriangle, Search, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -197,11 +197,13 @@ export default function Products() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Total Products')}</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('Total Products')}</CardTitle>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                <Package className="h-4 w-4" />
+              </span>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total}</div>
@@ -210,8 +212,10 @@ export default function Products() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Active Products')}</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('Active Products')}</CardTitle>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                <CheckCircle className="h-4 w-4" />
+              </span>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.active}</div>
@@ -222,8 +226,10 @@ export default function Products() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Low Stock')}</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('Low Stock')}</CardTitle>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                <AlertTriangle className="h-4 w-4" />
+              </span>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.lowStock}</div>
@@ -232,8 +238,10 @@ export default function Products() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('Total Value')}</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">{t('Total Value')}</CardTitle>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
+                <Package className="h-4 w-4" />
+              </span>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold ltr-num">{formatCurrency(stats.totalValue)}</div>
@@ -245,9 +253,18 @@ export default function Products() {
         {/* Products Table */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('Product Catalog')}</CardTitle>
-            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="relative w-full sm:w-72">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2">
+                {t('Product Catalog')}
+                {paginatedProducts?.total != null && (
+                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                    {paginatedProducts.total}
+                  </span>
+                )}
+              </CardTitle>
+            </div>
+            <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full sm:w-80">
                 <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"

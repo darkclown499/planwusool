@@ -25,6 +25,23 @@ export type PrimaryId =
     | 'analytics'
     | 'settings';
 
+// Matches the merchant "Store Settings" cluster — General, Payments, Shipping,
+// Taxes, Email, Domains, Integrations under a given store. These pages drop the
+// heavy desktop secondary sidebar and surface their sub-nav as horizontal
+// in-page tabs instead.
+const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations)(\/|$)/;
+
+// Merchant store-shipping & tax settings land on the global /shipping and /tax
+// routes (the /stores/{id}/shipping and /stores/{id}/taxes canonical routes
+// redirect to them), so include those landing pages too. Parenthesise prevents
+// matching admin CRUD sub-paths (e.g. /tax/create, /shipping/create).
+const STORE_SETTINGS_GLOBAL_RE = /^\/(shipping|tax)$/;
+
+export function isStoreSettingsUrl(url: string): boolean {
+    const path = String(url || '').split('?')[0].replace(/\/+$/, '') || '/';
+    return STORE_SETTINGS_RE.test(path) || STORE_SETTINGS_GLOBAL_RE.test(path);
+}
+
 export interface PrimaryArea {
     id: PrimaryId;
     labelKey: string; // i18n key — must have Arabic translation
