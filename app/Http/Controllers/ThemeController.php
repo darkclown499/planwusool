@@ -420,32 +420,12 @@ class ThemeController extends Controller
             }
         );
         
-        // Get categories for the store
+        // Get categories for the store — hierarchical (main + optional subcategories).
         $categories = \Illuminate\Support\Facades\Cache::remember(
             "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
             300,
             function () use ($store) {
-                return Category::where('store_id', $store['id'])
-                    ->where('is_active', true)
-                    ->whereNull('parent_id')
-                    ->withCount(['products' => function ($query) {
-                        $query->where('is_active', true);
-                    }])
-                    ->orderBy('sort_order')
-                    ->orderBy('name')
-                    ->orderBy('id')
-                    ->get()
-                    ->map(function ($category) {
-                        return [
-                            'id' => (string) $category->id,
-                            'name' => $category->name,
-                            'slug' => $category->slug,
-                            'image' => $category->image ?: null,
-                            'description' => $category->description,
-                            'product_count' => $category->products_count,
-                        ];
-                    })
-                    ->values();
+                return Category::hierarchicalForStorefront((int) $store['id']);
             }
         );
 
@@ -505,27 +485,7 @@ class ThemeController extends Controller
             "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
             300,
             function () use ($store) {
-                return Category::where('store_id', $store['id'])
-                    ->where('is_active', true)
-                    ->whereNull('parent_id')
-                    ->withCount(['products' => function ($query) {
-                        $query->where('is_active', true);
-                    }])
-                    ->orderBy('sort_order')
-                    ->orderBy('name')
-                    ->orderBy('id')
-                    ->get()
-                    ->map(function ($cat) {
-                        return [
-                            'id' => (string) $cat->id,
-                            'name' => $cat->name,
-                            'slug' => $cat->slug,
-                            'image' => $cat->image ?: null,
-                            'description' => $cat->description,
-                            'product_count' => $cat->products_count,
-                        ];
-                    })
-                    ->values();
+                return Category::hierarchicalForStorefront((int) $store['id']);
             }
         );
 
@@ -535,9 +495,11 @@ class ThemeController extends Controller
             $sort = 'newest';
         }
 
+        // For MAIN categories include subcategory products; for subcategories only its own.
+        $categoryIdsForListing = $category->descendantCategoryIdsForProducts();
         $query = Product::where('store_id', $store['id'])
             ->where('is_active', true)
-            ->where('category_id', $category->id);
+            ->whereIn('category_id', $categoryIdsForListing);
 
         switch ($sort) {
             case 'price_asc':
@@ -566,6 +528,37 @@ class ThemeController extends Controller
 
         $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
 
+        // Subcategories (for MAIN category) and parent breadcrumb (for SUBCATEGORY)
+        $subcategories = [];
+        $parentCategory = null;
+        if ($category->parent_id === null) {
+            $subcategories = Category::where('store_id', $store['id'])
+                ->where('is_active', true)
+                ->where('parent_id', $category->id)
+                ->ordered()
+                ->get()->map(fn($sc)=>[
+                    'id'=>(string)$sc->id,'name'=>$sc->name,'slug'=>$sc->slug,'image'=>$sc->image?:null,'description'=>$sc->description,'product_count'=>(int)\App\Models\Product::where('store_id',$store['id'])->where('is_active',true)->where('category_id',$sc->id)->count()
+                ])->values()->all();
+        } elseif ($category->parent_id) {
+            $par = Category::where('store_id', $store['id'])->where('id', $category->parent_id)->first();
+            if ($par) $parentCategory = ['id'=>(string)$par->id,'name'=>$par->name,'slug'=>$par->slug];
+        }
+
+        // Best sellers for this category (includes subcategories for MAIN, store-isolated, real sales + fallback)
+        $bestsellersRaw = Category::bestsellersForCategory((int)$store['id'], (int)$category->id, 8);
+        $bestsellers = $bestsellersRaw->map(fn($p)=>[
+            'id'=>(string)$p->id,
+            'name'=>$p->name,
+            'price'=>$p->hasEffectiveSale() ? (float)$p->sale_price : (float)$p->price,
+            'originalPrice'=>$p->hasEffectiveSale() ? (float)$p->price : null,
+            'image'=>$p->cover_image ? $p->cover_image : asset('images/avatar/avatar.png'),
+            'slug'=>$p->seo_url_slug ?: $p->id,
+            'categoryId'=>(string)$p->category_id,
+        ])->values()->all();
+
+        // Total product count for display respects hierarchy (main includes subcategories)
+        $hierarchicalProductCount = (int) \App\Models\Product::where('store_id', $store['id'])->where('is_active', true)->whereIn('category_id', $categoryIdsForListing)->count();
+
         return Inertia::render('store/category', array_merge(
             $this->storefrontViewProps($store, $storeData, $storeModel, $theme, $categories, $products, $request),
             [
@@ -578,8 +571,13 @@ class ThemeController extends Controller
                         'slug' => $category->slug,
                         'image' => $category->image ?: null,
                         'description' => $category->description,
-                        'product_count' => (int) $category->products()->where('is_active', true)->count(),
+                        'product_count' => $hierarchicalProductCount,
+                        'parent_id' => $category->parent_id ? (string)$category->parent_id : null,
+                        'is_root' => $category->parent_id === null,
                     ],
+                    'subcategories' => $subcategories,
+                    'parentCategory' => $parentCategory,
+                    'bestsellers' => $bestsellers,
                     'total' => $paginator->total(),
                     'perPage' => $paginator->perPage(),
                     'currentPage' => $paginator->currentPage(),
@@ -612,27 +610,7 @@ class ThemeController extends Controller
             "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
             300,
             function () use ($store) {
-                return Category::where('store_id', $store['id'])
-                    ->where('is_active', true)
-                    ->whereNull('parent_id')
-                    ->withCount(['products' => function ($query) {
-                        $query->where('is_active', true);
-                    }])
-                    ->orderBy('sort_order')
-                    ->orderBy('name')
-                    ->orderBy('id')
-                    ->get()
-                    ->map(function ($cat) {
-                        return [
-                            'id' => (string) $cat->id,
-                            'name' => $cat->name,
-                            'slug' => $cat->slug,
-                            'image' => $cat->image ?: null,
-                            'description' => $cat->description,
-                            'product_count' => $cat->products_count,
-                        ];
-                    })
-                    ->values();
+                return Category::hierarchicalForStorefront((int) $store['id']);
             }
         );
 
@@ -897,17 +875,12 @@ class ThemeController extends Controller
         $q = $raw === '' ? '' : mb_substr(preg_replace('/\s+/', ' ', trim(strip_tags($raw))), 0, 100);
         $q = trim($q);
 
-        // Categories for header chrome
+        // Categories for header chrome — hierarchical
         $categories = \Illuminate\Support\Facades\Cache::remember(
             "store_categories.{$store['id']}.theme_{$theme}.locale_{$locale}",
             300,
             function () use ($store) {
-                return Category::where('store_id', $store['id'])
-                    ->where('is_active', true)
-                    ->whereNull('parent_id')
-                    ->withCount(['products' => fn($q) => $q->where('is_active', true)])
-                    ->orderBy('sort_order')->orderBy('name')->orderBy('id')
-                    ->get()->map(fn($cat)=>['id'=>(string)$cat->id,'name'=>$cat->name,'slug'=>$cat->slug,'image'=>$cat->image?:null,'description'=>$cat->description,'product_count'=>$cat->products_count])->values();
+                return Category::hierarchicalForStorefront((int) $store['id']);
             }
         );
 

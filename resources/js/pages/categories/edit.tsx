@@ -141,7 +141,7 @@ export default function EditCategory() {
                   <SelectContent>
                     <SelectItem value="none">{t('None (Root Category)')}</SelectItem>
                     {parentCategories && parentCategories.map((parentCategory: any) => (
-                      // Skip the current category to prevent self-reference
+                      // Skip the current category to prevent self-reference (already filtered server-side to roots)
                       parentCategory.id !== category.id && (
                         <SelectItem key={parentCategory.id} value={String(parentCategory.id)}>
                           {parentCategory.name}
@@ -150,6 +150,7 @@ export default function EditCategory() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">{t('Leave empty for a main category. Select a main category to create a subcategory (max depth 2).')}</p>
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="sort_order">{t('Sort Order (Display)')}</Label>

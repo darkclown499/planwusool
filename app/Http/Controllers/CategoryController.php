@@ -114,10 +114,10 @@ class CategoryController extends Controller
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
         
-        // Get all categories for dropdown (for parent selection) — ordered deterministically
+        // Get valid parents: only root categories (depth limit 1) — ordered deterministically
         $parentCategories = Category::where('store_id', $currentStoreId)
-                                   ->orderBy('sort_order')
-                                   ->orderBy('name')
+                                   ->whereNull('parent_id')
+                                   ->ordered()
                                    ->get();
         
         return Inertia::render('categories/create', [

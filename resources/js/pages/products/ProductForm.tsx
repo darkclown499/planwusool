@@ -258,7 +258,26 @@ export default function ProductForm({ mode, product, categories: initialCategori
                   )}
                   <Select value={formData.category_id} onValueChange={v => handleSelectChange('category_id', v)}>
                     <SelectTrigger className="h-11" aria-invalid={!!errors.category_id}><SelectValue placeholder="اختر التصنيف" /></SelectTrigger>
-                    <SelectContent>{categoriesList?.map((cat: any) => <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>)}</SelectContent>
+                    <SelectContent>
+                      {(() => {
+                        // Build hierarchical order: roots first (ordered), then children indented
+                        const roots = (categoriesList || []).filter((c: any) => !c.parent_id);
+                        const childrenByParent: Record<string, any[]> = {};
+                        (categoriesList || []).forEach((c: any) => { if (c.parent_id) { const k = String(c.parent_id); (childrenByParent[k] ||= []).push(c); } });
+                        const out: any[] = [];
+                        roots.forEach((r: any) => {
+                          out.push(r);
+                          (childrenByParent[String(r.id)] || []).forEach((ch: any) => out.push(ch));
+                        });
+                        // Orphan subcategories (parent missing/filtered) appended
+                        (categoriesList || []).forEach((c: any) => { if (c.parent_id && !out.find((x:any)=> String(x.id)===String(c.id))) out.push(c); });
+                        return out.map((cat: any) => (
+                          <SelectItem key={cat.id} value={String(cat.id)}>
+                            {cat.parent_id ? `↳ ${cat.name}` : cat.name}
+                          </SelectItem>
+                        ));
+                      })()}
+                    </SelectContent>
                   </Select>
                   {newCategoryOpen && (
                     <div className="flex gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2">

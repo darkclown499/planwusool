@@ -135,6 +135,7 @@ export default function CreateCategory() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">{t('Leave empty for a main category. Select a main category to create a subcategory (max depth 2).')}</p>
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="sort_order">{t('Sort Order (Display)')}</Label>

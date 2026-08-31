@@ -147,73 +147,61 @@ export default function Categories() {
                   <p className="mt-3 text-xs text-muted-foreground">بعد إضافة التصنيف يمكنك إضافة المنتجات مباشرة</p>
                 </div>
               ) : (
-                categories.map((category: any) => (
-                  <div key={category.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 rounded-lg overflow-hidden border">
-                        {category.image ? (
-                          <img
-                            src={getImageUrl(category.image)}
-                            alt={category.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-primary/10 flex items-center justify-center">
-                            <Folder className="h-6 w-6 text-primary" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold">{category.name}</h3>
-                          <Badge variant={category.is_active ? 'default' : 'secondary'}>
-                            {category.is_active ? t('Active') : t('Inactive')}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">/{category.slug}</p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <span className="text-xs text-muted-foreground">
-                            {t('{{count}} products', { count: category.products_count || 0 })}
-                          </span>
-                          {category.parent && (
-                            <span className="text-xs text-muted-foreground">
-                              {t('Parent: {{name}}', { name: category.parent.name })}
-                            </span>
+                (() => {
+                  const roots = categories.filter((c: any) => !c.parent_id);
+                  const childrenByParent: Record<string, any[]> = {};
+                  categories.forEach((c: any) => { if (c.parent_id) { const k = String(c.parent_id); (childrenByParent[k] ||= []).push(c); } });
+                  // Orphan fallback
+                  const orphans = categories.filter((c:any)=> c.parent_id && !roots.find((r:any)=> String(r.id)===String(c.parent_id)));
+                  const renderRow = (category: any, isChild=false) => (
+                    <div key={category.id} className={`flex items-center justify-between p-4 border rounded-lg ${isChild ? 'ms-6 border-dashed bg-muted/20' : 'bg-white'}`}>
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 rounded-lg overflow-hidden border">
+                          {category.image ? (
+                            <img src={getImageUrl(category.image)} alt={category.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-primary/10 flex items-center justify-center"><Folder className="h-6 w-6 text-primary" /></div>
                           )}
                         </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            {isChild && <span className="text-muted-foreground">↳</span>}
+                            <h3 className={`font-semibold ${isChild ? 'text-sm' : ''}`}>{category.name}</h3>
+                            <Badge variant={category.is_active ? 'default' : 'secondary'}>{category.is_active ? t('Active') : t('Inactive')}</Badge>
+                            <Badge variant="outline" className="text-[10px]">{isChild ? t('Subcategory') : t('Main category')}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">/{category.slug}</p>
+                          <div className="flex items-center space-x-4 mt-1">
+                            <span className="text-xs text-muted-foreground">{t('{{count}} products', { count: category.products_count || 0 })}</span>
+                            {category.parent && <span className="text-xs text-muted-foreground">{t('Parent: {{name}}', { name: category.parent.name })}</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {hasPermission('view-categories') && <Button variant="ghost" size="sm" onClick={() => handleActionClick('view', 'view-categories', category.id)}><Eye className="h-4 w-4" /></Button>}
+                        {hasPermission('edit-categories') && <Button variant="ghost" size="sm" onClick={() => handleActionClick('edit', 'edit-categories', category.id)}><Edit className="h-4 w-4" /></Button>}
+                        {hasPermission('delete-categories') && <Button variant="ghost" size="sm" onClick={() => handleActionClick('delete', 'delete-categories', category.id)}><Trash2 className="h-4 w-4" /></Button>}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {hasPermission('view-categories') && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleActionClick('view', 'view-categories', category.id)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                  );
+                  return (
+                    <div className="space-y-3">
+                      {roots.map((r: any) => (
+                        <div key={`group-${r.id}`} className="space-y-2">
+                          {renderRow(r, false)}
+                          {(childrenByParent[String(r.id)] || []).map((ch: any) => renderRow(ch, true))}
+                        </div>
+                      ))}
+                      {orphans.length > 0 && (
+                        <div className="pt-2 space-y-2 border-t">
+                          <p className="text-xs text-muted-foreground">{t('Orphan subcategories (parent missing)')}</p>
+                          {orphans.map((o: any) => renderRow(o, true))}
+                        </div>
                       )}
-                      {hasPermission('edit-categories') && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleActionClick('edit', 'edit-categories', category.id)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {hasPermission('delete-categories') && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleActionClick('delete', 'delete-categories', category.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                      {roots.length===0 && orphans.length===0 && categories.map((c:any)=> renderRow(c,false))}
                     </div>
-                  </div>
-                ))
+                  );
+                })()
               )}
             </div>
           </CardContent>

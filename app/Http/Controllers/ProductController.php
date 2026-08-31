@@ -105,11 +105,11 @@ class ProductController extends Controller
         }
         $products = $query->paginate($perPage)->withQueryString();
 
-        // Categories for the filter dropdown (active, scoped to the store).
+        // Categories for the filter dropdown (active, scoped to the store) — include parent info for hierarchy display.
         $categories = Category::where('store_id', $currentStoreId)
             ->where('is_active', true)
-            ->select('id', 'name')
-            ->orderBy('name')
+            ->select('id', 'name', 'parent_id', 'sort_order')
+            ->ordered()
             ->get();
 
         $planLimits = null;
@@ -153,9 +153,10 @@ class ProductController extends Controller
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
         
-        // Get categories for the current store
+        // Get categories for the current store — hierarchical order
         $categories = Category::where('store_id', $currentStoreId)
                             ->where('is_active', true)
+                            ->ordered()
                             ->get();
         
         // Get taxes for the current store
@@ -370,9 +371,10 @@ class ProductController extends Controller
         
         $product = Product::where('store_id', $currentStoreId)->findOrFail($id);
         
-        // Get categories for the current store
+        // Get categories for the current store — hierarchical order
         $categories = Category::where('store_id', $currentStoreId)
                             ->where('is_active', true)
+                            ->ordered()
                             ->get();
         
         // Get taxes for the current store
