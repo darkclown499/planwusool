@@ -143,18 +143,20 @@ export function RestaurantHero({ banner }: { banner?: any }) {
   const hasMobYt = !!hero.youtubeIdMobile;
   if (isVideo) {
     return (
-      <section className="restaurant-hero-media hero-clamped relative w-full overflow-hidden bg-black" style={heightStyle} dir="rtl">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
         {mobileStyle && <style>{mobileStyle}</style>}
         {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .restaurant-hero-media{ height:${restaurantDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } }`}</style>}
-        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobVid?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
-        {hasMobVid && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={effective.imageMobile ? getHeroImageUrl(effective.imageMobile) : undefined} />}
-        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
-        <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
-          <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
-          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
-          <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
-        </div></div>
+        <div className="restaurant-hero-media hero-clamped relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-black" style={heightStyle}>
+          <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobVid?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={effective.image ? getHeroImageUrl(effective.image) : undefined} />
+          {hasMobVid && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={effective.imageMobile ? getHeroImageUrl(effective.imageMobile) : undefined} />}
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
+          <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
+            <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
+            <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
+            <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
+          </div></div>
+        </div>
       </section>
     );
   }
@@ -162,52 +164,56 @@ export function RestaurantHero({ banner }: { banner?: any }) {
     const ytDesktop = hero.youtubeId!;
     const ytMobile = hero.youtubeIdMobile || ytDesktop;
     return (
-      <section className="restaurant-hero-media hero-clamped relative w-full overflow-hidden bg-black" style={heightStyle} dir="rtl">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
         {mobileStyle && <style>{mobileStyle}</style>}
         {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .restaurant-hero-media{ height:${restaurantDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } }`}</style>}
-        <div className={`absolute inset-0 overflow-hidden ${hasMobYt?'hidden md:block':'block'} ${hero.fit==='contain' ? '' : 'bg-black opacity-60'}`}>
-          {hero.fit === 'contain' ? (
-            <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
-          ) : (
-            <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
-          )}
-        </div>
-        {hasMobYt && (
-          <div className="absolute inset-0 overflow-hidden block md:hidden bg-black opacity-60">
-            {(hero.fitMobile||hero.fit)==='contain' ? (
-              <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+        <div className="restaurant-hero-media hero-clamped relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-black" style={heightStyle}>
+          <div className={`absolute inset-0 overflow-hidden ${hasMobYt?'hidden md:block':'block'} ${hero.fit==='contain' ? '' : 'bg-black opacity-60'}`}>
+            {hero.fit === 'contain' ? (
+              <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
             ) : (
-              <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+              <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
             )}
           </div>
-        )}
-        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
-        <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
-          <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
-          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
-          <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
-        </div></div>
+          {hasMobYt && (
+            <div className="absolute inset-0 overflow-hidden block md:hidden bg-black opacity-60">
+              {(hero.fitMobile||hero.fit)==='contain' ? (
+                <iframe className="absolute inset-0 h-full w-full opacity-60" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+              ) : (
+                <div className="absolute inset-0 overflow-hidden bg-black opacity-60"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+              )}
+            </div>
+          )}
+          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
+          <div className="absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
+            <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
+            <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
+            <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
+          </div></div>
+        </div>
       </section>
     );
   }
   return (
-    <section className="restaurant-hero-media hero-clamped relative w-full overflow-hidden bg-[#0f0b09]" style={heightStyle} dir="rtl">
+    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-2 sm:pt-5" dir="rtl">
         {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .restaurant-hero-media{ height:${restaurantDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .restaurant-hero-media{ height:${restaurantMobileH} !important; } }`}</style>}
         {mobileStyle && <style>{mobileStyle}</style>}
-        {/* Desktop image */}
-        {desktopImg && <img src={getOptimizedImageUrl(desktopImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobile?'hidden md:block':'block'}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />}
-        {/* Mobile image */}
-        {hasMobile && mobileImg && <img src={getOptimizedImageUrl(mobileImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} loading="eager" decoding="async" fetchPriority="high" sizes="(max-width:767px) 100vw, 500px" width={1080} height={1350} />}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
-      {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
-      <div className="absolute inset-0 flex items-center">
-        <div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
-          <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
-          <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
-          <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
+        <div className="restaurant-hero-media hero-clamped relative w-full overflow-hidden rounded-t-xl rounded-b-2xl sm:rounded-2xl bg-[#0f0b09]" style={heightStyle}>
+          {/* Desktop image — unified container, same geometry for video/image, object-fit cover */}
+          {desktopImg && <img src={getOptimizedImageUrl(desktopImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobile?'hidden md:block':'block'}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" width={1200} height={500} />}
+          {/* Mobile image — respects independent focal/positionMobile, same rounded clip */}
+          {hasMobile && mobileImg && <img src={getOptimizedImageUrl(mobileImg, 'medium')} alt="" className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} loading="eager" decoding="async" fetchPriority="high" sizes="(max-width:767px) 100vw, 500px" width={1080} height={1350} />}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#191410] via-transparent to-[#191410]/40" />
+          {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
+          <div className="absolute inset-0 flex items-center">
+            <div className="mx-auto w-full max-w-5xl px-6 text-center sm:px-10">
+              <p className="mb-2 text-xs font-black tracking-[0.4em] text-[#f59e0b]">— MENU —</p>
+              <h1 className="font-serif text-3xl font-black leading-tight text-white drop-shadow-lg sm:text-5xl">{effective.title}</h1>
+              <p className="mt-3 font-serif text-base text-[#e8d9b8]">{effective.subtitle}</p>
+            </div>
+          </div>
         </div>
-      </div>
     </section>
   );
 }

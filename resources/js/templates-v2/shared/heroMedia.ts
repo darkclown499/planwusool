@@ -405,9 +405,9 @@ export const HERO_HEIGHTS: Record<string, { desktop: string; mobile: string }> =
   'fashion-atelier': { desktop: 'clamp(380px, 32vw, 520px)', mobile: 'clamp(310px, 82vw, 370px)' },
   'bazaar-market':   { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'grocery-souq':    { desktop: 'clamp(340px, 26vw, 440px)', mobile: 'clamp(360px, 108vw, 460px)' },
-  'bakery-house':    { desktop: 'clamp(340px, 30vw, 440px)', mobile: 'clamp(360px, 108vw, 440px)' },
+  'bakery-house':    { desktop: 'clamp(340px, 30vw, 440px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'electronics-hub': { desktop: 'clamp(320px, 26vw, 440px)', mobile: 'clamp(280px, 72vw, 380px)' },
-  'restaurant-menu': { desktop: 'clamp(360px, 26vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' },
+  'restaurant-menu': { desktop: 'clamp(380px, 32vw, 520px)', mobile: 'clamp(310px, 82vw, 370px)' },
 };
 export const HERO_HEIGHT_FALLBACK = { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' };
 
