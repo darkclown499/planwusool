@@ -258,37 +258,48 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
         </div>
       </div>
 
-      {/* Desktop: logo + search in controlled layout */}
-      <div className="hidden items-center gap-4 border-b border-[#eef1f5] px-4 py-2 lg:flex lg:px-8">
-        <a href={homeHref} className="flex shrink-0 items-center gap-2">
-          {config?.logo || store?.logo ? (
-            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[140px] object-contain" />
-          ) : (
-            <>
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
-              <span className="text-base font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
-            </>
-          )}
-        </a>
-        <div className="relative mx-4 max-w-[480px] flex-1">
-          <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <div className="hidden xl:block"><HeaderLoyaltyBadge /></div>
-          {canShowAuth && (
-            <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
-              className="flex h-10 items-center gap-1.5 rounded-lg px-2 text-[13px] font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220]">
-              <Package className="h-[18px] w-[18px]" strokeWidth={1.8} />
-              <span className="hidden xl:inline">طلباتي</span>
+      {/* Desktop: premium coherent bar — centered container matching storefront max-w-7xl */}
+      <div className="hidden border-b border-[#eef1f5] lg:block">
+        <div className="mx-auto flex max-w-7xl items-center gap-5 px-4 py-2.5 sm:px-6 lg:px-8">
+          <a href={homeHref} className="flex shrink-0 items-center gap-2">
+            {config?.logo || store?.logo ? (
+              <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[148px] object-contain" />
+            ) : (
+              <>
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
+                <span className="max-w-[160px] truncate text-[15px] font-extrabold leading-none text-[#0a1220]">{config?.storeName || store?.name}</span>
+              </>
+            )}
+          </a>
+          <div className="mx-6 flex flex-1 justify-center lg:mx-8 xl:mx-10">
+            <div className="w-full max-w-[640px]">
+              <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <div className="hidden xl:block"><HeaderLoyaltyBadge /></div>
+            {canShowAuth && (
+              <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)))} aria-label="حسابي"
+                className="flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220]">
+                <User className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                <span className="hidden xl:inline">حسابي</span>
+              </button>
+            )}
+            {canShowAuth && (
+              <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
+                className="flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220]">
+                <Package className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                <span className="hidden xl:inline">طلباتي</span>
+              </button>
+            )}
+            <button type="button" data-hub-cart="true" onClick={() => ui.setShowCart(true)} aria-label="السلة"
+              className="flex h-10 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+              style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+              <ShoppingCart className="h-[18px] w-[18px]" />
+              <span>السلة</span>
+              {count > 0 && <span data-hub-cart-badge="true" className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
             </button>
-          )}
-          <button type="button" data-hub-cart="true" onClick={() => ui.setShowCart(true)} aria-label="السلة"
-            className="flex h-10 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
-            style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-            <ShoppingCart className="h-[18px] w-[18px]" />
-            <span>السلة</span>
-            {count > 0 && <span data-hub-cart-badge="true" className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
-          </button>
+          </div>
         </div>
       </div>
 
