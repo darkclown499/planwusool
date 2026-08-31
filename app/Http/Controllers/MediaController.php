@@ -103,6 +103,19 @@ class MediaController extends Controller
         $config = StorageConfigService::getStorageConfig();
         $allowedTypes = array_map('trim', explode(',', strtolower($config['allowed_file_types'])));
 
+        // Always allow the media formats the designer/storefront explicitly supports
+        // for videos (served directly) and audio, even if a tenant's allowed_file_types
+        // setting omits them. Without this, a tenant whose storage_file_types lists only
+        // images/documents silently fails every video upload with "File type not allowed",
+        // even though the designer shows a dedicated video picker.
+        $alwaysAllowedTypes = ['mp4', 'webm', 'mp3'];
+        foreach ($alwaysAllowedTypes as $alwaysType) {
+            if (!in_array($alwaysType, $allowedTypes, true)) {
+                $allowedTypes[] = $alwaysType;
+            }
+        }
+        $allowedTypes = array_values(array_unique(array_filter($allowedTypes, fn($t) => $t !== '')));
+
         $mimeTypeMap = [
             'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
             'gif' => 'image/gif', 'webp' => 'image/webp', 'svg' => 'image/svg+xml',
