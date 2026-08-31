@@ -118,7 +118,53 @@ function VideoCropEditor({ src, ratio, label, hint, value, onChange, onReset }: 
                 onPointerUp={endDrag}
                 onPointerCancel={endDrag}
             >
-                <video src={normalizeImageUrl(src)} className="h-full w-full object-cover" style={{ objectPosition: value }} muted playsInline />
+                <video src={normalizeImageUrl(src)} className="h-full w-full object-cover" style={{ objectPosition: value }} autoPlay loop muted playsInline preload="metadata" onCanPlay={(e) => { const v = e.currentTarget; v.play().catch(()=>{}); }} />
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-white/30" />
+                <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/50 px-1.5 py-0.5 font-mono text-[9px] text-white" dir="ltr">{value}</span>
+            </div>
+        </div>
+    );
+}
+function ImageCropEditor({ src, ratio, label, hint, value, onChange, onReset }: { src: string; ratio: string; label: string; hint: string; value: string; onChange: (pos: string) => void; onReset: () => void; }) {
+    const dragRef = useRef<{ startX: number; startY: number; rect: DOMRect; ox: number; oy: number } | null>(null);
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        const t = e.currentTarget as HTMLElement;
+        try { t.setPointerCapture(e.pointerId); } catch { /* noop */ }
+        const rect = t.getBoundingClientRect();
+        const [ox, oy] = parsePos(value);
+        dragRef.current = { startX: e.clientX, startY: e.clientY, rect, ox, oy };
+    };
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        const d = dragRef.current;
+        if (!d) return;
+        const t = e.currentTarget as HTMLElement;
+        if (!t.hasPointerCapture(e.pointerId)) return;
+        const dx = ((e.clientX - d.startX) / d.rect.width) * 100;
+        const dy = ((e.clientY - d.startY) / d.rect.height) * 100;
+        onChange(clampPos(d.ox - dx * 0.5, d.oy - dy * 0.5));
+    };
+    const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+        const t = e.currentTarget as HTMLElement;
+        try { if (t.hasPointerCapture(e.pointerId)) t.releasePointerCapture(e.pointerId); } catch { /* noop */ }
+        dragRef.current = null;
+    };
+    return (
+        <div className="mt-2">
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-bold text-slate-600">{label}</p>
+                <button type="button" onClick={onReset} className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-bold text-slate-500 hover:text-slate-700">إعادة ضبط</button>
+            </div>
+            <p className="text-[10px] text-slate-400">{hint}</p>
+            <div
+                className="relative mt-1 w-full cursor-grab touch-none overflow-hidden rounded-lg border bg-black active:cursor-grabbing"
+                style={{ aspectRatio: ratio }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+            >
+                <img src={normalizeImageUrl(src)} alt="" className="h-full w-full object-cover" style={{ objectPosition: value }} draggable={false} />
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-white/30" />
                 <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/50 px-1.5 py-0.5 font-mono text-[9px] text-white" dir="ltr">{value}</span>
             </div>
@@ -944,6 +990,48 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                     </div>
                                                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
                                                 </div>
+                                                <ImageCropEditor
+                                                    src={item.src}
+                                                    ratio="3 / 2"
+                                                    label="ضبط عرض الكمبيوتر"
+                                                    hint="المقاس 3:2 — اسحب داخل الإطار (فأرة / لمس / قلم)"
+                                                    value={item.position || '50% 50%'}
+                                                    onChange={(pos) => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { position: pos });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: j===idx ? pos : '50% 50%', positionMobile: '50% 50%' }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                    onReset={() => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { position: '50% 50%' });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: '50% 50%' }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                />
+                                                <ImageCropEditor
+                                                    src={item.src}
+                                                    ratio="4 / 3"
+                                                    label="ضبط عرض الهاتف"
+                                                    hint="المقاس 4:3 — مستقل عن موضع الكمبيوتر"
+                                                    value={item.positionMobile || item.position || '50% 50%'}
+                                                    onChange={(pos) => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { positionMobile: pos });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: j===idx ? pos : '50% 50%' }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                    onReset={() => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { positionMobile: '50% 50%' });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: '50% 50%' }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                />
                                                 <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5">
                                                     <div className="mb-2 flex items-center justify-between gap-2">
                                                         <span className="text-[11px] font-black text-slate-700">محتوى هذه الشريحة</span>
@@ -1019,6 +1107,14 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                         }} />
                                         {allVideos.length===0 ? <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-xs text-slate-500">لا يوجد فيديو — فارغ</p> : allVideos.map((v:any, idx:number)=>{
                                           const setVideoField=(field:'position'|'positionMobile', pos:string)=>{
+                                            if (String(v.id)==='legacy-video') {
+                                              const hyd = [{ id: `video-${Date.now().toString(36)}`, type:'video', src: v.src, position: field==='position'?pos:(v.position||'50% 50%'), positionMobile: field==='positionMobile'?pos:(v.positionMobile||v.position||'50% 50%') }];
+                                              let tmp=setDotted(content,'hero_banner.media', hyd);
+                                              tmp=setDotted(tmp,'hero_banner.video_url', v.src);
+                                              tmp=setDotted(tmp,'hero_video_url', v.src);
+                                              setContent(tmp);
+                                              return;
+                                            }
                                             const next=[...(Array.isArray(rawMedia)?rawMedia:[])];
                                             const ti=next.findIndex((m:any)=>String(m.id)===String(v.id));
                                             if(ti<0) return;
