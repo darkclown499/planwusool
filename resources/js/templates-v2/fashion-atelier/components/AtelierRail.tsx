@@ -47,7 +47,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
   if (!products || products.length === 0) return null;
 
   return (
-    <section ref={railRef as any} className={`pt-6 pb-2 sm:pt-8 sm:pb-4 transition-all duration-500 motion-reduce:transition-none ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} dir="rtl">
+    <section ref={railRef as any} className={`bg-[#faf7f2] pt-6 pb-2 sm:pt-8 sm:pb-4 transition-all duration-500 motion-reduce:transition-none ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`} dir="rtl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-3 flex items-end justify-between gap-4 sm:mb-4">
           <div>
@@ -87,7 +87,7 @@ export const AtelierRail: React.FC<AtelierRailProps> = ({ title, subtitle, produ
         <div className="relative">
           <div
             ref={scroller}
-            className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4 sm:pb-3"
+            className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-4 sm:pb-2"
           >
             {products.map((p) => (
               <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-[23%] lg:w-[19%] min-[1400px]:w-[16%]">

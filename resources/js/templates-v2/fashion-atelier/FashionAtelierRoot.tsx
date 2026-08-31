@@ -509,7 +509,7 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       </div>
 
       {showLatest && (
-        <div id="atelier-new">
+        <div id="atelier-new" className="bg-[#faf7f2]">
           <AtelierRail title="أحدث المنتجات" subtitle="تشكيلة مختارة وصلت حديثاً" products={newest} viewAllHref="/products" />
         </div>
       )}
