@@ -108,7 +108,7 @@ function getElectronicsSocialSlots(content: any) {
   });
 }
 
-/* Floating WhatsApp — bottom-left, compact, above bottom nav, safe-area aware */
+/* Floating WhatsApp — bottom-left, compact, natural bottom margin, safe-area aware (no bottom-nav offset) */
 export function ElectronicsWhatsAppFloating() {
   const { config, content, store } = useStorefrontCore() as any;
   const href = resolveElectronicsWhatsAppHref(config, content, store);
@@ -120,7 +120,7 @@ export function ElectronicsWhatsAppFloating() {
       rel="noreferrer"
       aria-label="تواصل واتساب"
       className="fixed left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12),0_6px_18px_rgba(0,0,0,0.10)] ring-1 ring-black/5 transition hover:scale-[1.04] active:scale-[0.97] md:hidden"
-      style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' } as any}
+      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' } as any}
     >
       <MessageCircle className="h-[22px] w-[22px]" fill="white" />
     </a>
@@ -1007,7 +1007,7 @@ export const ElectronicsHubRoot: React.FC<TemplateRootProps> = ({ storeData, mod
   if (mode === 'category') return <HubCategoryMode categoryData={categoryData} />;
   if (mode === 'page') {
     return (
-      <div dir="rtl" className="min-h-screen bg-[#f3f5f8] pb-16 md:pb-0">
+      <div dir="rtl" className="min-h-screen bg-[#f3f5f8]">
         <HubHeader />
         <ElectronicsWhatsAppFloating />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
@@ -1051,7 +1051,7 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
     <div dir="rtl" className="min-h-screen bg-[#f3f5f8] text-[#0a1220] antialiased selection:bg-[#2563eb] selection:text-white">
       <HubHeader />
       <ElectronicsWhatsAppFloating />
-      <main className="pb-16 md:pb-0">
+      <main>
         <HubHero banner={banners[0]} />
 
         {/* Categories — improved vertical rhythm (breathing room after Hero/CoverFlow) */}
@@ -1128,7 +1128,7 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#f3f5f8] text-[#0a1220] antialiased pb-16 md:pb-0">
+    <div dir="rtl" className="min-h-screen bg-[#f3f5f8] text-[#0a1220] antialiased">
       <HubHeader homeHref="/" />
       <ElectronicsWhatsAppFloating />
       <main className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
