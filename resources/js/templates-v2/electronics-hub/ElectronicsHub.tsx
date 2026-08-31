@@ -471,7 +471,10 @@ export function HubCard({ product }: { product: V2Product }) {
   const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
 
   const specLine = useMemo(() => {
-    const line = String(product.description || '').split('\n').map((s) => s.trim()).find(Boolean);
+    const raw = String(product.description || '');
+    // strip HTML tags so card preview never exposes markup
+    const stripped = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const line = stripped.split('\n').map((s) => s.trim()).find(Boolean) || stripped;
     return line ? line.slice(0, 60) : '';
   }, [product.description]);
 
@@ -482,13 +485,13 @@ export function HubCard({ product }: { product: V2Product }) {
   const open = () => productCtx.handleProductClick(product);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#e8edf3] bg-white transition-all hover:-translate-y-0.5 hover:border-[#c9d4e3] hover:shadow-[0_10px_30px_-12px_rgba(10,18,32,0.18)]"
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#e6ebf1] bg-white transition-all hover:-translate-y-0.5 hover:border-[#cdd7e6] hover:shadow-[0_10px_30px_-12px_rgba(10,18,32,0.18)]"
       dir="rtl"
       style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
-      {/* Media */}
+      {/* Media — single coherent surface: stage is one subtle neutral so transparent PNGs and white-embedded images sit on the same plinth */}
       <div className="relative">
-        <button type="button" onClick={open} className="relative block aspect-square w-full overflow-hidden bg-[#f6f8fa]" aria-label={product.name}>
-          <HubProductStage src={product.image} alt={product.name} className="aspect-square transition-transform duration-300 group-hover:scale-[1.04]" fit="cover" />
+        <button type="button" onClick={open} className="relative block aspect-square w-full overflow-hidden bg-[#f1f4f8]" aria-label={product.name}>
+          <HubProductStage src={product.image} alt={product.name} className="aspect-square p-3 transition-transform duration-300 group-hover:scale-[1.04]" fit="contain" />
           {discount > 0 && !out && (
             <span className="absolute right-2 top-2 rounded-md bg-[#e11d48] px-1.5 py-0.5 text-[11px] font-extrabold text-white shadow-sm">-{discount}%</span>
           )}

@@ -95,6 +95,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
     const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
     const guestEnabled = !customerAccountsEnabled ? true : behavior?.guest_checkout !== false;
     const requireLogin = customerAccountsEnabled && behavior?.require_login_checkout === true;
+    const authModalVariant = (module as any)?.meta?.slug === 'electronics-hub' ? 'electronics' as const : 'default' as const;
 
     // Payment redirects (Paystack, Skrill, Flutterwave...) return to the store
     // with payment_status + order_number in the URL -> show the success modal ONCE.
@@ -228,6 +229,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
 
             {ui.showAuthModal && customerAccountsEnabled && (
                 <TemplateAuthGate
+                    variant={authModalVariant}
                     loginEnabled={loginEnabled}
                     guestEnabled={guestEnabled}
                     onClose={() => ui.setShowAuthModal(false)}
@@ -245,6 +247,7 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
 
             {auth.showLoginModal && customerAccountsEnabled && loginEnabled && (
                 <TemplateAuthForm
+                    variant={authModalVariant}
                     onClose={() => auth.setShowLoginModal(false)}
                     storeSlug={storeSlug}
                     onLoginSuccess={() => {

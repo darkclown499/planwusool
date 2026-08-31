@@ -12,7 +12,15 @@ import { useStore } from '@/contexts/StoreContext';
 const primary = 'var(--twc-primary-600, #059669)';
 const primarySoft = 'var(--twc-primary-50, #ecfdf5)';
 
-const ModalShell: React.FC<{ children: React.ReactNode; onClose: () => void; wide?: boolean }> = ({ children, onClose, wide = false }) => {
+/* Electronics Hub presentation tokens — used only when variant === 'electronics' */
+const ELECTRONICS_INK = '#0a1220';
+const ELECTRONICS_ACCENT = '#2563eb';
+const ELECTRONICS_LINE = '#e6ebf1';
+const ELECTRONICS_SOFT = '#f1f4f8';
+
+export type AuthModalVariant = 'default' | 'electronics';
+
+const ModalShell: React.FC<{ children: React.ReactNode; onClose: () => void; wide?: boolean; variant?: AuthModalVariant }> = ({ children, onClose, wide = false, variant = 'default' }) => {
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -20,12 +28,14 @@ const ModalShell: React.FC<{ children: React.ReactNode; onClose: () => void; wid
         };
     }, []);
 
+    const isElectronics = variant === 'electronics';
+
     return (
-        <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose}>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-[1px]" onClick={onClose}>
             <div className="flex min-h-full items-end justify-center md:items-center md:p-4">
                 <div
-                    className={`w-full ${wide ? 'max-w-md' : 'max-w-sm'} max-h-[92dvh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl md:rounded-3xl`}
-                    style={{ background: 'var(--twc-surface, #ffffff)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+                    className={`w-full ${wide ? 'max-w-md' : 'max-w-sm'} max-h-[92dvh] overflow-y-auto shadow-2xl ${isElectronics ? 'rounded-t-2xl md:rounded-2xl border border-[#e6ebf1]' : 'rounded-t-3xl md:rounded-3xl'}`}
+                    style={{ background: isElectronics ? '#ffffff' : 'var(--twc-surface, #ffffff)', paddingBottom: 'env(safe-area-inset-bottom)' }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {children}
@@ -41,88 +51,95 @@ interface AuthGateProps {
     onContinueAsGuest: () => void;
     loginEnabled?: boolean;
     guestEnabled?: boolean;
+    variant?: AuthModalVariant;
 }
 
-export const TemplateAuthGate: React.FC<AuthGateProps> = ({ onClose, onLogin, onContinueAsGuest, loginEnabled = true, guestEnabled = true }) => {
+export const TemplateAuthGate: React.FC<AuthGateProps> = ({ onClose, onLogin, onContinueAsGuest, loginEnabled = true, guestEnabled = true, variant = 'default' }) => {
+    const isElectronics = variant === 'electronics';
     // If only one option is available, auto-route: show only that button
     if (!loginEnabled && guestEnabled) {
         return (
-            <ModalShell onClose={onClose}>
-                <div className="relative p-6 text-center" style={{ background: primarySoft }}>
-                    <button type="button" onClick={onClose} aria-label="إغلاق" className="absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/10"><X className="h-5 w-5" /></button>
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg" style={{ background: primary }}><ShoppingBag className="h-8 w-8" /></div>
-                    <h2 className="text-xl font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>المتابعة كضيف</h2>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>تسجيل الدخول غير متاح حالياً — تابع طلبك كضيف</p>
+            <ModalShell onClose={onClose} variant={variant}>
+                <div className="relative p-6 text-center overflow-hidden" style={isElectronics ? { background: ELECTRONICS_INK, color: '#ffffff' } : { background: primarySoft }}>
+                    {isElectronics && <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-[#2563eb] to-transparent opacity-80" />}
+                    <button type="button" onClick={onClose} aria-label="إغلاق" className={`absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition ${isElectronics ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'hover:bg-black/10'}`}><X className="h-5 w-5" /></button>
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg" style={{ background: isElectronics ? ELECTRONICS_ACCENT : primary }}><ShoppingBag className="h-7 w-7" /></div>
+                    <h2 className="text-[18px] font-extrabold" style={{ color: isElectronics ? '#ffffff' : 'var(--twc-text-primary, #111827)' }}>المتابعة كضيف</h2>
+                    <p className="mt-1 text-sm" style={{ color: isElectronics ? '#cbd5e1' : 'var(--twc-text-muted, #6b7280)' }}>تسجيل الدخول غير متاح حالياً — تابع طلبك كضيف</p>
                 </div>
                 <div className="space-y-3 p-6">
-                    <button type="button" onClick={onContinueAsGuest} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 py-3.5 font-bold transition hover:opacity-90" style={{ background: 'var(--twc-background, #ffffff)', borderColor: primary, color: primary }}><UserCheck className="h-5 w-5" />المتابعة كضيف</button>
+                    <button type="button" onClick={onContinueAsGuest} className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-extrabold transition active:scale-[0.98] ${isElectronics ? 'border bg-white hover:bg-[#f1f4f8]' : 'border-2 hover:opacity-90'}`} style={isElectronics ? { borderColor: ELECTRONICS_LINE, color: ELECTRONICS_INK } : { background: 'var(--twc-background, #ffffff)', borderColor: primary, color: primary }}><UserCheck className="h-5 w-5" />المتابعة كضيف</button>
                 </div>
             </ModalShell>
         );
     }
     if (loginEnabled && !guestEnabled) {
         return (
-            <ModalShell onClose={onClose}>
-                <div className="relative p-6 text-center" style={{ background: primarySoft }}>
-                    <button type="button" onClick={onClose} aria-label="إغلاق" className="absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/10"><X className="h-5 w-5" /></button>
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg" style={{ background: primary }}><ShoppingBag className="h-8 w-8" /></div>
-                    <h2 className="text-xl font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>سجل الدخول للمتابعة</h2>
-                    <p className="mt-1 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>الدفع كزائر غير متاح — سجل الدخول لإتمام الطلب</p>
+            <ModalShell onClose={onClose} variant={variant}>
+                <div className="relative p-6 text-center overflow-hidden" style={isElectronics ? { background: ELECTRONICS_INK, color: '#ffffff' } : { background: primarySoft }}>
+                    {isElectronics && <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-[#2563eb] to-transparent opacity-80" />}
+                    <button type="button" onClick={onClose} aria-label="إغلاق" className={`absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition ${isElectronics ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'hover:bg-black/10'}`}><X className="h-5 w-5" /></button>
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg" style={{ background: isElectronics ? ELECTRONICS_ACCENT : primary }}><ShoppingBag className="h-7 w-7" /></div>
+                    <h2 className="text-[18px] font-extrabold" style={{ color: isElectronics ? '#ffffff' : 'var(--twc-text-primary, #111827)' }}>سجل الدخول للمتابعة</h2>
+                    <p className="mt-1 text-sm" style={{ color: isElectronics ? '#cbd5e1' : 'var(--twc-text-muted, #6b7280)' }}>الدفع كزائر غير متاح — سجل الدخول لإتمام الطلب</p>
                 </div>
                 <div className="space-y-3 p-6">
-                    <button type="button" onClick={onLogin} className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-white transition hover:opacity-90" style={{ background: primary }}><User className="h-5 w-5" />تسجيل الدخول إلى حسابك</button>
+                    <button type="button" onClick={onLogin} className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-extrabold text-white shadow-lg transition hover:opacity-90 active:scale-[0.98]" style={{ background: isElectronics ? ELECTRONICS_ACCENT : primary, boxShadow: isElectronics ? '0 8px 20px -8px rgba(37,99,235,0.45)' : undefined }}><User className="h-5 w-5" />تسجيل الدخول إلى حسابك</button>
                 </div>
             </ModalShell>
         );
     }
     return (
-        <ModalShell onClose={onClose}>
-            <div className="relative p-6 text-center" style={{ background: primarySoft }}>
+        <ModalShell onClose={onClose} variant={variant}>
+            <div className="relative p-6 text-center overflow-hidden" style={isElectronics ? { background: ELECTRONICS_INK, color: '#ffffff' } : { background: primarySoft }}>
+                {isElectronics && <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-[#2563eb] to-transparent opacity-80" />}
                 <button
                     type="button"
                     onClick={onClose}
                     aria-label="إغلاق"
-                    className="absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/10"
+                    className={`absolute end-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition ${isElectronics ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'hover:bg-black/10'}`}
                 >
                     <X className="h-5 w-5" />
                 </button>
                 <div
-                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg"
-                    style={{ background: primary }}
+                    className={`mx-auto mb-4 flex items-center justify-center text-white shadow-lg ${isElectronics ? 'h-14 w-14 rounded-2xl' : 'h-16 w-16 rounded-full'}`}
+                    style={{ background: isElectronics ? ELECTRONICS_ACCENT : primary, boxShadow: isElectronics ? '0 8px 20px -10px rgba(37,99,235,0.55)' : undefined }}
                 >
-                    <ShoppingBag className="h-8 w-8" />
+                    <ShoppingBag className={isElectronics ? 'h-7 w-7' : 'h-8 w-8'} />
                 </div>
-                <h2 className="text-xl font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                <h2 className="text-[18px] font-extrabold" style={{ color: isElectronics ? '#ffffff' : 'var(--twc-text-primary, #111827)' }}>
                     مستعد لإتمام الطلب؟
                 </h2>
-                <p className="mt-1 text-sm" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
-                    اختر كيف تريد المتابعة مع طلبك
+                <p className="mt-1 text-sm" style={{ color: isElectronics ? '#cbd5e1' : 'var(--twc-text-muted, #6b7280)' }}>
+                    {isElectronics ? 'اختر طريقة المتابعة — تسجيل دخول آمن أو متابعة مباشرة كضيف' : 'اختر كيف تريد المتابعة مع طلبك'}
                 </p>
             </div>
-            <div className="space-y-3 p-6">
+            <div className={`space-y-3 p-6 ${isElectronics ? 'bg-white' : ''}`}>
                 <button
                     type="button"
                     onClick={onLogin}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-white transition hover:opacity-90"
-                    style={{ background: primary }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-extrabold text-white shadow-lg transition hover:opacity-90 active:scale-[0.98]"
+                    style={{ background: isElectronics ? ELECTRONICS_ACCENT : primary, boxShadow: isElectronics ? '0 8px 20px -8px rgba(37,99,235,0.45)' : undefined }}
                 >
                     <User className="h-5 w-5" />
                     تسجيل الدخول إلى حسابك
                 </button>
                 <div className="relative py-1 text-center">
-                    <span className="bg-white px-4 text-sm font-bold" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
+                    <div className={`absolute inset-0 flex items-center ${isElectronics ? 'px-2' : ''}`}>{isElectronics && <div className="w-full border-t border-[#e6ebf1]" />}</div>
+                    <span className={`relative px-4 text-sm font-bold ${isElectronics ? 'bg-white text-[#5b6472]' : 'bg-white'}`} style={isElectronics ? undefined : { color: 'var(--twc-text-muted, #6b7280)' }}>
                         أو
                     </span>
                 </div>
                 <button
                     type="button"
                     onClick={onContinueAsGuest}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border-2 py-3.5 font-bold transition hover:opacity-90"
-                    style={{ background: 'var(--twc-background, #ffffff)', borderColor: primary, color: primary }}
+                    className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-extrabold transition active:scale-[0.98] ${isElectronics ? 'border bg-white hover:bg-[#f1f4f8]' : 'border-2 hover:opacity-90'}`}
+                    style={isElectronics ? { borderColor: ELECTRONICS_LINE, color: ELECTRONICS_INK } : { background: 'var(--twc-background, #ffffff)', borderColor: primary, color: primary }}
                 >
                     <UserCheck className="h-5 w-5" />
                     المتابعة كضيف
                 </button>
+                {isElectronics && <p className="pt-1 text-center text-[11px] font-semibold text-[#8a93a2]">سيتم حفظ سلتك ومتابعة الدفع بأمان</p>}
             </div>
         </ModalShell>
     );
@@ -132,9 +149,10 @@ interface AuthFormProps {
     onClose: () => void;
     onLoginSuccess: (customer?: any) => void;
     storeSlug?: string;
+    variant?: AuthModalVariant;
 }
 
-const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, storeSlug }) => {
+const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, storeSlug, variant = 'default' }) => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
     const otpRefs = useRef<Array<HTMLInputElement|null>>([]);
@@ -172,6 +190,8 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
         handleForgotPassword,
     } = useAuthForm();
     const { behavior } = useStore();
+    const isElectronics = variant === 'electronics';
+    const accent = isElectronics ? ELECTRONICS_ACCENT : primary;
     const customerAccountsEnabled = behavior?.customer_accounts_enabled !== false;
     const registerEnabled = customerAccountsEnabled && (behavior?.customer_registration_enabled ?? behavior?.enable_customer_registration) !== false;
     const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
@@ -216,13 +236,13 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
             if (e.key==='Backspace' && !otpCode[idx] && idx>0) otpRefs.current[idx-1]?.focus();
         };
         return (
-            <ModalShell onClose={onClose}>
-                <div className="flex items-center justify-between border-b p-4" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
+            <ModalShell onClose={onClose} variant={variant}>
+                <div className="flex items-center justify-between border-b p-4" style={isElectronics ? { borderColor: ELECTRONICS_LINE, background: ELECTRONICS_INK } : { borderColor: 'var(--twc-border, #e5e7eb)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ background: primary }}><Mail className="h-5 w-5" /></div>
-                        <h2 className="text-lg font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>تأكيد البريد الإلكتروني</h2>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ background: accent }}><Mail className="h-5 w-5" /></div>
+                        <h2 className="text-lg font-bold" style={{ color: isElectronics ? '#ffffff' : 'var(--twc-text-primary, #111827)' }}>تأكيد البريد الإلكتروني</h2>
                     </div>
-                    <button type="button" onClick={onClose} aria-label="إغلاق" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-black/5"><X className="h-5 w-5" /></button>
+                    <button type="button" onClick={onClose} aria-label="إغلاق" className={`flex h-9 w-9 items-center justify-center rounded-full transition ${isElectronics ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'hover:bg-black/5'}`}><X className="h-5 w-5" /></button>
                 </div>
                 <div className="space-y-4 p-5 text-center">
                     <p className="text-sm" style={{ color:'var(--twc-text-muted,#6b7280)' }}>أرسلنا رمز تحقق إلى<br/><span className="font-bold" dir="ltr">{(() => { const e = otpEmail || ''; const at = e.indexOf('@'); if (at<=1) return e; return e[0] + '***' + e.slice(at); })()}</span></p>
@@ -234,9 +254,9 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                     </div>
                     {otpError && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{otpError}</div>}
                     {errors && Object.keys(errors).length>0 && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{Object.entries(errors).map(([k,m])=> <p key={k}>{String(m)}</p>)}</div>}
-                    <button type="button" disabled={isLoading || otpCode.length!==6} onClick={()=>handleVerifyOtp(storeSlug!, ()=>{ onLoginSuccess(); onClose(); })} className="w-full rounded-xl py-3.5 font-bold text-white disabled:opacity-60" style={{ background:primary }}>{isLoading?'جاري التحقق...':'تأكيد الرمز'}</button>
+                    <button type="button" disabled={isLoading || otpCode.length!==6} onClick={()=>handleVerifyOtp(storeSlug!, ()=>{ onLoginSuccess(); onClose(); })} className="w-full rounded-xl py-3.5 font-bold text-white disabled:opacity-60" style={{ background:accent }}>{isLoading?'جاري التحقق...':'تأكيد الرمز'}</button>
                     <div className="flex items-center justify-between text-sm">
-                        <button type="button" disabled={resendIn>0 || isLoading} onClick={()=>handleResendOtp(storeSlug!)} className="font-semibold disabled:opacity-50 hover:underline" style={{ color:primary }}>{resendIn>0 ? `إعادة الإرسال بعد ${resendIn} ثانية` : 'إعادة إرسال الرمز'}</button>
+                        <button type="button" disabled={resendIn>0 || isLoading} onClick={()=>handleResendOtp(storeSlug!)} className="font-semibold disabled:opacity-50 hover:underline" style={{ color:accent }}>{resendIn>0 ? `إعادة الإرسال بعد ${resendIn} ثانية` : 'إعادة إرسال الرمز'}</button>
                         <button type="button" onClick={()=>{ setOtpStep('form'); setOtpCode(''); }} className="font-semibold hover:underline" style={{ color:'var(--twc-text-muted,#6b7280)' }}>العودة</button>
                     </div>
                 </div>
@@ -245,13 +265,13 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
     }
 
     return (
-        <ModalShell onClose={onClose}>
-            <div className="flex items-center justify-between border-b p-4" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
+        <ModalShell onClose={onClose} variant={variant}>
+            <div className="flex items-center justify-between border-b p-4" style={isElectronics ? { borderColor: ELECTRONICS_LINE, background: ELECTRONICS_INK } : { borderColor: 'var(--twc-border, #e5e7eb)' }}>
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white" style={{ background: primary }}>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm" style={{ background: accent, boxShadow: isElectronics ? '0 6px 14px -8px rgba(37,99,235,0.55)' : undefined }}>
                         <UserIcon className="h-5 w-5" />
                     </div>
-                    <h2 className="text-lg font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                    <h2 className="text-lg font-bold" style={{ color: isElectronics ? '#ffffff' : 'var(--twc-text-primary, #111827)' }}>
                         {showForgot ? 'استعادة كلمة المرور' : isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}
                     </h2>
                 </div>
@@ -259,7 +279,7 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                     type="button"
                     onClick={onClose}
                     aria-label="إغلاق"
-                    className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/5"
+                    className={`flex h-9 w-9 items-center justify-center rounded-full transition ${isElectronics ? 'text-white/70 hover:bg-white/10 hover:text-white' : 'hover:bg-black/5'}`}
                 >
                     <X className="h-5 w-5" />
                 </button>
@@ -417,7 +437,7 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                                     type="button"
                                     onClick={() => setShowForgot(true)}
                                     className="text-sm font-semibold hover:underline"
-                                    style={{ color: primary }}
+                                    style={{ color: accent }}
                                 >
                                     نسيت كلمة المرور؟
                                 </button>
@@ -437,8 +457,8 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full rounded-xl py-3.5 font-bold text-white transition hover:opacity-90 disabled:opacity-60"
-                    style={{ background: primary }}
+                    className="w-full rounded-xl py-3.5 font-extrabold text-white shadow-sm transition hover:opacity-90 disabled:opacity-60"
+                    style={{ background: accent, boxShadow: isElectronics ? '0 8px 20px -8px rgba(37,99,235,0.45)' : undefined }}
                 >
                     {isLoading ? 'جاري التحميل...' : showForgot ? 'إرسال رابط الاستعادة' : isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}
                 </button>
@@ -449,7 +469,7 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                             type="button"
                             onClick={() => setShowForgot(false)}
                             className="font-semibold hover:underline"
-                            style={{ color: primary }}
+                            style={{ color: accent }}
                         >
                             العودة لتسجيل الدخول
                         </button>
@@ -464,7 +484,7 @@ const AuthFormContent: React.FC<AuthFormProps> = ({ onClose, onLoginSuccess, sto
                                 type="button"
                                 onClick={() => setIsLogin(!isLogin)}
                                 className={`font-semibold hover:underline ${!registerEnabled || !loginEnabled ? 'opacity-50 pointer-events-none' : ''}`}
-                                style={{ color: primary }}
+                                style={{ color: accent }}
                                 disabled={!registerEnabled && isLogin ? true : !loginEnabled && !isLogin ? true : false}
                             >
                                 {isLogin ? 'إنشاء حساب' : 'تسجيل الدخول'}

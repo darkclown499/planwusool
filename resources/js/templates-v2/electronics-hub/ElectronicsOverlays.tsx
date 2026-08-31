@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Minus, PackageSearch, Plus, ShieldCheck, ShoppingCart, Trash2, X } from 'lucide-react';
+import { Gift, Minus, PackageSearch, Plus, ShieldCheck, ShoppingCart, Trash2, X } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
+import { createSafeHtml } from '@/utils/xss-protection';
 import { SearchSheet } from '../shared/SearchSheet';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
+import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 
 /* ===================================================================== */
 /* Electronics Hub overlays — mobile-first premium.                       */
@@ -34,17 +36,16 @@ function useEsc(onClose: () => void) {
   }, [onClose]);
 }
 
-/* Stable product image stage: identical aspect for every card, with a
-   restrained neutral placeholder when no image exists — never a giant
-   blank rectangle. */
+/* Stable product image stage: single coherent neutral plinth so transparent
+   PNGs and white-embedded rasters sit on the same surface. */
 export function HubProductStage({ src, alt, className, sizes, fit }: { src?: string; alt?: string; className?: string; sizes?: string; fit?: 'cover' | 'contain' }) {
   const [noImg, setNoImg] = useState(!src);
   const fitClass = fit === 'contain' ? 'object-contain' : 'object-cover';
   if (noImg || !src) {
     return (
-      <div className={`flex flex-col items-center justify-center gap-2 bg-gradient-to-b from-gray-50 to-gray-100 text-gray-300 ${className || ''}`}>
+      <div className={`flex flex-col items-center justify-center gap-2 bg-[#f1f4f8] text-[#b6bfcc] ${className || ''}`}>
         <PackageSearch className="h-10 w-10 sm:h-12 sm:w-12" strokeWidth={1.3} />
-        <span className="text-[11px] font-bold text-gray-400 sm:text-xs">لا توجد صورة</span>
+        <span className="text-[11px] font-bold text-[#8a93a2] sm:text-xs">لا توجد صورة</span>
       </div>
     );
   }
@@ -200,19 +201,6 @@ export function HubProductModal({ product, onClose }: any) {
     return () => clearTimeout(t);
   }, []);
 
-  const specs = useMemo(() => {
-    if (!product) return [] as Array<[string, string]>;
-    return String(product.description || '')
-      .split('\n')
-      .map((line: string) => line.trim())
-      .filter(Boolean)
-      .slice(0, 8)
-      .map((line: string, i: number): [string, string] => {
-        const [k, ...rest] = line.split(':');
-        return rest.length ? [k.trim(), rest.join(':').trim()] : [`ميزة ${i + 1}`, line];
-      });
-  }, [product]);
-
   if (!product) return null;
 
   const add = async () => {
@@ -225,87 +213,107 @@ export function HubProductModal({ product, onClose }: any) {
     ? Math.round(((Number(product.originalPrice) - Number(product.price)) / Number(product.originalPrice)) * 100)
     : 0;
 
+  /* Safe description HTML — reuse project sanitizer; preserve XSS safety */
+  const descriptionHtml = useMemo(() => {
+    const raw = String(product.description || '').trim();
+    if (!raw) return '';
+    // If merchant stored plain text with line breaks but no tags, preserve breaks
+    const hasTags = /<[a-z][\s\S]*>/i.test(raw);
+    const html = hasTags ? raw : raw.replace(/\n/g, '<br />');
+    return html;
+  }, [product.description]);
+
+  const loyaltyPoints = useMemo(() => {
+    const ls = getLoyaltySettingsFromPage();
+    if (!ls?.is_enabled) return 0;
+    return calcEarnedPoints(Number(product.price) || 0, ls);
+  }, [product.price]);
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6" dir="rtl" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4 md:p-6" dir="rtl" role="dialog" aria-modal="true">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={onClose}
+      <div className="absolute inset-0 bg-[#0a1220]/55 backdrop-blur-[2px]" onClick={onClose}
         style={{ opacity: entering ? 0 : 1, transition: `opacity ${DUR.overlay}ms ${EASE}` }} />
 
-      {/* Sheet / dialog */}
-      <div className="relative flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-h-[88vh] sm:rounded-3xl"
+      {/* Premium retail panel — balanced media + info, no giant dead canvas */}
+      <div className="relative flex max-h-[92dvh] w-full max-w-[900px] flex-col overflow-hidden bg-white shadow-2xl rounded-t-2xl sm:rounded-2xl border border-[#e6ebf1]"
         style={{
-          transform: entering ? 'translateY(40px)' : 'translateY(0)',
+          transform: entering ? 'translateY(24px)' : 'translateY(0)',
           opacity: entering ? 0 : 1,
           transition: `transform ${DUR.overlay}ms ${EASE}, opacity ${DUR.overlay}ms ${EASE}`,
         }}>
-        {/* Drag handle (mobile only) */}
-        <div className="mx-auto mt-2.5 hidden h-1.5 w-11 shrink-0 rounded-full bg-gray-200 sm:hidden" />
-
         {/* Close */}
         <button type="button" onClick={onClose} aria-label="إغلاق"
-          className="absolute left-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-500 shadow-md backdrop-blur transition-all hover:bg-white hover:text-gray-700"
+          className="absolute left-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-[#5b6472] shadow-md ring-1 ring-[#e6ebf1] backdrop-blur transition-all hover:bg-white hover:text-[#0a1220]"
           style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
           <X className="h-5 w-5" />
         </button>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto sm:flex-row">
-          {/* Product media — full-width top on mobile, half on desktop */}
-          <div className="relative flex shrink-0 items-center justify-center bg-gray-50 p-6 sm:w-1/2 sm:p-8">
-            <div className="aspect-square w-full max-w-[300px] sm:max-w-full">
-              <HubProductStage src={product.image} alt={product.name} className="aspect-square" fit="contain" />
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row">
+          {/* MEDIA — meaningful weight, same neutral plinth as cards */}
+          <div className="relative flex shrink-0 items-center justify-center bg-[#f1f4f8] p-5 sm:p-7 lg:w-[52%] xl:w-[54%] lg:p-8">
+            <div className="aspect-square w-full max-w-[360px] lg:max-w-[420px] xl:max-w-[440px]">
+              <HubProductStage src={product.image} alt={product.name} className="aspect-square p-2 sm:p-3" fit="contain" />
             </div>
             {discount > 0 && (
-              <span className="absolute top-4 right-4 rounded-lg bg-red-500 px-2.5 py-1 text-xs font-extrabold text-white shadow-sm">-{discount}%</span>
+              <span className="absolute right-3 top-3 rounded-md bg-[#e11d48] px-2.5 py-1 text-xs font-extrabold text-white shadow-sm sm:right-4 sm:top-4">-{discount}%</span>
+            )}
+            {product.availability === 'out_of_stock' && (
+              <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/55 text-sm font-bold text-white">غير متوفر</span>
             )}
           </div>
 
-          {/* Product info */}
-          <div className="flex flex-1 flex-col p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:w-1/2 sm:p-6 sm:pb-6">
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="text-lg font-extrabold leading-snug text-gray-900 sm:text-xl">{product.name}</h2>
-              {product.availability !== 'out_of_stock' && (
-                <span className="shrink-0 rounded-md bg-green-50 px-2 py-0.5 text-[11px] font-bold text-green-700 ring-1 ring-green-200">متوفر</span>
-              )}
+          {/* INFO — clear hierarchy, not cramped */}
+          <div className="flex flex-1 flex-col p-5 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 lg:p-7 lg:pb-7">
+            {/* Title row */}
+            <div className="flex items-start justify-between gap-3 pe-8">
+              <h2 className="text-[18px] font-extrabold leading-snug text-[#0a1220] sm:text-xl lg:text-[22px]">{product.name}</h2>
+              {product.availability !== 'out_of_stock' ? (
+                <span className="shrink-0 rounded-md bg-[#ecfdf5] px-2 py-1 text-[11px] font-extrabold text-[#059669] ring-1 ring-[#a7f3d0]">متوفر</span>
+              ) : null}
             </div>
 
-            <div className="mt-2 flex items-baseline gap-2.5">
-              <span className="text-2xl font-extrabold text-gray-900 sm:text-3xl">{formatPrice(product.price)}</span>
+            {/* Price hierarchy */}
+            <div className="mt-3 flex flex-wrap items-baseline gap-2.5">
+              <span className="text-[26px] font-extrabold tracking-tight text-[#0a1220] sm:text-[30px]">{formatPrice(product.price)}</span>
               {discount > 0 && !!product.originalPrice && (
-                <span className="text-sm text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+                <span className="text-sm font-semibold text-[#8a93a2] line-through">{formatPrice(product.originalPrice)}</span>
+              )}
+              {discount > 0 && (
+                <span className="rounded-md bg-[#fef2f2] px-2 py-0.5 text-xs font-extrabold text-[#e11d48] ring-1 ring-[#fecaca]">خصم {discount}%</span>
               )}
             </div>
+            {loyaltyPoints > 0 && (
+              <span className="mt-2 inline-flex w-fit items-center gap-1 rounded-full bg-[#fffbeb] px-2.5 py-1 text-xs font-bold text-[#b45309] ring-1 ring-[#fde68a]"><Gift className="h-3 w-3" /> +{loyaltyPoints} نقطة</span>
+            )}
 
-            {/* Specs */}
-            {specs.length > 0 && (
-              <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
-                <p className="border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-bold text-gray-500">المواصفات الرئيسية</p>
-                <table className="w-full text-sm">
-                  <tbody>
-                    {specs.map(([k, v], i) => (
-                      <tr key={`${k}-${i}`} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                        <td className="w-24 shrink-0 px-3 py-2 align-top text-[12px] font-bold text-gray-400 sm:w-28 sm:text-[13px]">{k}</td>
-                        <td className="px-3 py-2 text-[12px] leading-relaxed text-gray-700 sm:text-[13px]">{v}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {/* Description — sanitized rich HTML, never raw tags */}
+            {descriptionHtml ? (
+              <div className="mt-5 overflow-hidden rounded-xl border border-[#e6ebf1]">
+                <p className="border-b border-[#e6ebf1] bg-[#f1f4f8] px-4 py-2 text-xs font-extrabold tracking-wide text-[#0a1220]">الوصف والمواصفات</p>
+                <div
+                  className="max-w-none p-4 text-[13px] leading-7 text-[#2d3748] prose prose-sm prose-p:my-2 prose-p:leading-7 prose-strong:text-[#0a1220] prose-strong:font-extrabold prose-headings:font-extrabold prose-headings:text-[#0a1220] prose-h1:text-lg prose-h2:text-base prose-h3:text-sm prose-a:text-[#2563eb] prose-a:font-bold prose-ul:my-2 prose-ol:my-2 prose-li:marker:text-[#8a93a2] prose-img:rounded-lg prose-img:border prose-img:border-[#e6ebf1]"
+                  dangerouslySetInnerHTML={createSafeHtml(descriptionHtml)}
+                />
               </div>
+            ) : (
+              <p className="mt-4 text-sm leading-relaxed text-[#8a93a2]">لا يتوفر وصف مفصل لهذا الجهاز حالياً.</p>
             )}
 
             {/* Variants */}
             {(product.variants || []).map((group: any) => (
-              <div key={group.name} className="mt-4">
-                <p className="mb-2 text-xs font-bold text-gray-500">— {group.name}</p>
+              <div key={group.name} className="mt-5">
+                <p className="mb-2 text-xs font-extrabold tracking-wide text-[#0a1220]">{group.name}</p>
                 <div className="flex flex-wrap gap-2">
                   {(group.values || group.options || []).map((val: string) => (
                     <button
                       key={val}
                       type="button"
                       onClick={() => setPick((s) => ({ ...s, [group.name]: val }))}
-                      className={`rounded-lg border px-4 py-1.5 text-sm font-bold transition-all ${
+                      className={`rounded-lg border px-4 py-2 text-sm font-bold transition-all ${
                         pick[group.name] === val
-                          ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:text-blue-600'
+                          ? 'border-[#2563eb] bg-[#2563eb] text-white shadow-sm'
+                          : 'border-[#e6ebf1] bg-white text-[#5b6472] hover:border-[#2563eb]/40 hover:text-[#2563eb]'
                       }`}
                       style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}
                     >
@@ -316,33 +324,33 @@ export function HubProductModal({ product, onClose }: any) {
               </div>
             ))}
 
-            {/* Add to cart */}
-            <div className="mt-auto pt-5">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50">
+            {/* Quantity + CTA — pinned to bottom of info column */}
+            <div className="mt-6 pt-2">
+              <div className="flex items-stretch gap-3">
+                <div className="flex items-center rounded-xl border border-[#e6ebf1] bg-[#f8fafc]">
                   <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="أقل"
-                    className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:text-blue-600">
+                    className="flex h-12 w-11 items-center justify-center text-[#5b6472] transition-colors hover:text-[#2563eb]">
                     <Minus className="h-4 w-4" />
                   </button>
-                  <span className="w-9 text-center text-base font-extrabold text-gray-900">{qty}</span>
+                  <span className="w-10 text-center text-[15px] font-extrabold text-[#0a1220]">{qty}</span>
                   <button type="button" onClick={() => setQty((q) => q + 1)} aria-label="أكثر"
-                    className="flex h-11 w-11 items-center justify-center text-gray-500 transition-colors hover:text-blue-600">
+                    className="flex h-11 w-11 items-center justify-center text-[#5b6472] transition-colors hover:text-[#2563eb]">
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
                 <button
                   type="button"
                   onClick={add}
-                  disabled={missing.length > 0}
-                  className="flex-1 rounded-xl bg-blue-600 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none"
+                  disabled={missing.length > 0 || product.availability === 'out_of_stock'}
+                  className="flex flex-1 items-center justify-center rounded-xl bg-[#0a1220] px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#0a1220]/15 transition-all hover:bg-[#141d2f] active:scale-[0.98] disabled:bg-[#e6ebf1] disabled:text-[#8a93a2] disabled:shadow-none"
                   style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}
                 >
-                  {missing.length > 0 ? `اختار ${missing.map((g: any) => g.name).join(' و')}` : `أضف للسلة · ${formatPrice((Number(product.price) || 0) * qty)}`}
+                  {product.availability === 'out_of_stock' ? 'غير متوفر' : missing.length > 0 ? `اختار ${missing.map((g: any) => g.name).join(' و')}` : `أضف للسلة · ${formatPrice((Number(product.price) || 0) * qty)}`}
                 </button>
               </div>
 
-              <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-bold text-gray-400">
-                <ShieldCheck className="h-3.5 w-3.5 text-green-500" /> ضمان رسمي سنة كاملة • فاتورة معتمدة
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-bold text-[#8a93a2]">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#059669]" /> ضمان رسمي سنة كاملة • فاتورة معتمدة
               </p>
             </div>
           </div>
