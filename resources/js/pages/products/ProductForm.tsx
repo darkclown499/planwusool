@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Save, Plus, Trash2, Loader2, FolderPlus, ChevronDown, EyeOff, Eye } from 'lucide-react';
+import { Save, Plus, Trash2, Loader2, FolderPlus, ChevronDown, EyeOff, Eye, AlertTriangle, Package, Layers } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import MediaPicker from '@/components/MediaPicker';
@@ -41,6 +42,18 @@ interface Props {
   errors: Record<string, string>;
   planLimits?: any;
   onDirtyChange?: (dirty: boolean) => void;
+}
+
+const PRESET_COLORS = ['أسود', 'أبيض', 'زهري', 'أحمر', 'أزرق'];
+const PRESET_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+function isColorOption(name: string): boolean {
+  const n = String(name || '').trim().toLowerCase();
+  return n.includes('لون') || n.includes('اللون') || n.includes('color') || n.includes('colour');
+}
+function isSizeOption(name: string): boolean {
+  const n = String(name || '').trim().toLowerCase();
+  return n.includes('مقاس') || n.includes('المقاس') || n.includes('size') || n.includes('حجم') || n.includes('مقاسات');
 }
 
 export default function ProductForm({ mode, product, categories: initialCategories, taxes, errors, planLimits }: Props) {
@@ -117,6 +130,9 @@ export default function ProductForm({ mode, product, categories: initialCategori
   const [contentExtraOpen, setContentExtraOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [bulkPrice, setBulkPrice] = useState('');
+  const [bulkStock, setBulkStock] = useState('');
+  const [pendingRemoval, setPendingRemoval] = useState<null | { type: 'value' | 'group'; groupIdx: number; value?: string; affectedCount: number; label: string }>(null);
 
   const hasEditedMetaTitle = useRef(!!product?.meta_title);
   const hasEditedSlug = useRef(!!product?.seo_url_slug);
@@ -211,6 +227,118 @@ export default function ProductForm({ mode, product, categories: initialCategori
   };
 
   const variantsPreview = useMemo(() => generateVariantCombinations(variantsEnabled ? variants : []), [variants, variantsEnabled]);
+  const mergedCombos = useMemo(() => mergeCombinationEdits(variantsPreview, comboEdits), [variantsPreview, comboEdits]);
+
+  const totalStock = useMemo(() => {
+    if (!variantsEnabled || !formData.track_inventory || inventoryMode !== 'variant') return null;
+    return mergedCombos.reduce((acc: number, c: any) => acc + (parseInt(String(c.stock ?? 0)) || 0), 0);
+  }, [mergedCombos, variantsEnabled, formData.track_inventory, inventoryMode]);
+
+  // Bulk apply
+  const applyBulk = () => {
+    const p = bulkPrice.trim();
+    const s = bulkStock.trim();
+    if (p === '' && s === '') {
+      toast.error('أدخل السعر أو المخزون للتطبيق على كل التركيبات');
+      return;
+    }
+    if (variantsPreview.length === 0) return;
+    const generated = variantsPreview;
+    setComboEdits(prev => {
+      const next: Record<string, VariantCombination> = { ...prev };
+      generated.forEach(g => {
+        const existing = (next[g.id] as any) || g;
+        const updated: VariantCombination = {
+          ...g,
+          uuid: (existing as any).uuid || g.uuid,
+          price: p !== '' ? p : ((existing as any).price ?? g.price ?? ''),
+          stock: s !== '' ? s : ((existing as any).stock ?? g.stock ?? ''),
+          cost_price: (existing as any).cost_price ?? g.cost_price ?? '',
+          sku: (existing as any).sku ?? g.sku ?? '',
+          image: (existing as any).image ?? g.image ?? '',
+          low_stock_warning: (existing as any).low_stock_warning ?? g.low_stock_warning ?? '',
+        } as VariantCombination;
+        next[g.id] = updated;
+        if ((updated as any).uuid) next[(updated as any).uuid] = updated;
+      });
+      return next;
+    });
+    toast.success(`تم تطبيق ${p !== '' ? 'السعر' : ''}${p !== '' && s !== '' ? ' و' : ''}${s !== '' ? 'المخزون' : ''} على ${generated.length} تركيبة`);
+  };
+
+  // Preset helpers
+  const addPresetValue = (groupIdx: number, val: string) => {
+    const cur = variants[groupIdx]?.values || [];
+    if (cur.includes(val)) return;
+    const next = [...variants];
+    next[groupIdx] = { ...next[groupIdx], values: [...cur, val] };
+    setVariants(next as any);
+  };
+
+  // Safe removal helpers
+  const comboHasEdits = (combo: any): boolean => {
+    const hasPrice = combo.price !== '' && combo.price != null && String(combo.price).trim() !== '';
+    const hasStock = combo.stock !== '' && combo.stock != null && String(combo.stock).trim() !== '' && String(combo.stock) !== '0';
+    const hasSku = combo.sku !== '' && combo.sku != null && String(combo.sku).trim() !== '';
+    const hasImage = combo.image !== '' && combo.image != null && String(combo.image).trim() !== '';
+    const hasCost = (combo as any).cost_price !== '' && (combo as any).cost_price != null && String((combo as any).cost_price).trim() !== '';
+    return hasPrice || hasStock || hasSku || hasImage || hasCost;
+  };
+
+  const getAffectedForValue = (groupIdx: number, value: string) => {
+    const merged = mergeCombinationEdits(generateVariantCombinations(variantsEnabled ? variants : []), comboEdits);
+    const affected = merged.filter((c: any) => (c.values || []).includes(value));
+    const withEdits = affected.filter(comboHasEdits);
+    return { affectedCount: affected.length, withEditsCount: withEdits.length, hasEdits: withEdits.length > 0 };
+  };
+
+  const getAffectedForGroup = (groupIdx: number) => {
+    const merged = mergeCombinationEdits(generateVariantCombinations(variantsEnabled ? variants : []), comboEdits);
+    const withEdits = merged.filter(comboHasEdits);
+    return { affectedCount: merged.length, hasEdits: withEdits.length > 0, withEditsCount: withEdits.length };
+  };
+
+  const handleTagChangeWithConfirm = (groupIdx: number, newVals: string[]) => {
+    const oldVals: string[] = variants[groupIdx]?.values || [];
+    if (newVals.length < oldVals.length) {
+      const removed = oldVals.find(v => !newVals.includes(v));
+      if (removed) {
+        const { affectedCount, hasEdits } = getAffectedForValue(groupIdx, removed);
+        if (affectedCount > 0 && hasEdits) {
+          setPendingRemoval({ type: 'value', groupIdx, value: removed, affectedCount, label: removed });
+          return;
+        }
+      }
+    }
+    const next = [...variants];
+    next[groupIdx] = { ...next[groupIdx], values: newVals };
+    setVariants(next as any);
+  };
+
+  const confirmRemoval = () => {
+    if (!pendingRemoval) return;
+    if (pendingRemoval.type === 'value' && pendingRemoval.value) {
+      const idx = pendingRemoval.groupIdx;
+      const val = pendingRemoval.value;
+      const next = [...variants];
+      next[idx] = { ...next[idx], values: (next[idx].values || []).filter((v: string) => v !== val) };
+      setVariants(next as any);
+    } else if (pendingRemoval.type === 'group') {
+      const idx = pendingRemoval.groupIdx;
+      setVariants(variants.filter((_, i) => i !== idx));
+    }
+    setPendingRemoval(null);
+  };
+
+  const handleRemoveGroupWithConfirm = (idx: number) => {
+    const { affectedCount, hasEdits } = getAffectedForGroup(idx);
+    const label = variants[idx]?.name || `خيار ${idx + 1}`;
+    if (hasEdits && affectedCount > 0) {
+      setPendingRemoval({ type: 'group', groupIdx: idx, affectedCount, label });
+      return;
+    }
+    setVariants(variants.filter((_, i) => i !== idx));
+  };
 
   return (
     <div className="pb-24" dir="rtl">
@@ -231,6 +359,43 @@ export default function ProductForm({ mode, product, categories: initialCategori
               <CardTitle className="text-base flex items-center gap-2">معلومات المنتج <span className="text-xs font-normal text-muted-foreground">— الحقول الأساسية</span></CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
+              {/* TASK 1 — Prominent product type selector */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 sm:p-4" data-testid="product-type-selector">
+                <Label className="text-sm font-bold">نوع المنتج</Label>
+                <p className="text-xs text-muted-foreground mt-1 mb-3">مثال: بلوزة متوفرة بعدة ألوان أو مقاسات</p>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setVariantsEnabled(false)}
+                    className={`relative flex flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-3.5 text-center transition sm:py-4 ${!variantsEnabled ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                    aria-pressed={!variantsEnabled}
+                    data-testid="product-type-simple"
+                  >
+                    <Package className={`h-5 w-5 ${!variantsEnabled ? 'text-primary-foreground' : 'text-slate-600'}`} />
+                    <span className={`text-sm font-bold ${!variantsEnabled ? 'text-primary-foreground' : 'text-slate-800'}`}>منتج عادي</span>
+                    <span className={`text-[11px] leading-tight ${!variantsEnabled ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>لون/مقاس واحد</span>
+                    {!variantsEnabled && <span className="absolute top-2 left-2 h-2 w-2 rounded-full bg-white shadow" aria-hidden />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVariantsEnabled(true);
+                      if (!variants || variants.length === 0 || variants.every((v: any) => !v.name && (!v.values || v.values.length === 0))) {
+                        setVariants([{ name: 'اللون', values: [] as string[] }]);
+                      }
+                    }}
+                    className={`relative flex flex-col items-center gap-1.5 rounded-xl border-2 px-3 py-3.5 text-center transition sm:py-4 ${variantsEnabled ? 'border-primary bg-primary text-primary-foreground shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                    aria-pressed={variantsEnabled}
+                    data-testid="product-type-variable"
+                  >
+                    <Layers className={`h-5 w-5 ${variantsEnabled ? 'text-primary-foreground' : 'text-slate-600'}`} />
+                    <span className={`text-sm font-bold ${variantsEnabled ? 'text-primary-foreground' : 'text-slate-800'}`}>منتج بخيارات</span>
+                    <span className={`text-[11px] leading-tight ${variantsEnabled ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>ألوان / مقاسات</span>
+                    {variantsEnabled && <span className="absolute top-2 left-2 h-2 w-2 rounded-full bg-white shadow" aria-hidden />}
+                  </button>
+                </div>
+              </div>
+
               <div className="grid gap-1.5">
                 <Label htmlFor="name" required>اسم المنتج</Label>
                 <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="مثال: قميص قطني رجالي" className="h-11 text-base" aria-invalid={!!errors.name} />
@@ -295,32 +460,21 @@ export default function ProductForm({ mode, product, categories: initialCategori
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Stock: product-level only; hidden when variant inventory active */}
+                {/* TASK 4 — Inventory clarity: when variant mode, quantity becomes computed read-only */}
                 {!(formData.track_inventory && variantsEnabled && inventoryMode === 'variant') ? (
                   <div className="grid gap-1.5">
-                    <Label htmlFor="stock">الكمية {formData.track_inventory && variantsEnabled ? '(للمنتج ككل — غير مُستخدم عند التتبع المنفصل)' : ''}</Label>
+                    <Label htmlFor="stock">الكمية</Label>
                     <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleChange} placeholder="0" className="h-11" aria-invalid={!!errors.stock} />
                     <InputError message={errors.stock} />
-                    {formData.track_inventory && variantsEnabled && inventoryMode === 'variant' && (
-                      <p className="text-xs text-muted-foreground">ستُدارة الكميات عبر جدول الخيارات أدناه.</p>
-                    )}
                   </div>
                 ) : (
-                  <div className="grid gap-1.5">
-                    <Label>الكمية الإجمالية (محسوبة)</Label>
-                    <div className="h-11 flex items-center rounded-md border bg-slate-50 px-3 text-sm text-muted-foreground">
-                      {(() => {
-                        const sum = Object.values(comboEdits).reduce((acc: number, c: any) => acc + (parseInt(String(c.stock ?? 0)) || 0), 0);
-                        // Fallback to generated if no edits yet
-                        if (sum === 0) {
-                          const preview = generateVariantCombinations(variantsEnabled ? variants : []);
-                          const merged = mergeCombinationEdits(preview, comboEdits);
-                          return merged.reduce((a, cc) => a + (parseInt(String((cc as any).stock ?? 0)) || 0), 0);
-                        }
-                        return sum;
-                      })()} عبر الخيارات — مدارة تفصيلياً
+                  <div className="grid gap-1.5" data-testid="inventory-variant-total">
+                    <Label>إجمالي المخزون</Label>
+                    <div className="h-11 flex items-center justify-between rounded-lg border-2 border-emerald-200 bg-emerald-50 px-3 text-sm font-bold text-emerald-800">
+                      <span>{totalStock ?? 0}</span>
+                      <span className="text-xs font-medium text-emerald-700">عبر {mergedCombos.length} تركيبة</span>
                     </div>
-                    <p className="text-xs text-amber-700">هذا المنتج يتتبع المخزون لكل خيار منفصل.</p>
+                    <p className="text-xs text-amber-700 flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> يتم إدارة المخزون من جدول الخيارات أدناه</p>
                   </div>
                 )}
                 <div className="grid gap-1.5">
@@ -404,43 +558,90 @@ export default function ProductForm({ mode, product, categories: initialCategori
             </Card>
           </Collapsible>
 
-          {/* SECTION 3 — Variants */}
-          <Card className="border-slate-200 shadow-sm">
+          {/* SECTION 3 — Variants (now prominent, controlled by product type selector) */}
+          {variantsEnabled && (
+          <Card className="border-slate-200 shadow-sm" data-testid="variants-section">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base">هل للمنتج خيارات مثل اللون أو المقاس؟</CardTitle>
+                  <CardTitle className="text-base">خيارات المنتج</CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">مثال: اللون (أسود، أبيض) والمقاس (S، M، L)</p>
                 </div>
-                <Switch checked={variantsEnabled} onCheckedChange={setVariantsEnabled} />
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">{variantsPreview.length} تركيبة</span>
               </div>
             </CardHeader>
-            {variantsEnabled && (
-              <CardContent className="space-y-4">
+            <CardContent className="space-y-4">
                 <div className="flex justify-end"><Button type="button" variant="outline" size="sm" onClick={() => setVariants([...variants, { name: '', values: [] }])}><Plus className="h-4 w-4" /> إضافة خيار</Button></div>
                 {variants.map((variant, idx) => (
-                  <div key={idx} className="rounded-xl border border-slate-200 overflow-hidden">
+                  <div key={idx} className="rounded-xl border border-slate-200 overflow-hidden" data-testid={`variant-group-${idx}`}>
                     <div className="flex items-center justify-between bg-slate-50 px-4 py-2.5 border-b">
                       <span className="text-sm font-semibold text-muted-foreground">خيار {idx + 1}</span>
-                      <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0" onClick={() => setVariants(variants.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4" /></Button>
+                      <Button type="button" variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0" onClick={() => handleRemoveGroupWithConfirm(idx)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
                     <div className="p-4 space-y-3">
                       <div className="grid gap-1.5"><Label>اسم الخيار</Label><Input placeholder="مثال: اللون" value={variant.name} onChange={e => { const n=[...variants]; (n[idx] as any).name=e.target.value; setVariants(n); }} /></div>
-                      <div className="grid gap-1.5"><Label>القيم</Label><TagInput values={variant.values || []} onChange={vals => { const n=[...variants]; n[idx].values=vals; setVariants(n); }} placeholder="اكتب قيمة واضغط Enter" /></div>
+                      <div className="grid gap-1.5">
+                        <Label>القيم</Label>
+                        <TagInput values={variant.values || []} onChange={vals => handleTagChangeWithConfirm(idx, vals)} placeholder="اكتب قيمة واضغط Enter" />
+                        {/* TASK 2 — Quick presets */}
+                        {isColorOption(variant.name) && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1" data-testid={`presets-color-${idx}`}>
+                            <span className="text-[11px] text-muted-foreground">اقتراحات:</span>
+                            {PRESET_COLORS.map(c => {
+                              const exists = (variant.values || []).includes(c);
+                              return (
+                                <button key={c} type="button" disabled={exists} onClick={() => addPresetValue(idx, c)} className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${exists ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-300 bg-white hover:border-primary hover:text-primary'}`}>{c}</button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {isSizeOption(variant.name) && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1" data-testid={`presets-size-${idx}`}>
+                            <span className="text-[11px] text-muted-foreground">اقتراحات:</span>
+                            {PRESET_SIZES.map(s => {
+                              const exists = (variant.values || []).includes(s);
+                              return (
+                                <button key={s} type="button" disabled={exists} onClick={() => addPresetValue(idx, s)} className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${exists ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-300 bg-white hover:border-primary hover:text-primary'}`}>{s}</button>
+                              );
+                            })}
+                          </div>
+                        )}
+                        {!isColorOption(variant.name) && !isSizeOption(variant.name) && String(variant.name).trim() !== '' && (
+                          <p className="text-[11px] text-muted-foreground">💡 اكتب القيم ثم اضغط Enter. يمكنك أيضاً استخدام الاقتراحات أعلاه عند اختيار اللون أو المقاس.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
                 {variantsPreview.length > 0 && (
-                  <div className="rounded-xl border overflow-hidden">
-                    <div className="flex items-center justify-between bg-slate-50 px-4 py-3 border-b">
+                  <div className="rounded-xl border overflow-hidden" data-testid="combinations-panel">
+                    <div className="flex flex-col gap-2 bg-slate-50 px-3 py-3 border-b sm:flex-row sm:items-center sm:justify-between sm:px-4">
                       <div><p className="text-sm font-semibold">التركيبات ({variantsPreview.length})</p><p className="text-xs text-muted-foreground">تُولّد تلقائياً — يمكنك تعديل السعر والكمية لكل تركيبة {inventoryMode === 'variant' && formData.track_inventory ? '(المخزون منفصل لكل خيار)' : ''}</p></div>
                       <Button type="button" variant="ghost" size="sm" onClick={() => setShowVariantFields(!showVariantFields)}>{showVariantFields ? 'إخفاء الحقول' : 'حقول إضافية'}</Button>
                     </div>
+                    {/* TASK 3 — Bulk edit bar */}
+                    <div className="flex flex-col gap-2 border-b bg-amber-50/60 px-3 py-3 sm:flex-row sm:items-end sm:gap-3 sm:px-4" data-testid="bulk-bar">
+                      <div className="grid gap-1 flex-1">
+                        <Label className="text-xs">السعر لكل التركيبات</Label>
+                        <CurrencyInput type="number" step="0.01" placeholder="50" value={bulkPrice} onChange={e => setBulkPrice(e.target.value)} className="h-9 bg-white" />
+                      </div>
+                      <div className="grid gap-1 flex-1">
+                        <Label className="text-xs">المخزون لكل التركيبات</Label>
+                        <Input type="number" placeholder="5" value={bulkStock} onChange={e => setBulkStock(e.target.value)} className="h-9 bg-white" />
+                      </div>
+                      <Button type="button" onClick={applyBulk} className="h-9 shrink-0 bg-slate-900 hover:bg-slate-800 text-white font-bold px-5" data-testid="bulk-apply">تطبيق</Button>
+                    </div>
+                    {totalStock !== null && (
+                      <div className="flex items-center justify-between bg-emerald-50 px-3 py-2 text-xs sm:px-4">
+                        <span className="font-medium text-emerald-800">إجمالي المخزون: <strong>{totalStock}</strong></span>
+                        <span className="text-emerald-700">يتم إدارة المخزون من جدول الخيارات أدناه</span>
+                      </div>
+                    )}
                     {/* Desktop table */}
                     <div className="overflow-x-auto hidden md:block">
                       <table className="w-full text-sm">
                         <thead><tr className="bg-slate-50/70 text-xs text-muted-foreground border-b"><th className="px-3 py-2 text-start">صورة</th><th className="px-3 py-2 text-start">التركيبة</th><th className="px-3 py-2 text-start">السعر</th><th className="px-3 py-2 text-start">المخزون {inventoryMode === 'variant' && formData.track_inventory ? '*' : ''}</th>{showVariantFields && <><th className="px-3 py-2 text-start">التكلفة</th><th className="px-3 py-2 text-start">SKU</th></>}</tr></thead>
-                        <tbody>{mergeCombinationEdits(variantsPreview, comboEdits).map(combo => (
+                        <tbody>{mergedCombos.map(combo => (
                           <tr key={combo.id} className="border-b last:border-0">
                             <td className="px-3 py-2"><VariantImageSlot value={combo.image} onChange={v => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), image: v } as any }))} /></td>
                             <td className="px-3 py-2 font-medium whitespace-nowrap">{combo.label}</td>
@@ -451,22 +652,22 @@ export default function ProductForm({ mode, product, categories: initialCategori
                         ))}</tbody>
                       </table>
                     </div>
-                    {/* Mobile cards */}
+                    {/* Mobile cards — compact */}
                     <div className="md:hidden divide-y">
-                      {mergeCombinationEdits(variantsPreview, comboEdits).map(combo => (
-                        <div key={combo.id} className="p-3 space-y-3 bg-white">
+                      {mergedCombos.map(combo => (
+                        <div key={combo.id} className="p-3 space-y-2.5 bg-white" data-testid={`combo-card-${combo.id}`}>
                           <div className="flex items-center justify-between gap-3">
-                            <div className="font-bold text-sm">{combo.label}</div>
+                            <div className="font-bold text-sm leading-tight flex-1 min-w-0 truncate">{combo.label}</div>
                             <VariantImageSlot value={combo.image} onChange={v => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), image: v } as any }))} />
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="grid gap-1.5"><Label className="text-xs">السعر</Label><CurrencyInput type="number" step="0.01" placeholder="0.00" value={combo.price || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), price: e.target.value } as any }))} /></div>
-                            <div className="grid gap-1.5"><Label className="text-xs">المخزون {inventoryMode === 'variant' && formData.track_inventory ? '*' : ''}</Label><Input type="number" placeholder="0" value={combo.stock ?? ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), stock: e.target.value } as any }))} /></div>
+                          <div className="grid grid-cols-2 gap-2.5">
+                            <div className="grid gap-1"><Label className="text-[11px]">السعر</Label><CurrencyInput type="number" step="0.01" placeholder="0.00" value={combo.price || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), price: e.target.value } as any }))} /></div>
+                            <div className="grid gap-1"><Label className="text-[11px]">المخزون {inventoryMode === 'variant' && formData.track_inventory ? '*' : ''}</Label><Input type="number" placeholder="0" value={combo.stock ?? ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), stock: e.target.value } as any }))} /></div>
                           </div>
                           {showVariantFields && (
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="grid gap-1.5"><Label className="text-xs">التكلفة</Label><CurrencyInput type="number" step="0.01" placeholder="0.00" value={(combo as any).cost_price || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), cost_price: e.target.value } as any }))} /></div>
-                              <div className="grid gap-1.5"><Label className="text-xs">SKU</Label><Input placeholder="SKU" value={(combo as any).sku || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), sku: e.target.value } as any }))} /></div>
+                            <div className="grid grid-cols-2 gap-2.5">
+                              <div className="grid gap-1"><Label className="text-[11px]">التكلفة</Label><CurrencyInput type="number" step="0.01" placeholder="0.00" value={(combo as any).cost_price || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), cost_price: e.target.value } as any }))} /></div>
+                              <div className="grid gap-1"><Label className="text-[11px]">SKU</Label><Input placeholder="SKU" value={(combo as any).sku || ''} onChange={e => setComboEdits(prev => ({ ...prev, [combo.id]: { ...(prev[combo.id] || combo), sku: e.target.value } as any }))} /></div>
                             </div>
                           )}
                         </div>
@@ -475,8 +676,8 @@ export default function ProductForm({ mode, product, categories: initialCategori
                   </div>
                 )}
               </CardContent>
-            )}
-          </Card>
+            </Card>
+          )}
 
           {/* SECTION 4 — Content */}
           <Card className="border-slate-200 shadow-sm">
@@ -563,6 +764,26 @@ export default function ProductForm({ mode, product, categories: initialCategori
           </Card>
         </div>
       </div>
+
+      {/* TASK 5 — Safe removal confirmation dialog */}
+      <Dialog open={!!pendingRemoval} onOpenChange={(o) => !o && setPendingRemoval(null)}>
+        <DialogContent dir="rtl" className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-700"><AlertTriangle className="h-5 w-5" /> تأكيد الحذف</DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed pt-2">
+              {pendingRemoval?.type === 'value' ? (
+                <>سيؤدي حذف <strong className="text-foreground">{pendingRemoval.label}</strong> إلى إزالة <strong className="text-foreground">{pendingRemoval.affectedCount} تركيبات</strong> محفوظة (تحتوي على سعر/مخزون/SKU/صورة). هل تريد المتابعة؟</>
+              ) : (
+                <>سيؤدي حذف <strong className="text-foreground">{pendingRemoval?.label}</strong> إلى إزالة <strong className="text-foreground">{pendingRemoval?.affectedCount} تركيبة</strong>. هل تريد المتابعة؟</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-2 flex-row-reverse sm:flex-row">
+            <Button type="button" variant="outline" onClick={() => setPendingRemoval(null)}>إلغاء</Button>
+            <Button type="button" variant="destructive" onClick={confirmRemoval}>تأكيد الحذف</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
