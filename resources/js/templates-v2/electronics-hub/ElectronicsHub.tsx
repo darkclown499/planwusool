@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
 import { ArrowLeft, BadgeCheck, ChevronLeft, ChevronRight, Cpu, Gift, Headphones, Laptop, Menu, Package, PackageSearch, Play, Plus, Search, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Watch, X, Zap } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
@@ -98,11 +99,28 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   }, [q, product?.products]);
   const select = (p: any) => { setQ(''); product.handleProductClick(p); };
 
+  /* ---- Body scroll lock for mobile drawer ---- */
+  const mobileNavRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [mobileNavOpen]);
+  /* ESC to close mobile nav */
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileNavOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileNavOpen]);
+
   return (
+    <>
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md" dir="rtl">
-      {/* Trust strip — desktop only */}
+      {/* Trust strip — desktop only, compact */}
       <div className="hidden border-b border-[#eef1f5] bg-[#fafbfc] lg:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-center gap-10 px-4 py-1.5 text-[11px] font-semibold text-[#5b6472] sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-x-8 gap-y-0 px-4 py-1 text-[11px] font-semibold text-[#5b6472] sm:px-6 lg:px-8">
           <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-[#2563eb]" /> منتجات مضمونة</span>
           <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5 text-[#2563eb]" /> توصيل سريع</span>
           <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5 text-[#2563eb]" /> أجهزة أصلية</span>
@@ -110,65 +128,94 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
       </div>
 
       {/* Main row */}
-      <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2 border-b border-[#eef1f5] px-3 py-2.5 sm:grid-cols-[auto_1fr_auto] sm:px-6 lg:grid-cols-[auto_minmax(0,520px)_1fr_auto] lg:px-8 sm:py-3">
-        {/* Hamburger / (desktop:) logo */}
-        <button type="button" onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="القائمة"
-          className="flex h-11 w-11 items-center justify-center rounded-xl text-[#0a1220] transition-colors hover:bg-[#f0f3f7] lg:order-2 lg:h-11 lg:w-auto lg:gap-2 lg:px-0 lg:hover:bg-transparent">
-          <Menu className="h-6 w-6 lg:hidden" />
-          {((config?.logo || store?.logo)) ? (
-            <img src={getImageUrl(config.logo || store.logo)} alt="" className="hidden h-9 w-auto bg-white object-contain lg:block" />
-          ) : (
-            <span className="hidden items-center gap-2 lg:flex">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
-              <span className="text-base font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
-            </span>
-          )}
+      <div className="flex items-center gap-1.5 border-b border-[#eef1f5] px-2.5 py-1.5 sm:px-4 sm:py-2 lg:px-8">
+        {/* Mobile: hamburger — absolute left for centering logo */}
+        <button type="button" onClick={() => setMobileNavOpen(true)} aria-label="القائمة"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#0a1220] transition-colors hover:bg-[#f0f3f7] lg:hidden">
+          <Menu className="h-5.5 w-5.5" />
         </button>
 
-        {/* Centered logo (mobile) */}
-        <div className="flex justify-center lg:hidden">
-          {config?.logo || store?.logo ? (
-            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto bg-white object-contain" />
-          ) : (
-            <span className="flex items-center gap-1.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4 w-4" /></span>
-              <span className="text-[15px] font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
-            </span>
-          )}
+        {/* Mobile: centered logo (absolute centering, aspect preserved) */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex h-full items-center justify-center lg:hidden">
+          <a href={homeHref} className="pointer-events-auto flex max-w-[42%] items-center">
+            {config?.logo || store?.logo ? (
+              <img src={getImageUrl(config.logo || store.logo)} alt="" className="max-h-7 w-auto max-w-full object-contain" />
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
+                <span className="truncate text-[13px] font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+              </span>
+            )}
+          </a>
         </div>
 
-        {/* Desktop inline search (middle column) */}
-        <div className="relative hidden lg:block">
-          <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
+        {/* Desktop: logo + search in controlled layout */}
+        <div className="hidden items-center gap-4 lg:flex lg:flex-1 lg:justify-between">
+          {/* Logo — intentional max size */}
+          <a href={homeHref} className="flex shrink-0 items-center gap-2">
+            {config?.logo || store?.logo ? (
+              <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[140px] object-contain" />
+            ) : (
+              <>
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
+                <span className="text-base font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+              </>
+            )}
+          </a>
+
+          {/* Search — first-class desktop */}
+          <div className="relative mx-4 max-w-[480px] flex-1">
+            <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
+          </div>
+
+          {/* Right cluster: loyalty + orders + cart */}
+          <div className="flex shrink-0 items-center gap-1">
+            <div className="hidden xl:block"><HeaderLoyaltyBadge /></div>
+            {canShowAuth && (
+              <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
+                className="flex h-10 items-center gap-1.5 rounded-lg px-2 text-[13px] font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220]">
+                <Package className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                <span className="hidden xl:inline">طلباتي</span>
+              </button>
+            )}
+            <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة"
+              className="flex h-10 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+              style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+              <ShoppingCart className="h-[18px] w-[18px]" />
+              <span>السلة</span>
+              {count > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
+            </button>
+          </div>
         </div>
 
-        {/* Right cluster: actions + cart */}
-        <div className="flex items-center justify-end gap-1.5">
-          <div className="hidden xl:block"><HeaderLoyaltyBadge /></div>
+        {/* Mobile: right-side controls (cart + optionally orders) — placed naturally */}
+        <div className="flex items-center gap-0.5 lg:hidden">
           {canShowAuth && (
-            <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-lg p-2.5 text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220] sm:flex sm:items-center sm:justify-center">
+            <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
+              className="flex h-11 w-10 items-center justify-center rounded-xl text-[#5b6472] transition-colors hover:bg-[#f0f3f7]">
               <Package className="h-5 w-5" strokeWidth={1.8} />
             </button>
           )}
           <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة"
-            className="flex h-11 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3 text-sm font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+            className="relative flex h-11 w-11 items-center justify-center rounded-xl text-[#0a1220] transition-colors hover:bg-[#f0f3f7]"
             style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
             <ShoppingCart className="h-5 w-5" />
-            <span className="hidden sm:inline">السلة</span>
-            {count > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
+            {count > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#2563eb] px-1 text-[10px] font-extrabold text-white">{count}</span>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Mobile prominent search row — ROW2, app-like */}
-      <div className="border-b border-[#eef1f5] px-3 pb-3 lg:hidden">
+      {/* Mobile prominent search row — ROW2, app-like but slim */}
+      <div className="border-b border-[#eef1f5] px-2.5 pb-2 pt-1 lg:hidden">
         <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
       </div>
 
       {/* Category bar (desktop) */}
       {showCategoriesBar && categories.length > 0 && (
         <div className="hidden border-b border-[#eef1f5] lg:block">
-          <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-1.5 sm:px-6 lg:px-8">
+          <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-1 sm:px-6 lg:px-8">
             {categories.map((c: any) => (
               <a key={c.id} href={`/category/${c.slug || c.id}`}
                 className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#2563eb]">
@@ -179,48 +226,84 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
           </div>
         </div>
       )}
-
-      {/* Mobile nav drawer */}
-      {mobileNavOpen && (
-        <div className="fixed inset-0 z-[55] lg:hidden" style={{ animation: `hubFadeOverlay ${DUR.overlay}ms ${EASE} both` }}>
-          <div className="absolute inset-0 bg-[#0a1220]/50 backdrop-blur-sm" onClick={() => setMobileNavOpen(false)} />
-          <nav className="absolute inset-y-0 right-0 flex w-72 max-w-[82vw] flex-col bg-white shadow-2xl" style={{ animation: `hubSlideLeft ${DUR.overlay}ms ${EASE} both` }}>
-            <div className="flex items-center justify-between border-b border-[#eef1f5] px-4 py-4">
-              <span className="text-sm font-extrabold text-[#0a1220]">القائمة</span>
-              <button type="button" onClick={() => setMobileNavOpen(false)} aria-label="إغلاق القائمة" className="rounded-lg p-2 text-[#5b6472] hover:bg-[#f0f3f7]"><X className="h-5 w-5" /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3">
-              {categories.map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</span>
-                  {c.name}
-                </a>
-              ))}
-            </div>
-            {canShowAuth && (
-              <div className="border-t border-[#eef1f5] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                <button type="button" onClick={() => { setMobileNavOpen(false); handleMyOrders(); }}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] hover:bg-[#f4f6f9]">
-                  <Package className="h-5 w-5 text-[#8a93a2]" /> طلباتي
-                </button>
-                <button type="button" onClick={() => { setMobileNavOpen(false); (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true))); }}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] hover:bg-[#f4f6f9]">
-                  حسابي
-                </button>
-              </div>
-            )}
-          </nav>
-        </div>
-      )}
     </header>
+    {typeof document !== 'undefined' && mobileNavOpen && createPortal(
+      /* Mobile nav drawer — proper overlay via portal to body so it covers the full
+         viewport (header backdrop-blur would otherwise clip a fixed descendant). */
+      <div ref={mobileNavRef} className="fixed inset-0 z-[70]" dir="rtl"
+        onKeyDown={(e) => { if (e.key === 'Escape') setMobileNavOpen(false); }}>
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-[#0a1220]/45 backdrop-blur-[2px] transition-opacity"
+          onClick={() => setMobileNavOpen(false)} />
+        {/* Drawer — RTL: slides from right */}
+        <nav className="absolute inset-y-0 right-0 flex max-h-full w-[280px] max-w-[85vw] flex-col overflow-y-auto bg-white shadow-2xl"
+          style={{ animation: `hubSlideLeft ${DUR.overlay}ms ${EASE} both` }}>
+          {/* Drawer header */}
+          <div className="flex items-center justify-between border-b border-[#eef1f5] px-4 py-3.5">
+            <div className="flex items-center gap-2">
+              {config?.logo || store?.logo ? (
+                <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto max-w-[90px] object-contain" />
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
+                  <span className="text-sm font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+                </span>
+              )}
+            </div>
+            <button type="button" onClick={() => setMobileNavOpen(false)} aria-label="إغلاق القائمة"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#5b6472] transition-colors hover:bg-[#f0f3f7]">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          {/* Navigation items */}
+          <div className="flex-1 overflow-y-auto overscroll-contain p-2.5">
+            {/* Home link */}
+            <a href="/" onClick={() => setMobileNavOpen(false)}
+              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#2563eb]"><Zap className="h-5 w-5" /></span>
+              الرئيسية
+            </a>
+            {/* Categories */}
+            {categories.map((c: any) => (
+              <a key={c.id} href={`/category/${c.slug || c.id}`} onClick={() => setMobileNavOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</span>
+                {c.name}
+              </a>
+            ))}
+            {categories.length === 0 && (
+              <p className="px-3 py-4 text-center text-sm text-[#8a93a2]">لا توجد أقسام حالياً</p>
+            )}
+          </div>
+          {/* Bottom account/orders section */}
+          {canShowAuth && (
+            <div className="border-t border-[#eef1f5] p-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
+              <button type="button" onClick={() => { setMobileNavOpen(false); handleMyOrders(); }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#8a93a2]"><Package className="h-5 w-5" /></span>
+                طلباتي
+              </button>
+              <button type="button" onClick={() => { setMobileNavOpen(false); (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true))); }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#8a93a2]">
+                  {auth?.isLoggedIn ? <BadgeCheck className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
+                </span>
+                {auth?.isLoggedIn ? 'حسابي' : 'تسجيل الدخول'}
+              </button>
+            </div>
+          )}
+        </nav>
+      </div>,
+      document.body
+    )}
+  </>
   );
 }
 
 function SearchField({ value, setValue, matches, select, focused, setFocused }: any) {
   return (
     <div className="relative">
-      <div className={`flex h-11 items-center overflow-hidden rounded-xl border bg-[#f4f6f9] transition-all ${focused ? 'border-[#2563eb] bg-white ring-2 ring-[#2563eb]/20' : 'border-[#e3e9f0]'}`}>
+      <div className={`flex h-10 items-center overflow-hidden rounded-xl border bg-[#f4f6f9] transition-all sm:h-11 ${focused ? 'border-[#2563eb] bg-white ring-2 ring-[#2563eb]/20' : 'border-[#e3e9f0]'}`}>
         <Search className="pointer-events-none ms-3 h-4 w-4 shrink-0 text-[#8a93a2]" />
         <input
           value={value}
@@ -230,9 +313,15 @@ function SearchField({ value, setValue, matches, select, focused, setFocused }: 
           placeholder="ابحث عن جهاز… آيفون، لابتوب، سماعات"
           className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-[#0a1220] placeholder:text-[#9aa3b0] focus:outline-none"
         />
+        {value && (
+          <button type="button" onClick={() => { setValue(''); setFocused(false); }}
+            className="me-2 flex h-6 w-6 items-center justify-center rounded-full text-[#8a93a2] hover:bg-[#e3e9f0] hover:text-[#0a1220]">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
       {matches.length > 0 && (
-        <ul className="absolute inset-x-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-xl border border-[#e6ebf1] bg-white py-1 shadow-lg shadow-[#0a1220]/8">
+        <ul className="absolute inset-x-0 top-[calc(100%+4px)] z-50 overflow-hidden rounded-xl border border-[#e6ebf1] bg-white py-1 shadow-lg shadow-[#0a1220]/8">
           {matches.map((p: any) => (
             <li key={p.id}>
               <button type="button" onMouseDown={() => select(p)}
@@ -252,11 +341,28 @@ function SearchField({ value, setValue, matches, select, focused, setFocused }: 
 /*  HERO — premium navy product-showcase stage                         */
 /* ================================================================== */
 
+/** Media-aware auto-advance duration: images ~5s, video waits for end, youtube handled separately */
+const IMAGE_ADVANCE_MS = 5000;
+
+/** Small hook to detect prefers-reduced-motion */
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return reduced;
+}
+
 function HubHero({ banner }: { banner?: any }) {
   const hero = useResolvedHero();
   const heroCore = useStorefrontCore() as any;
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   const hasDynamic = hero.hasDynamicHero;
+  const reducedMotion = useReducedMotion();
 
   /* ---- Build the ordered showcase media sequence ------------------- */
   const media = useMemo<HeroMediaItem[]>(() => {
@@ -293,20 +399,101 @@ function HubHero({ banner }: { banner?: any }) {
 
   const multi = media.length > 1;
   const clamp = (i: number) => ((i % media.length) + media.length) % media.length;
-  const next = () => setActive((a) => clamp(a + 1));
-  const prev = () => setActive((a) => clamp(a - 1));
+  const goTo = useCallback((i: number) => setActive(i), []);
+  const next = useCallback(() => setActive((a) => clamp(a + 1)), [media.length]);
+  const prev = useCallback(() => setActive((a) => clamp(a - 1)), [media.length]);
 
-  const eff = {
+  /* ---- Hero text — merchant controlled, NO hardcoded fallback for empty/hidden ---- */
+  const eff = useMemo(() => ({
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
     button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
-  };
-  const promise = (() => { try { const c = heroCore?.content; const v = c?.electronics_promise ?? c?.electronics?.promise ?? c?.electronicsPromise; if (typeof v === 'string' && v.trim()) return v.trim(); } catch {} return 'أحدث الأجهزة الذكية بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.'; })();
+  }), [hero.heading, hero.subtitle, hero.ctaLabel, hero.ctaLink, banner]);
+
+  /* ---- Promise / subtitle line — only when merchant has set content ---- */
+  const promise = (() => {
+    try {
+      const c = heroCore?.content;
+      const v = c?.electronics_promise ?? c?.electronics?.promise ?? c?.electronicsPromise;
+      if (typeof v === 'string' && v.trim()) return v.trim();
+    } catch {}
+    return '';
+  })();
 
   const overlayOpacity = typeof hero.overlayOpacity === 'number' ? hero.overlayOpacity : 0;
 
-  /* ---- Shared stage chrome: subtle technical texture + accent light -- */
+  /* ---- Auto-advance lifecycle ---- */
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const ytReadyRef = useRef(false);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) { clearTimeout(timerRef.current); timerRef.current = null; }
+  }, []);
+
+  /* Schedule next advance based on current media type */
+  const scheduleAdvance = useCallback(() => {
+    if (!multi) return;
+    clearTimer();
+    const item = media[activeRef.current];
+    if (!item) return;
+    /* Video and youtube advance from their own end events, not a timer */
+    if (item.type === 'video' || item.type === 'youtube') return;
+    /* Image: advance after IMAGE_ADVANCE_MS */
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      setActive((a) => clamp(a + 1));
+    }, IMAGE_ADVANCE_MS);
+  }, [multi, media.length, clearTimer]);
+
+  /* When active index changes, restart the lifecycle */
+  useEffect(() => {
+    scheduleAdvance();
+    return clearTimer;
+  }, [active, scheduleAdvance, clearTimer]);
+
+  /* Pause/resume on tab visibility */
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden) { clearTimer(); }
+      else { scheduleAdvance(); }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [clearTimer, scheduleAdvance]);
+
+  /* Video ended → advance */
+  const onVideoEnded = useCallback(() => { next(); }, [next]);
+  const onVideoRef = useCallback((el: HTMLVideoElement | null) => {
+    videoRef.current = el;
+    if (el) {
+      el.addEventListener('ended', onVideoEnded);
+      el.addEventListener('pause', () => { /* no-op, let ended handle advance */ });
+    }
+  }, [onVideoEnded]);
+
+  /* YouTube: use postMessage API for ended detection */
+  useEffect(() => {
+    if (!multi) return;
+    const item = media[activeRef.current];
+    if (!item || item.type !== 'youtube') return;
+    const onMsg = (e: MessageEvent) => {
+      try {
+        const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+        if (data?.event === 'onStateChange' && data?.info === 0) {
+          /* YT_STATE_ENDED = 0 */
+          next();
+        }
+      } catch {}
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [multi, active, media, next]);
+
+  /* ---- Shared stage chrome ---- */
   const stageChrome = (
     <>
       <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
@@ -317,24 +504,29 @@ function HubHero({ banner }: { banner?: any }) {
 
   if (!hasDynamic && !hasBanner) return null;
 
-  /* ---- NO MEDIA: compact premium navy text stage (never empty) ------ */
+  /* ---- NO MEDIA: compact premium navy text stage (only when merchant has text) ------ */
   if (!media.length) {
+    if (!eff.title && !eff.subtitle && !eff.button_text && !promise) return null;
     return (
       <section className="bg-[#f3f5f8]" dir="rtl" data-hero>
-        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
           <div className="relative overflow-hidden rounded-2xl bg-[#0a1220] text-white sm:rounded-3xl">
             {stageChrome}
-            <div className="relative flex min-h-[240px] flex-col items-start justify-center gap-3 p-5 sm:min-h-[300px] sm:p-10 lg:p-12">
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold tracking-wide text-[#8ec5ff]">
-                <SlidersHorizontal className="h-3.5 w-3.5" /> عالَم التِقنية
-              </span>
-              <h1 className="max-w-xl text-2xl font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl">{eff.title || 'أحدث الأجهزة الذكية'}</h1>
-              <p className="max-w-md text-sm leading-relaxed text-slate-300 sm:text-base">{promise}</p>
-              <a href={eff.button_link}
-                className="mt-1 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
-                style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-                {eff.button_text || 'تسوّق الأجهزة'} <ArrowLeft className="h-4 w-4" />
-              </a>
+            <div className="relative flex min-h-[220px] flex-col items-start justify-center gap-3 p-5 sm:min-h-[280px] sm:p-8 lg:p-10">
+              {eff.subtitle && (
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold tracking-wide text-[#8ec5ff]">
+                  <SlidersHorizontal className="h-3.5 w-3.5" /> {eff.subtitle}
+                </span>
+              )}
+              {eff.title && <h1 className="max-w-xl text-2xl font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl">{eff.title}</h1>}
+              {promise && <p className="max-w-md text-sm leading-relaxed text-slate-300 sm:text-base">{promise}</p>}
+              {eff.button_text && (
+                <a href={eff.button_link}
+                  className="mt-1 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+                  style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+                  {eff.button_text} <ArrowLeft className="h-4 w-4" />
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -353,107 +545,161 @@ function HubHero({ banner }: { banner?: any }) {
     if (Math.abs(dx) > 48) { if (dx > 0) prev(); else next(); }
   };
 
-  const progressDots = (onDark: boolean) => (
-    <div className="flex items-center gap-1.5">
-      {media.map((m, i) => (
-        <button key={m.id} type="button" onClick={() => setActive(i)} aria-label={`إظهار الوسائط ${i + 1}`}
-          className={`h-1.5 rounded-full transition-all ${onDark ? 'bg-white' : 'bg-[#0a1220]'} ${i === active ? (onDark ? 'bg-[#2563eb]' : 'bg-[#2563eb]') : 'opacity-30'}`}
-          style={{ width: i === active ? 22 : 6, transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }} />
-      ))}
-    </div>
-  );
+  /* ---- Dots indicator — bounded for many items ---- */
+  const maxVisibleDots = 7;
+  const showEllipsis = media.length > maxVisibleDots;
+  const progressDots = (onDark: boolean) => {
+    let dotIndices: number[] = [];
+    if (!showEllipsis) {
+      dotIndices = media.map((_, i) => i);
+    } else {
+      /* Show first, last, and a window around active */
+      const windowStart = Math.max(1, Math.min(active - 1, media.length - maxVisibleDots + 1));
+      const windowEnd = Math.min(media.length - 1, windowStart + maxVisibleDots - 3);
+      dotIndices = [0];
+      if (windowStart > 1) dotIndices.push(-1); /* ellipsis marker */
+      for (let i = Math.max(1, windowStart); i <= windowEnd; i++) dotIndices.push(i);
+      if (windowEnd < media.length - 1) dotIndices.push(-2); /* ellipsis marker */
+      dotIndices.push(media.length - 1);
+    }
 
+    return (
+      <div className="flex items-center gap-1">
+        {dotIndices.map((idx) => {
+          if (idx < 0) {
+            return <span key={`e${idx}`} className={`text-[10px] ${onDark ? 'text-white/40' : 'text-[#0a1220]/30'}`}>…</span>;
+          }
+          return (
+            <button key={media[idx].id} type="button" onClick={() => goTo(idx)}
+              aria-label={`إظهار الوسائط ${idx + 1}`}
+              className={`h-1.5 rounded-full transition-all ${onDark ? 'bg-white' : 'bg-[#0a1220]'} ${idx === active ? (onDark ? 'bg-[#2563eb]' : 'bg-[#2563eb]') : 'opacity-30'}`}
+              style={{ width: idx === active ? 22 : 6, transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }} />
+          );
+        })}
+      </div>
+    );
+  };
+
+  /* ---- Compact thumbnail (real media) navigator tile ---- */
   const railThumb = (m: HeroMediaItem) => (
-    <button type="button" onClick={() => setActive(media.indexOf(m))} aria-label={`وسائط ${media.indexOf(m) + 1}`}
-      className={`group relative block aspect-[4/3] w-full overflow-hidden rounded-lg transition-all ${m.id === item.id ? 'ring-2 ring-[#2563eb] ring-offset-2 ring-offset-[#0a1220]/80' : 'opacity-70 hover:opacity-100'}`}
+    <button type="button" onClick={() => goTo(media.indexOf(m))} aria-label={`وسائط ${media.indexOf(m) + 1}`}
+      className={`group relative block aspect-[4/3] w-full overflow-hidden rounded-lg transition-all ${m.id === item.id ? 'ring-2 ring-[#2563eb] ring-offset-2 ring-offset-[#0a1220]' : 'opacity-80 hover:opacity-100 hover:ring-1 hover:ring-white/30'}`}
       style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
       <ThumbVisual m={m} />
       {m.type !== 'image' && (
-        <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0a1220]/70 text-white"><Play className="h-3 w-3 fill-current" /></span></span>
+        <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0a1220]/70 text-white"><Play className="h-2.5 w-2.5 fill-current" /></span></span>
       )}
     </button>
   );
 
-  const chevron = (dir: 'prev' | 'next', onDark: boolean) => (
+  /* ---- Chevron nav buttons (clean inside the hero) ---- */
+  const chevron = (dir: 'prev' | 'next') => (
     <button type="button" onClick={dir === 'prev' ? prev : next} aria-label={dir === 'prev' ? 'السابق' : 'التالي'}
-      className={`pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border transition-all backdrop-blur-sm ${onDark ? 'border-white/15 bg-white/10 text-white hover:bg-white/20' : 'border-[#0a1220]/10 bg-white text-[#0a1220] hover:bg-[#f3f5f8]'} shadow-lg`}
+      className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#0a1220]/45 text-white shadow-lg ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-[#0a1220]/70 active:scale-95"
       style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
       {dir === 'prev' ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
     </button>
   );
 
+  const hasText = !!(eff.title || eff.subtitle || eff.button_text || promise);
+
+  /* ---- Text block renderer (mobile = tighter, desktop = larger) ---- */
+  const heroText = (compact: boolean) => (
+    <div className="pointer-events-none flex flex-col items-center gap-2 text-center sm:items-start sm:text-right">
+      {eff.subtitle && (
+        <span className={`inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 text-[#8ec5ff] ${compact ? 'px-2.5 py-0.5 text-[10px]' : 'px-3 py-1 text-[11px] font-bold'}`}>{eff.subtitle}</span>
+      )}
+      {eff.title && (
+        <h1 className={`font-extrabold leading-tight text-white ${compact ? 'max-w-full text-lg' : 'max-w-xl text-2xl sm:text-3xl lg:text-4xl'}`}>{eff.title}</h1>
+      )}
+      {promise && (
+        <p className={`leading-relaxed text-slate-300 ${compact ? 'max-w-full text-[11px]' : 'max-w-md text-sm sm:text-base'}`}>{promise}</p>
+      )}
+      {eff.button_text && (
+        <a href={eff.button_link}
+          className={`pointer-events-auto mt-0.5 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97] ${compact ? 'px-3.5 py-2 text-xs' : 'px-5 py-3 text-sm'}`}
+          style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+          {eff.button_text} <ArrowLeft className={compact ? 'h-3 w-3' : 'h-4 w-4'} />
+        </a>
+      )}
+    </div>
+  );
+
   /* ---- SHOWCASE HERO (media present) -------------------------------- */
   return (
     <section className="bg-[#f3f5f8]" dir="rtl" data-hero>
-      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 lg:px-8 lg:py-6">
         {isMobile ? (
           /* ====================== MOBILE / TABLET (<1024) ====================== */
           <div className="overflow-hidden rounded-2xl bg-[#0a1220] text-white">
-            {/* Main media + text overlay */}
-            <div className="relative h-[260px] overflow-hidden"
+            {/* Media panel — bounded, square-ish, gentle on all ratios */}
+            <div className="flex justify-center px-4 pt-4"
               onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-              <ShowcaseMedia key={item.id} item={item} isMobile fit={hero.fit} />
-              {/* RTL-correct bottom gradient for text readability */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a1220]/85 via-[#0a1220]/25 to-transparent" style={{ opacity: 0.92 + overlayOpacity * 0.08 }} />
-              {multi && (
-                <>
-                  <div className="pointer-events-auto absolute right-2 top-1/2 -translate-y-1/2">{chevron('prev', true)}</div>
-                  <div className="pointer-events-auto absolute left-2 top-1/2 -translate-y-1/2">{chevron('next', true)}</div>
-                </>
-              )}
-              {/* Text overlay bottom */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 p-5">
-                {eff.subtitle && <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold text-[#8ec5ff]">{eff.subtitle}</span>}
-                <h1 className="max-w-md text-xl font-extrabold leading-tight sm:text-2xl">{eff.title || 'أحدث الأجهزة الذكية'}</h1>
-                <p className="max-w-sm text-xs leading-relaxed text-slate-300 sm:text-sm">{promise}</p>
-                <a href={eff.button_link}
-                  className="pointer-events-auto mt-1 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
-                  style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-                  {eff.button_text || 'تسوّق الأجهزة'} <ArrowLeft className="h-3.5 w-3.5" />
-                </a>
+              <div className="relative w-full max-w-[300px]" style={{ aspectRatio: '4 / 3' }}>
+                <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0a1220] shadow-lg">
+                  <ShowcaseMedia key={item.id} item={item} isMobile fit={hero.fit}
+                    onVideoRef={item.type === 'video' ? onVideoRef : undefined} />
+                  <div className="pointer-events-none absolute inset-0 bg-[#0a1220]" style={{ opacity: overlayOpacity * 0.5 }} />
+                </div>
+                {multi && (
+                  <>
+                    <div className="pointer-events-auto absolute -right-2 top-1/2 z-20 -translate-y-1/2">{chevron('prev')}</div>
+                    <div className="pointer-events-auto absolute -left-2 top-1/2 z-20 -translate-y-1/2">{chevron('next')}</div>
+                  </>
+                )}
               </div>
             </div>
-            {/* Dots strip (only when multi) */}
+            {/* Text bar — clean navy field below media, no artwork collision */}
+            {hasText && (
+              <div className="relative px-4 py-3.5 sm:px-5">{heroText(true)}</div>
+            )}
+            {/* Dots — integrated, centered, unobtrusive */}
             {multi && (
-              <div className="flex items-center justify-center gap-1.5 border-t border-white/10 py-3">{progressDots(true)}</div>
+              <div className="flex items-center justify-center gap-1.5 border-t border-white/10 py-2">{progressDots(true)}</div>
             )}
           </div>
         ) : (
-          /* ====================== DESKTOP (>=1024) ====================== */
-          <div className="relative overflow-hidden rounded-2xl bg-[#0a1220] text-white sm:rounded-3xl">
+          /* ====================== DESKTOP (>=1024) — Showcase composition ====== */
+          <div className="relative overflow-hidden rounded-3xl bg-[#0a1220] text-white">
             {stageChrome}
-            <div className="relative h-[420px] lg:h-[460px]" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-              {/* MAIN ACTIVE MEDIA — fills the whole hero surface (immersive) */}
-              <ShowcaseMedia key={item.id} item={item} isMobile={false} fit={hero.fit} />
-              {/* RTL directional scrim on the text side (right) */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-[#0a1220]/80 via-[#0a1220]/30 to-transparent" style={{ opacity: 0.9 + overlayOpacity * 0.1 }} />
-              {/* Text block — start (right) side, vertically centered */}
-              <div className="pointer-events-none absolute inset-y-0 right-8 z-10 flex max-w-md flex-col justify-center gap-3 lg:right-12">
-                {eff.subtitle && <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-[#8ec5ff]">{eff.subtitle}</span>}
-                <h1 className="text-2xl font-extrabold leading-tight lg:text-4xl">{eff.title || 'أحدث الأجهزة الذكية'}</h1>
-                <p className="text-sm leading-relaxed text-slate-300 lg:text-base">{promise}</p>
-                <a href={eff.button_link}
-                  className="pointer-events-auto mt-1 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
-                  style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-                  {eff.button_text || 'تسوّق الأجهزة'} <ArrowLeft className="h-4 w-4" />
-                </a>
+            <div className="relative grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-stretch gap-6 px-8 py-8 lg:px-12 lg:py-10"
+              style={{ minHeight: 'clamp(360px, 30vw, 500px)' }}
+              onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+              {/* TEXT ZONE — clean controlled readable zone (no media behind it) */}
+              <div className="relative z-10 flex flex-col justify-center gap-3" dir="rtl">
+                {heroText(false)}
+                {multi && <div className="mt-2 flex items-center gap-1.5">{progressDots(true)}</div>}
               </div>
-              {multi && (
-                <>
-                  <div className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2">{chevron('prev', true)}</div>
-                  <div className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2">{chevron('next', true)}</div>
-                  <div className="pointer-events-auto absolute bottom-4 left-1/2 -translate-x-1/2">{progressDots(true)}</div>
-                </>
-              )}
-              {/* COMPACT INTEGRATED RAIL — floats on the media edge (left in RTL),
-                  a navigator overlay, not a sidebar */}
-              {multi && (
-                <div className="absolute left-3 top-1/2 z-20 hidden w-[76px] -translate-y-1/2 flex-col gap-2 rounded-2xl bg-[#0a1220]/55 p-1.5 backdrop-blur-sm lg:flex">
-                  {media.map((m, i) => (
-                    <div key={m.id} className="flex-none">{railThumb(m)}</div>
-                  ))}
+
+              {/* MEDIA ZONE — bounded active panel + floating thumbnail navigator */}
+              <div className="relative flex min-h-0 min-w-0 items-stretch gap-3">
+                {/* Active media panel */}
+                <div className="relative min-w-0 flex-1">
+                  <div className="absolute inset-0">
+                    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0a1220] shadow-2xl">
+                      <ShowcaseMedia key={item.id} item={item} isMobile={false} fit={hero.fit}
+                        onVideoRef={item.type === 'video' ? onVideoRef : undefined} />
+                      <div className="pointer-events-none absolute inset-0 bg-[#0a1220]" style={{ opacity: overlayOpacity * 0.5 }} />
+                    </div>
+                    {multi && (
+                      <>
+                        <div className="pointer-events-auto absolute right-3 top-1/2 z-20 -translate-y-1/2">{chevron('prev')}</div>
+                        <div className="pointer-events-auto absolute left-3 top-1/2 z-20 -translate-y-1/2">{chevron('next')}</div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              )}
+                {/* Floating thumbnail navigator — real thumbs, compact but usable */}
+                {multi && (
+                  <div className="relative z-20 hidden w-[84px] shrink-0 self-center lg:block">
+                    <div className="scrollbar-none flex max-h-[320px] flex-col gap-2 overflow-y-auto rounded-xl bg-[#0a1220]/60 p-1.5 backdrop-blur-sm">
+                      {media.map((m) => (
+                        <div key={m.id} className="flex-none">{railThumb(m)}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -464,7 +710,12 @@ function HubHero({ banner }: { banner?: any }) {
 
 /* ---- Active media renderer: image / video / youtube (only the active
        item is mounted, so switching unmounts & stops any playback) ---- */
-function ShowcaseMedia({ item, isMobile, fit }: { item: HeroMediaItem; isMobile: boolean; fit?: string }) {
+function ShowcaseMedia({ item, isMobile, fit, onVideoRef }: {
+  item: HeroMediaItem;
+  isMobile: boolean;
+  fit?: string;
+  onVideoRef?: (el: HTMLVideoElement | null) => void;
+}) {
   const src = isMobile ? (item.srcMobile || item.src) : item.src;
   const pos = isMobile ? (item.positionMobile || item.position) : item.position;
   const posStyle: any = pos && pos !== 'center' ? { objectPosition: pos } : {};
@@ -472,7 +723,7 @@ function ShowcaseMedia({ item, isMobile, fit }: { item: HeroMediaItem; isMobile:
 
   if (item.type === 'video') {
     return (
-      <video autoPlay loop muted playsInline
+      <video ref={onVideoRef} autoPlay loop muted playsInline
         src={getImageUrl(src)} poster={item.poster ? getImageUrl(item.poster) : undefined}
         className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle} />
     );
@@ -480,7 +731,7 @@ function ShowcaseMedia({ item, isMobile, fit }: { item: HeroMediaItem; isMobile:
   if (item.type === 'youtube') {
     return (
       <iframe className="absolute inset-0 h-full w-full"
-        src={`https://www.youtube.com/embed/${src}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${src}&modestbranding=1&rel=0`}
+        src={`https://www.youtube.com/embed/${src}?autoplay=1&mute=1&controls=0&playsinline=1&modestbranding=1&rel=0&enablejsapi=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
         title="YouTube hero" frameBorder="0" allow="autoplay; fullscreen; encrypted-media" allowFullScreen />
     );
   }
@@ -495,18 +746,65 @@ function ShowcaseMedia({ item, isMobile, fit }: { item: HeroMediaItem; isMobile:
 /* ---- Gallery thumbnail visual: real poster / yt thumb / source image -- */
 function ThumbVisual({ m }: { m: HeroMediaItem }) {
   const [failed, setFailed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [posterFrame, setPosterFrame] = useState<string | null>(null);
+
+  /* For uploaded video: try to extract a real frame as thumbnail */
+  useEffect(() => {
+    if (m.type !== 'video' || !m.src) return;
+    if (m.poster) return; /* already has a poster, no need to generate */
+    let mounted = true;
+    const vid = document.createElement('video');
+    vid.preload = 'metadata';
+    vid.muted = true;
+    vid.src = getImageUrl(m.src);
+    vid.currentTime = 0.5; /* seek to 0.5s for a representative frame */
+    vid.onloadeddata = () => {
+      if (!mounted) return;
+      try {
+        vid.currentTime = 1;
+      } catch {}
+    };
+    vid.onseeked = () => {
+      if (!mounted) return;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 160;
+        canvas.height = 120;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(vid, 0, 0, 160, 120);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+          if (mounted && dataUrl && dataUrl.length > 100) setPosterFrame(dataUrl);
+        }
+      } catch {}
+      vid.src = '';
+    };
+    vid.onerror = () => { vid.src = ''; };
+    return () => { mounted = false; vid.src = ''; };
+  }, [m.type, m.src, m.poster]);
+
   let src = '';
   if (m.type === 'image') src = m.src;
-  else if (m.type === 'video') src = m.poster || '';
+  else if (m.type === 'video') src = posterFrame || m.poster || '';
   else src = m.poster || `https://i.ytimg.com/vi/${m.src}/hqdefault.jpg`;
 
-  if (failed || !src) {
+  if (failed || (!src && m.type !== 'youtube')) {
     return (
       <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/80">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#8ec5ff]"><Play className="h-4 w-4 fill-current" /></span>
       </span>
     );
   }
+
+  if (m.type === 'youtube' && !src) {
+    return (
+      <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/80">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#8ec5ff]"><Play className="h-4 w-4 fill-current" /></span>
+      </span>
+    );
+  }
+
   return (
     <img src={getImageUrl(src)} alt="" loading="lazy" decoding="async"
       className="absolute inset-0 h-full w-full object-cover"
@@ -607,18 +905,18 @@ export function HubCard({ product }: { product: V2Product }) {
 function HubCategoryRail({ categories }: { categories: any[] }) {
   if (!categories.length) return null;
 
-  /* Single category — full-width discovery card, never a lonely tile */
+  /* Single category — compact intentional discovery card */
   if (categories.length === 1) {
     const c = categories[0];
     return (
       <a href={`/category/${c.slug || c.id}`}
-        className="group flex items-center gap-4 overflow-hidden rounded-2xl border border-[#e8edf3] bg-white p-4 shadow-sm transition-all hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.99]"
+        className="group inline-flex w-full max-w-md items-center gap-3 rounded-2xl border border-[#e8edf3] bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.98]"
         style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-extrabold text-[#0a1220]">{c.name}</p>
-          <p className="mt-0.5 text-xs font-medium text-[#8a93a2]">تصفح جميع أجهزة وإكسسوارات هذا القسم</p>
-        </div>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#2563eb] transition-colors group-hover:bg-[#0a1220] group-hover:text-white">{categoryIcon(c.name)}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-extrabold text-[#0a1220]">{c.name}</span>
+          <span className="block text-xs font-medium text-[#8a93a2]">تصفح الأجهزة والإكسسوارات</span>
+        </span>
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e3e8ee] text-[#2563eb] transition-colors group-hover:border-[#2563eb] group-hover:bg-[#2563eb] group-hover:text-white">←</span>
       </a>
     );
@@ -677,20 +975,18 @@ function HubDealOfTheDay({ products }: { products: V2Product[] }) {
 
   return (
     <section id="hub-deals" ref={reveal.ref} className="mx-auto mt-6 max-w-7xl px-3 sm:px-6 lg:px-8" dir="rtl" style={revealStyle(reveal.visible)}>
-      <div className="relative overflow-hidden rounded-2xl border border-[#1c2740] bg-[#0a1220] p-3.5 sm:p-5 lg:p-6">
-        {/* band texture */}
-        <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-        <div className="relative mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
-          <h2 className="flex items-center gap-2 text-base font-extrabold text-white sm:text-xl">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563eb] text-white"><Zap className="h-4 w-4" /></span>
+      <div className="overflow-hidden rounded-2xl border border-[#1c2740]">
+        {/* Slim navy header bar — title + countdown, contained height (no empty dark stage) */}
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-[#0a1220] px-3.5 py-3 sm:px-5 sm:py-3.5">
+          <h2 className="flex items-center gap-2 text-sm font-extrabold text-white sm:text-lg">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2563eb] text-white"><Zap className="h-4 w-4" /></span>
             عروض اليوم
           </h2>
           <div className="flex items-center gap-1.5" dir="ltr">
             {units.map((u, i) => (
               <React.Fragment key={u.l}>
                 {i > 0 && <span className="text-white/20">:</span>}
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-sm tabular-nums text-white">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs tabular-nums text-white sm:text-sm">
                   <span className="font-extrabold">{u.v}</span>
                   <span className="ms-1 text-[9px] font-bold text-[#8ec5ff]">{u.l}</span>
                 </span>
@@ -698,14 +994,15 @@ function HubDealOfTheDay({ products }: { products: V2Product[] }) {
             ))}
           </div>
         </div>
-
-        {/* Mobile horizontal rail / desktop grid */}
-        <div className="relative flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4">
-          {deals.slice(0, 4).map((p) => (
-            <div key={p.id} className="min-w-[150px] shrink-0 snap-start sm:min-w-0">
-              <HubCard product={p} />
-            </div>
-          ))}
+        {/* Content-driven light body — cards sized to content, no huge empty dark region */}
+        <div className="border-t border-[#1c2740] bg-white p-3 sm:p-4">
+          <div className="relative flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4">
+            {deals.slice(0, 4).map((p) => (
+              <div key={p.id} className="min-w-[150px] shrink-0 snap-start sm:min-w-0">
+                <HubCard product={p} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
