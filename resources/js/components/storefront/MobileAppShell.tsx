@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Heart, Home, LayoutGrid, Package, Search, ShoppingCart, Store, User, X } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
@@ -50,6 +50,7 @@ export const MobileAppShell: React.FC = () => {
   const isFashionAtelier = String(store?.theme || '').toLowerCase() === 'fashion-atelier';
   const isGrocerySouq = String(store?.theme || '').toLowerCase() === 'grocery-souq';
   const isElectronicsHub = String(store?.theme || '').toLowerCase() === 'electronics-hub';
+  const isHayah = String(store?.theme || '').toLowerCase() === 'restaurant-menu';
   const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
   const { t } = useStorefrontLocale();
 
@@ -131,11 +132,11 @@ export const MobileAppShell: React.FC = () => {
 
   return (
     <>
-      {/* App header — legacy global header; hidden for v2 templates which own intentional mobile header (prevents duplicated search/wishlist/logo) */}
+      {/* App header â€” legacy global header; hidden for v2 templates which own intentional mobile header (prevents duplicated search/wishlist/logo) */}
       {!isV2 && (
       <header dir="rtl" data-app-shell="header" className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md shadow-sm md:hidden">
         <div className="flex items-center gap-2 px-3 py-2.5">
-          {/* Logo on right (RTL start) — single brand mark */}
+          {/* Logo on right (RTL start) â€” single brand mark */}
           <div className="flex shrink-0 items-center gap-2">
             {config.logo ? (
               <img src={getImageUrl(config.logo)} alt={config.storeName} className="h-8 w-auto max-w-24 object-contain" />
@@ -146,7 +147,7 @@ export const MobileAppShell: React.FC = () => {
             )}
             <h1 className="hidden max-w-24 truncate text-[13px] font-bold text-gray-900 sm:block">{config.storeName}</h1>
           </div>
-          {/* Search — unified server-backed: opens shared SearchOverlay (same contract as desktop) */}
+          {/* Search â€” unified server-backed: opens shared SearchOverlay (same contract as desktop) */}
           <div className="relative min-w-0 flex-1">
             <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <button
@@ -154,24 +155,24 @@ export const MobileAppShell: React.FC = () => {
               onClick={() => setShowSearch(true)}
               className="h-9 w-full rounded-full border border-gray-200 bg-gray-50 ps-9 pe-3 text-start text-sm text-gray-900 hover:bg-white"
             >
-              <span className={searchQuery ? 'text-gray-900' : 'text-gray-400'}>{searchQuery || t('ابحث عن المنتجات...')}</span>
+              <span className={searchQuery ? 'text-gray-900' : 'text-gray-400'}>{searchQuery || t('Ø§Ø¨Ø­Ø« Ø¹Ù† Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª...')}</span>
             </button>
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => handleSearch('')}
-                aria-label={t('مسح البحث')}
+                aria-label={t('Ù…Ø³Ø­ Ø§Ù„Ø¨Ø­Ø«')}
                 className="absolute end-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
-          {/* Wishlist — single instance on mobile (priority 5) */}
+          {/* Wishlist â€” single instance on mobile (priority 5) */}
           <button
             type="button"
             onClick={() => setShowWishlistModal(true)}
-            aria-label={t('المفضلة')}
+            aria-label={t('Ø§Ù„Ù…ÙØ¶Ù„Ø©')}
             className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-700 transition-colors hover:bg-gray-100"
           >
             <Heart className="h-5 w-5" strokeWidth={1.7} />
@@ -186,13 +187,13 @@ export const MobileAppShell: React.FC = () => {
       </header>
       )}
 
-      {/* Bottom tab bar — native app navigation — hidden for fashion-atelier (uses hamburger drawer), grocery-souq and electronics-hub (no bottom nav per design) */}
-      {!isFashionAtelier && !isGrocerySouq && !isElectronicsHub && (
+      {/* Bottom tab bar â€” native app navigation â€” hidden for fashion-atelier (uses hamburger drawer), grocery-souq, electronics-hub and restaurant-menu/Ø§Ù„Ù‡ÙŠØ¦Ø© (no bottom nav per reference reference) */}
+      {!isFashionAtelier && !isGrocerySouq && !isElectronicsHub && !isHayah && (
       <nav data-app-shell="tabs" className={`fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden ${anyOverlayOpen ? 'hidden' : ''}`}>
         <div className="flex items-stretch">
           <TabButton
             id="home"
-            label={t('الرئيسية')}
+            label={t('Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©')}
             icon={Home}
             active={activeTab === 'home'}
             accent={accent}
@@ -200,7 +201,7 @@ export const MobileAppShell: React.FC = () => {
           />
           <TabButton
             id="categories"
-            label={t('الأقسام')}
+            label={t('Ø§Ù„Ø£Ù‚Ø³Ø§Ù…')}
             icon={LayoutGrid}
             active={activeTab === 'categories'}
             accent={accent}
@@ -211,7 +212,7 @@ export const MobileAppShell: React.FC = () => {
           />
           <TabButton
             id="cart"
-            label={t('السلة')}
+            label={t('Ø§Ù„Ø³Ù„Ø©')}
             icon={ShoppingCart}
             active={activeTab === 'cart'}
             accent={accent}
@@ -221,7 +222,7 @@ export const MobileAppShell: React.FC = () => {
           {(customerAccountsEnabled && (isLoggedIn || loginEnabled)) && (
           <TabButton
             id="orders"
-            label={t('طلباتي')}
+            label={t('Ø·Ù„Ø¨Ø§ØªÙŠ')}
             icon={Package}
             active={activeTab === 'orders'}
             accent={accent}
@@ -231,7 +232,7 @@ export const MobileAppShell: React.FC = () => {
           {(customerAccountsEnabled && (isLoggedIn || loginEnabled)) && (
           <TabButton
             id="account"
-            label={t('حسابي')}
+            label={t('Ø­Ø³Ø§Ø¨ÙŠ')}
             icon={User}
             active={activeTab === 'account'}
             accent={accent}
@@ -256,11 +257,11 @@ export const MobileAppShell: React.FC = () => {
           <div className="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto rounded-t-2xl bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-200" />
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-900">{t('الأقسام')}</h2>
+              <h2 className="text-base font-bold text-gray-900">{t('Ø§Ù„Ø£Ù‚Ø³Ø§Ù…')}</h2>
               <button
                 type="button"
                 onClick={() => setShowCategoriesSheet(false)}
-                aria-label={t('إغلاق')}
+                aria-label={t('Ø¥ØºÙ„Ø§Ù‚')}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
               >
                 <X className="h-4 w-4" />
@@ -291,3 +292,4 @@ export const MobileAppShell: React.FC = () => {
     </>
   );
 };
+

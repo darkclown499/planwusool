@@ -1581,10 +1581,8 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                 )}
                                 {theme === 'restaurant-menu' && (
                                     <Card>
-                                        <p className="mb-2 text-xs font-black text-slate-800">مطعم — محتوى القالب <span className="ms-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">قائمة المطعم</span></p>
-                                        <div className="space-y-3">
-                                            <div><SectionLabel hint="الصفحة الرئيسية → شبكة اختيارات الشيف">عنوان قسم اختيارات الشيف</SectionLabel><Input value={String(getDotted(content,'restaurant_chef_heading') ?? '')} onChange={e=> setContent(setDotted(content,'restaurant_chef_heading', e.target.value))} placeholder="اختيارات الشيف" className="bg-white" /></div>
-                                        </div>
+                                        <p className="mb-2 text-xs font-black text-slate-800">الهيئة — محتوى القالب <span className="ms-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">الهيئة</span></p>
+                                        <p className="text-xs leading-relaxed text-slate-500">قالب الهيئة خفيف ومحتوى بانر الهيرو والتنقل يدار من قسم الهيرو والأقسام أعلاه — لا إعدادات مطعم خاصة.</p>
                                     </Card>
                                 )}
                                 {theme === 'bazaar-market' && (

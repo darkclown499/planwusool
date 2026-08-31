@@ -1,8 +1,8 @@
-import { getImageUrl } from '@/utils/image-helper';
+﻿import { getImageUrl } from '@/utils/image-helper';
 import { useStorefrontCore } from './hooks';
 
 /**
- * Shared hero_banner resolver — used by every template's Hero component
+ * Shared hero_banner resolver â€” used by every template's Hero component
  * so video/youtube/image hero types saved via Designer appear correctly
  * regardless of which template the merchant uses.
  *
@@ -40,7 +40,7 @@ export interface HeroMediaItem {
   poster?: string | null;
   position?: string | null;
   positionMobile?: string | null;
-  // Per-banner optional content — when showContent===false the banner explicitly shows NO TEXT.
+  // Per-banner optional content â€” when showContent===false the banner explicitly shows NO TEXT.
   // When showContent is undefined/null and all text fields empty -> legacy fallback to global hero fields.
   heading?: string | null;
   title?: string | null; // alias for heading
@@ -63,19 +63,19 @@ export interface ResolvedHero {
   overlayOpacity: number;
   overlayExplicit: boolean;
   hasDynamicHero: boolean;
-  /** Canonical ordered media collection — images/videos/youtube as real separate items. */
+  /** Canonical ordered media collection â€” images/videos/youtube as real separate items. */
   media: HeroMediaItem[];
   /** Reusable fit control: cover (crop, no bars) vs contain (letterbox). Defaults to cover. */
   fit: 'cover' | 'contain';
   /** Object-position / focal point: center | top | bottom | custom percentage string. */
   position: string;
-  /** Mobile-specific overrides — when null, desktop value applies. */
+  /** Mobile-specific overrides â€” when null, desktop value applies. */
   fitMobile: 'cover' | 'contain' | null;
   positionMobile: string | null;
   /** Optional desktop/mobile heights (px or clamp). When absent, template default applies. */
   heightDesktop: string | null;
   heightMobile: string | null;
-  /** Optional mobile-specific media source — when set, mobile uses vertical alternative. */
+  /** Optional mobile-specific media source â€” when set, mobile uses vertical alternative. */
   imagesMobile: string[];
   videoUrlMobile: string | null;
   youtubeUrlMobile: string | null;
@@ -139,13 +139,13 @@ export function useResolvedHero(): ResolvedHero {
   const heroCtaLabel = storeHero?.cta_label ?? storeHero?.button_text ?? rawContent?.hero_cta_label ?? '';
   const heroCtaLink = storeHero?.cta_link ?? storeHero?.button_link ?? rawContent?.hero_cta_link ?? '';
 
-  // Reusable fit/position controls — merchant can control crop vs letterbox and focal point
+  // Reusable fit/position controls â€” merchant can control crop vs letterbox and focal point
   const rawFit = String(storeHero?.fit ?? storeHero?.object_fit ?? storeHero?.media_fit ?? rawContent?.hero_fit ?? 'cover').toLowerCase().trim();
   const fit: 'cover' | 'contain' = rawFit === 'contain' ? 'contain' : 'cover';
   const rawPos = String(storeHero?.position ?? storeHero?.object_position ?? storeHero?.focal_point ?? rawContent?.hero_position ?? 'center').trim() || 'center';
   // Normalize common aliases
   const position = rawPos === 'centre' ? 'center' : rawPos;
-  // Mobile-specific overrides — independent so merchant can fix cropped video on phone without breaking desktop
+  // Mobile-specific overrides â€” independent so merchant can fix cropped video on phone without breaking desktop
   const rawFitMobile = storeHero?.fit_mobile ?? storeHero?.fitMobile ?? storeHero?.mobile_fit ?? rawContent?.hero_fit_mobile ?? rawContent?.heroFitMobile ?? null;
   const fitMobile: 'cover' | 'contain' | null = rawFitMobile ? (String(rawFitMobile).toLowerCase().trim() === 'contain' ? 'contain' : 'cover') : null;
   const rawPosMobile = storeHero?.position_mobile ?? storeHero?.positionMobile ?? storeHero?.mobile_position ?? rawContent?.hero_position_mobile ?? rawContent?.heroPositionMobile ?? null;
@@ -172,7 +172,7 @@ export function useResolvedHero(): ResolvedHero {
     return [];
   })();
 
-  // Canonical ordered media collection — supports multiple images/videos/youtube as real separate items
+  // Canonical ordered media collection â€” supports multiple images/videos/youtube as real separate items
   const heroMedia: HeroMediaItem[] = (() => {
     const rawMedia = storeHero?.media ?? storeHero?.hero_media ?? storeHero?.items ?? null;
     if (Array.isArray(rawMedia) && rawMedia.length > 0) {
@@ -197,7 +197,7 @@ export function useResolvedHero(): ResolvedHero {
         const poster = item.poster ?? null;
         // Normalize youtube src to id
         const finalSrc = type === 'youtube' ? (extractYouTubeId(src) || src) : src;
-        // Per-banner content — reuse canonical hero field names with multiple aliases
+        // Per-banner content â€” reuse canonical hero field names with multiple aliases
         const rawHeading = item.heading ?? item.title ?? item.hero_heading ?? item.heroHeading ?? null;
         const rawSubtitle = item.subtitle ?? item.hero_subtitle ?? item.heroSubtitle ?? item.description ?? null;
         const rawCtaLabel = item.cta_label ?? item.ctaLabel ?? item.button_text ?? item.buttonText ?? item.cta ?? null;
@@ -293,7 +293,7 @@ export function useResolvedHero(): ResolvedHero {
     }
     // If legacyList has items (images/videos/youtube), return it; otherwise empty
     // For image type stores, heroImages already added; for video/youtube single, list has one video/youtube
-    // Avoid duplicating single video when images also exist and type is image — only add video if heroType is video or legacyList empty
+    // Avoid duplicating single video when images also exist and type is image â€” only add video if heroType is video or legacyList empty
     // The above logic already handles that, but ensure we don't return empty when we have images
     return legacyList;
   })();
@@ -360,23 +360,23 @@ export const HERO_BREAKPOINT = 768;
 export const HERO_BREAKPOINT_CSS = '(max-width: 767px)';
 
 /**
- * Hero width mode per template — intentional page layout.
+ * Hero width mode per template â€” intentional page layout.
  *  - contained: inside page max-width with side margins
  *  - full-bleed: edge-to-edge (only when template identity demands it)
  *  - split: asymmetric editorial (e.g. electronics text+image)
  */
 export type HeroWidthMode = 'contained' | 'full-bleed' | 'split';
 export const HERO_WIDTH_MODE: Record<string, HeroWidthMode> = {
-  'fashion-atelier': 'contained',   // editorial — balanced margins, NOT edge-to-edge
+  'fashion-atelier': 'contained',   // editorial â€” balanced margins, NOT edge-to-edge
   'bazaar-market': 'contained',     // centered marketplace card
   'grocery-souq': 'contained',      // dense supermarket, contained
   'bakery-house': 'contained',      // artisan, centered
   'electronics-hub': 'split',       // asymmetric text+image split, background full-bleed but content split
-  'restaurant-menu': 'full-bleed',  // menu board — full width feels intentional
+  'restaurant-menu': 'contained',  // Al-Hayaa — contained carousel like reference
 };
 
 /**
- * Honest desktop visible-slot aspect per template — derived from
+ * Honest desktop visible-slot aspect per template â€” derived from
  * the REAL storefront Hero slot (not the old misleading source dream).
  * Used to advise merchants what composition will be crop-free.
  *
@@ -384,19 +384,19 @@ export const HERO_WIDTH_MODE: Record<string, HeroWidthMode> = {
  * Corrected to ~1600x520-550 wide slot so cover has negligible crop.
  */
 export const HERO_DESKTOP_ASPECTS: Record<string, string> = {
-  'fashion-atelier': '3/2',  // 1200×800 — premium 3:2 editorial banner
-  'bazaar-market': '8/3',      // 1600×600 ≈ 2.67
-  'grocery-souq': '8/3',       // 1600×600
-  'bakery-house': '12/5',      // 1200×500
-  'electronics-hub': '5/2',    // 1000×400 — compact split card, text+image
-  'restaurant-menu': '8/3',    // 1600×600
+  'fashion-atelier': '3/2',  // 1200Ã—800 â€” premium 3:2 editorial banner
+  'bazaar-market': '8/3',      // 1600Ã—600 â‰ˆ 2.67
+  'grocery-souq': '8/3',       // 1600Ã—600
+  'bakery-house': '12/5',      // 1200Ã—500
+  'electronics-hub': '5/2',    // 1000Ã—400 â€” compact split card, text+image
+  'restaurant-menu': '8/3',    // 1600Ã—600
 };
 
-/** Mobile slot — 4:5 vertical when mobile asset exists, otherwise same as desktop. */
+/** Mobile slot â€” 4:5 vertical when mobile asset exists, otherwise same as desktop. */
 export const HERO_MOBILE_ASPECT = '4/5';
 
 /**
- * Professional responsive height contract — NOT blindly aspectRatio:source.
+ * Professional responsive height contract â€” NOT blindly aspectRatio:source.
  * Each template gets a clamped height so common viewports stay ecommerce-scale:
  *  1920/1600/1366/1280/1024 remain ~380-520, never 700-900.
  *  Mobile capped so 375-430 (4:5) does not consume the whole first viewport.
@@ -407,7 +407,7 @@ export const HERO_HEIGHTS: Record<string, { desktop: string; mobile: string }> =
   'grocery-souq':    { desktop: 'clamp(340px, 26vw, 440px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'bakery-house':    { desktop: 'clamp(340px, 30vw, 440px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'electronics-hub': { desktop: 'clamp(320px, 26vw, 440px)', mobile: 'clamp(280px, 72vw, 380px)' },
-  'restaurant-menu': { desktop: 'clamp(380px, 32vw, 520px)', mobile: 'clamp(310px, 82vw, 370px)' },
+  'restaurant-menu': { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(300px, 90vw, 400px)' },
 };
 export const HERO_HEIGHT_FALLBACK = { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' };
 
@@ -426,7 +426,7 @@ export function heroDesktopAspect(templateSlug?: string | null): string {
 }
 
 /**
- * Tailwind safelist hint — ensure these arbitrary aspect classes are generated
+ * Tailwind safelist hint â€” ensure these arbitrary aspect classes are generated
  * even though they are constructed dynamically. This comment is intentionally
  * kept so Tailwind's content scanner sees the literal class names.
  *
@@ -437,7 +437,7 @@ export const _TAILWIND_ASPECT_SAFELIST = 'aspect-[16/9] aspect-[32/11] aspect-[1
 
 /**
  * CSS helper: returns responsive aspect-ratio style for a hero container.
- * Legacy aspect helper — kept for backward compat but new code should use
+ * Legacy aspect helper â€” kept for backward compat but new code should use
  * heroHeightStyle (clamped height) so giant 16:9 regressions do not return.
  */
 export function heroAspectStyle(templateSlug?: string | null, hasMobileAsset?: boolean): React.CSSProperties & Record<string, any> {
@@ -451,7 +451,7 @@ export function heroResponsiveAspectCss(templateSlug?: string | null): string {
 }
 
 /**
- * Preferred height helper — clamped so 16:9 source never creates 900px giants.
+ * Preferred height helper â€” clamped so 16:9 source never creates 900px giants.
  * Designer preview and storefront share identical clamp values.
  */
 export function heroHeightStyle(templateSlug?: string | null, hasCustomHeight?: boolean, customDesktop?: string | null, customMobile?: string | null): React.CSSProperties {
@@ -481,7 +481,7 @@ export function heroPositionFor(hero: ResolvedHero, isMobile: boolean): string {
 /**
  * Pick the correct media source for given viewport.
  * Fallback chain: mobile-specific -> desktop -> empty.
- * Never stretches/distorts — cover vs contain is handled by CSS.
+ * Never stretches/distorts â€” cover vs contain is handled by CSS.
  */
 export function heroImagesFor(hero: ResolvedHero, isMobile: boolean): string[] {
   if (isMobile && hero.imagesMobile.length > 0) return hero.imagesMobile;
@@ -497,7 +497,7 @@ export function heroYoutubeIdFor(hero: ResolvedHero, isMobile: boolean): string 
 }
 
 /**
- * Per-media content helpers — explicit empty state + legacy fallback.
+ * Per-media content helpers â€” explicit empty state + legacy fallback.
  *
  * Contract:
  * - If media.showContent === false => explicit NO TEXT (never fallback).
@@ -525,7 +525,7 @@ export function hasPerMediaContent(m: HeroMediaItem): boolean {
 }
 
 export function heroContentForMedia(m: HeroMediaItem, hero: ResolvedHero): ResolvedMediaContent {
-  // Explicit OFF — must not show any text
+  // Explicit OFF â€” must not show any text
   if (m.showContent === false) {
     return { heading: '', subtitle: '', ctaLabel: '', ctaLink: '', hasContent: false, isExplicitOff: true, isPerMedia: true };
   }
@@ -539,7 +539,7 @@ export function heroContentForMedia(m: HeroMediaItem, hero: ResolvedHero): Resol
     const hasContent = !!(perHeading || perSubtitle || perCtaLabel);
     return { heading: perHeading, subtitle: perSubtitle, ctaLabel: perCtaLabel, ctaLink: perCtaLink || '#', hasContent, isExplicitOff: false, isPerMedia: true };
   }
-  // Legacy fallback — use global hero fields
+  // Legacy fallback â€” use global hero fields
   const gHeading = String(hero.heading || '').trim();
   const gSubtitle = String(hero.subtitle || '').trim();
   const gCtaLabel = String(hero.ctaLabel || '').trim();
@@ -547,3 +547,4 @@ export function heroContentForMedia(m: HeroMediaItem, hero: ResolvedHero): Resol
   const hasContent = !!(gHeading || gSubtitle || gCtaLabel);
   return { heading: gHeading, subtitle: gSubtitle, ctaLabel: gCtaLabel, ctaLink: gCtaLink, hasContent, isExplicitOff: false, isPerMedia: false };
 }
+

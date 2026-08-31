@@ -1,27 +1,20 @@
-/* Restaurant Menu — sector demo catalog: grills, appetizers, mains,
-   desserts and drinks, menu-board style. */
+/* الهيئة — Al-Hay'a light commerce demo catalog: general grocery/spice categories */
 
 const IMG = {
-  restaurant: '/images/store/restaurant-dish.jpg',
-  sweets: '/images/store/sweets.jpg',
-  coffee: '/images/store/coffee.jpg',
-  banner: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5',
+  banner: '/images/store/spices.jpg',
 };
 
-/* A distinct photo per product (cycled by catalog order) so grills, mains,
-   desserts and drinks each get their own shot instead of one dish photo. */
 const PHOTOS = [
+  '/images/store/spices.jpg',
+  '/images/store/sweets.jpg',
+  '/images/store/coffee.jpg',
+  '/images/demo/products/store3_p6.jpg',
   '/images/store/restaurant-dish.jpg',
   '/images/store/grills.jpg',
-  '/images/demo/products/store3_p6.jpg',
-  '/images/store/fast-food.jpg',
   '/images/demo/products/store5_p4.jpg',
-  '/images/store/spices.jpg',
   '/images/demo/products/store3_p7.jpg',
-  '/images/store/sweets.jpg',
   '/images/demo/products/store3_p9.jpg',
-  '/images/store/coffee.jpg',
-  '/images/demo/products/store3_p12.jpg',
+  '/images/store/fast-food.jpg',
 ];
 
 let seq = 0;
@@ -29,62 +22,66 @@ const P = (name: string, price: number, categoryId: string, opts: Record<string,
   const photo = PHOTOS[seq % PHOTOS.length];
   seq++;
   return {
-    id: `rs-${seq}`,
+    id: `hy-${seq}`,
     name,
     price,
-    originalPrice: null,
-    sku: `RS-${String(seq).padStart(3, '0')}`,
+    originalPrice: opts.originalPrice ?? null,
+    sku: `HY-${String(seq).padStart(3, '0')}`,
     stockQuantity: opts.stockQuantity ?? 30,
     categoryId,
     availability: 'in_stock' as const,
     image: photo,
     images: [photo],
-    description: 'يُحضّر طازجاً عند الطلب بمكونات مختارة وتوابل بيتية.',
+    description: 'منتج مختار بعناية — جودة عالية وتغليف مناسب.',
+    variants: opts.variants ?? undefined,
+    variantCombinations: opts.variantCombinations ?? undefined,
     ...opts,
   };
 };
 
 export const RESTAURANT_DEMO = {
   categories: [
-    { id: 'c1', name: 'المقبلات', slug: 'appetizers', image: IMG.restaurant },
-    { id: 'c2', name: 'السلطات', slug: 'salads', image: IMG.restaurant },
-    { id: 'c3', name: 'المشاوي على الفحم', slug: 'grills', image: IMG.restaurant },
-    { id: 'c4', name: 'الأطباق الرئيسية', slug: 'mains', image: IMG.restaurant },
-    { id: 'c5', name: 'الحلويات', slug: 'desserts', image: IMG.sweets },
-    { id: 'c6', name: 'المشروبات', slug: 'drinks', image: IMG.coffee },
+    { id: 'c1', name: 'بهارات وتوابل', slug: 'spices', image: PHOTOS[0] },
+    { id: 'c2', name: 'مكسرات محمصة', slug: 'roasted-nuts', image: PHOTOS[1] },
+    { id: 'c3', name: 'مواد غذائية', slug: 'groceries', image: PHOTOS[2] },
+    { id: 'c4', name: 'بقوليات', slug: 'legumes', image: PHOTOS[3] },
+    { id: 'c5', name: 'زيوت طبيعية', slug: 'oils', image: PHOTOS[4] },
+    { id: 'c6', name: 'أعشاب', slug: 'herbs', image: PHOTOS[5] },
   ],
   products: [
-    P('حمص بالطحينة وزيت الزيتون', 18, 'c1'),
-    P('متبل باذنجان مشوي', 20, 'c1'),
-    P('سمبوسك جبن — ٦ حبات', 22, 'c1', { originalPrice: 26 }),
-    P('أجنحة دجاج حارة — ٨ حبات', 32, 'c1', { variants: [{ name: 'الحارّة', values: ['عادية', 'حارة 🔥', 'نارية 🔥🔥'] }] }),
-    P('فتوش الخضار بخبز محمص', 24, 'c2'),
-    P('سلطة سيزر بالدجاج المشوي', 34, 'c2'),
-    P('تبولة ناعمة بزيت الزيتون', 22, 'c2'),
-    P('مشاوي مشكلة لعائلة ٤ أشخاص', 165, 'c3', { originalPrice: 190, variants: [{ name: 'الحجم', values: ['لشخصين', 'عائلي'] }] }),
-    P('كباب حلبي — ١٢ سيخ', 85, 'c3'),
-    P('شيش طاووق بالثوم والليمون', 62, 'c3'),
-    P('ريش غنم على الفحم — كيلو', 120, 'c3', { stockQuantity: 8 }),
-    P('دجاج مسحب على الطريقة الشامية', 55, 'c4', { originalPrice: 64 }),
-    P('كبسة لحم مع الرز المفلفل', 78, 'c4'),
-    P('منسف جمزة باللبن الجميد', 88, 'c4'),
-    P('كنافة بالقشطة — صينية وسط', 42, 'c5'),
-    P('مهلبية بماء الورد ومكسرات', 16, 'c5'),
-    P('تشيكوك حلى الشوكولاتة الباردة', 21, 'c5'),
-    P('ليموناضة نعنع طازجة — إبريق', 14, 'c6'),
-    P('شاي مغربي بالنعنع — براد', 12, 'c6'),
-    P('قهوة عربية بالهيل — دلة', 15, 'c6'),
+    P('بهارات مشكلة للطبيخ', 18, 'c1', { variants: [{ name: 'الوزن', values: ['250غم', '500غم', '1كغ'] }], variantCombinations: [{ id: '250غم', values: ['250غم'], price: 18 }, { id: '500غم', values: ['500غم'], price: 32 }, { id: '1كغ', values: ['1كغ'], price: 58 }] }),
+    P('زعفران أصلي', 20, 'c1'),
+    P('بهارات كبسة سعودية', 22, 'c1', { originalPrice: 26 }),
+    P('كمون بلدي', 14, 'c1', { variants: [{ name: 'الوزن', values: ['100غم', '250غم'] }] }),
+    P('خلطة مكسرات سوبر', 42, 'c2', { originalPrice: 48, variants: [{ name: 'الوزن', values: ['250غم', '500غم', '1كغ'] }], variantCombinations: [{ id: '250غم', values: ['250غم'], price: 22 }, { id: '500غم', values: ['500غم'], price: 42 }, { id: '1كغ', values: ['1كغ'], price: 78 }] }),
+    P('كاشو محمص', 32, 'c2'),
+    P('لوز محمص', 28, 'c2'),
+    P('رز بسمتي', 23, 'c3'),
+    P('طحينية', 14, 'c3'),
+    P('عدس أحمر مجروش', 8, 'c4', { variants: [{ name: 'الوزن', values: ['500غم', '1كغ'] }], variantCombinations: [{ id: '500غم', values: ['500غم'], price: 8 }, { id: '1كغ', values: ['1كغ'], price: 14 }] }),
+    P('فريكة خشنة', 10, 'c4'),
+    P('زيت حبة البركة', 20, 'c5'),
+    P('زيت سمسم', 18, 'c5'),
+    P('زهورات شامية', 12, 'c6'),
+    P('شاي أعشاب', 9, 'c6'),
+    P('تلبينة نبوية', 18, 'c6'),
+    P('قسط هندي', 22, 'c1'),
+    P('حب هال', 16, 'c1'),
+    P('جوز بيكان محمص', 36, 'c2'),
+    P('مفتول ناشف', 10, 'c3'),
   ],
   banners: [
     {
-      title: 'من قائمة الشيف',
-      subtitle: 'مشاوي على الفحم • توابل بيتية • خبز التنور',
+      title: 'عروض الهيئة',
+      subtitle: 'بهارات • مكسرات • مواد غذائية بجودة عالية',
       image: IMG.banner,
-      button_text: 'اطلب الآن',
-      button_link: '#chef-picks',
+      button_text: 'تسوق الآن',
+      button_link: '#featured',
     },
   ],
 };
+
+export const HAYAH_DEMO = RESTAURANT_DEMO;
 
 export function buildRestaurantPreviewStoreData(store: any, branding?: Record<string, any>): any {
   return {
@@ -93,10 +90,11 @@ export function buildRestaurantPreviewStoreData(store: any, branding?: Record<st
     products: RESTAURANT_DEMO.products.map((p) => ({ ...p })),
     config: {
       ...(branding?.config || {}),
-      storeName: store?.name || 'مطعم الفحم',
+      storeName: store?.name || 'متجر الهيئة',
       logo: branding?.config?.logo || store?.logo,
       socialMedia: branding?.config?.socialMedia || {},
     },
     content: { banners: RESTAURANT_DEMO.banners },
   };
 }
+export const buildHayahPreviewStoreData = buildRestaurantPreviewStoreData;

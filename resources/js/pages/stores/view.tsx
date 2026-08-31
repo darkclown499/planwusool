@@ -40,7 +40,7 @@ const TEMPLATE_LABELS: Record<string, string> = {
   'fashion-atelier': 'أزياء وبوتيك',
   'grocery-souq': 'بقالة وسوبر ماركت',
   'bakery-house': 'مخبز وحلويات',
-  'restaurant-menu': 'مطاعم وأطعمة',
+  'restaurant-menu': 'الهيئة',
   'electronics-hub': 'إلكترونيات',
   'bazaar-market': 'سوق عام',
 };

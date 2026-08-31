@@ -86,32 +86,40 @@ function TemplateVisualPreview({ slug, preview }: { slug: string; preview: strin
         );
     }
     if (slug === 'restaurant-menu') {
-        // Dark header, large food hero, menu list
+        // الهيئة — light commerce: white header + search + category pills + contained hero + 3-col white cards
         return (
             <>
                 <span className={base} style={{ background: preview }} />
                 <span className="absolute inset-0 flex flex-col">
-                    <span className="flex h-8 items-center justify-between px-4">
-                        <span className="h-2 w-12 rounded-full bg-white/20" />
-                        <span className="h-6 w-6 rounded-full bg-white/15" />
-                    </span>
-                    <span className="mx-3 h-24 rounded-xl bg-black/20 backdrop-blur flex items-center gap-3 p-3">
-                        <span className="h-16 w-16 rounded-xl bg-white/90 flex-shrink-0" />
-                        <span className="space-y-1.5 flex-1">
-                            <span className="block h-2 w-16 rounded-full bg-white" />
-                            <span className="block h-1.5 w-full rounded-full bg-white/60" />
-                            <span className="block h-5 w-14 rounded-full bg-amber-400" />
+                    <span className="flex h-8 items-center gap-2 px-3">
+                        <span className="h-6 w-6 rounded-lg bg-slate-900 flex-shrink-0" />
+                        <span className="flex-1 h-6 rounded-full bg-white shadow-sm border border-slate-100 flex items-center px-2 gap-1">
+                            <span className="h-3 w-3 rounded-full bg-slate-200" />
+                            <span className="h-1.5 w-12 rounded-full bg-slate-100" />
                         </span>
+                        <span className="h-6 w-6 rounded-full bg-slate-900 flex-shrink-0" />
                     </span>
-                    <span className="mx-3 mt-2 space-y-2 flex-1">
-                        {[...Array(3)].map((_, i) => (
-                            <span key={i} className="flex gap-2 rounded-xl bg-white/90 p-2 shadow-sm">
-                                <span className="h-12 w-12 rounded-lg bg-black/5 flex-shrink-0" />
-                                <span className="flex-1 space-y-1">
-                                    <span className="block h-1.5 w-3/4 rounded-full bg-black/10" />
-                                    <span className="block h-1 w-full rounded-full bg-black/6" />
-                                    <span className="block h-1.5 w-10 rounded-full bg-black/80" />
-                                </span>
+                    <span className="mx-3 flex gap-1 overflow-hidden">
+                        {[...Array(4)].map((_, i) => (
+                            <span key={i} className={`h-5 rounded-full px-2 flex items-center ${i === 0 ? 'bg-slate-900' : 'bg-white border border-slate-200'}`}>
+                                <span className={`h-1.5 rounded-full ${i === 0 ? 'w-8 bg-white' : 'w-8 bg-slate-200'}`} />
+                            </span>
+                        ))}
+                    </span>
+                    <span className="mx-3 mt-1 h-20 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center p-2 gap-2">
+                        <span className="flex-1 space-y-1">
+                            <span className="block h-1.5 w-12 rounded-full bg-slate-200" />
+                            <span className="block h-2 w-16 rounded-full bg-slate-900" />
+                            <span className="block h-5 w-14 rounded-full bg-slate-900" />
+                        </span>
+                        <span className="h-14 w-20 rounded-xl bg-slate-100 flex-shrink-0" />
+                    </span>
+                    <span className="mx-3 mt-2 grid grid-cols-3 gap-1.5 flex-1">
+                        {[...Array(6)].map((_, i) => (
+                            <span key={i} className="rounded-xl bg-white shadow-sm border border-slate-100 flex flex-col p-1">
+                                <span className="aspect-square rounded-lg bg-slate-50 mb-1" />
+                                <span className="h-1 w-full rounded-full bg-slate-200" />
+                                <span className="h-1.5 w-10 rounded-full bg-slate-900 mt-1" />
                             </span>
                         ))}
                     </span>
