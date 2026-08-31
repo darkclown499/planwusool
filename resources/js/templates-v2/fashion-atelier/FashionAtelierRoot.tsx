@@ -124,7 +124,7 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void; closeButtonRef?: Re
   const isLoggedIn: boolean = !!auth?.isLoggedIn;
   const [activeSection, setActiveSection] = useState<'categories' | 'account' | null>(null);
 
-  const socialSlots = [1, 2, 3].map((idx) => {
+  const socialSlots = [1, 2, 3, 4, 5, 6].map((idx) => {
     const base = (content as any)?.fashion_mobile_nav ?? {};
     const enabled = !!base[`social_${idx}_enabled`];
     const platform = String(base[`social_${idx}_platform`] ?? 'instagram').toLowerCase();
@@ -343,7 +343,7 @@ const AtelierMobileMenuView: React.FC<{ onClose: () => void; closeButtonRef?: Re
           <>
             <div className="mt-4 h-px bg-stone-200/60" />
             <p className="mt-3 mb-3 text-[11px] font-bold tracking-[0.14em] text-stone-500">تابعنا</p>
-            <div className="flex items-start justify-start gap-5">
+            <div className="flex flex-wrap items-start justify-start gap-5">
               {socialSlots.filter((s) => s.safe).map((slot) => {
                 const Icon = getSocialIcon(slot.platform);
                 return (

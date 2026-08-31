@@ -1268,10 +1268,10 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                 )}
                                 {theme === 'fashion-atelier' && (
                                     <Card>
-                                        <p className="mb-2 text-xs font-black text-slate-800">أتيليه — روابط التواصل في القائمة (3 خانات) <span className="ms-1 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold text-stone-600">هامبرغر</span></p>
+                                        <p className="mb-2 text-xs font-black text-slate-800">أتيليه — روابط التواصل في القائمة (6 خانات) <span className="ms-1 rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-bold text-stone-600">هامبرغر</span></p>
                                         <p className="mb-3 text-[11px] leading-relaxed text-slate-500">تظهر داخل قائمة الهامبرغر للجوال فقط. كل خانة قابلة للتفعيل/التعطيل مع اختيار المنصة والرابط. الروابط غير المفعلة أو الفارغة لا تُعرض.</p>
                                         <div className="space-y-4">
-                                            {[1,2,3].map((idx) => {
+                                            {[1,2,3,4,5,6].map((idx) => {
                                                 const enabled = !!getDotted(content, `fashion_mobile_nav.social_${idx}_enabled`);
                                                 const platform = String(getDotted(content, `fashion_mobile_nav.social_${idx}_platform`) ?? 'instagram');
                                                 const url = String(getDotted(content, `fashion_mobile_nav.social_${idx}_url`) ?? '');
