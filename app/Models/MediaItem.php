@@ -21,7 +21,18 @@ class MediaItem extends Model implements HasMedia
 
         $config = StorageConfigService::getStorageConfig();
         $allowedExtensions = array_map('trim', explode(',', strtolower($config['allowed_file_types'])));
-        $maxSizeBytes = ($config['max_file_size_mb'] ?? 2) * 1024 * 1024;
+        // Always accept the media formats the designer/storefront explicitly supports
+        // for videos (served directly) and audio, even if a tenant's allowed_file_types
+        // setting omits them. This mirrors MediaController so a tenant with only
+        // image/document types can still upload the videos the designer offers.
+        foreach (['mp4', 'webm', 'mp3'] as $alwaysType) {
+            if (!in_array($alwaysType, $allowedExtensions, true)) {
+                $allowedExtensions[] = $alwaysType;
+            }
+        }
+        $allowedExtensions = array_values(array_unique(array_filter($allowedExtensions, fn($t) => $t !== '')));
+        // Allow up to 50MB per file (videos are served directly, not downscaled).
+        $maxSizeBytes = 50 * 1024 * 1024;
 
         $this->addMediaCollection('images')
             ->acceptsFile(function ($file) use ($allowedExtensions, $maxSizeBytes) {

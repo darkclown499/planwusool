@@ -11,7 +11,7 @@ return [
      * The maximum file size of an item in bytes.
      * Adding a larger file will result in an exception.
      */
-    'max_file_size' => 1024 * 1024 * 10, // 10MB
+    'max_file_size' => 1024 * 1024 * 50, // 50MB
 
     /*
      * This is the class that is responsible for naming generated files.
