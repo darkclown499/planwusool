@@ -61,6 +61,17 @@ export function getImageUrl(path: string): string {
     return path;
   }
 
+  // Absolute storage paths are always root-relative in this app (e.g. /storage/media/12/file.jpg)
+  // They must resolve to origin + path regardless of Designer sub-path like /stores/123/designer.
+  // Reuse same canonical path as CoverFlow/storefront Hero: keep /storage prefix, ignore page base.
+  if (path.startsWith('/storage/')) {
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      if (origin) return `${origin.replace(/\/$/, '')}${path}`;
+    } catch {}
+    return path;
+  }
+
   let baseUrl = '';
 
   // Try app settings first

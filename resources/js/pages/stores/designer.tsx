@@ -118,7 +118,20 @@ function VideoCropEditor({ src, ratio, label, hint, value, onChange, onReset }: 
                 onPointerUp={endDrag}
                 onPointerCancel={endDrag}
             >
-                <video src={normalizeImageUrl(src)} className="h-full w-full object-cover" style={{ objectPosition: value }} autoPlay loop muted playsInline preload="metadata" onCanPlay={(e) => { const v = e.currentTarget; v.play().catch(()=>{}); }} />
+                {/* Canonical video src: same as CoverFlow — raw src, no image helper (covers /storage + http) */}
+                <video
+                    src={String(src || '').trim()}
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: value }}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    onLoadedMetadata={(e) => { const v = e.currentTarget; v.play().catch(()=>{}); }}
+                    onCanPlay={(e) => { const v = e.currentTarget; v.play().catch(()=>{}); }}
+                    onError={(e) => { try { (e.currentTarget as HTMLVideoElement).load(); } catch {} }}
+                />
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-white/30" />
                 <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/50 px-1.5 py-0.5 font-mono text-[9px] text-white" dir="ltr">{value}</span>
             </div>
@@ -164,7 +177,15 @@ function ImageCropEditor({ src, ratio, label, hint, value, onChange, onReset }: 
                 onPointerUp={endDrag}
                 onPointerCancel={endDrag}
             >
-                <img src={normalizeImageUrl(src)} alt="" className="h-full w-full object-cover" style={{ objectPosition: value }} draggable={false} />
+                {/* Canonical image src: same as CoverFlow/Hero — getImageUrl (fixed for /storage root-relative in Designer) */}
+                <img
+                    src={getImageUrl(String(src || '').trim())}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    style={{ objectPosition: value }}
+                    draggable={false}
+                    onError={(e) => { const img = e.currentTarget as HTMLImageElement; if (img.dataset.retried !== '1' && String(src||'').trim().startsWith('/storage')) { img.dataset.retried='1'; img.src = String(src||'').trim(); } }}
+                />
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-white/30" />
                 <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/50 px-1.5 py-0.5 font-mono text-[9px] text-white" dir="ltr">{value}</span>
             </div>
