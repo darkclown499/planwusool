@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, Clock3, Gift, Heart, Minus, Plus, ShoppingBasket, X } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Check, ChevronLeft, Clock3, Gift, Heart, Minus, Plus, ShoppingBasket, X } from 'lucide-react';
+import { ensureSouqInteractionsStyle, pulseSouqCartBadge } from './souqInteractions';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import {
@@ -24,8 +25,8 @@ import { useServerSearch, submitStorefrontSearch } from '@/hooks/useServerSearch
 /* steppers, and a sticky mobile cart bar.                                */
 /* ===================================================================== */
 
-export const SOUQ_ACCENT = '#FFC20E';
-export const BIDDI_YELLOW = '#FFC20E';
+export const SOUQ_ACCENT = 'var(--store-primary, #FFC20E)';
+export const BIDDI_YELLOW = 'var(--store-primary, #FFC20E)';
 export const BIDDI_CREAM = '#FDF9F1';
 export const BIDDI_BLACK = '#0F1620';
 
@@ -54,10 +55,13 @@ export function SouqHeader() {
     }
   };
 
-  // Design tokens — propagated from Designer via content / designTokens
+  // Design tokens — canonical primary color from Designer (tokens.colors.primary) via --store-primary CSS var
+  // Uses CSS variable so live preview (Designer draft) updates instantly without save; persisted via Store.design_tokens.
   const rawContent = (content ?? store?.content ?? {}) as any;
   const designTokens = (store as any)?.design_tokens ?? {};
-  const accent = rawContent?.accent_color ?? designTokens?.accent_color ?? (config as any)?.accent_color ?? '#FFC20E';
+  // Canonical fallback reads tokens.colors.primary if present (persisted), otherwise CSS var handles it.
+  const __primaryFromTokens = (designTokens as any)?.colors?.primary || (designTokens as any)?.primary || rawContent?.accent_color || (config as any)?.accent_color || null;
+  const accent = 'var(--store-primary, ' + (__primaryFromTokens || '#FFC20E') + ')';
   const headerBg = rawContent?.header_bg ?? designTokens?.header_bg ?? '#FDF9F1';
 
   // WhatsApp support — real merchant config only (no hardcoded demo)
@@ -76,6 +80,11 @@ export function SouqHeader() {
   };
 
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
+  const prevCountRef = useRef<number>(count);
+  useEffect(() => {
+    if (count > prevCountRef.current) pulseSouqCartBadge();
+    prevCountRef.current = count;
+  }, [count]);
   const storeName = config?.storeName || store?.name || 'المتجر';
 
   const isActive = (href: string) => {
@@ -106,8 +115,8 @@ export function SouqHeader() {
               <Heart className="h-5 w-5" strokeWidth={1.8} />
               {!!wishlist?.count && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-black text-black" style={{ background: accent }}>{wishlist.count}</span>}
             </button>
-            <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="relative flex h-9 items-center gap-1 rounded-full px-3 text-sm font-black text-white shadow-sm" style={{ background: '#0F1620' }}>
-              <ShoppingBasket className="h-4 w-4" /> {count > 0 && <span className="rounded-full px-1.5 py-0.5 text-xs font-black text-black" style={{ background: accent }}>{count}</span>}
+            <button type="button" data-souq-cart="true" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="relative flex h-9 items-center gap-1 rounded-full px-3 text-sm font-black text-white shadow-sm" style={{ background: '#0F1620' }}>
+              <ShoppingBasket className="h-4 w-4" /> {count > 0 && <span data-souq-cart-badge="true" className="rounded-full px-1.5 py-0.5 text-xs font-black text-black" style={{ background: accent }}>{count}</span>}
             </button>
             {canShowAuth ? (
               <button type="button" onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : auth.setShowLoginModal(true))} aria-label="حسابي" className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 text-stone-700">
@@ -249,8 +258,8 @@ export function SouqHeader() {
               </ul>
             )}
           </div>
-          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full px-5 text-sm font-bold text-white shadow-sm transition hover:bg-black" style={{ background: '#0F1620' }}>
-            <ShoppingBasket className="h-4 w-4" /> السلة {count > 0 && <span className="rounded-full px-1.5 py-0.5 text-xs font-black text-black" style={{ background: accent }}>{count}</span>}
+          <button type="button" data-souq-cart="true" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full px-5 text-sm font-bold text-white shadow-sm transition hover:bg-black" style={{ background: '#0F1620' }}>
+            <ShoppingBasket className="h-4 w-4" /> السلة {count > 0 && <span data-souq-cart-badge="true" className="rounded-full px-1.5 py-0.5 text-xs font-black text-black" style={{ background: accent }}>{count}</span>}
           </button>
         </div>
       </div>
@@ -264,7 +273,7 @@ function SouqSearchRow({ product, onPick }: { product: any; onPick: () => void }
   const formatPrice = usePriceFormatter();
   return (
     <li>
-      <div className="flex items-center gap-2.5 px-3 py-2 transition hover:bg-[#FFC20E]/10">
+      <div className="flex items-center gap-2.5 px-3 py-2 transition hover:bg-black/5" style={{ ['--hover-accent' as any]: 'var(--store-primary)' }}>
         <button type="button" onClick={() => { onPick(); productCtx.handleProductClick(product); }} className="flex min-w-0 flex-1 items-center gap-2.5 text-start">
           <img src={getImageUrl(product.image || '')} alt="" className="h-10 w-10 shrink-0 rounded-xl object-cover ring-1 ring-black/5" loading="lazy" />
           <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-stone-800">{product.name}</span>
@@ -376,7 +385,7 @@ export function SouqHero({ banners }: { banners: any[] }) {
     return (
       <section className="mx-auto w-full max-w-[1280px] px-3 pt-2 lg:px-8" dir="rtl">
         {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
-        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-gradient-to-l from-[#FFC20E]/20 to-[#FDF9F1] shadow-sm ring-1 ring-black/5" style={heightStyle}>
+        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5" style={{ ...heightStyle, background: 'linear-gradient(to left, color-mix(in srgb, var(--store-primary, #FFC20E) 20%, transparent), #FDF9F1)' } as any}>
           <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
             {hero.subtitle && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{hero.subtitle}</p>}
             {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{hero.heading}</h1>}
@@ -384,7 +393,7 @@ export function SouqHero({ banners }: { banners: any[] }) {
           </div></div>
         </div>
       </section>
-    );
+     );
   }
   const slides = rawSlides;
   const normalized = slides.map((b: any) => ({
@@ -441,7 +450,7 @@ export function SouqHero({ banners }: { banners: any[] }) {
         {normalized.length > 1 && (
           <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
             {normalized.map((_, idx: number) => (
-              <button key={idx} type="button" onClick={() => setI(idx)} aria-label={`شريحة ${idx + 1}`} className={`h-1.5 rounded-full transition-all ${idx === i ? 'w-6 bg-[#FFC20E]' : 'w-1.5 bg-black/20'}`} />
+              <button key={idx} type="button" onClick={() => setI(idx)} aria-label={`شريحة ${idx + 1}`} className={`h-1.5 rounded-full transition-all ${idx === i ? 'w-6' : 'w-1.5 bg-black/20'}`} style={idx === i ? { background: 'var(--store-primary, #FFC20E)' } : undefined} />
             ))}
           </div>
         )}
@@ -457,9 +466,11 @@ interface SouqCardProps {
   onOpen?: (p: V2Product) => void;
 }
 
-/** Biddi-style tile: rounded-[18px], image contain, price + strikethrough inline, full-width pill button. */
+/** Biddi-style tile: rounded-[18px], image contain, price + strikethrough inline, full-width pill button.
+ *  Unified WHITE surface (#ffffff) for card + media + info — no gray interiors.
+ */
 export function SouqProductCard({ product }: SouqCardProps) {
-  const { cart, product: productCtx, wishlist } = useStorefrontCore() as any;
+  const { cart, product: productCtx, wishlist, store, config, content } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
   const discount = discountPercent(product);
   const out = product.availability === 'out_of_stock';
@@ -470,17 +481,54 @@ export function SouqProductCard({ product }: SouqCardProps) {
   const inCart = cartIndex !== -1;
   const cartQty = inCart ? Number((cart.cartItems[cartIndex] as any)?.quantity || 0) : 0;
 
-  const quickAdd = async () => {
+  const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const addedTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    ensureSouqInteractionsStyle();
+    return () => { if (addedTimerRef.current) window.clearTimeout(addedTimerRef.current); };
+  }, []);
+
+  const rawContent = (content ?? store?.content ?? {}) as any;
+  const designTokens = (store as any)?.design_tokens ?? {};
+  const accent = rawContent?.accent_color ?? designTokens?.accent_color ?? (config as any)?.accent_color ?? '#FFC20E';
+  const isLight = (() => {
+    try {
+      const hex = String(accent).trim().replace('#','');
+      const full = hex.length === 3 ? hex.split('').map(c=>c+c).join('') : hex;
+      const r = parseInt(full.slice(0,2),16), g = parseInt(full.slice(2,4),16), b = parseInt(full.slice(4,6),16);
+      const lum = 0.2126*(r/255)+0.7152*(g/255)+0.0722*(b/255);
+      return lum > 0.62;
+    } catch { return true; }
+  })();
+  const accentText = isLight ? '#0F1620' : '#ffffff';
+
+  const quickAdd = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (variable) {
       productCtx.handleProductClick(product);
       return;
     }
-    await cart.addToCart(product as any);
+    if (adding || added) return;
+    setAdding(true);
+    try {
+      const ok: boolean = await (cart.addToCart as (p: any) => Promise<boolean>)(product as any);
+      if (!ok) return;
+      setAdded(true);
+      try { pulseSouqCartBadge(); } catch {}
+      if (addedTimerRef.current) window.clearTimeout(addedTimerRef.current);
+      addedTimerRef.current = window.setTimeout(() => setAdded(false), 650) as unknown as number;
+    } finally {
+      setAdding(false);
+    }
   };
 
+  const reducedMotion = typeof window !== 'undefined' && (()=>{ try{return window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return false;}})();
+
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-black/5 bg-white shadow-sm transition hover:shadow-md" dir="rtl">
-      <div className="relative aspect-square w-full overflow-hidden bg-[#F5F5F4] p-2">
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-[18px] border border-black/[0.06] bg-white shadow-sm transition hover:shadow-md" dir="rtl">
+      <div className="relative aspect-square w-full overflow-hidden bg-white p-2">
         <button type="button" onClick={() => productCtx.handleProductClick(product)} className="absolute inset-0 p-2" aria-label={product.name}>
           <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 20vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]" width={400} height={400} />
         </button>
@@ -503,7 +551,7 @@ export function SouqProductCard({ product }: SouqCardProps) {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-3 pt-2">
+      <div className="flex flex-1 flex-col gap-2 bg-white p-3 pt-2">
         <button type="button" onClick={() => productCtx.handleProductClick(product)} className="line-clamp-2 min-h-[40px] text-start text-[13px] font-bold leading-snug text-stone-800 hover:text-black">
           {product.name}
         </button>
@@ -520,7 +568,21 @@ export function SouqProductCard({ product }: SouqCardProps) {
           )}
         </div>
         {!out ? (
-          inCart && !variable ? (
+          added ? (
+            <button
+              type="button"
+              onClick={quickAdd}
+              aria-label="تمت الإضافة"
+              disabled={adding}
+              className="mt-1 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-xs font-black shadow-sm transition active:scale-[0.98]"
+              style={{ background: accent, color: accentText, transitionDuration: '180ms' } as any}
+            >
+              <span className={`flex items-center justify-center gap-1.5 ${reducedMotion ? '' : 'souq-add-success-pop'}`} style={reducedMotion ? { transform: 'none' } : undefined}>
+                <Check className="h-3.5 w-3.5" strokeWidth={2.8} />
+                تمت الإضافة ✓
+              </span>
+            </button>
+          ) : inCart && !variable ? (
             <div className="mt-1 flex w-full items-center justify-between rounded-full border border-black/10 bg-stone-50 px-1 py-1">
               <button type="button" onClick={() => cart.updateQuantity(cartIndex, 1)} className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-stone-800" aria-label="زيادة"><Plus className="h-4 w-4" /></button>
               <span className="text-sm font-black text-stone-900">{cartQty}</span>
@@ -531,7 +593,9 @@ export function SouqProductCard({ product }: SouqCardProps) {
               type="button"
               onClick={quickAdd}
               aria-label="أضف للسلة"
-              className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-full bg-[#0F1620] py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-black active:scale-[0.98] min-h-[44px]"
+              disabled={adding}
+              className="mt-1 flex min-h-[44px] w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-xs font-black shadow-sm transition hover:brightness-[0.97] active:scale-[0.98] disabled:opacity-60"
+              style={{ background: accent, color: accentText, transitionDuration: '180ms' } as any}
             >
               <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
               إضافة للسلة
@@ -559,7 +623,7 @@ export function SouqDealsRail({ products, title = 'عروض اليوم ⚡' }: {
       <div className="mx-auto max-w-[1600px] px-3 lg:px-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-lg font-black text-stone-900">
-            <span className="rounded-full bg-[#FFC20E] px-3 py-1 text-sm font-black text-black shadow-sm">{title}</span>
+            <span className="rounded-full px-3 py-1 text-sm font-black text-black shadow-sm" style={{ background: 'var(--store-primary, #FFC20E)' }}>{title}</span>
             <span className="hidden text-sm font-bold text-stone-500 sm:inline">{deals.length} منتج</span>
           </h2>
           <a href="/category/عروض" className="text-xs font-bold text-stone-600 underline decoration-dotted hover:text-black">عرض الكل ←</a>
@@ -596,7 +660,7 @@ export function SouqStickyCartBar() {
         عرض السلة ({totals.count})
       </span>
       <span className="flex items-center gap-2 text-sm font-black">
-        <span className="rounded-full bg-[#FFC20E] px-2 py-0.5 text-xs font-black text-black">{formatPrice(totals.total)}</span>
+        <span className="rounded-full px-2 py-0.5 text-xs font-black text-black" style={{ background: 'var(--store-primary, #FFC20E)' }}>{formatPrice(totals.total)}</span>
       </span>
     </button>
   );
