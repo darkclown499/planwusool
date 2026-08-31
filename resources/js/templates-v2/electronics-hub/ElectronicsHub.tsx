@@ -9,7 +9,6 @@ import {
   discountPercent,
   isVariableProduct,
   lowStockRemaining,
-  useCountdown,
   usePriceFormatter,
   useStorefrontCore,
   type V2Product,
@@ -17,7 +16,7 @@ import {
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { useResolvedHero, HERO_HEIGHTS, HERO_HEIGHT_FALLBACK } from '../shared/heroMedia';
+import { useResolvedHero, HERO_HEIGHTS, HERO_HEIGHT_FALLBACK, heroContentForMedia } from '../shared/heroMedia';
 import type { HeroMediaItem } from '../shared/heroMedia';
 import { CoverFlow, type CoverMedia } from '../shared/CoverFlow';
 import { HubProductStage } from './ElectronicsOverlays';
@@ -431,19 +430,23 @@ function HubHero({ banner }: { banner?: any }) {
      Multiple    => circular cover-flow stage (height derived from width, Fashion mechanics). */
   const heights = HERO_HEIGHTS['electronics-hub'] ?? HERO_HEIGHT_FALLBACK;
 
-  const coverMedia = useMemo<CoverMedia[]>(() => media.map((m) => ({
-    id: m.id,
-    type: m.type,
-    src: m.src,
-    srcMobile: m.srcMobile || undefined,
-    poster: m.poster || undefined,
-    position: m.position || undefined,
-    positionMobile: m.positionMobile || undefined,
-    title: eff.title || undefined,
-    subtitle: eff.subtitle || promise || undefined,
-    ctaLabel: eff.button_text || undefined,
-    ctaLink: eff.button_link || undefined,
-  })), [media, eff, promise]);
+  const coverMedia = useMemo<CoverMedia[]>(() => media.map((m) => {
+    const c = heroContentForMedia(m as any, hero as any);
+    if (c.isExplicitOff) {
+      return { id: m.id, type: m.type, src: m.src, srcMobile: m.srcMobile || undefined, poster: m.poster || undefined, position: m.position || undefined, positionMobile: m.positionMobile || undefined, showContent: false as any };
+    }
+    if (c.isPerMedia) {
+      return {
+        id: m.id, type: m.type, src: m.src, srcMobile: m.srcMobile || undefined, poster: m.poster || undefined, position: m.position || undefined, positionMobile: m.positionMobile || undefined,
+        title: c.heading || undefined, subtitle: c.subtitle || undefined, ctaLabel: c.ctaLabel || undefined, ctaLink: c.ctaLink || undefined, showContent: c.hasContent ? true : undefined,
+      };
+    }
+    // legacy fallback — global heading shared across all media
+    return {
+      id: m.id, type: m.type, src: m.src, srcMobile: m.srcMobile || undefined, poster: m.poster || undefined, position: m.position || undefined, positionMobile: m.positionMobile || undefined,
+      title: eff.title || undefined, subtitle: eff.subtitle || promise || undefined, ctaLabel: eff.button_text || undefined, ctaLink: eff.button_link || undefined,
+    };
+  }), [media, eff, promise, hero]);
 
   return (
     <CoverFlow

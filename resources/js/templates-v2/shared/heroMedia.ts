@@ -40,6 +40,14 @@ export interface HeroMediaItem {
   poster?: string | null;
   position?: string | null;
   positionMobile?: string | null;
+  // Per-banner optional content — when showContent===false the banner explicitly shows NO TEXT.
+  // When showContent is undefined/null and all text fields empty -> legacy fallback to global hero fields.
+  heading?: string | null;
+  title?: string | null; // alias for heading
+  subtitle?: string | null;
+  ctaLabel?: string | null;
+  ctaLink?: string | null;
+  showContent?: boolean | null;
 }
 
 export interface ResolvedHero {
@@ -189,6 +197,25 @@ export function useResolvedHero(): ResolvedHero {
         const poster = item.poster ?? null;
         // Normalize youtube src to id
         const finalSrc = type === 'youtube' ? (extractYouTubeId(src) || src) : src;
+        // Per-banner content — reuse canonical hero field names with multiple aliases
+        const rawHeading = item.heading ?? item.title ?? item.hero_heading ?? item.heroHeading ?? null;
+        const rawSubtitle = item.subtitle ?? item.hero_subtitle ?? item.heroSubtitle ?? item.description ?? null;
+        const rawCtaLabel = item.cta_label ?? item.ctaLabel ?? item.button_text ?? item.buttonText ?? item.cta ?? null;
+        const rawCtaLink = item.cta_link ?? item.ctaLink ?? item.button_link ?? item.buttonLink ?? item.link ?? null;
+        const rawShow = item.showContent ?? item.show_content ?? item.show_content_enabled ?? item.content_enabled ?? item.enabled ?? null;
+        let showContent: boolean | null = null;
+        if (rawShow !== null && rawShow !== undefined && String(rawShow).trim() !== '') {
+          const v = String(rawShow).toLowerCase().trim();
+          if (['1','true','yes','on','show','enabled'].includes(v)) showContent = true;
+          else if (['0','false','no','off','hide','disabled'].includes(v)) showContent = false;
+          else if (typeof rawShow === 'boolean') showContent = rawShow;
+          else if (typeof rawShow === 'number') showContent = !!rawShow;
+        } else if (typeof rawShow === 'boolean') {
+          showContent = rawShow;
+        }
+        // Also accept explicit boolean without string conversion
+        if (typeof item.showContent === 'boolean') showContent = item.showContent;
+        if (typeof item.show_content === 'boolean') showContent = item.show_content;
         norm.push({
           id,
           type,
@@ -197,6 +224,12 @@ export function useResolvedHero(): ResolvedHero {
           poster: poster ? String(poster).trim() : null,
           position: pos ? String(pos).trim() : null,
           positionMobile: posMob ? String(posMob).trim() : null,
+          heading: rawHeading !== null && rawHeading !== undefined ? String(rawHeading) : null,
+          title: rawHeading !== null && rawHeading !== undefined ? String(rawHeading) : null,
+          subtitle: rawSubtitle !== null && rawSubtitle !== undefined ? String(rawSubtitle) : null,
+          ctaLabel: rawCtaLabel !== null && rawCtaLabel !== undefined ? String(rawCtaLabel) : null,
+          ctaLink: rawCtaLink !== null && rawCtaLink !== undefined ? String(rawCtaLink).trim() : null,
+          showContent,
         });
       });
       if (norm.length > 0) return norm;
@@ -355,7 +388,7 @@ export const HERO_DESKTOP_ASPECTS: Record<string, string> = {
   'bazaar-market': '8/3',      // 1600×600 ≈ 2.67
   'grocery-souq': '8/3',       // 1600×600
   'bakery-house': '12/5',      // 1200×500
-  'electronics-hub': '7/3',    // 1400×600 (split card, image part)
+  'electronics-hub': '5/2',    // 1000×400 — compact split card, text+image
   'restaurant-menu': '8/3',    // 1600×600
 };
 
@@ -373,7 +406,7 @@ export const HERO_HEIGHTS: Record<string, { desktop: string; mobile: string }> =
   'bazaar-market':   { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'grocery-souq':    { desktop: 'clamp(340px, 26vw, 440px)', mobile: 'clamp(360px, 108vw, 460px)' },
   'bakery-house':    { desktop: 'clamp(340px, 30vw, 440px)', mobile: 'clamp(360px, 108vw, 440px)' },
-  'electronics-hub': { desktop: 'clamp(400px, 32vw, 500px)', mobile: 'clamp(380px, 112vw, 480px)' },
+  'electronics-hub': { desktop: 'clamp(320px, 26vw, 440px)', mobile: 'clamp(280px, 72vw, 380px)' },
   'restaurant-menu': { desktop: 'clamp(360px, 26vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' },
 };
 export const HERO_HEIGHT_FALLBACK = { desktop: 'clamp(360px, 28vw, 460px)', mobile: 'clamp(360px, 108vw, 460px)' };
@@ -461,4 +494,56 @@ export function heroVideoFor(hero: ResolvedHero, isMobile: boolean): string {
 export function heroYoutubeIdFor(hero: ResolvedHero, isMobile: boolean): string | null {
   if (isMobile && hero.youtubeIdMobile) return hero.youtubeIdMobile;
   return hero.youtubeId;
+}
+
+/**
+ * Per-media content helpers — explicit empty state + legacy fallback.
+ *
+ * Contract:
+ * - If media.showContent === false => explicit NO TEXT (never fallback).
+ * - If media.showContent === true OR any per-media text field non-empty => per-media authoritative (use its values, even if some empty).
+ * - Otherwise (showContent null/undefined and all per-media fields empty/null) => legacy: fallback to global hero fields.
+ *
+ * This prevents:   perMedia.title || global.title  (which would make intentional empty impossible)
+ */
+export interface ResolvedMediaContent {
+  heading: string;
+  subtitle: string;
+  ctaLabel: string;
+  ctaLink: string;
+  hasContent: boolean;
+  isExplicitOff: boolean;
+  isPerMedia: boolean;
+}
+
+export function hasPerMediaContent(m: HeroMediaItem): boolean {
+  const heading = (m.heading ?? m.title ?? '') as string;
+  const subtitle = (m.subtitle ?? '') as string;
+  const ctaLabel = (m.ctaLabel ?? '') as string;
+  const ctaLink = (m.ctaLink ?? '') as string;
+  return !!(String(heading||'').trim() || String(subtitle||'').trim() || String(ctaLabel||'').trim() || String(ctaLink||'').trim());
+}
+
+export function heroContentForMedia(m: HeroMediaItem, hero: ResolvedHero): ResolvedMediaContent {
+  // Explicit OFF — must not show any text
+  if (m.showContent === false) {
+    return { heading: '', subtitle: '', ctaLabel: '', ctaLink: '', hasContent: false, isExplicitOff: true, isPerMedia: true };
+  }
+  const perHeading = String(m.heading ?? m.title ?? '').trim();
+  const perSubtitle = String(m.subtitle ?? '').trim();
+  const perCtaLabel = String(m.ctaLabel ?? '').trim();
+  const perCtaLink = String(m.ctaLink ?? '').trim();
+  const perHasAny = !!(perHeading || perSubtitle || perCtaLabel || perCtaLink);
+  const perConfigured = m.showContent === true || perHasAny;
+  if (perConfigured) {
+    const hasContent = !!(perHeading || perSubtitle || perCtaLabel);
+    return { heading: perHeading, subtitle: perSubtitle, ctaLabel: perCtaLabel, ctaLink: perCtaLink || '#', hasContent, isExplicitOff: false, isPerMedia: true };
+  }
+  // Legacy fallback — use global hero fields
+  const gHeading = String(hero.heading || '').trim();
+  const gSubtitle = String(hero.subtitle || '').trim();
+  const gCtaLabel = String(hero.ctaLabel || '').trim();
+  const gCtaLink = String(hero.ctaLink || '').trim() || '#';
+  const hasContent = !!(gHeading || gSubtitle || gCtaLabel);
+  return { heading: gHeading, subtitle: gSubtitle, ctaLabel: gCtaLabel, ctaLink: gCtaLink, hasContent, isExplicitOff: false, isPerMedia: false };
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
-import { useResolvedHero, HERO_HEIGHTS, HERO_BREAKPOINT_CSS, HERO_BREAKPOINT } from '../../shared/heroMedia';
+import { useResolvedHero, HERO_HEIGHTS, HERO_BREAKPOINT_CSS, HERO_BREAKPOINT, heroContentForMedia } from '../../shared/heroMedia';
 import { CoverFlow as AtelierCoverFlow } from '../../shared/CoverFlow';
 // hero breakpoint 767px / 768px — kept as literal for certification contract
 // @media (max-width: 767px)
@@ -91,19 +91,58 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   })();
   const useCoverFlow = coverMedia.length > 1;
   if (useCoverFlow) {
-    const cfMedia = coverMedia.map((m) => ({
-      id: (m as any).id || `${m.type}-${m.src}`,
-      type: m.type,
-      src: m.src,
-      srcMobile: (m as any).srcMobile,
-      poster: (m as any).poster,
-      position: (m as any).position,
-      positionMobile: (m as any).positionMobile,
-      title: hero.heading || singleHeroTitle,
-      subtitle: hero.subtitle || singleHeroSubtitle,
-      ctaLabel: hero.ctaLabel || singleHeroCtaLabel,
-      ctaLink: hero.ctaLink || singleHeroCtaLink,
-    }));
+    const cfMedia = coverMedia.map((m) => {
+      // For canonical hero.media, resolve per-media content with legacy fallback
+      const raw = hero.media.find((x) => x.id === (m as any).id);
+      if (raw) {
+        const c = heroContentForMedia(raw as any, hero);
+        // Explicit OFF -> no text
+        if (c.isExplicitOff) {
+          return {
+            id: (m as any).id || `${m.type}-${m.src}`,
+            type: m.type as any,
+            src: m.src,
+            srcMobile: (m as any).srcMobile,
+            poster: (m as any).poster,
+            position: (m as any).position,
+            positionMobile: (m as any).positionMobile,
+            title: undefined,
+            subtitle: undefined,
+            ctaLabel: undefined,
+            ctaLink: undefined,
+            showContent: false as any,
+          };
+        }
+        return {
+          id: (m as any).id || `${m.type}-${m.src}`,
+          type: m.type as any,
+          src: m.src,
+          srcMobile: (m as any).srcMobile,
+          poster: (m as any).poster,
+          position: (m as any).position,
+          positionMobile: (m as any).positionMobile,
+          title: c.heading || undefined,
+          subtitle: c.subtitle || undefined,
+          ctaLabel: c.ctaLabel || undefined,
+          ctaLink: c.ctaLink || undefined,
+          showContent: c.isPerMedia ? (c.hasContent ? true : (c.isExplicitOff ? false : true)) : undefined,
+        };
+      }
+      // Legacy fallback — single global text for all (old behavior)
+      return {
+        id: (m as any).id || `${m.type}-${m.src}`,
+        type: m.type as any,
+        src: m.src,
+        srcMobile: (m as any).srcMobile,
+        poster: (m as any).poster,
+        position: (m as any).position,
+        positionMobile: (m as any).positionMobile,
+        title: hero.heading || singleHeroTitle || undefined,
+        subtitle: hero.subtitle || singleHeroSubtitle || undefined,
+        ctaLabel: hero.ctaLabel || singleHeroCtaLabel || undefined,
+        ctaLink: hero.ctaLink || singleHeroCtaLink || undefined,
+      };
+    });
     return <AtelierCoverFlow media={cfMedia} heights={{ desktop: desktopH, mobile: mobileH }} overlayOpacity={overlayStyleOpacity} />;
   }
 

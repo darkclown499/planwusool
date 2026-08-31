@@ -501,6 +501,28 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
         tmp=setDotted(tmp,'hero_youtube_url', tmp['hero_banner.youtube_url'] as any);
         setContent(tmp);
     };
+    const updateHeroMedia = (id: string, patch: Record<string, any>) => {
+        const raw = (getDotted(content, 'hero_banner.media') ?? []) as any[];
+        if (!Array.isArray(raw) || !raw.length) {
+            // Hydrate legacy into canonical first if empty
+            const hyd = getHeroMedia();
+            const next = hyd.map((m:any)=> String(m.id)===String(id) ? { ...m, ...patch, show_content: patch.showContent ?? patch.show_content ?? m.show_content, showContent: patch.showContent ?? patch.show_content ?? m.showContent, cta_label: patch.cta_label ?? patch.ctaLabel ?? m.cta_label, ctaLabel: patch.ctaLabel ?? patch.cta_label ?? m.ctaLabel, cta_link: patch.cta_link ?? patch.ctaLink ?? m.cta_link, ctaLink: patch.ctaLink ?? patch.cta_link ?? m.ctaLink } : m);
+            setContent(setDotted(content, 'hero_banner.media', next));
+            return;
+        }
+        const next = raw.map((m:any)=> String(m.id)===String(id) ? { ...m, ...patch, show_content: patch.showContent !== undefined ? patch.showContent : (patch.show_content !== undefined ? patch.show_content : m.show_content), showContent: patch.showContent !== undefined ? patch.showContent : (patch.show_content !== undefined ? patch.show_content : m.showContent) } : m);
+        // sync aliases for content fields
+        const synced = next.map((m:any)=> {
+            if (String(m.id)!==String(id)) return m;
+            const out={...m};
+            if (patch.heading !== undefined) { out.heading = patch.heading; out.title = patch.heading; }
+            if (patch.subtitle !== undefined) out.subtitle = patch.subtitle;
+            if (patch.ctaLabel !== undefined || patch.cta_label !== undefined) { const v = patch.ctaLabel ?? patch.cta_label; out.ctaLabel = v; out.cta_label = v; out.button_text = v; }
+            if (patch.ctaLink !== undefined || patch.cta_link !== undefined) { const v = patch.ctaLink ?? patch.cta_link; out.ctaLink = v; out.cta_link = v; out.button_link = v; }
+            return out;
+        });
+        setContent(setDotted(content, 'hero_banner.media', synced));
+    };
     const heroVideoUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url') ?? getDotted(content, 'hero_video_url') ?? ''));
     const heroVideoUrlMobile = stripTrailingSlash(String(getDotted(content, 'hero_banner.video_url_mobile') ?? getDotted(content, 'hero_banner.videoUrlMobile') ?? getDotted(content, 'hero_video_url_mobile') ?? ''));
     const heroYoutubeUrl = stripTrailingSlash(String(getDotted(content, 'hero_banner.youtube_url') ?? getDotted(content, 'hero_youtube_url') ?? ''));
@@ -889,33 +911,55 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                         </div>
                                         <p className="text-[11px] leading-relaxed text-slate-500">اسحب صوراً جديدة أو استبدل/احذف — الترتيب يظهر فوراً (الحد الإجمالي 10 عناصر)</p>
                                         {displayImages.length===0 && <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-4 text-center text-xs text-slate-500">لا توجد شرائح — اسحب الصور هنا (حتى 10 إجمالي)</p>}
-                                        {displayImages.map((item:any, idx:number)=>(
-                                            <div key={item.id||idx} className="flex gap-3 rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
-                                                <img src={normalizeImageUrl(item.src)} alt={`شريحة ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" />
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-xs font-black text-slate-800">الشريحة {idx+1}</p>
-                                                    <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                                        <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(idx, e.target.files)} />استبدال</label>
-                                                        <button type="button" onClick={()=>moveDesktop(idx,-1)} disabled={idx===0} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
-                                                        <button type="button" onClick={()=>moveDesktop(idx,1)} disabled={idx===displayImages.length-1} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
-                                                        <button type="button" onClick={()=>{
-                                                            if (hasMedia) {
-                                                                const targetId=displayImages[idx]?.id;
-                                                                const newMedia=(rawMediaImg as any[]).filter((m:any)=>String(m.id)!==String(targetId));
-                                                                let tmp=setDotted(content,'hero_banner.media', newMedia);
-                                                                const legImgs=newMedia.filter((m:any)=>m.type==='image').map((m:any)=>m.src);
-                                                                tmp=setDotted(tmp,'hero_banner.images', legImgs);
-                                                                tmp=setDotted(tmp,'hero_images', legImgs);
-                                                                setContent(tmp);
-                                                            } else {
-                                                                const next=heroImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);
-                                                            }
-                                                        }} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
+                                        {displayImages.map((item:any, idx:number)=>{
+                                            const showOn = (item.showContent ?? item.show_content) !== false;
+                                            const titleVal = String(item.heading ?? item.title ?? '');
+                                            const subVal = String(item.subtitle ?? '');
+                                            const ctaLabelVal = String(item.ctaLabel ?? item.cta_label ?? item.button_text ?? '');
+                                            const ctaLinkVal = String(item.ctaLink ?? item.cta_link ?? item.button_link ?? '');
+                                            return (
+                                            <div key={item.id||idx} className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
+                                                <div className="flex gap-3">
+                                                    <img src={normalizeImageUrl(item.src)} alt={`شريحة ${idx+1}`} className="h-16 w-24 rounded-lg object-cover ring-1 ring-slate-100" />
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-xs font-black text-slate-800">الشريحة {idx+1} — صورة<span className="ms-1 text-[10px] font-normal text-slate-400">محتواها خاص بها فقط</span></p>
+                                                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                                            <label className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-bold hover:bg-slate-50"><input type="file" accept="image/*" className="hidden" onChange={e=>e.target.files && handleReplaceDesktop(idx, e.target.files)} />استبدال</label>
+                                                            <button type="button" onClick={()=>moveDesktop(idx,-1)} disabled={idx===0} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
+                                                            <button type="button" onClick={()=>moveDesktop(idx,1)} disabled={idx===displayImages.length-1} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
+                                                            <button type="button" onClick={()=>{
+                                                                if (hasMedia) {
+                                                                    const targetId=displayImages[idx]?.id;
+                                                                    const newMedia=(rawMediaImg as any[]).filter((m:any)=>String(m.id)!==String(targetId));
+                                                                    let tmp=setDotted(content,'hero_banner.media', newMedia);
+                                                                    const legImgs=newMedia.filter((m:any)=>m.type==='image').map((m:any)=>m.src);
+                                                                    tmp=setDotted(tmp,'hero_banner.images', legImgs);
+                                                                    tmp=setDotted(tmp,'hero_images', legImgs);
+                                                                    setContent(tmp);
+                                                                } else {
+                                                                    const next=heroImages.filter((_:string,i:number)=>i!==idx); let tmp=setDotted(content,'hero_banner.images',next); tmp=setDotted(tmp,'hero_images',next); setContent(tmp);
+                                                                }
+                                                            }} className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100">حذف</button>
+                                                        </div>
                                                     </div>
+                                                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
                                                 </div>
-                                                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
+                                                <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5">
+                                                    <div className="mb-2 flex items-center justify-between gap-2">
+                                                        <span className="text-[11px] font-black text-slate-700">محتوى هذه الشريحة</span>
+                                                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600"><Switch checked={showOn} onCheckedChange={(v)=>updateHeroMedia(String(item.id), { showContent: !!v, show_content: !!v })} /><span>{showOn ? 'إظهار النص' : 'بدون نص'}</span></label>
+                                                    </div>
+                                                    {showOn ? (
+                                                        <div className="space-y-2">
+                                                            <div><SectionLabel>العنوان</SectionLabel><Input value={titleVal} onChange={e=>updateHeroMedia(String(item.id), { heading: e.target.value })} placeholder="مثال: وصلت التشكيلة الجديدة" className="h-8 bg-white text-xs" /></div>
+                                                            <div><SectionLabel>الوصف</SectionLabel><Input value={subVal} onChange={e=>updateHeroMedia(String(item.id), { subtitle: e.target.value })} placeholder="اكتشف أحدث المنتجات" className="h-8 bg-white text-xs" /></div>
+                                                            <div className="grid grid-cols-2 gap-2"><div><SectionLabel>نص الزر</SectionLabel><Input value={ctaLabelVal} onChange={e=>updateHeroMedia(String(item.id), { ctaLabel: e.target.value })} placeholder="تسوق الآن" className="h-8 bg-white text-xs" /></div><div><SectionLabel>رابط الزر</SectionLabel><Input dir="ltr" value={ctaLinkVal} onChange={e=>updateHeroMedia(String(item.id), { ctaLink: e.target.value.trim() })} placeholder="#atelier-new" className="h-8 bg-white text-xs font-mono" /></div></div>
+                                                            {!titleVal && !subVal && !ctaLabelVal && <p className="text-[10px] leading-relaxed text-amber-600">اترك الحقول فارغة + شغّل “إظهار النص” لإظهار النص العام (للشرائح القديمة). لإخفاء النص نهائياً أوقف “إظهار النص”.</p>}
+                                                        </div>
+                                                    ) : (<p className="text-[11px] leading-relaxed text-slate-500">هذه الشريحة بدون نص — لن يظهر أي عنوان/زر عند عرضها (صريح).</p>)}
+                                                </div>
                                             </div>
-                                        ))}
+                                        );})}
                                         {totalMediaCount < 10 && <DropzoneUploader label={displayImages.length===0 ? 'اسحب شرائح الهيرو هنا' : `إضافة شرائح (${displayImages.length}/10)`} hint={`حتى 10 شرائح — 1200×800 — 3:2`} multiple uploading={heroUploading} onFiles={uploadHeroFiles} />}
                                         </div>
                                     </Card>
@@ -1021,6 +1065,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                               onChange={(pos)=>setVideoField('positionMobile', pos)}
                                               onReset={()=>setVideoField('positionMobile', '50% 50%')}
                                             />
+                                            {(()=>{ const showOn=(v.showContent ?? v.show_content) !== false; const t=String(v.heading ?? v.title ?? ''); const s=String(v.subtitle ?? ''); const l=String(v.ctaLabel ?? v.cta_label ?? ''); const lk=String(v.ctaLink ?? v.cta_link ?? ''); return (<div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5"><div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-black text-slate-700">محتوى هذا الفيديو</span><label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600"><Switch checked={showOn} onCheckedChange={(ch)=>updateHeroMedia(String(v.id), { showContent: !!ch, show_content: !!ch })} /><span>{showOn ? 'إظهار النص' : 'بدون نص'}</span></label></div>{showOn ? (<div className="space-y-2"><div><SectionLabel>العنوان</SectionLabel><Input value={t} onChange={e=>updateHeroMedia(String(v.id), { heading: e.target.value })} placeholder="مثال: شاهد المجموعة الجديدة" className="h-8 bg-white text-xs" /></div><div><SectionLabel>الوصف</SectionLabel><Input value={s} onChange={e=>updateHeroMedia(String(v.id), { subtitle: e.target.value })} placeholder="وصف قصير" className="h-8 bg-white text-xs" /></div><div className="grid grid-cols-2 gap-2"><div><SectionLabel>نص الزر</SectionLabel><Input value={l} onChange={e=>updateHeroMedia(String(v.id), { ctaLabel: e.target.value })} placeholder="اكتشف" className="h-8 bg-white text-xs" /></div><div><SectionLabel>رابط الزر</SectionLabel><Input dir="ltr" value={lk} onChange={e=>updateHeroMedia(String(v.id), { ctaLink: e.target.value.trim() })} placeholder="#atelier-new" className="h-8 bg-white text-xs font-mono" /></div></div></div>) : (<p className="text-[11px] text-slate-500">هذا الفيديو بدون نص — صريح.</p>)}</div>); })()}
                                           </div>
                                         ); })}
                                     </Card>
@@ -1062,30 +1107,35 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                           <Input dir="ltr" id="yt-input" placeholder="https://www.youtube.com/watch?v=..." className="bg-white font-mono text-sm flex-1" onKeyDown={(e:any)=>{ if(e.key==='Enter'){ const inp=document.getElementById('yt-input') as HTMLInputElement; if(inp&&inp.value.trim()){ addYt(inp.value); inp.value=''; }}}} />
                                           <button type="button" onClick={()=>{ const inp=document.getElementById('yt-input') as HTMLInputElement; if(inp&&inp.value.trim()){ addYt(inp.value); inp.value=''; }}} className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white">إضافة</button>
                                         </div>
-                                        {allYt.length===0 ? <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">لا يوجد رابط يوتيوب</p> : allYt.map((u:any, idx:number)=>(
-                                          <div key={u.id||idx} className="mt-3 flex gap-3 rounded-xl border bg-white p-2.5">
-                                            <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg border"><iframe className="h-full w-full" src={`https://www.youtube.com/embed/${getYoutubeId(u.src)||u.src}?mute=1&controls=0`} title={`yt-${idx}`} /></div>
-                                            <div className="min-w-0 flex-1">
-                                              <p className="text-xs font-bold truncate">YouTube {idx+1}</p>
-                                              <p className="text-[11px] text-slate-500 truncate">{u.src}</p>
-                                              <div className="mt-1.5 flex gap-1.5">
-                                                <button type="button" onClick={()=>moveYt(idx,-1)} disabled={idx===0} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
-                                                <button type="button" onClick={()=>moveYt(idx,1)} disabled={idx===allYt.length-1} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
-                                                <button type="button" onClick={()=>{ const newMedia=(Array.isArray(rawMedia2)?rawMedia2:[]).filter((m:any)=>String(m.id)!==String(u.id)); let tmp=setDotted(content,'hero_banner.media', newMedia); const firstYt=newMedia.find((m:any)=>m.type==='youtube')?.src||''; tmp=setDotted(tmp,'hero_banner.youtube_url', firstYt); tmp=setDotted(tmp,'hero_youtube_url', firstYt); setContent(tmp);}} className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700">حذف</button>
+                                        {allYt.length===0 ? <p className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">لا يوجد رابط يوتيوب</p> : allYt.map((u:any, idx:number)=>{
+                                          const showOn=(u.showContent ?? u.show_content) !== false; const t=String(u.heading ?? u.title ?? ''); const s=String(u.subtitle ?? ''); const l=String(u.ctaLabel ?? u.cta_label ?? ''); const lk=String(u.ctaLink ?? u.cta_link ?? ''); return (
+                                          <div key={u.id||idx} className="mt-3 rounded-xl border bg-white p-2.5">
+                                            <div className="flex gap-3">
+                                              <div className="h-16 w-24 shrink-0 overflow-hidden rounded-lg border"><iframe className="h-full w-full" src={`https://www.youtube.com/embed/${getYoutubeId(u.src)||u.src}?mute=1&controls=0`} title={`yt-${idx}`} /></div>
+                                              <div className="min-w-0 flex-1">
+                                                <p className="text-xs font-bold truncate">YouTube {idx+1}</p>
+                                                <p className="text-[11px] text-slate-500 truncate">{u.src}</p>
+                                                <div className="mt-1.5 flex gap-1.5">
+                                                  <button type="button" onClick={()=>moveYt(idx,-1)} disabled={idx===0} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↑</button>
+                                                  <button type="button" onClick={()=>moveYt(idx,1)} disabled={idx===allYt.length-1} className="rounded-full border px-2 py-1 text-[11px] disabled:opacity-40">↓</button>
+                                                  <button type="button" onClick={()=>{ const newMedia=(Array.isArray(rawMedia2)?rawMedia2:[]).filter((m:any)=>String(m.id)!==String(u.id)); let tmp=setDotted(content,'hero_banner.media', newMedia); const firstYt=newMedia.find((m:any)=>m.type==='youtube')?.src||''; tmp=setDotted(tmp,'hero_banner.youtube_url', firstYt); tmp=setDotted(tmp,'hero_youtube_url', firstYt); setContent(tmp);}} className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700">حذف</button>
+                                                </div>
                                               </div>
+                                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
                                             </div>
-                                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
+                                            <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5"><div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-black text-slate-700">محتوى هذا الفيديو</span><label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600"><Switch checked={showOn} onCheckedChange={(ch)=>updateHeroMedia(String(u.id), { showContent: !!ch, show_content: !!ch })} /><span>{showOn ? 'إظهار النص' : 'بدون نص'}</span></label></div>{showOn ? (<div className="space-y-2"><div><SectionLabel>العنوان</SectionLabel><Input value={t} onChange={e=>updateHeroMedia(String(u.id), { heading: e.target.value })} placeholder="شاهد المجموعة الجديدة" className="h-8 bg-white text-xs" /></div><div><SectionLabel>الوصف</SectionLabel><Input value={s} onChange={e=>updateHeroMedia(String(u.id), { subtitle: e.target.value })} placeholder="وصف" className="h-8 bg-white text-xs" /></div><div className="grid grid-cols-2 gap-2"><div><SectionLabel>نص الزر</SectionLabel><Input value={l} onChange={e=>updateHeroMedia(String(u.id), { ctaLabel: e.target.value })} placeholder="اكتشف" className="h-8 bg-white text-xs" /></div><div><SectionLabel>رابط الزر</SectionLabel><Input dir="ltr" value={lk} onChange={e=>updateHeroMedia(String(u.id), { ctaLink: e.target.value.trim() })} placeholder="#hub-deals" className="h-8 bg-white text-xs font-mono" /></div></div></div>) : (<p className="text-[11px] text-slate-500">هذا العنصر بدون نص — صريح.</p>)}</div>
                                           </div>
-                                        ))}
+                                        );})}
                                     </Card>
                                     </div>
                                     );
                                 })()}
 
-                                {/* C. النص والمحتوى */}
+                                {/* C. النص والمحتوى — legacy fallback for media without per-banner content */}
                                 <Card>
                                     <div className="space-y-2.5">
-                                        <SectionLabel>النص والمحتوى</SectionLabel>
+                                        <SectionLabel>النص والمحتوى — عام (احتياطي)</SectionLabel>
+                                        <p className="text-[11px] leading-relaxed text-slate-500">يُستخدم فقط للشرائح التي لم يتم تخصيص محتواها الخاص (التوافق مع المتاجر القديمة). الشرائح التي تم ضبط “محتوى هذه الشريحة” سيتم تجاهل هذا الحقل عند عرضها.</p>
                                         <div>
                                             <SectionLabel>العنوان</SectionLabel>
                                             <Input value={heroHeading ?? ''} onChange={(e) => { let tmp = setDotted(content, 'hero_banner.heading', e.target.value); tmp = setDotted(tmp, 'hero_heading', e.target.value); setContent(tmp); }} placeholder="أناقة تُروى كقصة" className="h-9 bg-white" />

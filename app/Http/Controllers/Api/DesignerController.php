@@ -171,6 +171,26 @@ class DesignerController extends Controller
                     $posMob = isset($item['positionMobile']) ? trim((string)$item['positionMobile']) : (isset($item['position_mobile']) ? trim((string)$item['position_mobile']) : null);
                     if ($posMob !== null && $posMob !== '' && !preg_match('/^\d{1,3}% \d{1,3}%$/', $posMob)) $posMob='50% 50%';
                     elseif ($posMob !== null && $posMob !== '') { [$xm,$ym]=explode(' ', $posMob); $xm=max(0,min(100,(int)rtrim($xm,'%'))); $ym=max(0,min(100,(int)rtrim($ym,'%'))); $posMob=$xm.'% '.$ym.'%'; }
+                    // Per-banner optional content — canonical keys: heading/subtitle/cta_label/cta_link/show_content
+                    $rawHeading = $item['heading'] ?? $item['title'] ?? null;
+                    $rawSubtitle = $item['subtitle'] ?? null;
+                    $rawCtaLabel = $item['cta_label'] ?? $item['ctaLabel'] ?? $item['button_text'] ?? null;
+                    $rawCtaLink = $item['cta_link'] ?? $item['ctaLink'] ?? $item['button_link'] ?? null;
+                    $rawShow = $item['showContent'] ?? $item['show_content'] ?? $item['show_content_enabled'] ?? null;
+                    $heading = $rawHeading !== null ? mb_substr(trim((string)$rawHeading), 0, 200) : null;
+                    $subtitle = $rawSubtitle !== null ? mb_substr(trim((string)$rawSubtitle), 0, 500) : null;
+                    $ctaLabel = $rawCtaLabel !== null ? mb_substr(trim((string)$rawCtaLabel), 0, 100) : null;
+                    $ctaLink = $rawCtaLink !== null ? mb_substr(trim((string)$rawCtaLink), 0, 500) : null;
+                    $showContent = null;
+                    if ($rawShow !== null && $rawShow !== '') {
+                        if (is_bool($rawShow)) $showContent = $rawShow;
+                        elseif (is_numeric($rawShow)) $showContent = ((int)$rawShow) !== 0;
+                        else {
+                            $vs = strtolower(trim((string)$rawShow));
+                            if (in_array($vs, ['1','true','yes','on','show','enabled'], true)) $showContent = true;
+                            elseif (in_array($vs, ['0','false','no','off','hide','disabled'], true)) $showContent = false;
+                        }
+                    }
                     $normalized[] = [
                         'id' => $id,
                         'type' => $type,
@@ -179,6 +199,15 @@ class DesignerController extends Controller
                         'poster' => isset($item['poster']) ? trim((string)$item['poster']) : null,
                         'position' => $pos,
                         'positionMobile' => $posMob,
+                        'heading' => $heading,
+                        'subtitle' => $subtitle,
+                        'cta_label' => $ctaLabel,
+                        'cta_link' => $ctaLink,
+                        'show_content' => $showContent,
+                        // camel aliases for JS convenience — kept in sync
+                        'showContent' => $showContent,
+                        'ctaLabel' => $ctaLabel,
+                        'ctaLink' => $ctaLink,
                     ];
                 }
                 $merged['hero_banner']['media'] = $normalized;

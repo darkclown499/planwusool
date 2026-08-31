@@ -15,6 +15,7 @@ export interface CoverMedia {
   subtitle?: string;
   ctaLabel?: string;
   ctaLink?: string;
+  showContent?: boolean | null;
 }
 
 interface CoverFlowProps {
@@ -227,7 +228,7 @@ export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpa
                 <img src={getImageUrl(singleSrc)} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: singlePosNorm }} />
               )}
               <div className="absolute inset-0 bg-black" style={{ opacity: overlayOpacity }} />
-              {(m.title || m.subtitle || m.ctaLabel) && (
+              {m.showContent !== false && (m.title || m.subtitle || m.ctaLabel) && (
                 <div className="absolute inset-0 z-10 flex items-center">
                   <div className="mx-auto w-full max-w-7xl px-6 sm:px-10">
                     <div className="max-w-xl">
@@ -437,11 +438,11 @@ export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpa
                 )}
                 {/* brightness guard: only merchant overlay, plus faint vignette for text legibility on active */}
                 <div className="absolute inset-0 bg-black" style={{ opacity: overlayOpacity * (isActive ? 1 : 0.52) }} />
-                {isActive && overlayOpacity < 0.08 && (m.title || m.subtitle) && (
+                {isActive && m.showContent !== false && overlayOpacity < 0.08 && (m.title || m.subtitle) && (
                   <div className="absolute inset-0 bg-gradient-to-t from-black/22 via-transparent to-transparent pointer-events-none" />
                 )}
-                {/* Content overlay — active shows full CTA, neighbors show title peek only */}
-                {(m.title || m.subtitle || m.ctaLabel) && (
+                {/* Content overlay — active shows full CTA, neighbors show title peek only — respects explicit NO TEXT */}
+                {m.showContent !== false && (m.title || m.subtitle || m.ctaLabel) && (
                   <div className={`absolute inset-x-0 bottom-0 p-4 sm:p-6 ${isHidden ? 'hidden' : ''}`}>
                     <div className={`${isActive ? '' : 'opacity-95'}`}>
                       {m.subtitle && <p className={`font-medium tracking-[0.16em] text-[#e8cfa8] ${isActive ? 'text-[11px] sm:text-xs' : 'text-[10px] sm:text-[11px]'}`}>{m.subtitle}</p>}
