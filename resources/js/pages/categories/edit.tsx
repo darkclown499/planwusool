@@ -126,6 +126,8 @@ export default function EditCategory() {
                 dragDrop
                 showPreview
               />
+              <p className="text-xs text-muted-foreground">المقاس الموصى به لقالب التقنية: 800 × 450 بكسل</p>
+              <p className="text-xs text-muted-foreground">استخدم صورة أفقية بهذه النسبة للحصول على أفضل عرض.</p>
               <InputError message={errors.image} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

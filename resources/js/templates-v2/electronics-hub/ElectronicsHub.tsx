@@ -550,49 +550,101 @@ export function HubCard({ product }: { product: V2Product }) {
 function HubCategoryRail({ categories }: { categories: any[] }) {
   if (!categories.length) return null;
 
-  /* Single category — compact intentional discovery card */
-  if (categories.length === 1) {
-    const c = categories[0];
+  const getCatImage = (c: any): string => {
+    const raw = c?.image || c?.image_url || c?.cover || '';
+    if (!raw) return '';
+    try { return getImageUrl(String(raw)); } catch { return String(raw); }
+  };
+
+  const CardWithImage = ({ c, variant }: { c: any; variant: 'single' | 'few' | 'many' }) => {
+    const src = getCatImage(c);
+    const hasImage = !!src;
+    const href = `/category/${c.slug || c.id}`;
+    // Keep outer footprint approx same as before; image fills card with subtle bottom scrim for readable name
+    if (variant === 'many') {
+      return (
+        <a key={c.id} href={href}
+          className="group relative isolate flex min-w-[104px] max-w-[120px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[#e8edf3] bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#c9d4e3] hover:shadow-md active:scale-[0.98] sm:min-w-0 sm:max-w-none"
+          style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
+          <div className="relative aspect-square w-full overflow-hidden bg-[#f6f8fa] sm:aspect-[16/10]">
+            {hasImage ? (
+              <img src={src} alt={c.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</div>
+            )}
+            {/* subtle bottom scrim — no excessive gradient/gaming effect */}
+            <div className="absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+            <span className="absolute inset-x-0 bottom-0 px-2 pb-2 pt-6 text-center text-[11px] font-extrabold leading-tight text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.65)] sm:px-2.5 sm:text-xs line-clamp-2">{c.name}</span>
+          </div>
+        </a>
+      );
+    }
+    if (variant === 'few') {
+      return (
+        <a key={c.id} href={href}
+          className="group relative isolate flex overflow-hidden rounded-2xl border border-[#e8edf3] bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#c9d4e3] hover:shadow-md active:scale-[0.98]"
+          style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
+          <div className="relative h-[84px] w-full overflow-hidden bg-[#f6f8fa] sm:h-[108px]">
+            {hasImage ? (
+              <img src={src} alt={c.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</div>
+            )}
+            <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <span className="absolute inset-x-0 bottom-0 px-3 pb-2.5 text-start text-[13px] font-extrabold leading-tight text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.65)] line-clamp-2">{c.name}</span>
+          </div>
+        </a>
+      );
+    }
+    // single
     return (
-      <a href={`/category/${c.slug || c.id}`}
-        className="group inline-flex w-full max-w-md items-center gap-3 rounded-2xl border border-[#e8edf3] bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.98]"
+      <a key={c.id} href={href}
+        className="group relative isolate flex w-full max-w-md overflow-hidden rounded-2xl border border-[#e8edf3] bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#c9d4e3] hover:shadow-md active:scale-[0.98]"
         style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#2563eb] transition-colors group-hover:bg-[#0a1220] group-hover:text-white">{categoryIcon(c.name)}</span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-extrabold text-[#0a1220]">{c.name}</span>
-          <span className="block text-xs font-medium text-[#8a93a2]">تصفح الأجهزة والإكسسوارات</span>
-        </span>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e3e8ee] text-[#2563eb] transition-colors group-hover:border-[#2563eb] group-hover:bg-[#2563eb] group-hover:text-white">←</span>
+        <div className="relative h-[72px] w-full overflow-hidden bg-[#f6f8fa] sm:h-[84px]">
+          {hasImage ? (
+            <img src={src} alt={c.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center gap-3 bg-[#eef2f8] px-3 text-[#2563eb]">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#2563eb] shadow-sm">{categoryIcon(c.name)}</span>
+              <span className="text-sm font-extrabold text-[#0a1220]">{c.name}</span>
+            </div>
+          )}
+          {hasImage && (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 px-3.5 py-2.5">
+                <span className="line-clamp-1 text-sm font-extrabold text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.65)]">{c.name}</span>
+                <span className="hidden shrink-0 text-xs font-medium text-white/80 sm:block">تصفح الأجهزة والإكسسوارات</span>
+              </div>
+            </>
+          )}
+        </div>
       </a>
     );
+  };
+
+  /* Single category — compact intentional discovery card, now image-fill */
+  if (categories.length === 1) {
+    return <CardWithImage c={categories[0]} variant="single" />;
   }
 
-  /* 2–4 categories — generous tiles */
+  /* 2–4 categories — generous tiles, now image-fill with same footprint */
   if (categories.length <= 4) {
     return (
       <div className="grid grid-cols-2 gap-3">
         {categories.map((c: any) => (
-          <a key={c.id} href={`/category/${c.slug || c.id}`}
-            className="group flex items-center gap-3 rounded-2xl border border-[#e8edf3] bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.98]"
-            style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#2563eb] transition-colors group-hover:bg-[#0a1220] group-hover:text-white">{categoryIcon(c.name)}</span>
-            <span className="line-clamp-2 text-[13px] font-bold text-[#0a1220]">{c.name}</span>
-          </a>
+          <CardWithImage key={c.id} c={c} variant="few" />
         ))}
       </div>
     );
   }
 
-  /* Many — horizontal touch rail (mobile) → grid (desktop) */
+  /* Many — horizontal touch rail (mobile) → grid (desktop), image-fill */
   return (
     <div className="scrollbar-none -mx-3 flex gap-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 lg:grid-cols-5 xl:grid-cols-6">
       {categories.map((c: any) => (
-        <a key={c.id} href={`/category/${c.slug || c.id}`}
-          className="group flex min-w-[104px] max-w-[120px] shrink-0 snap-start flex-col items-center gap-2 rounded-2xl border border-[#e8edf3] bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.98] sm:min-w-0 sm:max-w-none sm:p-4"
-          style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#2563eb] transition-colors group-hover:bg-[#0a1220] group-hover:text-white">{categoryIcon(c.name)}</span>
-          <span className="line-clamp-2 max-w-[80px] text-center text-xs font-bold leading-tight text-[#0a1220] sm:max-w-[100px] sm:text-[13px]">{c.name}</span>
-        </a>
+        <CardWithImage key={c.id} c={c} variant="many" />
       ))}
     </div>
   );
