@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
-import { ArrowLeft, BadgeCheck, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Cpu, Facebook, Gift, Globe, Headphones, Heart, Home, Instagram, Laptop, LogIn, LogOut, MapPin, Menu, MessageCircle, Music, Package, PackageSearch, Plus, Search, Send, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Twitter, User, Watch, X, Youtube, Zap } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Cpu, Facebook, Gift, Globe, Headphones, Heart, Home, Instagram, Laptop, LogIn, LogOut, MapPin, Menu, MessageCircle, Music, Package, PackageSearch, Plus, Search, Send, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Twitter, User, Watch, X, Youtube, Zap } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
+import { flyToCartHub, pulseHubCartBadge } from './hubInteractions';
 import {
   discountPercent,
   isVariableProduct,
@@ -172,6 +173,11 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   const showCategoriesBar = (store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false;
   const count = (cart.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const categories = (product?.categories || []).slice(0, 8);
+  const prevCountRef = useRef<number>(count);
+  useEffect(() => {
+    if (count > prevCountRef.current) pulseHubCartBadge();
+    prevCountRef.current = count;
+  }, [count]);
 
   const handleMyOrders = () => {
     if (auth?.isLoggedIn) { order?.loadUserOrders?.(); auth.setShowOrdersModal(true); }
@@ -241,12 +247,12 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
               <Package className="h-5 w-5" strokeWidth={1.8} />
             </button>
           )}
-          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة"
+          <button type="button" data-hub-cart="true" onClick={() => ui.setShowCart(true)} aria-label="السلة"
             className="relative flex h-11 w-11 items-center justify-center rounded-xl text-[#0a1220] transition-colors hover:bg-[#f0f3f7]"
             style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
             <ShoppingCart className="h-5 w-5" />
             {count > 0 && (
-              <span className="absolute right-0.5 top-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#2563eb] px-1 text-[10px] font-extrabold text-white">{count}</span>
+              <span data-hub-cart-badge="true" className="absolute right-0.5 top-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#2563eb] px-1 text-[10px] font-extrabold text-white">{count}</span>
             )}
           </button>
         </div>
@@ -276,12 +282,12 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
               <span className="hidden xl:inline">طلباتي</span>
             </button>
           )}
-          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة"
+          <button type="button" data-hub-cart="true" onClick={() => ui.setShowCart(true)} aria-label="السلة"
             className="flex h-10 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
             style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
             <ShoppingCart className="h-[18px] w-[18px]" />
             <span>السلة</span>
-            {count > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
+            {count > 0 && <span data-hub-cart-badge="true" className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
           </button>
         </div>
       </div>
@@ -720,7 +726,7 @@ function HubHero({ banner }: { banner?: any }) {
 /* ================================================================== */
 
 export function HubCard({ product }: { product: V2Product }) {
-  const { cart, product: productCtx, wishlist } = useStorefrontCore();
+  const { cart, product: productCtx, wishlist, auth } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
   const discount = discountPercent(product);
   const out = product.availability === 'out_of_stock';
@@ -730,23 +736,85 @@ export function HubCard({ product }: { product: V2Product }) {
 
   const specLine = useMemo(() => {
     const raw = String(product.description || '');
-    // strip HTML tags so card preview never exposes markup
     const stripped = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const line = stripped.split('\n').map((s) => s.trim()).find(Boolean) || stripped;
     return line ? line.slice(0, 60) : '';
   }, [product.description]);
 
-  const add = async () => {
-    if (variable) return productCtx.handleProductClick(product);
-    await cart.addToCart(product as any);
-  };
+  // per-card transient interaction state — never global, never blocks scroll
+  const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const addedTimerRef = useRef<number | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const [heartAnim, setHeartAnim] = useState<'idle' | 'pop' | 'shrink'>('idle');
+
   const open = () => productCtx.handleProductClick(product);
 
+  const handleAdd = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (variable) return productCtx.handleProductClick(product);
+    if (adding || added) return;
+    const originEl = (e.currentTarget as HTMLElement)?.closest?.('[data-hub-card]') as HTMLElement | null;
+    // Use image element for fly origin when possible
+    const imgOrigin = cardRef.current?.querySelector('img') as HTMLElement | null;
+    const flyOrigin = originEl || imgOrigin || (e.currentTarget as HTMLElement);
+    setAdding(true);
+    try {
+      const ok: boolean = await (cart.addToCart as (p: any) => Promise<boolean>)(product as any);
+      if (!ok) return;
+      // SUCCESS only — then visual feedback
+      setAdded(true);
+      // fly cue — uses real image url, measured once, transform-only
+      const src = getImageUrl(product.image || (product as any).images?.[0] || '');
+      try { flyToCartHub(src || product.image || null, flyOrigin); } catch {}
+      if (addedTimerRef.current) window.clearTimeout(addedTimerRef.current);
+      addedTimerRef.current = window.setTimeout(() => setAdded(false), 1050) as unknown as number;
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  useEffect(() => () => {
+    if (addedTimerRef.current) window.clearTimeout(addedTimerRef.current);
+  }, []);
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const wasWished = !!wished;
+    // Preserve auth-required behavior: if wishlist requires auth, backend will 401 and we return false
+    // Do not bypass; only animate on canonical success
+    const result = await (wishlist.toggle as (id: any) => Promise<'added' | 'removed' | false>)(product.id);
+    if (result === 'added' && !wasWished) {
+      setHeartAnim('pop');
+      window.setTimeout(() => setHeartAnim('idle'), 340);
+    } else if (result === 'removed' && wasWished) {
+      setHeartAnim('shrink');
+      window.setTimeout(() => setHeartAnim('idle'), 220);
+    } else if (result === false) {
+      // failure or auth-required — no success animation; ensure UI reflects canonical state (no optimistic change)
+      // briefly pulse back to indicate no-op without success styling
+      if (!wasWished) {
+        // auth failure: ensure login flow preserved if existing code expects it — check legacy auth gate
+        // WishlistButton used to trigger login modal; preserve by not adding new trigger here (caller preserves existing).
+        // If auth is required and user is guest, optionally trigger login if prior behavior did — but ElectronicsHub previously did not.
+        // We keep as-is to avoid bypassing.
+      }
+    }
+  };
+
+  const reducedMotionStyle: React.CSSProperties = added && typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? { transform: 'none' }
+    : {};
+
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#e6ebf1] bg-white transition-all hover:-translate-y-0.5 hover:border-[#cdd7e6] hover:shadow-[0_10px_30px_-12px_rgba(10,18,32,0.18)]"
+    <div
+      ref={cardRef}
+      data-hub-card="true"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#e6ebf1] bg-white transition-all hover:-translate-y-0.5 hover:border-[#cdd7e6] hover:shadow-[0_10px_30px_-12px_rgba(10,18,32,0.18)]"
       dir="rtl"
       style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
-      {/* Media — single coherent surface: stage is one subtle neutral so transparent PNGs and white-embedded images sit on the same plinth */}
+      {/* Media */}
       <div className="relative">
         <button type="button" onClick={open} className="relative block aspect-square w-full overflow-hidden bg-[#f1f4f8]" aria-label={product.name}>
           <HubProductStage src={product.image} alt={product.name} className="aspect-square p-3 transition-transform duration-300 group-hover:scale-[1.04]" fit="contain" />
@@ -759,13 +827,14 @@ export function HubCard({ product }: { product: V2Product }) {
           {out && <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/55 text-sm font-bold text-white">غير متوفر</span>}
         </button>
         <button type="button"
-          onClick={(e) => { e.stopPropagation(); wishlist.toggle(product.id); }}
+          onClick={handleWishlist}
           aria-label={wished ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
-          className={`absolute left-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition-all ${
+          aria-pressed={wished}
+          className={`absolute left-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition-colors ${
             wished ? 'border-[#2563eb] bg-[#2563eb] text-white' : 'border-[#e3e8ee] bg-white/95 text-[#5b6472] hover:border-[#2563eb] hover:text-[#2563eb]'
-          }`}
+          } ${heartAnim === 'pop' ? 'hub-heart-pop hub-heart-ring relative' : ''} ${heartAnim === 'shrink' ? 'scale-[0.88] opacity-90' : ''}`}
           style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-          <svg className="h-4 w-4" fill={wished ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+          <svg className={`h-4 w-4 ${heartAnim === 'pop' ? '' : ''}`} fill={wished ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
         </button>
         {!out && !remaining && (
           <span className="absolute bottom-2 left-2 z-10 hidden rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-bold text-[#059669] shadow-sm ring-1 ring-[#059669]/20 sm:block">متوفر</span>
@@ -792,10 +861,15 @@ export function HubCard({ product }: { product: V2Product }) {
             )}
           </div>
           {!out && (
-            <button type="button" onClick={add} aria-label="أضف للسلة"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0a1220] text-white shadow-md transition-all hover:bg-[#2563eb] active:scale-90"
-              style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-              <Plus className="h-5 w-5" strokeWidth={2.6} />
+            <button type="button" onClick={handleAdd} aria-label={added ? 'تمت الإضافة' : 'أضف للسلة'} disabled={adding}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md transition-all active:scale-[0.92] disabled:opacity-60 ${
+                added ? 'bg-[#2563eb] text-white' : 'bg-[#0a1220] text-white hover:bg-[#2563eb]'
+              }`}
+              style={{ transitionDuration: `200ms`, transitionTimingFunction: EASE, ...reducedMotionStyle }}>
+              <span className="relative flex items-center justify-center">
+                <Plus className={`h-5 w-5 absolute transition-all duration-200 ${added ? 'scale-0 opacity-0 rotate-90' : 'scale-100 opacity-100 rotate-0'}`} strokeWidth={2.6} />
+                <Check className={`h-5 w-5 absolute transition-all duration-200 ${added ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`} strokeWidth={2.6} style={added ? { animation: 'hubAddSuccessPop 280ms cubic-bezier(0.34,1.56,0.64,1)' } as any : undefined} />
+              </span>
             </button>
           )}
         </div>

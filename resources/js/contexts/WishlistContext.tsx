@@ -18,7 +18,7 @@ interface WishlistContextType {
   wishlistCount: number;
   loading: boolean;
   isInWishlist: (productId: string | number) => boolean;
-  toggle: (productId: string | number) => Promise<boolean>;
+  toggle: (productId: string | number) => Promise<'added' | 'removed' | false>;
   remove: (id: string | number) => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -66,7 +66,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children, st
   );
 
   const toggle = useCallback(
-    async (productId: string | number) => {
+    async (productId: string | number): Promise<'added' | 'removed' | false> => {
       if (!storeId) return false;
       try {
         const response = await fetch(route('api.wishlist.toggle'), {
@@ -81,10 +81,14 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children, st
           const data = await response.json();
           if (data.action === 'added') {
             await refresh();
+            return 'added';
           } else {
             setItems((prev) => prev.filter((item) => String(item.product_id) !== String(productId)));
+            return 'removed';
           }
-          return data.action === 'added';
+        } else if (response.status === 401) {
+          // Preserve auth-required behavior — return false without modifying state
+          return false;
         }
       } catch (error) {
         console.error('Wishlist toggle failed:', error);

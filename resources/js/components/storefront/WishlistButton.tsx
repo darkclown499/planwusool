@@ -52,12 +52,16 @@ export const WishlistButton: React.FC<WishlistButtonProps> = ({
     }
     const willAdd = !active;
     if (willAdd) triggerAnimation();
-    const added = await toggle(productId);
-    if (added && !willAdd) {
+    const raw = (await toggle(productId)) as unknown as boolean | 'added' | 'removed';
+    const isAdded = raw === true || raw === 'added';
+    const isRemoved = raw === 'removed' || (raw === false && !isAdded && active);
+    // Handle string-based result (new) and boolean fallback
+    if (isAdded && !willAdd) {
       // edge case where optimistic mismatched, still animate if actually added
       triggerAnimation();
     }
-    toast.success(added ? 'تمت الإضافة إلى المفضلة' : 'تمت الإزالة من المفضلة');
+    if (isAdded) toast.success('تمت الإضافة إلى المفضلة');
+    else if (isRemoved || raw === false) toast.success('تمت الإزالة من المفضلة');
   };
 
   return (

@@ -29,7 +29,7 @@ interface CartContextType {
   cartItems: any[];
   cartLoading: boolean;
   cartError: string | null;
-  addToCart: (product: any) => Promise<void>;
+  addToCart: (product: any) => Promise<boolean>;
   removeFromCart: (index: number) => Promise<void>;
   updateQuantity: (index: number, change: number) => Promise<void>;
   setQuantity: (index: number, quantity: any) => Promise<void>;
@@ -103,7 +103,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
     }
   };
 
-  const addToCart = async (product: Product & { selectedVariants?: {[key: string]: string}, quantity?: number }) => {
+  const addToCart = async (product: Product & { selectedVariants?: {[key: string]: string}, quantity?: number }): Promise<boolean> => {
     setCartLoading(true);
     try {
       const response = await fetch(route('api.cart.add'), {
@@ -119,25 +119,27 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
           variants: product.selectedVariants || null
         })
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add to cart');
+        const errorData = await response.json().catch(() => ({} as any));
+        throw new Error((errorData as any)?.message || 'Failed to add to cart');
       }
-      
+
       const data = await response.json();
-      
+
       // Store session ID for guest users
       if (data.item?.session_id) {
         sessionStorage.setItem('guest_session_id', data.item.session_id);
       }
-      
+
       await loadCart();
       toast.success('تمت الإضافة إلى السلة');
-      
+      return true;
+
     } catch (error) {
       console.error('Failed to add to cart:', error);
       toast.error('تعذرت الإضافة إلى السلة. حاول مرة أخرى.');
+      return false;
     } finally {
       setCartLoading(false);
     }

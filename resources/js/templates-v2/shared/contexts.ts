@@ -18,7 +18,7 @@ import { useContext } from 'react';
 export function useStorefrontCore() {
     const cart = useContext(CartContext) || {
         cartItems: [] as any[],
-        addToCart: async () => {},
+        addToCart: async () => true as unknown as boolean,
         removeFromCart: async () => {},
         updateQuantity: async () => {},
         setQuantity: async () => {},
@@ -73,7 +73,7 @@ export function useStorefrontCore() {
         items: [] as any[],
         count: 0,
         isInWishlist: () => false,
-        toggle: async () => false,
+        toggle: async () => false as unknown as 'added' | 'removed' | false,
     };
 
     return {
