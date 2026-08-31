@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 
 
-interface CoverMedia {
+export interface CoverMedia {
   id?: string;
   type: 'image' | 'video' | 'youtube';
   src: string;
@@ -17,7 +17,7 @@ interface CoverMedia {
   ctaLink?: string;
 }
 
-interface AtelierCoverFlowProps {
+interface CoverFlowProps {
   media: CoverMedia[];
   heights: { desktop: string; mobile: string };
   overlayOpacity: number;
@@ -31,7 +31,7 @@ function circularOffset(idx: number, active: number, len: number): number {
   return d;
 }
 
-export const AtelierCoverFlow: React.FC<AtelierCoverFlowProps> = ({ media, heights, overlayOpacity }) => {
+export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpacity }) => {
   const [index, setIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

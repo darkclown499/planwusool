@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
-import { ArrowLeft, BadgeCheck, ChevronLeft, ChevronRight, Cpu, Gift, Headphones, Laptop, Menu, Package, PackageSearch, Play, Plus, Search, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Watch, X, Zap } from 'lucide-react';
-import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
+import { ArrowLeft, BadgeCheck, ChevronLeft, ChevronRight, Cpu, Gift, Headphones, Laptop, Menu, Package, PackageSearch, Plus, Search, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Watch, X, Zap } from 'lucide-react';
+import { getImageUrl } from '@/utils/image-helper';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import {
@@ -17,8 +17,9 @@ import {
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { useResolvedHero } from '../shared/heroMedia';
+import { useResolvedHero, HERO_HEIGHTS, HERO_HEIGHT_FALLBACK } from '../shared/heroMedia';
 import type { HeroMediaItem } from '../shared/heroMedia';
+import { CoverFlow, type CoverMedia } from '../shared/CoverFlow';
 import { HubProductStage } from './ElectronicsOverlays';
 
 /* ===================================================================== */
@@ -341,30 +342,13 @@ function SearchField({ value, setValue, matches, select, focused, setFocused }: 
 /*  HERO — premium navy product-showcase stage                         */
 /* ================================================================== */
 
-/** Media-aware auto-advance duration: images ~5s, video waits for end, youtube handled separately */
-const IMAGE_ADVANCE_MS = 5000;
-
-/** Small hook to detect prefers-reduced-motion */
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-  return reduced;
-}
-
 function HubHero({ banner }: { banner?: any }) {
   const hero = useResolvedHero();
   const heroCore = useStorefrontCore() as any;
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
   const hasDynamic = hero.hasDynamicHero;
-  const reducedMotion = useReducedMotion();
 
-  /* ---- Build the ordered showcase media sequence ------------------- */
+  /* ---- Build the ordered cover-flow media sequence (Electronics' own canonical hero data) ---- */
   const media = useMemo<HeroMediaItem[]>(() => {
     const list = (hero as any).media;
     if (Array.isArray(list) && list.length) return list as HeroMediaItem[];
@@ -387,23 +371,7 @@ function HubHero({ banner }: { banner?: any }) {
     return out;
   }, [hero]);
 
-  const [active, setActive] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)');
-    const apply = () => setIsMobile(mq.matches);
-    apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
-  }, []);
-
-  const multi = media.length > 1;
-  const clamp = (i: number) => ((i % media.length) + media.length) % media.length;
-  const goTo = useCallback((i: number) => setActive(i), []);
-  const next = useCallback(() => setActive((a) => clamp(a + 1)), [media.length]);
-  const prev = useCallback(() => setActive((a) => clamp(a - 1)), [media.length]);
-
-  /* ---- Hero text — merchant controlled, NO hardcoded fallback for empty/hidden ---- */
+  /* ---- Hero text - merchant controlled, NO hardcoded fallback for empty/hidden ---- */
   const eff = useMemo(() => ({
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
@@ -411,7 +379,7 @@ function HubHero({ banner }: { banner?: any }) {
     button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
   }), [hero.heading, hero.subtitle, hero.ctaLabel, hero.ctaLink, banner]);
 
-  /* ---- Promise / subtitle line — only when merchant has set content ---- */
+  /* ---- Promise / subtitle line - only when merchant has set content ---- */
   const promise = (() => {
     try {
       const c = heroCore?.content;
@@ -423,85 +391,7 @@ function HubHero({ banner }: { banner?: any }) {
 
   const overlayOpacity = typeof hero.overlayOpacity === 'number' ? hero.overlayOpacity : 0;
 
-  /* ---- Auto-advance lifecycle ---- */
-  const activeRef = useRef(active);
-  activeRef.current = active;
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const ytReadyRef = useRef(false);
-
-  const clearTimer = useCallback(() => {
-    if (timerRef.current !== null) { clearTimeout(timerRef.current); timerRef.current = null; }
-  }, []);
-
-  /* Schedule next advance based on current media type */
-  const scheduleAdvance = useCallback(() => {
-    if (!multi) return;
-    clearTimer();
-    const item = media[activeRef.current];
-    if (!item) return;
-    /* Video and youtube advance from their own end events, not a timer */
-    if (item.type === 'video' || item.type === 'youtube') return;
-    /* Image: advance after IMAGE_ADVANCE_MS */
-    timerRef.current = setTimeout(() => {
-      timerRef.current = null;
-      setActive((a) => clamp(a + 1));
-    }, IMAGE_ADVANCE_MS);
-  }, [multi, media.length, clearTimer]);
-
-  /* When active index changes, restart the lifecycle */
-  useEffect(() => {
-    scheduleAdvance();
-    return clearTimer;
-  }, [active, scheduleAdvance, clearTimer]);
-
-  /* Pause/resume on tab visibility */
-  useEffect(() => {
-    const onVis = () => {
-      if (document.hidden) { clearTimer(); }
-      else { scheduleAdvance(); }
-    };
-    document.addEventListener('visibilitychange', onVis);
-    return () => document.removeEventListener('visibilitychange', onVis);
-  }, [clearTimer, scheduleAdvance]);
-
-  /* Video ended → advance */
-  const onVideoEnded = useCallback(() => { next(); }, [next]);
-  const onVideoRef = useCallback((el: HTMLVideoElement | null) => {
-    videoRef.current = el;
-    if (el) {
-      el.addEventListener('ended', onVideoEnded);
-      el.addEventListener('pause', () => { /* no-op, let ended handle advance */ });
-    }
-  }, [onVideoEnded]);
-
-  /* YouTube: use postMessage API for ended detection */
-  useEffect(() => {
-    if (!multi) return;
-    const item = media[activeRef.current];
-    if (!item || item.type !== 'youtube') return;
-    const onMsg = (e: MessageEvent) => {
-      try {
-        const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
-        if (data?.event === 'onStateChange' && data?.info === 0) {
-          /* YT_STATE_ENDED = 0 */
-          next();
-        }
-      } catch {}
-    };
-    window.addEventListener('message', onMsg);
-    return () => window.removeEventListener('message', onMsg);
-  }, [multi, active, media, next]);
-
-  /* ---- Shared stage chrome ---- */
-  const stageChrome = (
-    <>
-      <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
-      <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-[#2563eb]/25 blur-[90px]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-l from-transparent via-[#2563eb] to-transparent" />
-    </>
-  );
-
+  /* ---- No media at all: compact premium navy text stage (merchant text only) ---- */
   if (!hasDynamic && !hasBanner) return null;
 
   /* ---- NO MEDIA: compact premium navy text stage (only when merchant has text) ------ */
@@ -511,7 +401,9 @@ function HubHero({ banner }: { banner?: any }) {
       <section className="bg-[#f3f5f8]" dir="rtl" data-hero>
         <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
           <div className="relative overflow-hidden rounded-2xl bg-[#0a1220] text-white sm:rounded-3xl">
-            {stageChrome}
+            <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
+            <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-[#2563eb]/25 blur-[90px]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-l from-transparent via-[#2563eb] to-transparent" />
             <div className="relative flex min-h-[220px] flex-col items-start justify-center gap-3 p-5 sm:min-h-[280px] sm:p-8 lg:p-10">
               {eff.subtitle && (
                 <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold tracking-wide text-[#8ec5ff]">
@@ -534,281 +426,31 @@ function HubHero({ banner }: { banner?: any }) {
     );
   }
 
-  const item = media[active];
+  /* ---- Cover Flow (shared, exact Fashion reuse) driven by Electronics' own hero data ----
+     Single media => single-brand full-bleed hero using Electronics' heights.
+     Multiple    => circular cover-flow stage (height derived from width, Fashion mechanics). */
+  const heights = HERO_HEIGHTS['electronics-hub'] ?? HERO_HEIGHT_FALLBACK;
 
-  /* ---- Touch swipe handlers (mobile) -------------------------------- */
-  const touchStartX = useRef(0);
-  const onTouchStart = (e: any) => { if (multi) touchStartX.current = e.touches[0].clientX; };
-  const onTouchEnd = (e: any) => {
-    if (!multi) return;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(dx) > 48) { if (dx > 0) prev(); else next(); }
-  };
-
-  /* ---- Dots indicator — bounded for many items ---- */
-  const maxVisibleDots = 7;
-  const showEllipsis = media.length > maxVisibleDots;
-  const progressDots = (onDark: boolean) => {
-    let dotIndices: number[] = [];
-    if (!showEllipsis) {
-      dotIndices = media.map((_, i) => i);
-    } else {
-      /* Show first, last, and a window around active */
-      const windowStart = Math.max(1, Math.min(active - 1, media.length - maxVisibleDots + 1));
-      const windowEnd = Math.min(media.length - 1, windowStart + maxVisibleDots - 3);
-      dotIndices = [0];
-      if (windowStart > 1) dotIndices.push(-1); /* ellipsis marker */
-      for (let i = Math.max(1, windowStart); i <= windowEnd; i++) dotIndices.push(i);
-      if (windowEnd < media.length - 1) dotIndices.push(-2); /* ellipsis marker */
-      dotIndices.push(media.length - 1);
-    }
-
-    return (
-      <div className="flex items-center gap-1">
-        {dotIndices.map((idx) => {
-          if (idx < 0) {
-            return <span key={`e${idx}`} className={`text-[10px] ${onDark ? 'text-white/40' : 'text-[#0a1220]/30'}`}>…</span>;
-          }
-          return (
-            <button key={media[idx].id} type="button" onClick={() => goTo(idx)}
-              aria-label={`إظهار الوسائط ${idx + 1}`}
-              className={`h-1.5 rounded-full transition-all ${onDark ? 'bg-white' : 'bg-[#0a1220]'} ${idx === active ? (onDark ? 'bg-[#2563eb]' : 'bg-[#2563eb]') : 'opacity-30'}`}
-              style={{ width: idx === active ? 22 : 6, transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }} />
-          );
-        })}
-      </div>
-    );
-  };
-
-  /* ---- Compact thumbnail (real media) navigator tile ---- */
-  const railThumb = (m: HeroMediaItem) => (
-    <button type="button" onClick={() => goTo(media.indexOf(m))} aria-label={`وسائط ${media.indexOf(m) + 1}`}
-      className={`group relative block aspect-[4/3] w-full overflow-hidden rounded-lg transition-all ${m.id === item.id ? 'ring-2 ring-[#2563eb] ring-offset-2 ring-offset-[#0a1220]' : 'opacity-80 hover:opacity-100 hover:ring-1 hover:ring-white/30'}`}
-      style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
-      <ThumbVisual m={m} />
-      {m.type !== 'image' && (
-        <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0a1220]/70 text-white"><Play className="h-2.5 w-2.5 fill-current" /></span></span>
-      )}
-    </button>
-  );
-
-  /* ---- Chevron nav buttons (clean inside the hero) ---- */
-  const chevron = (dir: 'prev' | 'next') => (
-    <button type="button" onClick={dir === 'prev' ? prev : next} aria-label={dir === 'prev' ? 'السابق' : 'التالي'}
-      className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#0a1220]/45 text-white shadow-lg ring-1 ring-white/25 backdrop-blur-sm transition-all hover:bg-[#0a1220]/70 active:scale-95"
-      style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-      {dir === 'prev' ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-    </button>
-  );
-
-  const hasText = !!(eff.title || eff.subtitle || eff.button_text || promise);
-
-  /* ---- Text block renderer (mobile = tighter, desktop = larger) ---- */
-  const heroText = (compact: boolean) => (
-    <div className="pointer-events-none flex flex-col items-center gap-2 text-center sm:items-start sm:text-right">
-      {eff.subtitle && (
-        <span className={`inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 text-[#8ec5ff] ${compact ? 'px-2.5 py-0.5 text-[10px]' : 'px-3 py-1 text-[11px] font-bold'}`}>{eff.subtitle}</span>
-      )}
-      {eff.title && (
-        <h1 className={`font-extrabold leading-tight text-white ${compact ? 'max-w-full text-lg' : 'max-w-xl text-2xl sm:text-3xl lg:text-4xl'}`}>{eff.title}</h1>
-      )}
-      {promise && (
-        <p className={`leading-relaxed text-slate-300 ${compact ? 'max-w-full text-[11px]' : 'max-w-md text-sm sm:text-base'}`}>{promise}</p>
-      )}
-      {eff.button_text && (
-        <a href={eff.button_link}
-          className={`pointer-events-auto mt-0.5 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97] ${compact ? 'px-3.5 py-2 text-xs' : 'px-5 py-3 text-sm'}`}
-          style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-          {eff.button_text} <ArrowLeft className={compact ? 'h-3 w-3' : 'h-4 w-4'} />
-        </a>
-      )}
-    </div>
-  );
-
-  /* ---- SHOWCASE HERO (media present) -------------------------------- */
-  return (
-    <section className="bg-[#f3f5f8]" dir="rtl" data-hero>
-      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4 lg:px-8 lg:py-6">
-        {isMobile ? (
-          /* ====================== MOBILE / TABLET (<1024) ====================== */
-          <div className="overflow-hidden rounded-2xl bg-[#0a1220] text-white">
-            {/* Media panel — bounded, square-ish, gentle on all ratios */}
-            <div className="flex justify-center px-4 pt-4"
-              onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-              <div className="relative w-full max-w-[300px]" style={{ aspectRatio: '4 / 3' }}>
-                <div className="absolute inset-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0a1220] shadow-lg">
-                  <ShowcaseMedia key={item.id} item={item} isMobile fit={hero.fit}
-                    onVideoRef={item.type === 'video' ? onVideoRef : undefined} />
-                  <div className="pointer-events-none absolute inset-0 bg-[#0a1220]" style={{ opacity: overlayOpacity * 0.5 }} />
-                </div>
-                {multi && (
-                  <>
-                    <div className="pointer-events-auto absolute -right-2 top-1/2 z-20 -translate-y-1/2">{chevron('prev')}</div>
-                    <div className="pointer-events-auto absolute -left-2 top-1/2 z-20 -translate-y-1/2">{chevron('next')}</div>
-                  </>
-                )}
-              </div>
-            </div>
-            {/* Text bar — clean navy field below media, no artwork collision */}
-            {hasText && (
-              <div className="relative px-4 py-3.5 sm:px-5">{heroText(true)}</div>
-            )}
-            {/* Dots — integrated, centered, unobtrusive */}
-            {multi && (
-              <div className="flex items-center justify-center gap-1.5 border-t border-white/10 py-2">{progressDots(true)}</div>
-            )}
-          </div>
-        ) : (
-          /* ====================== DESKTOP (>=1024) — Showcase composition ====== */
-          <div className="relative overflow-hidden rounded-3xl bg-[#0a1220] text-white">
-            {stageChrome}
-            <div className="relative grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-stretch gap-6 px-8 py-8 lg:px-12 lg:py-10"
-              style={{ minHeight: 'clamp(360px, 30vw, 500px)' }}
-              onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-              {/* TEXT ZONE — clean controlled readable zone (no media behind it) */}
-              <div className="relative z-10 flex flex-col justify-center gap-3" dir="rtl">
-                {heroText(false)}
-                {multi && <div className="mt-2 flex items-center gap-1.5">{progressDots(true)}</div>}
-              </div>
-
-              {/* MEDIA ZONE — bounded active panel + floating thumbnail navigator */}
-              <div className="relative flex min-h-0 min-w-0 items-stretch gap-3">
-                {/* Active media panel */}
-                <div className="relative min-w-0 flex-1">
-                  <div className="absolute inset-0">
-                    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0a1220] shadow-2xl">
-                      <ShowcaseMedia key={item.id} item={item} isMobile={false} fit={hero.fit}
-                        onVideoRef={item.type === 'video' ? onVideoRef : undefined} />
-                      <div className="pointer-events-none absolute inset-0 bg-[#0a1220]" style={{ opacity: overlayOpacity * 0.5 }} />
-                    </div>
-                    {multi && (
-                      <>
-                        <div className="pointer-events-auto absolute right-3 top-1/2 z-20 -translate-y-1/2">{chevron('prev')}</div>
-                        <div className="pointer-events-auto absolute left-3 top-1/2 z-20 -translate-y-1/2">{chevron('next')}</div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                {/* Floating thumbnail navigator — real thumbs, compact but usable */}
-                {multi && (
-                  <div className="relative z-20 hidden w-[84px] shrink-0 self-center lg:block">
-                    <div className="scrollbar-none flex max-h-[320px] flex-col gap-2 overflow-y-auto rounded-xl bg-[#0a1220]/60 p-1.5 backdrop-blur-sm">
-                      {media.map((m) => (
-                        <div key={m.id} className="flex-none">{railThumb(m)}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/* ---- Active media renderer: image / video / youtube (only the active
-       item is mounted, so switching unmounts & stops any playback) ---- */
-function ShowcaseMedia({ item, isMobile, fit, onVideoRef }: {
-  item: HeroMediaItem;
-  isMobile: boolean;
-  fit?: string;
-  onVideoRef?: (el: HTMLVideoElement | null) => void;
-}) {
-  const src = isMobile ? (item.srcMobile || item.src) : item.src;
-  const pos = isMobile ? (item.positionMobile || item.position) : item.position;
-  const posStyle: any = pos && pos !== 'center' ? { objectPosition: pos } : {};
-  const fitClass = (item.type === 'image' && fit === 'contain') ? 'object-contain' : 'object-cover';
-
-  if (item.type === 'video') {
-    return (
-      <video ref={onVideoRef} autoPlay loop muted playsInline
-        src={getImageUrl(src)} poster={item.poster ? getImageUrl(item.poster) : undefined}
-        className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle} />
-    );
-  }
-  if (item.type === 'youtube') {
-    return (
-      <iframe className="absolute inset-0 h-full w-full"
-        src={`https://www.youtube.com/embed/${src}?autoplay=1&mute=1&controls=0&playsinline=1&modestbranding=1&rel=0&enablejsapi=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
-        title="YouTube hero" frameBorder="0" allow="autoplay; fullscreen; encrypted-media" allowFullScreen />
-    );
-  }
-  return (
-    <img src={getImageUrl(src)} alt=""
-      className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle}
-      loading="eager" decoding="async"
-      onError={(e) => { (e.currentTarget.src = getOptimizedImageUrl(src, 'medium')); }} />
-  );
-}
-
-/* ---- Gallery thumbnail visual: real poster / yt thumb / source image -- */
-function ThumbVisual({ m }: { m: HeroMediaItem }) {
-  const [failed, setFailed] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [posterFrame, setPosterFrame] = useState<string | null>(null);
-
-  /* For uploaded video: try to extract a real frame as thumbnail */
-  useEffect(() => {
-    if (m.type !== 'video' || !m.src) return;
-    if (m.poster) return; /* already has a poster, no need to generate */
-    let mounted = true;
-    const vid = document.createElement('video');
-    vid.preload = 'metadata';
-    vid.muted = true;
-    vid.src = getImageUrl(m.src);
-    vid.currentTime = 0.5; /* seek to 0.5s for a representative frame */
-    vid.onloadeddata = () => {
-      if (!mounted) return;
-      try {
-        vid.currentTime = 1;
-      } catch {}
-    };
-    vid.onseeked = () => {
-      if (!mounted) return;
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = 160;
-        canvas.height = 120;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(vid, 0, 0, 160, 120);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-          if (mounted && dataUrl && dataUrl.length > 100) setPosterFrame(dataUrl);
-        }
-      } catch {}
-      vid.src = '';
-    };
-    vid.onerror = () => { vid.src = ''; };
-    return () => { mounted = false; vid.src = ''; };
-  }, [m.type, m.src, m.poster]);
-
-  let src = '';
-  if (m.type === 'image') src = m.src;
-  else if (m.type === 'video') src = posterFrame || m.poster || '';
-  else src = m.poster || `https://i.ytimg.com/vi/${m.src}/hqdefault.jpg`;
-
-  if (failed || (!src && m.type !== 'youtube')) {
-    return (
-      <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/80">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#8ec5ff]"><Play className="h-4 w-4 fill-current" /></span>
-      </span>
-    );
-  }
-
-  if (m.type === 'youtube' && !src) {
-    return (
-      <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/80">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#8ec5ff]"><Play className="h-4 w-4 fill-current" /></span>
-      </span>
-    );
-  }
+  const coverMedia = useMemo<CoverMedia[]>(() => media.map((m) => ({
+    id: m.id,
+    type: m.type,
+    src: m.src,
+    srcMobile: m.srcMobile || undefined,
+    poster: m.poster || undefined,
+    position: m.position || undefined,
+    positionMobile: m.positionMobile || undefined,
+    title: eff.title || undefined,
+    subtitle: eff.subtitle || promise || undefined,
+    ctaLabel: eff.button_text || undefined,
+    ctaLink: eff.button_link || undefined,
+  })), [media, eff, promise]);
 
   return (
-    <img src={getImageUrl(src)} alt="" loading="lazy" decoding="async"
-      className="absolute inset-0 h-full w-full object-cover"
-      onError={() => setFailed(true)} />
+    <CoverFlow
+      media={coverMedia}
+      heights={heights}
+      overlayOpacity={overlayOpacity}
+    />
   );
 }
 

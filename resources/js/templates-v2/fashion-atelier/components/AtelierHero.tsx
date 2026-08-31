@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { useResolvedHero, HERO_HEIGHTS, HERO_BREAKPOINT_CSS, HERO_BREAKPOINT } from '../../shared/heroMedia';
-import { AtelierCoverFlow } from './AtelierCoverFlow';
+import { CoverFlow as AtelierCoverFlow } from '../../shared/CoverFlow';
 // hero breakpoint 767px / 768px — kept as literal for certification contract
 // @media (max-width: 767px)
 
