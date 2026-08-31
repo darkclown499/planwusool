@@ -26,8 +26,8 @@ import { HubProductStage } from './ElectronicsOverlays';
 /* ===================================================================== */
 /* Position one, light-cool surfaces, deep-navy ink, electric-blue used   */
 /* as a controlled accent only (CTA / active / focus / hero focal light). */
-/* The hero and the flash-deals band are the two "navy stage" moments that */
-/* give the store its premium tech identity; everything else stays light. */
+/* The hero is the "navy stage" moment that gives the store its premium   */
+/* tech identity; everything else stays light.                             */
 /* ===================================================================== */
 
 const ACCENT = '#2563eb';
@@ -375,7 +375,7 @@ function HubHero({ banner }: { banner?: any }) {
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
     button_text: hero.ctaLabel || banner?.button_text || '',
-    button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
+    button_link: hero.ctaLink || banner?.button_link || '',
   }), [hero.heading, hero.subtitle, hero.ctaLabel, hero.ctaLink, banner]);
 
   /* ---- Promise / subtitle line - only when merchant has set content ---- */
@@ -599,62 +599,6 @@ function HubCategoryRail({ categories }: { categories: any[] }) {
 }
 
 /* ================================================================== */
-/*  FLASH DEALS — integrated navy promo band                          */
-/* ================================================================== */
-
-function HubDealOfTheDay({ products }: { products: V2Product[] }) {
-  const deadline = useMemo(() => new Date(Date.now() + 26 * 3600_000), []);
-  const cd = useCountdown(deadline);
-  const deals = useMemo(
-    () => products.filter((p) => p.originalPrice && Number(p.originalPrice) > Number(p.price)).slice(0, 8),
-    [products]
-  );
-  if (!deals.length || !cd) return null;
-
-  const reveal = useReveal();
-  const units = [
-    { v: String(cd.hours).padStart(2, '0'), l: 'ساعة' },
-    { v: String(cd.minutes).padStart(2, '0'), l: 'دقيقة' },
-    { v: String(cd.seconds).padStart(2, '0'), l: 'ثانية' },
-  ];
-
-  return (
-    <section id="hub-deals" ref={reveal.ref} className="mx-auto mt-6 max-w-7xl px-3 sm:px-6 lg:px-8" dir="rtl" style={revealStyle(reveal.visible)}>
-      <div className="overflow-hidden rounded-2xl border border-[#1c2740]">
-        {/* Slim navy header bar — title + countdown, contained height (no empty dark stage) */}
-        <div className="flex flex-wrap items-center justify-between gap-2 bg-[#0a1220] px-3.5 py-3 sm:px-5 sm:py-3.5">
-          <h2 className="flex items-center gap-2 text-sm font-extrabold text-white sm:text-lg">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#2563eb] text-white"><Zap className="h-4 w-4" /></span>
-            عروض اليوم
-          </h2>
-          <div className="flex items-center gap-1.5" dir="ltr">
-            {units.map((u, i) => (
-              <React.Fragment key={u.l}>
-                {i > 0 && <span className="text-white/20">:</span>}
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs tabular-nums text-white sm:text-sm">
-                  <span className="font-extrabold">{u.v}</span>
-                  <span className="ms-1 text-[9px] font-bold text-[#8ec5ff]">{u.l}</span>
-                </span>
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-        {/* Content-driven light body — cards sized to content, no huge empty dark region */}
-        <div className="border-t border-[#1c2740] bg-white p-3 sm:p-4">
-          <div className="relative flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4">
-            {deals.slice(0, 4).map((p) => (
-              <div key={p.id} className="min-w-[150px] shrink-0 snap-start sm:min-w-0">
-                <HubCard product={p} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ================================================================== */
 /*  ROOT                                                               */
 /* ================================================================== */
 
@@ -720,8 +664,6 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
             <HubCategoryRail categories={categories} />
           </section>
         )}
-
-        <HubDealOfTheDay products={products} />
 
         {/* Latest products */}
         {showLatest && (

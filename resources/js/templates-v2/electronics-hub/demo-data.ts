@@ -103,8 +103,8 @@ export const ELECTRONICS_DEMO = {
       title: 'تقنية تليق بك',
       subtitle: 'إصدارات 2026 وصلت',
       image: IMG.banner,
-      button_text: 'تصفح عروض اليوم',
-      button_link: '#hub-deals',
+      button_text: 'تصفح المنتجات',
+      button_link: '#',
     },
   ],
 };
