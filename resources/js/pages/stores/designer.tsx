@@ -1515,6 +1515,70 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                         </div>
                                     </Card>
                                 )}
+                                {theme === 'electronics-hub' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">تقنية — زر واتساب العائم (جوال) <span className="ms-1 rounded bg-green-50 px-1.5 py-0.5 text-[10px] font-bold text-green-700">WhatsApp</span></p>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                                <span className="text-xs font-bold text-slate-700">تفعيل زر واتساب العائم</span>
+                                                <Switch checked={!!getDotted(content,'electronics_whatsapp.enabled')} onCheckedChange={(v)=> setContent(setDotted(content,'electronics_whatsapp.enabled', v))} />
+                                            </div>
+                                            <div>
+                                                <SectionLabel hint="يُستخدم إن وجد، وإلا رقم واتساب العام للمتجر">رقم واتساب (مع رمز البلد)</SectionLabel>
+                                                <Input dir="ltr" value={String(getDotted(content,'electronics_whatsapp.number') ?? '')} onChange={(e)=> setContent(setDotted(content,'electronics_whatsapp.number', e.target.value.replace(/[^0-9+]/g,'')))} placeholder="9705XXXXXXXX" className="bg-white text-sm" />
+                                            </div>
+                                            <div>
+                                                <SectionLabel>الرسالة الافتراضية</SectionLabel>
+                                                <Textarea value={String(getDotted(content,'electronics_whatsapp.message') ?? '')} onChange={(e)=> setContent(setDotted(content,'electronics_whatsapp.message', e.target.value))} placeholder="مرحباً، لدي استفسار عن أحد المنتجات" rows={2} className="bg-white" />
+                                                <p className="mt-1 text-[11px] text-slate-400">يتم ترميزها تلقائياً عبر wa.me</p>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                )}
+                                {theme === 'electronics-hub' && (
+                                    <Card>
+                                        <p className="mb-2 text-xs font-black text-slate-800">تقنية — روابط التواصل في القائمة (6 خانات) <span className="ms-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">هامبرغر</span></p>
+                                        <p className="mb-3 text-[11px] leading-relaxed text-slate-500">تظهر داخل قائمة الهامبرغر للجوال فقط قرب الأسفل. كل خانة قابلة للتفعيل/التعطيل مع اختيار المنصة والرابط.</p>
+                                        <div className="space-y-4">
+                                            {[1,2,3,4,5,6].map((idx) => {
+                                                const enabled = !!getDotted(content, `electronics_mobile_nav.social_${idx}_enabled`);
+                                                const platform = String(getDotted(content, `electronics_mobile_nav.social_${idx}_platform`) ?? 'instagram');
+                                                const url = String(getDotted(content, `electronics_mobile_nav.social_${idx}_url`) ?? '');
+                                                return (
+                                                    <div key={idx} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                                        <div className="mb-2 flex items-center justify-between">
+                                                            <span className="text-xs font-black text-slate-700">رابط {idx}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[11px] font-bold text-slate-500">مفعل</span>
+                                                                <Switch checked={enabled} onCheckedChange={(v)=> setContent(setDotted(content, `electronics_mobile_nav.social_${idx}_enabled`, v))} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div>
+                                                                <SectionLabel>المنصة</SectionLabel>
+                                                                <select value={platform} onChange={(e)=> setContent(setDotted(content, `electronics_mobile_nav.social_${idx}_platform`, e.target.value))} className="w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-xs focus:border-[#2563eb] focus:outline-none">
+                                                                    <option value="facebook">Facebook</option>
+                                                                    <option value="instagram">Instagram</option>
+                                                                    <option value="tiktok">TikTok</option>
+                                                                    <option value="youtube">YouTube</option>
+                                                                    <option value="snapchat">Snapchat</option>
+                                                                    <option value="telegram">Telegram</option>
+                                                                    <option value="x">X / Twitter</option>
+                                                                    <option value="whatsapp">WhatsApp</option>
+                                                                    <option value="website">Website</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <SectionLabel>الرابط</SectionLabel>
+                                                                <Input dir="ltr" value={url} onChange={(e)=> setContent(setDotted(content, `electronics_mobile_nav.social_${idx}_url`, e.target.value.trim()))} placeholder="https://..." className="bg-white text-xs" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </Card>
+                                )}
                                 {theme === 'restaurant-menu' && (
                                     <Card>
                                         <p className="mb-2 text-xs font-black text-slate-800">مطعم — محتوى القالب <span className="ms-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">قائمة المطعم</span></p>

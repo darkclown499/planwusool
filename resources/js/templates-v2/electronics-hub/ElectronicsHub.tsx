@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
-import { ArrowLeft, BadgeCheck, ChevronLeft, ChevronRight, Cpu, Gift, Headphones, Laptop, Menu, Package, PackageSearch, Plus, Search, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Watch, X, Zap } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Cpu, Facebook, Gift, Globe, Headphones, Heart, Home, Instagram, Laptop, LogIn, LogOut, MapPin, Menu, MessageCircle, Music, Package, PackageSearch, Plus, Search, Send, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Twitter, User, Watch, X, Youtube, Zap } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
@@ -39,6 +39,92 @@ const GRAPHITE = '#5b6472';  // secondary text
 
 const EASE = 'cubic-bezier(0.22,1,0.36,1)';
 const DUR = { micro: 140, normal: 200, overlay: 300 };
+
+/* -------------------------------------------------------------- */
+/*  WhatsApp helper — reuse canonical normalization                 */
+/* -------------------------------------------------------------- */
+function cleanWhatsAppNumber(input: string): string {
+  return String(input || '').replace(/[^0-9]/g, '');
+}
+function resolveElectronicsWhatsAppHref(config: any, content: any, store: any): string | null {
+  const rawContent: any = content ?? {};
+  const waCfg: any = rawContent.electronics_whatsapp ?? rawContent.electronics_wa ?? {};
+  const enabledRaw = waCfg.enabled ?? waCfg.show ?? rawContent.electronics_whatsapp_enabled;
+  // If merchant has explicitly configured electronics whatsapp, respect it; otherwise fallback to generic widget if enabled
+  let enabled: boolean | null = null;
+  if (enabledRaw !== undefined) enabled = !!enabledRaw;
+  else {
+    // No electronics-specific setting: check generic widget enabled — but only if merchant hasn't disabled electronics explicitly
+    // If generic widget is enabled, we still require a number; fallback maintains per-store isolation via store's own number
+    if (config?.whatsapp_widget_enabled) enabled = true;
+    else enabled = false;
+  }
+  if (!enabled) return null;
+  const rawNumber = String(waCfg.number ?? waCfg.phone ?? rawContent.electronics_whatsapp_number ?? rawContent.electronics_wa_number ?? config?.whatsapp_widget_phone ?? config?.socialMedia?.whatsapp ?? (store as any)?.phone ?? '');
+  const cleaned = cleanWhatsAppNumber(rawNumber);
+  if (!cleaned || cleaned.length < 7) return null;
+  const rawMessage = String(waCfg.message ?? rawContent.electronics_whatsapp_message ?? config?.whatsapp_widget_message ?? 'مرحباً، لدي استفسار عن أحد المنتجات');
+  return `https://wa.me/${cleaned}?text=${encodeURIComponent(rawMessage)}`;
+}
+
+/* -------------------------------------------------------------- */
+/*  Social helpers — up to 6 slots, reuse canonical contract        */
+/* -------------------------------------------------------------- */
+const SOCIAL_PLATFORMS = [
+  { value: 'facebook', label: 'Facebook', icon: Facebook },
+  { value: 'instagram', label: 'Instagram', icon: Instagram },
+  { value: 'tiktok', label: 'TikTok', icon: Music },
+  { value: 'youtube', label: 'YouTube', icon: Youtube },
+  { value: 'snapchat', label: 'Snapchat', icon: MessageCircle },
+  { value: 'telegram', label: 'Telegram', icon: Send },
+  { value: 'x', label: 'X / Twitter', icon: Twitter },
+  { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+  { value: 'website', label: 'Website', icon: Globe },
+] as const;
+function getSocialIcon(platform: string) {
+  const f = SOCIAL_PLATFORMS.find((p) => p.value === String(platform).toLowerCase());
+  return f ? f.icon : Globe;
+}
+function isSafeUrl(url: string): boolean {
+  try { const u = new URL(String(url).trim()); return ['https:', 'http:'].includes(u.protocol) && u.hostname.includes('.'); } catch { return false; }
+}
+function getElectronicsSocialSlots(content: any) {
+  const base = (content as any)?.electronics_mobile_nav ?? {};
+  // Also support legacy flat keys for forward compat (electronics_social_...)
+  return [1,2,3,4,5,6].map((idx) => {
+    const enabled = !!base[`social_${idx}_enabled`];
+    const platform = String(base[`social_${idx}_platform`] ?? 'instagram').toLowerCase();
+    const url = String(base[`social_${idx}_url`] ?? '').trim();
+    // Also check alternative flat dorm: content.electronics_social_{idx}_*
+    const altEnabled = (content as any)[`electronics_social_${idx}_enabled`];
+    const altPlatform = (content as any)[`electronics_social_${idx}_platform`];
+    const altUrl = (content as any)[`electronics_social_${idx}_url`];
+    const finalEnabled = altEnabled !== undefined ? !!altEnabled : enabled;
+    const finalPlatform = altPlatform ? String(altPlatform).toLowerCase() : platform;
+    const finalUrl = altUrl !== undefined ? String(altUrl).trim() : url;
+    const safe = finalEnabled && !!finalUrl && isSafeUrl(finalUrl);
+    return { idx, platform: finalPlatform, url: finalUrl, safe, enabled: finalEnabled };
+  });
+}
+
+/* Floating WhatsApp — bottom-left, compact, above bottom nav, safe-area aware */
+export function ElectronicsWhatsAppFloating() {
+  const { config, content, store } = useStorefrontCore() as any;
+  const href = resolveElectronicsWhatsAppHref(config, content, store);
+  if (!href) return null;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="تواصل واتساب"
+      className="fixed left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12),0_6px_18px_rgba(0,0,0,0.10)] ring-1 ring-black/5 transition hover:scale-[1.04] active:scale-[0.97] md:hidden"
+      style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' } as any}
+    >
+      <MessageCircle className="h-[22px] w-[22px]" fill="white" />
+    </a>
+  );
+}
 
 /* Reduced-motion aware reveal */
 function useReveal() {
@@ -127,69 +213,28 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
         </div>
       </div>
 
-      {/* Main row */}
-      <div className="flex items-center gap-1.5 border-b border-[#eef1f5] px-2.5 py-1.5 sm:px-4 sm:py-2 lg:px-8">
-        {/* Mobile: hamburger — absolute left for centering logo */}
+      {/* Mobile header — TRUE centered logo via grid-cols-[1fr_auto_1fr] */}
+      <div className="grid h-14 max-w-full grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-[#eef1f5] px-2.5 lg:hidden" dir="rtl">
+        {/* RIGHT: hamburger (justify-self-start = right in RTL) */}
         <button type="button" onClick={() => setMobileNavOpen(true)} aria-label="القائمة"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#0a1220] transition-colors hover:bg-[#f0f3f7] lg:hidden">
-          <Menu className="h-5.5 w-5.5" />
+          className="flex h-11 w-11 shrink-0 items-center justify-center justify-self-start rounded-xl text-[#0a1220] transition-colors hover:bg-[#f0f3f7]">
+          <Menu className="h-5 w-5" />
         </button>
 
-        {/* Mobile: centered logo (absolute centering, aspect preserved) */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex h-full items-center justify-center lg:hidden">
-          <a href={homeHref} className="pointer-events-auto flex max-w-[42%] items-center">
-            {config?.logo || store?.logo ? (
-              <img src={getImageUrl(config.logo || store.logo)} alt="" className="max-h-7 w-auto max-w-full object-contain" />
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
-                <span className="truncate text-[13px] font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
-              </span>
-            )}
-          </a>
-        </div>
+        {/* CENTER: logo truly centered in header/viewport */}
+        <a href={homeHref} className="flex max-w-[42vw] items-center justify-center justify-self-center" aria-label={config?.storeName || store?.name}>
+          {config?.logo || store?.logo ? (
+            <img src={getImageUrl(config.logo || store.logo)} alt="" className="max-h-7 w-auto max-w-full object-contain" />
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
+              <span className="truncate text-[13px] font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+            </span>
+          )}
+        </a>
 
-        {/* Desktop: logo + search in controlled layout */}
-        <div className="hidden items-center gap-4 lg:flex lg:flex-1 lg:justify-between">
-          {/* Logo — intentional max size */}
-          <a href={homeHref} className="flex shrink-0 items-center gap-2">
-            {config?.logo || store?.logo ? (
-              <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[140px] object-contain" />
-            ) : (
-              <>
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
-                <span className="text-base font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
-              </>
-            )}
-          </a>
-
-          {/* Search — first-class desktop */}
-          <div className="relative mx-4 max-w-[480px] flex-1">
-            <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
-          </div>
-
-          {/* Right cluster: loyalty + orders + cart */}
-          <div className="flex shrink-0 items-center gap-1">
-            <div className="hidden xl:block"><HeaderLoyaltyBadge /></div>
-            {canShowAuth && (
-              <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
-                className="flex h-10 items-center gap-1.5 rounded-lg px-2 text-[13px] font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220]">
-                <Package className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                <span className="hidden xl:inline">طلباتي</span>
-              </button>
-            )}
-            <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة"
-              className="flex h-10 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
-              style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
-              <ShoppingCart className="h-[18px] w-[18px]" />
-              <span>السلة</span>
-              {count > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile: right-side controls (cart + optionally orders) — placed naturally */}
-        <div className="flex items-center gap-0.5 lg:hidden">
+        {/* LEFT: cart + orders (justify-self-end = left in RTL) */}
+        <div className="flex items-center justify-self-end gap-0.5">
           {canShowAuth && (
             <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
               className="flex h-11 w-10 items-center justify-center rounded-xl text-[#5b6472] transition-colors hover:bg-[#f0f3f7]">
@@ -203,6 +248,40 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
             {count > 0 && (
               <span className="absolute right-0.5 top-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#2563eb] px-1 text-[10px] font-extrabold text-white">{count}</span>
             )}
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop: logo + search in controlled layout */}
+      <div className="hidden items-center gap-4 border-b border-[#eef1f5] px-4 py-2 lg:flex lg:px-8">
+        <a href={homeHref} className="flex shrink-0 items-center gap-2">
+          {config?.logo || store?.logo ? (
+            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[140px] object-contain" />
+          ) : (
+            <>
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
+              <span className="text-base font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+            </>
+          )}
+        </a>
+        <div className="relative mx-4 max-w-[480px] flex-1">
+          <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          <div className="hidden xl:block"><HeaderLoyaltyBadge /></div>
+          {canShowAuth && (
+            <button type="button" onClick={handleMyOrders} aria-label="طلباتي"
+              className="flex h-10 items-center gap-1.5 rounded-lg px-2 text-[13px] font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220]">
+              <Package className="h-[18px] w-[18px]" strokeWidth={1.8} />
+              <span className="hidden xl:inline">طلباتي</span>
+            </button>
+          )}
+          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة"
+            className="flex h-10 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3.5 text-[13px] font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+            style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+            <ShoppingCart className="h-[18px] w-[18px]" />
+            <span>السلة</span>
+            {count > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
           </button>
         </div>
       </div>
@@ -228,75 +307,254 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
       )}
     </header>
     {typeof document !== 'undefined' && mobileNavOpen && createPortal(
-      /* Mobile nav drawer — proper overlay via portal to body so it covers the full
-         viewport (header backdrop-blur would otherwise clip a fixed descendant). */
-      <div ref={mobileNavRef} className="fixed inset-0 z-[70]" dir="rtl"
-        onKeyDown={(e) => { if (e.key === 'Escape') setMobileNavOpen(false); }}>
-        {/* Backdrop */}
-        <div className="absolute inset-0 bg-[#0a1220]/45 backdrop-blur-[2px] transition-opacity"
-          onClick={() => setMobileNavOpen(false)} />
-        {/* Drawer — RTL: slides from right */}
-        <nav className="absolute inset-y-0 right-0 flex max-h-full w-[280px] max-w-[85vw] flex-col overflow-y-auto bg-white shadow-2xl"
-          style={{ animation: `hubSlideLeft ${DUR.overlay}ms ${EASE} both` }}>
-          {/* Drawer header */}
-          <div className="flex items-center justify-between border-b border-[#eef1f5] px-4 py-3.5">
-            <div className="flex items-center gap-2">
-              {config?.logo || store?.logo ? (
-                <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto max-w-[90px] object-contain" />
-              ) : (
-                <span className="flex items-center gap-1.5">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
-                  <span className="text-sm font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
-                </span>
-              )}
-            </div>
-            <button type="button" onClick={() => setMobileNavOpen(false)} aria-label="إغلاق القائمة"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#5b6472] transition-colors hover:bg-[#f0f3f7]">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          {/* Navigation items */}
-          <div className="flex-1 overflow-y-auto overscroll-contain p-2.5">
-            {/* Home link */}
-            <a href="/" onClick={() => setMobileNavOpen(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#2563eb]"><Zap className="h-5 w-5" /></span>
-              الرئيسية
-            </a>
-            {/* Categories */}
-            {categories.map((c: any) => (
-              <a key={c.id} href={`/category/${c.slug || c.id}`} onClick={() => setMobileNavOpen(false)}
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</span>
-                {c.name}
-              </a>
-            ))}
-            {categories.length === 0 && (
-              <p className="px-3 py-4 text-center text-sm text-[#8a93a2]">لا توجد أقسام حالياً</p>
-            )}
-          </div>
-          {/* Bottom account/orders section */}
-          {canShowAuth && (
-            <div className="border-t border-[#eef1f5] p-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
-              <button type="button" onClick={() => { setMobileNavOpen(false); handleMyOrders(); }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#8a93a2]"><Package className="h-5 w-5" /></span>
-                طلباتي
-              </button>
-              <button type="button" onClick={() => { setMobileNavOpen(false); (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true))); }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#8a93a2]">
-                  {auth?.isLoggedIn ? <BadgeCheck className="h-5 w-5" /> : <Zap className="h-5 w-5" />}
-                </span>
-                {auth?.isLoggedIn ? 'حسابي' : 'تسجيل الدخول'}
-              </button>
-            </div>
-          )}
-        </nav>
-      </div>,
+      <HubMobileDrawer
+        mobileNavRef={mobileNavRef as any}
+        config={config}
+        store={store}
+        content={content}
+        categories={product?.categories || []}
+        auth={auth}
+        order={order}
+        behavior={behavior}
+        onClose={() => setMobileNavOpen(false)}
+      />,
       document.body
     )}
   </>
+  );
+}
+
+/* ================================================================== */
+/*  MOBILE DRAWER — portal, grouped architecture                        */
+/* ================================================================== */
+function HubMobileDrawer({ mobileNavRef, config, store, content, categories, auth, order, behavior, onClose }: any) {
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [expandedCatId, setExpandedCatId] = useState<string | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Body already locked by parent, but ensure focus on close button
+  useEffect(() => {
+    try { closeRef.current?.focus(); } catch {}
+  }, []);
+
+  const isLoggedIn: boolean = !!auth?.isLoggedIn;
+  const accountsOn = behavior?.customer_accounts_enabled !== false;
+  const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
+  const canShowAccount = accountsOn && (isLoggedIn || loginEnabled);
+  const registrationEnabled = accountsOn && (behavior?.enable_customer_registration ?? behavior?.customer_registration_enabled ?? true) !== false;
+
+  const customerName = [auth?.customer?.first_name, auth?.customer?.last_name].filter(Boolean).join(' ').trim() || auth?.customer?.email || '';
+  const customerEmail = auth?.customer?.email || auth?.userProfile?.email || '';
+  const customerPhone = auth?.customer?.phone || auth?.userProfile?.phone || '';
+
+  const socialSlots = getElectronicsSocialSlots(content);
+  const hasSocial = socialSlots.some((s: any) => s.safe);
+  const whatsappHref = resolveElectronicsWhatsAppHref(config, content, store);
+
+  const handleMyOrders = () => {
+    onClose();
+    if (auth?.isLoggedIn) { order?.loadUserOrders?.(); auth.setShowOrdersModal(true); }
+    else auth.setShowLoginModal(true);
+  };
+  const handleLogin = () => { onClose(); auth?.setShowLoginModal?.(true); };
+  const handleProfile = () => { onClose(); auth?.setShowProfileModal?.(true); };
+  const handleLogout = () => { onClose(); auth?.logout?.(); };
+  const handleHome = () => { onClose(); window.location.href = '/'; };
+  const handleCategory = (cat: any) => { onClose(); window.location.href = `/category/${cat.slug || cat.id}`; };
+  const handleSubCategory = (cat: any) => handleCategory(cat);
+
+  const getCatImage = (c: any): string => {
+    const raw = c?.image || c?.image_url || c?.cover || '';
+    if (!raw) return '';
+    try { return getImageUrl(String(raw)); } catch { return String(raw); }
+  };
+
+  return (
+    <div ref={mobileNavRef} className="fixed inset-0 z-[70]" dir="rtl" role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
+      <div className="absolute inset-0 bg-[#0a1220]/45 backdrop-blur-[2px]" onClick={onClose} />
+      <nav className="absolute inset-y-0 right-0 flex max-h-[100dvh] w-[300px] max-w-[85vw] flex-col overflow-hidden bg-white shadow-2xl" style={{ animation: `hubSlideLeft ${DUR.overlay}ms ${EASE} both` }}>
+        {/* Drawer header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-[#eef1f5] px-4 py-3.5">
+          <div className="flex items-center gap-2">
+            {config?.logo || store?.logo ? (
+              <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto max-w-[90px] object-contain" />
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
+                <span className="text-sm font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+              </span>
+            )}
+          </div>
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="إغلاق القائمة"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-[#5b6472] transition-colors hover:bg-[#f0f3f7]">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overscroll-contain p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-3">
+          {/* HOME — distinct primary navigation action */}
+          <button type="button" onClick={handleHome}
+            className="flex w-full items-center gap-3 rounded-xl bg-[#0a1220] px-3 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#141d2f] active:scale-[0.98]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white"><Home className="h-5 w-5" /></span>
+            الرئيسية
+            <ChevronLeft className="ms-auto h-4 w-4 text-white/60" />
+          </button>
+
+          {/* الأقسام — expandable/collapsible */}
+          <div className="rounded-xl border border-[#e6ebf1] bg-[#f8fafc] overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setCategoriesOpen((v) => !v)}
+              aria-expanded={categoriesOpen}
+              aria-controls="hub-cats"
+              className="flex h-[56px] w-full items-center gap-3 px-3 text-start transition"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#2563eb] ring-1 ring-[#e6ebf1]"><Cpu className="h-5 w-5" /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-extrabold leading-none text-[#0a1220]">الأقسام</span>
+                <span className="mt-1 block text-[11px] font-medium leading-none text-[#8a93a2]">{categories.length ? `${categories.length} أقسام` : 'استكشف الأقسام'}</span>
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-[#8a93a2] transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {categoriesOpen && (
+              <div id="hub-cats" className="border-t border-[#e6ebf1] bg-white px-2 py-2">
+                {categories.length === 0 ? (
+                  <p className="px-3 py-4 text-center text-sm text-[#8a93a2]">لا توجد أقسام حالياً</p>
+                ) : (
+                  <div className="space-y-1">
+                    {categories.slice(0, 30).map((cat: any) => {
+                      const img = getCatImage(cat);
+                      const subs: any[] = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+                      const hasSubs = subs.length > 0;
+                      const isExpanded = expandedCatId === String(cat.id);
+                      return (
+                        <div key={cat.id} className="rounded-lg">
+                          <div className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[#f4f6f9]">
+                            <button type="button" onClick={() => handleCategory(cat)} className="flex flex-1 items-center gap-2.5 text-start">
+                              {img ? (
+                                <img src={img} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover ring-1 ring-[#e6ebf1]" loading="lazy" />
+                              ) : (
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#eef2f8] text-[#2563eb] ring-1 ring-[#e6ebf1]">{categoryIcon(cat.name)}</span>
+                              )}
+                              <span className="flex-1 truncate text-[13px] font-bold text-[#0a1220]">{cat.name}</span>
+                            </button>
+                            {hasSubs ? (
+                              <button type="button" onClick={() => setExpandedCatId(isExpanded ? null : String(cat.id))} aria-label="عرض الأقسام الفرعية" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#8a93a2] hover:bg-[#eef2f8]">
+                                <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              </button>
+                            ) : (
+                              <ChevronLeft className="h-3.5 w-3.5 shrink-0 text-[#cbd5e1]" />
+                            )}
+                          </div>
+                          {hasSubs && isExpanded && (
+                            <div className="ms-6 mt-1 space-y-0.5 border-s-2 border-[#eef2f8] ps-2">
+                              {subs.map((sub: any) => {
+                                const subImg = getCatImage(sub);
+                                return (
+                                  <button key={sub.id} type="button" onClick={() => handleSubCategory(sub)} className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-start hover:bg-[#f4f6f9]">
+                                    {subImg ? <img src={subImg} alt="" className="h-6 w-6 shrink-0 rounded-md object-cover ring-1 ring-[#e6ebf1]" loading="lazy" /> : <span className="h-6 w-6 shrink-0 rounded-md bg-[#eef2f8]" />}
+                                    <span className="flex-1 truncate text-[12px] font-semibold text-[#334155]">{sub.name}</span>
+                                    <ChevronLeft className="h-3 w-3 text-[#cbd5e1]" />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* الحساب — separate group, auth-aware, real actions only */}
+          {canShowAccount && (
+            <div className="rounded-xl border border-[#e6ebf1] bg-[#f8fafc] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setAccountOpen((v) => !v)}
+                aria-expanded={accountOpen}
+                aria-controls="hub-account"
+                className="flex h-[56px] w-full items-center gap-3 px-3 text-start transition"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><User className="h-5 w-5" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-extrabold leading-none text-[#0a1220]">الحساب</span>
+                  <span className="mt-1 block truncate text-[11px] font-medium leading-none text-[#8a93a2]">{isLoggedIn ? (customerName || 'إدارة الحساب') : 'تسجيل الدخول أو إنشاء حساب'}</span>
+                </span>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-[#8a93a2] transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {accountOpen && (
+                <div id="hub-account" className="border-t border-[#e6ebf1] bg-white px-2 py-2">
+                  {isLoggedIn ? (
+                    <>
+                      {(customerName || customerEmail) && (
+                        <div className="mx-1 mb-2 flex items-center gap-3 rounded-xl bg-[#f1f4f8] px-3 py-2.5 ring-1 ring-[#e6ebf1]">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0a1220] text-[12px] font-bold text-white">{(customerName || customerEmail || '؟').trim().charAt(0).toUpperCase()}</span>
+                          <span className="min-w-0 flex-1">
+                            {customerName && <span className="block truncate text-[12px] font-bold text-[#0a1220]">{customerName}</span>}
+                            {(customerEmail || customerPhone) && <span className="block truncate text-[11px] text-[#64748b]">{customerEmail || customerPhone}</span>}
+                          </span>
+                        </div>
+                      )}
+                      <div className="space-y-0.5">
+                        <button type="button" onClick={handleProfile} className="flex h-[44px] w-full items-center gap-3 rounded-lg px-3 text-start text-[13px] font-bold text-[#0a1220] hover:bg-[#f4f6f9]"><BadgeCheck className="h-4 w-4 text-[#8a93a2]" /> حسابي <ChevronLeft className="ms-auto h-3.5 w-3.5 text-[#cbd5e1]" /></button>
+                        <button type="button" onClick={handleMyOrders} className="flex h-[44px] w-full items-center gap-3 rounded-lg px-3 text-start text-[13px] font-bold text-[#0a1220] hover:bg-[#f4f6f9]"><Package className="h-4 w-4 text-[#8a93a2]" /> طلباتي <ChevronLeft className="ms-auto h-3.5 w-3.5 text-[#cbd5e1]" /></button>
+                        <div className="mx-3 my-1 h-px bg-[#eef1f5]" />
+                        <button type="button" onClick={handleLogout} className="flex h-[44px] w-full items-center gap-3 rounded-lg px-3 text-start text-[13px] font-bold text-[#dc2626] hover:bg-red-50"><LogOut className="h-4 w-4" /> تسجيل الخروج</button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="px-1 py-1">
+                      <p className="px-2 text-[11px] leading-relaxed text-[#8a93a2]">سجّل الدخول لمتابعة حسابك وطلباتك</p>
+                      <div className="mt-2 space-y-1.5">
+                        <button type="button" onClick={handleLogin} className="flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#0a1220] px-4 text-[13px] font-extrabold text-white transition hover:bg-[#141d2f] active:scale-[0.98]"><LogIn className="h-4 w-4" /> تسجيل الدخول</button>
+                        {registrationEnabled && <button type="button" onClick={handleLogin} className="flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-[13px] font-bold text-[#0a1220] ring-1 ring-[#e6ebf1] transition hover:bg-[#f8fafc] active:scale-[0.98]"><User className="h-4 w-4" /> إنشاء حساب</button>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* WhatsApp in drawer — connected to contact area */}
+          {whatsappHref && (
+            <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={onClose} className="flex h-[52px] w-full items-center gap-3 rounded-xl bg-white px-3 shadow-sm ring-1 ring-[#e6ebf1] transition hover:bg-[#f8fafc] active:scale-[0.98]">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white"><MessageCircle className="h-5 w-5" fill="white" /></span>
+              <span className="flex-1 text-start">
+                <span className="block text-[13px] font-bold leading-none text-[#0a1220]">تواصل عبر واتساب</span>
+                <span className="mt-1 block text-[11px] leading-none text-[#8a93a2]">للاستفسار والتواصل</span>
+              </span>
+              <ChevronLeft className="h-4 w-4 text-[#cbd5e1]" />
+            </a>
+          )}
+
+          {/* Social — compact circular icon buttons near bottom, up to 6 */}
+          {hasSocial && (
+            <>
+              <div className="h-px bg-[#eef1f5]" />
+              <div>
+                <p className="mb-2 text-[11px] font-extrabold tracking-wide text-[#8a93a2]">تابعنا</p>
+                <div className="flex flex-wrap gap-2">
+                  {socialSlots.filter((s: any) => s.safe).slice(0,6).map((slot: any) => {
+                    const Icon = getSocialIcon(slot.platform);
+                    return (
+                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0a1220] text-white shadow-sm transition hover:bg-[#141d2f] active:scale-95">
+                        <Icon className="h-4 w-4" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </nav>
+    </div>
   );
 }
 
@@ -666,6 +924,7 @@ export const ElectronicsHubRoot: React.FC<TemplateRootProps> = ({ storeData, mod
     return (
       <div dir="rtl" className="min-h-screen bg-[#f3f5f8] pb-16 md:pb-0">
         <HubHeader />
+        <ElectronicsWhatsAppFloating />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
           <h1 className="mb-6 border-b border-[#e8edf3] pb-3 text-2xl font-extrabold text-[#0a1220]">{page?.title}</h1>
           <article className="text-[#5b6472] [&_a]:!text-[#2563eb] [&_h1]:!text-[#0a1220] [&_h2]:!text-[#0a1220] [&_h3]:!text-[#0a1220] [&_p]:!text-[#5b6472] [&_strong]:!text-[#0a1220]" dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
@@ -706,12 +965,13 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   return (
     <div dir="rtl" className="min-h-screen bg-[#f3f5f8] text-[#0a1220] antialiased selection:bg-[#2563eb] selection:text-white">
       <HubHeader />
+      <ElectronicsWhatsAppFloating />
       <main className="pb-16 md:pb-0">
         <HubHero banner={banners[0]} />
 
-        {/* Categories */}
+        {/* Categories — improved vertical rhythm (breathing room after Hero/CoverFlow) */}
         {categories.length > 0 && (
-          <section ref={catReveal.ref} className="mx-auto mt-4 max-w-7xl px-3 sm:px-6 lg:px-8" style={revealStyle(catReveal.visible)}>
+          <section ref={catReveal.ref} className="mx-auto mt-7 max-w-7xl px-3 sm:mt-8 sm:px-6 lg:px-8" style={revealStyle(catReveal.visible)}>
             <div className="mb-3 flex items-center gap-2">
               <span className="h-4 w-1 rounded-full bg-[#2563eb]" />
               <h2 className="text-base font-extrabold text-[#0a1220] sm:text-lg">تسوّق حسب القسم</h2>
@@ -785,6 +1045,7 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
   return (
     <div dir="rtl" className="min-h-screen bg-[#f3f5f8] text-[#0a1220] antialiased pb-16 md:pb-0">
       <HubHeader homeHref="/" />
+      <ElectronicsWhatsAppFloating />
       <main className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-[#8a93a2]">
           <a href="/" className="font-bold text-[#5b6472] transition-colors hover:text-[#2563eb]">الرئيسية</a>
