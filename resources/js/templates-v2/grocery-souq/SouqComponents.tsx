@@ -535,9 +535,6 @@ export function SouqProductCard({ product }: SouqCardProps) {
         {discount > 0 && !out && (
           <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-600 ring-1 ring-red-200">-{discount}%</span>
         )}
-        {!!remaining && !out && (
-          <span className="pointer-events-none absolute top-2 left-10 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">آخر {remaining}</span>
-        )}
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); wishlist?.toggle?.(product.id); }}
@@ -561,6 +558,11 @@ export function SouqProductCard({ product }: SouqCardProps) {
           const pts = calcEarnedPoints(Number(product.price) || 0, ls);
           return pts > 0 ? <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600"><Gift className="h-3 w-3" /> كسب {pts} نقطة</span> : null;
         })()}
+        {!!remaining && !out && (
+          <span className="inline-flex w-fit items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold leading-none text-amber-800 ring-1 ring-amber-200/70">
+            {remaining === 1 ? 'آخر قطعة' : remaining === 2 ? 'آخر قطعتين' : `آخر ${remaining} قطع`}
+          </span>
+        )}
         <div className="flex items-baseline gap-1.5 leading-none">
           <span className="text-[15px] font-black text-[#0F1620]">{formatPrice(product.price)}</span>
           {discount > 0 && !!product.originalPrice && (
