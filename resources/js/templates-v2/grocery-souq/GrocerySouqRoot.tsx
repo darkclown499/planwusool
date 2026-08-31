@@ -3,6 +3,7 @@ import { router } from '@inertiajs/react';
 import { PackageSearch } from 'lucide-react';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
+import { getImageUrl } from '@/utils/image-helper';
 import { useStorefrontCore } from '../shared/hooks';
 import { useHomepageSettings } from '../shared/CategorySections';
 import { SouqDealsRail, SouqHeader, SouqHero, SouqProductCard, SouqStickyCartBar } from './SouqComponents';
@@ -65,46 +66,79 @@ const SouqHome: React.FC<{ storeData: any }> = ({ storeData }) => {
       <main>
         <SouqHero banners={banners} />
 
-        {/* Category scalable — desktop grid limited, mobile horizontal scroll */}
+        {/* Category gallery — premium balanced (5-col desktop, centered last row, RTL swipe on mobile) */}
         {categories.length > 0 && (
-          <section className="mx-auto max-w-[1600px] px-3 py-5 lg:px-6">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-base font-black text-stone-900">التصنيفات</h2>
-              <span className="text-xs text-stone-500">{categories.length} قسم</span>
+          <section className="mx-auto max-w-[1600px] px-3 py-5 lg:px-6" dir="rtl">
+            {/* Coherent section header: title + subdued count inline */}
+            <div className="mb-3.5 flex items-center justify-between gap-3">
+              <h2 className="text-[15px] font-black tracking-tight text-stone-900 lg:text-[16px]">التصنيفات</h2>
+              <span className="inline-flex shrink-0 items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-bold leading-none text-stone-600 ring-1 ring-black/5">
+                {categories.length === 1 ? 'قسم واحد' : `${categories.length} أقسام`}
+              </span>
             </div>
-            {/* Mobile: horizontal scroll chips */}
-            <div className="flex gap-3 overflow-x-auto pb-2 md:hidden scrollbar-none snap-x">
+            {/* Mobile: horizontal RTL swipe rail with peek, smooth scroll, no horizontal page overflow */}
+            <div
+              className="flex gap-3 overflow-x-auto overflow-y-hidden pb-2 md:hidden snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden overscroll-x-contain"
+              style={{ scrollbarWidth: 'none' } as any}
+            >
               {visibleCats.map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex shrink-0 snap-start flex-col items-center gap-1.5 rounded-[18px] bg-white p-2 shadow-sm ring-1 ring-black/5 transition hover:shadow-md w-[92px]">
-                  <span className="flex h-[76px] w-[76px] items-center justify-center overflow-hidden rounded-[14px] bg-[#F5F5F4]">
+                <a
+                  key={c.id}
+                  href={`/category/${c.slug || c.id}`}
+                  className="group flex w-[108px] shrink-0 snap-start flex-col overflow-hidden rounded-[16px] bg-white p-1.5 shadow-sm ring-1 ring-black/5 transition-colors duration-200 hover:ring-black/10 sm:w-[120px]"
+                >
+                  <span className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[12px] bg-[#F5F5F4]">
                     {c.image ? (
-                      <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
+                      <img
+                        src={getImageUrl(c.image || '')}
+                        alt={c.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(c.image || ''); }}
+                      />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 to-stone-200 text-[11px] font-black text-stone-600">{String(c.name).slice(0,2)}</span>
                     )}
                   </span>
-                  <span className="line-clamp-2 min-h-[28px] max-w-[76px] break-words px-1 text-center text-xs font-bold leading-tight text-stone-700 group-hover:text-black">{c.name}</span>
+                  <span className="flex min-h-[36px] items-center justify-center px-1.5 py-2 text-center text-xs font-bold leading-tight text-stone-700 line-clamp-2 group-hover:text-stone-900">{c.name}</span>
                 </a>
               ))}
             </div>
-            {/* Desktop: grid limited */}
-            <div className="hidden md:grid grid-cols-4 gap-3 lg:grid-cols-6 xl:grid-cols-6">
+            {/* Desktop/Tablet: balanced premium gallery — flex-wrap centered so last row never sticks to one side */}
+            <div className="hidden md:flex flex-wrap justify-center gap-3">
               {visibleCats.map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-[18px] bg-white p-2 shadow-sm ring-1 ring-black/5 transition hover:shadow-md">
-                  <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-[14px] bg-[#F5F5F4]">
+                <a
+                  key={c.id}
+                  href={`/category/${c.slug || c.id}`}
+                  className="group flex flex-col overflow-hidden rounded-[16px] bg-white p-1.5 shadow-sm ring-1 ring-black/[0.06] transition-all duration-200 hover:shadow-md hover:ring-black/10
+                    w-[calc((100%-24px)/3)] lg:w-[calc((100%-36px)/4)] xl:w-[calc((100%-48px)/5)]"
+                >
+                  <span className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[12px] bg-[#F5F5F4]">
                     {c.image ? (
-                      <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-cover" />
+                      <img
+                        src={getImageUrl(c.image || '')}
+                        alt={c.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-300 will-change-transform group-hover:scale-[1.03]"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(c.image || ''); }}
+                      />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 to-stone-200 text-xs font-black text-stone-600">{String(c.name).slice(0,2)}</span>
                     )}
                   </span>
-                  <span className="line-clamp-2 min-h-[28px] max-w-full break-words px-1 text-center text-xs font-bold leading-tight text-stone-700 group-hover:text-black">{c.name}</span>
+                  <span className="flex min-h-[38px] items-center justify-center px-2 py-2 text-center text-[13px] font-bold leading-tight text-stone-700 line-clamp-2 group-hover:text-stone-900">{c.name}</span>
                 </a>
               ))}
             </div>
             {categories.length > CATS_INITIAL && (
               <div className="mt-4 flex justify-center">
-                <button type="button" onClick={() => setCatsExpanded((v) => !v)} className="rounded-full border border-black/10 bg-white px-5 py-2 text-xs font-black text-stone-700 hover:bg-black hover:text-white transition">
+                <button
+                  type="button"
+                  onClick={() => setCatsExpanded((v) => !v)}
+                  className="rounded-full border border-black/10 bg-white px-5 py-2 text-xs font-black text-stone-700 transition hover:bg-black hover:text-white"
+                >
                   {catsExpanded ? 'عرض أقل' : `عرض جميع الأقسام (${categories.length})`}
                 </button>
               </div>
