@@ -122,13 +122,13 @@ class MediaController extends Controller
         }
         $allowedMimes = array_unique($allowedMimes);
 
-        // Hard safety ceiling for a single upload. Keep this comfortably above the
-        // per-tenant max_file_size value so that raising the admin setting actually
-        // takes effect for larger assets such as banner/mobile videos. Videos are
-        // served directly and are NOT run through the WebP downscaler, so a very
-        // low cap silently blocks normal-length clips.
-        $hardMaxKb = 200 * 1024; // 200 MB
-        $effectiveMaxKb = min($config['max_file_size_kb'], $hardMaxKb);
+        // Hard safety ceiling for a single upload. Raised to 50 MB so every file
+        // type (including banner/mobile videos) can be uploaded up to 50 MB, and
+        // not silently blocked by the per-tenant default of 2 MB. Videos are served
+        // directly and are NOT run through the WebP downscaler, so a very low cap
+        // would silently block normal-length clips.
+        $hardMaxKb = 50 * 1024; // 50 MB
+        $effectiveMaxKb = $hardMaxKb;
 
         $validator = \Validator::make($request->all(), [
             'files' => 'required|array|min:1',
