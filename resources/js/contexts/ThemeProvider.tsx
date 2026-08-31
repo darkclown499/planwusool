@@ -152,8 +152,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
                                     >
                                         <MobileAppShell />
                                         {children}
-                                        {/* Reserves space so the fixed mobile bottom tab bar never covers the last bit of page content (e.g. the footer). */}
-                                        <div aria-hidden className="h-[calc(54px_+_env(safe-area-inset-bottom))] md:hidden" />
+                                        {/* Reserves space so the fixed mobile bottom tab bar never covers content — hidden for templates without bottom nav (fashion-atelier, grocery-souq) */}
+                                        {(() => {
+                                            const t = String((store as any)?.theme || '').toLowerCase();
+                                            const hideSpacer = t === 'fashion-atelier' || t === 'grocery-souq';
+                                            return hideSpacer ? null : <div aria-hidden className="h-[calc(54px_+_env(safe-area-inset-bottom))] md:hidden" />;
+                                        })()}
                                         <AccountArea />
                                     </UIProvider>
                                 </OrderProvider>

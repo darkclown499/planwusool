@@ -251,14 +251,14 @@ const SouqCategoryMode: React.FC<{ categoryData?: any | null; storeData?: any }>
         {allCategories.length > 0 && (
           <div className="scrollbar-none -mx-3 mb-4 flex gap-2 overflow-x-auto px-3 pb-2 lg:mx-0 lg:px-0">
             <a href="/" className="flex shrink-0 flex-col items-center gap-1">
-              <span className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-[#FFC20E] text-xs font-black text-black shadow-sm">الكل</span>
+              <span className="flex h-16 w-16 items-center justify-center rounded-[18px] text-xs font-black text-black shadow-sm" style={{ background: 'var(--store-primary, #FFC20E)' }}>الكل</span>
               <span className="text-xs font-bold text-black">الكل</span>
             </a>
             {allCategories.map((c: any) => {
               const active = String(c.id) === String(cat.id) || String(c.slug) === String(cat.slug);
               return (
                 <a key={c.id} href={`/category/${c.slug || c.id}`} className="flex shrink-0 flex-col items-center gap-1">
-                  <span className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] shadow-sm ring-1 ${active ? 'bg-[#FFC20E] ring-[#FFC20E] text-black' : 'bg-white ring-black/5'}`}>
+                  <span className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-[18px] shadow-sm ring-1 ${active ? 'text-black' : 'bg-white ring-black/5'}`} style={active ? { background: 'var(--store-primary, #FFC20E)', borderColor: 'var(--store-primary, #FFC20E)' } : undefined}>
                     {c.image ? <img src={c.image} alt={c.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 to-stone-200 text-xs font-black text-stone-600">{String(c.name).slice(0,2)}</span>}
                   </span>
                   <span className={`max-w-[64px] truncate text-xs ${active ? 'font-black text-black' : 'font-semibold text-stone-600'}`}>{c.name}</span>
@@ -282,7 +282,8 @@ const SouqCategoryMode: React.FC<{ categoryData?: any | null; storeData?: any }>
           <select
             value={categoryData.sort || 'newest'}
             onChange={(e) => navigate({ sort: e.target.value })}
-            className="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold focus:border-[#FFC20E] focus:outline-none focus:ring-1 focus:ring-[#FFC20E]"
+            className="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold focus:border-[var(--store-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--store-primary)]"
+            style={{ ['--tw-ring-color' as any]: 'var(--store-primary, #FFC20E)' } as any}
           >
             {SORTS.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -310,9 +311,10 @@ const SouqCategoryMode: React.FC<{ categoryData?: any | null; storeData?: any }>
                     key={n}
                     type="button"
                     onClick={() => navigate({ page: n })}
-                    className={`h-9 min-w-9 rounded-full px-2 text-sm font-black transition ${
-                      n === categoryData.currentPage ? 'bg-[#0F1620] text-white shadow' : 'bg-white text-stone-600 ring-1 ring-black/5 hover:bg-[#FFC20E] hover:text-black'
-                    }`}
+                    style={n !== categoryData.currentPage ? { ['--hover-bg' as any]: 'var(--store-primary)' } as any : undefined}
+                  className={`h-9 min-w-9 rounded-full px-2 text-sm font-black transition ${
+                      n === categoryData.currentPage ? 'bg-[#0F1620] text-white shadow' : 'bg-white text-stone-600 ring-1 ring-black/5 hover:text-black'
+                    }` + (n !== categoryData.currentPage ? ' hover:!bg-[var(--store-primary)]' : '')}
                   >
                     {n}
                   </button>

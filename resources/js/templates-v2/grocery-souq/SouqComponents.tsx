@@ -492,10 +492,11 @@ export function SouqProductCard({ product }: SouqCardProps) {
 
   const rawContent = (content ?? store?.content ?? {}) as any;
   const designTokens = (store as any)?.design_tokens ?? {};
-  const accent = rawContent?.accent_color ?? designTokens?.accent_color ?? (config as any)?.accent_color ?? '#FFC20E';
+  const __primaryHex = (designTokens as any)?.colors?.primary || rawContent?.accent_color || (config as any)?.accent_color || '#FFC20E';
+  const accent = 'var(--store-primary, ' + __primaryHex + ')';
   const isLight = (() => {
     try {
-      const hex = String(accent).trim().replace('#','');
+      const hex = String(__primaryHex).trim().replace('#','');
       const full = hex.length === 3 ? hex.split('').map(c=>c+c).join('') : hex;
       const r = parseInt(full.slice(0,2),16), g = parseInt(full.slice(2,4),16), b = parseInt(full.slice(4,6),16);
       const lum = 0.2126*(r/255)+0.7152*(g/255)+0.0722*(b/255);
@@ -654,7 +655,8 @@ export function SouqStickyCartBar() {
     <button
       type="button"
       onClick={() => ui.setShowCart(true)}
-      className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-between rounded-full bg-[#0F1620] px-5 py-3.5 text-white shadow-2xl ring-1 ring-white/10 transition active:scale-[0.99] sm:hidden"
+      className="fixed inset-x-3 z-40 flex items-center justify-between rounded-full bg-[#0F1620] px-5 py-3.5 text-white shadow-2xl ring-1 ring-white/10 transition active:scale-[0.99] sm:hidden"
+      style={{ bottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' } as any}
       dir="rtl"
     >
       <span className="flex items-center gap-2 text-sm font-black">

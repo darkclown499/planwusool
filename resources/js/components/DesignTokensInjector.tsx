@@ -108,8 +108,15 @@ export default function DesignTokensInjector({ tokens }: Props) {
                 .text-\\[\\#9d7463\\], .hover\\:text-\\[\\#9d7463\\]:hover { color: var(--store-primary) !important; }
                 .border-\\[\\#9d7463\\] { border-color: var(--store-primary) !important; }
                 .bg-\\[\\#FFC20E\\], .bg-\\[\\#ffc20e\\], .from-\\[\\#FFC20E\\], .to-\\[\\#FFC20E\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .bg-\\[\\#FFC20E\\]\\/10, .bg-\\[\\#FFC20E\\]\\/15, .bg-\\[\\#FFC20E\\]\\/20 { background-color: color-mix(in srgb, var(--store-primary) 15%, transparent) !important; }
+                .from-\\[\\#FFC20E\\]\\/20 { --tw-gradient-from: color-mix(in srgb, var(--store-primary) 20%, transparent) var(--tw-gradient-from-position) !important; }
                 .text-\\[\\#FFC20E\\] { color: var(--store-primary) !important; }
                 .border-\\[\\#FFC20E\\] { border-color: var(--store-primary) !important; }
+                .border-\\[\\#FFC20E\\]\\/10, .border-\\[\\#FFC20E\\]\\/20, .border-\\[\\#FFC20E\\]\\/40 { border-color: color-mix(in srgb, var(--store-primary) 40%, transparent) !important; }
+                .ring-\\[\\#FFC20E\\], .ring-\\[\\#FFC20E\\]\\/20 { --tw-ring-color: var(--store-primary) !important; }
+                .hover\\:bg-\\[\\#FFC20E\\]:hover, .hover\\:bg-\\[\\#FFC20E\\]\\/10:hover { background-color: var(--store-primary) !important; }
+                .hover\\:border-\\[\\#FFC20E\\]:hover { border-color: var(--store-primary) !important; }
+                .focus\\:border-\\[\\#FFC20E\\]:focus, .focus\\:ring-\\[\\#FFC20E\\]:focus { border-color: var(--store-primary) !important; --tw-ring-color: var(--store-primary) !important; }
                 .bg-\\[\\#b45309\\], .bg-\\[\\#B45309\\], .from-\\[\\#b45309\\], .to-\\[\\#b45309\\], .bg-\\[\\#92400e\\], .from-\\[\\#92400e\\], .to-\\[\\#92400e\\] { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
                 .text-\\[\\#b45309\\], .text-\\[\\#92400e\\] { color: var(--store-primary) !important; }
                 .border-\\[\\#b45309\\], .border-\\[\\#92400e\\] { border-color: var(--store-primary) !important; }
