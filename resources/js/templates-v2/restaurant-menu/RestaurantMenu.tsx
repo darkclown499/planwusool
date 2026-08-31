@@ -173,12 +173,17 @@ function HayahSidebar() {
     { key: 'tiktok', url: (config?.socialMedia as any)?.tiktok || (useStorefrontCore() as any).content?.tiktok_url, label: 'تيك توك', icon: '♪' },
   ].filter((s) => s.url && String(s.url).trim() && /^https?:\/\//.test(String(s.url)));
 
+  const [catsExpanded, setCatsExpanded] = useState(false);
+  const INITIAL_CATS = 18;
+  const visibleCats = catsExpanded ? categories : categories.slice(0, INITIAL_CATS);
+  const hasMore = categories.length > INITIAL_CATS;
+
   return (
-    <aside className="hidden lg:flex w-[210px] shrink-0 flex-col gap-3" dir="rtl">
+    <aside className="hidden lg:flex w-[210px] shrink-0 flex-col gap-3 sticky top-[84px] self-start max-h-[calc(100vh-88px)] overflow-y-auto scrollbar-thin" dir="rtl">
       <div className="rounded-lg bg-white ring-1 ring-slate-200 overflow-hidden">
         <a href="/" className="flex items-center gap-2 px-3 py-2.5 text-sm font-bold text-slate-800 hover:bg-slate-50 border-b border-slate-100"><Home className="h-4 w-4 text-slate-500" />الرئيسية</a>
         <div className="divide-y divide-slate-100">
-          {categories.slice(0, 25).map((cat: any) => {
+          {visibleCats.map((cat: any) => {
             const img = getCatImg(cat);
             const hasSubs = Array.isArray(cat.subcategories) && cat.subcategories.length > 0;
             return (
@@ -190,6 +195,11 @@ function HayahSidebar() {
             );
           })}
         </div>
+        {hasMore && (
+          <button type="button" onClick={() => setCatsExpanded((v) => !v)} className="flex w-full items-center justify-center gap-1 border-t border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-white hover:text-slate-900">
+            {catsExpanded ? 'عرض أقل' : `عرض المزيد (${categories.length - INITIAL_CATS})`} <ChevronLeft className={`h-3 w-3 transition-transform ${catsExpanded ? 'rotate-90' : '-rotate-90'}`} />
+          </button>
+        )}
         <a href="/products" className="flex items-center justify-center gap-1 border-t border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-white">عرض كل المنتجات<ChevronLeft className="h-3 w-3" /></a>
       </div>
 
@@ -237,44 +247,171 @@ function HayahUtilityRow() {
   );
 }
 
-/* ------------------------- Hero ------------------------- */
+/* ------------------------- Hero — canonical media[] wins ------------------------- */
 export function HayahHero({ banners }: { banners?: any[] }) {
   const hero = useResolvedHero();
-  const hasMobileImages = hero.imagesMobile.length > 0;
-  const desktopImages = hero.images;
-  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && desktopImages.length > 0 ? desktopImages.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink })) : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && desktopImages.length === 0 ? [{ title: hero.heading, subtitle: hero.subtitle, image: '', button_text: hero.ctaLabel, button_link: hero.ctaLink }] : null;
-  const rawSlides = dynamicSlides ?? (banners && banners.length > 0 ? banners : []);
-  const mediaCarousel = (hero as any).media?.length > 1 ? (hero as any).media as any[] : null;
-  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
-  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const [index, setIndex] = useState(0);
   const touchStart = useRef<number | null>(null);
-  const slides = useMemo(() => {
-    if (mediaCarousel && mediaCarousel.length) { return mediaCarousel.map((m: any) => { const c = heroContentForMedia(m, hero as any); return { image: m.type === 'image' ? m.src : (m.poster || ''), imageMobile: m.srcMobile || '', title: c.heading || hero.heading, subtitle: c.subtitle || hero.subtitle, button_text: c.ctaLabel || hero.ctaLabel, button_link: c.ctaLink || hero.ctaLink, hasContent: c.hasContent, isExplicitOff: c.isExplicitOff, type: m.type, src: m.src }; }); }
-    return rawSlides;
-  }, [mediaCarousel, rawSlides, hero]);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+
+  const slides: Array<{
+    id: string;
+    type: 'image' | 'video' | 'youtube';
+    src: string;
+    srcMobile: string | null;
+    poster: string | null;
+    position: string | null;
+    positionMobile: string | null;
+    title: string;
+    subtitle: string;
+    button_text: string;
+    button_link: string;
+    hasContent: boolean;
+    isExplicitOff: boolean;
+  }> = useMemo(() => {
+    const media: any[] = (hero as any).media || [];
+    if (media.length > 0) {
+      return media.map((m: any) => {
+        const c = heroContentForMedia(m, hero as any);
+        return {
+          id: m.id,
+          type: m.type as 'image' | 'video' | 'youtube',
+          src: m.src,
+          srcMobile: m.srcMobile || null,
+          poster: m.poster || null,
+          position: m.position || null,
+          positionMobile: m.positionMobile || null,
+          title: c.heading || '',
+          subtitle: c.subtitle || '',
+          button_text: c.ctaLabel || '',
+          button_link: c.ctaLink || '',
+          hasContent: c.hasContent,
+          isExplicitOff: c.isExplicitOff,
+        };
+      });
+    }
+    // Legacy fallbacks — preserve old stores (single image/video/youtube or banners)
+    const legacy: typeof slides = [];
+    if (hero.images.length > 0) {
+      hero.images.forEach((src, idx) => {
+        const mobileSrc = hero.imagesMobile[idx] || null;
+        // Only use global heading for legacy image slides when no per-media content
+        legacy.push({
+          id: `image-legacy-${idx}`,
+          type: 'image',
+          src,
+          srcMobile: mobileSrc,
+          poster: null,
+          position: hero.position || null,
+          positionMobile: hero.positionMobile || null,
+          title: hero.heading || '',
+          subtitle: hero.subtitle || '',
+          button_text: hero.ctaLabel || '',
+          button_link: hero.ctaLink || '',
+          hasContent: !!(hero.heading || hero.subtitle || hero.ctaLabel),
+          isExplicitOff: false,
+        });
+      });
+      if (legacy.length) return legacy;
+    }
+    if (hero.videoUrl) {
+      legacy.push({
+        id: 'video-legacy',
+        type: 'video',
+        src: hero.videoUrl,
+        srcMobile: hero.videoUrlMobile || null,
+        poster: hero.images[0] || null,
+        position: hero.position || null,
+        positionMobile: hero.positionMobile || null,
+        title: hero.heading || '',
+        subtitle: hero.subtitle || '',
+        button_text: hero.ctaLabel || '',
+        button_link: hero.ctaLink || '',
+        hasContent: !!(hero.heading || hero.subtitle || hero.ctaLabel),
+        isExplicitOff: false,
+      });
+      return legacy;
+    }
+    if (hero.youtubeId) {
+      legacy.push({
+        id: 'youtube-legacy',
+        type: 'youtube',
+        src: hero.youtubeId,
+        srcMobile: hero.youtubeIdMobile || null,
+        poster: null,
+        position: null,
+        positionMobile: null,
+        title: hero.heading || '',
+        subtitle: hero.subtitle || '',
+        button_text: hero.ctaLabel || '',
+        button_link: hero.ctaLink || '',
+        hasContent: !!(hero.heading || hero.subtitle || hero.ctaLabel),
+        isExplicitOff: false,
+      });
+      return legacy;
+    }
+    if (banners && banners.length > 0) {
+      return banners.map((b: any, idx: number) => ({
+        id: `banner-${idx}`,
+        type: 'image' as const,
+        src: b.image || b.src || '',
+        srcMobile: b.imageMobile || b.mobile_image || null,
+        poster: null,
+        position: null,
+        positionMobile: null,
+        title: b.title || b.heading || '',
+        subtitle: b.subtitle || '',
+        button_text: b.button_text || b.ctaLabel || '',
+        button_link: b.button_link || b.ctaLink || '',
+        hasContent: !!(b.title || b.subtitle || b.button_text),
+        isExplicitOff: false,
+      }));
+    }
+    return [];
+  }, [hero, banners]);
+
   const totalSlides = slides.length;
-  const hasSlides = totalSlides > 0 || isVideo || isYoutube;
-  useEffect(() => { if (isVideo || isYoutube || totalSlides <= 1) return; const t = setInterval(() => setIndex((v) => (v + 1) % totalSlides), 5000); return () => clearInterval(t); }, [totalSlides, isVideo, isYoutube]);
-  const heightStyle = useMemo(() => { const h = HERO_HEIGHTS['restaurant-menu']; const hasCustom = !!(hero.heightDesktop || hero.heightMobile); if (hasCustom && hero.heightDesktop) return { height: hero.heightDesktop } as any; return { height: h.desktop } as any; }, [hero.heightDesktop, hero.heightMobile]);
+  const hasSlides = totalSlides > 0;
+
+  useEffect(() => {
+    if (totalSlides <= 1) return;
+    const t = setInterval(() => setIndex((v) => (v + 1) % totalSlides), 5000);
+    return () => clearInterval(t);
+  }, [totalSlides]);
+
+  // Pause hidden videos, play active one — saves CPU/audio and respects autoplay policy (muted required)
+  useEffect(() => {
+    videoRefs.current.forEach((el, idx) => {
+      if (!el) return;
+      const slideIdx = idx >= 10000 ? idx - 10000 : idx;
+      if (slideIdx === index && el.paused) {
+        const p = el.play();
+        if (p && typeof (p as any).catch === 'function') (p as any).catch(() => {});
+      } else if (slideIdx !== index && !el.paused) {
+        el.pause();
+        try { el.currentTime = 0; } catch {}
+      }
+    });
+  }, [index, slides]);
+
+  const heightStyle = useMemo(() => {
+    const h = HERO_HEIGHTS['restaurant-menu'];
+    const hasCustom = !!(hero.heightDesktop || hero.heightMobile);
+    if (hasCustom && hero.heightDesktop) return { height: hero.heightDesktop } as any;
+    return { height: h.desktop } as any;
+  }, [hero.heightDesktop, hero.heightMobile]);
   const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
   const h = HERO_HEIGHTS['restaurant-menu'];
   const desktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
   const mobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
+
   if (!hasSlides && !hero.hasDynamicHero) return null;
-  const fit = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
-  const fitMobile = hero.fitMobile ? (hero.fitMobile === 'contain' ? 'object-contain' : 'object-cover') : fit;
-  const pos = hero.position && hero.position !== 'center' ? hero.position : 'center';
-  const posMobile = hero.positionMobile || pos;
-  if (isVideo) {
-    return (<div className="hayah-hero-media hero-clamped relative w-full overflow-hidden rounded-lg bg-black" style={heightStyle}>{!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .hayah-hero-media{ height:${mobileH} !important; } } @media (min-width: 768px) { .hayah-hero-media{ height:${desktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .hayah-hero-media{ height:${mobileH} !important; } }`}</style>}<video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fit} ${hero.videoUrlMobile ? 'hidden md:block' : 'block'}`} style={{ objectPosition: pos }} src={getHeroImageUrl(hero.videoUrl)} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />{hero.videoUrlMobile && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitMobile} block md:hidden`} style={{ objectPosition: posMobile }} src={getHeroImageUrl(hero.videoUrlMobile)} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />}<div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />{(hero.heading || hero.subtitle || hero.ctaLabel) && <div className="absolute inset-0 flex items-center"><div className="w-full px-4 sm:px-6">{hero.subtitle && <p className="mb-1.5 inline-block rounded bg-white/15 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">{hero.subtitle}</p>}{hero.heading && <h1 className="max-w-xl text-lg font-black leading-snug text-white sm:text-2xl">{hero.heading}</h1>}{hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-2 inline-flex rounded-full bg-white px-4 py-1.5 text-sm font-bold text-slate-900 shadow">{hero.ctaLabel}</a>}</div></div>}</div>);
-  }
-  if (isYoutube) {
-    const ytDesktop = hero.youtubeId!;
-    const ytMobile = hero.youtubeIdMobile || ytDesktop;
-    const hasMobYt = !!hero.youtubeIdMobile;
-    return (<div className="hayah-hero-media hero-clamped relative w-full overflow-hidden rounded-lg bg-black" style={heightStyle}>{!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .hayah-hero-media{ height:${mobileH} !important; } } @media (min-width: 768px) { .hayah-hero-media{ height:${desktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .hayah-hero-media{ height:${mobileH} !important; } }`}</style>}<div className={`absolute inset-0 overflow-hidden bg-black ${hasMobYt ? 'hidden md:block' : 'block'}`}>{hero.fit === 'contain' ? <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /> : <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width: '177.77777778vh', height: '56.25vw', minWidth: '100%', minHeight: '100%', maxWidth: 'none', maxHeight: 'none' } as any} /></div>}</div>{hasMobYt && <div className="absolute inset-0 overflow-hidden bg-black block md:hidden">{(hero.fitMobile || hero.fit) === 'contain' ? <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen /> : <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width: '177.77777778vh', height: '56.25vw', minWidth: '100%', minHeight: '100%', maxWidth: 'none', maxHeight: 'none' } as any} /></div>}</div>}<div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />{(hero.heading || hero.subtitle || hero.ctaLabel) && <div className="absolute inset-0 flex items-center"><div className="w-full px-4 sm:px-6">{hero.subtitle && <p className="mb-1.5 inline-block rounded bg-white/15 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">{hero.subtitle}</p>}{hero.heading && <h1 className="max-w-xl text-lg font-black leading-snug text-white sm:text-2xl">{hero.heading}</h1>}{hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-2 inline-flex rounded-full bg-white px-4 py-1.5 text-sm font-bold text-slate-900 shadow">{hero.ctaLabel}</a>}</div></div>}</div>);
-  }
+
+  const globalFit = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const globalFitMobile = hero.fitMobile ? (hero.fitMobile === 'contain' ? 'object-contain' : 'object-cover') : globalFit;
+  const globalPos = hero.position && hero.position !== 'center' ? hero.position : 'center';
+  const globalPosMobile = hero.positionMobile || globalPos;
+
   const handleTouchStart = (e: React.TouchEvent) => { touchStart.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStart.current === null) return;
@@ -282,23 +419,97 @@ export function HayahHero({ banners }: { banners?: any[] }) {
     if (Math.abs(diff) > 40) { if (diff < 0) setIndex((v) => (v + 1) % totalSlides); else setIndex((v) => (v - 1 + totalSlides) % totalSlides); }
     touchStart.current = null;
   };
+
+  const goPrev = () => setIndex((v) => (v - 1 + totalSlides) % totalSlides);
+  const goNext = () => setIndex((v) => (v + 1) % totalSlides);
+
   return (
     <div className="hayah-hero-media hero-clamped relative w-full overflow-hidden rounded-lg bg-slate-100" style={heightStyle} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .hayah-hero-media{ height:${mobileH} !important; } } @media (min-width: 768px) { .hayah-hero-media{ height:${desktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .hayah-hero-media{ height:${mobileH} !important; } }`}</style>}
-      {slides.map((b: any, idx: number) => {
-        const desktopSrc = b.image ? getOptimizedImageUrl(b.image || '', 'medium') : '';
-        const mobileSrc = b.imageMobile ? getOptimizedImageUrl(b.imageMobile || '', 'medium') : desktopSrc;
-        const hasContent = b.hasContent !== false && !b.isExplicitOff && (b.title || b.subtitle || b.button_text);
+      {slides.map((s, idx) => {
+        const isActive = idx === index;
+        const fit = s.position ? 'object-cover' : globalFit; // keep cover unless per-slide wants contain explicitly via hero.fit — per-slide fit stored in s.position? actually fit per slide is in m.fit but we store position only; use globalFit as fallback, per-slide fit via heroMediaItem has no separate fit, reuse global
+        // Per-slide fit: if hero media item had its own fit, it would be encoded via position? For now use global, but per-slide position overrides
+        const slidePos = s.position || globalPos;
+        const slidePosMobile = s.positionMobile || s.position || globalPosMobile;
+        const slideFit = globalFit; // per-slide fit not stored separately in HeroMediaItem beyond position; keep global
+        const slideFitMobile = globalFitMobile;
+        const hasContent = !s.isExplicitOff && s.hasContent && (s.title || s.subtitle || s.button_text);
         return (
-          <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === index ? 1 : 0 }} aria-hidden={idx !== index}>
-            {desktopSrc ? <><img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${fit} ${hasMobileImages || b.imageMobile ? 'hidden md:block' : 'block'}`} style={{ objectPosition: pos }} loading={idx === 0 ? 'eager' : 'lazy'} decoding="async" fetchPriority={idx === 0 ? 'high' : undefined as any} sizes="(max-width:768px) 100vw, 900px" onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(b.image || ''); }} width={900} height={300} />{(hasMobileImages || b.imageMobile) && mobileSrc && <img src={mobileSrc} alt="" className={`absolute inset-0 h-full w-full ${fitMobile} block md:hidden`} style={{ objectPosition: posMobile }} loading={idx === 0 ? 'eager' : 'lazy'} decoding="async" fetchPriority={idx === 0 ? 'high' : undefined as any} sizes="100vw" onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(b.imageMobile || b.image || ''); }} width={900} height={500} />} </> : <div className="absolute inset-0 bg-gradient-to-l from-slate-200 to-slate-100" />}
+          <div key={s.id} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: isActive ? 1 : 0, pointerEvents: isActive ? 'auto' : 'none' }} aria-hidden={!isActive}>
+            {s.type === 'video' ? (
+              <>
+                <video
+                  ref={(el) => { if (el) videoRefs.current.set(idx, el); else videoRefs.current.delete(idx); }}
+                  muted
+                  playsInline
+                  loop
+                  preload="metadata"
+                  poster={s.poster ? getHeroImageUrl(s.poster) : undefined}
+                  className={`absolute inset-0 h-full w-full ${slideFit} ${s.srcMobile ? 'hidden md:block' : 'block'}`}
+                  style={{ objectPosition: slidePos }}
+                  src={getHeroImageUrl(s.src)}
+                />
+                {s.srcMobile && (
+                  <video
+                    ref={(el) => { if (el) videoRefs.current.set(idx + 10000, el); else videoRefs.current.delete(idx + 10000); }}
+                    muted
+                    playsInline
+                    loop
+                    preload="metadata"
+                    poster={s.poster ? getHeroImageUrl(s.poster) : undefined}
+                    className={`absolute inset-0 h-full w-full ${slideFitMobile} block md:hidden`}
+                    style={{ objectPosition: slidePosMobile }}
+                    src={getHeroImageUrl(s.srcMobile)}
+                  />
+                )}
+              </>
+            ) : s.type === 'youtube' ? (
+              <div className={`absolute inset-0 overflow-hidden bg-black ${s.srcMobile ? 'hidden md:block' : 'block'}`}>
+                <div className="absolute inset-0 overflow-hidden bg-black">
+                  <iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${s.src}?autoplay=${isActive ? 1 : 0}&mute=1&loop=1&controls=0&playsinline=1&playlist=${s.src}&modestbranding=1&rel=0&enablejsapi=1`} title={`YouTube ${idx}`} frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width: '177.77777778vh', height: '56.25vw', minWidth: '100%', minHeight: '100%', maxWidth: 'none', maxHeight: 'none' } as any} />
+                </div>
+              </div>
+            ) : (
+              <>
+                {s.src ? (
+                  <>
+                    <img src={getOptimizedImageUrl(s.src, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${slideFit} ${s.srcMobile ? 'hidden md:block' : 'block'}`} style={{ objectPosition: slidePos }} loading={idx === 0 ? 'eager' : 'lazy'} decoding="async" fetchPriority={idx === 0 ? 'high' : undefined as any} sizes="(max-width:768px) 100vw, 900px" onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(s.src); }} width={900} height={300} />
+                    {s.srcMobile && <img src={getOptimizedImageUrl(s.srcMobile, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${slideFitMobile} block md:hidden`} style={{ objectPosition: slidePosMobile }} loading={idx === 0 ? 'eager' : 'lazy'} decoding="async" fetchPriority={idx === 0 ? 'high' : undefined as any} sizes="100vw" onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(s.srcMobile); }} width={900} height={500} />}
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-l from-slate-200 to-slate-100" />
+                )}
+              </>
+            )}
+            {s.srcMobile && s.type === 'youtube' && (
+              <div className="absolute inset-0 overflow-hidden bg-black block md:hidden">
+                <div className="absolute inset-0 overflow-hidden bg-black">
+                  <iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${s.srcMobile}?autoplay=${isActive ? 1 : 0}&mute=1&loop=1&controls=0&playsinline=1&playlist=${s.srcMobile}&modestbranding=1&rel=0&enablejsapi=1`} title={`YouTube mobile ${idx}`} frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width: '177.77777778vh', height: '56.25vw', minWidth: '100%', minHeight: '100%', maxWidth: 'none', maxHeight: 'none' } as any} />
+                </div>
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-black/10 to-transparent" />
-            {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
-            {hasContent && <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-1.5 p-4 sm:p-6 max-w-[62%]">{b.subtitle && <p className="rounded bg-white/15 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">{b.subtitle}</p>}{b.title && <h2 className="text-base font-black leading-snug text-white sm:text-xl line-clamp-2">{b.title}</h2>}{b.button_text && <a href={b.button_link || '#'} className="mt-1 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-slate-900 shadow hover:bg-slate-50">{b.button_text}</a>}</div>}
+            <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+            {hasContent && <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-1.5 p-4 sm:p-6 max-w-[62%]">{s.subtitle && <p className="rounded bg-white/15 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">{s.subtitle}</p>}{s.title && <h2 className="text-base font-black leading-snug text-white sm:text-xl line-clamp-2">{s.title}</h2>}{s.button_text && <a href={s.button_link || '#'} className="mt-1 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-slate-900 shadow hover:bg-slate-50">{s.button_text}</a>}</div>}
           </div>
         );
       })}
-      {totalSlides > 1 && <div className="absolute bottom-2.5 right-1/2 flex translate-x-1/2 gap-1.5">{slides.map((_: any, i: number) => <button key={i} type="button" onClick={() => setIndex(i)} aria-label={`شريحة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/50'}`} />)}</div>}
+      {totalSlides > 1 && (
+        <>
+          <div className="absolute bottom-2.5 right-1/2 flex translate-x-1/2 gap-1.5">
+            {slides.map((_, i) => (
+              <button key={i} type="button" onClick={() => setIndex(i)} aria-label={`شريحة ${i + 1}`} className={`h-1.5 rounded-full transition-all ${i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/50'}`} />
+            ))}
+          </div>
+          {totalSlides > 2 && (
+            <>
+              <button type="button" onClick={goPrev} aria-label="السابق" className="absolute left-2 top-1/2 -translate-y-1/2 hidden md:flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur hover:bg-black/50"><ChevronLeft className="h-5 w-5 rotate-180" /></button>
+              <button type="button" onClick={goNext} aria-label="التالي" className="absolute right-2 top-1/2 -translate-y-1/2 hidden md:flex h-8 w-8 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur hover:bg-black/50"><ChevronLeft className="h-5 w-5" /></button>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
